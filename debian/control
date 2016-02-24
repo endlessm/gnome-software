@@ -24,7 +24,8 @@ Build-Depends: appstream-util,
                libsqlite3-dev,
                libxml2-utils,
                pkg-config,
-               xsltproc
+               xsltproc,
+               libxdgapp-dev (>= 0.4.12)
 Standards-Version: 3.9.6
 Homepage: https://wiki.gnome.org/Apps/Software
 Vcs-Svn: svn://anonscm.debian.org/pkg-gnome/packages/unstable/gnome-software/
@@ -35,6 +36,7 @@ Architecture: any
 Depends: libappstream-glib8,
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.11.5),
+         libxdgapp (>= 0.4.12),
          ${misc:Depends},
          ${shlibs:Depends}
 Replaces: gnome-packagekit-session (<< 3.16.0-2~)
