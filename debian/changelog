@@ -1,0 +1,112 @@
+gnome-software (3.18.3-3) unstable; urgency=medium
+
+  * Add 01_fwupd-dont-crash.patch: Don't crash when the fwupd daemon
+    is removed.
+  * Add 02_fwupd-nofail.patch: Do not fail update checks if fwupd is
+    not available. (Closes: #808305)
+
+ -- Matthias Klumpp <mak@debian.org>  Fri, 15 Jan 2016 15:14:42 +0100
+
+gnome-software (3.18.3-2) unstable; urgency=medium
+
+  * Enable fwupd support
+    - This allows updating flashed firmware from GNOME-Software
+      when 'fwupd' is installed.
+  * Depend on 'appstream'
+    - Enables AppStream/DEP-11 integration on Debian automatically.
+
+ -- Matthias Klumpp <mak@debian.org>  Mon, 14 Dec 2015 16:02:42 +0100
+
+gnome-software (3.18.3-1) unstable; urgency=medium
+
+  * New upstream bugfix release
+    - Closes: #803418
+
+ -- Matthias Klumpp <mak@debian.org>  Thu, 05 Nov 2015 20:04:16 +0100
+
+gnome-software (3.18.2-2) unstable; urgency=medium
+
+  * Add missing Breaks/Replaces against gnome-packagekit-session
+    - Closes: #802458
+  * Explicitly depend on PackageKit (Closes: #794979)
+    - GNOME-Software needs the PackageKit daemon to work properly
+      at time.
+
+ -- Matthias Klumpp <mak@debian.org>  Wed, 21 Oct 2015 20:26:34 +0200
+
+gnome-software (3.18.2-1) unstable; urgency=medium
+
+  [ Michael Biebl ]
+  * Use https:// for Vcs-Browser
+
+  [ Matthias Klumpp ]
+  * New upstream release: 3.18.2
+  * Update Build-Depends:
+    - Bump libpackagekit-glib2-dev to (>= 1.0.10)
+    - Bump libsoup2.4-dev to (>= 2.52)
+    - Bump libgnome-desktop-3-dev to (>= 3.18)
+    - Bump libappstream-glib-dev to (>= 0.5.1)
+    - Bump libgtk-3-dev to (>= 3.18)
+    - Add liblimba-dev (>= 0.5.2) on Linux
+  * Sort build dependencies
+  * Enable optional support for the Limba installer.
+    - Will be inert if not explicitly configured.
+
+ -- Matthias Klumpp <mak@debian.org>  Wed, 14 Oct 2015 19:54:10 +0200
+
+gnome-software (3.16.5-2) unstable; urgency=medium
+
+  * Add transitional package for the PK session interface
+  * Do not ship with Fedora-specific plugins
+
+ -- Matthias Klumpp <mak@debian.org>  Sat, 08 Aug 2015 18:18:44 +0200
+
+gnome-software (3.16.5-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 06 Aug 2015 16:27:58 +0200
+
+gnome-software (3.16.4-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Update Build-Depends as per configure.ac:
+    - Add appstream-util.
+    - Add libpolkit-gobject-1-dev.
+    - Bump libappstream-glib-dev to (>= 0.3.4).
+    - Bump libgtk-3-dev to (>= 3.16).
+  * Drop hard-coded dependency on libappstream-glib7 now that the library
+    provides a symbols file.
+  * Use dh_install's exclude (-X) functionality to not install the .a and .la
+    files.
+
+ -- Michael Biebl <biebl@debian.org>  Wed, 22 Jul 2015 00:03:04 +0200
+
+gnome-software (3.14.2-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/control.in: Bump both appstream-glib build and runtime dependencies
+    to >= 0.3.2, this can be reverted when appstream-glib will provide a
+    .symbols file
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 18 Nov 2014 23:08:05 +0100
+
+gnome-software (3.14.1-2) unstable; urgency=medium
+
+  * debian/rules, debian/gnome-software.install: Install appdata file
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 25 Oct 2014 02:36:59 +0200
+
+gnome-software (3.14.1-1) unstable; urgency=medium
+
+  * New upstream release
+    - debian/control.in: Bump gtk+-3.0 build-dependency to 3.14.1
+    - debian/rules: Bump plugin API version to 7
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 18 Oct 2014 09:12:33 +0200
+
+gnome-software (3.14.0-1) unstable; urgency=low
+
+  * Initial release (Closes: #722316)
+
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 11 Oct 2014 11:04:58 +0200
