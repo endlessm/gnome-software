@@ -13,7 +13,7 @@ Build-Depends: appstream-util,
                dh-autoreconf,
                docbook-xsl,
                gnome-pkg-tools (>= 0.10),
-               gsettings-desktop-schemas-dev (>= 3.18),
+               gsettings-desktop-schemas-dev (>= 3.11.5),
                intltool (>= 0.35.0),
                libappstream-glib-dev (>= 0.5.2-2),
                libfwupd-dev (>= 0.6) [amd64 arm64 armhf i386],
@@ -37,7 +37,7 @@ Package: gnome-software
 Architecture: any
 Depends: libappstream-glib8,
          gnome-software-common (= ${source:Version}),
-         gsettings-desktop-schemas (>= 3.18),
+         gsettings-desktop-schemas (>= 3.11.5),
          packagekit (>= 1.0.10),
          ${misc:Depends},
          ${shlibs:Depends}
