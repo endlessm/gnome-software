@@ -273,12 +273,6 @@ BUILT_SOURCES =						\
 	gs-resources.c					\
 	gs-resources.h
 
-TESTS_ENVIRONMENT =						\
-	libtool --mode=execute valgrind				\
-	--quiet							\
-	--leak-check=full					\
-	--show-possibly-lost=no
-
 check_PROGRAMS =						\
 	gs-self-test
 
