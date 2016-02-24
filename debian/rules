@@ -3,16 +3,6 @@
 GS_CONFIGURE_FLAGS = --libdir=/usr/lib \
 		--disable-silent-rules
 
-# ifeq ($(DEB_HOST_ARCH_OS), linux)
-# 	# Enable Limba support on Linux
-# 	GS_CONFIGURE_FLAGS += --enable-limba
-
-# 	# Enable fwupd support on supported architectures
-# 	ifneq (,$(findstring $(DEB_BUILD_ARCH), amd64 arm64 armhf i386))
-# 		GS_CONFIGURE_FLAGS += --enable-firmware
-# 	endif
-# endif
-
 # Install target dir
 INSTALLDIR = $(CURDIR)/debian/tmp
 
