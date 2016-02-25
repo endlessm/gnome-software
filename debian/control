@@ -66,15 +66,3 @@ Description: Software Center for GNOME (common files)
  .
  This package contains the architectures independent files
 
-Package: gnome-packagekit-session
-Architecture: all
-Section: oldlibs
-Priority: extra
-Depends: gnome-software (>= ${source:Version}),
-         ${misc:Depends}
-Description: Transitional package (gnome-packagekit-session -> gnome-software)
- Transitional dummy package replacing gnome-packagekit-session with
- gnome-software.
- .
- The PackageKit session interface is no separate component anymore, but built
- into GNOME-Software.
