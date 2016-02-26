@@ -108,8 +108,6 @@ bin_PROGRAMS =						\
 	gnome-software
 
 gnome_software_SOURCES =				\
-	gs-resources.c					\
-	gs-resources.h					\
 	gs-utils.c					\
 	gs-utils.h					\
 	gs-app.c					\
@@ -200,8 +198,6 @@ gnome_software_SOURCES =				\
 	gs-plugin-loader.h				\
 	gs-plugin-loader-sync.c				\
 	gs-plugin-loader-sync.h				\
-	gs-shell-search-provider-generated.c		\
-	gs-shell-search-provider-generated.h		\
 	gs-shell-search-provider.c			\
 	gs-shell-search-provider.h			\
 	gs-application.c				\
@@ -210,12 +206,20 @@ gnome_software_SOURCES =				\
 	gs-folders.h					\
 	gs-main.c
 
+nodist_gnome_software_SOURCES =				\
+	gs-resources.c					\
+	gs-resources.h					\
+	gs-shell-search-provider-generated.c		\
+	gs-shell-search-provider-generated.h
+
 if HAVE_PACKAGEKIT
 gnome_software_SOURCES +=				\
-	$(packagekit_built_sources)			\
-	$(packagekit_modify2_built_sources)		\
 	gs-dbus-helper.c				\
 	gs-dbus-helper.h
+
+nodist_gnome_software_SOURCES +=			\
+	$(packagekit_built_sources)			\
+	$(packagekit_modify2_built_sources)
 endif
 
 gnome_software_LDADD =					\
@@ -232,7 +236,6 @@ gnome_software_CFLAGS =					\
 	-DLIBEXECDIR=\"$(libexecdir)\"			\
 	$(WARN_CFLAGS)
 
-if HAVE_PACKAGEKIT
 packagekit_built_sources = gs-packagekit-generated.c gs-packagekit-generated.h
 $(packagekit_built_sources): Makefile.am org.freedesktop.PackageKit.xml
 	$(AM_V_GEN) gdbus-codegen				\
@@ -248,7 +251,6 @@ $(packagekit_modify2_built_sources): Makefile.am org.freedesktop.PackageKit.Modi
 		--c-namespace Gs					\
 		--generate-c-code gs-packagekit-modify2-generated	\
 		$(srcdir)/org.freedesktop.PackageKit.Modify2.xml
-endif
 
 gs-shell-search-provider-generated.h gs-shell-search-provider-generated.c: Makefile.am $(srcdir)/shell-search-provider-dbus-interfaces.xml
 	$(AM_V_GEN) gdbus-codegen \
@@ -270,12 +272,6 @@ BUILT_SOURCES =						\
 	gs-shell-search-provider-generated.h		\
 	gs-resources.c					\
 	gs-resources.h
-
-TESTS_ENVIRONMENT =						\
-	libtool --mode=execute valgrind				\
-	--quiet							\
-	--leak-check=full					\
-	--show-possibly-lost=no
 
 check_PROGRAMS =						\
 	gs-self-test
