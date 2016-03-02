@@ -297,8 +297,6 @@ gs_self_test_LDADD =						\
 
 gs_self_test_CFLAGS = $(WARN_CFLAGS)
 
-TESTS = gs-self-test
-
 EXTRA_DIST =						\
 	shell-search-provider-dbus-interfaces.xml	\
 	org.freedesktop.PackageKit.xml			\
