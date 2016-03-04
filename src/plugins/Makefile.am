@@ -79,6 +79,10 @@ if HAVE_OSTREE
 plugin_LTLIBRARIES += libgs_plugin_ostree.la
 endif
 
+#todo: ADD if HAVE_EOS_APP_MANAGER
+plugin_LTLIBRARIES += libgs_plugin_eos_legacy_bundles.la
+#endif
+
 if HAVE_LIMBA
 plugin_LTLIBRARIES += libgs_plugin_limba.la
 endif
@@ -231,6 +235,13 @@ libgs_plugin_desktop_menu_path_la_SOURCES =		\
 libgs_plugin_desktop_menu_path_la_LIBADD = $(GS_PLUGIN_LIBS)
 libgs_plugin_desktop_menu_path_la_LDFLAGS = -module -avoid-version
 libgs_plugin_desktop_menu_path_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
+
+if HAVE_EAM
+libgs_plugin_eos_legacy_bundles_la_SOURCES = gs-plugin-eos-legacy-bundles.c
+libgs_plugin_eos_legacy_bundles_la_LIBADD = $(GS_PLUGIN_LIBS)
+libgs_plugin_eos_legacy_bundles_la_LDFLAGS = -module -avoid-version
+libgs_plugin_eos_legacy_bundles_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
+endif
 
 libgs_plugin_hardcoded_blacklist_la_SOURCES = gs-plugin-hardcoded-blacklist.c
 libgs_plugin_hardcoded_blacklist_la_LIBADD = $(GS_PLUGIN_LIBS)
