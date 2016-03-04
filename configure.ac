@@ -235,6 +235,15 @@ GS_PLUGIN_API_VERSION=9
 AC_SUBST(GS_PLUGIN_API_VERSION)
 AC_DEFINE_UNQUOTED([GS_PLUGIN_API_VERSION], "$GS_PLUGIN_API_VERSION", [the plugin API version])
 
+# check if Endless App Manager is installed
+AC_PATH_PROG(EAM, [eamd])
+AS_IF([test -z "$EAM"], [
+  have_eam=no
+], [
+  have_eam=yes
+])
+AM_CONDITIONAL(HAVE_EAM, test x$have_eam = xyes)
+
 GLIB_TESTS
 
 dnl ---------------------------------------------------------------------------
@@ -277,6 +286,7 @@ echo "
         PolicyKit support:         ${have_polkit}
         Firmware support:          ${have_firmware}
         Limba support:             ${have_limba}
+        EOS legacy bundles support: ${have_eam}
         XDG-APP support:           ${have_xdg_app}
         Steam support:             ${enable_steam}
         GNOME Shell ext. support:  ${enable_shell_extensions}
