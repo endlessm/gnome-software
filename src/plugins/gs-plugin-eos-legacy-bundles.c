@@ -23,6 +23,8 @@
 
 #include <gs-plugin.h>
 
+#include "eos-app-manager-service.h"
+
 /*
  * SECTION:
  * Plugin to deal with EOS's legacy app bundles.
