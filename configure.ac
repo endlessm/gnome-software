@@ -244,6 +244,9 @@ AS_IF([test -z "$EAM"], [
 ])
 AM_CONDITIONAL(HAVE_EAM, test x$have_eam = xyes)
 
+GDBUS_CODEGEN=`$PKG_CONFIG --variable gdbus_codegen gio-2.0`
+AC_SUBST(GDBUS_CODEGEN)
+
 GLIB_TESTS
 
 dnl ---------------------------------------------------------------------------
