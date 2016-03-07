@@ -33,6 +33,59 @@
  * Refines:     | [id]->[name], [id]->[summary]
  */
 
+static void
+on_eam_proxy_name_owner_changed (GDBusProxy *proxy,
+                                 GParamSpec *pspec,
+                                 gpointer user_data)
+{
+  EosAppManager **proxy_ptr = user_data;
+  char *name_owner = g_dbus_proxy_get_name_owner (proxy);
+
+  /* Whenever eam goes away, we invalidate our static proxy,
+   * otherwise calls that would read cached properties will all
+   * return NULL.
+   */
+  if (name_owner == NULL)
+    g_clear_object (proxy_ptr);
+
+  g_free (name_owner);
+}
+
+static EosAppManager *
+eos_get_eam_dbus_proxy (void)
+{
+  static EosAppManager *proxy = NULL;
+  GError *error = NULL;
+
+  g_debug ("Getting EAM dbus proxy");
+
+  /* If we already have a proxy, return it */
+  if (proxy != NULL)
+    return proxy;
+
+  /* Otherwise create it */
+  g_debug ("No EAM dbus proxy object yet - creating it");
+
+  proxy = eos_app_manager_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+                                                  G_DBUS_PROXY_FLAGS_NONE,
+                                                  "com.endlessm.AppManager",
+                                                  "/com/endlessm/AppManager",
+                                                  NULL, /* GCancellable* */
+                                                  &error);
+  if (error != NULL)
+    {
+      g_warning ("Unable to create dbus proxy: %s", error->message);
+      g_error_free (error);
+      return NULL;
+    }
+
+  g_dbus_proxy_set_default_timeout (G_DBUS_PROXY (proxy), G_MAXINT);
+  g_signal_connect (proxy, "notify::g-name-owner",
+                    G_CALLBACK (on_eam_proxy_name_owner_changed), &proxy);
+
+  return proxy;
+}
+
 /**
  * gs_plugin_get_name:
  */
