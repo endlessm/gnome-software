@@ -27,6 +27,8 @@
 
 #include "eos-app-manager-service.h"
 
+#define EOS_BUNDLE_KEY_FILE_GROUP "Bundle"
+
 /*
  * SECTION:
  * Plugin to deal with EOS's legacy app bundles.
@@ -200,6 +202,40 @@ cleanup:
 }
 
 static void
+gs_plugin_set_app_info_from_bundle_info_file (GsApp *app, const gchar *info_file)
+{
+  GKeyFile *key_file;
+  GError *error = NULL;
+  gchar *value = NULL;
+
+  key_file = g_key_file_new ();
+
+  if (!g_key_file_load_from_file (key_file, info_file, G_KEY_FILE_NONE, &error))
+    {
+      g_warning ("Error loading info file '%s': %s", info_file, error->message);
+      g_error_free (error);
+      goto cleanup;
+    }
+
+  value = g_key_file_get_value (key_file, EOS_BUNDLE_KEY_FILE_GROUP, "version", NULL);
+  if (value)
+    {
+      gs_app_set_version (app, value);
+      g_free (value);
+    }
+
+  value = g_key_file_get_value (key_file, EOS_BUNDLE_KEY_FILE_GROUP, "homepage", NULL);
+  if (value)
+    {
+      gs_app_set_url(app, AS_URL_KIND_HOMEPAGE, value);
+      g_free (value);
+    }
+
+cleanup:
+  g_key_file_free (key_file);
+}
+
+static void
 gs_plugin_set_app_info_from_desktop_id (GsApp *app, const gchar *desktop_id)
 {
   GAppInfo *app_info;
@@ -272,6 +308,7 @@ gs_plugin_add_installed (GsPlugin *plugin,
       gs_app_set_state (app, AS_APP_STATE_INSTALLED);
       gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
       gs_plugin_set_app_info_from_desktop_id (app, desktop_id);
+      gs_plugin_set_app_info_from_bundle_info_file (app, info_path);
       gs_plugin_add_app (list, app);
 
       g_free (desktop_id);
