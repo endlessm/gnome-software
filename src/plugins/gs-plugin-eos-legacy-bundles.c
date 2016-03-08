@@ -158,6 +158,28 @@ is_app_id (const char *appid)
 }
 
 static void
+gs_plugin_set_categories_from_desktop_app_info (GsApp *app, GDesktopAppInfo *info)
+{
+  const gchar *categories;
+  gchar **categories_list;
+  gchar **categories_index;
+
+  categories = g_desktop_app_info_get_categories (info);
+
+  if (!categories)
+    return;
+
+  categories_list = g_strsplit (categories, ";", -1);
+  for (categories_index = categories_list; *categories_index != NULL; ++categories_index)
+    {
+      if (strlen (*categories_index) > 0)
+        gs_app_add_category(app, *categories_index);
+    }
+
+  g_strfreev (categories_list);
+}
+
+static void
 gs_plugin_set_icon_from_app_info (GsApp *app, GAppInfo *app_info)
 {
   GtkIconTheme *theme;
@@ -195,6 +217,8 @@ gs_plugin_set_icon_from_app_info (GsApp *app, GAppInfo *app_info)
     }
 
   gs_app_set_pixbuf (app, pixbuf);
+
+  gs_plugin_set_categories_from_desktop_app_info (app, G_DESKTOP_APP_INFO (app_info));
 
 cleanup:
   g_object_unref (info);
@@ -253,6 +277,7 @@ gs_plugin_set_app_info_from_desktop_id (GsApp *app, const gchar *desktop_id)
   gs_app_set_description (app, GS_APP_QUALITY_NORMAL, g_app_info_get_description (app_info));
 
   gs_plugin_set_icon_from_app_info (app, app_info);
+  gs_plugin_set_categories_from_desktop_app_info (app, G_DESKTOP_APP_INFO (app_info));
 }
 
 /**
