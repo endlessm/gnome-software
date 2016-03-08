@@ -21,6 +21,8 @@
 
 #include <config.h>
 
+#include <gio/gdesktopappinfo.h>
+#include <glib/gi18n.h>
 #include <gs-plugin.h>
 
 #include "eos-app-manager-service.h"
@@ -115,6 +117,108 @@ gs_plugin_add_updates (GsPlugin *plugin,
   return TRUE;
 }
 
+static const char *
+eos_get_bundles_dir (void)
+{
+  return eos_app_manager_get_applications_dir (eos_get_eam_dbus_proxy ());
+}
+
+static gboolean
+is_app_id (const char *appid)
+{
+  guint i;
+  int c;
+  static const char alsoallowed[] = "_-+.";
+  static const char *reserveddirs[] = { "bin", "games", "share", "lost+found", "xdg", };
+
+  if (!appid || appid[0] == '\0')
+    return FALSE;
+
+  for (i = 0; i < G_N_ELEMENTS (reserveddirs); i++)
+    {
+      if (g_strcmp0 (appid, reserveddirs[i]) == 0)
+        return FALSE;
+    }
+
+  if (!g_ascii_isalnum (appid[0]))
+    return FALSE; /* must start with an alphanumeric character */
+
+  while ((c = *appid++) != '\0')
+    {
+      if (!g_ascii_isalnum (c) && !strchr (alsoallowed, c))
+        break;
+    }
+
+  if (!c)
+    return TRUE;
+
+  return FALSE;
+}
+
+static void
+gs_plugin_set_icon_from_app_info (GsApp *app, GAppInfo *app_info)
+{
+  GtkIconTheme *theme;
+  GtkIconInfo *info = NULL;
+  GdkPixbuf *pixbuf = NULL;
+  GIcon *icon;
+  GError *error = NULL;
+
+  theme = gtk_icon_theme_get_default ();
+  icon = g_app_info_get_icon (app_info);
+
+  if (!icon)
+    {
+      g_warning ("Could not get icon from app info for app '%s'", gs_app_get_name (app));
+      return;
+    }
+
+  info = gtk_icon_theme_lookup_by_gicon (theme, icon, 64, GTK_ICON_LOOKUP_GENERIC_FALLBACK);
+
+  if (!info)
+    {
+      g_warning ("Could not get icon info from app info for app '%s'", gs_app_get_name (app));
+      goto cleanup;
+    }
+
+  pixbuf = gtk_icon_info_load_icon (info, &error);
+
+  if (error)
+    {
+      g_warning ("Could not load pixbuf for app '%s': %s",
+                 gs_app_get_name (app),
+                 error->message);
+      g_error_free (error);
+      goto cleanup;
+    }
+
+  gs_app_set_pixbuf (app, pixbuf);
+
+cleanup:
+  g_object_unref (info);
+  g_object_unref (pixbuf);
+}
+
+static void
+gs_plugin_set_app_info_from_desktop_id (GsApp *app, const gchar *desktop_id)
+{
+  GAppInfo *app_info;
+
+  app_info = G_APP_INFO (g_desktop_app_info_new (desktop_id));
+
+  if (!app_info)
+    {
+      g_warning ("Could not load desktop file '%s'", desktop_id);
+      return;
+    }
+
+  gs_app_set_name (app, GS_APP_QUALITY_NORMAL, g_app_info_get_display_name (app_info));
+  gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, g_app_info_get_description (app_info));
+  gs_app_set_description (app, GS_APP_QUALITY_NORMAL, g_app_info_get_description (app_info));
+
+  gs_plugin_set_icon_from_app_info (app, app_info);
+}
+
 /**
  * gs_plugin_add_installed:
  */
@@ -124,6 +228,64 @@ gs_plugin_add_installed (GsPlugin *plugin,
                          GCancellable *cancellable,
                          GError **error)
 {
+  gint64 start_time;
+  const char *prefix = eos_get_bundles_dir ();
+  GDir *dir = g_dir_open (prefix, 0, error);
+  int n_bundles;
+  const char *appid;
+
+  if (!dir)
+    {
+      g_warning ("Unable to open '%s': %s", prefix, (*error)->message);
+      g_error_free (*error);
+      return FALSE;
+    }
+
+  /* update UI as this might take some time */
+  gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
+
+  start_time = g_get_monotonic_time ();
+
+  n_bundles = 0;
+  while ((appid = g_dir_read_name (dir)) != NULL)
+    {
+      char *info_path;
+      char *desktop_id;
+      g_autoptr(GsApp) app = NULL;
+
+      if (g_cancellable_is_cancelled (cancellable))
+        break;
+
+      if (!is_app_id (appid))
+        {
+          g_debug ("Skipping '%s/%s': not a valid app directory", prefix, appid);
+          continue;
+        }
+
+      info_path = g_build_filename (prefix, appid, ".info", NULL);
+      g_debug ("Loading bundle info for '%s' from '%s'...\n", appid, info_path);
+
+      desktop_id = g_strconcat (appid, ".desktop", NULL);
+
+      app = gs_app_new (appid);
+      gs_app_set_id (app, appid);
+      gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+      gs_app_set_kind (app, GS_APP_KIND_NORMAL);
+      gs_app_set_id_kind (app, AS_ID_KIND_DESKTOP);
+      gs_plugin_set_app_info_from_desktop_id (app, desktop_id);
+      gs_plugin_add_app (list, app);
+
+      g_free (desktop_id);
+      g_free (info_path);
+    }
+
+  g_dir_close (dir);
+
+  g_debug ("Bundle loading from '%s': %d bundles, %.3f msecs",
+           prefix,
+           n_bundles,
+           (double) (g_get_monotonic_time () - start_time) / 1000);
+
   return TRUE;
 }
 
