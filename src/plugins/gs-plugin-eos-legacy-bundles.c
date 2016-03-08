@@ -28,6 +28,8 @@
 #include "eos-app-manager-service.h"
 
 #define EOS_BUNDLE_KEY_FILE_GROUP "Bundle"
+#define EOS_LEGACY_BUNDLES_PLUGIN_NAME "EosLegacyBundles"
+#define EOS_LEGACY_BUNDLES_DESKTOP_INFO "desktop-info"
 
 /*
  * SECTION:
@@ -36,6 +38,11 @@
  * Methods:     | Search, AddUpdates, AddInstalled, AddPopular
  * Refines:     | [id]->[name], [id]->[summary]
  */
+
+struct GsPluginPrivate
+{
+  GDBusConnection *session_bus;
+};
 
 static void
 on_eam_proxy_name_owner_changed (GDBusProxy *proxy,
@@ -105,6 +112,18 @@ gs_plugin_get_name (void)
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
+  plugin->priv = GS_PLUGIN_GET_PRIVATE (GsPluginPrivate);
+
+  plugin->priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+}
+
+/**
+ * gs_plugin_destroy:
+ */
+void
+gs_plugin_destroy (GsPlugin *plugin)
+{
+  g_clear_object (&plugin->priv->session_bus);
 }
 
 /**
@@ -275,6 +294,7 @@ gs_plugin_set_app_info_from_desktop_id (GsApp *app, const gchar *desktop_id)
   gs_app_set_name (app, GS_APP_QUALITY_NORMAL, g_app_info_get_display_name (app_info));
   gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, g_app_info_get_description (app_info));
   gs_app_set_description (app, GS_APP_QUALITY_NORMAL, g_app_info_get_description (app_info));
+  gs_app_set_metadata (app, EOS_LEGACY_BUNDLES_DESKTOP_INFO, desktop_id);
 
   gs_plugin_set_icon_from_app_info (app, app_info);
   gs_plugin_set_categories_from_desktop_app_info (app, G_DESKTOP_APP_INFO (app_info));
@@ -329,6 +349,7 @@ gs_plugin_add_installed (GsPlugin *plugin,
       desktop_id = g_strconcat (appid, ".desktop", NULL);
 
       app = gs_app_new (appid);
+      gs_app_set_management_plugin (app, EOS_LEGACY_BUNDLES_PLUGIN_NAME);
       gs_app_set_id (app, appid);
       gs_app_set_state (app, AS_APP_STATE_INSTALLED);
       gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
@@ -348,6 +369,58 @@ gs_plugin_add_installed (GsPlugin *plugin,
            (double) (g_get_monotonic_time () - start_time) / 1000);
 
   return TRUE;
+}
+
+/**
+ * gs_plugin_launch:
+ */
+gboolean
+gs_plugin_launch (GsPlugin *plugin,
+                  GsApp *app,
+                  GCancellable *cancellable,
+                  GError **error)
+{
+  GError *err = NULL;
+  gboolean retval = FALSE;
+  const char *desktop_info;
+  GVariant *res;
+
+  /* only process this app if was created by this plugin */
+  if (g_strcmp0 (gs_app_get_management_plugin (app), EOS_LEGACY_BUNDLES_PLUGIN_NAME) != 0)
+    return TRUE;
+
+  desktop_info = gs_app_get_metadata_item (app, EOS_LEGACY_BUNDLES_DESKTOP_INFO);
+
+  g_assert (desktop_info != NULL);
+
+  res = g_dbus_connection_call_sync (plugin->priv->session_bus,
+                                     "org.gnome.Shell",
+                                     "/org/gnome/Shell",
+                                     "org.gnome.Shell.AppLauncher", "Launch",
+                                     g_variant_new ("(su)",
+                                                    desktop_info,
+                                                    0),
+                                     G_VARIANT_TYPE ("(b)"),
+                                     G_DBUS_CALL_FLAGS_NONE,
+                                     -1,
+                                     NULL,
+                                     &err);
+
+  if (err != NULL)
+    {
+      g_critical ("Unable to launch application '%s': %s", desktop_info, err->message);
+      g_propagate_error (error, err);
+
+      retval = FALSE;
+    }
+
+  if (res != NULL)
+    {
+      g_variant_get (res, "(b)", &retval);
+      g_variant_unref (res);
+    }
+
+  return retval;
 }
 
 /**
