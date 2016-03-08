@@ -423,6 +423,126 @@ gs_plugin_launch (GsPlugin *plugin,
   return retval;
 }
 
+static gboolean
+remove_app_from_shell (GsPlugin *plugin,
+                       GsApp *app,
+                       GCancellable *cancellable,
+                       GError **error_out)
+{
+  GError *error = NULL;
+  const char *desktop_info;
+
+  desktop_info = gs_app_get_metadata_item (app, EOS_LEGACY_BUNDLES_DESKTOP_INFO);
+
+  g_dbus_connection_call_sync (plugin->priv->session_bus,
+                               "org.gnome.Shell",
+                               "/org/gnome/Shell",
+                               "org.gnome.Shell.AppStore", "RemoveApplication",
+                               g_variant_new ("(s)", desktop_info),
+                               NULL,
+                               G_DBUS_CALL_FLAGS_NONE,
+                               -1,
+                               cancellable,
+                               &error);
+
+  if (error != NULL)
+    {
+      g_propagate_error (error_out, error);
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
+static gboolean
+remove_app_from_manager (GsApp *app,
+                         GCancellable *cancellable,
+                         GError **error_out)
+{
+  GError *error = NULL;
+  gboolean retval = FALSE;
+  EosAppManager *proxy;
+  const char *app_id = gs_app_get_id (app);
+
+  /* We do a double check here, to catch the case where the app manager
+   * proxy was successfully created, but the app bundles directory was
+   * removed afterwards
+   */
+  proxy = eos_get_eam_dbus_proxy ();
+
+  if (proxy == NULL)
+    {
+      g_warning ("Cannot get EAM proxy to remove '%s'", app_id);
+      goto out;
+    }
+
+  if (!g_file_test (eos_get_bundles_dir (), G_FILE_TEST_EXISTS))
+    {
+      g_warning ("Bundles dir does not exist");
+      goto out;
+    }
+
+  g_info ("Trying to uninstall %s", app_id);
+  eos_app_manager_call_uninstall_sync (proxy, app_id, &retval, NULL, &error);
+
+  if (error != NULL && g_dbus_error_is_remote_error (error))
+    {
+      char *code = g_dbus_error_get_remote_error (error);
+
+      if (g_strcmp0 (code, "com.endlessm.AppManager.Error.NotAuthorized") == 0)
+        g_warning ("Only admin can remove applications");
+
+      g_free (code);
+    }
+
+out:
+  if (retval)
+    {
+      g_info ("Uninstalling '%s' succeeded", app_id);
+    }
+  else if (error)
+    {
+      g_info ("Uninstalling '%s' failed: %s", app_id, error->message);
+      g_propagate_error (error_out, error);
+    }
+
+  return retval;
+}
+
+/**
+ * gs_plugin_app_remove:
+ */
+gboolean
+gs_plugin_app_remove (GsPlugin *plugin,
+                      GsApp *app,
+                      GCancellable *cancellable,
+                      GError **error)
+{
+  /* only process this app if was created by this plugin */
+  if (g_strcmp0 (gs_app_get_management_plugin (app), EOS_LEGACY_BUNDLES_PLUGIN_NAME) != 0)
+    return TRUE;
+
+  /* remove */
+  gs_app_set_state (app, AS_APP_STATE_REMOVING);
+
+  if (!remove_app_from_manager (app, cancellable, error))
+    {
+      return FALSE;
+    }
+
+  g_debug ("Removing '%s' from shell", gs_app_get_id (app));
+
+  if (!remove_app_from_shell (plugin, app, cancellable, error))
+    {
+      if (error)
+        g_debug ("Failed to remove '%s' from shell: %s", gs_app_get_id (app), (*error)->message);
+
+      return FALSE;
+    }
+
+  return TRUE;
+}
+
 /**
  * gs_plugin_add_popular:
  */
