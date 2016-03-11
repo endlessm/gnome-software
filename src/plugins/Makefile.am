@@ -187,7 +187,8 @@ libgs_plugin_steam_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
 endif
 
 if HAVE_EAM
-libgs_plugin_eos_legacy_bundles_la_SOURCES = gs-plugin-eos-legacy-bundles.c eos-app-manager-service.c eos-app-manager-service.h
+libgs_plugin_eos_legacy_bundles_la_SOURCES = gs-plugin-eos-legacy-bundles.c
+nodist_libgs_plugin_eos_legacy_bundles_la_SOURCES = eos-app-manager-service.c eos-app-manager-service.h
 libgs_plugin_eos_legacy_bundles_la_LIBADD = $(GS_PLUGIN_LIBS)
 libgs_plugin_eos_legacy_bundles_la_LDFLAGS = -module -avoid-version
 libgs_plugin_eos_legacy_bundles_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
@@ -292,7 +293,6 @@ eos-app-manager-service.h: Makefile $(top_srcdir)/data/eam-service-interface.xml
 eos-app-manager-service.c: eos-app-manager-service.h
     @: # generated as a side-effect
 
-EXTRA_DIST = $(top_srcdir)/data/eam-service-interface.xml
 CLEANFILES = eos-app-manager-service.c eos-app-manager-service.h
 BUILT_SOURCES = eos-app-manager-service.c eos-app-manager-service.h
 endif
