@@ -41,7 +41,8 @@ install-sample-data:
 
 EXTRA_DIST =						\
 	$(gsettings_SCHEMAS)				\
-	featured.ini.in
+	featured.ini.in					\
+	eam-service-interface.xml
 
 MAINTAINERCLEANFILES =					\
 	*~						\
