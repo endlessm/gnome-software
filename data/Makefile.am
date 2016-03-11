@@ -57,7 +57,8 @@ CLEANFILES =						\
 
 EXTRA_DIST =						\
 	$(appstream_files)				\
-	$(gsettings_SCHEMAS)
+	$(gsettings_SCHEMAS)				\
+	eam-service-interface.xml
 
 MAINTAINERCLEANFILES =					\
 	*~						\
