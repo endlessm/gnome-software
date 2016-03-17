@@ -1,7 +1,9 @@
 #!/usr/bin/make -f
 
 GS_CONFIGURE_FLAGS = --libdir=/usr/lib \
-		--disable-silent-rules
+		--disable-silent-rules \
+		--disable-reviews      \
+		--disable-shell-extensions
 
 # Install target dir
 INSTALLDIR = $(CURDIR)/debian/tmp
