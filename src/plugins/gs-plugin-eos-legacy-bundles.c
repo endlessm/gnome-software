@@ -41,7 +41,7 @@
  * Refines:     | [id]->[name], [id]->[summary]
  */
 
-struct GsPluginPrivate
+struct GsPluginData
 {
 	GDBusConnection *session_bus;
 };
@@ -113,9 +113,8 @@ gs_plugin_get_name (void)
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
-	plugin->priv = GS_PLUGIN_GET_PRIVATE (GsPluginPrivate);
-
-	plugin->priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 }
 
 /**
@@ -124,7 +123,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 void
 gs_plugin_destroy (GsPlugin *plugin)
 {
-	g_clear_object (&plugin->priv->session_bus);
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_clear_object (&priv->session_bus);
 }
 
 /**
@@ -386,6 +386,7 @@ gs_plugin_launch (GsPlugin *plugin,
 	gboolean retval = FALSE;
 	const char *desktop_info;
 	GVariant *res;
+	GsPluginData *priv;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app), EOS_LEGACY_BUNDLES_PLUGIN_NAME) != 0)
@@ -395,7 +396,9 @@ gs_plugin_launch (GsPlugin *plugin,
 
 	g_assert (desktop_info != NULL);
 
-	res = g_dbus_connection_call_sync (plugin->priv->session_bus,
+	priv = gs_plugin_get_data (plugin);
+
+	res = g_dbus_connection_call_sync (priv->session_bus,
 					   "org.gnome.Shell",
 					   "/org/gnome/Shell",
 					   "org.gnome.Shell.AppLauncher",
@@ -433,10 +436,11 @@ remove_app_from_shell (GsPlugin *plugin,
 {
 	GError *error = NULL;
 	const char *desktop_info;
+	GsPluginData *priv = gs_plugin_get_data (plugin);
 
 	desktop_info = gs_app_get_metadata_item (app, EOS_LEGACY_BUNDLES_DESKTOP_INFO);
 
-	g_dbus_connection_call_sync (plugin->priv->session_bus,
+	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
 				     "/org/gnome/Shell",
 				     "org.gnome.Shell.AppStore", "RemoveApplication",
