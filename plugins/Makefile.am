@@ -7,6 +7,7 @@ SUBDIRS = core
 # non-core, but no configure option required
 SUBDIRS += dpkg
 SUBDIRS += dummy
+SUBDIRS += eos
 SUBDIRS += fedora-distro-upgrades
 SUBDIRS += fedora-tagger-usage
 SUBDIRS += ubuntuone

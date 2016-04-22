@@ -497,6 +497,7 @@ plugins/Makefile
 plugins/core/Makefile
 plugins/dpkg/Makefile
 plugins/dummy/Makefile
+plugins/eos/Makefile
 plugins/epiphany/Makefile
 plugins/external-appstream/Makefile
 plugins/fedora-distro-upgrades/Makefile
