@@ -11,6 +11,7 @@ subdir('core')
 subdir('dpkg')
 subdir('dummy')
 subdir('eos-blocklist')
+subdir('eos')
 subdir('fedora-langpacks')
 subdir('fedora-pkgdb-collections')
 
