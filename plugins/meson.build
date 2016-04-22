@@ -13,6 +13,7 @@ subdir('core')
 subdir('dpkg')
 subdir('dummy')
 subdir('eos-blacklist')
+subdir('eos')
 subdir('epiphany')
 subdir('fedora-pkgdb-collections')
 
