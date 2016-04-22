@@ -99,6 +99,8 @@ if HAVE_RPM
 plugin_LTLIBRARIES += libgs_plugin_rpm.la
 endif
 
+plugin_LTLIBRARIES += libgs_plugin_eos.la
+
 libgs_plugin_dummy_la_SOURCES = gs-plugin-dummy.c
 libgs_plugin_dummy_la_LIBADD = $(GS_PLUGIN_LIBS)
 libgs_plugin_dummy_la_LDFLAGS = -module -avoid-version
@@ -239,6 +241,11 @@ libgs_plugin_eos_legacy_bundles_la_LIBADD = $(GS_PLUGIN_LIBS)
 libgs_plugin_eos_legacy_bundles_la_LDFLAGS = -module -avoid-version
 libgs_plugin_eos_legacy_bundles_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
 endif
+
+libgs_plugin_eos_la_SOURCES = gs-plugin-eos.c
+libgs_plugin_eos_la_LIBADD = $(GS_PLUGIN_LIBS)
+libgs_plugin_eos_la_LDFLAGS = -module -avoid-version
+libgs_plugin_eos_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
 
 libgs_plugin_hardcoded_blacklist_la_SOURCES = gs-plugin-hardcoded-blacklist.c
 libgs_plugin_hardcoded_blacklist_la_LIBADD = $(GS_PLUGIN_LIBS)
