@@ -37,15 +37,6 @@ struct GsPluginData
 	int applications_changed_id;
 };
 
-/**
- * gs_plugin_get_name:
- */
-const gchar *
-gs_plugin_get_name (void)
-{
-	return "eos";
-}
-
 static GHashTable *
 get_applications_with_shortcuts (GsPlugin	*self,
 				 GCancellable	*cancellable,
