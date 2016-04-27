@@ -25,6 +25,7 @@
 
 #include <gio/gdesktopappinfo.h>
 #include <glib/gi18n.h>
+#include <gtk/gtk.h>
 #include <gs-plugin.h>
 
 #include "eos-app-manager-service.h"
