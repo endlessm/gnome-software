@@ -99,15 +99,6 @@ eos_get_eam_dbus_proxy (void)
 }
 
 /**
- * gs_plugin_get_name:
- */
-const gchar *
-gs_plugin_get_name (void)
-{
-	return "eos-legacy-bundles";
-}
-
-/**
  * gs_plugin_initialize:
  */
 void
@@ -350,7 +341,7 @@ gs_plugin_add_installed (GsPlugin *plugin,
 		desktop_id = g_strconcat (appid, ".desktop", NULL);
 
 		app = gs_app_new (appid);
-		gs_app_set_management_plugin (app, gs_plugin_get_name ());
+		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 		gs_app_set_id (app, appid);
 		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 		gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
@@ -388,7 +379,7 @@ gs_plugin_launch (GsPlugin *plugin,
 	GsPluginData *priv;
 
 	/* only process this app if was created by this plugin */
-	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name ()) != 0)
+	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
 	desktop_info = gs_app_get_metadata_item (app, EOS_LEGACY_BUNDLES_DESKTOP_INFO);
@@ -517,7 +508,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
                       GError **error)
 {
 	/* only process this app if was created by this plugin */
-	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name ()) != 0)
+	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
 	/* remove */
