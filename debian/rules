@@ -3,7 +3,8 @@
 GS_CONFIGURE_FLAGS = --libdir=/usr/lib \
 		--disable-silent-rules \
 		--disable-reviews      \
-		--disable-shell-extensions
+		--disable-shell-extensions 	\
+		--enable-xdg-app
 
 # Install target dir
 INSTALLDIR = $(CURDIR)/debian/tmp
