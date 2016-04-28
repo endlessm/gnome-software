@@ -308,6 +308,14 @@ AM_CONDITIONAL(HAVE_EAM, test x$have_eam = xyes)
 GDBUS_CODEGEN=`$PKG_CONFIG --variable gdbus_codegen gio-2.0`
 AC_SUBST(GDBUS_CODEGEN)
 
+# hack to override the result of the arch that 'uname' gives.
+# this is needed when using a 64bit kernel with a 32bit user space
+DPKG_ARCH=`dpkg --print-architecture`
+AS_IF([ test "$DPKG_ARCH" = "i386" ],
+  ARCH_OVERRIDE="${prefix}/bin/setarch $DPKG_ARCH "
+  AC_SUBST(ARCH_OVERRIDE)
+)
+
 GLIB_TESTS
 
 dnl ---------------------------------------------------------------------------
