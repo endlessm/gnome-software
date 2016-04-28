@@ -92,7 +92,7 @@ org.freedesktop.PackageKit.service: org.freedesktop.PackageKit.service.in Makefi
 endif
 
 org.gnome.Software.service: org.gnome.Software.service.in Makefile
-	$(AM_V_GEN) sed -e "s|\@bindir\@|$(bindir)|" $<> $@
+	$(AM_V_GEN) sed -e "s|\@bindir\@|@ARCH_OVERRIDE@$(bindir)|" $<> $@
 
 searchproviderdir = $(datadir)/gnome-shell/search-providers
 searchprovider_DATA = org.gnome.Software-search-provider.ini
