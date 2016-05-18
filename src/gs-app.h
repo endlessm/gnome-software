@@ -194,6 +194,9 @@ void		 gs_app_set_local_file		(GsApp		*app,
 GsApp		*gs_app_get_runtime		(GsApp		*app);
 void		 gs_app_set_runtime		(GsApp		*app,
 						 GsApp		*runtime);
+GPtrArray	*gs_app_get_deps       		(GsApp		*app);
+void		 gs_app_add_dep			(GsApp		*app,
+						 GsApp		*dep);
 const gchar	*gs_app_get_metadata_item	(GsApp		*app,
 						 const gchar	*key);
 void		 gs_app_set_metadata		(GsApp		*app,

@@ -110,6 +110,7 @@ struct _GsApp
 	AsAppQuirk		 quirk;
 	gboolean		 license_is_free;
 	GsApp			*runtime;
+	GPtrArray		*deps;
 	GFile			*local_file;
 	GdkPixbuf		*pixbuf;
 };
@@ -1161,6 +1162,35 @@ gs_app_set_runtime (GsApp *app, GsApp *runtime)
 {
 	g_return_if_fail (GS_IS_APP (app));
 	g_set_object (&app->runtime, runtime);
+}
+
+/**
+ * gs_app_get_deps:
+ * @app: a #GsApp
+ *
+ * Gets the dependencies for the application.
+ *
+ * Returns: (transfer none): a #GPtrArray
+ **/
+GPtrArray *
+gs_app_get_deps (GsApp *app)
+{
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	return app->deps;
+}
+
+/**
+ * gs_app_add_dep:
+ * @app: a #GsApp
+ * @dep: a #GsApp
+ *
+ * Adds a dependency that the application requires.
+ **/
+void
+gs_app_add_dep (GsApp *app, GsApp *dep)
+{
+	g_return_if_fail (GS_IS_APP (app));
+	g_ptr_array_add (&app->deps, dep);
 }
 
 /**
@@ -2791,6 +2821,7 @@ gs_app_finalize (GObject *object)
 	g_hash_table_unref (app->related_hash);
 	g_ptr_array_unref (app->categories);
 	g_ptr_array_unref (app->key_colors);
+	g_ptr_array_unref (app->deps);
 	if (app->keywords != NULL)
 		g_ptr_array_unref (app->keywords);
 	if (app->last_error != NULL)
@@ -2939,6 +2970,8 @@ gs_app_init (GsApp *app)
 	                                    g_str_equal,
 	                                    g_free,
 	                                    g_free);
+
+	app->deps = gs_app_list_new ();
 }
 
 /**

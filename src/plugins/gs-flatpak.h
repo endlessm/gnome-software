@@ -103,6 +103,8 @@ gboolean	gs_flatpak_file_to_app		(GsFlatpak		*self,
 						 GCancellable		*cancellable,
 						 GError			**error);
 
+const char	*gs_flatpak_get_prefix		(GsFlatpak *self);
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */

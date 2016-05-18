@@ -1248,6 +1248,14 @@ gs_flatpak_app_install (GsFlatpak *self,
 						     cancellable, error);
 	}
 	if (xref == NULL) {
+		/* We may have failed to install because the app is already
+		 * installed */
+		if (error && g_error_matches (*error, FLATPAK_ERROR,
+					      FLATPAK_ERROR_ALREADY_INSTALLED)) {
+			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+			return TRUE;
+		}
+
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
@@ -1562,4 +1570,15 @@ gs_flatpak_new (GsPlugin *plugin, GsFlatpakScope scope)
 	self->scope = scope;
 	self->plugin = g_object_ref (plugin);
 	return GS_FLATPAK (self);
+}
+
+const char *
+gs_flatpak_get_prefix (GsFlatpak *self)
+{
+	if (self->scope == GS_FLATPAK_SCOPE_USER)
+		return GS_FLATPAK_USER_PREFIX;
+	else if (self->scope == GS_FLATPAK_SCOPE_SYSTEM)
+		return GS_FLATPAK_SYSTEM_PREFIX;
+
+	return "";
 }
