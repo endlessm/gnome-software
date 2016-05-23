@@ -118,18 +118,6 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_clear_object (&priv->session_bus);
 }
 
-/**
- * gs_plugin_add_updates:
- */
-gboolean
-gs_plugin_add_updates (GsPlugin *plugin,
-                       GList **list,
-                       GCancellable *cancellable,
-                       GError **error)
-{
-	return TRUE;
-}
-
 static const char *
 eos_get_bundles_dir (void)
 {
