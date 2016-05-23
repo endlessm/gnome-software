@@ -22,6 +22,7 @@
 #include <config.h>
 
 #include <gio/gdesktopappinfo.h>
+#include <gnome-software.h>
 #include <glib/gi18n.h>
 #include <gs-plugin.h>
 
@@ -161,20 +162,20 @@ get_applications_with_shortcuts (GsPlugin	*plugin,
  */
 gboolean
 gs_plugin_refine (GsPlugin		*plugin,
-		  GList			**list,
+		  GsAppList		*list,
 		  GsPluginRefineFlags	flags,
 		  GCancellable		*cancellable,
 		  GError		**error)
 {
-	GList *l;
+	guint i;
 	GHashTable *apps;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
 	g_hash_table_remove_all (priv->desktop_apps);
 	apps = get_applications_with_shortcuts (plugin, cancellable, NULL);
 
-	for (l = *list; l != NULL; l = l->next) {
-		GsApp *app = GS_APP (l->data);
+	for (i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
 		const char *app_id = gs_app_get_id_no_prefix (app);
 
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
