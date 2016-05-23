@@ -25,6 +25,7 @@
 
 #include <gio/gdesktopappinfo.h>
 #include <glib/gi18n.h>
+#include <gnome-software.h>
 #include <gtk/gtk.h>
 #include <gs-plugin.h>
 
@@ -286,7 +287,7 @@ gs_plugin_set_app_info_from_desktop_id (GsApp *app, const gchar *desktop_id)
  */
 gboolean
 gs_plugin_add_installed (GsPlugin *plugin,
-                         GList **list,
+                         GsAppList *list,
                          GCancellable *cancellable,
                          GError **error)
 {
