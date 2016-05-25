@@ -159,12 +159,19 @@ gs_plugin_destroy (GsPlugin *plugin)
 static gboolean
 gs_plugin_eos_blacklist_if_needed (GsApp *app)
 {
-	if (g_str_has_prefix (gs_app_get_id (app), "eos-link-")) {
-		gs_app_add_category (app, "Blacklisted");
-		return TRUE;
+	gboolean blacklist_app = FALSE;
+
+	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
+	    gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY)) {
+		blacklist_app = TRUE;
+	} else if (g_str_has_prefix (gs_app_get_id (app), "eos-link-")) {
+		blacklist_app = TRUE;
 	}
 
-	return FALSE;
+	if (blacklist_app)
+		gs_app_add_category (app, "Blacklisted");
+
+	return blacklist_app;
 }
 
 static void
