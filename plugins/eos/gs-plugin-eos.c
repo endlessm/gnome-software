@@ -67,6 +67,56 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 	gs_app_set_management_plugin (app, plugin);
 }
 
+static void
+refine_core_app (GsApp *app)
+{
+	if (app_is_flatpak (app) ||
+	    (gs_app_get_scope (app) == AS_COMPONENT_SCOPE_UNKNOWN))
+		return;
+
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_OPERATING_SYSTEM)
+		return;
+
+	/* Hide non-installed apt packages, as they can’t actually be installed.
+	 * The installed ones are pre-installed in the image, and can’t be
+	 * removed. We only allow flatpaks to be removed. */
+	if (!gs_app_is_installed (app)) {
+		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
+	} else {
+		gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
+	}
+}
+
+static void
+gs_plugin_eos_refine_async (GsPlugin            *plugin,
+                            GsAppList           *list,
+                            GsPluginRefineFlags  flags,
+                            GCancellable        *cancellable,
+                            GAsyncReadyCallback  callback,
+                            gpointer             user_data)
+{
+	g_autoptr(GTask) task = NULL;
+
+	task = g_task_new (plugin, cancellable, callback, user_data);
+	g_task_set_source_tag (task, gs_plugin_eos_refine_async);
+
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+
+		refine_core_app (app);
+	}
+
+	g_task_return_boolean (task, TRUE);
+}
+
+static gboolean
+gs_plugin_eos_refine_finish (GsPlugin      *plugin,
+                             GAsyncResult  *result,
+                             GError       **error)
+{
+	return g_task_propagate_boolean (G_TASK (result), error);
+}
+
 gboolean
 gs_plugin_launch (GsPlugin *plugin,
 		  GsApp *app,
@@ -85,6 +135,10 @@ gs_plugin_launch (GsPlugin *plugin,
 static void
 gs_plugin_eos_class_init (GsPluginEosClass *klass)
 {
+	GsPluginClass *plugin_class = GS_PLUGIN_CLASS (klass);
+
+	plugin_class->refine_async = gs_plugin_eos_refine_async;
+	plugin_class->refine_finish = gs_plugin_eos_refine_finish;
 }
 
 GType
