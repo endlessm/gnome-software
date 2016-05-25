@@ -222,6 +222,14 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 }
 
+static void
+gs_plugin_eos_refine_core_app (GsApp *app)
+{
+	/* we only allow to remove flatpak apps */
+	if (!app_is_flatpak (app))
+		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+}
+
 gboolean
 gs_plugin_refine (GsPlugin		*plugin,
 		  GsAppList		*list,
@@ -231,6 +239,8 @@ gs_plugin_refine (GsPlugin		*plugin,
 {
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
+
+		gs_plugin_eos_refine_core_app (app);
 
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
 			continue;
