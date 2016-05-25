@@ -157,6 +157,17 @@ get_applications_with_shortcuts (GsPlugin	*plugin,
 	return apps_table;
 }
 
+static gboolean
+gs_plugin_eos_blacklist_if_needed (GsApp *app)
+{
+	if (g_str_has_prefix (gs_app_get_id_no_prefix (app), "eos-link-")) {
+		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 static void
 gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 					 GsApp *app,
@@ -198,6 +209,8 @@ gs_plugin_refine (GsPlugin		*plugin,
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
 			continue;
 
+		if (gs_plugin_eos_blacklist_if_needed (app))
+			continue;
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
 	}
