@@ -56,6 +56,42 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 }
 
+static void
+gs_plugin_eos_refine_core_app (GsApp *app)
+{
+	if (app_is_flatpak (app) ||
+	    (gs_app_get_scope (app) == AS_COMPONENT_SCOPE_UNKNOWN))
+		return;
+
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_OPERATING_SYSTEM)
+		return;
+
+	/* Hide non-installed apt packages, as they can’t actually be installed.
+	 * The installed ones are pre-installed in the image, and can’t be
+	 * removed. We only allow flatpaks to be removed. */
+	if (!gs_app_is_installed (app)) {
+		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
+	} else {
+		gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
+	}
+}
+
+gboolean
+gs_plugin_refine (GsPlugin		*plugin,
+		  GsAppList		*list,
+		  GsPluginRefineFlags	flags,
+		  GCancellable		*cancellable,
+		  GError		**error)
+{
+	for (guint i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+
+		gs_plugin_eos_refine_core_app (app);
+	}
+
+	return TRUE;
+}
+
 gboolean
 gs_plugin_launch (GsPlugin *plugin,
 		  GsApp *app,
