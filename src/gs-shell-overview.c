@@ -306,6 +306,13 @@ category_tile_clicked (GsCategoryTile *tile, gpointer data)
 	gs_shell_show_category (priv->shell, category);
 }
 
+static void
+add_category_tile_to_flowbox (GtkWidget *tile, GtkFlowBox *flowbox)
+{
+	gtk_flow_box_insert (flowbox, tile, -1);
+	gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
+}
+
 /**
  * gs_shell_overview_get_categories_cb:
  **/
@@ -324,6 +331,10 @@ gs_shell_overview_get_categories_cb (GObject *source_object,
 	gboolean use_expander = FALSE;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GPtrArray) list = NULL;
+	g_autoptr(GPtrArray) primary_cats = NULL;
+	g_autoptr(GPtrArray) secondary_cats = NULL;
+	guint remaining_primary_cats = 1;
+	GtkFlowBox *flowbox;
 
 	list = gs_plugin_loader_get_categories_finish (plugin_loader, res, &error);
 	if (list == NULL) {
@@ -334,23 +345,47 @@ gs_shell_overview_get_categories_cb (GObject *source_object,
 	gs_container_remove_all (GTK_CONTAINER (priv->flowbox_categories));
 	gs_container_remove_all (GTK_CONTAINER (priv->flowbox_categories2));
 
+	secondary_cats = g_ptr_array_new ();
+
+	flowbox = GTK_FLOW_BOX (priv->flowbox_categories);
+	remaining_primary_cats = gtk_flow_box_get_max_children_per_line (flowbox);
+
 	for (i = 0; i < list->len; i++) {
-		GtkFlowBox *flowbox;
 		cat = GS_CATEGORY (g_ptr_array_index (list, i));
 		if (gs_category_get_size (cat) == 0)
 			continue;
 		tile = gs_category_tile_new (cat);
 		g_signal_connect (tile, "clicked",
 				  G_CALLBACK (category_tile_clicked), self);
+
+		/* The the important categories directly to the UI and the
+		 * secondary to an array for later */
 		if (gs_category_get_important (cat)) {
-			flowbox = GTK_FLOW_BOX (priv->flowbox_categories);
+			add_category_tile_to_flowbox (tile, flowbox);
+			has_category = TRUE;
+
+			if (remaining_primary_cats > 0)
+				--remaining_primary_cats;
 		} else {
+			g_ptr_array_add (secondary_cats, tile);
+		}
+	}
+
+	for (i = 0; i < secondary_cats->len; ++i) {
+		tile = GTK_WIDGET (g_ptr_array_index (secondary_cats, i));
+
+		/* if we have filled at least a row of categories, then use
+		 * the secondary categories widget */
+		if (!use_expander && remaining_primary_cats == 0) {
 			flowbox = GTK_FLOW_BOX (priv->flowbox_categories2);
 			use_expander = TRUE;
+			has_category = TRUE;
 		}
-		gtk_flow_box_insert (flowbox, tile, -1);
-		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
-		has_category = TRUE;
+
+		add_category_tile_to_flowbox (tile, flowbox);
+
+		if (remaining_primary_cats > 0)
+			--remaining_primary_cats;
 	}
 
 	/* show the expander if we have too many children */
