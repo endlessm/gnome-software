@@ -64,7 +64,7 @@ gs_category_tile_set_category (GsCategoryTile *tile, GsCategory *cat)
 
 	/* set custom CSS for important tiles */
 	key_colors = gs_category_get_key_colors (cat);
-	if (gs_category_get_important (cat) && key_colors->len > 0) {
+	if (key_colors->len > 0) {
 		GdkRGBA *tmp = g_ptr_array_index (key_colors, 0);
 		g_autofree gchar *css = NULL;
 		g_autofree gchar *color = gdk_rgba_to_string (tmp);;
