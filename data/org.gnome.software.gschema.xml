@@ -5,6 +5,13 @@
       <summary>A list of compatible projects</summary>
       <description>This is a list of compatible projects we should show such as GNOME, KDE and XFCE.</description>
     </key>
+    <key name="plugins-whitelist" type="as">
+      <default>[]</default>
+      <summary>A list of plugins to whitelist</summary>
+      <description>this is intended to be used mostly as a debugging tool,
+      but can be useful to explicitly whitelist plugins not configurable by
+      ./configure flags.</description>
+    </key>
     <key name="download-updates" type="b">
       <default>true</default>
       <summary>Whether to automatically download updates</summary>

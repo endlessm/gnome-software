@@ -50,6 +50,7 @@ typedef struct
 	GSettings		*settings;
 
 	gchar			**compatible_projects;
+	gchar			**plugins_whitelist;
 	gint			 scale;
 
 	guint			 updates_changed_id;
@@ -3376,15 +3377,36 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	if (dir == NULL)
 		return FALSE;
 
+
 	/* try to open each plugin */
 	g_debug ("searching for plugins in %s", priv->location);
 	do {
 		g_autofree gchar *filename_plugin = NULL;
+		guint len;
+		guint found = 0;
+
 		filename_tmp = g_dir_read_name (dir);
 		if (filename_tmp == NULL)
 			break;
 		if (!g_str_has_suffix (filename_tmp, ".so"))
 			continue;
+
+		len = strlen(filename_tmp);
+		if (priv->plugins_whitelist && priv->plugins_whitelist[0]) {
+			for (i = 0; !found && priv->plugins_whitelist[i]; i++) {
+				if (g_strstr_len(filename_tmp, len,
+						 priv->plugins_whitelist[i])) {
+					found++;
+				}
+			}
+			if (!found) {
+				g_debug ("not loading: %s", filename_tmp);
+				continue;
+			}
+
+		}
+
+		g_debug ("loading: %s", filename_tmp);
 		filename_plugin = g_build_filename (priv->location,
 						    filename_tmp,
 						    NULL);
@@ -3606,6 +3628,7 @@ gs_plugin_loader_finalize (GObject *object)
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 
 	g_strfreev (priv->compatible_projects);
+	g_strfreev (priv->plugins_whitelist);
 	g_free (priv->location);
 	g_free (priv->locale);
 
@@ -3655,6 +3678,7 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	const gchar *tmp;
 	gchar **projects;
+	gchar **plugins;
 	guint i;
 
 	priv->scale = 1;
@@ -3699,6 +3723,18 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	for (i = 0; projects[i] != NULL; i++)
 		g_debug ("compatible-project: %s", projects[i]);
 	priv->compatible_projects = projects;
+
+	/* by default we whitelist all plugins */
+	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_WHITELIST");
+	if (tmp == NULL) {
+		plugins = g_settings_get_strv (priv->settings,
+						"plugins-whitelist");
+	} else {
+		plugins = g_strsplit (tmp, ",", -1);
+	}
+	for (i = 0; plugins[i] != NULL; i++)
+		g_debug ("plugin whitelisted: %s", plugins[i]);
+	priv->plugins_whitelist = plugins;
 }
 
 /**
