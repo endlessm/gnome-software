@@ -3670,6 +3670,29 @@ gs_plugin_loader_class_init (GsPluginLoaderClass *klass)
 }
 
 /**
+ * gs_array_from_gsettings_or_env:
+ *
+ * Return value: an array of gchar containing the gsettings or the env specified
+ */
+static inline gchar **
+gs_array_from_gsettings_or_env(GsPluginLoaderPrivate *priv, gchar *env, gchar *key)
+{
+	const gchar *tmp = g_getenv (env);
+	guint i;
+	gchar **ret;
+
+	if (tmp == NULL) {
+		ret = g_settings_get_strv (priv->settings,
+						key);
+	} else {
+		ret = g_strsplit (tmp, ",", -1);
+	}
+	for (i = 0; ret[i] != NULL; i++)
+		g_debug ("%s: %s", env, ret[i]);
+	return ret;
+}
+
+/**
  * gs_plugin_loader_init:
  **/
 static void
@@ -3677,9 +3700,6 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	const gchar *tmp;
-	gchar **projects;
-	gchar **plugins;
-	guint i;
 
 	priv->scale = 1;
 	priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -3713,28 +3733,13 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	g_mutex_init (&priv->pending_apps_mutex);
 
 	/* by default we only show project-less apps or compatible projects */
-	tmp = g_getenv ("GNOME_SOFTWARE_COMPATIBLE_PROJECTS");
-	if (tmp == NULL) {
-		projects = g_settings_get_strv (priv->settings,
-						"compatible-projects");
-	} else {
-		projects = g_strsplit (tmp, ",", -1);
-	}
-	for (i = 0; projects[i] != NULL; i++)
-		g_debug ("compatible-project: %s", projects[i]);
-	priv->compatible_projects = projects;
+	priv->compatible_projects =
+		gs_array_from_gsettings_or_env(priv, "GNOME_SOFTWARE_COMPATIBLE_PROJECTS", "compatible-projects");
 
 	/* by default we whitelist all plugins */
-	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_WHITELIST");
-	if (tmp == NULL) {
-		plugins = g_settings_get_strv (priv->settings,
-						"plugins-whitelist");
-	} else {
-		plugins = g_strsplit (tmp, ",", -1);
-	}
-	for (i = 0; plugins[i] != NULL; i++)
-		g_debug ("plugin whitelisted: %s", plugins[i]);
-	priv->plugins_whitelist = plugins;
+	priv->plugins_whitelist =
+		gs_array_from_gsettings_or_env(priv, "GNOME_SOFTWARE_PLUGINS_WHITELIST", "plugins-whitelist");
+
 }
 
 /**
