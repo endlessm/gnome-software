@@ -50,6 +50,8 @@ typedef struct
 	GSettings		*settings;
 
 	gchar			**compatible_projects;
+	gchar			**plugins_whitelist;
+	gchar			**plugins_blacklist;
 	gint			 scale;
 
 	guint			 updates_changed_id;
@@ -3348,6 +3350,27 @@ gs_plugin_loader_plugin_sort_fn (gconstpointer a, gconstpointer b)
 }
 
 /**
+ * gs_plugin_find_in_array:
+ */
+static inline gint
+gs_plugin_find_in_array (const gchar *filename, guint len, gchar **array)
+{
+	gint i, found = 0;
+
+	if (! array || ! array[0])
+		return -1;
+
+	for (i = 0; !found && array[i]; i++) {
+		if (g_strstr_len(filename, len,
+				 array[i])) {
+			found++;
+		}
+	}
+
+	return found;
+}
+
+/**
  * gs_plugin_loader_setup:
  */
 gboolean
@@ -3376,15 +3399,35 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	if (dir == NULL)
 		return FALSE;
 
+
 	/* try to open each plugin */
 	g_debug ("searching for plugins in %s", priv->location);
 	do {
 		g_autofree gchar *filename_plugin = NULL;
+		guint len;
+		guint found = 0;
+
 		filename_tmp = g_dir_read_name (dir);
 		if (filename_tmp == NULL)
 			break;
 		if (!g_str_has_suffix (filename_tmp, ".so"))
 			continue;
+
+		len = strlen(filename_tmp);
+
+		found = gs_plugin_find_in_array(filename_tmp, len, priv->plugins_whitelist);
+		if (found == 0) {
+			g_debug ("not loading (not whitelisted): %s", filename_tmp);
+			continue;
+		}
+
+		found = gs_plugin_find_in_array(filename_tmp, len, priv->plugins_blacklist);
+		if (found == 1) {
+			g_debug ("not loading (blacklisted): %s", filename_tmp);
+			continue;
+		}
+
+		g_debug ("loading: %s", filename_tmp);
 		filename_plugin = g_build_filename (priv->location,
 						    filename_tmp,
 						    NULL);
@@ -3606,6 +3649,8 @@ gs_plugin_loader_finalize (GObject *object)
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 
 	g_strfreev (priv->compatible_projects);
+	g_strfreev (priv->plugins_whitelist);
+	g_strfreev (priv->plugins_blacklist);
 	g_free (priv->location);
 	g_free (priv->locale);
 
@@ -3647,6 +3692,29 @@ gs_plugin_loader_class_init (GsPluginLoaderClass *klass)
 }
 
 /**
+ * gs_array_from_gsettings_or_env:
+ *
+ * Return value: an array of gchar containing the gsettings or the env specified
+ */
+static inline gchar **
+gs_array_from_gsettings_or_env(GsPluginLoaderPrivate *priv, gchar *env, gchar *key)
+{
+	const gchar *tmp = g_getenv (env);
+	guint i;
+	gchar **ret;
+
+	if (tmp == NULL) {
+		ret = g_settings_get_strv (priv->settings,
+						key);
+	} else {
+		ret = g_strsplit (tmp, ",", -1);
+	}
+	for (i = 0; ret[i] != NULL; i++)
+		g_debug ("%s: %s", env, ret[i]);
+	return ret;
+}
+
+/**
  * gs_plugin_loader_init:
  **/
 static void
@@ -3654,8 +3722,6 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	const gchar *tmp;
-	gchar **projects;
-	guint i;
 
 	priv->scale = 1;
 	priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -3689,16 +3755,16 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	g_mutex_init (&priv->pending_apps_mutex);
 
 	/* by default we only show project-less apps or compatible projects */
-	tmp = g_getenv ("GNOME_SOFTWARE_COMPATIBLE_PROJECTS");
-	if (tmp == NULL) {
-		projects = g_settings_get_strv (priv->settings,
-						"compatible-projects");
-	} else {
-		projects = g_strsplit (tmp, ",", -1);
-	}
-	for (i = 0; projects[i] != NULL; i++)
-		g_debug ("compatible-project: %s", projects[i]);
-	priv->compatible_projects = projects;
+	priv->compatible_projects =
+		gs_array_from_gsettings_or_env(priv, "GNOME_SOFTWARE_COMPATIBLE_PROJECTS", "compatible-projects");
+
+	/* by default we whitelist all plugins */
+	priv->plugins_whitelist =
+		gs_array_from_gsettings_or_env(priv, "GNOME_SOFTWARE_PLUGINS_WHITELIST", "plugins-whitelist");
+
+	/* by default we blacklist no plugins */
+	priv->plugins_blacklist =
+		gs_array_from_gsettings_or_env(priv, "GNOME_SOFTWARE_PLUGINS_BLACKLIST", "plugins-blacklist");
 }
 
 /**
