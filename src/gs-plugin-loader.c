@@ -51,6 +51,7 @@ typedef struct
 
 	gchar			**compatible_projects;
 	gchar			**plugins_whitelist;
+	gchar			**plugins_blacklist;
 	gint			 scale;
 
 	guint			 updates_changed_id;
@@ -3420,6 +3421,12 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 			continue;
 		}
 
+		found = gs_plugin_find_in_array(filename_tmp, len, priv->plugins_blacklist);
+		if (found == 1) {
+			g_debug ("not loading (blacklisted): %s", filename_tmp);
+			continue;
+		}
+
 		g_debug ("loading: %s", filename_tmp);
 		filename_plugin = g_build_filename (priv->location,
 						    filename_tmp,
@@ -3643,6 +3650,7 @@ gs_plugin_loader_finalize (GObject *object)
 
 	g_strfreev (priv->compatible_projects);
 	g_strfreev (priv->plugins_whitelist);
+	g_strfreev (priv->plugins_blacklist);
 	g_free (priv->location);
 	g_free (priv->locale);
 
@@ -3754,6 +3762,9 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	priv->plugins_whitelist =
 		gs_array_from_gsettings_or_env(priv, "GNOME_SOFTWARE_PLUGINS_WHITELIST", "plugins-whitelist");
 
+	/* by default we blacklist no plugins */
+	priv->plugins_blacklist =
+		gs_array_from_gsettings_or_env(priv, "GNOME_SOFTWARE_PLUGINS_BLACKLIST", "plugins-blacklist");
 }
 
 /**
