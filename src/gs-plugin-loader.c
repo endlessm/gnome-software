@@ -3349,6 +3349,27 @@ gs_plugin_loader_plugin_sort_fn (gconstpointer a, gconstpointer b)
 }
 
 /**
+ * gs_plugin_find_in_array:
+ */
+static inline gint
+gs_plugin_find_in_array (const gchar *filename, guint len, gchar **array)
+{
+	gint i, found = 0;
+
+	if (! array || ! array[0])
+		return -1;
+
+	for (i = 0; !found && array[i]; i++) {
+		if (g_strstr_len(filename, len,
+				 array[i])) {
+			found++;
+		}
+	}
+
+	return found;
+}
+
+/**
  * gs_plugin_loader_setup:
  */
 gboolean
@@ -3392,18 +3413,11 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 			continue;
 
 		len = strlen(filename_tmp);
-		if (priv->plugins_whitelist && priv->plugins_whitelist[0]) {
-			for (i = 0; !found && priv->plugins_whitelist[i]; i++) {
-				if (g_strstr_len(filename_tmp, len,
-						 priv->plugins_whitelist[i])) {
-					found++;
-				}
-			}
-			if (!found) {
-				g_debug ("not loading: %s", filename_tmp);
-				continue;
-			}
 
+		found = gs_plugin_find_in_array(filename_tmp, len, priv->plugins_whitelist);
+		if (found == 0) {
+			g_debug ("not loading (not whitelisted): %s", filename_tmp);
+			continue;
 		}
 
 		g_debug ("loading: %s", filename_tmp);
