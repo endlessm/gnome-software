@@ -2685,3 +2685,31 @@ gs_flatpak_new (GsPlugin *plugin, AsAppScope scope)
 	self->plugin = g_object_ref (plugin);
 	return GS_FLATPAK (self);
 }
+
+gboolean
+gs_flatpak_is_installed (GsFlatpak *self,
+			 GsApp *app,
+			 GCancellable *cancellable,
+			 GError **error)
+{
+	g_autoptr(FlatpakInstalledRef) ref;
+	FlatpakRefKind kind;
+	const char *name;
+	const char *arch;
+	const char *branch;
+
+	kind = gs_app_get_flatpak_kind (app);
+	name = gs_app_get_flatpak_name (app);
+	arch = gs_app_get_flatpak_arch (app);
+	branch = gs_app_get_flatpak_branch (app);
+
+	ref = flatpak_installation_get_installed_ref (self->installation,
+						      kind,
+						      name,
+						      arch,
+						      branch,
+						      cancellable,
+						      error);
+
+	return ref != NULL;
+}

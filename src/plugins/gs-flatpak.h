@@ -115,6 +115,11 @@ gboolean	gs_flatpak_add_category_apps	(GsFlatpak		*self,
 						 GCancellable		*cancellable,
 						 GError			**error);
 
+gboolean	gs_flatpak_is_installed		(GsFlatpak		*self,
+						 GsApp			*app,
+						 GCancellable		*cancellable,
+						 GError			**error);
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */
