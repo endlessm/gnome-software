@@ -96,6 +96,11 @@ gboolean	gs_flatpak_file_to_app		(GsFlatpak		*self,
 						 GCancellable		*cancellable,
 						 GError			**error);
 
+gboolean	gs_flatpak_is_installed		(GsFlatpak		*self,
+						 GsApp			*app,
+						 GCancellable		*cancellable,
+						 GError			**error);
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */
