@@ -1217,6 +1217,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 			GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
+	GError *local_error = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
@@ -1285,7 +1286,8 @@ gs_flatpak_app_install (GsFlatpak *self,
 							    gs_app_get_local_file (app),
 							    gs_flatpak_progress_cb,
 							    app,
-							    cancellable, error);
+							    cancellable,
+							    &local_error);
 	} else {
 		g_debug ("installing %s", gs_app_get_id (app));
 		xref = flatpak_installation_install (self->installation,
@@ -1295,9 +1297,20 @@ gs_flatpak_app_install (GsFlatpak *self,
 						     gs_app_get_flatpak_arch (app),
 						     gs_app_get_flatpak_branch (app),
 						     gs_flatpak_progress_cb, app,
-						     cancellable, error);
+						     cancellable, &local_error);
 	}
 	if (xref == NULL) {
+		/* We may have failed to install because the app is already
+		 * installed */
+		if (g_error_matches (local_error, FLATPAK_ERROR,
+				     FLATPAK_ERROR_ALREADY_INSTALLED)) {
+			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+			return TRUE;
+		}
+
+		if (local_error)
+			g_propagate_error (error, local_error);
+
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
