@@ -1629,3 +1629,16 @@ gs_flatpak_new (GsPlugin *plugin, GsFlatpakScope scope)
 	self->plugin = g_object_ref (plugin);
 	return GS_FLATPAK (self);
 }
+
+const char *
+gs_flatpak_get_prefix (GsFlatpak *self)
+{
+	if (self->scope == GS_FLATPAK_SCOPE_USER)
+		return GS_FLATPAK_USER_PREFIX;
+	else if (self->scope == GS_FLATPAK_SCOPE_SYSTEM)
+		return GS_FLATPAK_SYSTEM_PREFIX;
+
+	g_assert_not_reached ();
+
+	return NULL;
+}
