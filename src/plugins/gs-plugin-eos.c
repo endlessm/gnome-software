@@ -128,8 +128,8 @@ static GHashTable *
 get_applications_with_shortcuts (GsPlugin	*plugin,
 				 GCancellable	*cancellable,
 				 GError		**error_out) {
-	g_autoptr (GVariantIter) iter;
-	g_autoptr (GVariant) apps;
+	g_autoptr (GVariantIter) iter = NULL;
+	g_autoptr (GVariant) apps = NULL;
 	GError *error = NULL;
 	gchar *application;
 	GHashTable *apps_table;
