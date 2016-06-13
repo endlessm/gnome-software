@@ -780,3 +780,42 @@ gs_plugin_launch (GsPlugin *plugin,
 	return gs_flatpak_launch (priv->flatpak, app, cancellable, error);
 }
 
+gboolean
+gs_plugin_app_remove (GsPlugin *plugin,
+		      GsApp *app,
+		      GCancellable *cancellable,
+		      GError **error)
+{
+	GsApp *ext_runtime;
+	GsPluginData *priv;
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	gs_app_set_state (app, AS_APP_STATE_REMOVING);
+
+	priv = gs_plugin_get_data (plugin);
+
+	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
+
+	if (!ext_runtime) {
+		g_debug ("External app '%s' has no external runtime to be"
+			 "removed", gs_app_get_id (app));
+	} else if (gs_app_get_state (ext_runtime) == AS_APP_STATE_INSTALLED ||
+		   gs_app_get_state (ext_runtime) == AS_APP_STATE_UPDATABLE) {
+		g_autoptr(GError) local_error = NULL;
+
+		if (!gs_flatpak_app_remove (priv->flatpak, ext_runtime,
+					    cancellable, &local_error)) {
+			g_debug ("Cannot remove '%s': %s. Will try to "
+				 "remove app '%s'.",
+				 gs_app_get_id (ext_runtime),
+				 local_error->message,
+				 gs_app_get_id (app));
+		}
+	}
+
+	return gs_flatpak_app_remove (priv->flatpak, app, cancellable, error);
+}
