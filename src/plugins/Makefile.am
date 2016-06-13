@@ -19,8 +19,11 @@ AM_CPPFLAGS =						\
 	-DI_KNOW_THE_GNOME_SOFTWARE_API_IS_SUBJECT_TO_CHANGE	\
 	-DBINDIR=\"$(bindir)\"				\
 	-DDATADIR=\"$(datadir)\"			\
+	-DEXT_APPS_HELPER_USER=\"$(EXT_APPS_HELPER_USER)\"	\
+	-DGS_DATA=\"$(pkgdatadir)\"			\
 	-DG_LOG_DOMAIN=\"GsPlugin\"			\
 	-DLIBDIR=\""$(libdir)"\"			\
+	-DLIBEXECDIR=\""$(libexecdir)"\"		\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\"		\
 	-DSBINDIR=\"$(sbindir)\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
@@ -80,6 +83,7 @@ endif
 if HAVE_FLATPAK
 plugin_LTLIBRARIES += libgs_plugin_flatpak-system.la
 plugin_LTLIBRARIES += libgs_plugin_flatpak-user.la
+plugin_LTLIBRARIES += libgs_plugin_external-apps.la
 endif
 
 if HAVE_OSTREE
@@ -195,6 +199,20 @@ libgs_plugin_flatpak_user_la_SOURCES =			\
 libgs_plugin_flatpak_user_la_LIBADD = $(GS_PLUGIN_LIBS) $(FLATPAK_LIBS)
 libgs_plugin_flatpak_user_la_LDFLAGS = -module -avoid-version
 libgs_plugin_flatpak_user_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
+
+libgs_plugin_external_apps_la_SOURCES =		\
+	gs-appstream.c				\
+	gs-appstream.h				\
+	gs-flatpak.c				\
+	gs-flatpak.h				\
+	gs-flatpak-symlinks.c			\
+	gs-flatpak-symlinks.h			\
+	gs-plugin-external-apps.c
+
+libgs_plugin_external_apps_la_LIBADD = $(GS_PLUGIN_LIBS) $(FLATPAK_LIBS) $(JSON_GLIB_LIBS)
+libgs_plugin_external_apps_la_LDFLAGS = -module -avoid-version
+libgs_plugin_external_apps_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(JSON_GLIB_CFLAGS) $(WARN_CFLAGS)
+
 endif
 
 if HAVE_OSTREE
@@ -387,5 +405,9 @@ gs_self_test_CFLAGS = $(WARN_CFLAGS)
 
 TESTS = gs-self-test
 endif
+
+dist_libexec_SCRIPTS =			\
+	eos-external-apps-build-install \
+	eos-external-apps-remove
 
 -include $(top_srcdir)/git.mk

@@ -374,6 +374,19 @@ GS_PLUGIN_API_VERSION=11
 AC_SUBST(GS_PLUGIN_API_VERSION)
 AC_DEFINE_UNQUOTED([GS_PLUGIN_API_VERSION], "$GS_PLUGIN_API_VERSION", [the plugin API version])
 
+# system external apps helper
+AC_ARG_WITH(privileged_group,
+		AS_HELP_STRING([--with-privileged-group=GROUP],[Name of privileged group, [default=sudo]]),
+            with_privileged_group="$withval", with_privileged_group=sudo)
+PRIVILEGED_GROUP=$with_privileged_group
+AC_SUBST(PRIVILEGED_GROUP)
+
+AC_ARG_WITH(ext_apps_helper_user,
+		AS_HELP_STRING([--with-ext-apps-helper-user=GROUP],[Name of the system apps' helper user, [default=g-s-helper]]),
+            with_ext_apps_helper_user="$withval", with_ext_apps_helper_user=g-s-helper)
+EXT_APPS_HELPER_USER=$with_ext_apps_helper_user
+AC_SUBST(EXT_APPS_HELPER_USER)
+
 GLIB_TESTS
 
 dnl ---------------------------------------------------------------------------
@@ -383,6 +396,7 @@ AC_CONFIG_FILES([
 Makefile
 po/Makefile.in
 data/appdata/Makefile
+data/com.endlessm.SystemExternalApps.rules
 data/Makefile
 data/icons/Makefile
 data/icons/hicolor/Makefile
