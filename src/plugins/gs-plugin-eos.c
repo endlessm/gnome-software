@@ -26,6 +26,8 @@
 #include <glib/gi18n.h>
 #include <gs-plugin.h>
 
+#include "gs-flatpak.h"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -203,10 +205,10 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 static gboolean
 gs_plugin_eos_app_is_flatpak (GsApp *app)
 {
-	const char *app_manager;
-	app_manager = gs_app_get_management_plugin (app);
+	const char *id = gs_app_get_id (app);
 
-	return g_strcmp0 (app_manager, "flatpak") == 0;
+	return id && (g_str_has_prefix (id, GS_FLATPAK_SYSTEM_PREFIX ":") ||
+		      g_str_has_prefix (id, GS_FLATPAK_USER_PREFIX ":"));
 }
 
 static void
