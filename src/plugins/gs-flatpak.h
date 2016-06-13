@@ -110,6 +110,10 @@ gboolean	gs_flatpak_is_installed		(GsFlatpak		*self,
 						 GCancellable		*cancellable,
 						 GError			**error);
 
+GPtrArray	*gs_flatpak_get_remotes_names	(GsFlatpak		*flatpak,
+						 GCancellable		*cancellable,
+						 GError			**error);
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */
