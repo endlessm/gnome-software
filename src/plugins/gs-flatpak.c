@@ -1658,3 +1658,27 @@ gs_flatpak_is_installed (GsFlatpak *self,
 
 	return ref != NULL;
 }
+
+GPtrArray *
+gs_flatpak_get_remotes_names (GsFlatpak *self,
+			      GCancellable *cancellable,
+			      GError **error)
+{
+	GPtrArray *names = NULL;
+	guint i;
+	g_autoptr(GPtrArray) xremotes = NULL;
+
+	xremotes = flatpak_installation_list_remotes (self->installation,
+						      cancellable,
+						      error);
+	if (!xremotes)
+		return NULL;
+
+	names = g_ptr_array_new_full (xremotes->len, g_free);
+	for (i = 0; i < xremotes->len; i++) {
+		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
+		g_ptr_array_add (names, g_strdup (flatpak_remote_get_name (xremote)));
+	}
+
+	return names;
+}
