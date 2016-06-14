@@ -1999,3 +1999,9 @@ gs_flatpak_is_installed (GsFlatpak *self,
 
 	return ref != NULL;
 }
+
+gboolean
+gs_flatpak_app_is_runtime (GsApp *app)
+{
+	return g_strcmp0 (gs_app_get_flatpak_kind_as_str (app), "runtime") == 0;
+}
