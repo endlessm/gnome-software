@@ -120,6 +120,8 @@ gboolean	gs_flatpak_is_installed		(GsFlatpak		*self,
 						 GCancellable		*cancellable,
 						 GError			**error);
 
+gboolean	gs_flatpak_app_is_runtime	(GsApp *app);
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */
