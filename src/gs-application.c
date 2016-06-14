@@ -258,6 +258,10 @@ gs_application_initialize_ui (GsApplication *app)
 	/* register ahead of loading the .ui file */
 	gd_notification_get_type ();
 
+	/* prefer the dark theme */
+	g_object_set (gtk_settings_get_default (),
+		      "gtk-application-prefer-dark-theme", TRUE, NULL);
+
 	/* get CSS */
 	app->provider = gtk_css_provider_new ();
 	gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
