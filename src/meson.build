@@ -54,6 +54,7 @@ gnome_software_sources = [
   'gs-search-page.c',
   'gs-shell.c',
   'gs-shell-search-provider.c',
+  'gs-side-filter-row.c',
   'gs-sources-dialog.c',
   'gs-sources-dialog-row.c',
   'gs-star-widget.c',
