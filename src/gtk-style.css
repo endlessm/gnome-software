@@ -409,3 +409,32 @@ flowboxchild {
 .upgrade-progressbar {
 	box-shadow: none
 }
+
+.sidefilter row:hover {
+	background-color: @theme_bg_color;
+}
+
+.sidefilter row:selected {
+	background-color: @theme_bg_color;
+	border-bottom: 1px #000;
+}
+
+.sidefilter row {
+	border: 0;
+	border-radius: 0;
+	outline: 0;
+	box-shadow: none;
+	-gtk-outline-radius: 0;
+	padding: 0;
+}
+
+.sidefilter row box.filter-left-border {
+	background-color: transparent;
+	opacity: 0;
+}
+
+.sidefilter row:selected box.filter-left-border,
+.sidefilter row:active box.filter-left-border,
+.sidefilter row:hover box.filter-left-border {
+	opacity: 1;
+}
