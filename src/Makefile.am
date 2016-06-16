@@ -54,6 +54,7 @@ UI_FILES =						\
 	gs-summary-tile.ui				\
 	gs-auth-dialog.ui				\
 	gs-category-tile.ui				\
+	gs-side-filter-row.ui				\
 	gs-feature-tile.ui				\
 	gs-first-run-dialog.ui				\
 	gs-history-dialog.ui				\
@@ -175,6 +176,8 @@ gnome_software_SOURCES =				\
 	gs-feature-tile.h				\
 	gs-category-tile.c				\
 	gs-category-tile.h				\
+	gs-side-filter-row.c				\
+	gs-side-filter-row.h				\
 	gs-app-tile.c					\
 	gs-app-tile.h					\
 	gs-summary-tile.c				\
