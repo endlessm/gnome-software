@@ -30,6 +30,7 @@
 #include "gs-extras-page.h"
 #include "gs-repos-dialog.h"
 #include "gs-prefs-dialog.h"
+#include "gs-side-filter-row.h"
 #include "gs-update-dialog.h"
 #include "gs-update-monitor.h"
 #include "gs-utils.h"
@@ -64,6 +65,8 @@ typedef struct
 	GHashTable		*pages;
 	GtkWidget		*header_start_widget;
 	GtkWidget		*header_end_widget;
+	GtkWidget		*side_filter_scrolled_window;
+	GtkWidget		*side_filter;
 	GtkBuilder		*builder;
 	GtkWindow		*main_window;
 	GQueue			*back_entry_stack;
@@ -87,6 +90,11 @@ enum {
 };
 
 static guint signals [SIGNAL_LAST] = { 0 };
+
+static void gs_shell_side_filter_add_mode (GsShell *shell, GsShellMode mode);
+static void side_filter_select_by_mode (GsShell *shell, GsShellMode mode);
+static void side_filter_row_selected (GtkListBox *side_filter,
+				      GsSideFilterRow *row, gpointer data);
 
 static void
 modal_dialog_unmapped_cb (GtkWidget *dialog,
@@ -548,6 +556,9 @@ gs_shell_change_mode (GsShell *shell,
 		}
 		g_ptr_array_set_size (priv->modal_dialogs, 0);
 	}
+
+	/* update the side filter accordingly */
+	side_filter_select_by_mode (shell, priv->mode);
 }
 
 static void
@@ -2216,6 +2227,17 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 		g_object_unref (widget);
 	}
 
+	/* side filters */
+	priv->side_filter_scrolled_window =
+		GTK_WIDGET (gtk_builder_get_object (priv->builder,
+						    "scrolledwindow_sidefilter"));
+	priv->side_filter =
+		GTK_WIDGET (gtk_builder_get_object (priv->builder,
+						    "listbox_sidefilter"));
+	g_signal_connect (priv->side_filter, "row-selected",
+			  G_CALLBACK (side_filter_row_selected), shell);
+
+
 	/* global keynav */
 	g_signal_connect_after (priv->main_window, "key_press_event",
 				G_CALLBACK (window_key_press_event), shell);
@@ -2324,6 +2346,8 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	page = GS_PAGE (gtk_builder_get_object (priv->builder, "loading_page"));
 	g_signal_connect (page, "refreshed",
 			  G_CALLBACK (initial_refresh_done), shell);
+
+	gs_shell_side_filter_add_mode (shell, GS_SHELL_MODE_OVERVIEW);
 
 	/* coldplug */
 	gs_shell_rescan_events (shell);
@@ -2579,6 +2603,161 @@ gs_shell_show_uri (GsShell *shell, const gchar *url)
 		g_warning ("failed to show URI %s: %s",
 		           url, error->message);
 	}
+}
+
+void
+gs_shell_side_filter_set_visible (GsShell *shell, gboolean visible)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	gtk_widget_set_visible (priv->side_filter_scrolled_window, visible);
+}
+
+void
+gs_shell_side_filter_clear_categories (GsShell *shell)
+{
+	g_autoptr(GList) rows = NULL;
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+
+	/* select the overview mode to prevent removing a category row
+	 * that may be selected */
+	if (priv->mode == GS_SHELL_MODE_CATEGORY)
+		gs_shell_set_mode (shell, GS_SHELL_MODE_OVERVIEW);
+
+	rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
+	for (GList *l = rows; l; l = l->next) {
+		GsSideFilterRow *current = GS_SIDE_FILTER_ROW (l->data);
+		GsShellMode mode = gs_side_filter_row_get_mode (current);
+		if (mode == GS_SHELL_MODE_CATEGORY)
+			gtk_widget_destroy (GTK_WIDGET (current));
+	}
+}
+
+static void
+side_filter_row_selected (GtkListBox *side_filter,
+			  GsSideFilterRow *row,
+			  gpointer data)
+{
+	GsShell *shell = GS_SHELL (data);
+	GsShellMode mode;
+	GsCategory *category = NULL;
+
+	if (row == NULL)
+		return;
+
+	mode = gs_side_filter_row_get_mode (row);
+
+	switch (mode) {
+	case GS_SHELL_MODE_OVERVIEW:
+		gs_shell_set_mode (shell, GS_SHELL_MODE_OVERVIEW);
+		break;
+	case GS_SHELL_MODE_CATEGORY:
+		category = gs_side_filter_row_get_category (row);
+		gs_shell_show_category (shell, category);
+		break;
+	default:
+		g_assert_not_reached ();
+	}
+}
+
+static void
+side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
+{
+	g_autoptr(GList) rows = NULL;
+	GtkListBoxRow *row;
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "category"));
+	GsCategory *category = gs_category_page_get_category (GS_CATEGORY_PAGE (page));
+
+	row = gtk_list_box_get_selected_row (GTK_LIST_BOX (priv->side_filter));
+
+	/* if the mode is already selected, we do nothing */
+	if (row && gs_side_filter_row_get_mode (GS_SIDE_FILTER_ROW (row)) == mode &&
+	    gs_side_filter_row_get_category (GS_SIDE_FILTER_ROW (row)) == category) {
+		gs_shell_side_filter_set_visible (shell, TRUE);
+		return;
+	}
+
+	row = NULL;
+
+	/* we don't want it to select a row and switch to the view we're
+	 * already in so disconnect the handler functions */
+	g_signal_handlers_block_by_func (priv->side_filter,
+					 side_filter_row_selected, shell);
+
+	rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
+	for (GList *l = rows; l; l = l->next) {
+		GsSideFilterRow *current = GS_SIDE_FILTER_ROW (l->data);
+		if (gs_side_filter_row_get_mode (current) == mode) {
+			row = GTK_LIST_BOX_ROW (current);
+
+			/* special-case the category mode because we need to
+			 * select the right one, not the first one with this
+			 * mode; without this, clicking on a category works fine
+			 * but not when using the arrows */
+			if (mode == GS_SHELL_MODE_CATEGORY) {
+				if (gs_side_filter_row_get_category (current) != category)
+					continue;
+			}
+
+			break;
+		}
+	}
+
+	if (row)
+		gtk_list_box_select_row (GTK_LIST_BOX (priv->side_filter), row);
+
+	g_signal_handlers_unblock_by_func (priv->side_filter,
+					   side_filter_row_selected, shell);
+
+	gs_shell_side_filter_set_visible (shell, (row != NULL));
+}
+
+GtkWidget *
+gs_shell_side_filter_add_category (GsShell *shell, GsCategory *cat)
+{
+	GtkWidget *row;
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+
+	row = gs_side_filter_row_new (cat);
+	gtk_list_box_insert (GTK_LIST_BOX (priv->side_filter), row, -1);
+
+	return row;
+}
+
+static void
+gs_shell_side_filter_add_mode (GsShell *shell,
+			       GsShellMode mode)
+{
+	GsSideFilterRow *row = NULL;
+	GsCategory *cat;
+	GdkRGBA color;
+	const char *id;
+	const char *name;
+	const char *icon;
+	const char *color_str;
+
+	switch (mode) {
+	case GS_SHELL_MODE_OVERVIEW:
+		id = "overview";
+		name = _("Featured");
+		icon = "starred-symbolic";
+		color_str = "#cf602a";
+		break;
+	default:
+	        return;
+	}
+
+	gdk_rgba_parse (&color, color_str);
+	cat = gs_category_new (id);
+	gs_category_set_name (cat, name);
+	gs_category_set_icon (cat, icon);
+	gs_category_add_key_color (cat, &color);
+
+	row = GS_SIDE_FILTER_ROW (gs_shell_side_filter_add_category (shell,
+								     cat));
+	gs_side_filter_row_set_mode (row, mode);
+
+	g_object_unref (cat);
 }
 
 static void
