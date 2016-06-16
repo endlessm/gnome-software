@@ -540,3 +540,55 @@ flowboxchild {
   font-weight: 400;
   font-size: 10pt;
 }
+
+.sidefilter row:hover {
+	background-color: alpha(#f3f3f3, 0.66);
+}
+
+/* The selected row always have 1px borders... */
+.sidefilter row:selected,
+.sidefilter:backdrop row:selected {
+	border: solid #cfcfcf;
+	border-width: 0 0 1px 0;
+}
+
+/* ... except the first row */
+.sidefilter row:first-child:selected,
+.sidefilter:backdrop row:first-child:selected {
+	border: solid #cfcfcf;
+	border-width: 0 0 1px 0;
+}
+
+.sidefilter:backdrop row:selected {
+	background-color: #f3f3f3;
+}
+
+.sidefilter row:selected {
+	background-color: #f6f6f6;
+}
+
+.sidefilter row {
+	border: 0;
+	border-radius: 0;
+	outline: 0;
+	box-shadow: none;
+	-gtk-outline-radius: 0;
+	padding: 0;
+	font-size: 18px;
+}
+
+.sidefilter row box.filter-left-border {
+	background-color: transparent;
+	opacity: 0;
+}
+
+.sidefilter row:selected box.filter-left-border,
+.sidefilter row:active box.filter-left-border,
+.sidefilter row:hover box.filter-left-border {
+	opacity: 1;
+}
+
+.sidefilter row label,
+.sidefilter row image {
+	color: #4d4d4d;
+}
