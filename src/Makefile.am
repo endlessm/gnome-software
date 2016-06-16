@@ -50,6 +50,7 @@ UI_FILES =						\
 	gs-review-row.ui				\
 	gs-screenshot-image.ui				\
 	gs-search-page.ui				\
+	gs-side-filter-row.ui				\
 	gs-sources-dialog-row.ui			\
 	gs-sources-dialog.ui				\
 	gs-star-widget.ui				\
@@ -158,6 +159,8 @@ gnome_software_SOURCES =				\
 	gs-screenshot-image.h				\
 	gs-search-page.c				\
 	gs-search-page.h				\
+	gs-side-filter-row.c				\
+	gs-side-filter-row.h				\
 	gs-shell.c					\
 	gs-shell.h					\
 	gs-shell-search-provider.c			\
