@@ -87,5 +87,10 @@ void		 gs_shell_setup			(GsShell	*shell,
 						 GCancellable	*cancellable);
 gboolean	 gs_shell_is_active		(GsShell	*shell);
 GtkWindow	*gs_shell_get_window		(GsShell	*shell);
+void		 gs_shell_side_filter_set_visible	(GsShell	*shell,
+							 gboolean	visible);
+GtkWidget	*gs_shell_side_filter_add_category	(GsShell	*shell,
+							 GsCategory	*cat);
+void		 gs_shell_side_filter_clear_categories	(GsShell	*shell);
 
 G_END_DECLS
