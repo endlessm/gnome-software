@@ -884,6 +884,23 @@ gs_shell_side_filter_set_visible (GsShell *shell, gboolean visible)
 	gtk_widget_set_visible (priv->side_filter_scrolled_window, visible);
 }
 
+void
+gs_shell_side_filter_clear_categories (GsShell *shell)
+{
+	g_autoptr(GList) rows = NULL;
+	GList *l;
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+
+	rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
+	for (l = rows; l; l = l->next) {
+		GsSideFilterRow *current = GS_SIDE_FILTER_ROW (l->data);
+		GsShellMode mode = gs_side_filter_row_get_mode (current);
+		if (mode == GS_SHELL_MODE_CATEGORY) {
+			gtk_widget_destroy (GTK_WIDGET (current));
+		}
+	}
+}
+
 static void
 side_filter_row_selected (GtkListBox *side_filter,
 			  GsSideFilterRow *row,
