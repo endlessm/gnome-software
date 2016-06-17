@@ -336,6 +336,58 @@ out:
 	}
 }
 
+/**
+ * get_categories_cb:
+ * This function is used instead of the gs_shell_get_categories_cb to set the
+ * categories in the side filter. The original function is not removed so it is
+ * easier to maintain the source code.
+ **/
+static void
+get_categories_cb (GObject *source_object,
+		   GAsyncResult *res,
+		   gpointer user_data)
+{
+	GsShellOverview *self = GS_SHELL_OVERVIEW (user_data);
+	GsShellOverviewPrivate *priv = gs_shell_overview_get_instance_private (self);
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
+	guint i;
+	GsCategory *cat;
+	gboolean has_category = FALSE;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) list = NULL;
+
+	list = gs_plugin_loader_get_categories_finish (plugin_loader, res, &error);
+	if (list == NULL) {
+		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
+			g_warning ("failed to get categories: %s", error->message);
+		goto out;
+	}
+
+	gs_shell_side_filter_clear_categories (priv->shell);
+
+	for (i = 0; i < list->len; i++) {
+		cat = GS_CATEGORY (g_ptr_array_index (list, i));
+		if (gs_category_get_size (cat) == 0)
+			continue;
+		has_category = TRUE;
+		gs_shell_side_filter_add_category (priv->shell, cat);
+	}
+
+out:
+	priv->empty = !has_category;
+
+	/* We always show the side filter in the overview page because it
+	 * has the "Featured" row */
+	gs_shell_side_filter_set_visible (priv->shell, TRUE);
+
+	priv->loading_categories = FALSE;
+	priv->refresh_count--;
+	if (priv->refresh_count == 0) {
+		priv->cache_valid = TRUE;
+		g_signal_emit (self, signals[SIGNAL_REFRESHED], 0);
+	}
+}
+
 static void
 category_tile_clicked (GsCategoryTile *tile, gpointer data)
 {
@@ -545,7 +597,7 @@ gs_shell_overview_load (GsShellOverview *self)
 		gs_plugin_loader_get_categories_async (priv->plugin_loader,
 						       GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 						       priv->cancellable,
-						       gs_shell_overview_get_categories_cb,
+						       get_categories_cb,
 						       self);
 		priv->refresh_count++;
 	}
@@ -591,6 +643,11 @@ gs_shell_overview_switch_to (GsPage *page, gboolean scroll_up)
 	}
 
 	gs_grab_focus_when_mapped (priv->scrolledwindow_overview);
+
+	/* hide the category related UI because it is handled in the
+	 * side filter */
+	gtk_widget_set_visible (priv->categories_expander, FALSE);
+	gtk_widget_set_visible (priv->category_heading, FALSE);
 
 	if (priv->cache_valid || priv->refresh_count > 0)
 		return;
