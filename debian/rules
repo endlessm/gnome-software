@@ -1,5 +1,8 @@
 #!/usr/bin/make -f
 
+export DEB_LDFLAGS_MAINT_STRIP=-Wl,-Bsymbolic-functions
+include /usr/share/dpkg/buildflags.mk
+
 GS_CONFIGURE_FLAGS = --libdir=/usr/lib \
 		--disable-silent-rules \
 		--disable-reviews      \
