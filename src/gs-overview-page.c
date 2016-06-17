@@ -515,6 +515,54 @@ out:
 	gs_overview_page_decrement_action_cnt (self);
 }
 
+/**
+ * get_categories_cb:
+ * This function is used instead of the gs_shell_get_categories_cb to set the
+ * categories in the side filter. The original function is not removed so it is
+ * easier to maintain the source code.
+ **/
+static void
+get_categories_cb (GObject *source_object,
+		   GAsyncResult *res,
+		   gpointer data)
+{
+	GsOverviewPage *self = GS_OVERVIEW_PAGE (data);
+	GsOverviewPagePrivate *priv = gs_overview_page_get_instance_private (self);
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
+	GsCategory *cat;
+	gboolean has_category = FALSE;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GPtrArray) list = NULL;
+
+	list = gs_plugin_loader_job_get_categories_finish (plugin_loader, res, &error);
+	if (list == NULL) {
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+			g_warning ("failed to get categories: %s", error->message);
+		goto out;
+	}
+
+	gs_shell_side_filter_clear_categories (priv->shell);
+
+	for (guint i = 0; i < list->len; i++) {
+		cat = GS_CATEGORY (g_ptr_array_index (list, i));
+		if (gs_category_get_size (cat) == 0)
+			continue;
+		has_category = TRUE;
+		gs_shell_side_filter_add_category (priv->shell, cat);
+	}
+
+out:
+	priv->empty = !has_category;
+
+	/* We always show the side filter in the overview page because it
+	 * has the "Featured" row */
+	gs_shell_side_filter_set_visible (priv->shell, TRUE);
+
+	priv->loading_categories = FALSE;
+
+	gs_overview_page_decrement_action_cnt (self);
+}
+
 static void
 category_tile_clicked (GsCategoryTile *tile, gpointer data)
 {
@@ -746,6 +794,41 @@ gs_overview_page_load (GsOverviewPage *self)
 
 	priv->empty = TRUE;
 
+	if (!priv->loading_popular) {
+		g_autoptr(GsPluginJob) plugin_job = NULL;
+
+		priv->loading_popular = TRUE;
+		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_POPULAR,
+						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
+						 NULL);
+		gs_plugin_loader_job_process_async (priv->plugin_loader,
+						    plugin_job,
+						    priv->cancellable,
+						    gs_overview_page_get_popular_cb,
+						    self);
+		priv->action_cnt++;
+	}
+
+	if (!priv->loading_categories) {
+		g_autoptr(GsPluginJob) plugin_job = NULL;
+		priv->loading_categories = TRUE;
+		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORIES,
+						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
+						 NULL);
+		gs_plugin_loader_job_get_categories_async (priv->plugin_loader, plugin_job,
+							   priv->cancellable,
+							   get_categories_cb,
+							   self);
+		priv->action_cnt++;
+	}
+
+	/* stop here because we don't want to load anything else but we want to
+	 * keep the code around as it makes future rebases easier */
+	return;
+
 	if (!priv->loading_featured) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 
@@ -906,6 +989,11 @@ gs_overview_page_switch_to (GsPage *page, gboolean scroll_up)
 	}
 
 	gs_grab_focus_when_mapped (priv->scrolledwindow_overview);
+
+	/* hide the category related UI because it is handled in the
+	 * side filter */
+	gtk_widget_set_visible (priv->categories_expander_box, FALSE);
+	gtk_widget_set_visible (priv->category_heading, FALSE);
 
 	if (priv->cache_valid || priv->action_cnt > 0)
 		return;
