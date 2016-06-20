@@ -2245,7 +2245,6 @@ gs_shell_show_app (GsShell *shell, GsApp *app)
 void
 gs_shell_show_category (GsShell *shell, GsCategory *category)
 {
-	save_back_entry (shell);
 	gs_shell_change_mode (shell, GS_SHELL_MODE_CATEGORY, category, TRUE);
 }
 
