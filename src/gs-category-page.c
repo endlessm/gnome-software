@@ -70,9 +70,8 @@ gs_category_page_switch_to (GsPage *page, gboolean scroll_up)
 	GsCategoryPage *self = GS_CATEGORY_PAGE (page);
 	GtkWidget *widget;
 
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "application_details_header"));
+	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
 	gtk_widget_show (widget);
-	gtk_label_set_label (GTK_LABEL (widget), gs_category_get_name (self->category));
 }
 
 static void
