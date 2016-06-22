@@ -230,6 +230,26 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
 }
 
+static void
+gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
+				  GsApp *app)
+{
+	const char *popular_bg = NULL;
+	g_autofree char *css = NULL;
+
+	if (gs_app_get_metadata_item (app, "GnomeSoftware::ImageTile-css"))
+		return;
+
+	popular_bg =
+	   gs_app_get_metadata_item (app, "GnomeSoftware::popular-background");
+
+	if (!popular_bg)
+		return;
+
+	css = g_strdup_printf ("background-image: url('%s');", popular_bg);
+	gs_app_set_metadata (app, "GnomeSoftware::ImageTile-css", css);
+}
+
 gboolean
 gs_plugin_refine (GsPlugin		*plugin,
 		  GsAppList		*list,
@@ -246,6 +266,8 @@ gs_plugin_refine (GsPlugin		*plugin,
 			continue;
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app);
+
+		gs_plugin_eos_refine_popular_app (plugin, app);
 	}
 
 	return TRUE;
