@@ -356,3 +356,56 @@ button.star, .button.star {
 .sidefilter_scrolledwindow {
 	border: 0;
 }
+
+.image-tile {
+	border-radius: 3%;
+	border: 0;
+	padding: 0;
+}
+
+.image-tile .app-info {
+	background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.6));
+	transition-duration: 500ms;
+	border-radius: 3%;
+	border: 0;
+}
+
+.image-tile:hover .app-info {
+	background: rgba(255, 255, 255, 0.8);
+	transition-duration: 0;
+}
+
+.image-tile .app-info * {
+	opacity: 1;
+	transition-duration: 500ms;
+}
+
+.image-tile:hover .app-info * {
+	opacity: 0;
+	transition-duration: 0;
+}
+
+.image-tile .app-name {
+	font: 20px;
+}
+
+.image-tile .hover-app-info .app-name {
+	color: @theme_bg_color;
+}
+
+.image-tile .hover-app-info .app-arrow {
+	color: @theme_bg_color;
+	font: 40px;
+}
+
+.image-tile .app-installed-indicator {
+	font-size: 80%;
+	background-color: @theme_bg_color;
+	border-radius: 0;
+	color: @theme_selected_fg_color;
+	text-shadow: none;
+}
+
+.image-tile .app-installed-indicator:backdrop label {
+	color: @theme_selected_fg_color;
+}
