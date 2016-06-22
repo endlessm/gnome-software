@@ -57,13 +57,12 @@ UI_FILES =						\
 	gs-app-folder-dialog.ui				\
 	gs-app-row.ui					\
 	gs-app-tile.ui					\
-	gs-summary-tile.ui				\
 	gs-auth-dialog.ui				\
 	gs-category-tile.ui				\
-	gs-side-filter-row.ui				\
 	gs-feature-tile.ui				\
 	gs-first-run-dialog.ui				\
 	gs-history-dialog.ui				\
+	gs-image-tile.ui				\
 	gs-info-bar.ui					\
 	gs-menus.ui					\
 	gs-popular-tile.ui				\
@@ -76,14 +75,16 @@ UI_FILES =						\
 	gs-shell-details.ui				\
 	gs-shell-extras.ui				\
 	gs-shell-installed.ui				\
-	gs-shell-moderate.ui				\
 	gs-shell-loading.ui				\
+	gs-shell-moderate.ui				\
 	gs-shell-overview.ui				\
 	gs-shell-search.ui				\
 	gs-shell-updates.ui				\
+	gs-side-filter-row.ui				\
 	gs-sources-dialog-row.ui			\
 	gs-sources-dialog.ui				\
 	gs-star-widget.ui				\
+	gs-summary-tile.ui				\
 	gs-update-dialog.ui				\
 	gs-upgrade-banner.ui
 
@@ -180,6 +181,8 @@ gnome_software_SOURCES =				\
 	gs-star-widget.h				\
 	gs-popular-tile.c				\
 	gs-popular-tile.h				\
+	gs-image-tile.c					\
+	gs-image-tile.h					\
 	gs-feature-tile.c				\
 	gs-feature-tile.h				\
 	gs-category-tile.c				\
