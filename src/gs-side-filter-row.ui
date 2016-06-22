@@ -3,6 +3,7 @@
   <!-- interface-requires gtk+ 3.10 -->
   <template class="GsSideFilterRow" parent="GtkListBoxRow">
     <property name="visible">True</property>
+    <property name="height-request">62</property>
     <child>
       <object class="GtkBox" id="outterbox">
         <property name="visible">True</property>
@@ -12,7 +13,7 @@
           <object class="GtkBox" id="leftborder">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="width-request">8</property>
+            <property name="width-request">10</property>
             <style>
               <class name="filter-left-border"/>
             </style>
@@ -23,7 +24,7 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">horizontal</property>
-            <property name="spacing">12</property>
+            <property name="spacing">14</property>
             <property name="margin_top">12</property>
             <property name="margin_bottom">12</property>
             <property name="margin_start">9</property>
@@ -33,7 +34,7 @@
 		<property name="visible">True</property>
 		<property name="can_focus">False</property>
 		<property name="icon_name">folder-music-symbolic</property>
-		<property name="icon_size">1</property>
+		<property name="icon_size">3</property>
 		<style>
 		  <class name="dim-label"/>
 		</style>
