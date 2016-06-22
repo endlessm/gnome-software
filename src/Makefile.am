@@ -58,6 +58,7 @@ UI_FILES =						\
 	gs-info-bar.ui					\
 	gs-menus.ui					\
 	gs-popular-tile.ui				\
+	gs-image-tile.ui				\
 	gs-review-dialog.ui				\
 	gs-review-histogram.ui				\
 	gs-review-row.ui				\
@@ -161,6 +162,8 @@ gnome_software_SOURCES =				\
 	gs-star-widget.h				\
 	gs-popular-tile.c				\
 	gs-popular-tile.h				\
+	gs-image-tile.c					\
+	gs-image-tile.h					\
 	gs-feature-tile.c				\
 	gs-feature-tile.h				\
 	gs-category-tile.c				\
