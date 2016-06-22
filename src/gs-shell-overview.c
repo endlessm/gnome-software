@@ -29,7 +29,7 @@
 #include "gs-app.h"
 #include "gs-app-list-private.h"
 #include "gs-category.h"
-#include "gs-popular-tile.h"
+#include "gs-image-tile.h"
 #include "gs-feature-tile.h"
 #include "gs-category-tile.h"
 #include "gs-hiding-box.h"
@@ -154,7 +154,7 @@ gs_shell_overview_get_popular_cb (GObject *source_object,
 
 	for (i = 0; i < gs_app_list_length (list) && i < N_TILES; i++) {
 		app = gs_app_list_index (list, i);
-		tile = gs_popular_tile_new (app);
+		tile = gs_image_tile_new (app);
 		g_signal_connect (tile, "clicked",
 			  G_CALLBACK (app_tile_clicked), self);
 		gtk_container_add (GTK_CONTAINER (priv->box_popular), tile);
@@ -264,7 +264,7 @@ gs_shell_overview_get_category_apps_cb (GObject *source_object,
 	/* add all the apps */
 	for (i = 0; i < gs_app_list_length (list) && i < N_TILES; i++) {
 		app = gs_app_list_index (list, i);
-		tile = gs_popular_tile_new (app);
+		tile = gs_image_tile_new (app);
 		g_signal_connect (tile, "clicked",
 			  G_CALLBACK (app_tile_clicked), self);
 		gtk_container_add (GTK_CONTAINER (box), tile);
@@ -825,7 +825,7 @@ gs_shell_overview_setup (GsShellOverview *self,
 	gtk_container_add (GTK_CONTAINER (priv->bin_featured), tile);
 
 	for (i = 0; i < N_TILES; i++) {
-		tile = gs_popular_tile_new (NULL);
+		tile = gs_image_tile_new (NULL);
 		gtk_container_add (GTK_CONTAINER (priv->box_popular), tile);
 	}
 
