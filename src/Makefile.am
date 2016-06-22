@@ -37,6 +37,7 @@ UI_FILES =						\
 	gs-feature-tile.ui				\
 	gs-first-run-dialog.ui				\
 	gs-history-dialog.ui				\
+	gs-image-tile.ui				\
 	gs-info-bar.ui					\
 	gs-installed-page.ui				\
 	gs-loading-page.ui				\
@@ -126,6 +127,8 @@ gnome_software_SOURCES =				\
 	gs-hiding-box.h					\
 	gs-history-dialog.c				\
 	gs-history-dialog.h				\
+	gs-image-tile.c					\
+	gs-image-tile.h					\
 	gs-info-bar.c					\
 	gs-info-bar.h					\
 	gs-installed-page.c				\

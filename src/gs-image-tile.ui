@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk+ 3.10 -->
+  <template class="GsImageTile" parent="GsAppTile">
+    <property name="visible">True</property>
+    <property name="width_request">180</property>
+    <property name="height_request">180</property>
+    <property name="halign">center</property>
+    <style>
+      <class name="image-tile"/>
+    </style>
+    <child>
+      <object class="GtkStack" id="stack">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <child>
+          <object class="GtkImage" id="waiting">
+            <property name="visible">True</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="pixel-size">16</property>
+            <property name="icon-name">content-loading-symbolic</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+          <packing>
+            <property name="name">waiting</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkOverlay" id="overlay">
+            <property name="visible">True</property>
+            <property name="halign">fill</property>
+            <property name="valign">fill</property>
+	    <child type="overlay">
+	      <object class="GtkEventBox" id="image_box">
+                <property name="visible">True</property>
+		<property name="halign">fill</property>
+		<property name="valign">fill</property>
+		<style>
+		  <class name="main-image"/>
+		</style>
+	      </object>
+	    </child>
+	    <child type="overlay">
+	      <object class="GtkEventBox" id="eboxbox">
+                <property name="visible">True</property>
+		<property name="halign">fill</property>
+		<property name="valign">fill</property>
+                <child>
+                  <object class="GtkBox" id="box">
+		    <property name="visible">True</property>
+		    <property name="orientation">vertical</property>
+		    <property name="halign">fill</property>
+		    <property name="valign">start</property>
+                    <property name="vexpand">True</property>
+		    <property name="margin_left">12</property>
+		    <property name="margin_right">12</property>
+                    <child>
+                      <object class="GtkImage" id="placeholder_icon">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="width-request">64</property>
+                        <property name="height-request">64</property>
+                        <property name="margin-bottom">12</property>
+                        <property name="margin_top">12</property>
+                      </object>
+                    </child>
+		    <child>
+		      <object class="GtkLabel" id="app_name">
+                        <property name="visible">True</property>
+                        <property name="valign">end</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">1</property>
+                        <property name="vexpand">True</property>
+                        <property name="ellipsize">end</property>
+                        <property name="width_chars">12</property>
+                        <property name="max_width_chars">12</property>
+                        <property name="margin_top">8</property>
+			<style>
+			  <class name="app-name"/>
+			</style>
+		      </object>
+		      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+		      </packing>
+		    </child>
+		    <child>
+		      <object class="GtkLabel" id="app_summary">
+                        <property name="visible">True</property>
+                        <property name="valign">end</property>
+                        <property name="xalign">0</property>
+                        <property name="ellipsize">end</property>
+                        <property name="lines">2</property>
+                        <property name="wrap">True</property>
+			<property name="width_chars">12</property>
+                        <property name="max_width_chars">12</property>
+                        <property name="margin_top">6</property>
+			<style>
+			  <class name="app-summary"/>
+			</style>
+		      </object>
+		      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+		      </packing>
+		    </child>
+		    <child>
+		      <object class="GsStarWidget" id="stars">
+                        <property name="visible">True</property>
+                        <property name="halign">center</property>
+		      </object>
+		      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+		      </packing>
+		    </child>
+                  </object>
+                </child>
+		<style>
+		  <class name="app-info"/>
+		</style>
+	      </object>
+	    </child>
+            <child type="overlay">
+              <object class="GtkEventBox" id="eventbox">
+                <property name="no_show_all">True</property>
+                <property name="visible_window">True</property>
+                <property name="halign">end</property>
+                <property name="valign">start</property>
+                <property name="margin-top">6</property>
+                <style>
+                  <class name="app-installed-indicator"/>
+                </style>
+                <child>
+                  <object class="GtkLabel" id="installed-label">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Installed</property>
+                    <property name="margin-start">10</property>
+                    <property name="margin-end">10</property>
+                    <property name="margin-top">4</property>
+                    <property name="margin-bottom">4</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="overlay">
+	      <object class="GtkRevealer" id="details_revealer">
+                <property name="visible">True</property>
+                <property name="transition-duration">350</property>
+                <property name="transition-type">slide-up</property>
+		<property name="valign">end</property>
+		<child>
+		  <object class="GtkEventBox" id="icon_ebox">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkBox" id="icon_box">
+			<property name="visible">True</property>
+			<property name="orientation">vertical</property>
+			<property name="halign">fill</property>
+			<property name="valign">end</property>
+			<property name="margin">12</property>
+			<property name="spacing">6</property>
+			<child>
+			  <object class="GtkBox" id="icon_box2">
+			    <property name="visible">True</property>
+			    <property name="orientation">horizontal</property>
+			    <property name="halign">start</property>
+			    <property name="valign">end</property>
+			    <property name="spacing">12</property>
+			    <child>
+			      <object class="GtkImage" id="icon">
+				<property name="width-request">64</property>
+				<property name="height-request">64</property>
+				<property name="visible">True</property>
+				<property name="valign">center</property>
+				<property name="xalign">0</property>
+			      </object>
+			      <packing>
+				<property name="expand">False</property>
+				<property name="fill">False</property>
+			      </packing>
+			    </child>
+			    <child>
+			      <object class="GtkLabel" id="arrow-label">
+				<property name="visible">True</property>
+				<property name="valign">center</property>
+				<property name="xalign">0</property>
+				<property name="label">&gt;</property>
+				<style>
+				  <class name="app-arrow"/>
+				</style>
+			      </object>
+			      <packing>
+				<property name="expand">False</property>
+				<property name="fill">False</property>
+			      </packing>
+			    </child>
+			  </object>
+			  <packing>
+			    <property name="expand">True</property>
+                            <property name="fill">True</property>
+			  </packing>
+			</child>
+			<child>
+			  <object class="GtkLabel" id="hover_app_name">
+                            <property name="visible">True</property>
+                            <property name="valign">end</property>
+                            <property name="ellipsize">end</property>
+                            <property name="width_chars">12</property>
+                            <property name="max_width_chars">12</property>
+                            <property name="xalign">0</property>
+			    <style>
+			      <class name="app-name"/>
+			    </style>
+			  </object>
+			  <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+			  </packing>
+			</child>
+			<style>
+			  <class name="hover-app-info"/>
+			</style>
+                      </object>
+                    </child>
+		  </object>
+		</child>
+              </object>
+	    </child>
+            <child>
+              <object class="GtkImage" id="fallback_icon">
+                <property name="width-request">64</property>
+                <property name="height-request">64</property>
+                <property name="visible">True</property>
+                <property name="halign">start</property>
+                <property name="valign">start</property>
+                <property name="margin_top">24</property>
+                <property name="margin_left">12</property>
+                <property name="margin_right">12</property>
+                <property name="margin_bottom">12</property>
+                <style>
+                  <class name="fallback-icon"/>
+                </style>
+              </object>
+            </child>
+	  </object>
+	  <packing>
+	    <property name="name">content</property>
+	  </packing>
+	</child>
+      </object>
+    </child>
+  </template>
+</interface>
