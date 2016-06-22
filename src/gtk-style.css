@@ -485,6 +485,7 @@ flowboxchild {
 	box-shadow: none;
 	-gtk-outline-radius: 0;
 	padding: 0;
+	font-size: 18px;
 }
 
 .sidefilter row box.filter-left-border {
@@ -501,4 +502,92 @@ flowboxchild {
 .sidefilter row label,
 .sidefilter row image {
 	color: #4d4d4d;
+}
+
+.image-tile stack {
+	background-color: #646464;
+	border-radius: 8px;
+	border: 0;
+	padding: 0;
+}
+
+.image-tile.loading stack {
+	background-color: #e6e6e6;
+}
+
+.image-tile.loading stack image {
+	color: #bfbfbf;
+}
+
+.image-tile, .image-tile .main-image {
+	border-radius: 8px;
+	border: 0;
+	padding: 0;
+}
+
+.image-tile .app-info {
+	background: linear-gradient(to bottom, transparent 45%, rgba(0, 0, 0, 0.6));
+	transition-duration: 500ms;
+	border-radius: 8px;
+	border: 0;
+}
+
+.image-tile:hover .app-info {
+	background: rgba(0, 0, 0, 0.75);
+	transition-duration: 0;
+}
+
+.image-tile .app-info *, .image-tile .fallback-icon {
+	opacity: 1;
+	transition-duration: 500ms;
+}
+
+.image-tile:hover .app-info *, .image-tile:hover .fallback-icon {
+	opacity: 0;
+	transition-duration: 0;
+}
+
+.image-tile .app-name {
+	text-shadow: 0px 1px 2px black;
+	color: white;
+	font-size: 20px;
+}
+
+.image-tile .hover-app-info {
+	text-shadow: none;
+	-gtk-icon-shadow: none;
+}
+
+.image-tile .hover-app-info .app-name {
+	color: @theme_bg_color;
+}
+
+.image-tile .hover-app-info .app-arrow {
+	color: @theme_bg_color;
+	font-size: 40px;
+}
+
+.image-tile .app-installed-indicator {
+	font-size: 80%;
+	background-color: #f6f6f6;
+	border-radius: 0;
+	text-shadow: none;
+	opacity: 0;
+	transition-duration: 300ms;
+}
+
+.image-tile .app-installed-indicator:backdrop,
+.image-tile .app-installed-indicator:backdrop label {
+	background-color: #f3f3f3;
+}
+
+.image-tile:hover .app-installed-indicator {
+	opacity: 1;
+	transition-duration: 500ms;
+}
+
+.image-tile .app-summary {
+	text-shadow: 0px 1px 2px black;
+	color: white;
+	font-size: 80%;
 }
