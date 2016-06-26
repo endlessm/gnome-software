@@ -38,6 +38,8 @@ struct _GsImageTile
 	GtkWidget	*app_summary;
 	GtkWidget	*hover_app_name;
 	GtkWidget	*icon;
+	GtkWidget	*fallback_icon;
+	GtkWidget	*image_box;
 	GtkWidget	*eventbox;
 	GtkWidget	*stack;
 	GtkWidget	*stars;
@@ -132,10 +134,17 @@ gs_image_tile_set_app (GsAppTile *app_tile, GsApp *app)
 	app_state_changed (tile->app, NULL, tile);
 
 	/* perhaps set custom css */
-	gs_utils_widget_set_css_app (app, GTK_WIDGET (tile),
+	gs_utils_widget_set_css_app (app, GTK_WIDGET (tile->image_box),
 				     "GnomeSoftware::ImageTile-css");
 
 	gs_image_set_from_pixbuf (GTK_IMAGE (tile->icon),
+				  gs_app_get_pixbuf (tile->app));
+
+	/* The fallback icon should be covered by the main image but
+	 * is here for the cases where that image doesn't exist, as
+	 * without a graphical reference it is very difficult to spot
+	 * the applications */
+	gs_image_set_from_pixbuf (GTK_IMAGE (tile->fallback_icon),
 				  gs_app_get_pixbuf (tile->app));
 
 	gtk_label_set_label (GTK_LABEL (tile->app_name), gs_app_get_name (app));
@@ -214,6 +223,10 @@ gs_image_tile_class_init (GsImageTileClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsImageTile, stars);
 	gtk_widget_class_bind_template_child (widget_class, GsImageTile,
 					      details_revealer);
+	gtk_widget_class_bind_template_child (widget_class, GsImageTile,
+					      fallback_icon);
+	gtk_widget_class_bind_template_child (widget_class, GsImageTile,
+					      image_box);
 }
 
 GtkWidget *
