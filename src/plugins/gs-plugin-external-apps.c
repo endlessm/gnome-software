@@ -115,7 +115,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	remove_runtimes_build_dir (plugin);
 
 	g_clear_object (&priv->flatpak);
-	g_clear_object (&priv->runtimes_build_dir);
+	g_free (priv->runtimes_build_dir);
 }
 
 static gboolean
