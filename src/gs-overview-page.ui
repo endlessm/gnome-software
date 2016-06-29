@@ -72,8 +72,8 @@
                     <child>
                       <object class="GtkBox" id="box_overview">
                         <property name="visible">True</property>
-                        <property name="halign">center</property>
-                        <property name="hexpand">False</property>
+                        <property name="halign">fill</property>
+                        <property name="hexpand">True</property>
                         <property name="border_width">12</property>
                         <property name="orientation">vertical</property>
                         <child>
@@ -241,10 +241,13 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GsHidingBox" id="box_popular">
+                          <object class="GtkFlowBox" id="box_popular">
                             <property name="visible">True</property>
-                            <property name="spacing">14</property>
+                            <property name="margin_start">12</property>
+                            <property name="margin_end">12</property>
                             <property name="valign">start</property>
+                            <property name="row_spacing">6</property>
+                            <property name="selection_mode">none</property>
                             <accessibility>
                               <relation target="popular_heading" type="labelled-by"/>
                             </accessibility>
