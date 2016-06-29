@@ -20,7 +20,7 @@
 #include "gs-hiding-box.h"
 #include "gs-common.h"
 
-#define N_TILES					9
+#define N_TILES					35
 #define FEATURED_ROTATE_TIME			30 /* seconds */
 #define FEATURED_SWITCHER_ACTIVE_TEXT		"●"
 #define FEATURED_SWITCHER_INACTIVE_TEXT		"○"
@@ -852,7 +852,6 @@ gs_overview_page_load (GsOverviewPage *self)
 
 		priv->loading_popular = TRUE;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_POPULAR,
-						 "max-results", 20,
 						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
 								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
