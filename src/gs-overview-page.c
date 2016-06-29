@@ -20,7 +20,7 @@
 #include "gs-hiding-box.h"
 #include "gs-common.h"
 
-#define N_TILES					9
+#define N_TILES					35
 #define FEATURED_ROTATE_TIME			30 /* seconds */
 
 typedef struct
