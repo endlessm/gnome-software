@@ -877,6 +877,10 @@ gs_shell_side_filter_clear_categories (GsShell *shell)
 	GList *l;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 
+	/* select the overview mode to prevent removing a category row
+	 * that may be selected */
+	gs_shell_set_mode (shell, GS_SHELL_MODE_OVERVIEW);
+
 	rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
 	for (l = rows; l; l = l->next) {
 		GsSideFilterRow *current = GS_SIDE_FILTER_ROW (l->data);
