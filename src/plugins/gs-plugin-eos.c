@@ -362,3 +362,22 @@ gs_plugin_remove_shortcut (GsPlugin	*plugin,
 	gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
 	return remove_app_from_shell (plugin, app, cancellable, error);
 }
+
+gboolean
+gs_plugin_app_install (GsPlugin *plugin,
+		       GsApp *app,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	if (!gs_plugin_eos_app_is_flatpak (app))
+		return TRUE;
+
+	/* We're only interested in already installed flatpak apps so we can
+	 * add them to the desktop */
+	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLED)
+		return TRUE;
+
+	add_app_to_shell (plugin, app, cancellable, error);
+
+	return TRUE;
+}
