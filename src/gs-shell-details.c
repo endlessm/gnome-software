@@ -58,6 +58,7 @@ struct _GsShellDetails
 	GsShell			*shell;
 	SoupSession		*session;
 	gboolean		 enable_reviews;
+	GSettings		*settings;
 
 	GtkWidget		*application_details_icon;
 	GtkWidget		*application_details_summary;
@@ -789,6 +790,7 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 	guint64 updated;
 	guint64 user_integration_bf;
 	g_autoptr(GError) error = NULL;
+	gboolean show_nonfree = FALSE;
 
 	/* change widgets */
 	tmp = gs_app_get_name (self->app);
@@ -977,7 +979,7 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 	/* set the tags buttons */
 	if (gs_app_get_kind (self->app) == AS_APP_KIND_WEB_APP) {
 		gtk_widget_set_visible (self->label_details_tag_webapp, TRUE);
-		gtk_widget_set_visible (self->label_details_tag_nonfree, FALSE);
+		show_nonfree = FALSE;
 		gtk_widget_set_visible (self->label_details_tag_3rdparty, FALSE);
 		gtk_widget_set_visible (self->label_details_info_text, TRUE);
 		gtk_label_set_label (GTK_LABEL (self->label_details_info_text),
@@ -988,7 +990,7 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 		if (gs_app_get_license_is_free (self->app) &&
 		    !gs_app_has_quirk (self->app, AS_APP_QUIRK_PROVENANCE)) {
 			/* free and 3rd party */
-			gtk_widget_set_visible (self->label_details_tag_nonfree, FALSE);
+			show_nonfree = FALSE;
 			gtk_widget_set_visible (self->label_details_tag_3rdparty, TRUE);
 			gtk_widget_set_visible (self->label_details_info_text, TRUE);
 			gtk_label_set_label (GTK_LABEL (self->label_details_info_text),
@@ -997,7 +999,7 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 		} else if (!gs_app_get_license_is_free (self->app) &&
 			   !gs_app_has_quirk (self->app, AS_APP_QUIRK_PROVENANCE)) {
 			/* nonfree and 3rd party */
-			gtk_widget_set_visible (self->label_details_tag_nonfree, TRUE);
+			show_nonfree = TRUE;
 			gtk_widget_set_visible (self->label_details_tag_3rdparty, TRUE);
 			gtk_widget_set_visible (self->label_details_info_text, TRUE);
 			gtk_label_set_label (GTK_LABEL (self->label_details_info_text),
@@ -1006,7 +1008,7 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 		} else if (!gs_app_get_license_is_free (self->app) &&
 			   gs_app_has_quirk (self->app, AS_APP_QUIRK_PROVENANCE)) {
 			/* nonfree and distro */
-			gtk_widget_set_visible (self->label_details_tag_nonfree, TRUE);
+			show_nonfree = TRUE;
 			gtk_widget_set_visible (self->label_details_tag_3rdparty, FALSE);
 			gtk_widget_set_visible (self->label_details_info_text, TRUE);
 			gtk_label_set_label (GTK_LABEL (self->label_details_info_text),
@@ -1014,13 +1016,19 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 					     _("This software may contain non-free components."));
 		} else {
 			/* free and not 3rd party */
-			gtk_widget_set_visible (self->label_details_tag_nonfree, FALSE);
+			show_nonfree = FALSE;
 			gtk_widget_set_visible (self->label_details_tag_3rdparty, FALSE);
 			gtk_widget_set_visible (self->label_details_info_text, FALSE);
 		}
 	}
 	gtk_widget_set_visible (self->label_details_tag_extension,
 				gs_app_get_kind (self->app) == AS_APP_KIND_SHELL_EXTENSION);
+
+	/* Override the non-free label visibility from the settings if needed */
+        if (!g_settings_get_boolean (self->settings, "show-nonfree-ui"))
+		show_nonfree = FALSE;
+
+	gtk_widget_set_visible (self->label_details_tag_nonfree, show_nonfree);
 
 	/* hide the kudo details for non-desktop software */
 	switch (gs_app_get_kind (self->app)) {
@@ -1561,6 +1569,16 @@ gs_shell_details_reload (GsPage *page)
 		gs_shell_details_load (self);
 }
 
+static void
+settings_changed_cb (GsShellDetails *self,
+		     const gchar *key,
+		     gpointer data)
+{
+	if (g_strcmp0 (key, "show-nonfree-ui") == 0) {
+		gs_shell_details_refresh_all (self);
+	}
+}
+
 /**
  * gs_shell_details_set_app:
  **/
@@ -1577,6 +1595,9 @@ gs_shell_details_set_app (GsShellDetails *self, GsApp *app)
 	if (self->app != NULL) {
 		g_signal_handlers_disconnect_by_func (self->app, gs_shell_details_notify_state_changed_cb, self);
 		g_signal_handlers_disconnect_by_func (self->app, gs_shell_details_progress_changed_cb, self);
+		g_signal_handlers_disconnect_by_func (self->settings,
+						      settings_changed_cb,
+						      self);
 	}
 	/* save app */
 	g_set_object (&self->app, app);
@@ -1600,6 +1621,10 @@ gs_shell_details_set_app (GsShellDetails *self, GsApp *app)
 
 	/* change widgets */
 	gs_shell_details_refresh_all (self);
+
+	g_signal_connect_swapped (self->settings, "changed",
+				  G_CALLBACK (settings_changed_cb),
+				  self);
 }
 
 GsApp *
@@ -1949,6 +1974,7 @@ gs_shell_details_init (GsShellDetails *self)
 	/* setup networking */
 	self->session = soup_session_new_with_options (SOUP_SESSION_USER_AGENT, gs_user_agent (),
 	                                               NULL);
+	self->settings = g_settings_new ("org.gnome.software");
 
 	gtk_list_box_set_header_func (GTK_LIST_BOX (self->list_box_addons),
 				      list_header_func,
