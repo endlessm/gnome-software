@@ -106,15 +106,29 @@ app_state_changed (GsApp *app, GParamSpec *pspec, GsImageTile *tile)
 }
 
 static void
+app_image_tile_css_added (GsApp *app, const char *metadata, GsImageTile *tile)
+{
+	if (g_strcmp0 (metadata, "GnomeSoftware::ImageTile-css") == 0) {
+		gs_utils_widget_set_css_app (app, tile->image_box,
+					     "GnomeSoftware::ImageTile-css");
+	} else {
+		g_assert_not_reached ();
+	}
+}
+
+static void
 gs_image_tile_set_app (GsAppTile *app_tile, GsApp *app)
 {
 	GsImageTile *tile = GS_IMAGE_TILE (app_tile);
 
 	g_return_if_fail (GS_IS_APP (app) || app == NULL);
 
-	if (tile->app)
+	if (tile->app) {
 		g_signal_handlers_disconnect_by_func (tile->app,
 						      app_state_changed, tile);
+		g_signal_handlers_disconnect_by_func (tile->app,
+		                                      app_image_tile_css_added, tile);
+	}
 
 	g_set_object (&tile->app, app);
 	if (!app)
@@ -131,6 +145,8 @@ gs_image_tile_set_app (GsAppTile *app_tile, GsApp *app)
 
 	g_signal_connect (tile->app, "notify::state",
 		 	  G_CALLBACK (app_state_changed), tile);
+	g_signal_connect (tile->app, "metadata-changed::GnomeSoftware::ImageTile-css",
+	                  G_CALLBACK (app_image_tile_css_added), tile);
 	app_state_changed (tile->app, NULL, tile);
 
 	/* perhaps set custom css */
