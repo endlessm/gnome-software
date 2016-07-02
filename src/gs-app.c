@@ -138,6 +138,13 @@ enum {
 	PROP_LAST
 };
 
+enum {
+	SIGNAL_METADATA_CHANGED,
+	SIGNAL_LAST
+};
+
+static guint signals [SIGNAL_LAST] = { 0 };
+
 G_DEFINE_TYPE (GsApp, gs_app, G_TYPE_OBJECT)
 
 static void
@@ -2568,6 +2575,10 @@ gs_app_set_metadata (GsApp *app, const gchar *key, const gchar *value)
 
 	/* if no value, then remove the key */
 	if (value == NULL) {
+		g_signal_emit (app,
+	        	       signals[SIGNAL_METADATA_CHANGED],
+			       g_quark_from_string (key),
+			       key);
 		g_hash_table_remove (app->metadata, key);
 		return;
 	}
@@ -2586,6 +2597,11 @@ gs_app_set_metadata (GsApp *app, const gchar *key, const gchar *value)
 	g_hash_table_insert (app->metadata,
 			     g_strdup (key),
 			     g_string_free (str, FALSE));
+
+	g_signal_emit (app,
+	               signals[SIGNAL_METADATA_CHANGED],
+	               g_quark_from_string (key),
+	               key);
 }
 
 /**
@@ -3521,6 +3537,24 @@ gs_app_class_init (GsAppClass *klass)
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	g_object_class_install_property (object_class, PROP_QUIRK, pspec);
+
+        /**
+         * GsApp:metadata-changed:
+         * Fired when a plugin either adds or removes metadata for this
+         * GsApp. Mutating existing metadata is not a valid operation
+         * and the signal will not be fired in that case.
+         *
+         * The detail of this signal will be the key that was either
+         * added or removed from this GsApp's metadata.
+         */
+	signals [SIGNAL_METADATA_CHANGED] =
+	        g_signal_new ("metadata-changed",
+	                      G_TYPE_FROM_CLASS (object_class),
+	                      G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED,
+	                      0,
+	                      NULL, NULL, g_cclosure_marshal_VOID__STRING,
+	                      G_TYPE_NONE, 1,
+	                      G_TYPE_STRING);
 }
 
 static void
