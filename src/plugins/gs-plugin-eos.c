@@ -22,9 +22,12 @@
 #include <config.h>
 
 #include <gio/gdesktopappinfo.h>
+#include <libsoup/soup.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
+#include <gs-common.h>
 #include <gs-plugin.h>
+#include <gs-utils.h>
 
 /*
  * SECTION:
@@ -36,6 +39,7 @@ struct GsPluginData
 	GDBusConnection *session_bus;
 	GHashTable *desktop_apps;
 	int applications_changed_id;
+	SoupSession *soup_session;
 };
 
 static GHashTable *
@@ -109,6 +113,9 @@ gs_plugin_initialize (GsPlugin *plugin)
 						    G_DBUS_SIGNAL_FLAGS_NONE,
 						    (GDBusSignalCallback) on_desktop_apps_changed,
 						    plugin, NULL);
+	priv->soup_session = soup_session_new_with_options (SOUP_SESSION_USER_AGENT,
+	                                                    gs_user_agent (),
+	                                                    NULL);
 }
 
 /**
@@ -126,6 +133,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	}
 
 	g_clear_object (&priv->session_bus);
+	g_clear_object (&priv->soup_session);
 	g_hash_table_destroy (priv->desktop_apps);
 }
 
@@ -229,12 +237,78 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 	}
 }
 
+typedef struct _PopularBackgroundImageTileRequestData
+{
+	GsApp *app;
+	GsPlugin *plugin;
+	char *cache_filename;
+} PopularBackgroundImageTileRequestData;
+
+static void
+popular_background_image_tile_request_data_destroy (PopularBackgroundImageTileRequestData *data)
+{
+	g_free (data->cache_filename);
+	g_free (data);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PopularBackgroundImageTileRequestData,
+                              popular_background_image_tile_request_data_destroy);
+
+static void
+gs_plugin_eos_update_tile_image_from_filename (GsApp      *app,
+                                               const char *filename)
+{
+	g_autofree char *css = g_strdup_printf ("background-image: url('%s')",
+	                                       filename);
+	gs_app_set_metadata (app, "GnomeSoftware::ImageTile-css", css);
+}
+
+static void
+gs_plugin_eos_tile_image_downloaded_cb (SoupSession *session,
+                                        SoupMessage *msg,
+                                        gpointer user_data)
+{
+	g_autoptr(PopularBackgroundImageTileRequestData) data = user_data;
+	g_autoptr(GError) error = NULL;
+
+	if (msg->status_code == SOUP_STATUS_CANCELLED)
+		return;
+
+	if (msg->status_code != SOUP_STATUS_OK) {
+		g_debug ("Failed to download tile image corresponding to cache entry %s: %s",
+		         data->cache_filename,
+		         msg->reason_phrase);
+		return;
+	}
+
+	/* Write out the cache image to disk */
+	if (!g_file_set_contents (data->cache_filename,
+	                          msg->response_body->data,
+	                          msg->response_body->length,
+	                          &error)) {
+		g_debug ("Failed to write cache image %s, %s",
+		         data->cache_filename,
+		         error->message);
+		return;
+	}
+
+	gs_plugin_eos_update_tile_image_from_filename (data->app, data->cache_filename);
+}
+
 static void
 gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 				  GsApp *app)
 {
 	const char *popular_bg = NULL;
-	g_autofree char *css = NULL;
+	g_autofree char *tile_cache_hash = NULL;
+	g_autofree char *cache_filename = NULL;
+	g_autofree char *writable_cache_filename = NULL;
+	g_autofree char *url_basename = NULL;
+	g_autofree char *cache_identifier = NULL;
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	PopularBackgroundImageTileRequestData *request_data = NULL;
+	g_autoptr(SoupURI) soup_uri = NULL;
+	g_autoptr(SoupMessage) message = NULL;
 
 	popular_bg =
 	   gs_app_get_metadata_item (app, "GnomeSoftware::popular-background");
@@ -243,8 +317,57 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	    gs_app_get_metadata_item (app, "GnomeSoftware::ImageTile-css"))
 		return;
 
-	css = g_strdup_printf ("background-image: url('%s');", popular_bg);
-	gs_app_set_metadata (app, "GnomeSoftware::ImageTile-css", css);
+	url_basename = g_path_get_basename (popular_bg);
+
+	/* First take a hash of this URL and see if it is in our cache */
+	tile_cache_hash = g_compute_checksum_for_string (G_CHECKSUM_SHA256,
+	                                                 popular_bg,
+	                                                 -1);
+	cache_identifier = g_strdup_printf ("%s-%s", tile_cache_hash, url_basename);
+	cache_filename = gs_utils_get_cache_filename ("eos-popular-app-thumbnails",
+	                                              cache_identifier,
+	                                              GS_UTILS_CACHE_FLAG_NONE,
+	                                              NULL);
+
+	/* Check to see if the file exists in the cache at the time we called this
+	 * function. If it does, then change the css so that the tile loads. Otherwise,
+	 * we'll need to asynchronously fetch the image from the server and write it
+	 * to the cache */
+	if (g_file_test (cache_filename, G_FILE_TEST_EXISTS)) {
+		g_debug ("Hit cache for thumbnail %s: %s", popular_bg, cache_filename);
+		gs_plugin_eos_update_tile_image_from_filename (app, cache_filename);
+		return;
+	}
+
+	writable_cache_filename = gs_utils_get_cache_filename ("eos-popular-app-thumbnails",
+	                                                       cache_identifier,
+	                                                       GS_UTILS_CACHE_FLAG_WRITEABLE,
+	                                                       NULL);
+
+	soup_uri = soup_uri_new (popular_bg);
+	g_debug ("Downloading thumbnail %s to %s", popular_bg, writable_cache_filename);
+	if (!soup_uri || !SOUP_URI_VALID_FOR_HTTP (soup_uri)) {
+		g_debug ("Couldn't download %s, URL is not valid", popular_bg);
+		return;
+	}
+
+	/* XXX: Note that we might have multiple downloads in progress here. We
+	 * don't make any attempt to keep track of this. */
+	message = soup_message_new_from_uri (SOUP_METHOD_GET, soup_uri);
+	if (!message) {
+		g_debug ("Couldn't download %s, network not available", popular_bg);
+		return;
+	}
+
+	request_data = g_new0 (PopularBackgroundImageTileRequestData, 1);
+	request_data->app = app;
+	request_data->plugin = plugin;
+	request_data->cache_filename = g_steal_pointer (&writable_cache_filename);
+
+	soup_session_queue_message (priv->soup_session,
+	                            g_steal_pointer (&message),
+	                            gs_plugin_eos_tile_image_downloaded_cb,
+	                            request_data);
 }
 
 /**
