@@ -324,6 +324,7 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	 * we'll need to asynchronously fetch the image from the server and write it
 	 * to the cache */
 	if (g_file_test (cache_filename, G_FILE_TEST_EXISTS)) {
+		g_debug("Hit cache for thumbnail %s: %s", popular_bg, cache_filename);
 		gs_plugin_eos_update_tile_image_from_filename (app, cache_filename);
 		return;
 	}
