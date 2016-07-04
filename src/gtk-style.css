@@ -27,6 +27,7 @@
 .index-title-alignment-software {
 	font-weight: bold;
 	font-size: 125%;
+	color: #f6f6f6;
 }
 
 .app-row-installed-label {
@@ -593,4 +594,13 @@ flowboxchild {
 .sidefilter row label,
 .sidefilter row image {
 	color: #4d4d4d;
+}
+
+/* Override the theme's .view class */
+.view {
+	background-color: #f6f6f6;
+}
+
+.view:backdrop {
+	background-color: #f3f3f3;
 }

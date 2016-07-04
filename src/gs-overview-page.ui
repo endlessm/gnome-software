@@ -10,6 +10,11 @@
     <child>
       <object class="GtkStack" id="stack_overview">
         <property name="visible">True</property>
+
+        <style>
+          <class name="view" />
+        </style>
+
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
@@ -206,9 +211,13 @@
                             <property name="visible">True</property>
                             <property name="margin_start">12</property>
                             <property name="margin_end">12</property>
+			    <property name="margin_top">12</property>
                             <property name="valign">start</property>
-                            <property name="row_spacing">6</property>
                             <property name="selection_mode">none</property>
+                            <property name="row_spacing">20</property>
+                            <property name="column_spacing">20</property>
+                            <property name="halign">center</property>
+                            <property name="min_children_per_line">2</property>
                             <accessibility>
                               <relation target="popular_heading" type="labelled-by"/>
                             </accessibility>

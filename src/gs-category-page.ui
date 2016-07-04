@@ -39,6 +39,9 @@
     <child>
       <object class="GtkBox" id="box_category">
         <property name="visible">True</property>
+        <style>
+          <class name="view" />
+        </style>
         <child>
           <object class="GtkBox" id="box_category_results">
             <property name="visible">True</property>
@@ -341,10 +344,10 @@
                                 <property name="margin_end">24</property>
                                 <property name="margin_top">14</property>
                                 <property name="margin_bottom">21</property>
-                                <property name="halign">fill</property>
+                                <property name="halign">center</property>
                                 <property name="visible">True</property>
-                                <property name="row_spacing">14</property>
-                                <property name="column_spacing">14</property>
+                                <property name="row_spacing">20</property>
+                                <property name="column_spacing">20</property>
                                 <property name="homogeneous">True</property>
                                 <property name="hexpand">True</property>
                                 <property name="vexpand">True</property>
