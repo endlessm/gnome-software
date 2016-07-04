@@ -293,6 +293,7 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	const char *popular_bg = NULL;
 	g_autofree char *tile_cache_hash = NULL;
 	g_autofree char *cache_filename = NULL;
+	g_autofree char *writable_cache_filename = NULL;
 	g_autofree char *url_basename = NULL;
 	g_autofree char *cache_identifier = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
@@ -329,8 +330,13 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 		return;
 	}
 
+	writable_cache_filename = gs_utils_get_cache_filename ("eos-popular-app-thumbnails",
+	                                                       cache_identifier,
+	                                                       GS_UTILS_CACHE_FLAG_WRITEABLE,
+	                                                       NULL);
+
 	soup_uri = soup_uri_new (popular_bg);
-	g_debug("Downloading thumbnail %s to %s", popular_bg, cache_filename);
+	g_debug("Downloading thumbnail %s to %s", popular_bg, writable_cache_filename);
 	if (!soup_uri || !SOUP_URI_VALID_FOR_HTTP (soup_uri)) {
 		g_debug ("Couldn't download %s, URL is not valid", popular_bg);
 		return;
@@ -347,7 +353,7 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	request_data = g_new0 (PopularBackgroundImageTileRequestData, 1);
 	request_data->app = app;
 	request_data->plugin = plugin;
-	request_data->cache_filename = g_steal_pointer (&cache_filename);
+	request_data->cache_filename = g_steal_pointer (&writable_cache_filename);
 
 	soup_session_queue_message (priv->soup_session,
 	                            g_steal_pointer (&message),
