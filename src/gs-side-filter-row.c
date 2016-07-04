@@ -62,7 +62,7 @@ gs_side_filter_row_set_category (GsSideFilterRow *row, GsCategory *cat)
 	gtk_label_set_label (GTK_LABEL (row->label), gs_category_get_name (cat));
 	gtk_image_set_from_icon_name (GTK_IMAGE (row->image),
 				      gs_category_get_icon (cat),
-				      GTK_ICON_SIZE_MENU);
+				      GTK_ICON_SIZE_LARGE_TOOLBAR);
 
 	/* set custom CSS for the colored border */
 	key_colors = gs_category_get_key_colors (cat);
