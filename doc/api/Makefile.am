@@ -79,6 +79,7 @@ GTKDOC_LIBS=							\
 	$(GTK_LIBS)						\
 	$(top_builddir)/src/gnome_software-gs-app-list.o	\
 	$(top_builddir)/src/gnome_software-gs-app.o		\
+	$(top_builddir)/src/gnome_software-gs-auth.o		\
 	$(top_builddir)/src/gnome_software-gs-category.o	\
 	$(top_builddir)/src/gnome_software-gs-os-release.o	\
 	$(top_builddir)/src/gnome_software-gs-plugin.o		\
