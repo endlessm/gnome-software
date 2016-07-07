@@ -1274,6 +1274,9 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_details_permissions_value, FALSE);
 	}
 
+	/* hide the kudos details for EOS */
+	gtk_widget_set_visible (self->grid_details_kudo, FALSE);
+
 	/* are we trying to replace something in the baseos */
 	gtk_widget_set_visible (self->infobar_details_package_baseos,
 				gs_app_has_quirk (self->app, GS_APP_QUIRK_COMPULSORY) &&
