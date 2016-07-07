@@ -99,6 +99,12 @@ filter_category (GsApp *app, gpointer user_data)
 	return !gs_app_has_category (app, category);
 }
 
+static gint
+sort_by_alphabetical_order (GsApp *a, GsApp *b, gpointer user_data)
+{
+	return g_strcmp0 (gs_app_get_name (a), gs_app_get_name (b));
+}
+
 static void
 gs_overview_page_decrement_action_cnt (GsOverviewPage *self)
 {
@@ -133,6 +139,7 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 	guint i;
 	GsApp *app;
 	GtkWidget *tile;
+	gboolean sort_alphabetically = FALSE;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 
@@ -156,6 +163,12 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 	/* Don't show apps from the category that's currently featured as the category of the day */
 	gs_app_list_filter (list, filter_category, priv->category_of_day);
 	gs_app_list_randomize (list);
+
+	/* On some images, we want these apps to be sorted alphabetically. */
+	sort_alphabetically = g_settings_get_boolean (priv->settings,
+						      "sort-overview-alphabetically");
+	if (sort_alphabetically)
+		gs_app_list_sort (list, sort_by_alphabetical_order, NULL);
 
 	gs_container_remove_all (GTK_CONTAINER (priv->box_popular));
 
