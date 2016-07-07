@@ -943,6 +943,9 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 		break;
 	}
 
+	/* hide the kudos details for EOS */
+	gtk_widget_set_visible (self->grid_details_kudo, FALSE);
+
 	/* are we trying to replace something in the baseos */
 	gtk_widget_set_visible (self->infobar_details_package_baseos,
 				gs_app_has_quirk (self->app, AS_APP_QUIRK_COMPULSORY) &&
