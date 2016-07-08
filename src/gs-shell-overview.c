@@ -35,7 +35,7 @@
 #include "gs-hiding-box.h"
 #include "gs-common.h"
 
-#define N_TILES 12
+#define N_TILES 35
 
 typedef struct
 {
