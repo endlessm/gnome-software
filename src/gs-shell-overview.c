@@ -184,8 +184,6 @@ gs_shell_overview_get_popular_cb (GObject *source_object,
 			g_warning ("failed to get popular apps: %s", error->message);
 		goto out;
 	}
-	/* Don't show apps from the category that's currently featured as the category of the day */
-	gs_app_list_filter (list, filter_category, priv->category_of_day);
 	gs_app_list_randomize (list);
 
 	/* Sort the randomized list based on the presence of the popular
@@ -581,7 +579,9 @@ gs_shell_overview_load (GsShellOverview *self)
 		priv->action_cnt++;
 	}
 
-	if (!priv->loading_popular_rotating) {
+	/* disable the popular rotating for now since we only want the general
+	 * popular apps */
+	if (FALSE && !priv->loading_popular_rotating) {
 		const guint MAX_CATS = 2;
 		g_autoptr(GPtrArray) cats_random = NULL;
 		cats_random = gs_shell_overview_get_random_categories ();
