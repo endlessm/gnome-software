@@ -470,8 +470,15 @@ flowboxchild {
 	border-radius: 0;
 	color: @theme_selected_fg_color;
 	text-shadow: none;
+	opacity: 0;
+	transition-duration: 300ms;
 }
 
 .image-tile .app-installed-indicator:backdrop label {
 	color: @theme_selected_fg_color;
+}
+
+.image-tile:hover .app-installed-indicator {
+	opacity: 1;
+	transition-duration: 500ms;
 }
