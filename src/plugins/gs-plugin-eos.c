@@ -180,13 +180,18 @@ static gboolean
 gs_plugin_eos_blacklist_if_needed (GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
+	const char *id = gs_app_get_id (app);
 
 	blacklist_app = gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
 			gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY);
 
-	if (!blacklist_app &&
-	    g_str_has_prefix (gs_app_get_id (app), "eos-link-")) {
-		blacklist_app = TRUE;
+	if (!blacklist_app) {
+		if (g_str_has_prefix (id, "eos-link-")) {
+			blacklist_app = TRUE;
+		} else if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+			   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
+			blacklist_app = TRUE;
+		}
 	}
 
 	if (blacklist_app)
