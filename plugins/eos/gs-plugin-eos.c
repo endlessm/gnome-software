@@ -185,6 +185,7 @@ static gboolean
 gs_plugin_eos_blacklist_if_needed (GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
+	const char *id = gs_app_get_id (app);
 
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
 	    gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY)) {
@@ -193,6 +194,11 @@ gs_plugin_eos_blacklist_if_needed (GsApp *app)
 		blacklist_app = TRUE;
 	} else if (g_str_has_prefix (gs_app_get_id (app), "eos-link-")) {
 		g_debug ("Blacklisting '%s': app is an eos-link",
+			 gs_app_get_unique_id (app));
+		blacklist_app = TRUE;
+	} else if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
+		g_debug ("Blacklisting '%s': app is GNOME Software itself",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	}
