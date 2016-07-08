@@ -33,7 +33,7 @@
 #include "gs-category-tile.h"
 #include "gs-common.h"
 
-#define N_TILES 12
+#define N_TILES 35
 
 typedef struct
 {
@@ -118,6 +118,23 @@ filter_category (GsApp *app, gpointer user_data)
 	return !gs_app_has_category (app, category);
 }
 
+static gint
+sort_with_popular_background (GsApp *a, GsApp *b, gpointer user_data)
+{
+	const char *image_a = gs_app_get_metadata_item (a,
+					"GnomeSoftware::popular-background");
+	const char *image_b = gs_app_get_metadata_item (b,
+					"GnomeSoftware::popular-background");
+
+	if (image_a && strlen (image_a) > 0)
+		return -1;
+
+	if (image_b && strlen (image_b) > 0)
+		return 1;
+
+	return 0;
+}
+
 static void
 gs_shell_overview_get_popular_cb (GObject *source_object,
 				  GAsyncResult *res,
@@ -141,9 +158,11 @@ gs_shell_overview_get_popular_cb (GObject *source_object,
 			g_warning ("failed to get popular apps: %s", error->message);
 		goto out;
 	}
-	/* Don't show apps from the category that's currently featured as the category of the day */
-	gs_app_list_filter (list, filter_category, priv->category_of_day);
 	gs_app_list_randomize (list);
+
+	/* Sort the randomized list based on the presence of the popular
+	 * background so it gives precedence to apps that have that asset */
+	gs_app_list_sort (list, sort_with_popular_background, NULL);
 
 	gs_container_remove_all (GTK_CONTAINER (priv->box_popular));
 
@@ -491,7 +510,9 @@ gs_shell_overview_load (GsShellOverview *self)
 		priv->refresh_count++;
 	}
 
-	if (!priv->loading_popular_rotating) {
+	/* disable the popular rotating for now since we only want the general
+	 * popular apps */
+	if (FALSE && !priv->loading_popular_rotating) {
 		LoadData *load_data;
 		g_autoptr(GsCategory) category = NULL;
 		g_autoptr(GsCategory) featured_category = NULL;
