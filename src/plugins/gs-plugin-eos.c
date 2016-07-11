@@ -375,6 +375,15 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	                            request_data);
 }
 
+void
+gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
+{
+	if (gs_app_is_flatpak (app))
+		return;
+
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+}
+
 /**
  * gs_plugin_refine:
  */
@@ -525,4 +534,18 @@ gs_plugin_app_install (GsPlugin *plugin,
 	add_app_to_shell (plugin, app, cancellable, error);
 
 	return TRUE;
+}
+
+gboolean
+gs_plugin_launch (GsPlugin *plugin,
+		  GsApp *app,
+		  GCancellable *cancellable,
+		  GError **error)
+{
+	/* only process the app if it belongs to this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	return gs_plugin_app_launch (plugin, app, error);
 }
