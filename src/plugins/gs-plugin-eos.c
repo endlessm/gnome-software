@@ -225,11 +225,12 @@ gs_plugin_eos_app_is_flatpak (GsApp *app)
 }
 
 static void
-gs_plugin_eos_refine_core_app (GsApp *app)
+gs_plugin_eos_refine_core_app (GsPlugin *plugin, GsApp *app)
 {
 	/* we only allow to remove flatpak apps */
 	if (!gs_plugin_eos_app_is_flatpak (app)) {
 		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	}
 }
 
@@ -386,7 +387,7 @@ gs_plugin_refine (GsPlugin		*plugin,
 	for (i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
 
-		gs_plugin_eos_refine_core_app (app);
+		gs_plugin_eos_refine_core_app (plugin, app);
 
 		if (gs_plugin_eos_blacklist_if_needed (app))
 			continue;
@@ -508,4 +509,18 @@ gs_plugin_app_install (GsPlugin *plugin,
 	add_app_to_shell (plugin, app, cancellable, error);
 
 	return TRUE;
+}
+
+gboolean
+gs_plugin_launch (GsPlugin *plugin,
+		  GsApp *app,
+		  GCancellable *cancellable,
+		  GError **error)
+{
+	/* only process the app if it belongs to this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	return gs_plugin_app_launch (plugin, app, error);
 }
