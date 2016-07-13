@@ -177,6 +177,15 @@ get_applications_with_shortcuts (GsPlugin	*plugin,
 }
 
 static gboolean
+app_is_renamed (GsApp *app)
+{
+	/* Apps renamed by eos-desktop get the desktop attribute of
+	 * X-Endless-CreatedBy assigned to the desktop's name */
+	return g_strcmp0 (gs_app_get_metadata_item (app, "X-Endless-CreatedBy"),
+			  "eos-desktop") == 0;
+}
+
+static gboolean
 gs_plugin_eos_blacklist_if_needed (GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
@@ -190,6 +199,8 @@ gs_plugin_eos_blacklist_if_needed (GsApp *app)
 			blacklist_app = TRUE;
 		} else if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
 			   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
+			blacklist_app = TRUE;
+		} else if (app_is_renamed (app)) {
 			blacklist_app = TRUE;
 		}
 	}
