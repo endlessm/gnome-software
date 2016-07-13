@@ -230,7 +230,6 @@ gs_plugin_eos_refine_core_app (GsPlugin *plugin, GsApp *app)
 	/* we only allow to remove flatpak apps */
 	if (!gs_plugin_eos_app_is_flatpak (app)) {
 		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
-		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	}
 }
 
@@ -365,6 +364,15 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	                            g_steal_pointer (&message),
 	                            gs_plugin_eos_tile_image_downloaded_cb,
 	                            request_data);
+}
+
+void
+gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
+{
+	if (gs_plugin_eos_app_is_flatpak (app))
+		return;
+
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 }
 
 /**
