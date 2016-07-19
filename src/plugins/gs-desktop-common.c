@@ -102,6 +102,17 @@ static const GsDesktopMap map_education[] = {
 	{ NULL }
 };
 
+/* Utility */
+static const GsDesktopMap map_family[] = {
+	{ "all",		NC_("Menu of Family", "All"),
+					{ "Family",
+					  NULL } },
+	{ "featured",		NC_("Menu of Family", "Featured"),
+					{ "Family::Featured",
+					  NULL} },
+	{ NULL }
+};
+
 /* Games */
 static const GsDesktopMap map_games[] = {
 	{ "all",		NC_("Menu of Games", "All"),
@@ -279,6 +290,9 @@ static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Learning */
 	{ "education",		map_education,		N_("Learning"),
 				"accessories-dictionary-symbolic", "#e34535", 30 },
+	/* TRANSLATORS: this is the menu spec main category for Family */
+	{ "family",		map_family,		N_("Family"),
+				"gs-category-family-symbolic", "#ec9f45", 50 },
 	/* TRANSLATORS: this is the menu spec main category for Game */
 	{ "games",		map_games,		N_("Games"),
 				"applications-games-symbolic", "#5cae4b", 70 },
