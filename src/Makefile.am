@@ -315,11 +315,11 @@ gs-shell-search-provider-generated.h gs-shell-search-provider-generated.c: Makef
 		--generate-c-code gs-shell-search-provider-generated \
 		$(srcdir)/shell-search-provider-dbus-interfaces.xml
 
-gs-resources.c: gnome-software.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/gnome-software.gresource.xml)
-	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --target=$@ --generate-source --c-name gs $(srcdir)/gnome-software.gresource.xml
+gs-resources.c: gnome-software.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --sourcedir="$(top_srcdir)/data/icons/categories" --generate-dependencies $(srcdir)/gnome-software.gresource.xml)
+	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --sourcedir="$(top_srcdir)/data/icons/categories" --target=$@ --generate-source --c-name gs $(srcdir)/gnome-software.gresource.xml
 
-gs-resources.h: gnome-software.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --generate-dependencies $(srcdir)/gnome-software.gresource.xml)
-	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --target=$@ --generate-header --c-name gs $(srcdir)/gnome-software.gresource.xml
+gs-resources.h: gnome-software.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --sourcedir="$(top_srcdir)/data/icons/categories" --generate-dependencies $(srcdir)/gnome-software.gresource.xml)
+	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --sourcedir="$(top_srcdir)/data/icons/categories" --target=$@ --generate-header --c-name gs $(srcdir)/gnome-software.gresource.xml
 
 BUILT_SOURCES =						\
 	$(packagekit_built_sources)			\
