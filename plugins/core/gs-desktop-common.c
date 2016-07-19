@@ -279,22 +279,22 @@ static const GsDesktopMap map_reference[] = {
 static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Learning */
 	{ "education-science",		map_education_science,	N_("Learning"),
-				"system-help-symbolic", "#29cc5d", 30 },
+				"accessories-dictionary-symbolic", "#e34535", 30 },
 	/* TRANSLATORS: this is the menu spec main category for Game */
 	{ "games",		map_games,		N_("Games"),
-				"applications-games-symbolic", "#c4a000", 70 },
+				"applications-games-symbolic", "#5cae4b", 70 },
 	/* TRANSLATORS: this is the menu spec main category for Multimedia */
 	{ "multimedia",		map_multimedia,		N_("Multimedia"),
-				"applications-graphics-symbolic", "#75507b", 60 },
+				"applications-multimedia-symbolic", "#07afa7", 60 },
 	/* TRANSLATORS: this is the menu spec main category for Work */
 	{ "productivity",	map_productivity,	N_("Work"),
 				"x-office-document-symbolic", "#0098d2", 80 },
 	/* TRANSLATORS: this is the menu spec main category for Reference */
 	{ "reference",		map_reference,		N_("Reference & News"),
-				"view-dual-symbolic", "#ac5500", 0 },
+				"gs-category-newspaper-symbolic", "#ffcd34", 0 },
 	/* TRANSLATORS: this is the menu spec main category for Utilities */
 	{ "utilities",		map_utilities,		N_("Utilities"),
-				"applications-utilities-symbolic", "#d3d7c7", 10 },
+				"applications-utilities-symbolic", "#3841c3", 10 },
 	{ NULL }
 };
 
