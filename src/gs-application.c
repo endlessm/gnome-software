@@ -248,6 +248,10 @@ gs_application_initialize_ui (GsApplication *app)
 
 	initialized = TRUE;
 
+	/* add custom icons */
+	gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
+					  "/org/gnome/Software/icons");
+
 	/* get CSS */
 	app->provider = gtk_css_provider_new ();
 	gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
