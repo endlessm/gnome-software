@@ -320,25 +320,25 @@ static const GsDesktopData msdata[] = {
 				"applications-engineering-symbolic", "#297bcc" },
 	/* TRANSLATORS: this is the menu spec main category for Learning */
 	{ "education",		map_education,		N_("Learning"),
-				"system-help-symbolic", "#29cc5d" },
+				"accessories-dictionary-symbolic", "#e34535" },
 	/* TRANSLATORS: this is the menu spec main category for Game */
 	{ "games",		map_games,		N_("Games"),
-				"applications-games-symbolic", "#c4a000", TRUE },
+				"applications-games-symbolic", "#5cae4b", TRUE },
 	/* TRANSLATORS: this is the menu spec main category for Multimedia */
 	{ "multimedia",		map_multimedia,		N_("Multimedia"),
-				"applications-graphics-symbolic", "#75507b", TRUE },
+				"applications-multimedia-symbolic", "#07afa7", TRUE },
 	/* TRANSLATORS: this is the menu spec main category for Work */
 	{ "productivity",	map_productivity,	N_("Work"),
-				"text-editor-symbolic", "#cc0000", TRUE },
+				"x-office-document-symbolic", "#0098d2", TRUE },
 	/* TRANSLATORS: this is the menu spec main category for Add-ons */
 	{ "addons",		map_addons,		N_("Add-ons"),
 				"application-x-addon-symbolic", "#4e9a06", TRUE },
 	/* TRANSLATORS: this is the menu spec main category for Reference */
 	{ "reference",		map_reference,		N_("Reference & News"),
-				"view-dual-symbolic", "#ac5500" },
+				"gs-category-newspaper-symbolic", "#ffcd34" },
 	/* TRANSLATORS: this is the menu spec main category for Utilities */
 	{ "utilities",		map_utilities,		N_("Utilities"),
-				"applications-utilities-symbolic", "#2944cc" },
+				"preferences-system-symbolic", "#3841c3" },
 	{ NULL }
 };
 
