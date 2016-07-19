@@ -480,6 +480,7 @@ po/Makefile.in
 data/appdata/Makefile
 data/Makefile
 data/icons/Makefile
+data/icons/categories/Makefile
 data/icons/hicolor/Makefile
 data/icons/hicolor/16x16/Makefile
 data/icons/hicolor/22x22/Makefile
