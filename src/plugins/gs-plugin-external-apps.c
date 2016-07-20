@@ -303,6 +303,23 @@ get_type_from_string (const char *type)
 }
 
 static gboolean
+add_runtime_tar_asset (const gchar *build_dir,
+		       const gchar *repo_dir,
+		       const char *asset_path,
+		       GError **error)
+{
+	/* flatpak build --runtime needs files in /usr, when coming from a
+	   debian package we can assume some files in /usr, when coming from
+	   a tgz, it's harder, so force that here. */
+	g_autofree gchar *extract_path = g_build_filename (repo_dir, "usr", NULL);
+	const char *argv[] = {"tar", "xvf",  asset_path, "-C", extract_path, NULL};
+
+	g_mkdir_with_parents (extract_path, 0700);
+
+	return run_command (build_dir, argv, error);
+}
+
+static gboolean
 add_runtime_asset (GsPlugin *plugin,
 		   GsApp *app,
 		   const gchar *build_dir,
@@ -333,6 +350,12 @@ add_runtime_asset (GsPlugin *plugin,
 	if ((type == GS_PLUGIN_EXTERNAL_TYPE_DEB) ||
 	    g_content_type_is_a (content_type, "application/x-deb")) {
 		return add_runtime_deb_asset (build_dir, repo_dir,
+					      download_name, error);
+	}
+
+	if ((type == GS_PLUGIN_EXTERNAL_TYPE_TAR) ||
+	    g_content_type_is_a (content_type, "application/x-tar")) {
+		return add_runtime_tar_asset (build_dir, repo_dir,
 					      download_name, error);
 	}
 
