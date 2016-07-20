@@ -64,24 +64,6 @@ static const GsDesktopMap map_multimedia[] = {
 	{ NULL }
 };
 
-/* Development */
-static const GsDesktopMap map_developertools[] = {
-	{ "all",		NC_("Menu of Development", "All"),
-					{ "Development",
-					  NULL } },
-	{ "featured",		NC_("Menu of Development", "Featured"),
-					{ "Development::Featured",
-					  NULL} },
-	{ "debuggers",		NC_("Menu of Development", "Debuggers"),
-					{ "Development:Debugger",
-					  NULL} },
-	{ "ide",		NC_("Menu of Development", "IDEs"),
-					{ "Development::IDE",
-					  "Development::GUIDesigner",
-					  NULL} },
-	{ NULL }
-};
-
 /* Education */
 static const GsDesktopMap map_education[] = {
 	{ "all",		NC_("Menu of Education", "All"),
@@ -256,15 +238,17 @@ static const GsDesktopMap map_science[] = {
 	{ NULL }
 };
 
-/* Utility */
+/* Utility: Utility + Network + Development */
 static const GsDesktopMap map_utilities[] = {
 	{ "all",		NC_("Menu of Utility", "All"),
 					{ "Utility",
 					  "Network",
+					  "Development",
 					  NULL } },
 	{ "featured",		NC_("Menu of Utility", "Featured"),
 					{ "Utility::Featured",
 					  "Network::Featured",
+					  "Development::Featured",
 					  NULL} },
 	{ "chat",		NC_("Menu of Communication", "Chat"),
 					{ "Network::Chat",
@@ -272,6 +256,13 @@ static const GsDesktopMap map_utilities[] = {
 					  "Network::Telephony",
 					  "Network::VideoConference",
 					  "Network::Email",
+					  NULL} },
+	{ "debuggers",		NC_("Menu of Development", "Debuggers"),
+					{ "Development:Debugger",
+					  NULL} },
+	{ "ide",		NC_("Menu of Development", "IDEs"),
+					{ "Development::IDE",
+					  "Development::GUIDesigner",
 					  NULL} },
 	{ "text-editors",	NC_("Menu of Utility", "Text Editors"),
 					{ "Utility::TextEditor",
@@ -326,9 +317,6 @@ static const GsDesktopMap map_reference[] = {
 
 /* main categories */
 static const GsDesktopData msdata[] = {
-	/* TRANSLATORS: this is the menu spec main category for Development */
-	{ "developer-tools",	map_developertools,	N_("Developer Tools"),
-				"applications-engineering-symbolic", "#297bcc" },
 	/* TRANSLATORS: this is the menu spec main category for Learning */
 	{ "education",		map_education,		N_("Learning"),
 				"accessories-dictionary-symbolic", "#e34535" },
