@@ -243,6 +243,7 @@ gs_shell_change_mode (GsShell *shell,
 	GsPage *new_page;
 	GtkWidget *widget;
 	GtkStyleContext *context;
+	gsize i = 0;
 
 	if (priv->ignore_primary_buttons)
 		return;
@@ -349,8 +350,18 @@ gs_shell_change_mode (GsShell *shell,
 	gs_shell_set_header_end_widget (shell, widget);
 
 	/* destroy any existing modals */
-	if (priv->modal_dialogs != NULL)
+	if (priv->modal_dialogs != NULL) {
+		/* block signal emission of 'unmapped' since that will
+		 * call g_ptr_array_remove_index. The unmapped signal may
+		 * be emitted whilst running unref handlers for
+		 * g_ptr_array_set_size */
+		for (i = 0; i < priv->modal_dialogs->len; ++i) {
+			g_signal_handlers_disconnect_by_func (g_ptr_array_index (priv->modal_dialogs, i),
+			                                      modal_dialog_unmapped_cb,
+			                                      shell);
+		}
 		g_ptr_array_set_size (priv->modal_dialogs, 0);
+	}
 
 	/* update the side filter accordingly */
 	side_filter_select_by_mode (shell, priv->mode);
