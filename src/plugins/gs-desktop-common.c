@@ -290,6 +290,9 @@ static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Family */
 	{ "family",		map_family,		N_("Family"),
 				"gs-category-family-symbolic", "#ec9f45", TRUE },
+	/* TRANSLATORS: this is the menu spec main category for Reference */
+	{ "reference",		map_reference,		N_("Reference & News"),
+				"gs-category-newspaper-symbolic", "#ffcd34" },
 	/* TRANSLATORS: this is the menu spec main category for Game */
 	{ "games",		map_games,		N_("Games"),
 				"applications-games-symbolic", "#5cae4b", TRUE },
@@ -299,9 +302,6 @@ static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Work */
 	{ "productivity",	map_productivity,	N_("Work"),
 				"x-office-document-symbolic", "#0098d2", TRUE },
-	/* TRANSLATORS: this is the menu spec main category for Reference */
-	{ "reference",		map_reference,		N_("Reference & News"),
-				"gs-category-newspaper-symbolic", "#ffcd34" },
 	/* TRANSLATORS: this is the menu spec main category for Utilities */
 	{ "utilities",		map_utilities,		N_("Utilities"),
 				"preferences-system-symbolic", "#3841c3" },
