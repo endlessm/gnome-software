@@ -210,34 +210,6 @@ static const GsDesktopMap map_addons[] = {
 	{ NULL }
 };
 
-/* Science */
-static const GsDesktopMap map_science[] = {
-	{ "all",		NC_("Menu of Science", "All"),
-					{ "Science",
-					  NULL } },
-	{ "featured",		NC_("Menu of Science", "Featured"),
-					{ "Science::Featured",
-					  NULL} },
-	{ "artificial-intelligence", NC_("Menu of Science", "Artificial Intelligence"),
-					{ "Science::ArtificialIntelligence",
-					  NULL} },
-	{ "astronomy",		NC_("Menu of Science", "Astronomy"),
-					{ "Science::Astronomy",
-					  NULL} },
-	{ "chemistry",		NC_("Menu of Science", "Chemistry"),
-					{ "Science::Chemistry",
-					  NULL} },
-	{ "math",		NC_("Menu of Science", "Math"),
-					{ "Science::Math",
-					  "Science::Physics",
-					  "Science::NumericalAnalysis",
-					  NULL} },
-	{ "robotics",		NC_("Menu of Science", "Robotics"),
-					{ "Science::Robotics",
-					  NULL} },
-	{ NULL }
-};
-
 /* Utility: Utility + Network + Development */
 static const GsDesktopMap map_utilities[] = {
 	{ "all",		NC_("Menu of Utility", "All"),
