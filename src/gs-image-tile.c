@@ -106,11 +106,11 @@ app_state_changed (GsApp *app, GParamSpec *pspec, GsImageTile *tile)
 }
 
 static void
-app_image_tile_css_added (GsApp *app, const char *metadata, GsAppTile *tile)
+app_image_tile_css_added (GsApp *app, const char *metadata, GsImageTile *tile)
 {
 	if (g_strcmp0 (metadata, "GnomeSoftware::ImageTile-css") == 0) {
-		gs_utils_widget_set_css_app (app, GTK_WIDGET (tile),
-		                             "GnomeSoftware::ImageTile-css");
+		gs_utils_widget_set_css_app (app, tile->image_box,
+					     "GnomeSoftware::ImageTile-css");
 	} else {
 		g_assert_not_reached ();
 	}
