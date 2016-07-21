@@ -187,29 +187,6 @@ static const GsDesktopMap map_productivity[] = {
 	{ NULL }
 };
 
-/* Addons */
-static const GsDesktopMap map_addons[] = {
-	{ "fonts",		NC_("Menu of Addons", "Fonts"),
-					{ "Addons::Fonts",
-					  NULL} },
-	{ "codecs",		NC_("Menu of Addons", "Codecs"),
-					{ "Addons::Codecs",
-					  NULL} },
-	{ "input-sources",	NC_("Menu of Addons", "Input Sources"),
-					{ "Addons::InputSources",
-					  NULL} },
-	{ "language-packs",	NC_("Menu of Addons", "Language Packs"),
-					{ "Addons::LanguagePacks",
-					  NULL} },
-	{ "shell-extensions",	NC_("Menu of Addons", "Shell Extensions"),
-					{ "Addons::ShellExtensions",
-					  NULL} },
-	{ "localization",	NC_("Menu of Addons", "Localization"),
-					{ "Addons::Localization",
-					  NULL} },
-	{ NULL }
-};
-
 /* Utility: Utility + Network + Development */
 static const GsDesktopMap map_utilities[] = {
 	{ "all",		NC_("Menu of Utility", "All"),
@@ -229,12 +206,30 @@ static const GsDesktopMap map_utilities[] = {
 					  "Network::VideoConference",
 					  "Network::Email",
 					  NULL} },
+	{ "codecs",		NC_("Menu of Addons", "Codecs"),
+					{ "Addons::Codecs",
+					  NULL} },
 	{ "debuggers",		NC_("Menu of Development", "Debuggers"),
 					{ "Development:Debugger",
+					  NULL} },
+	{ "fonts",		NC_("Menu of Addons", "Fonts"),
+					{ "Addons::Fonts",
 					  NULL} },
 	{ "ide",		NC_("Menu of Development", "IDEs"),
 					{ "Development::IDE",
 					  "Development::GUIDesigner",
+					  NULL} },
+	{ "input-sources",	NC_("Menu of Addons", "Input Sources"),
+					{ "Addons::InputSources",
+					  NULL} },
+	{ "language-packs",	NC_("Menu of Addons", "Language Packs"),
+					{ "Addons::LanguagePacks",
+					  NULL} },
+	{ "localization",	NC_("Menu of Addons", "Localization"),
+					{ "Addons::Localization",
+					  NULL} },
+	{ "shell-extensions",	NC_("Menu of Addons", "Shell Extensions"),
+					{ "Addons::ShellExtensions",
 					  NULL} },
 	{ "text-editors",	NC_("Menu of Utility", "Text Editors"),
 					{ "Utility::TextEditor",
@@ -304,9 +299,6 @@ static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Work */
 	{ "productivity",	map_productivity,	N_("Work"),
 				"x-office-document-symbolic", "#0098d2", TRUE },
-	/* TRANSLATORS: this is the menu spec main category for Add-ons */
-	{ "addons",		map_addons,		N_("Add-ons"),
-				"application-x-addon-symbolic", "#4e9a06", TRUE },
 	/* TRANSLATORS: this is the menu spec main category for Reference */
 	{ "reference",		map_reference,		N_("Reference & News"),
 				"gs-category-newspaper-symbolic", "#ffcd34" },
