@@ -269,18 +269,46 @@ add_runtime_deb_asset (const gchar *build_dir,
 		       GError **error)
 {
 	const char *argv[] = {"ar", "x",  asset_path, NULL};
-	const char *argv2[] = {"tar", "xzf",  "data.tar.gz", "-C", repo_dir,
-			       NULL};
+	const char **argv2 = NULL;
+	g_autofree char *data_tar_path = NULL;
+	gboolean ret = FALSE;
 
 	if (!run_command (build_dir, argv, error)) {
 		return FALSE;
 	}
 
-	if (!run_command (build_dir, argv2, error)) {
-		return FALSE;
+	data_tar_path = g_build_filename (build_dir, "data.tar.gz", NULL);
+	if (!g_file_test (data_tar_path, G_FILE_TEST_EXISTS)) {
+		g_free (data_tar_path);
+		data_tar_path = g_build_filename (build_dir, "data.tar.xz",
+						  NULL);
+
+		if (!g_file_test (data_tar_path, G_FILE_TEST_EXISTS)) {
+			g_set_error (error,
+				     GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_FAILED,
+				     "Could not find data.tar.gz or "
+				     "data.tar.xz after decompressing Debian "
+				     "package '%s' in '%s'", asset_path,
+				     build_dir);
+
+			return FALSE;
+		}
 	}
 
-	return TRUE;
+	/* Build array for command: tar xf TAR_FILE -C REPO_DIR */
+	argv2 = (const char **) g_new0 (char *, 6);
+	argv2[0] = "tar";
+	argv2[1] = "xf";
+	argv2[2] = data_tar_path;
+	argv2[3] = "-C";
+	argv2[4] = repo_dir;
+
+	ret = run_command (build_dir, argv2, error);
+
+	g_free (argv2);
+
+	return ret;
 }
 
 static gboolean
