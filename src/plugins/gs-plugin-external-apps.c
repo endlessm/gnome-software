@@ -35,13 +35,21 @@
 #define JSON_RUNTIME_KEY "runtime"
 #define JSON_RUNTIME_NAME_KEY "name"
 #define JSON_RUNTIME_URL_KEY "url"
+#define JSON_RUNTIME_TYPE_KEY "type"
 
 #define METADATA_URL "GnomeSoftware::external-app::url"
+#define METADATA_TYPE "GnomeSoftware::external-app::type"
 #define METADATA_HEADLESS_APP "GnomeSoftware::external-app::headless-app"
 #define METADATA_BUILD_DIR "GnomeSoftware::external-app::build-dir"
 #define METADATA_EXTERNAL_ASSETS "flatpak-3rdparty::external-assets"
 
 #define TMP_ASSSETS_PREFIX "gs-external-apps"
+
+typedef enum {
+	GS_PLUGIN_EXTERNAL_TYPE_UNKNOWN = 0,
+	GS_PLUGIN_EXTERNAL_TYPE_DEB,
+	GS_PLUGIN_EXTERNAL_TYPE_TAR
+} GsPluginExternalType;
 
 struct GsPluginData {
 	GsFlatpak	*flatpak;
@@ -283,12 +291,24 @@ add_runtime_deb_asset (const gchar *build_dir,
 	return TRUE;
 }
 
+static inline GsPluginExternalType
+get_type_from_string (const char *type)
+{
+	if (g_strcmp0 (type, "deb") == 0)
+		return GS_PLUGIN_EXTERNAL_TYPE_DEB;
+	else if (g_strcmp0 (type, "tar") == 0)
+		return  GS_PLUGIN_EXTERNAL_TYPE_TAR;
+
+	return GS_PLUGIN_EXTERNAL_TYPE_UNKNOWN;
+}
+
 static gboolean
 add_runtime_asset (GsPlugin *plugin,
 		   GsApp *app,
 		   const gchar *build_dir,
 		   const gchar *repo_dir,
 		   const char *runtime,
+		   const char *archive_type,
 		   const char *asset,
 		   GError **error)
 {
@@ -296,6 +316,7 @@ add_runtime_asset (GsPlugin *plugin,
 	g_autoptr(GFile) download_file = NULL;
 	g_autofree char *download_name = download_asset (plugin, app, runtime,
 							 asset, error);
+	GsPluginExternalType type = get_type_from_string (archive_type);
 
 	if (!download_name)
 		return FALSE;
@@ -309,7 +330,8 @@ add_runtime_asset (GsPlugin *plugin,
 
 	g_debug ("Adding runtime asset with type '%s'", content_type);
 
-	if (g_content_type_is_a (content_type, "application/x-deb")) {
+	if ((type == GS_PLUGIN_EXTERNAL_TYPE_DEB) ||
+	    g_content_type_is_a (content_type, "application/x-deb")) {
 		return add_runtime_deb_asset (build_dir, repo_dir,
 					      download_name, error);
 	}
@@ -368,6 +390,8 @@ build_runtime (GsPlugin *plugin,
 	const char *runtime_name = gs_app_get_id_no_prefix (runtime);
 	const char *runtime_url = gs_app_get_metadata_item (runtime,
 							    METADATA_URL);
+	const char *runtime_type = gs_app_get_metadata_item (runtime,
+							     METADATA_TYPE);
 
 	tmp_dir = g_build_filename (priv->runtimes_build_dir, runtime_name,
 				    NULL);
@@ -398,7 +422,7 @@ build_runtime (GsPlugin *plugin,
 	gs_app_set_progress (app, 15);
 
 	if (!add_runtime_asset (plugin, app, tmp_dir, build_dir, runtime_name,
-				runtime_url, error)) {
+				runtime_type, runtime_url, error)) {
 		g_debug ("Failed to add the asset '%s'", runtime_name);
 		return FALSE;
 	}
@@ -442,6 +466,7 @@ build_runtime (GsPlugin *plugin,
 static char *
 extract_runtime_info_from_json_data (const char *data,
 				     char **url,
+				     char **type,
 				     GError **error)
 {
 	gboolean ret;
@@ -450,6 +475,7 @@ extract_runtime_info_from_json_data (const char *data,
 	g_autoptr(GList) members = NULL;
 	const char *runtime_name = NULL;
 	const char *json_url = NULL;
+	const char *type_str = NULL;
 	guint spec = 0;
 
 	parser = json_parser_new ();
@@ -509,6 +535,10 @@ extract_runtime_info_from_json_data (const char *data,
 		return NULL;
 	}
 
+	/* optional elements */
+	type_str = json_object_get_string_member (runtime,
+						  JSON_RUNTIME_TYPE_KEY);
+	*type = g_strdup (type_str);
 	*url = g_strdup (json_url);
 
 	return g_strdup (runtime_name);
@@ -523,6 +553,7 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	g_autofree char *id = NULL;
 	g_autofree char *full_id = NULL;
 	g_autofree char *url = NULL;
+	g_autofree char *type = NULL;
 	g_autofree char *json_data = NULL;
 	g_autoptr (GError) error = NULL;
 	const char *metadata;
@@ -534,7 +565,7 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 		return NULL;
 
 	json_data = g_uri_unescape_string (metadata, NULL);
-	id = extract_runtime_info_from_json_data (json_data, &url, &error);
+	id = extract_runtime_info_from_json_data (json_data, &url, &type, &error);
 
 	if (!id) {
 		g_debug ("Error getting external runtime from "
@@ -561,6 +592,7 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	gs_app_set_metadata (runtime, METADATA_HEADLESS_APP,
 			     gs_app_get_id (headless_app));
 	gs_app_set_metadata (runtime, METADATA_URL, url);
+	gs_app_set_metadata (runtime, METADATA_TYPE, type);
 	gs_app_set_metadata (runtime, "flatpak::kind", "runtime");
 	gs_app_set_kind (runtime, AS_APP_KIND_RUNTIME);
 	gs_app_set_flatpak_name (runtime, id);
