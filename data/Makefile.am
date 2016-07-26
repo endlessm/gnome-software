@@ -40,8 +40,7 @@ install-sample-data:
 	cd -
 
 EXTRA_DIST =						\
-	$(gsettings_SCHEMAS)				\
-	eam-service-interface.xml
+	$(gsettings_SCHEMAS)
 
 MAINTAINERCLEANFILES =					\
 	*~						\

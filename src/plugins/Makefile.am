@@ -84,10 +84,6 @@ if HAVE_OSTREE
 plugin_LTLIBRARIES += libgs_plugin_ostree.la
 endif
 
-#todo: ADD if HAVE_EOS_APP_MANAGER
-plugin_LTLIBRARIES += libgs_plugin_eos_legacy_bundles.la
-#endif
-
 if HAVE_LIMBA
 plugin_LTLIBRARIES += libgs_plugin_limba.la
 endif
@@ -262,14 +258,6 @@ libgs_plugin_desktop_menu_path_la_LIBADD = $(GS_PLUGIN_LIBS)
 libgs_plugin_desktop_menu_path_la_LDFLAGS = -module -avoid-version
 libgs_plugin_desktop_menu_path_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
 
-if HAVE_EAM
-libgs_plugin_eos_legacy_bundles_la_SOURCES = gs-plugin-eos-legacy-bundles.c
-nodist_libgs_plugin_eos_legacy_bundles_la_SOURCES = eos-app-manager-service.c eos-app-manager-service.h
-libgs_plugin_eos_legacy_bundles_la_LIBADD = $(GS_PLUGIN_LIBS)
-libgs_plugin_eos_legacy_bundles_la_LDFLAGS = -module -avoid-version
-libgs_plugin_eos_legacy_bundles_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
-endif
-
 libgs_plugin_eos_la_SOURCES = gs-plugin-eos.c
 libgs_plugin_eos_la_LIBADD = $(GS_PLUGIN_LIBS)
 libgs_plugin_eos_la_LDFLAGS = -module -avoid-version
@@ -394,22 +382,6 @@ libgs_plugin_ubuntuone_la_LIBADD =			\
 	$(JSON_GLIB_LIBS)
 libgs_plugin_ubuntuone_la_LDFLAGS = -module -avoid-version
 libgs_plugin_ubuntuone_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
-
-if HAVE_EAM
-eos-app-manager-service.h: Makefile $(top_srcdir)/data/eam-service-interface.xml
-	$(AM_V_GEN) $(MKDIR_P) lib && \
-	$(GDBUS_CODEGEN) \
-		--interface-prefix com.endlessm. \
-		--generate-c-code eos-app-manager-service \
-		--c-generate-object-manager \
-		--c-namespace Eos \
-		$(top_srcdir)/data/eam-service-interface.xml
-eos-app-manager-service.c: eos-app-manager-service.h
-    @: # generated as a side-effect
-
-CLEANFILES = eos-app-manager-service.c eos-app-manager-service.h
-BUILT_SOURCES = eos-app-manager-service.c eos-app-manager-service.h
-endif
 
 if ENABLE_TESTS
 check_PROGRAMS =						\
