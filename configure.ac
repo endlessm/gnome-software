@@ -296,15 +296,6 @@ GS_PLUGIN_API_VERSION=11
 AC_SUBST(GS_PLUGIN_API_VERSION)
 AC_DEFINE_UNQUOTED([GS_PLUGIN_API_VERSION], "$GS_PLUGIN_API_VERSION", [the plugin API version])
 
-# check if Endless App Manager is installed
-AC_PATH_PROG(EAM, [eamd])
-AS_IF([test -z "$EAM"], [
-  have_eam=no
-], [
-  have_eam=yes
-])
-AM_CONDITIONAL(HAVE_EAM, test x$have_eam = xyes)
-
 GDBUS_CODEGEN=`$PKG_CONFIG --variable gdbus_codegen gio-2.0`
 AC_SUBST(GDBUS_CODEGEN)
 
@@ -363,7 +354,6 @@ echo "
         Firmware support:          ${have_firmware}
         Limba support:             ${have_limba}
         Flatpak support:           ${have_flatpak}
-        EOS legacy bundles support: ${have_eam}
         OSTree support:            ${have_ostree}
         RPM support:               ${have_rpm}
         Steam support:             ${enable_steam}
