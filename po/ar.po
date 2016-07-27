@@ -4,13 +4,14 @@
 # 
 # Translators:
 # safa1996alfulaij <safa1996alfulaij@gmail.com>, 2014
+# safa1996alfulaij <safa1996alfulaij@gmail.com>, 2014
 # Shuaib Zahda <shuaib.zahda@gmail.com>, 2014
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-19 03:35+0000\n"
-"PO-Revision-Date: 2016-07-15 20:03+0000\n"
+"POT-Creation-Date: 2016-07-26 04:25+0000\n"
+"PO-Revision-Date: 2016-07-26 04:26+0000\n"
 "Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Arabic (http://www.transifex.com/endless-mobile-inc/gnome-software/language/ar/)\n"
 "MIME-Version: 1.0\n"
@@ -205,8 +206,8 @@ msgstr "ألغِ التّحديد"
 #. TRANSLATORS: this is the application name
 #. set the window title back to default
 #. TRANSLATORS: this is the main window title
-#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:382
-#: ../src/gs-shell.c:273 ../src/org.gnome.Software.desktop.in.h:1
+#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:386
+#: ../src/gs-shell.c:274 ../src/org.gnome.Software.desktop.in.h:1
 msgid "Software"
 msgstr "«برمجيّات»"
 
@@ -321,17 +322,17 @@ msgstr "فضّل مصادر الملفّات المحليّة على AppStream"
 msgid "Show version number"
 msgstr ""
 
-#: ../src/gs-application.c:375
+#: ../src/gs-application.c:379
 msgid "translator-credits"
 msgstr "فريق عربآيز للترجمة http://www.arabeyes.org :\nشعيب زاهدة\t<shuaib.zahda@gmail.com>\nصفا الفليج\t<safa1996alfulaij@gmail.com>"
 
 #. TRANSLATORS: this is the title of the about window
-#: ../src/gs-application.c:379
+#: ../src/gs-application.c:383
 msgid "About Software"
 msgstr "عنْ «برمجيّات»"
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: ../src/gs-application.c:385
+#: ../src/gs-application.c:389
 msgid "A nice way to manage the software on your system."
 msgstr "طريقة لطيفة لإدارة البرمجيّات في النّظام."
 
@@ -449,7 +450,7 @@ msgid "All"
 msgstr ""
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: ../src/gs-category.c:191 ../src/gs-shell.c:988
+#: ../src/gs-category.c:191 ../src/gs-shell.c:999
 msgid "Featured"
 msgstr "مُختارة"
 
@@ -1081,9 +1082,8 @@ msgstr ""
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#. TRANSLATORS: this is the menu spec main category for Add-ons
 #: ../src/gs-shell-details.ui.h:43 ../src/gs-shell-installed.c:424
-#: ../src/gs-update-list.c:128 ../src/plugins/gs-desktop-common.c:341
+#: ../src/gs-update-list.c:128
 msgid "Add-ons"
 msgstr "الإضافات"
 
@@ -2455,44 +2455,49 @@ msgstr ""
 msgid "Starting up…"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:30
+#: ../src/plugins/gs-desktop-common.c:31
 msgctxt "Menu of AudioVideo"
 msgid "All"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:33
+#: ../src/plugins/gs-desktop-common.c:35
 msgctxt "Menu of AudioVideo"
 msgid "Featured"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:36
+#: ../src/plugins/gs-desktop-common.c:39
 msgctxt "Menu of AudioVideo"
 msgid "Audio Creation & Editing"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:42
+#: ../src/plugins/gs-desktop-common.c:45
 msgctxt "Menu of AudioVideo"
 msgid "Music Players"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:51
-msgctxt "Menu of Development"
-msgid "All"
+#: ../src/plugins/gs-desktop-common.c:49
+msgctxt "Menu of Graphics"
+msgid "3D Graphics"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:54
-msgctxt "Menu of Development"
-msgid "Featured"
+#: ../src/plugins/gs-desktop-common.c:52
+msgctxt "Menu of Graphics"
+msgid "Photography"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:57
-msgctxt "Menu of Development"
-msgid "Debuggers"
+#: ../src/plugins/gs-desktop-common.c:55
+msgctxt "Menu of Graphics"
+msgid "Scanning"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:60
-msgctxt "Menu of Development"
-msgid "IDEs"
+#: ../src/plugins/gs-desktop-common.c:58
+msgctxt "Menu of Graphics"
+msgid "Vector Graphics"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:61
+msgctxt "Menu of Graphics"
+msgid "Viewers"
 msgstr ""
 
 #: ../src/plugins/gs-desktop-common.c:69
@@ -2500,368 +2505,303 @@ msgctxt "Menu of Education"
 msgid "All"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:72
+#: ../src/plugins/gs-desktop-common.c:73
 msgctxt "Menu of Education"
 msgid "Featured"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:75
-msgctxt "Menu of Education"
-msgid "Astronomy"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:78
-msgctxt "Menu of Education"
-msgid "Chemistry"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:81
-msgctxt "Menu of Education"
-msgid "Languages"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:85
-msgctxt "Menu of Education"
-msgid "Math"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:94
-msgctxt "Menu of Games"
-msgid "All"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:97
-msgctxt "Menu of Games"
-msgid "Featured"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:100
-msgctxt "Menu of Games"
-msgid "Action"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:103
-msgctxt "Menu of Games"
-msgid "Adventure"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:106
-msgctxt "Menu of Games"
-msgid "Arcade"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:109
-msgctxt "Menu of Games"
-msgid "Blocks"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:112
-msgctxt "Menu of Games"
-msgid "Board"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:115
-msgctxt "Menu of Games"
-msgid "Card"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:118
-msgctxt "Menu of Games"
-msgid "Emulators"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:121
-msgctxt "Menu of Games"
-msgid "Kids"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:124
-msgctxt "Menu of Games"
-msgid "Logic"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:127
-msgctxt "Menu of Games"
-msgid "Role Playing"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:130
-msgctxt "Menu of Games"
-msgid "Sports"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:134
-msgctxt "Menu of Games"
-msgid "Strategy"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:142
-msgctxt "Menu of Graphics"
-msgid "All"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:145
-msgctxt "Menu of Graphics"
-msgid "Featured"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:148
-msgctxt "Menu of Graphics"
-msgid "3D Graphics"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:151
-msgctxt "Menu of Graphics"
-msgid "Photography"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:154
-msgctxt "Menu of Graphics"
-msgid "Scanning"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:157
-msgctxt "Menu of Graphics"
-msgid "Vector Graphics"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:160
-msgctxt "Menu of Graphics"
-msgid "Viewers"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:168
-msgctxt "Menu of Office"
-msgid "All"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:171
-msgctxt "Menu of Office"
-msgid "Featured"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:174
-msgctxt "Menu of Office"
-msgid "Calendar"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:178
-msgctxt "Menu of Office"
-msgid "Database"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:181
-msgctxt "Menu of Office"
-msgid "Finance"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:185
-msgctxt "Menu of Office"
-msgid "Word Processor"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:194
-msgctxt "Menu of Addons"
-msgid "Fonts"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:197
-msgctxt "Menu of Addons"
-msgid "Codecs"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:200
-msgctxt "Menu of Addons"
-msgid "Input Sources"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:203
-msgctxt "Menu of Addons"
-msgid "Language Packs"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:206
-msgctxt "Menu of Addons"
-msgid "Shell Extensions"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:209
-msgctxt "Menu of Addons"
-msgid "Localization"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:217
-msgctxt "Menu of Science"
-msgid "All"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:220
-msgctxt "Menu of Science"
-msgid "Featured"
-msgstr ""
-
-#: ../src/plugins/gs-desktop-common.c:223
+#: ../src/plugins/gs-desktop-common.c:77
 msgctxt "Menu of Science"
 msgid "Artificial Intelligence"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:226
-msgctxt "Menu of Science"
+#: ../src/plugins/gs-desktop-common.c:80
+msgctxt "Menu of Education"
 msgid "Astronomy"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:229
-msgctxt "Menu of Science"
+#: ../src/plugins/gs-desktop-common.c:84
+msgctxt "Menu of Education"
 msgid "Chemistry"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:232
-msgctxt "Menu of Science"
+#: ../src/plugins/gs-desktop-common.c:88
+msgctxt "Menu of Education"
+msgid "Languages"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:92
+msgctxt "Menu of Education"
 msgid "Math"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:237
+#: ../src/plugins/gs-desktop-common.c:99
 msgctxt "Menu of Science"
 msgid "Robotics"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:245
-msgctxt "Menu of Communication"
+#: ../src/plugins/gs-desktop-common.c:107
+msgctxt "Menu of Family"
 msgid "All"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:248
-msgctxt "Menu of Communication"
+#: ../src/plugins/gs-desktop-common.c:110
+msgctxt "Menu of Family"
 msgid "Featured"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:251
+#: ../src/plugins/gs-desktop-common.c:118
+msgctxt "Menu of Games"
+msgid "All"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:121
+msgctxt "Menu of Games"
+msgid "Featured"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:124
+msgctxt "Menu of Games"
+msgid "Action"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:127
+msgctxt "Menu of Games"
+msgid "Adventure"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:130
+msgctxt "Menu of Games"
+msgid "Arcade"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:133
+msgctxt "Menu of Games"
+msgid "Blocks"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:136
+msgctxt "Menu of Games"
+msgid "Board"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:139
+msgctxt "Menu of Games"
+msgid "Card"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:142
+msgctxt "Menu of Games"
+msgid "Emulators"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:145
+msgctxt "Menu of Games"
+msgid "Kids"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:148
+msgctxt "Menu of Games"
+msgid "Logic"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:151
+msgctxt "Menu of Games"
+msgid "Role Playing"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:154
+msgctxt "Menu of Games"
+msgid "Sports"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:158
+msgctxt "Menu of Games"
+msgid "Strategy"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:166
+msgctxt "Menu of Office"
+msgid "All"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:169
+msgctxt "Menu of Office"
+msgid "Featured"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:172
+msgctxt "Menu of Office"
+msgid "Calendar"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:176
+msgctxt "Menu of Office"
+msgid "Database"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:179
+msgctxt "Menu of Office"
+msgid "Finance"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:183
+msgctxt "Menu of Office"
+msgid "Word Processor"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:192
+msgctxt "Menu of Utility"
+msgid "All"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:197
+msgctxt "Menu of Utility"
+msgid "Featured"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:202
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:258
-msgctxt "Menu of Communication"
-msgid "News"
+#: ../src/plugins/gs-desktop-common.c:209
+msgctxt "Menu of Addons"
+msgid "Codecs"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:262
-msgctxt "Menu of Communication"
-msgid "Web Browsers"
+#: ../src/plugins/gs-desktop-common.c:212
+msgctxt "Menu of Development"
+msgid "Debuggers"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:270
-msgctxt "Menu of Utility"
-msgid "All"
+#: ../src/plugins/gs-desktop-common.c:215
+msgctxt "Menu of Addons"
+msgid "Fonts"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:273
-msgctxt "Menu of Utility"
-msgid "Featured"
+#: ../src/plugins/gs-desktop-common.c:218
+msgctxt "Menu of Development"
+msgid "IDEs"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:276
+#: ../src/plugins/gs-desktop-common.c:222
+msgctxt "Menu of Addons"
+msgid "Input Sources"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:225
+msgctxt "Menu of Addons"
+msgid "Language Packs"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:228
+msgctxt "Menu of Addons"
+msgid "Localization"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:231
+msgctxt "Menu of Addons"
+msgid "Shell Extensions"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:234
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:284
+#: ../src/plugins/gs-desktop-common.c:237
+msgctxt "Menu of Communication"
+msgid "Web Browsers"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:245
 msgctxt "Menu of Reference"
 msgid "All"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:287
+#: ../src/plugins/gs-desktop-common.c:248
 msgctxt "Menu of Reference"
 msgid "Featured"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:290
+#: ../src/plugins/gs-desktop-common.c:251
 msgctxt "Menu of Art"
 msgid "Art"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:293
+#: ../src/plugins/gs-desktop-common.c:254
 msgctxt "Menu of Reference"
 msgid "Biography"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:296
-#: ../src/plugins/gs-desktop-common.c:299
+#: ../src/plugins/gs-desktop-common.c:257
+#: ../src/plugins/gs-desktop-common.c:260
 msgctxt "Menu of Reference"
 msgid "Fiction"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:302
+#: ../src/plugins/gs-desktop-common.c:263
 msgctxt "Menu of Reference"
 msgid "Health"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:305
+#: ../src/plugins/gs-desktop-common.c:266
 msgctxt "Menu of Reference"
 msgid "History"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:308
+#: ../src/plugins/gs-desktop-common.c:269
 msgctxt "Menu of Reference"
 msgid "Lifestyle"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:311
+#: ../src/plugins/gs-desktop-common.c:272
+msgctxt "Menu of Communication"
+msgid "News"
+msgstr ""
+
+#: ../src/plugins/gs-desktop-common.c:276
 msgctxt "Menu of Reference"
 msgid "Politics"
 msgstr ""
 
-#: ../src/plugins/gs-desktop-common.c:314
+#: ../src/plugins/gs-desktop-common.c:279
 msgctxt "Menu of Reference"
 msgid "Sports"
 msgstr ""
 
-#. TRANSLATORS: this is the menu spec main category for Audio & Video
-#: ../src/plugins/gs-desktop-common.c:323
-msgid "Audio & Video"
+#. TRANSLATORS: this is the menu spec main category for Learning
+#: ../src/plugins/gs-desktop-common.c:288
+msgid "Learning"
 msgstr ""
 
-#. TRANSLATORS: this is the menu spec main category for Development
-#: ../src/plugins/gs-desktop-common.c:326
-msgid "Developer Tools"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Education
-#: ../src/plugins/gs-desktop-common.c:329
-msgid "Education"
-msgstr "التّعليم"
-
-#. TRANSLATORS: this is the menu spec main category for Game
-#: ../src/plugins/gs-desktop-common.c:332
-msgid "Games"
-msgstr "الألعاب"
-
-#. TRANSLATORS: this is the menu spec main category for Graphics
-#: ../src/plugins/gs-desktop-common.c:335
-msgid "Graphics & Photography"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Office
-#: ../src/plugins/gs-desktop-common.c:338
-msgid "Productivity"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Science
-#: ../src/plugins/gs-desktop-common.c:344
-msgid "Science"
-msgstr "العلوم"
-
-#. TRANSLATORS: this is the menu spec main category for Communication
-#: ../src/plugins/gs-desktop-common.c:347
-msgid "Communication & News"
+#. TRANSLATORS: this is the menu spec main category for Family
+#: ../src/plugins/gs-desktop-common.c:291
+msgid "Family"
 msgstr ""
 
 #. TRANSLATORS: this is the menu spec main category for Reference
-#: ../src/plugins/gs-desktop-common.c:350
-msgid "Reference"
+#: ../src/plugins/gs-desktop-common.c:294
+msgid "Reference & News"
+msgstr ""
+
+#. TRANSLATORS: this is the menu spec main category for Game
+#: ../src/plugins/gs-desktop-common.c:297
+msgid "Games"
+msgstr "الألعاب"
+
+#. TRANSLATORS: this is the menu spec main category for Multimedia
+#: ../src/plugins/gs-desktop-common.c:300
+msgid "Multimedia"
+msgstr ""
+
+#. TRANSLATORS: this is the menu spec main category for Work
+#: ../src/plugins/gs-desktop-common.c:303
+msgid "Work"
 msgstr ""
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
-#: ../src/plugins/gs-desktop-common.c:353
+#: ../src/plugins/gs-desktop-common.c:306
 msgid "Utilities"
 msgstr "الأدوات"
