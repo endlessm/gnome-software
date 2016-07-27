@@ -213,8 +213,20 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 					 GsApp *app,
 					 GHashTable *apps_with_shortcuts)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *app_id = gs_app_get_id_no_prefix (app);
+	GsPluginData *priv = NULL;
+	const char *app_id = NULL;
+	g_autoptr (GDesktopAppInfo) app_info = NULL;
+
+	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLED &&
+	    gs_app_get_state (app) != AS_APP_STATE_UPDATABLE) {
+		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+		return;
+	}
+
+	priv = gs_plugin_get_data (plugin);
+	app_id = gs_app_get_id_no_prefix (app);
+	app_info = gs_utils_get_desktop_app_info (app_id);
+	app_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	gs_plugin_cache_add (plugin, app_id, app);
 	if (g_hash_table_lookup (apps_with_shortcuts, app_id)) {
@@ -432,7 +444,10 @@ remove_app_from_shell (GsPlugin		*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *app_id = gs_app_get_id_no_prefix (app);
+	const char *id = gs_app_get_id_no_prefix (app);
+	g_autoptr (GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (id);
+	const char *app_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
@@ -462,7 +477,10 @@ add_app_to_shell (GsPlugin	*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *app_id = gs_app_get_id_no_prefix (app);
+	const char *id = gs_app_get_id_no_prefix (app);
+	g_autoptr (GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (id);
+	const char *app_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
