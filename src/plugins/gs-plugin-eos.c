@@ -215,6 +215,7 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 {
 	GsPluginData *priv = NULL;
 	const char *app_id = NULL;
+	g_autoptr (GDesktopAppInfo) app_info = NULL;
 
 	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLED &&
 	    gs_app_get_state (app) != AS_APP_STATE_UPDATABLE) {
@@ -224,6 +225,8 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 
 	priv = gs_plugin_get_data (plugin);
 	app_id = gs_app_get_id_no_prefix (app);
+	app_info = gs_utils_get_desktop_app_info (app_id);
+	app_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	gs_plugin_cache_add (plugin, app_id, app);
 	if (g_hash_table_lookup (apps_with_shortcuts, app_id)) {
