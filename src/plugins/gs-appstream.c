@@ -506,6 +506,10 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	if (as_app_get_id (item) != NULL && gs_app_get_id (app) == NULL)
 		gs_app_set_id (app, as_app_get_id (item));
 
+	/* set unique-id */
+	if (as_app_get_unique_id (item) != NULL && gs_app_get_unique_id (app) == NULL)
+		gs_app_set_unique_id (app, as_app_get_unique_id (item));
+
 	/* set source */
 	gs_app_set_metadata (app, "appstream::source-file", as_app_get_source_file (item));
 
@@ -556,11 +560,10 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	/* set origin */
 	if (as_app_get_origin (item) != NULL &&
 	    gs_app_get_origin (app) == NULL ) {
-		tmp = as_app_get_origin (item);
-		if (g_str_has_prefix (tmp, "flatpak:"))
-			gs_app_set_origin (app, tmp + 8);
-		if (g_str_has_prefix (tmp, "user-flatpak:"))
-			gs_app_set_origin (app, tmp + 13);
+		tmp = as_app_get_unique_id (item);
+		if (g_str_has_prefix (tmp, "user/flatpak/") ||
+		    g_str_has_prefix (tmp, "system/flatpak/"))
+			gs_app_set_origin (app, as_app_get_origin (item));
 	}
 
 	/* set description */

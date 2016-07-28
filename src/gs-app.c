@@ -59,6 +59,7 @@ struct _GsApp
 	GObject			 parent_instance;
 
 	gchar			*id;
+	gchar			*unique_id;
 	gchar			*name;
 	GsAppQuality		 name_quality;
 	GPtrArray		*icons;
@@ -261,6 +262,8 @@ gs_app_to_string (GsApp *app)
 		gs_app_kv_printf (str, "progress", "%i%%", app->progress);
 	if (app->id != NULL)
 		gs_app_kv_lpad (str, "id", app->id);
+	if (app->unique_id != NULL)
+		gs_app_kv_lpad (str, "unique-id", app->unique_id);
 	if ((app->kudos & GS_APP_KUDO_MY_LANGUAGE) > 0)
 		gs_app_kv_lpad (str, "kudo", "my-language");
 	if ((app->kudos & GS_APP_KUDO_RECENT_RELEASE) > 0)
@@ -491,33 +494,12 @@ gs_app_queue_notify (GsApp *app, const gchar *property_name)
  *
  * Gets the application ID.
  *
- * Returns: The whole ID, e.g. "gimp.desktop" or "flatpak:org.gnome.Gimp.desktop"
+ * Returns: The whole ID, e.g. "gimp.desktop"
  **/
 const gchar *
 gs_app_get_id (GsApp *app)
 {
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	return app->id;
-}
-
-/**
- * gs_app_get_id_no_prefix:
- * @app: a #GsApp
- *
- * Gets the application ID without any prefix set.
- *
- * Returns: The whole ID, e.g. gimp.desktop" or "org.gnome.Gimp.desktop"
- **/
-const gchar *
-gs_app_get_id_no_prefix (GsApp *app)
-{
-	gchar *tmp;
-	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	if (app->id == NULL)
-		return NULL;
-	tmp = g_strrstr (app->id, ":");
-	if (tmp != NULL)
-		return tmp + 1;
 	return app->id;
 }
 
@@ -532,6 +514,15 @@ void
 gs_app_set_id (GsApp *app, const gchar *id)
 {
 	g_return_if_fail (GS_IS_APP (app));
+
+	/* check for old-style prefix */
+	if (id != NULL && g_strstr_len (id, -1, ":") != NULL) {
+		g_warning ("Invalid ID of %s -- use "
+			   "gs_app_set_unique_id() and use the actual "
+			   "desktop-style ID here instead!", id);
+		return;
+	}
+
 	g_free (app->id);
 	app->id = g_strdup (id);
 }
@@ -831,6 +822,46 @@ gs_app_set_kind (GsApp *app, AsAppKind kind)
 
 	app->kind = kind;
 	gs_app_queue_notify (app, "kind");
+}
+
+/**
+ * gs_app_get_unique_id:
+ * @app: a #GsApp
+ *
+ * Gets the unique application ID used for de-duplication.
+ * If nothing has been set the value from gs_app_get_id() will be used.
+ *
+ * Returns: The unique ID, e.g. "flatpak:gimp.desktop:3.22", or %NULL
+ **/
+const gchar *
+gs_app_get_unique_id (GsApp *app)
+{
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	if (app->unique_id == NULL)
+		return app->id;
+	return app->unique_id;
+}
+
+/**
+ * gs_app_set_unique_id:
+ * @app: a #GsApp
+ * @unique_id: a unique application ID, e.g. "flatpak:gimp.desktop:3.22"
+ *
+ * Sets the unique application ID. Any #GsApp using the same ID will be
+ * deduplicated. This means that applications that can exist from more than
+ * one plugin should use this method.
+ */
+void
+gs_app_set_unique_id (GsApp *app, const gchar *unique_id)
+{
+	g_return_if_fail (GS_IS_APP (app));
+
+	/* check for validity */
+	if (!as_utils_unique_id_valid (unique_id))
+		g_warning ("unique ID %s is not valid!", unique_id);
+
+	g_free (app->unique_id);
+	app->unique_id = g_strdup (unique_id);
 }
 
 /**
@@ -2858,6 +2889,7 @@ gs_app_finalize (GObject *object)
 	GsApp *app = GS_APP (object);
 
 	g_free (app->id);
+	g_free (app->unique_id);
 	g_free (app->name);
 	g_hash_table_unref (app->urls);
 	g_free (app->license);
@@ -3045,7 +3077,7 @@ gs_app_init (GsApp *app)
 
 /**
  * gs_app_new:
- * @id: an application ID, or %NULL, e.g. "flatpak:org.gnome.Software.desktop"
+ * @id: an application ID, or %NULL, e.g. "org.gnome.Software.desktop"
  *
  * Creates a new application object.
  *
