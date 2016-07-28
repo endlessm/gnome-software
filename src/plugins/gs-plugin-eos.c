@@ -226,6 +226,9 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	priv = gs_plugin_get_data (plugin);
 	app_id = gs_app_get_id_no_prefix (app);
 	app_info = gs_utils_get_desktop_app_info (app_id);
+	if (!app_info)
+		return;
+
 	app_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	gs_plugin_cache_add (plugin, app_id, app);
