@@ -244,10 +244,10 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 static gboolean
 gs_plugin_eos_app_is_flatpak (GsApp *app)
 {
-	const char *id = gs_app_get_id (app);
+	const char *id = gs_app_get_unique_id (app);
 
-	return id && (g_str_has_prefix (id, GS_FLATPAK_SYSTEM_PREFIX ":") ||
-		      g_str_has_prefix (id, GS_FLATPAK_USER_PREFIX ":"));
+	return id && (g_str_has_prefix (id, GS_FLATPAK_SYSTEM_PREFIX) ||
+		      g_str_has_prefix (id, GS_FLATPAK_USER_PREFIX));
 }
 
 static void
