@@ -31,6 +31,10 @@
 
 #include "gs-flatpak.h"
 
+#define FLATPAK_EXTRA_CONF_FILE "/etc/gnome-software/flatpak-extra.conf"
+#define FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX "remote:"
+#define FLATPAK_EXTRA_CONF_REMOTE_DEFAULT_BRANCH "default-branch"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -42,6 +46,7 @@ struct GsPluginData
 	GHashTable *desktop_apps;
 	int applications_changed_id;
 	SoupSession *soup_session;
+	GHashTable *default_branches;
 };
 
 static GHashTable *
@@ -83,6 +88,58 @@ on_desktop_apps_changed (GDBusConnection *connection,
 	g_hash_table_destroy (apps);
 }
 
+static void
+reload_default_branches (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GKeyFile) config_file = g_key_file_new ();
+	g_autoptr(GError) error = NULL;
+	g_auto(GStrv) groups = NULL;
+	int idx;
+	const guint group_prefix_len =
+		strlen (FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX);;
+
+	g_hash_table_remove_all (priv->default_branches);
+
+	g_debug ("Reloading default branches from '%s'...",
+		 FLATPAK_EXTRA_CONF_FILE);
+
+	if (!g_key_file_load_from_file (config_file, FLATPAK_EXTRA_CONF_FILE,
+					G_KEY_FILE_NONE, &error)) {
+		g_debug ("Error loading Flatpak extra config file: %s",
+			 error->message);
+		return;
+	}
+
+	groups = g_key_file_get_groups (config_file, NULL);
+	for (idx = 0; groups[idx] != NULL; idx++) {
+		const char *group = groups[idx];
+		char *remote = NULL;
+		char *default_branch = NULL;
+
+		if (!g_str_has_prefix (group,
+				       FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX))
+			continue;
+
+		default_branch = g_key_file_get_string (config_file,
+							group,
+							FLATPAK_EXTRA_CONF_REMOTE_DEFAULT_BRANCH,
+							NULL);
+
+		if (!default_branch)
+			continue;
+
+		remote = g_strdup (group + group_prefix_len);
+		g_hash_table_insert (priv->default_branches, remote,
+				     default_branch);
+		g_debug ("Found default branch '%s' for remote '%s'",
+			 default_branch, remote);
+	}
+
+	if (g_hash_table_size (priv->default_branches) == 0)
+		g_debug ("No default branches configured!");
+}
+
 /**
  * gs_plugin_initialize:
  */
@@ -100,6 +157,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 	priv->desktop_apps = g_hash_table_new_full (g_str_hash, g_str_equal,
 						    g_free, NULL);
+	priv->default_branches = g_hash_table_new_full (g_str_hash, g_str_equal,
+							g_free, g_free);
 	priv->applications_changed_id =
 		g_dbus_connection_signal_subscribe (priv->session_bus,
 						    "org.gnome.Shell",
@@ -132,6 +191,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_clear_object (&priv->session_bus);
 	g_clear_object (&priv->soup_session);
 	g_hash_table_destroy (priv->desktop_apps);
+	g_hash_table_destroy (priv->default_branches);
 }
 
 static GHashTable *
@@ -401,6 +461,37 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 }
 
+static void
+gs_plugin_eos_refine_app_branch (GsPlugin *plugin, GsApp *app)
+{
+	const char *default_branch;
+	const char *branch = NULL;
+	const char *origin = gs_app_get_origin (app);
+	GsPluginData *priv = NULL;
+
+	if (!gs_plugin_eos_app_is_flatpak (app))
+		return;
+
+	priv = gs_plugin_get_data (plugin);
+	default_branch = g_hash_table_lookup (priv->default_branches, origin);
+
+	/* if we do not have a configured default branch for this repo then
+	 * do nothing */
+	if (!default_branch)
+		return;
+
+	/* if an app has no branch set, maybe it will be set later so we let
+	 * it pass */
+	branch = gs_app_get_flatpak_branch (app);
+	if (!branch)
+		return;
+
+	/* do not show an app if it doesn't belong to the default branch that
+	 * is configured for its remote */
+	if (g_strcmp0 (branch, default_branch) != 0)
+		gs_app_add_category (app, "Blacklisted");
+}
+
 /**
  * gs_plugin_refine:
  */
@@ -430,6 +521,8 @@ gs_plugin_refine (GsPlugin		*plugin,
 			continue;
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
+
+		gs_plugin_eos_refine_app_branch (plugin, app);
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
 	}
@@ -563,4 +656,15 @@ gs_plugin_launch (GsPlugin *plugin,
 		return TRUE;
 
 	return gs_plugin_app_launch (plugin, app, error);
+}
+
+gboolean
+gs_plugin_refresh (GsPlugin *plugin,
+		   guint cache_age,
+		   GsPluginRefreshFlags flags,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	reload_default_branches (plugin);
+	return TRUE;
 }
