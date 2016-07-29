@@ -129,9 +129,9 @@ gs_plugin_destroy (GsPlugin *plugin)
 static gboolean
 app_is_flatpak (GsApp *app)
 {
-	const gchar *id = gs_app_get_id (app);
-	return id && (g_str_has_prefix (id, GS_FLATPAK_USER_PREFIX ":") ||
-		      g_str_has_prefix (id, GS_FLATPAK_SYSTEM_PREFIX ":"));
+	const gchar *id = gs_app_get_unique_id (app);
+	return id && (g_str_has_prefix (id, GS_FLATPAK_USER_PREFIX) ||
+		      g_str_has_prefix (id, GS_FLATPAK_SYSTEM_PREFIX));
 }
 
 void
