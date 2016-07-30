@@ -129,9 +129,9 @@ gs_plugin_destroy (GsPlugin *plugin)
 static gboolean
 app_is_flatpak (GsApp *app)
 {
-	const gchar *id = gs_app_get_id (app);
-	return id && (g_str_has_prefix (id, GS_FLATPAK_USER_PREFIX ":") ||
-		      g_str_has_prefix (id, GS_FLATPAK_SYSTEM_PREFIX ":"));
+	const gchar *id = gs_app_get_unique_id (app);
+	return id && (g_str_has_prefix (id, GS_FLATPAK_USER_PREFIX) ||
+		      g_str_has_prefix (id, GS_FLATPAK_SYSTEM_PREFIX));
 }
 
 void
@@ -402,7 +402,7 @@ clean_runtime_build_dir (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	GError *local_error = NULL;
-	const char *runtime_name = gs_app_get_id_no_prefix (runtime);
+	const char *runtime_name = gs_app_get_id (runtime);
 	g_autofree char *build_dir = g_build_filename (priv->runtimes_build_dir,
 						       runtime_name,
 						       NULL);
@@ -438,7 +438,7 @@ build_runtime (GsPlugin *plugin,
 	g_autofree char *repo_name = NULL;
 	g_autofree char *dir_basename = NULL;
 	const char *repo_build_dir = "3rd-party-repo";
-	const char *runtime_name = gs_app_get_id_no_prefix (runtime);
+	const char *runtime_name = gs_app_get_id (runtime);
 	const char *runtime_url = gs_app_get_metadata_item (runtime,
 							    METADATA_URL);
 	const char *runtime_type = gs_app_get_metadata_item (runtime,
@@ -691,7 +691,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		g_debug ("Could not understand the asset from the "
 			 "metadata in "
 			 "app %s: %s",
-			 gs_app_get_id_no_prefix (app), metadata);
+			 gs_app_get_id (app), metadata);
 		return TRUE;
 	}
 

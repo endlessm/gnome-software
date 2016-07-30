@@ -260,7 +260,7 @@ gs_plugin_loader_run_adopt (GsPluginLoader *plugin_loader, GsAppList *list)
 			if (gs_app_get_management_plugin (app) != NULL) {
 				g_debug ("%s adopted %s",
 					 gs_plugin_get_name (plugin),
-					 gs_app_get_id (app));
+					 gs_app_get_unique_id (app));
 			}
 		}
 	}
@@ -640,7 +640,7 @@ gs_plugin_loader_get_app_str (GsApp *app)
 	const gchar *id;
 
 	/* first try the actual id */
-	id = gs_app_get_id (app);
+	id = gs_app_get_unique_id (app);
 	if (id != NULL)
 		return id;
 
@@ -858,12 +858,12 @@ gs_plugin_loader_set_app_error (GsApp *app, GError *error)
 	/* random, non-plugin error domains are never shown to the user */
 	if (error->domain == GS_PLUGIN_ERROR) {
 		g_debug ("saving error for %s: %s",
-			 gs_app_get_id (app),
+			 gs_app_get_unique_id (app),
 			 error->message);
 		gs_app_set_last_error (app, error);
 	} else {
 		g_warning ("not saving error for %s: %s",
-			   gs_app_get_id (app),
+			   gs_app_get_unique_id (app),
 			   error->message);
 	}
 }
@@ -2692,7 +2692,7 @@ gs_plugin_loader_app_action_thread_cb (GTask *task,
 	case AS_APP_STATE_INSTALLING:
 	case AS_APP_STATE_REMOVING:
 		g_warning ("application %s left in %s state",
-			   gs_app_get_id (state->app),
+			   gs_app_get_unique_id (state->app),
 			   as_app_state_to_string (gs_app_get_state (state->app)));
 		gs_app_set_state (state->app, AS_APP_STATE_UNKNOWN);
 		break;
@@ -2831,7 +2831,7 @@ load_install_queue (GsPluginLoader *plugin_loader, GError **error)
 				 g_object_ref (app));
 		g_mutex_unlock (&priv->pending_apps_mutex);
 
-		g_debug ("adding pending app %s", gs_app_get_id (app));
+		g_debug ("adding pending app %s", gs_app_get_unique_id (app));
 		gs_app_list_add (list, app);
 	}
 
@@ -3933,7 +3933,7 @@ gs_plugin_loader_app_installed_cb (GObject *source,
 	if (!ret) {
 		remove_app_from_install_queue (plugin_loader, app);
 		g_warning ("failed to install %s: %s",
-			   gs_app_get_id (app), error->message);
+			   gs_app_get_unique_id (app), error->message);
 	}
 }
 
