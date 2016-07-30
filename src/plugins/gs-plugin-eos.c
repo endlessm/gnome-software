@@ -87,12 +87,29 @@ on_desktop_apps_changed (GDBusConnection *connection,
 	g_hash_table_destroy (apps);
 }
 
+static GKeyFile *
+load_branches_config_file (const char *path)
+{
+	g_autoptr(GKeyFile) config_file = g_key_file_new ();
+	g_autoptr(GError) error = NULL;
+
+	g_debug ("Reloading default branches from '%s'...", path);
+
+	if (!g_key_file_load_from_file (config_file, path,
+					G_KEY_FILE_NONE, &error)) {
+		g_debug ("Error loading Flatpak extra config file '%s': %s",
+			 path, error->message);
+		return NULL;
+	}
+
+	return g_steal_pointer (&config_file);
+}
+
 static void
 reload_default_branches (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GKeyFile) config_file = g_key_file_new ();
-	g_autoptr(GError) error = NULL;
 	g_auto(GStrv) groups = NULL;
 	g_autofree char *extra_conf_file = NULL;
 	int idx;
@@ -103,16 +120,18 @@ reload_default_branches (GsPlugin *plugin)
 
 	extra_conf_file = g_build_filename (SYSCONFDIR, "gnome-software",
 					    "flatpak-extra.conf", NULL);
+	config_file = load_branches_config_file (extra_conf_file);
 
-	g_debug ("Reloading default branches from '%s'...",
-		 extra_conf_file);
+	if (!config_file) {
+		/* Try loading the file from our pkgdatadir instead */
+		g_free (extra_conf_file);
+		extra_conf_file = g_build_filename (GS_DATA, "flatpak-extra.conf", NULL);
 
-	if (!g_key_file_load_from_file (config_file, extra_conf_file,
-					G_KEY_FILE_NONE, &error)) {
-		g_debug ("Error loading Flatpak extra config file: %s",
-			 error->message);
-		return;
+		config_file = load_branches_config_file (extra_conf_file);
 	}
+
+	if (!config_file)
+		return;
 
 	groups = g_key_file_get_groups (config_file, NULL);
 	for (idx = 0; groups[idx] != NULL; idx++) {
