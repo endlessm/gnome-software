@@ -31,7 +31,6 @@
 
 #include "gs-flatpak.h"
 
-#define FLATPAK_EXTRA_CONF_FILE "/etc/gnome-software/flatpak-extra.conf"
 #define FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX "remote:"
 #define FLATPAK_EXTRA_CONF_REMOTE_DEFAULT_BRANCH "default-branch"
 
@@ -95,16 +94,20 @@ reload_default_branches (GsPlugin *plugin)
 	g_autoptr(GKeyFile) config_file = g_key_file_new ();
 	g_autoptr(GError) error = NULL;
 	g_auto(GStrv) groups = NULL;
+	g_autofree char *extra_conf_file = NULL;
 	int idx;
 	const guint group_prefix_len =
 		strlen (FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX);;
 
 	g_hash_table_remove_all (priv->default_branches);
 
-	g_debug ("Reloading default branches from '%s'...",
-		 FLATPAK_EXTRA_CONF_FILE);
+	extra_conf_file = g_build_filename (SYSCONFDIR, "gnome-software",
+					    "flatpak-extra.conf", NULL);
 
-	if (!g_key_file_load_from_file (config_file, FLATPAK_EXTRA_CONF_FILE,
+	g_debug ("Reloading default branches from '%s'...",
+		 extra_conf_file);
+
+	if (!g_key_file_load_from_file (config_file, extra_conf_file,
 					G_KEY_FILE_NONE, &error)) {
 		g_debug ("Error loading Flatpak extra config file: %s",
 			 error->message);
