@@ -173,7 +173,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	/* let the flatpak plugins run first so we deal with the apps
 	 * in a more complete/refined state */
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "flatpak");
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "flatpak-system");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "flatpak-user");
 
 	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
