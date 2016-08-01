@@ -52,7 +52,8 @@ typedef enum {
 } GsPluginExternalType;
 
 struct GsPluginData {
-	GsFlatpak	*flatpak;
+	GsFlatpak	*usr_flatpak;
+	GsFlatpak	*sys_flatpak;
 	char		*runtimes_build_dir;
 };
 
@@ -81,7 +82,7 @@ remove_ext_apps_remotes (GsPlugin *plugin)
 	guint i;
 	GPtrArray *names;
 
-	names = gs_flatpak_get_remotes_names (priv->flatpak, NULL, NULL);
+	names = gs_flatpak_get_remotes_names (priv->usr_flatpak, NULL, NULL);
 
 	if (!names)
 		return;
@@ -102,7 +103,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
 	const char *ext_apps_build_dir = g_get_user_cache_dir ();
 
-	priv->flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
+	priv->usr_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
+	priv->sys_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_SYSTEM);
 	priv->runtimes_build_dir = g_build_filename (ext_apps_build_dir,
 						     TMP_ASSSETS_PREFIX,
 						     NULL);
@@ -122,7 +124,8 @@ gs_plugin_destroy (GsPlugin *plugin)
 	 * left from previous builds */
 	remove_runtimes_build_dir (plugin);
 
-	g_clear_object (&priv->flatpak);
+	g_clear_object (&priv->usr_flatpak);
+	g_clear_object (&priv->sys_flatpak);
 	g_free (priv->runtimes_build_dir);
 }
 
@@ -153,16 +156,17 @@ gs_plugin_setup (GsPlugin *plugin,
 		 GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	gboolean ret = gs_flatpak_setup (priv->flatpak, cancellable, error);
 
-	if (ret) {
-		/* Remove the runtimes build directories and remotes to clean
-		 * any contents eventually left from previous builds */
-		remove_runtimes_build_dir (plugin);
-		remove_ext_apps_remotes (plugin);
-	}
+	if (!gs_flatpak_setup (priv->usr_flatpak, cancellable, error) ||
+	    !gs_flatpak_setup (priv->sys_flatpak, cancellable, error))
+		return FALSE;
 
-	return ret;
+	/* Remove the runtimes build directories and remotes to clean
+	 * any contents eventually left from previous builds */
+	remove_runtimes_build_dir (plugin);
+	remove_ext_apps_remotes (plugin);
+
+	return TRUE;
 }
 
 static char *
@@ -626,8 +630,8 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 
 	priv = gs_plugin_get_data (plugin);
 
-	full_id = g_strdup_printf ("%s:%s",
-				   gs_flatpak_get_prefix (priv->flatpak),
+	full_id = g_strdup_printf ("%s%s",
+				   gs_flatpak_get_prefix (priv->usr_flatpak),
 				   id);
 
 	runtime = gs_plugin_cache_lookup (plugin, full_id);
@@ -639,9 +643,9 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 		return runtime;
 	}
 
-	runtime = gs_app_new (full_id);
+	runtime = gs_app_new (id);
 	gs_app_set_metadata (runtime, METADATA_HEADLESS_APP,
-			     gs_app_get_id (headless_app));
+			     gs_app_get_unique_id (headless_app));
 	gs_app_set_metadata (runtime, METADATA_URL, url);
 	gs_app_set_metadata (runtime, METADATA_TYPE, type);
 	gs_app_set_metadata (runtime, "flatpak::kind", "runtime");
@@ -653,11 +657,24 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 
 	gs_plugin_cache_add (plugin, full_id, runtime);
 
-	if (gs_flatpak_is_installed (priv->flatpak, runtime, NULL, NULL)) {
+	if (gs_flatpak_is_installed (priv->usr_flatpak, runtime, NULL, NULL)) {
 		gs_app_set_state (runtime, AS_APP_STATE_INSTALLED);
 	}
 
 	return runtime;
+}
+
+static GsFlatpak *
+gs_plugin_get_gs_flatpak_for_app (GsPlugin *plugin,
+				  GsApp *app)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const char *app_unique_id = gs_app_get_unique_id (app);
+
+	if (g_str_has_prefix (app_unique_id, GS_FLATPAK_SYSTEM_PREFIX))
+		return priv->sys_flatpak;
+
+	return priv->usr_flatpak;
 }
 
 gboolean
@@ -669,7 +686,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 {
 	GsApp *ext_runtime;
 	const char *metadata = NULL;
-	GsPluginData *priv;
+	GsFlatpak *flatpak = NULL;
 
 	/* We cache all runtimes because an external runtime may have been
 	 * adopted by the flatpak plugins */
@@ -695,11 +712,10 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		return TRUE;
 	}
 
-	priv = gs_plugin_get_data (plugin);
+	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
 
-	if (!gs_flatpak_refine_app (priv->flatpak, app, flags, cancellable, 
-				    error)) {
-		g_debug ("Refining app %s failed!", gs_app_get_id (app));
+	if (!gs_flatpak_refine_app (flatpak, app, flags, cancellable, error)) {
+		g_debug ("Refining app %s failed!", gs_app_get_unique_id (app));
 		return FALSE;
 	}
 
@@ -714,17 +730,6 @@ gs_plugin_refine_app (GsPlugin *plugin,
 }
 
 gboolean
-gs_plugin_add_installed (GsPlugin *plugin,
-			 GsAppList *list,
-			 GCancellable *cancellable,
-			 GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	return gs_flatpak_add_installed (priv->flatpak, list, cancellable,
-					 error);
-}
-
-gboolean
 gs_plugin_app_install (GsPlugin *plugin,
 		       GsApp *app,
 		       GCancellable *cancellable,
@@ -736,6 +741,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 	GError *internal_error = NULL;
 	GsApp *ext_runtime;
 	GsPluginData *priv;
+	GsFlatpak *flatpak = NULL;
 	gboolean ret = FALSE;
 
 	/* only process this app if was created by this plugin */
@@ -764,7 +770,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 			return FALSE;
 		}
 
-		if (!gs_flatpak_refine_app (priv->flatpak, ext_runtime,
+		if (!gs_flatpak_refine_app (priv->usr_flatpak, ext_runtime,
 					    GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 					    cancellable, error)) {
 			g_debug ("Failed to refine '%s'",
@@ -782,7 +788,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 	case AS_APP_STATE_UPDATABLE:
 		g_debug ("Updating '%s'", gs_app_get_id (ext_runtime));
 
-		if (!gs_flatpak_update_app (priv->flatpak, ext_runtime,
+		if (!gs_flatpak_update_app (priv->usr_flatpak, ext_runtime,
 					    cancellable, error)) {
 			g_debug ("Failed to update '%s'",
 				 gs_app_get_id (ext_runtime));
@@ -792,7 +798,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 	case AS_APP_STATE_AVAILABLE:
 		g_debug ("Installing '%s'", gs_app_get_id (ext_runtime));
-		ret = gs_flatpak_app_install (priv->flatpak, ext_runtime,
+		ret = gs_flatpak_app_install (priv->usr_flatpak, ext_runtime,
 					      cancellable, error);
 
 		/* Clean-up remote (we only needed it for installing the app) */
@@ -830,7 +836,8 @@ gs_plugin_app_install (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	if (!gs_flatpak_app_install (priv->flatpak, app, cancellable, error)) {
+	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
+	if (!gs_flatpak_app_install (flatpak, app, cancellable, error)) {
 		g_debug ("Failed to install '%s'", gs_app_get_id (app));
 		return FALSE;
 	}
@@ -842,25 +849,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 }
 
 gboolean
-gs_plugin_refresh (GsPlugin *plugin,
-		   guint cache_age,
-		   GsPluginRefreshFlags flags,
-		   GCancellable *cancellable,
-		   GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	return gs_flatpak_refresh (priv->flatpak, cache_age, flags,
-				   cancellable, error);
-}
-
-gboolean
 gs_plugin_launch (GsPlugin *plugin,
 		  GsApp *app,
 		  GCancellable *cancellable,
 		  GError **error)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	return gs_flatpak_launch (priv->flatpak, app, cancellable, error);
+	GsFlatpak *flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
+	return gs_flatpak_launch (flatpak, app, cancellable, error);
 }
 
 gboolean
@@ -871,6 +866,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 {
 	GsApp *ext_runtime;
 	GsPluginData *priv;
+	GsFlatpak *flatpak = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
@@ -890,7 +886,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		   gs_app_get_state (ext_runtime) == AS_APP_STATE_UPDATABLE) {
 		g_autoptr(GError) local_error = NULL;
 
-		if (!gs_flatpak_app_remove (priv->flatpak, ext_runtime,
+		if (!gs_flatpak_app_remove (priv->usr_flatpak, ext_runtime,
 					    cancellable, &local_error)) {
 			g_debug ("Cannot remove '%s': %s. Will try to "
 				 "remove app '%s'.",
@@ -900,5 +896,6 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		}
 	}
 
-	return gs_flatpak_app_remove (priv->flatpak, app, cancellable, error);
+	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
+	return gs_flatpak_app_remove (flatpak, app, cancellable, error);
 }
