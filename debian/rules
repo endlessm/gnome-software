@@ -21,7 +21,7 @@ override_dh_auto_configure:
 
 override_dh_auto_install:
 	dh_auto_install --destdir=$(INSTALLDIR)
-	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-?/libgs_plugin_fedora*
+	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_fedora*
 
 override_dh_install:
 	dh_install -X.a -X.la --list-missing
