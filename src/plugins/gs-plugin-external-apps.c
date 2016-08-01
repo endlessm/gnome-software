@@ -626,7 +626,7 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 
 	priv = gs_plugin_get_data (plugin);
 
-	full_id = g_strdup_printf ("%s:%s",
+	full_id = g_strdup_printf ("%s%s",
 				   gs_flatpak_get_prefix (priv->flatpak),
 				   id);
 
@@ -639,9 +639,9 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 		return runtime;
 	}
 
-	runtime = gs_app_new (full_id);
+	runtime = gs_app_new (id);
 	gs_app_set_metadata (runtime, METADATA_HEADLESS_APP,
-			     gs_app_get_id (headless_app));
+			     gs_app_get_unique_id (headless_app));
 	gs_app_set_metadata (runtime, METADATA_URL, url);
 	gs_app_set_metadata (runtime, METADATA_TYPE, type);
 	gs_app_set_metadata (runtime, "flatpak::kind", "runtime");
