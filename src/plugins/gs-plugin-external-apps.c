@@ -714,17 +714,6 @@ gs_plugin_refine_app (GsPlugin *plugin,
 }
 
 gboolean
-gs_plugin_add_installed (GsPlugin *plugin,
-			 GsAppList *list,
-			 GCancellable *cancellable,
-			 GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	return gs_flatpak_add_installed (priv->flatpak, list, cancellable,
-					 error);
-}
-
-gboolean
 gs_plugin_app_install (GsPlugin *plugin,
 		       GsApp *app,
 		       GCancellable *cancellable,
@@ -839,18 +828,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 	clean_runtime_build_dir (plugin, ext_runtime, NULL);
 
 	return TRUE;
-}
-
-gboolean
-gs_plugin_refresh (GsPlugin *plugin,
-		   guint cache_age,
-		   GsPluginRefreshFlags flags,
-		   GCancellable *cancellable,
-		   GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	return gs_flatpak_refresh (priv->flatpak, cache_age, flags,
-				   cancellable, error);
 }
 
 gboolean
