@@ -8,6 +8,8 @@ GS_CONFIGURE_FLAGS = --libdir=/usr/lib \
 		--disable-reviews      \
 		--disable-shell-extensions 	\
 		--disable-odrs			\
+		--disable-ostree		\
+		--disable-steam			\
 		--enable-flatpak
 
 # Install target dir
@@ -21,8 +23,12 @@ override_dh_auto_configure:
 
 override_dh_auto_install:
 	dh_auto_install --destdir=$(INSTALLDIR)
+	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_dpkg*
 	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_dummy*
+	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_epiphany*
 	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_fedora*
+	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_snap*
+	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_ubuntuone*
 
 override_dh_install:
 	dh_install -X.a -X.la --list-missing
