@@ -1,0 +1,1 @@
+../flatpak/gs-flatpak-app.h
