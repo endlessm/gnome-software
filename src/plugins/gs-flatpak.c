@@ -1867,5 +1867,5 @@ gs_flatpak_get_remotes_names (GsFlatpak *self,
 gboolean
 gs_flatpak_app_is_runtime (GsApp *app)
 {
-	return gs_app_get_flatpak_kind (app) == FLATPAK_REF_KIND_RUNTIME;
+	return g_strcmp0 (gs_app_get_flatpak_kind_as_str (app), "runtime") == 0;
 }
