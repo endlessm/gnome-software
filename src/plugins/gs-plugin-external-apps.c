@@ -527,6 +527,7 @@ extract_runtime_info_from_json_data (const char *data,
 	gboolean ret;
 	g_autoptr(JsonParser) parser = NULL;
 	JsonObject *root, *runtime;
+	JsonNode *node;
 	g_autoptr(GList) members = NULL;
 	const char *runtime_name = NULL;
 	const char *json_url = NULL;
@@ -548,7 +549,9 @@ extract_runtime_info_from_json_data (const char *data,
 		return NULL;
 	}
 
-	spec = json_object_get_int_member (root, JSON_SPEC_KEY);
+	node = json_object_get_member (root, JSON_SPEC_KEY);
+	if (node)
+		spec = json_node_get_int (node);
 	if (spec != EXTERNAL_ASSETS_SPEC_VERSION) {
 		g_set_error (error,
 		             GS_PLUGIN_ERROR,
@@ -559,8 +562,8 @@ extract_runtime_info_from_json_data (const char *data,
 		return NULL;
 	}
 
-	runtime = json_object_get_object_member (root, JSON_RUNTIME_KEY);
-	if (!runtime) {
+	node = json_object_get_member (root, JSON_RUNTIME_KEY);
+	if (!node) {
 		g_set_error (error,
 		             GS_PLUGIN_ERROR,
 		             GS_PLUGIN_ERROR_FAILED,
@@ -569,9 +572,10 @@ extract_runtime_info_from_json_data (const char *data,
 		return NULL;
 	}
 
-	runtime_name = json_object_get_string_member (runtime,
-						      JSON_RUNTIME_NAME_KEY);
-	if (!runtime_name) {
+	runtime = json_node_get_object (node);
+
+	node = json_object_get_member (runtime, JSON_RUNTIME_NAME_KEY);
+	if (!node) {
 		g_set_error (error,
 		             GS_PLUGIN_ERROR,
 		             GS_PLUGIN_ERROR_FAILED,
@@ -580,8 +584,10 @@ extract_runtime_info_from_json_data (const char *data,
 		return NULL;
 	}
 
-	json_url = json_object_get_string_member (runtime, JSON_RUNTIME_URL_KEY);
-	if (!json_url) {
+	runtime_name = json_node_get_string (node);
+
+	node = json_object_get_member (runtime, JSON_RUNTIME_URL_KEY);
+	if (!node) {
 		g_set_error (error,
 		             GS_PLUGIN_ERROR,
 		             GS_PLUGIN_ERROR_FAILED,
@@ -590,11 +596,15 @@ extract_runtime_info_from_json_data (const char *data,
 		return NULL;
 	}
 
+	json_url = json_node_get_string (node);
+
 	/* optional elements */
-	type_str = json_object_get_string_member (runtime,
-						  JSON_RUNTIME_TYPE_KEY);
-	*type = g_strdup (type_str);
+	node = json_object_get_member (runtime, JSON_RUNTIME_TYPE_KEY);
+	if (node)
+		type_str = json_node_get_string (node);
+
 	*url = g_strdup (json_url);
+	*type = g_strdup (type_str);
 
 	return g_strdup (runtime_name);
 }
