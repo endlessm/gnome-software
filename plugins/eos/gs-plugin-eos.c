@@ -24,11 +24,17 @@
 
 #include <config.h>
 
+#include <flatpak.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
 #include <gs-plugin.h>
 #include <gs-utils.h>
 #include <libsoup/soup.h>
+
+#include "gs-flatpak.h"
+#include "gs-flatpak-app.h"
+
+#define ENDLESS_ID_PREFIX "com.endlessm."
 
 /*
  * SECTION:
@@ -190,6 +196,162 @@ app_is_renamed (GsApp *app)
 	 * we keep it for legacy reasons */
 	return g_strcmp0 (gs_app_get_metadata_item (app, "X-Endless-CreatedBy"),
 			  "eos-desktop") == 0;
+}
+
+static gboolean
+gs_plugin_locale_is_compatible (GsPlugin *plugin,
+				const char *locale)
+{
+	g_auto(GStrv) locale_variants;
+	const char *plugin_locale = gs_plugin_get_locale (plugin);
+	int idx;
+
+	locale_variants = g_get_locale_variants (plugin_locale);
+	for (idx = 0; locale_variants[idx] != NULL; idx++) {
+		if (g_strcmp0 (locale_variants[idx], locale) == 0)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static char *
+get_app_locale_cache_key (const char *app_name)
+{
+	guint name_length = strlen (app_name);
+	char *suffix = NULL;
+	/* locales can be as long as 5 chars (e.g. pt_PT) so  */
+	const guint locale_max_length = 5;
+	char *locale_cache_name;
+
+	if (name_length <= locale_max_length)
+		return NULL;
+
+	locale_cache_name = g_strdup_printf ("locale:%s", app_name);
+	/* include the 'locale:' prefix */
+	name_length += 7;
+
+	/* get the suffix after the last '.' so we can get
+	 * e.g. com.endlessm.FooBar.pt or com.endlessm.FooBar.pt_BR */
+	suffix = g_strrstr (locale_cache_name + name_length - locale_max_length,
+			    ".");
+
+	if (suffix) {
+		/* get the language part of the eventual locale suffix
+		 * e.g. pt_BR -> pt */
+		char *locale_split = g_strrstr (suffix + 1, "_");
+
+		if (locale_split)
+			*locale_split = '\0';
+	}
+
+	return locale_cache_name;
+}
+
+static gboolean
+gs_plugin_app_is_locale_best_match (GsPlugin *plugin,
+				    GsApp *app)
+{
+	return g_str_has_suffix (gs_flatpak_app_get_ref_name (app),
+				 gs_plugin_get_locale (plugin));
+}
+
+static gboolean
+is_same_app (GsApp *app_a, GsApp *app_b)
+{
+	const char *app_a_id;
+	const char *app_b_id;
+
+	if (!app_a || !app_b)
+		return FALSE;
+
+	app_a_id = gs_app_get_unique_id (app_a);
+	app_b_id = gs_app_get_unique_id (app_b);
+
+	return (app_a == app_b) || (g_strcmp0 (app_a_id, app_b_id) == 0);
+}
+
+static void
+gs_plugin_update_locale_cache_app (GsPlugin *plugin,
+				   const char *locale_cache_key,
+				   GsApp *app)
+{
+	GsApp *cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
+
+	/* avoid blacklisting the same app that's already cached */
+	if (is_same_app (cached_app, app))
+		return;
+
+	if (cached_app && !gs_app_is_installed (cached_app)) {
+		const char *app_id = gs_app_get_unique_id (app);
+		const char *cached_app_id = gs_app_get_unique_id (cached_app);
+
+		g_debug ("Blacklisting '%s': using '%s' due to its locale",
+			 cached_app_id, app_id);
+		gs_app_add_category (cached_app, "Blacklisted");
+	}
+
+	gs_plugin_cache_add (plugin, locale_cache_key, app);
+}
+
+static gboolean
+gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
+{
+	guint endless_prefix_len = strlen (ENDLESS_ID_PREFIX);
+	g_autofree char *locale_cache_key = NULL;
+	g_auto(GStrv) tokens = NULL;
+	const char *last_token = NULL;
+	guint num_tokens = 0;
+	/* getting the app name, besides skipping the '.desktop' part of the id
+	 * also makes sure we're dealing with a Flatpak app */
+	const char *app_name = gs_flatpak_app_get_ref_name (app);
+	GsApp *cached_app = NULL;
+
+	if (!app_name || !g_str_has_prefix (app_name, ENDLESS_ID_PREFIX))
+		return FALSE;
+
+	tokens = g_strsplit (app_name + endless_prefix_len, ".", -1);
+	num_tokens = g_strv_length (tokens);
+
+	/* we need at least 2 tokens: app-name & locale */
+	if (num_tokens < 2)
+		return FALSE;
+
+	/* last token may be the locale */
+	last_token = tokens[num_tokens - 1];
+
+	if (!gs_plugin_locale_is_compatible (plugin, last_token)) {
+		if (gs_app_is_installed (app))
+			return FALSE;
+
+		g_debug ("Blacklisting '%s': incompatible with the current "
+			 "locale", gs_app_get_unique_id (app));
+		gs_app_add_category (app, "Blacklisted");
+
+		return TRUE;
+	}
+
+	locale_cache_key = get_app_locale_cache_key (app_name);
+	cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
+
+	if (is_same_app (cached_app, app))
+		return FALSE;
+
+	/* skip if the cached app is already our best */
+	if (cached_app &&
+	    gs_plugin_app_is_locale_best_match (plugin, cached_app)) {
+		if (!gs_app_is_installed (app)) {
+			g_debug ("Blacklisting '%s': cached app '%s' is best "
+				 "match", gs_app_get_unique_id (app),
+				 gs_app_get_unique_id (cached_app));
+			gs_app_add_category (app, "Blacklisted");
+		}
+
+		return TRUE;
+	}
+
+	gs_plugin_update_locale_cache_app (plugin, locale_cache_key, app);
+	return FALSE;
 }
 
 static gboolean
@@ -432,6 +594,9 @@ gs_plugin_refine (GsPlugin		*plugin,
 			continue;
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app);
+
+		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
+			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
 	}
