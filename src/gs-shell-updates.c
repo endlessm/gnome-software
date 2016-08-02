@@ -659,7 +659,12 @@ gs_shell_updates_activated_cb (GtkListBox *list_box,
 
 	app = gs_app_row_get_app (GS_APP_ROW (row));
 
-	show_update_details (app, self);
+	/* XXX: (Endless): since we don't publish details about updates for our apps
+	 * and runtimes yet, just show the app page instead of the update details.
+	 *
+	 * show_update_details (app, self);
+	 */
+	gs_shell_show_app (self->shell, app);
 }
 
 static void
