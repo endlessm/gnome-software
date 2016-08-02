@@ -663,7 +663,17 @@ gs_updates_page_activated_cb (GtkListBox *list_box,
 
 	app = gs_app_row_get_app (GS_APP_ROW (row));
 
-	show_update_details (app, self);
+	/* XXX: (Endless): since we don't publish details about updates for our apps
+	 * and runtimes yet, just show the app page instead of the update
+	 * details; for runtimes however, we do nothing as the details page for
+	 * runtimes does not have a lot of useful information and allows users
+	 * to remove the runtimes which is unintented.
+	 *
+	 * show_update_details (app, self);
+	 */
+
+	if (gs_app_get_kind (app) != AS_APP_KIND_RUNTIME)
+		gs_shell_show_app (self->shell, app);
 }
 
 static void
