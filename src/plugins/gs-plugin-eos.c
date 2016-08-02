@@ -483,8 +483,8 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 }
 
-static void
-gs_plugin_eos_refine_app_branch (GsPlugin *plugin, GsApp *app)
+static gboolean
+gs_plugin_eos_blacklist_by_branch_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	const char *default_branch;
 	const char *branch = NULL;
@@ -492,7 +492,7 @@ gs_plugin_eos_refine_app_branch (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = NULL;
 
 	if (!gs_plugin_eos_app_is_flatpak (app))
-		return;
+		return FALSE;
 
 	priv = gs_plugin_get_data (plugin);
 	default_branch = g_hash_table_lookup (priv->default_branches, origin);
@@ -500,18 +500,22 @@ gs_plugin_eos_refine_app_branch (GsPlugin *plugin, GsApp *app)
 	/* if we do not have a configured default branch for this repo then
 	 * do nothing */
 	if (!default_branch)
-		return;
+		return FALSE;
 
 	/* if an app has no branch set, maybe it will be set later so we let
 	 * it pass */
 	branch = gs_app_get_flatpak_branch (app);
 	if (!branch)
-		return;
+		return FALSE;
 
 	/* do not show an app if it doesn't belong to the default branch that
 	 * is configured for its remote */
-	if (g_strcmp0 (branch, default_branch) != 0)
+	if (g_strcmp0 (branch, default_branch) != 0) {
 		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 /**
@@ -544,7 +548,8 @@ gs_plugin_refine (GsPlugin		*plugin,
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
 
-		gs_plugin_eos_refine_app_branch (plugin, app);
+		if (gs_plugin_eos_blacklist_by_branch_if_needed (plugin, app))
+			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
 	}
