@@ -542,12 +542,12 @@ gs_plugin_refine (GsPlugin		*plugin,
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
 			continue;
 
-		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
-
 		if (gs_plugin_eos_blacklist_by_branch_if_needed (plugin, app))
 			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
+
+		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
 	}
 
 	if (apps)
