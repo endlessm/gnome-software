@@ -265,50 +265,21 @@ app_is_renamed (GsApp *app)
 			  "eos-desktop") == 0;
 }
 
-/* Copied from the private as_locale_to_language that is part of
- * appstream-glib's as-utils.c */
-static gchar *
-locale_to_language (const gchar *locale)
-{
-	gchar *tmp;
-	gchar *country_code;
-
-	/* invalid */
-	if (locale == NULL)
-		return NULL;
-
-	/* return the part before the _ (not always 2 chars!) */
-	country_code = g_strdup (locale);
-	tmp = g_strstr_len (country_code, -1, "_");
-	if (tmp != NULL)
-		*tmp = '\0';
-	return country_code;
-}
-
 static gboolean
 gs_plugin_locale_is_compatible (GsPlugin *plugin,
 				const char *locale)
 {
-	g_autofree char *lang = NULL;
+	g_auto(GStrv) locale_variants;
 	const char *plugin_locale = gs_plugin_get_locale (plugin);
 	const char *plugin_lang = gs_plugin_get_language (plugin);
+	int idx;
 
-	/* if we don't know the current locale than all locales should be
-	 * compatible */
-	if (!plugin_locale)
-		return TRUE;
-
-	if (g_strcmp0 (locale, plugin_locale) == 0)
-		return TRUE;
-
-	lang = locale_to_language (locale);
-
-	/* in case one of the given locales only represents the language
-	 * (e.g. 'es') check if it's compatible with the other locale's language
-	 * component */
-	if ((g_strcmp0 (lang, plugin_locale) == 0) ||
-	    (g_strcmp0 (plugin_lang, locale) == 0))
-		return TRUE;
+	locale_variants = g_get_locale_variants (locale);
+	for (idx = 0; locale_variants[idx] != NULL; idx++) {
+		if (g_strcmp0 (locale_variants[idx], plugin_locale) == 0 ||
+		    g_strcmp0 (locale_variants[idx], plugin_lang) == 0)
+			return TRUE;
+	}
 
 	return FALSE;
 }
