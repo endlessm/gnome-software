@@ -347,15 +347,6 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	if (!app_name || !g_str_has_prefix (app_name, ENDLESS_ID_PREFIX))
 		return FALSE;
 
-	locale_cache_key = get_app_locale_cache_key (app_name);
-
-	/* skip if the cached app is already our best */
-	if (gs_plugin_locale_cached_app_is_best_match (plugin,
-						       locale_cache_key)) {
-		gs_app_add_category (app, "Blacklisted");
-		return TRUE;
-	}
-
 	tokens = g_strsplit (app_name + endless_prefix_len, ".", -1);
 	num_tokens = g_strv_length (tokens);
 
@@ -367,6 +358,14 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	last_token = tokens[num_tokens - 1];
 
 	if (!gs_plugin_locale_is_compatible (plugin, last_token)) {
+		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
+
+	locale_cache_key = get_app_locale_cache_key (app_name);
+
+	/* skip if the cached app is already our best */
+	if (gs_plugin_locale_cached_app_is_best_match (plugin, locale_cache_key)) {
 		gs_app_add_category (app, "Blacklisted");
 		return TRUE;
 	}
