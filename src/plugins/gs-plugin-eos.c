@@ -33,6 +33,7 @@
 
 #define FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX "remote:"
 #define FLATPAK_EXTRA_CONF_REMOTE_DEFAULT_BRANCH "default-branch"
+#define ENDLESS_ID_PREFIX "com.endlessm."
 
 /*
  * SECTION:
@@ -265,6 +266,115 @@ app_is_renamed (GsApp *app)
 }
 
 static gboolean
+gs_plugin_locale_is_compatible (GsPlugin *plugin,
+				const char *locale)
+{
+	g_auto(GStrv) locale_variants;
+	const char *plugin_locale = gs_plugin_get_locale (plugin);
+	const char *plugin_lang = gs_plugin_get_language (plugin);
+	int idx;
+
+	locale_variants = g_get_locale_variants (locale);
+	for (idx = 0; locale_variants[idx] != NULL; idx++) {
+		if (g_strcmp0 (locale_variants[idx], plugin_locale) == 0 ||
+		    g_strcmp0 (locale_variants[idx], plugin_lang) == 0)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static char *
+get_app_locale_cache_key (const char *app_name)
+{
+	g_autofree char *locale_cache_name = g_strdup (app_name);
+	guint name_length = strlen (locale_cache_name);
+	char *locale_split = NULL;
+
+	/* locales can be as long as 5 chars (e.g. pt_PT) so  */
+	if (name_length <= 5)
+		return NULL;
+
+	locale_split = g_strrstr (locale_cache_name + name_length - 5, "_");
+	if (locale_split)
+		*locale_split = '\0';
+
+	return g_strdup_printf ("locale:%s", locale_cache_name);
+}
+
+static gboolean
+gs_plugin_locale_cached_app_is_best_match (GsPlugin *plugin,
+					   const char *locale_cache_key)
+{
+	GsApp *cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
+
+	if (!cached_app)
+		return FALSE;
+
+	return g_str_has_suffix (gs_app_get_flatpak_name (cached_app),
+				 gs_plugin_get_locale (plugin));
+}
+
+static void
+gs_plugin_update_locale_cache_app (GsPlugin *plugin,
+				   const char *locale_cache_key,
+				   GsApp *app)
+{
+	GsApp *cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
+
+	/* avoid blacklisting the same app that's already cached */
+	if (cached_app == app)
+		return;
+
+	if (cached_app)
+		gs_app_add_category (cached_app, "Blacklisted");
+
+	gs_plugin_cache_add (plugin, locale_cache_key, app);
+}
+
+static gboolean
+gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
+{
+	guint endless_prefix_len = strlen (ENDLESS_ID_PREFIX);
+	g_autofree char *locale_cache_key = NULL;
+	g_auto(GStrv) tokens = NULL;
+	const char *last_token = NULL;
+	guint num_tokens = 0;
+	/* getting the app name, besides skipping the '.desktop' part of the id
+	 * also makes sure we're dealing with a Flatpak app */
+	const char *app_name = gs_app_get_flatpak_name (app);
+
+	if (!app_name || !g_str_has_prefix (app_name, ENDLESS_ID_PREFIX))
+		return FALSE;
+
+	tokens = g_strsplit (app_name + endless_prefix_len, ".", -1);
+	num_tokens = g_strv_length (tokens);
+
+	/* we need at least 2 tokens: app-name & locale */
+	if (num_tokens < 2)
+		return FALSE;
+
+	/* last token may be the locale */
+	last_token = tokens[num_tokens - 1];
+
+	if (!gs_plugin_locale_is_compatible (plugin, last_token)) {
+		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
+
+	locale_cache_key = get_app_locale_cache_key (app_name);
+
+	/* skip if the cached app is already our best */
+	if (gs_plugin_locale_cached_app_is_best_match (plugin, locale_cache_key)) {
+		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
+
+	gs_plugin_update_locale_cache_app (plugin, locale_cache_key, app);
+	return FALSE;
+}
+
+static gboolean
 gs_plugin_eos_blacklist_if_needed (GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
@@ -483,8 +593,8 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 }
 
-static void
-gs_plugin_eos_refine_app_branch (GsPlugin *plugin, GsApp *app)
+static gboolean
+gs_plugin_eos_blacklist_by_branch_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	const char *default_branch;
 	const char *branch = NULL;
@@ -492,7 +602,7 @@ gs_plugin_eos_refine_app_branch (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = NULL;
 
 	if (!gs_plugin_eos_app_is_flatpak (app))
-		return;
+		return FALSE;
 
 	priv = gs_plugin_get_data (plugin);
 	default_branch = g_hash_table_lookup (priv->default_branches, origin);
@@ -500,18 +610,22 @@ gs_plugin_eos_refine_app_branch (GsPlugin *plugin, GsApp *app)
 	/* if we do not have a configured default branch for this repo then
 	 * do nothing */
 	if (!default_branch)
-		return;
+		return FALSE;
 
 	/* if an app has no branch set, maybe it will be set later so we let
 	 * it pass */
 	branch = gs_app_get_flatpak_branch (app);
 	if (!branch)
-		return;
+		return FALSE;
 
 	/* do not show an app if it doesn't belong to the default branch that
 	 * is configured for its remote */
-	if (g_strcmp0 (branch, default_branch) != 0)
+	if (g_strcmp0 (branch, default_branch) != 0) {
 		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 /**
@@ -542,11 +656,15 @@ gs_plugin_refine (GsPlugin		*plugin,
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
 			continue;
 
-		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
+		if (gs_plugin_eos_blacklist_by_branch_if_needed (plugin, app))
+			continue;
 
-		gs_plugin_eos_refine_app_branch (plugin, app);
+		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
+			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
+
+		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
 	}
 
 	g_hash_table_destroy (apps);
