@@ -271,13 +271,11 @@ gs_plugin_locale_is_compatible (GsPlugin *plugin,
 {
 	g_auto(GStrv) locale_variants;
 	const char *plugin_locale = gs_plugin_get_locale (plugin);
-	const char *plugin_lang = gs_plugin_get_language (plugin);
 	int idx;
 
-	locale_variants = g_get_locale_variants (locale);
+	locale_variants = g_get_locale_variants (plugin_locale);
 	for (idx = 0; locale_variants[idx] != NULL; idx++) {
-		if (g_strcmp0 (locale_variants[idx], plugin_locale) == 0 ||
-		    g_strcmp0 (locale_variants[idx], plugin_lang) == 0)
+		if (g_strcmp0 (locale_variants[idx], locale) == 0)
 			return TRUE;
 	}
 
