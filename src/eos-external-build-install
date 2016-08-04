@@ -1,0 +1,145 @@
+#!/bin/bash -e
+
+# eos-external-build-install - Build an external app and install it in a system repo
+# Copyright (C) 2016 Endless Mobile, Inc.
+#
+# Authors:
+#	Joaquim Rocha <jrocha@endlessm.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+function help {
+    echo "$0"
+    echo "Usage:"
+    echo "  $0 SYSTEM_REPO APP_NAME EXTERNAL_ASSET_URL EXTERNAL_ASSET_TYPE EXTERNAL_ASSET_SHA256"
+    echo ""
+    echo "APP_NAME              the app name (e.g. org.myorg.MyApp)"
+    echo "EXTERNAL_ASSET_URL    the asset URL (e.g. https://www.myorg.org/MyOrg_0.1.2-1.deb)"
+    echo "EXTERNAL_ASSET_TYPE   the type of the asset ('deb' or 'tar')"
+}
+
+SYSTEMREPO=$1
+APPNAME=$2
+ASSETURL=$3
+ASSETTYPE=$4
+ASSETSHA256=$5 # fixme: currently not used; so installations are not using a branch
+
+if [ -z "$SYSTEMREPO" ]; then
+   echo "$0: Need the system repo name"
+   help
+   exit 1
+fi
+
+if [ -z "$APPNAME" ]; then
+   echo "$0: Need the app name"
+   help
+   exit 1
+fi
+
+if [ -z "$ASSETURL" ]; then
+    echo "$0: Need an external asset URL"
+    help
+    exit 1
+fi
+
+if [ -z "$ASSETTYPE" ]; then
+    echo "$0: Need the external asset type"
+    help
+    exit 1
+fi
+
+if [ -z "$ASSETSHA256" ]; then
+    echo "$0: Need the external asset checksum"
+    help
+    exit 1
+fi
+
+EXTAPPSDIR="/var/opt/flatpak-external-apps"
+BUILDDIR="$EXTAPPSDIR/$APPNAME/app"
+BUNDLEDIR="$EXTAPPSDIR/$APPNAME/bundle"
+REPO="$EXTAPPSDIR/repo"
+
+# Make sure the system external apps repo exists and is added
+if [ ! -d ${REPO} ]; then
+    mkdir -p ${REPO}
+
+    ret=$?
+    if [ ! $ret -eq 0 ]; then
+       echo "Could create the external apps repo: retcode=$ret"
+       exit $ret
+    fi
+fi
+
+mkdir -p "$BUILDDIR"
+
+# Download the app
+cd "$BUILDDIR"
+curl -L -O -C - "$ASSETURL"
+ret=$?
+if [ $ret -ne 0 ]; then
+    echo "$0: Could not download asset: retcode=$ret"
+    exit $ret
+fi
+
+rm -rf "$BUNDLEDIR"
+
+echo "Building bundle..."
+
+# Initialize the build structure
+flatpak build-init "$BUNDLEDIR" "$APPNAME" "com.endlessm.Platform" "com.endlessm.Platform"
+sed -i s/Application/Runtime/ "$BUNDLEDIR/metadata"
+
+# Extract the asset into the build files
+mkdir -p "$BUNDLEDIR/usr"
+cd $BUILDDIR
+assetfile=$(basename "$ASSETURL")
+if [ "$ASSETTYPE" = "deb" ]; then
+    ar x "$assetfile"
+    tar xf data.tar.* -C "$BUNDLEDIR"
+else
+    if [ "$ASSETTYPE" = "tar" ]; then
+	tar xf "$assetfile" -C "$BUNDLEDIR/usr"
+    else
+	echo "$0: Cannot support asset type $ASSETTYPE"
+	exit 1
+    fi
+fi
+
+# Export the runtime extension to the external apps repo
+flatpak build-export --runtime "$REPO" "$BUNDLEDIR" "$APPNAME"
+ret=$?
+if [ $ret -ne 0 ]; then
+    echo "$0: Could not export runtime extension: retcode=$ret"
+    exit $ret
+fi
+
+# Delete build dirs
+rm -rf "$BUILDDIR" "$BUNDLEDIR"
+
+echo "Built bundle $APPNAME and exported to $REPO"
+
+# Install the bundle
+echo "Install $APPNAME..."
+
+flatpak install "$SYSTEMREPO" "$APPNAME"
+ret=$?
+if [ $ret -ne 0 ]; then
+    echo "$0: Could not install $APPNAME from repo $SYSTEMREPO"
+else
+    echo "$APPNAME is now installed"
+fi
+
+# Remove installed app from system repo
+ostree refs --delete "runtime/$APPNAME" --repo="$SYSTEMREPO"
