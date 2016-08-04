@@ -365,6 +365,9 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	locale_cache_key = get_app_locale_cache_key (app_name);
 	cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
 
+	if (cached_app == app)
+		return FALSE;
+
 	/* skip if the cached app is already our best */
 	if (cached_app &&
 	    gs_plugin_app_is_locale_best_match (plugin, cached_app)) {
