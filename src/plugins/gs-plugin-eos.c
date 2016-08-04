@@ -271,13 +271,11 @@ gs_plugin_locale_is_compatible (GsPlugin *plugin,
 {
 	g_auto(GStrv) locale_variants;
 	const char *plugin_locale = gs_plugin_get_locale (plugin);
-	const char *plugin_lang = gs_plugin_get_language (plugin);
 	int idx;
 
-	locale_variants = g_get_locale_variants (locale);
+	locale_variants = g_get_locale_variants (plugin_locale);
 	for (idx = 0; locale_variants[idx] != NULL; idx++) {
-		if (g_strcmp0 (locale_variants[idx], plugin_locale) == 0 ||
-		    g_strcmp0 (locale_variants[idx], plugin_lang) == 0)
+		if (g_strcmp0 (locale_variants[idx], locale) == 0)
 			return TRUE;
 	}
 
@@ -303,15 +301,10 @@ get_app_locale_cache_key (const char *app_name)
 }
 
 static gboolean
-gs_plugin_locale_cached_app_is_best_match (GsPlugin *plugin,
-					   const char *locale_cache_key)
+gs_plugin_app_is_locale_best_match (GsPlugin *plugin,
+				    GsApp *app)
 {
-	GsApp *cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
-
-	if (!cached_app)
-		return FALSE;
-
-	return g_str_has_suffix (gs_app_get_flatpak_name (cached_app),
+	return g_str_has_suffix (gs_app_get_flatpak_name (app),
 				 gs_plugin_get_locale (plugin));
 }
 
@@ -326,8 +319,12 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 	if (cached_app == app)
 		return;
 
-	if (cached_app)
+	if (cached_app) {
+		g_debug ("Blacklisting '%s': using '%s' due to its locale",
+			 gs_app_get_unique_id (cached_app),
+			 gs_app_get_unique_id (app));
 		gs_app_add_category (cached_app, "Blacklisted");
+	}
 
 	gs_plugin_cache_add (plugin, locale_cache_key, app);
 }
@@ -343,6 +340,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	/* getting the app name, besides skipping the '.desktop' part of the id
 	 * also makes sure we're dealing with a Flatpak app */
 	const char *app_name = gs_app_get_flatpak_name (app);
+	GsApp *cached_app = NULL;
 
 	if (!app_name || !g_str_has_prefix (app_name, ENDLESS_ID_PREFIX))
 		return FALSE;
@@ -358,14 +356,24 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	last_token = tokens[num_tokens - 1];
 
 	if (!gs_plugin_locale_is_compatible (plugin, last_token)) {
+		g_debug ("Blacklisting '%s': incompatible with the current "
+			 "locale", gs_app_get_unique_id (app));
 		gs_app_add_category (app, "Blacklisted");
 		return TRUE;
 	}
 
 	locale_cache_key = get_app_locale_cache_key (app_name);
+	cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
+
+	if (cached_app == app)
+		return FALSE;
 
 	/* skip if the cached app is already our best */
-	if (gs_plugin_locale_cached_app_is_best_match (plugin, locale_cache_key)) {
+	if (cached_app &&
+	    gs_plugin_app_is_locale_best_match (plugin, cached_app)) {
+		g_debug ("Blacklisting '%s': cached app '%s' is best match",
+			 gs_app_get_unique_id (app),
+			 gs_app_get_unique_id (cached_app));
 		gs_app_add_category (app, "Blacklisted");
 		return TRUE;
 	}
