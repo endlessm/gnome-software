@@ -27,10 +27,16 @@
 #include <glib/gi18n.h>
 #include <gs-plugin.h>
 #include <gs-utils.h>
+#include <sys/types.h>
+#include <sys/xattr.h>
 
 #include "gs-flatpak.h"
 
 #define ENDLESS_ID_PREFIX "com.endlessm."
+
+#define EOS_IMAGE_VERSION_XATTR "user.eos-image-version"
+#define EOS_IMAGE_VERSION_PATH "/sysroot"
+#define EOS_IMAGE_VERSION_ALT_PATH "/"
 
 /*
  * SECTION:
@@ -43,6 +49,7 @@ struct GsPluginData
 	GHashTable *desktop_apps;
 	int applications_changed_id;
 	SoupSession *soup_session;
+	char *personality;
 };
 
 static GHashTable *
@@ -89,6 +96,65 @@ on_desktop_apps_changed (GDBusConnection *connection,
 		g_hash_table_destroy (apps);
 }
 
+static char *
+get_image_version_for_path (const char *path)
+{
+	ssize_t xattr_size = 0;
+	char *image_version = NULL;
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR, NULL, 0);
+
+	if (xattr_size == -1) {
+		return NULL;
+	}
+
+	image_version = g_malloc0 (xattr_size + 1);
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR,
+			       image_version, xattr_size);
+
+	/* this check is just in case the xattr has changed in between the
+	 * size checks */
+	if (xattr_size == -1) {
+		g_warning ("Error when getting the 'eos-image-version' from %s",
+			   path);
+		return NULL;
+	}
+
+	return image_version;
+}
+
+static char *
+get_image_version (void)
+{
+	char *image_version =
+		get_image_version_for_path (EOS_IMAGE_VERSION_PATH);
+
+	if (!image_version)
+		image_version =
+			get_image_version_for_path (EOS_IMAGE_VERSION_ALT_PATH);
+
+	return image_version;
+}
+
+static char *
+get_personality (void)
+{
+	g_autofree char *image_version = get_image_version ();
+	g_auto(GStrv) tokens = NULL;
+	guint num_tokens = 0;
+	char *personality = NULL;
+
+	if (!image_version)
+		return NULL;
+
+	tokens = g_strsplit (image_version, ".", 0);
+	num_tokens = g_strv_length (tokens);
+	personality = tokens[num_tokens - 1];
+
+	return g_strdup (personality);
+}
+
 /**
  * gs_plugin_initialize:
  */
@@ -118,6 +184,10 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->soup_session = soup_session_new_with_options (SOUP_SESSION_USER_AGENT,
 	                                                    gs_user_agent (),
 	                                                    NULL);
+	priv->personality = get_personality ();
+
+	if (!priv->personality)
+		g_warning ("No system personality could be retrieved!");
 }
 
 /**
@@ -137,6 +207,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_clear_object (&priv->session_bus);
 	g_clear_object (&priv->soup_session);
 	g_hash_table_destroy (priv->desktop_apps);
+	g_free (priv->personality);
 }
 
 static GHashTable *
@@ -343,7 +414,21 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-gs_plugin_eos_blacklist_if_needed (GsApp *app)
+app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const char *id = gs_app_get_id (app);
+
+	/* only block apps based on personality if they are not installed */
+	if (gs_app_is_installed (app))
+		return FALSE;
+
+	return (g_strcmp0 (priv->personality, "es_GT") == 0) &&
+		(g_strcmp0 (id, "org.openarena.Openarena.desktop") == 0);
+}
+
+static gboolean
+gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
 	const char *id = gs_app_get_id (app);
@@ -358,6 +443,8 @@ gs_plugin_eos_blacklist_if_needed (GsApp *app)
 			   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
 			blacklist_app = TRUE;
 		} else if (app_is_renamed (app)) {
+			blacklist_app = TRUE;
+		} else if (app_is_banned_for_personality (plugin, app)) {
 			blacklist_app = TRUE;
 		}
 	}
@@ -591,7 +678,7 @@ gs_plugin_refine (GsPlugin		*plugin,
 
 		gs_plugin_eos_refine_core_app (app);
 
-		if (gs_plugin_eos_blacklist_if_needed (app))
+		if (gs_plugin_eos_blacklist_if_needed (plugin, app))
 			continue;
 
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
