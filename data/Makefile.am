@@ -39,8 +39,22 @@ install-sample-data:
 	rm fedora-20-icons.tar.gz; \
 	cd -
 
+polkit_rulesdir = $(datadir)/polkit-1/rules.d
+polkit_rules_DATA =					\
+	com.endlessm.SystemExternalApps.rules
+
+polkit_policydir = $(datadir)/polkit-1/actions
+polkit_policy_DATA =					\
+	com.endlessm.SystemExternalApps.policy
+
 EXTRA_DIST =						\
-	$(gsettings_SCHEMAS)
+	$(gsettings_SCHEMAS)				\
+	com.endlessm.SystemExternalApps.policy.in	\
+	com.endlessm.SystemExternalApps.rules.in
+
+DISTCLEANFILES =					\
+	com.endlessm.SystemExternalApps.policy		\
+	com.endlessm.SystemExternalApps.rules
 
 MAINTAINERCLEANFILES =					\
 	*~						\
