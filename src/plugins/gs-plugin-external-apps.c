@@ -122,32 +122,51 @@ gs_plugin_setup (GsPlugin *plugin,
 	return TRUE;
 }
 
+static void
+command_cancelled_cb (GCancellable *cancellable,
+		      GSubprocess *subprocess)
+{
+	g_debug ("Killing process '%s' after a cancellation!",
+		 g_subprocess_get_identifier (subprocess));
+	g_subprocess_force_exit (subprocess);
+}
+
 static gboolean
-run_command (const char *working_dir,
-	     const char **argv,
+run_command (const char **argv,
+	     GCancellable *cancellable,
 	     GError **error)
 {
-	g_autofree char *stderr_buf = NULL;
-	g_autofree char *stdout_buf = NULL;
 	g_autofree char *cmd = NULL;
 	int exit_val = -1;
+	g_autoptr(GSubprocess) subprocess = NULL;
+	gboolean result = FALSE;
 
-	if (!g_spawn_sync (working_dir, (char **) argv, NULL,
-			   G_SPAWN_SEARCH_PATH, NULL, NULL, &stdout_buf,
-			   &stderr_buf, &exit_val, error)) {
+	subprocess = g_subprocess_newv (argv,
+					G_SUBPROCESS_FLAGS_STDOUT_PIPE |
+					G_SUBPROCESS_FLAGS_STDIN_PIPE,
+					error);
+
+	if (!subprocess)
 		return FALSE;
-	}
 
+	if (cancellable)
+		g_cancellable_connect (cancellable,
+				       G_CALLBACK (command_cancelled_cb),
+				       subprocess, NULL);
+
+	result = g_subprocess_wait_check (subprocess, NULL, error);
+
+	exit_val = g_subprocess_get_exit_status (subprocess);
 	cmd = g_strjoinv (" ", (char **) argv);
-	g_debug ("Result of running '%s': retcode=%d stdout='%s' stderr='%s'",
-		 cmd, exit_val,	(stdout_buf ? stdout_buf : "NULL"),
-		 (stderr_buf ? stderr_buf : "NULL"));
 
-	return g_spawn_check_exit_status (exit_val, error);
+	g_debug ("Result of running '%s': retcode=%d", cmd, exit_val);
+
+	return result;
 }
 
 static gboolean
 build_and_install_external_runtime (GsApp *runtime,
+				    GCancellable *cancellable,
 				    GError **error)
 {
 	const char *runtime_url = gs_app_get_metadata_item (runtime,
@@ -166,7 +185,7 @@ build_and_install_external_runtime (GsApp *runtime,
 	g_debug ("Building and installing runtime extension '%s'...",
 		 gs_app_get_unique_id (runtime));
 
-	return run_command (NULL, argv, error);
+	return run_command (argv, cancellable, error);
 }
 
 static inline GsPluginExternalType
@@ -436,7 +455,8 @@ gs_plugin_app_install (GsPlugin *plugin,
 	if (gs_app_get_state (ext_runtime) == AS_APP_STATE_UNKNOWN) {
 		gs_app_set_progress (app, 50);
 
-		if (!build_and_install_external_runtime (ext_runtime, error)) {
+		if (!build_and_install_external_runtime (ext_runtime,
+							 cancellable, error)) {
 			g_debug ("Failed to build and install external "
 				 "runtime '%s'", runtime);
 			return FALSE;
@@ -490,6 +510,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 		/* In case we may end up here somehow, just let the situation
 		 * be dealt with in the check for the 'installed' state below */
 		break;
+	}
+
+	if (g_cancellable_is_cancelled (cancellable)) {
+		g_debug ("Installation of '%s' was cancelled",
+			 gs_app_get_unique_id (ext_runtime));
+
+		return TRUE;
 	}
 
 	if (gs_app_get_state (ext_runtime) != AS_APP_STATE_INSTALLED) {
