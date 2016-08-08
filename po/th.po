@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-26 04:25+0000\n"
-"PO-Revision-Date: 2016-08-01 20:05+0000\n"
+"POT-Creation-Date: 2016-08-02 05:13+0000\n"
+"PO-Revision-Date: 2016-08-03 06:05+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Thai (http://www.transifex.com/endless-mobile-inc/gnome-software/language/th/)\n"
 "MIME-Version: 1.0\n"
@@ -125,7 +125,7 @@ msgstr "รายชื่อแหล่งที่เป็นทางกา
 
 #: ../data/org.gnome.software.gschema.xml.h:20
 msgid "A list of official sources that should be considered free software"
-msgstr ""
+msgstr "รายการแหล่งข้อมูลอย่างเป็นทางการซึ่งควรจัดเป็นซอฟต์แวร์ฟรี"
 
 #: ../data/org.gnome.software.gschema.xml.h:21
 msgid ""
@@ -148,7 +148,7 @@ msgstr "อนุญาตการเข้าถึงไดอะล็อก
 
 #: ../data/org.gnome.software.gschema.xml.h:25
 msgid "Offer upgrades for pre-releases"
-msgstr ""
+msgstr "เสนอการอัพเกรดสำหรับรุ่นก่อนปล่อยตัว"
 
 #: ../data/org.gnome.software.gschema.xml.h:26
 msgid "Show some UI elements informing the user that an app is non-free"
@@ -277,7 +277,7 @@ msgstr "คำค้น"
 
 #: ../src/gs-application.c:102
 msgid "Show application details (using application ID)"
-msgstr ""
+msgstr "แสดงรายละเอียดแอพพลิเคชั่น (ใช้งาน ID ของแอพพลิเคชั่น)"
 
 #: ../src/gs-application.c:102
 msgid "ID"
@@ -384,12 +384,12 @@ msgstr "แหล่ง"
 #. security sandbox
 #: ../src/gs-app-row.ui.h:3 ../src/gs-shell-details.ui.h:28
 msgid "Sandboxed"
-msgstr ""
+msgstr "เก็บไว้ในหลุมทรายแล้ว"
 
 #. TRANSLATORS: this is when the service name is not known
 #: ../src/gs-auth-dialog.c:70
 msgid "To continue you need to sign in."
-msgstr ""
+msgstr "คุณต้องเข้าสู่ระบบเพื่อทำต่อ"
 
 #. TRANSLATORS: the %s is a service name, e.g. "Ubuntu One"
 #: ../src/gs-auth-dialog.c:74
@@ -400,7 +400,7 @@ msgstr "คุณต้องเข้าสู่ระบบ %s เพื่�
 #. vim: set noexpandtab:
 #: ../src/gs-auth-dialog.ui.h:1
 msgid "Email address"
-msgstr ""
+msgstr "ที่อยู่อีเมล"
 
 #: ../src/gs-auth-dialog.ui.h:2
 msgid "I have an account already"
@@ -432,7 +432,7 @@ msgstr "PIN"
 
 #: ../src/gs-auth-dialog.ui.h:9
 msgid "Continue"
-msgstr ""
+msgstr "ทำต่อ"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -637,7 +637,7 @@ msgstr "ข้อมูลเกี่ยวกับ %s และตัวเ�
 msgid ""
 "Some of the currently installed software is not compatible with %s. If you "
 "continue, the following will be automatically removed during the upgrade:"
-msgstr ""
+msgstr "ซอฟต์แวร์บางตัวที่ติดตั้งอยู่ในปัจจุบันไม่สามารถทำงานร่วมกันกับ %s ได้  หากคุณทำต่อ รายการต่อไปนี้จะถูกลบโดยอัตโนมัติระหว่างการอัพเกรด: "
 
 #. vim: set noexpandtab:
 #: ../src/gs-removal-dialog.ui.h:1
@@ -646,7 +646,7 @@ msgstr "ซอฟต์แวร์ที่ไม่สามารถทำง
 
 #: ../src/gs-removal-dialog.ui.h:3
 msgid "_Continue"
-msgstr ""
+msgstr "_ทำต่อ"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A really bad application
@@ -925,17 +925,17 @@ msgstr "สาธารณสมบัติ"
 #. TRANSLATORS: see GNU page
 #: ../src/gs-shell-details.c:1747 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
-msgstr ""
+msgstr "ซอฟต์แวร์ฟรี"
 
 #. TRANSLATORS: for the free software popover
 #: ../src/gs-shell-details.c:1802
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
-msgstr[0] ""
+msgstr[0] "ผู้ใช้มีพันธะผูกพันต่อลิขสิทธิ์ต่อไปนี้:"
 
 #: ../src/gs-shell-details.c:1817 ../src/gs-shell-details.ui.h:55
 msgid "More information"
-msgstr ""
+msgstr "ข้อมูลเพิ่มเติม"
 
 #. vim: set noexpandtab:
 #: ../src/gs-shell-details.ui.h:1
@@ -1043,7 +1043,7 @@ msgstr "หมวด"
 
 #: ../src/gs-shell-details.ui.h:32
 msgid "Installed Size"
-msgstr ""
+msgstr "ขนาดการติดตั้ง"
 
 #: ../src/gs-shell-details.ui.h:33
 msgid "Download Size"
@@ -1104,11 +1104,11 @@ msgstr "แ_สดงเพิ่มเติม"
 msgid ""
 "This means that the software can be freely run, copied, distributed, studied"
 " and modified."
-msgstr ""
+msgstr "นี่หมายความว่าซอฟต์แวร์สามารถทำงาน, คัดลอก, แจกจ่าย, ศึกษา หรือปรับเปลี่ยนได้โดยไม่มีค่าใช้จ่าย"
 
 #: ../src/gs-shell-details.ui.h:53
 msgid "Proprietary Software"
-msgstr ""
+msgstr "ซอฟต์แวร์กรรมสิทธิ์ "
 
 #: ../src/gs-shell-details.ui.h:54
 msgid ""
@@ -1119,11 +1119,11 @@ msgstr "นี่หมายความว่าซอฟต์แวร์เ
 
 #: ../src/gs-shell-details.ui.h:56
 msgid "Unknown Software License"
-msgstr ""
+msgstr "ลิขสิทธิ์ซอฟต์แวร์ไม่ทราบที่มา"
 
 #: ../src/gs-shell-details.ui.h:57
 msgid "The license terms of this software are unknown."
-msgstr ""
+msgstr "ไม่ทราบเงื่อนไขลิขสิทธิ์ของซอฟต์แวร์นี้"
 
 #. TRANSLATORS: separator for a list of items
 #: ../src/gs-shell-extras.c:145
@@ -1342,7 +1342,7 @@ msgstr "อื่นๆ..."
 #. * have been featured ('recommended') by the distribution
 #: ../src/gs-shell-overview.c:521
 msgid "Recommended Audio & Video Applications"
-msgstr ""
+msgstr "แอพพลิเคชั่นเสียงและวิดีโอแนะนำ"
 
 #. TRANSLATORS: this is a heading for games which have been
 #. * featured ('recommended') by the distribution
@@ -1521,12 +1521,12 @@ msgstr "ตั้งค่าเครือข่าย"
 #. TRANSLATORS: we've just live-updated some apps
 #: ../src/gs-shell-updates.c:943
 msgid "Updates have been installed"
-msgstr ""
+msgstr "ติดตั้งตัวอัพเดตแล้ว"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: ../src/gs-shell-updates.c:945
 msgid "A restart is required for them to take effect."
-msgstr ""
+msgstr "จำเป็นต้องรีสตาร์ตเพื่อให้แสดงผล"
 
 #. TRANSLATORS: button text
 #: ../src/gs-shell-updates.c:947 ../src/gs-update-monitor.c:102
@@ -1688,7 +1688,7 @@ msgstr "เว็บไซต์"
 #: ../src/gs-summary-tile.c:74
 #, c-format
 msgid "%s (Installed)"
-msgstr ""
+msgstr "%s (ติดตั้งแล้ว)"
 
 #: ../src/gs-summary-tile.c:82
 #, c-format
@@ -1911,7 +1911,7 @@ msgstr "ถอดถอน %s ไม่สำเร็จ"
 #: ../src/gs-common.c:182
 #, c-format
 msgid "Upgrade to %s failed."
-msgstr ""
+msgstr "อัพเกรดเป็น %s ไม่สำเร็จ"
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
@@ -1922,7 +1922,7 @@ msgstr "จำเป็นต้องมีการเชื่อมต่อ
 #. TRANSLATORS: plug in the network cable...
 #: ../src/gs-common.c:199
 msgid "Please make sure that you have internet access and try again."
-msgstr ""
+msgstr "โปรดตรวจสอบว่าคุณมีการเชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง"
 
 #. TRANSLATORS: we ran out of disk space
 #: ../src/gs-common.c:204
@@ -1932,12 +1932,12 @@ msgstr "มีพื้นที่ดิสก์ไม่เพียงพอ
 #. TRANSLATORS: delete some stuff!
 #: ../src/gs-common.c:207
 msgid "Please free up some space and try again."
-msgstr ""
+msgstr "กรุณาเพิ่มพื้นที่เก็บข้อมูลแล้วลองอีกครั้ง"
 
 #. TRANSLATORS: we didn't handle the error type
 #: ../src/gs-common.c:212
 msgid "If the problem persists, contact your software provider."
-msgstr ""
+msgstr "หากปัญหายังคงเกิดขึ้น กรุณาติดต่อผู้ให้บริการซอฟต์แวร์"
 
 #. TRANSLATORS: window title
 #: ../src/gs-common.c:272
@@ -2029,7 +2029,7 @@ msgstr "ตัวละครในสถานการณ์ไม่ปลอ
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:420
 msgid "Characters in aggressive conflict easily distinguishable from reality"
-msgstr ""
+msgstr "ตัวละครในสถานการณ์ขัดแย้งรุนแรงซึ่งสามารถแยกจากความเป็นจริงได้ง่าย"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:423
@@ -2045,7 +2045,7 @@ msgstr "ไม่มี"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:429
 msgid "Mild realistic characters in unsafe situations"
-msgstr ""
+msgstr "ตัวละครค่อนข้างสมจริงในสถานการณ์ไม่ปลอดภัย"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:432
@@ -2066,17 +2066,17 @@ msgstr "ไม่มี"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:441
 msgid "Unrealistic bloodshed"
-msgstr ""
+msgstr "ภาพการนองเลือดแบบไม่สมจริง"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:444
 msgid "Realistic bloodshed"
-msgstr ""
+msgstr "การนองเลือดแบบสมจริง"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:447
 msgid "Depictions of bloodshed and the mutilation of body parts"
-msgstr ""
+msgstr "การบรรยายการนองเลือดและการทำลายอวัยวะร่างกาย"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:450
@@ -2087,13 +2087,13 @@ msgstr "ไม่มี"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:453
 msgid "Rape or other violent sexual behavior"
-msgstr ""
+msgstr "การข่มขืนหรือพฤติกรรมรุนแรงทางเพศอื่นๆ"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:456
 msgctxt "content rating drugs-alcohol"
 msgid "None"
-msgstr ""
+msgstr "ไม่มี"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:459
@@ -2103,13 +2103,13 @@ msgstr "การอ้างอิงถึงเครื่องดื่ม
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:462
 msgid "Use of alcoholic beverages"
-msgstr ""
+msgstr "การใช้เครื่องดื่มแอลกอฮอล์"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:465
 msgctxt "content rating drugs-narcotics"
 msgid "None"
-msgstr ""
+msgstr "ไม่มี"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:468
@@ -2129,13 +2129,13 @@ msgstr "อ้างอิงถึงผลิตภัณฑ์บุหรี
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:477
 msgid "Use of tobacco products"
-msgstr ""
+msgstr "การใช้ผลิตภัณฑ์บุหรี่"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:480
 msgctxt "content rating sex-nudity"
 msgid "None"
-msgstr ""
+msgstr "ไม่มี"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:483
@@ -2172,7 +2172,7 @@ msgstr "พฤติกรรมรุนแรงทางเพศ"
 #: ../src/gs-common.c:501
 msgctxt "content rating language-profanity"
 msgid "None"
-msgstr ""
+msgstr "ไม่มี"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:504
@@ -2198,17 +2198,17 @@ msgstr "ไม่มี"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:516
 msgid "Slapstick humor"
-msgstr ""
+msgstr "ตลกตีหัว"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:519
 msgid "Vulgar or bathroom humor"
-msgstr ""
+msgstr "มุขตลกสัปดน"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:522
 msgid "Mature or sexual humor"
-msgstr ""
+msgstr "มุขตลกสำหรับผู้ใหญ่หรือมีนัยยะทางเพศ"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:525
@@ -2224,7 +2224,7 @@ msgstr "ทัศนะเชิงลบต่อกลุ่มบุคคล
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:531
 msgid "Discrimation designed to cause emotional harm"
-msgstr ""
+msgstr "การเลือกปฏิบัติเพื่อทำร้ายความรู้สึกอย่างจงใจ"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:534
@@ -2235,7 +2235,7 @@ msgstr "การเลือกปฏิบัติอย่างรุนแ
 #: ../src/gs-common.c:537
 msgctxt "content rating money-advertising"
 msgid "None"
-msgstr ""
+msgstr "ไม่มี"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:540
@@ -2245,7 +2245,7 @@ msgstr "พื้นที่ผลิตภัณฑ์"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:543
 msgid "Explicit references to specific brands or trademarked products"
-msgstr ""
+msgstr "การอ้างอิงถึงสินค้าแบรนด์หรือเครื่องหมายการค้าจำเพาะอย่างชัดเจน"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:546
@@ -2266,7 +2266,7 @@ msgstr "การพนันในกิจกรรมที่มีขึ้
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:555
 msgid "Gambling using \"play\" money"
-msgstr ""
+msgstr "การพนันโดยใช้เงิน \"ในเกม\""
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:558
@@ -2303,18 +2303,18 @@ msgstr "พรีเซตปฏิสัมพันธ์แบบตัวต
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:576
 msgid "Uncontrolled chat functionality between players"
-msgstr ""
+msgstr "มีฟังก์ชั่นแชตซึ่งปราศจากการควบคุมระหว่างผู้ใช้"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:579
 msgctxt "content rating social-audio"
 msgid "None"
-msgstr ""
+msgstr "ไม่มี"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:582
 msgid "Uncontrolled audio or video chat functionality between players"
-msgstr ""
+msgstr "มีฟังก์ชั่นแชตทางเสียงหรือวิดีโอซึ่งปราศจากการควบคุมระหว่างผู้ใช้"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:585
@@ -2325,18 +2325,18 @@ msgstr "ไม่มี"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:588
 msgid "Sharing social network usernames or email addresses"
-msgstr ""
+msgstr "แบ่งปันชื่อผู้ใช้โซเชียลเน็ตเวิร์กหรือที่อยู่อีเมล"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:591
 msgctxt "content rating social-info"
 msgid "None"
-msgstr ""
+msgstr "ไม่มี"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:594
 msgid "Sharing user information with 3rd parties"
-msgstr ""
+msgstr "การแบ่งปันข้อมูลผู้ใช้กับบุคคลที่สาม"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:597
@@ -2381,7 +2381,7 @@ msgstr "ปรับรุ่น;แหล่งซอฟต์แวร์;ค�
 #. TRANSLATORS: initial start
 #: ../src/gs-shell-loading.c:63
 msgid "Software catalog is being downloaded"
-msgstr ""
+msgstr "ดาวน์โหลดแคตาล็อกซอฟต์แวร์แล้ว"
 
 #. TRANSLATORS: initial start
 #: ../src/gs-shell-loading.c:68
@@ -2391,7 +2391,7 @@ msgstr "โหลดแคตาล็อกซอฟต์แวร์แล้
 #. vim: set noexpandtab:
 #: ../src/gs-shell-loading.ui.h:1
 msgid "Loading page"
-msgstr ""
+msgstr "กำลังโหลดหน้าเว็บ"
 
 #: ../src/gs-shell-loading.ui.h:2
 msgid "Starting up…"
@@ -2425,7 +2425,7 @@ msgstr "ภาพกราฟิก 3D"
 #: ../src/plugins/gs-desktop-common.c:52
 msgctxt "Menu of Graphics"
 msgid "Photography"
-msgstr ""
+msgstr "ภาพถ่าย"
 
 #: ../src/plugins/gs-desktop-common.c:55
 msgctxt "Menu of Graphics"
@@ -2445,7 +2445,7 @@ msgstr "ผู้ชม"
 #: ../src/plugins/gs-desktop-common.c:69
 msgctxt "Menu of Education"
 msgid "All"
-msgstr ""
+msgstr "ทั้งหมด"
 
 #: ../src/plugins/gs-desktop-common.c:73
 msgctxt "Menu of Education"
@@ -2455,12 +2455,12 @@ msgstr "แนะนำ"
 #: ../src/plugins/gs-desktop-common.c:77
 msgctxt "Menu of Science"
 msgid "Artificial Intelligence"
-msgstr ""
+msgstr "ปัญญาประดิษฐ์"
 
 #: ../src/plugins/gs-desktop-common.c:80
 msgctxt "Menu of Education"
 msgid "Astronomy"
-msgstr ""
+msgstr "ดาราศาสตร์"
 
 #: ../src/plugins/gs-desktop-common.c:84
 msgctxt "Menu of Education"
@@ -2470,7 +2470,7 @@ msgstr "เคมี"
 #: ../src/plugins/gs-desktop-common.c:88
 msgctxt "Menu of Education"
 msgid "Languages"
-msgstr ""
+msgstr "ภาษา"
 
 #: ../src/plugins/gs-desktop-common.c:92
 msgctxt "Menu of Education"
@@ -2480,7 +2480,7 @@ msgstr "คณิตศาสตร์"
 #: ../src/plugins/gs-desktop-common.c:99
 msgctxt "Menu of Science"
 msgid "Robotics"
-msgstr ""
+msgstr "หุ่นยนต์"
 
 #: ../src/plugins/gs-desktop-common.c:107
 msgctxt "Menu of Family"
@@ -2490,7 +2490,7 @@ msgstr "ทั้งหมด"
 #: ../src/plugins/gs-desktop-common.c:110
 msgctxt "Menu of Family"
 msgid "Featured"
-msgstr ""
+msgstr "แนะนำ"
 
 #: ../src/plugins/gs-desktop-common.c:118
 msgctxt "Menu of Games"
@@ -2500,32 +2500,32 @@ msgstr "ทั้งหมด"
 #: ../src/plugins/gs-desktop-common.c:121
 msgctxt "Menu of Games"
 msgid "Featured"
-msgstr ""
+msgstr "แนะนำ"
 
 #: ../src/plugins/gs-desktop-common.c:124
 msgctxt "Menu of Games"
 msgid "Action"
-msgstr ""
+msgstr "แอคชั่น"
 
 #: ../src/plugins/gs-desktop-common.c:127
 msgctxt "Menu of Games"
 msgid "Adventure"
-msgstr ""
+msgstr "ผจญภัย"
 
 #: ../src/plugins/gs-desktop-common.c:130
 msgctxt "Menu of Games"
 msgid "Arcade"
-msgstr ""
+msgstr "อาร์เคด"
 
 #: ../src/plugins/gs-desktop-common.c:133
 msgctxt "Menu of Games"
 msgid "Blocks"
-msgstr ""
+msgstr "บล็อก"
 
 #: ../src/plugins/gs-desktop-common.c:136
 msgctxt "Menu of Games"
 msgid "Board"
-msgstr ""
+msgstr "กระดาน"
 
 #: ../src/plugins/gs-desktop-common.c:139
 msgctxt "Menu of Games"
@@ -2535,7 +2535,7 @@ msgstr "บัตร"
 #: ../src/plugins/gs-desktop-common.c:142
 msgctxt "Menu of Games"
 msgid "Emulators"
-msgstr ""
+msgstr "โปรแกรมเลียนแบบ"
 
 #: ../src/plugins/gs-desktop-common.c:145
 msgctxt "Menu of Games"
@@ -2565,7 +2565,7 @@ msgstr "กลยุทธ์"
 #: ../src/plugins/gs-desktop-common.c:166
 msgctxt "Menu of Office"
 msgid "All"
-msgstr ""
+msgstr "ทั้งหมด"
 
 #: ../src/plugins/gs-desktop-common.c:169
 msgctxt "Menu of Office"
@@ -2585,17 +2585,17 @@ msgstr "ฐานข้อมูล"
 #: ../src/plugins/gs-desktop-common.c:179
 msgctxt "Menu of Office"
 msgid "Finance"
-msgstr ""
+msgstr "การเงิน"
 
 #: ../src/plugins/gs-desktop-common.c:183
 msgctxt "Menu of Office"
 msgid "Word Processor"
-msgstr ""
+msgstr "Word Processor"
 
 #: ../src/plugins/gs-desktop-common.c:192
 msgctxt "Menu of Utility"
 msgid "All"
-msgstr ""
+msgstr "ทั้งหมด"
 
 #: ../src/plugins/gs-desktop-common.c:197
 msgctxt "Menu of Utility"
@@ -2610,22 +2610,22 @@ msgstr "แชต"
 #: ../src/plugins/gs-desktop-common.c:209
 msgctxt "Menu of Addons"
 msgid "Codecs"
-msgstr ""
+msgstr "Codecs"
 
 #: ../src/plugins/gs-desktop-common.c:212
 msgctxt "Menu of Development"
 msgid "Debuggers"
-msgstr ""
+msgstr "Debuggers"
 
 #: ../src/plugins/gs-desktop-common.c:215
 msgctxt "Menu of Addons"
 msgid "Fonts"
-msgstr ""
+msgstr "ตัวอักษร"
 
 #: ../src/plugins/gs-desktop-common.c:218
 msgctxt "Menu of Development"
 msgid "IDEs"
-msgstr ""
+msgstr "IDEs"
 
 #: ../src/plugins/gs-desktop-common.c:222
 msgctxt "Menu of Addons"
@@ -2650,7 +2650,7 @@ msgstr "ส่วนเสริม Shell Extensions"
 #: ../src/plugins/gs-desktop-common.c:234
 msgctxt "Menu of Utility"
 msgid "Text Editors"
-msgstr ""
+msgstr "Text Editors"
 
 #: ../src/plugins/gs-desktop-common.c:237
 msgctxt "Menu of Communication"
@@ -2665,7 +2665,7 @@ msgstr "ทั้งหมด"
 #: ../src/plugins/gs-desktop-common.c:248
 msgctxt "Menu of Reference"
 msgid "Featured"
-msgstr ""
+msgstr "แนะนำ"
 
 #: ../src/plugins/gs-desktop-common.c:251
 msgctxt "Menu of Art"
@@ -2686,12 +2686,12 @@ msgstr "นิยาย"
 #: ../src/plugins/gs-desktop-common.c:263
 msgctxt "Menu of Reference"
 msgid "Health"
-msgstr ""
+msgstr "สุขภาพ"
 
 #: ../src/plugins/gs-desktop-common.c:266
 msgctxt "Menu of Reference"
 msgid "History"
-msgstr ""
+msgstr "ประวัติ"
 
 #: ../src/plugins/gs-desktop-common.c:269
 msgctxt "Menu of Reference"
@@ -2711,7 +2711,7 @@ msgstr "การเมือง"
 #: ../src/plugins/gs-desktop-common.c:279
 msgctxt "Menu of Reference"
 msgid "Sports"
-msgstr ""
+msgstr "กีฬา"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: ../src/plugins/gs-desktop-common.c:288
@@ -2736,7 +2736,7 @@ msgstr "เกม"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: ../src/plugins/gs-desktop-common.c:300
 msgid "Multimedia"
-msgstr ""
+msgstr "มัลติมีเดีย"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: ../src/plugins/gs-desktop-common.c:303

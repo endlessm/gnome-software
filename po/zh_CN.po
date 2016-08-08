@@ -4,6 +4,7 @@
 # 
 # Translators:
 # Bin Li <binli@gnome.org>, 2016
+# chenzibing <chenzibing_endless@126.com>, 2016
 # Dz Chen <wsxy162@gmail.com>, 2015-2016
 # Dianjin Wang <1132321739qq@gmail.com>, 2013
 # Dz Chen <wsxy162@gmail.com>, 2016
@@ -20,9 +21,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-07-26 04:25+0000\n"
-"PO-Revision-Date: 2016-07-26 04:26+0000\n"
-"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
+"POT-Creation-Date: 2016-08-02 05:13+0000\n"
+"PO-Revision-Date: 2016-08-07 15:12+0000\n"
+"Last-Translator: chenzibing <chenzibing_endless@126.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/endless-mobile-inc/gnome-software/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -138,34 +139,34 @@ msgstr "不被当作第三方的源的官方源列表"
 
 #: ../data/org.gnome.software.gschema.xml.h:20
 msgid "A list of official sources that should be considered free software"
-msgstr ""
+msgstr "应当作免费软件的官方源列表"
 
 #: ../data/org.gnome.software.gschema.xml.h:21
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
-msgstr ""
+msgstr "免费软件可使用的许可URL"
 
 #: ../data/org.gnome.software.gschema.xml.h:22
 msgid ""
 "Install bundled applications for all users on the system where possible"
-msgstr ""
+msgstr "为所有用户在系统上尽可能安装捆绑程序"
 
 #: ../data/org.gnome.software.gschema.xml.h:23
 msgid "Show the folder management UI"
-msgstr ""
+msgstr "显示文件夹管理界面"
 
 #: ../data/org.gnome.software.gschema.xml.h:24
 msgid "Allow access to the Software Sources dialog"
-msgstr ""
+msgstr "允许访问软件源对话框"
 
 #: ../data/org.gnome.software.gschema.xml.h:25
 msgid "Offer upgrades for pre-releases"
-msgstr ""
+msgstr "提供已发布版本的升级"
 
 #: ../data/org.gnome.software.gschema.xml.h:26
 msgid "Show some UI elements informing the user that an app is non-free"
-msgstr ""
+msgstr "显示用以提示用户该软件非免费的界面信息"
 
 #: ../src/gs-app-folder-dialog.ui.h:1
 msgid "Add to Application Folder"
@@ -290,7 +291,7 @@ msgstr "搜索"
 
 #: ../src/gs-application.c:102
 msgid "Show application details (using application ID)"
-msgstr ""
+msgstr "显示应用程序详情(使用应用程序ID)"
 
 #: ../src/gs-application.c:102
 msgid "ID"
@@ -298,11 +299,11 @@ msgstr "ID"
 
 #: ../src/gs-application.c:104
 msgid "Show application details (using package name)"
-msgstr ""
+msgstr "显示应用程序详情(使用程序包名称)"
 
 #: ../src/gs-application.c:104
 msgid "PKGNAME"
-msgstr ""
+msgstr "包名"
 
 #: ../src/gs-application.c:106
 msgid "Open a local package file"
@@ -322,7 +323,7 @@ msgstr "显示服务分析信息"
 
 #: ../src/gs-application.c:112
 msgid "Quit the running instance"
-msgstr ""
+msgstr "退出应用实例"
 
 #: ../src/gs-application.c:114
 msgid "Prefer local file sources to AppStream"
@@ -397,55 +398,55 @@ msgstr "源"
 #. security sandbox
 #: ../src/gs-app-row.ui.h:3 ../src/gs-shell-details.ui.h:28
 msgid "Sandboxed"
-msgstr ""
+msgstr "沙盒式"
 
 #. TRANSLATORS: this is when the service name is not known
 #: ../src/gs-auth-dialog.c:70
 msgid "To continue you need to sign in."
-msgstr ""
+msgstr "你需要登录以继续。"
 
 #. TRANSLATORS: the %s is a service name, e.g. "Ubuntu One"
 #: ../src/gs-auth-dialog.c:74
 #, c-format
 msgid "To continue you need to sign in to %s."
-msgstr ""
+msgstr "你需要登录%s以继续。"
 
 #. vim: set noexpandtab:
 #: ../src/gs-auth-dialog.ui.h:1
 msgid "Email address"
-msgstr ""
+msgstr "电子邮件地址"
 
 #: ../src/gs-auth-dialog.ui.h:2
 msgid "I have an account already"
-msgstr ""
+msgstr "我已经有一个帐户"
 
 #: ../src/gs-auth-dialog.ui.h:3
 msgid "Password"
-msgstr ""
+msgstr "密码"
 
 #: ../src/gs-auth-dialog.ui.h:4
 msgid "I want to register for an account now"
-msgstr ""
+msgstr "我想要现在注册一个帐户"
 
 #: ../src/gs-auth-dialog.ui.h:5
 msgid "I have forgotten my password"
-msgstr ""
+msgstr "我忘记了我的密码"
 
 #: ../src/gs-auth-dialog.ui.h:6
 msgid "Sign in automatically next time"
-msgstr ""
+msgstr "下次自动登录"
 
 #: ../src/gs-auth-dialog.ui.h:7
 msgid "Enter your one-time pin for two-factor authentication."
-msgstr ""
+msgstr "请输入您的一次性PIN码以双重认证。"
 
 #: ../src/gs-auth-dialog.ui.h:8
 msgid "PIN"
-msgstr ""
+msgstr "PIN"
 
 #: ../src/gs-auth-dialog.ui.h:9
 msgid "Continue"
-msgstr ""
+msgstr "继续"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -650,16 +651,16 @@ msgstr "可在网络上找到关于 %s 及如何获取播放该格式的编解�
 msgid ""
 "Some of the currently installed software is not compatible with %s. If you "
 "continue, the following will be automatically removed during the upgrade:"
-msgstr ""
+msgstr "您现在安装的某个软件与%s不兼容。如果您继续安装，以下软件将会在升级过程中自动移除："
 
 #. vim: set noexpandtab:
 #: ../src/gs-removal-dialog.ui.h:1
 msgid "Incompatible Software"
-msgstr ""
+msgstr "不兼容的软件"
 
 #: ../src/gs-removal-dialog.ui.h:3
 msgid "_Continue"
-msgstr ""
+msgstr "_继续"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A really bad application
@@ -876,7 +877,7 @@ msgstr "安装(_I)"
 #. * can be live-updated
 #: ../src/gs-shell-details.c:292
 msgid "_Update"
-msgstr ""
+msgstr "_升级"
 
 #. TRANSLATORS: this is a button that allows the apps to
 #. * be installed.
@@ -923,7 +924,7 @@ msgstr "找不到 %s"
 #. * any plugin, e.g. if you try installing a .tar.gz
 #: ../src/gs-shell-details.c:1368
 msgid "The file is not supported."
-msgstr ""
+msgstr "文件不受支持。"
 
 #. TRANSLATORS: install or removed failed
 #: ../src/gs-shell-details.c:1378 ../src/gs-common.c:161
@@ -938,17 +939,17 @@ msgstr "公有领域"
 #. TRANSLATORS: see GNU page
 #: ../src/gs-shell-details.c:1747 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
-msgstr ""
+msgstr "免费软件"
 
 #. TRANSLATORS: for the free software popover
 #: ../src/gs-shell-details.c:1802
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
-msgstr[0] ""
+msgstr[0] "使用者需有以下许可："
 
 #: ../src/gs-shell-details.c:1817 ../src/gs-shell-details.ui.h:55
 msgid "More information"
-msgstr ""
+msgstr "更多信息"
 
 #. vim: set noexpandtab:
 #: ../src/gs-shell-details.ui.h:1
@@ -964,17 +965,17 @@ msgstr "启动(_L)"
 #. application.
 #: ../src/gs-shell-details.ui.h:9
 msgid "_Add shortcut"
-msgstr ""
+msgstr "_添加快捷方式"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: ../src/gs-shell-details.ui.h:11
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "移_除快捷方式"
 
 #: ../src/gs-shell-details.ui.h:12
 msgid "No screenshot provided"
-msgstr ""
+msgstr "没有可用截图"
 
 #: ../src/gs-shell-details.ui.h:13
 msgid "Software Source Included"
@@ -1056,11 +1057,11 @@ msgstr "软件分类"
 
 #: ../src/gs-shell-details.ui.h:32
 msgid "Installed Size"
-msgstr ""
+msgstr "已安装容量"
 
 #: ../src/gs-shell-details.ui.h:33
 msgid "Download Size"
-msgstr ""
+msgstr "下载容量"
 
 #: ../src/gs-shell-details.ui.h:35
 msgid "Developer"
@@ -1073,7 +1074,7 @@ msgstr "许可协议"
 #. This refers to the license of the application
 #: ../src/gs-shell-details.ui.h:38
 msgid "Free"
-msgstr ""
+msgstr "免费"
 
 #. This refers to the license of the application
 #: ../src/gs-shell-details.ui.h:40
@@ -1083,7 +1084,7 @@ msgstr "专有软件"
 #. This refers to the license of the application
 #: ../src/gs-shell-details.ui.h:42
 msgid "Unknown"
-msgstr ""
+msgstr "未知"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
@@ -1117,26 +1118,26 @@ msgstr "显示更多(_S)"
 msgid ""
 "This means that the software can be freely run, copied, distributed, studied"
 " and modified."
-msgstr ""
+msgstr "这表示该软件可以免费运行、复制、发行、学习和修改。"
 
 #: ../src/gs-shell-details.ui.h:53
 msgid "Proprietary Software"
-msgstr ""
+msgstr "专有软件"
 
 #: ../src/gs-shell-details.ui.h:54
 msgid ""
 "This means that the software is owned by an individual or a company. There "
 "are often restrictions on its use and its source code cannot usually be "
 "accessed."
-msgstr ""
+msgstr "这表示该软件为个人或公司所有，使用常常受限且无法访问其源代码。"
 
 #: ../src/gs-shell-details.ui.h:56
 msgid "Unknown Software License"
-msgstr ""
+msgstr "未知软件许可证"
 
 #: ../src/gs-shell-details.ui.h:57
 msgid "The license terms of this software are unknown."
-msgstr ""
+msgstr "该软件的许可条款未知。"
 
 #. TRANSLATORS: separator for a list of items
 #: ../src/gs-shell-extras.c:145
@@ -1349,13 +1350,13 @@ msgstr "没有需要管理的评价"
 #. add button
 #: ../src/gs-shell-overview.c:259
 msgid "More…"
-msgstr ""
+msgstr "更多..."
 
 #. TRANSLATORS: this is a heading for audio applications which
 #. * have been featured ('recommended') by the distribution
 #: ../src/gs-shell-overview.c:521
 msgid "Recommended Audio & Video Applications"
-msgstr ""
+msgstr "推荐的音频&视频应用"
 
 #. TRANSLATORS: this is a heading for games which have been
 #. * featured ('recommended') by the distribution
@@ -1373,7 +1374,7 @@ msgstr "推荐的图形类应用"
 #. * have been featured ('recommended') by the distribution
 #: ../src/gs-shell-overview.c:536
 msgid "Recommended Productivity Applications"
-msgstr ""
+msgstr "推荐的效率型应用"
 
 #. vim: set noexpandtab:
 #: ../src/gs-shell-overview.ui.h:1
@@ -1488,7 +1489,7 @@ msgstr "上次检查：%s"
 #. TRANSLATORS: all updates will be installed
 #: ../src/gs-shell-updates.c:490
 msgid "_Install All"
-msgstr ""
+msgstr "_全部安装"
 
 #. TRANSLATORS: this is an offline update
 #: ../src/gs-shell-updates.c:494 ../src/gs-shell-updates.c:1340
@@ -1534,12 +1535,12 @@ msgstr "网络设置"
 #. TRANSLATORS: we've just live-updated some apps
 #: ../src/gs-shell-updates.c:943
 msgid "Updates have been installed"
-msgstr ""
+msgstr "更新已安装"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: ../src/gs-shell-updates.c:945
 msgid "A restart is required for them to take effect."
-msgstr ""
+msgstr "重启以生效。"
 
 #. TRANSLATORS: button text
 #: ../src/gs-shell-updates.c:947 ../src/gs-update-monitor.c:102
@@ -1549,7 +1550,7 @@ msgstr "现在不"
 #. TRANSLATORS: button text
 #: ../src/gs-shell-updates.c:949
 msgid "Restart"
-msgstr ""
+msgstr "重启"
 
 #: ../src/gs-shell-updates.c:1358
 msgid "Check for updates"
@@ -1701,17 +1702,17 @@ msgstr "网站"
 #: ../src/gs-summary-tile.c:74
 #, c-format
 msgid "%s (Installed)"
-msgstr ""
+msgstr "%s(已安装)"
 
 #: ../src/gs-summary-tile.c:82
 #, c-format
 msgid "%s (Installing)"
-msgstr ""
+msgstr "%s(安装中)"
 
 #: ../src/gs-summary-tile.c:90
 #, c-format
 msgid "%s (Removing)"
-msgstr ""
+msgstr "%s(移除中)"
 
 #. TRANSLATORS: this is where the packager did not write
 #. * a description for the update
@@ -1924,33 +1925,33 @@ msgstr "移除 %s 失败。"
 #: ../src/gs-common.c:182
 #, c-format
 msgid "Upgrade to %s failed."
-msgstr ""
+msgstr "升级%s失败。"
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
 #: ../src/gs-common.c:196
 msgid "Internet access was required but wasn’t available."
-msgstr ""
+msgstr "需要访问互联网但互联网不可用。"
 
 #. TRANSLATORS: plug in the network cable...
 #: ../src/gs-common.c:199
 msgid "Please make sure that you have internet access and try again."
-msgstr ""
+msgstr "请确认您有接入互联网并再次尝试。"
 
 #. TRANSLATORS: we ran out of disk space
 #: ../src/gs-common.c:204
 msgid "There wasn’t enough disk space."
-msgstr ""
+msgstr "磁盘空间不足。"
 
 #. TRANSLATORS: delete some stuff!
 #: ../src/gs-common.c:207
 msgid "Please free up some space and try again."
-msgstr ""
+msgstr "请释放一些空间后再次尝试。"
 
 #. TRANSLATORS: we didn't handle the error type
 #: ../src/gs-common.c:212
 msgid "If the problem persists, contact your software provider."
-msgstr ""
+msgstr "如果问题仍未解决，请联系您的软件供应商。"
 
 #. TRANSLATORS: window title
 #: ../src/gs-common.c:272
@@ -2011,249 +2012,249 @@ msgstr "安装并启用"
 #: ../src/gs-common.c:402
 msgctxt "content rating violence-cartoon"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:405
 msgid "Cartoon characters in unsafe situations"
-msgstr ""
+msgstr "卡通人物遇到危险"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:408
 msgid "Cartoon characters in aggressive conflict"
-msgstr ""
+msgstr "卡通人物受到攻击"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:411
 msgid "Graphic violence involving cartoon characters"
-msgstr ""
+msgstr "卡通人物暴力画面"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:414
 msgctxt "content rating violence-fantasy"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:417
 msgid "Characters in unsafe situations easily distinguishable from reality"
-msgstr ""
+msgstr "区别于真实的卡通人物遇到危险"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:420
 msgid "Characters in aggressive conflict easily distinguishable from reality"
-msgstr ""
+msgstr "区别于真实的卡通人物受到攻击"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:423
 msgid "Graphic violence easily distinguishable from reality"
-msgstr ""
+msgstr "区别于真实的卡通人物暴力画面"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:426
 msgctxt "content rating violence-realistic"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:429
 msgid "Mild realistic characters in unsafe situations"
-msgstr ""
+msgstr "轻微真实人物出于遇到危险"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:432
 msgid "Depictions of realistic characters in aggressive conflict"
-msgstr ""
+msgstr "真实人物受到攻击的描述"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:435
 msgid "Graphic violence involving realistic characters"
-msgstr ""
+msgstr "真实人物暴力画面"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:438
 msgctxt "content rating violence-bloodshed"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:441
 msgid "Unrealistic bloodshed"
-msgstr ""
+msgstr "虚拟流血画面"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:444
 msgid "Realistic bloodshed"
-msgstr ""
+msgstr "真实流血画面"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:447
 msgid "Depictions of bloodshed and the mutilation of body parts"
-msgstr ""
+msgstr "身体受伤流血的描述"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:450
 msgctxt "content rating violence-sexual"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:453
 msgid "Rape or other violent sexual behavior"
-msgstr ""
+msgstr "强奸或其他性暴力行为"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:456
 msgctxt "content rating drugs-alcohol"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:459
 msgid "References to alcoholic beverages"
-msgstr ""
+msgstr "含酒精饮料参考"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:462
 msgid "Use of alcoholic beverages"
-msgstr ""
+msgstr "含酒精饮料的使用"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:465
 msgctxt "content rating drugs-narcotics"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:468
 msgid "References to illicit drugs"
-msgstr ""
+msgstr "违禁药品参考"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:471
 msgid "Use of illicit drugs"
-msgstr ""
+msgstr "违禁药品的使用"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:474
 msgid "References to tobacco products"
-msgstr ""
+msgstr "烟草制品参考"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:477
 msgid "Use of tobacco products"
-msgstr ""
+msgstr "烟草制品的使用"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:480
 msgctxt "content rating sex-nudity"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:483
 msgid "Brief artistic nudity"
-msgstr ""
+msgstr "短暂艺术性裸露"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:486
 msgid "Prolonged nudity"
-msgstr ""
+msgstr "持续裸露"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:489
 msgctxt "content rating sex-themes"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:492
 msgid "Provocative references or depictions"
-msgstr ""
+msgstr "刺激性参考或描述"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:495
 msgid "Sexual references or depictions"
-msgstr ""
+msgstr "性意味参考或描述"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:498
 msgid "Graphic sexual behavior"
-msgstr ""
+msgstr "性行为画面"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:501
 msgctxt "content rating language-profanity"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:504
 msgid "Mild or infrequent use of profanity"
-msgstr ""
+msgstr "轻度或较少使用不敬语言"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:507
 msgid "Moderate use of profanity"
-msgstr ""
+msgstr "中度使用不敬语言"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:510
 msgid "Strong or frequent use of profanity"
-msgstr ""
+msgstr "强烈或频繁使用不敬语言"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:513
 msgctxt "content rating language-humor"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:516
 msgid "Slapstick humor"
-msgstr ""
+msgstr "闹剧幽默"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:519
 msgid "Vulgar or bathroom humor"
-msgstr ""
+msgstr "粗俗幽默"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:522
 msgid "Mature or sexual humor"
-msgstr ""
+msgstr "成人幽默"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:525
 msgctxt "content rating language-discrimination"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:528
 msgid "Negativity towards a specific group of people"
-msgstr ""
+msgstr "对特定人群的否定"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:531
 msgid "Discrimation designed to cause emotional harm"
-msgstr ""
+msgstr "会引起情感伤害的歧视"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:534
 msgid "Explicit discrimination based on gender, sexuality, race or religion"
-msgstr ""
+msgstr "明显的性别、性取向、种族、宗教歧视"
 
 #. TRANSLATORS: content rating description
 #: ../src/gs-common.c:537
 msgctxt "content rating money-advertising"
 msgid "None"
-msgstr ""
+msgstr "无"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:540
 msgid "Product placement"
-msgstr ""
+msgstr "项目管理"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:543
