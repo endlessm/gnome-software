@@ -256,6 +256,7 @@ gs_appstream_create_runtime (GsPlugin *plugin,
 {
 	const gchar *id_parent;
 	g_autofree gchar *id = NULL;
+	g_autofree gchar *cache_key = NULL;
 	g_autofree gchar *source = NULL;
 	g_auto(GStrv) id_split = NULL;
 	g_auto(GStrv) runtime_split = NULL;
@@ -267,20 +268,24 @@ gs_appstream_create_runtime (GsPlugin *plugin,
 		return NULL;
 
 	/* find the parent app ID prefix */
-	id_parent = gs_app_get_id (parent);
+	id_parent = gs_app_get_unique_id (parent);
 	if (id_parent == NULL)
 		return NULL;
-	id_split = g_strsplit (id_parent, ":", 2);
+	id_split = g_strsplit (id_parent, "/", 2);
 	if (g_strv_length (id_split) == 2) {
-		id = g_strdup_printf ("%s:%s.runtime",
-				      id_split[0],
-				      runtime_split[0]);
+		cache_key = g_strdup_printf ("%s/%s/%s.runtime",
+					     id_split[0],
+					     runtime_split[0],
+					     runtime_split[2]);
 	} else {
-		id = g_strdup_printf ("%s.runtime", runtime_split[0]);
+		cache_key = g_strdup_printf ("%s/%s.runtime", runtime_split[0],
+					     runtime_split[2]);
 	}
 
+	id = g_strdup_printf ("%s.runtime", runtime_split[0]);
+
 	/* search in the cache */
-	app = gs_plugin_cache_lookup (plugin, id);
+	app = gs_plugin_cache_lookup (plugin, cache_key);
 	if (app != NULL)
 		return g_steal_pointer (&app);
 
@@ -292,7 +297,7 @@ gs_appstream_create_runtime (GsPlugin *plugin,
 	gs_app_set_version (app, runtime_split[2]);
 
 	/* save in the cache */
-	gs_plugin_cache_add (plugin, id, app);
+	gs_plugin_cache_add (plugin, cache_key, app);
 
 	return g_steal_pointer (&app);
 }
