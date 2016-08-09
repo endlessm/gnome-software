@@ -22,6 +22,7 @@
 #include <config.h>
 
 #include <gio/gdesktopappinfo.h>
+#include <flatpak.h>
 #include <libsoup/soup.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
@@ -54,6 +55,8 @@ struct GsPluginData
 	SoupSession *soup_session;
 	GHashTable *default_branches;
 	char *personality;
+	GsFlatpak	*usr_flatpak;
+	GsFlatpak	*sys_flatpak;
 };
 
 static GHashTable *
@@ -265,6 +268,26 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	if (!priv->personality)
 		g_warning ("No system personality could be set!");
+
+	priv->usr_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
+	priv->sys_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_SYSTEM);
+}
+
+/**
+ * gs_plugin_setup:
+ */
+gboolean
+gs_plugin_setup (GsPlugin *plugin,
+		 GCancellable *cancellable,
+		 GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	if (!gs_flatpak_setup (priv->usr_flatpak, cancellable, error) ||
+	    !gs_flatpak_setup (priv->sys_flatpak, cancellable, error))
+		return FALSE;
+
+	return TRUE;
 }
 
 /**
@@ -283,6 +306,8 @@ gs_plugin_destroy (GsPlugin *plugin)
 
 	g_clear_object (&priv->session_bus);
 	g_clear_object (&priv->soup_session);
+	g_clear_object (&priv->usr_flatpak);
+	g_clear_object (&priv->sys_flatpak);
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->default_branches);
 	g_free (priv->personality);
