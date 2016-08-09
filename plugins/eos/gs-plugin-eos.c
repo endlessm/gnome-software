@@ -43,6 +43,8 @@
 #define EOS_IMAGE_VERSION_ALT_PATH "/"
 
 #define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
+#define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -262,6 +264,10 @@ gs_plugin_initialize (GsPlugin *plugin)
 	/* let the flatpak plugin run first so we deal with the apps
 	 * in a more complete/refined state */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "flatpak");
+
+	/* we already deal with apps that need to be proxied, so let's impede
+	 * the other plugin from running */
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "generic-updates");
 }
 
 void
@@ -492,7 +498,8 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	const char *id = gs_app_get_id (app);
 
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
-	    gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY)) {
+	    gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+	    !gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY)) {
 		g_debug ("Blacklisting '%s': it's a compulsory, non-desktop app",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
@@ -906,4 +913,95 @@ gs_plugin_launch (GsPlugin *plugin,
 		return gs_plugin_app_launch (plugin, app, error);
 
 	return TRUE;
+}
+
+static GsApp *
+gs_plugin_eos_create_updates_proxy_app (GsPlugin *plugin)
+{
+	const char *id = EOS_PROXY_APP_PREFIX ".EOSUpdatesProxy";
+	GsApp *proxy = gs_app_new (id);
+	g_autoptr(AsIcon) icon;
+
+	gs_app_set_scope (proxy, AS_APP_SCOPE_SYSTEM);
+	gs_app_set_kind (proxy, AS_APP_KIND_RUNTIME);
+	/* TRANSLATORS: this is the name of the Endless Platform app */
+	gs_app_set_name (proxy, GS_APP_QUALITY_NORMAL,
+			 _("Endless Platform"));
+	/* TRANSLATORS: this is the summary of the Endless Platform app */
+	gs_app_set_summary (proxy, GS_APP_QUALITY_NORMAL,
+			    _("Framework for applications"));
+	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_add_quirk (proxy, AS_APP_QUIRK_IS_PROXY);
+	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
+
+	icon = as_icon_new ();
+	as_icon_set_kind (icon, AS_ICON_KIND_STOCK);
+	as_icon_set_name (icon, "system-run-symbolic");
+	gs_app_add_icon (proxy, icon);
+
+	return proxy;
+}
+
+static gboolean
+add_updates (GsPlugin *plugin,
+	     GsAppList *list,
+	     GCancellable *cancellable,
+	     GError **error)
+{
+	g_autoptr(GsApp) updates_proxy_app = gs_plugin_eos_create_updates_proxy_app (plugin);
+	g_autoptr(GSList) proxied_updates = NULL;
+	const char *proxied_apps[] = {"com.endlessm.Platform",
+				      "com.endlessm.apps.Platform",
+				      "com.endlessm.EknServices.desktop",
+				      "com.endlessm.EknServices2.desktop",
+				      "com.endlessm.CompanionAppService.desktop",
+				      "com.endlessm.quote_of_the_day.en.desktop",
+				      "com.endlessm.word_of_the_day.en.desktop",
+				      NULL};
+
+	for (guint i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+		const char *id = gs_app_get_id (app);
+
+		if (!g_strv_contains (proxied_apps, id) ||
+		    gs_app_get_scope (updates_proxy_app) != gs_app_get_scope (app))
+			continue;
+
+		proxied_updates = g_slist_prepend (proxied_updates, app);
+	}
+
+	if (!proxied_updates)
+		return TRUE;
+
+	for (GSList *iter = proxied_updates; iter; iter = g_slist_next (iter)) {
+		GsApp *app = GS_APP (iter->data);
+		gs_app_add_related (updates_proxy_app, app);
+		/* remove proxied apps from updates list since they will be
+		 * updated from the proxy app */
+		gs_app_list_remove (list, app);
+	}
+	gs_app_list_add (list, updates_proxy_app);
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_updates_pending (GsPlugin *plugin,
+			       GsAppList *list,
+			       GCancellable *cancellable,
+			       GError **error)
+{
+	return add_updates (plugin, list, cancellable, error);
+}
+
+gboolean
+gs_plugin_add_updates (GsPlugin *plugin,
+		       GsAppList *list,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	/* only the gs_plugin_add_updates_pending should be used in EOS
+	 * but in case the user has changed the "download-updates" setting then
+	 * this will still work correctly */
+	return add_updates (plugin, list, cancellable, error);
 }
