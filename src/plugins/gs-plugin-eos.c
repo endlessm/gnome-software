@@ -41,6 +41,8 @@
 #define EOS_IMAGE_VERSION_ALT_PATH "/"
 
 #define METADATA_SYS_DESKTOP_FILE "flatpak-3rdparty::system-desktop-file"
+#define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -477,13 +479,20 @@ app_is_compatible_with_os (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
+app_is_proxy (GsApp *app)
+{
+	return g_str_has_prefix (gs_app_get_id (app), EOS_PROXY_APP_PREFIX);
+}
+
+static gboolean
 gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
 	const char *id = gs_app_get_id (app);
 
 	blacklist_app = gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
-			gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY);
+			gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+			!app_is_proxy (app);
 
 	if (!blacklist_app) {
 		if (g_str_has_prefix (id, "eos-link-")) {
@@ -872,4 +881,82 @@ gs_plugin_launch (GsPlugin *plugin,
 		return TRUE;
 
 	return gs_plugin_app_launch (plugin, app, error);
+}
+
+static GsApp *
+gs_plugin_eos_create_updates_proxy_app (GsPlugin *plugin)
+{
+	const char *id = EOS_PROXY_APP_PREFIX ".EOSUpdatesProxy";
+	GsApp *proxy = gs_app_new (id);
+	g_autoptr(AsIcon) icon;
+
+	gs_app_set_scope (proxy, AS_APP_SCOPE_SYSTEM);
+	gs_app_set_kind (proxy, AS_APP_KIND_RUNTIME);
+	/* TRANSLATORS: this is the name of the Endless Platform app */
+	gs_app_set_name (proxy, GS_APP_QUALITY_NORMAL,
+			 _("Endless Platform"));
+	/* TRANSLATORS: this is the summary of the Endless Platform app */
+	gs_app_set_summary (proxy, GS_APP_QUALITY_NORMAL,
+			    _("Framework for applications"));
+	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_add_quirk (proxy, AS_APP_QUIRK_IS_PROXY);
+	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
+
+	icon = as_icon_new ();
+	as_icon_set_kind (icon, AS_ICON_KIND_STOCK);
+	as_icon_set_name (icon, "system-run-symbolic");
+	gs_app_add_icon (proxy, icon);
+
+	return proxy;
+}
+
+gboolean
+gs_plugin_add_updates_pending (GsPlugin *plugin,
+			       GsAppList *list,
+			       GCancellable *cancellable,
+			       GError **error)
+{
+	g_autoptr(GsApp) updates_proxy_app = NULL;
+	g_autoptr(GSList) proxied_updates = NULL;
+	const char *proxied_apps[] = {"com.endlessm.Platform.runtime",
+				      "com.endlessm.EknServices.desktop",
+				      NULL};
+
+	for (guint i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+		const char *id = gs_app_get_id (app);
+
+		if (!g_strv_contains (proxied_apps, id))
+			continue;
+
+		proxied_updates = g_slist_prepend (proxied_updates, app);
+	}
+
+	if (!proxied_updates)
+		return TRUE;
+
+	updates_proxy_app = gs_plugin_eos_create_updates_proxy_app (plugin);
+
+	for (GSList *iter = proxied_updates; iter; iter = g_slist_next (iter)) {
+		GsApp *app = GS_APP (iter->data);
+		gs_app_add_related (updates_proxy_app, app);
+		/* remove proxied apps from updates list since they will be
+		 * updated from the proxy app */
+		gs_app_list_remove (list, app);
+	}
+	gs_app_list_add (list, updates_proxy_app);
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_updates (GsPlugin *plugin,
+		       GsAppList *list,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	/* only the gs_plugin_add_updates_pending should be used in EOS
+	 * but in case the user has changed the "download-updates" setting then
+	 * this will still work correctly */
+	return gs_plugin_add_updates_pending (plugin, list, cancellable, error);
 }
