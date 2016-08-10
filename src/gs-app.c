@@ -3095,6 +3095,8 @@ gs_app_init (GsApp *app)
 	                                    g_str_equal,
 	                                    g_free,
 	                                    g_free);
+	app->size_installed = GS_APP_SIZE_UNKNOWABLE;
+	app->size_download = GS_APP_SIZE_UNKNOWABLE;
 }
 
 /**
