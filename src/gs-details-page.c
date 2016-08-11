@@ -788,11 +788,11 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_details_website, FALSE);
 	}
 
-	/* set the developer name, falling back to the project group */
-	tmp = gs_app_get_developer_name (self->app);
-	if (tmp == NULL)
-		tmp = gs_app_get_project_group (self->app);
-	if (tmp == NULL) {
+	/* set the project group */
+	tmp = gs_app_get_project_group (self->app);
+	/* XXX: Always hide the developer title until we correctly set it
+	 * as otherwise GNOME shows up in every app */
+	if (TRUE || tmp == NULL) {
 		gtk_widget_set_visible (self->label_details_developer_title, FALSE);
 		gtk_widget_set_visible (self->label_details_developer_value, FALSE);
 	} else {
