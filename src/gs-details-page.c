@@ -1107,7 +1107,9 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 	tmp = gs_app_get_developer_name (self->app);
 	if (tmp == NULL)
 		tmp = gs_app_get_project_group (self->app);
-	if (tmp == NULL) {
+	/* XXX: Always hide the developer title until we correctly set it
+	 * as otherwise GNOME shows up in every app */
+	if (TRUE || tmp == NULL) {
 		gtk_widget_set_visible (self->label_details_developer_title, FALSE);
 		gtk_widget_set_visible (self->box_details_developer, FALSE);
 	} else {
