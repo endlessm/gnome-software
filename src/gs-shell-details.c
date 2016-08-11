@@ -775,7 +775,9 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 
 	/* set the project group */
 	tmp = gs_app_get_project_group (self->app);
-	if (tmp == NULL) {
+	/* XXX: Always hide the developer title until we correctly set it
+	 * as otherwise GNOME shows up in every app */
+	if (TRUE || tmp == NULL) {
 		gtk_widget_set_visible (self->label_details_developer_title, FALSE);
 		gtk_widget_set_visible (self->label_details_developer_value, FALSE);
 	} else {
