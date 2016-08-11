@@ -32,12 +32,32 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GsAppList, gs_app_list, GS, APP_LIST, GObject)
 
+/**
+ * GsAppListFilterFlags:
+ * @GS_APP_LIST_FILTER_FLAG_NONE:	No flags set
+ * @GS_APP_LIST_FILTER_FLAG_PRIORITY:	Filter by application priority
+ *
+ * Flags to use when filtering.
+ **/
+typedef enum {
+	GS_APP_LIST_FILTER_FLAG_NONE		= 0,
+	GS_APP_LIST_FILTER_FLAG_PRIORITY	= 1 << 0,
+	/*< private >*/
+	GS_APP_LIST_FILTER_FLAG_LAST
+} GsAppListFilterFlags;
+
+typedef gboolean (*GsAppListFilterFunc)		(GsApp		*app,
+						 gpointer	 user_data);
+
 GsAppList	*gs_app_list_new		(void);
 void		 gs_app_list_add		(GsAppList	*list,
 						 GsApp		*app);
 GsApp		*gs_app_list_index		(GsAppList	*list,
 						 guint		 idx);
 guint		 gs_app_list_length		(GsAppList	*list);
+void		 gs_app_list_filter		(GsAppList	*list,
+						 GsAppListFilterFunc func,
+						 gpointer	 user_data);
 
 G_END_DECLS
 

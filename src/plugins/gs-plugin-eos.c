@@ -22,6 +22,7 @@
 #include <config.h>
 
 #include <gio/gdesktopappinfo.h>
+#include <flatpak.h>
 #include <libsoup/soup.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
@@ -41,6 +42,8 @@
 #define EOS_IMAGE_VERSION_PATH "/sysroot"
 #define EOS_IMAGE_VERSION_ALT_PATH "/"
 
+#define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -54,6 +57,8 @@ struct GsPluginData
 	SoupSession *soup_session;
 	GHashTable *default_branches;
 	char *personality;
+	GsFlatpak	*usr_flatpak;
+	GsFlatpak	*sys_flatpak;
 };
 
 static GHashTable *
@@ -265,6 +270,26 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	if (!priv->personality)
 		g_warning ("No system personality could be set!");
+
+	priv->usr_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
+	priv->sys_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_SYSTEM);
+}
+
+/**
+ * gs_plugin_setup:
+ */
+gboolean
+gs_plugin_setup (GsPlugin *plugin,
+		 GCancellable *cancellable,
+		 GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	if (!gs_flatpak_setup (priv->usr_flatpak, cancellable, error) ||
+	    !gs_flatpak_setup (priv->sys_flatpak, cancellable, error))
+		return FALSE;
+
+	return TRUE;
 }
 
 /**
@@ -283,6 +308,8 @@ gs_plugin_destroy (GsPlugin *plugin)
 
 	g_clear_object (&priv->session_bus);
 	g_clear_object (&priv->soup_session);
+	g_clear_object (&priv->usr_flatpak);
+	g_clear_object (&priv->sys_flatpak);
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->default_branches);
 	g_free (priv->personality);
@@ -470,13 +497,20 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
+app_is_proxy (GsApp *app)
+{
+	return g_str_has_prefix (gs_app_get_id (app), EOS_PROXY_APP_PREFIX);
+}
+
+static gboolean
 gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
 	const char *id = gs_app_get_id (app);
 
 	blacklist_app = gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
-			gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY);
+			gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+			!app_is_proxy (app);
 
 	if (!blacklist_app) {
 		if (g_str_has_prefix (id, "eos-link-")) {
@@ -903,5 +937,171 @@ gs_plugin_refresh (GsPlugin *plugin,
 		   GError **error)
 {
 	reload_default_branches (plugin);
+	return TRUE;
+}
+
+static gint
+g_slist_compare_app_ids (GsApp *a,
+			 GsApp *b)
+{
+	return g_strcmp0 (gs_app_get_id (a), gs_app_get_id (b));
+}
+
+static gboolean
+filter_proxied_apps (GsApp *app,
+		     gpointer data)
+{
+	GSList *proxied_apps = (GSList *) data;
+	return g_slist_find_custom (proxied_apps, app,
+				(GCompareFunc) g_slist_compare_app_ids) == NULL;
+}
+
+static GsApp *
+gs_plugin_eos_create_updates_proxy_app (GsPlugin *plugin)
+{
+	const char *id = EOS_PROXY_APP_PREFIX ".EOSUpdatesProxy";
+	const char *unique_id;
+	GsApp *proxy = gs_app_new (id);
+	g_autoptr(AsIcon) icon;
+
+	unique_id = g_strdup_printf ("system/proxy/*/runtime/%s/*/*", id);
+
+	gs_app_set_unique_id (proxy, unique_id);
+	gs_app_set_kind (proxy, AS_APP_KIND_RUNTIME);
+	/* TRANSLATORS: this is the name of the Endless Platform app */
+	gs_app_set_name (proxy, GS_APP_QUALITY_NORMAL,
+			 _("Endless Platform"));
+	/* TRANSLATORS: this is the summary of the Endless Platform app */
+	gs_app_set_summary (proxy, GS_APP_QUALITY_NORMAL,
+			    _("Framework for applications"));
+	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
+
+	icon = as_icon_new ();
+	as_icon_set_kind (icon, AS_ICON_KIND_STOCK);
+	as_icon_set_name (icon, "system-run-symbolic");
+	gs_app_add_icon (proxy, icon);
+
+	return proxy;
+}
+
+static GsFlatpak *
+gs_plugin_get_gs_flatpak_for_app (GsPlugin *plugin,
+				  GsApp *app)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const char *app_unique_id = gs_app_get_unique_id (app);
+
+	if (g_str_has_prefix (app_unique_id, GS_FLATPAK_SYSTEM_PREFIX))
+		return priv->sys_flatpak;
+
+	return priv->usr_flatpak;
+}
+
+gboolean
+gs_plugin_update_app (GsPlugin *plugin,
+		      GsApp *proxy,
+		      GCancellable *cancellable,
+		      GError **error)
+{
+	GPtrArray *proxied_apps = NULL;
+	guint i;
+	guint num_apps_updated = 0;
+	guint num_apps_to_update = 0;
+
+	/* we only update proxy apps in this plugin */
+	if (!app_is_proxy (proxy))
+		return TRUE;
+
+	proxied_apps = gs_app_get_related (proxy);
+
+	if (proxied_apps->len == 0)
+		return TRUE;
+
+	gs_app_set_state (proxy, AS_APP_STATE_INSTALLING);
+
+	num_apps_to_update = proxied_apps->len;
+	for (i = 0; i < num_apps_to_update; ++i) {
+		GsApp *app = g_ptr_array_index (proxied_apps, i);
+		GsFlatpak *flatpak = gs_plugin_get_gs_flatpak_for_app (plugin,
+								       app);
+		const char *management;
+		gboolean update_result = FALSE;
+
+		g_debug ("Updating '%s' from proxy '%s' ",
+			 gs_app_get_unique_id (app),
+			 gs_app_get_unique_id (proxy));
+
+		/* set the management plugin momentaneously so we can really
+		 * update it; we reset it back later */
+		management = gs_app_get_management_plugin (app);
+		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+
+		update_result = gs_flatpak_update_app (flatpak, app,
+						       cancellable, error);
+
+		gs_app_set_management_plugin (app, management);
+
+		/* in case one of the updates failed we fail too */
+		if (!update_result) {
+			gs_app_set_state_recover (proxy);
+			return FALSE;
+		}
+
+		++num_apps_updated;
+
+		if (g_cancellable_is_cancelled (cancellable))
+			break;
+	}
+
+	if (num_apps_updated != num_apps_to_update) {
+		gs_app_set_state_recover (proxy);
+		return TRUE;
+	}
+
+	gs_app_set_state (proxy, AS_APP_STATE_INSTALLED);
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_updates (GsPlugin *plugin,
+		       GsAppList *list,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	guint i;
+	g_autoptr(GsApp) updates_proxy_app = NULL;
+	g_autoptr(GSList) proxied_updates = NULL;
+	GSList *iter;
+	const char *proxied_apps[] = {"com.endlessm.Platform.runtime",
+				      "com.endlessm.EknServices.desktop",
+				      NULL};
+
+	for (i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+		const char *id = gs_app_get_id (app);
+
+		if (!g_strv_contains (proxied_apps, id))
+			continue;
+
+		proxied_updates = g_slist_prepend (proxied_updates, app);
+	}
+
+	if (!proxied_updates)
+		return TRUE;
+
+	/* remove proxied apps from updates list */
+	gs_app_list_filter (list, filter_proxied_apps, proxied_updates);
+
+	updates_proxy_app = gs_plugin_eos_create_updates_proxy_app (plugin);
+
+	for (iter = proxied_updates; iter; iter = g_slist_next (iter)) {
+		GsApp *app = GS_APP (iter->data);
+		gs_app_add_related (updates_proxy_app, app);
+	}
+
+	gs_app_list_add (list, updates_proxy_app);
+
 	return TRUE;
 }
