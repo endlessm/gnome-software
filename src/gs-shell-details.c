@@ -105,6 +105,7 @@ struct _GsShellDetails
 	GtkWidget		*label_details_size_installed_value;
 	GtkWidget		*label_details_size_download_title;
 	GtkWidget		*label_details_size_download_value;
+	GtkWidget		*label_details_updated_title;
 	GtkWidget		*label_details_updated_value;
 	GtkWidget		*label_details_version_value;
 	GtkWidget		*label_failed;
@@ -853,8 +854,9 @@ gs_shell_details_refresh_all (GsShellDetails *self)
 	updated = gs_app_get_install_date (self->app);
 	if (updated == GS_APP_INSTALL_DATE_UNKNOWN ||
 	    updated == GS_APP_INSTALL_DATE_UNSET) {
-		/* TRANSLATORS: this is where the updated date is not known */
-		gtk_label_set_label (GTK_LABEL (self->label_details_updated_value), C_("updated", "Never"));
+		/* Hide the updates labels as no useful info is shown */
+		gtk_widget_hide (self->label_details_updated_title);
+		gtk_widget_hide (self->label_details_updated_value);
 	} else {
 		g_autoptr(GDateTime) dt = NULL;
 		g_autofree gchar *updated_str = NULL;
@@ -2168,6 +2170,7 @@ gs_shell_details_class_init (GsShellDetailsClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsShellDetails, label_details_size_download_value);
 	gtk_widget_class_bind_template_child (widget_class, GsShellDetails, label_details_size_installed_title);
 	gtk_widget_class_bind_template_child (widget_class, GsShellDetails, label_details_size_installed_value);
+	gtk_widget_class_bind_template_child (widget_class, GsShellDetails, label_details_updated_title);
 	gtk_widget_class_bind_template_child (widget_class, GsShellDetails, label_details_updated_value);
 	gtk_widget_class_bind_template_child (widget_class, GsShellDetails, label_details_version_value);
 	gtk_widget_class_bind_template_child (widget_class, GsShellDetails, label_failed);
