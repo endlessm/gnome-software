@@ -1163,6 +1163,40 @@ gs_plugin_refine_item_metadata (GsFlatpak *self,
 	return TRUE;
 }
 
+static FlatpakInstalledRef *
+gs_flatpak_get_installed_ref (GsFlatpak *self,
+			      GsApp *app,
+			      GCancellable *cancellable,
+			      GError **error)
+{
+        FlatpakInstalledRef *ref;
+	FlatpakRefKind kind;
+	const char *name;
+	const char *arch;
+	const char *branch;
+
+	kind = gs_app_get_flatpak_kind (app);
+	name = gs_app_get_flatpak_name (app);
+	arch = gs_app_get_flatpak_arch (app);
+	branch = gs_app_get_flatpak_branch (app);
+
+	ref = flatpak_installation_get_installed_ref (self->installation,
+						      kind,
+						      name,
+						      arch,
+						      branch,
+						      cancellable,
+						      error);
+
+	return ref;
+}
+
+static gboolean
+app_size_is_valid (guint64 size)
+{
+	return (size > 0) && (size != GS_APP_SIZE_UNKNOWABLE);
+}
+
 static gboolean
 gs_plugin_refine_item_size (GsFlatpak *self,
 			    GsApp *app,
@@ -1170,15 +1204,16 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 			    GError **error)
 {
 	gboolean ret;
-	guint64 download_size;
-	guint64 installed_size;
+	guint64 download_size = GS_APP_SIZE_UNKNOWABLE;
+	guint64 installed_size = GS_APP_SIZE_UNKNOWABLE;
 	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(FlatpakRef) xref = NULL;
 	g_autoptr(GError) error_local = NULL;
 
-	/* already set */
-	if (gs_app_get_size_installed (app) > 0 &&
-	    gs_app_get_size_download (app) > 0)
+	/* we only care about the installed size if the app is installed */
+	if ((app_size_is_valid (gs_app_get_size_installed (app)) &&
+	     gs_app_is_installed (app)) ||
+	    app_size_is_valid (gs_app_get_size_download (app)))
 		return TRUE;
 
 	/* need runtime */
@@ -1218,21 +1253,40 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 	xref = gs_flatpak_create_fake_ref (app, error);
 	if (xref == NULL)
 		return FALSE;
-	ret = flatpak_installation_fetch_remote_size_sync (self->installation,
-							   gs_app_get_origin (app),
-							   xref,
-							   &download_size,
-							   &installed_size,
-							   cancellable, &error_local);
-	if (!ret) {
-		g_warning ("libflatpak failed to return application size: %s",
-			   error_local->message);
-		gs_app_set_size_installed (app, GS_APP_SIZE_UNKNOWABLE);
-		gs_app_set_size_download (app, GS_APP_SIZE_UNKNOWABLE);
+
+	/* if the app is installed we use the ref to fetch the installed size
+	 * and ignore the download size as this is faster */
+	if (gs_app_is_installed (app)) {
+		g_autoptr(FlatpakInstalledRef) ref =
+			gs_flatpak_get_installed_ref (self, app,
+						      cancellable, error);
+
+		installed_size =
+			flatpak_installed_ref_get_installed_size (ref);
+
+		if (installed_size == 0)
+			installed_size = GS_APP_SIZE_UNKNOWABLE;
 	} else {
-		gs_app_set_size_installed (app, installed_size);
-		gs_app_set_size_download (app, download_size);
+		ret = flatpak_installation_fetch_remote_size_sync (self->installation,
+								   gs_app_get_origin (app),
+								   xref,
+								   &download_size,
+								   &installed_size,
+								   cancellable,
+								   &error_local);
+
+		if (!ret) {
+			g_warning ("libflatpak failed to return application "
+				   "size: %s", error_local->message);
+
+			installed_size = GS_APP_SIZE_UNKNOWABLE;
+			download_size = GS_APP_SIZE_UNKNOWABLE;
+		}
 	}
+
+	gs_app_set_size_installed (app, installed_size);
+	gs_app_set_size_download (app, download_size);
+
 	return TRUE;
 }
 
@@ -1818,24 +1872,8 @@ gs_flatpak_is_installed (GsFlatpak *self,
 			 GCancellable *cancellable,
 			 GError **error)
 {
-	g_autoptr(FlatpakInstalledRef) ref;
-	FlatpakRefKind kind;
-	const char *name;
-	const char *arch;
-	const char *branch;
-
-	kind = gs_app_get_flatpak_kind (app);
-	name = gs_app_get_flatpak_name (app);
-	arch = gs_app_get_flatpak_arch (app);
-	branch = gs_app_get_flatpak_branch (app);
-
-	ref = flatpak_installation_get_installed_ref (self->installation,
-						      kind,
-						      name,
-						      arch,
-						      branch,
-						      cancellable,
-						      error);
+	g_autoptr(FlatpakInstalledRef) ref =
+		gs_flatpak_get_installed_ref (self, app, cancellable, error);
 
 	return ref != NULL;
 }
