@@ -45,6 +45,8 @@
 
 #define TMP_ASSSETS_PREFIX "gs-external-apps"
 
+#define EXT_APPS_SYSTEM_REPO_NAME "eos-external-apps"
+
 typedef enum {
 	GS_PLUGIN_EXTERNAL_TYPE_UNKNOWN = 0,
 	GS_PLUGIN_EXTERNAL_TYPE_DEB,
@@ -56,46 +58,6 @@ struct GsPluginData {
 	GsFlatpak	*sys_flatpak;
 	char		*runtimes_build_dir;
 };
-
-static gboolean flatpak_remote_delete (const char *repo_name, GError **error);
-
-static void
-remove_runtimes_build_dir (GsPlugin *plugin)
-{
-	g_autoptr(GError) error = NULL;
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	if (gs_utils_rmtree (priv->runtimes_build_dir, &error))
-		return;
-
-	if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
-		g_debug ("Cannot remove previously created external apps build "
-			 "dir '%s': %s", priv->runtimes_build_dir,
-			 error->message);
-	}
-}
-
-static void
-remove_ext_apps_remotes (GsPlugin *plugin)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	guint i;
-	GPtrArray *names;
-
-	names = gs_flatpak_get_remotes_names (priv->usr_flatpak, NULL, NULL);
-
-	if (!names)
-		return;
-
-	for (i = 0; i < names->len; i++) {
-		const char *name = g_ptr_array_index (names, i);
-		if (g_str_has_prefix (name, TMP_ASSSETS_PREFIX)) {
-			flatpak_remote_delete (name, NULL);
-		}
-	}
-
-	g_ptr_array_free (names, TRUE);
-}
 
 void
 gs_plugin_initialize (GsPlugin *plugin)
@@ -119,10 +81,6 @@ void
 gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	/* Remove the runtimes build directory to clean any contents eventually
-	 * left from previous builds */
-	remove_runtimes_build_dir (plugin);
 
 	g_clear_object (&priv->usr_flatpak);
 	g_clear_object (&priv->sys_flatpak);
@@ -161,166 +119,73 @@ gs_plugin_setup (GsPlugin *plugin,
 	    !gs_flatpak_setup (priv->sys_flatpak, cancellable, error))
 		return FALSE;
 
-	/* Remove the runtimes build directories and remotes to clean
-	 * any contents eventually left from previous builds */
-	remove_runtimes_build_dir (plugin);
-	remove_ext_apps_remotes (plugin);
-
 	return TRUE;
 }
 
-static char *
-download_asset (GsPlugin *plugin,
-		GsApp *app,
-		const char *runtime,
-		const char *asset,
-		GError **error)
+static void
+command_cancelled_cb (GCancellable *cancellable,
+		      GSubprocess *subprocess)
 {
-	g_autofree gchar *cache_basename = NULL;
-	g_autofree gchar *cache_fn = NULL;
-	g_autofree gchar *cache_png = NULL;
-	g_autofree gchar *data = NULL;
-
-	cache_basename = g_path_get_basename (asset);
-	cache_fn = gs_utils_get_cache_filename (gs_plugin_get_name (plugin),
-						cache_basename,
-						GS_UTILS_CACHE_FLAG_NONE,
-						error);
-	if (cache_fn == NULL)
-		return NULL;
-
-	if (!g_file_test (cache_fn, G_FILE_TEST_EXISTS)) {
-		if (!gs_mkdir_parent (cache_fn, error))
-			return NULL;
-
-		if (!gs_plugin_download_file (plugin, app, asset, cache_fn,
-					      NULL, error))
-			return NULL;
-	}
-
-	return g_steal_pointer (&cache_fn);
+	g_debug ("Killing process '%s' after a cancellation!",
+		 g_subprocess_get_identifier (subprocess));
+	g_subprocess_force_exit (subprocess);
 }
 
 static gboolean
-run_command (const char *working_dir,
-	     const char **argv,
+run_command (const char **argv,
+	     GCancellable *cancellable,
 	     GError **error)
 {
-	g_autofree char *stderr_buf = NULL;
-	g_autofree char *stdout_buf = NULL;
 	g_autofree char *cmd = NULL;
 	int exit_val = -1;
+	g_autoptr(GSubprocess) subprocess = NULL;
+	gboolean result = FALSE;
 
-	if (!g_spawn_sync (working_dir, (char **) argv, NULL,
-			   G_SPAWN_SEARCH_PATH, NULL, NULL, &stdout_buf,
-			   &stderr_buf, &exit_val, error)) {
+	subprocess = g_subprocess_newv (argv,
+					G_SUBPROCESS_FLAGS_STDOUT_PIPE |
+					G_SUBPROCESS_FLAGS_STDIN_PIPE,
+					error);
+
+	if (!subprocess)
 		return FALSE;
-	}
 
+	if (cancellable)
+		g_cancellable_connect (cancellable,
+				       G_CALLBACK (command_cancelled_cb),
+				       subprocess, NULL);
+
+	result = g_subprocess_wait_check (subprocess, NULL, error);
+
+	exit_val = g_subprocess_get_exit_status (subprocess);
 	cmd = g_strjoinv (" ", (char **) argv);
-	g_debug ("Result of running '%s': retcode=%d stdout='%s' stderr='%s'",
-		 cmd, exit_val,	(stdout_buf ? stdout_buf : "NULL"),
-		 (stderr_buf ? stderr_buf : "NULL"));
 
-	return g_spawn_check_exit_status (exit_val, error);
+	g_debug ("Result of running '%s': retcode=%d", cmd, exit_val);
+
+	return result;
 }
 
 static gboolean
-flatpak_repo_build_init (const char *repo_dir,
-			 const char *repo_name,
-			 GError **error)
+build_and_install_external_runtime (GsApp *runtime,
+				    GCancellable *cancellable,
+				    GError **error)
 {
-	const char *endless_runtime = "com.endlessm.Platform";
-	const char *argv[] = {"flatpak", "build-init",  repo_dir, repo_name,
-			      endless_runtime, endless_runtime, NULL};
-	const char *argv2[] = {"sed", "-i", "s/Application/Runtime/",
-			       "metadata", NULL};
+	const char *runtime_url = gs_app_get_metadata_item (runtime,
+							    METADATA_URL);
+	const char *runtime_type = gs_app_get_metadata_item (runtime,
+							     METADATA_TYPE);
 
-	if (!run_command (NULL, argv, error))
-		return FALSE;
+	/* run the external apps builder script as the configured helper user */
+	const char *argv[] = {"pkexec", "--user", EXT_APPS_HELPER_USER,
+			      LIBEXECDIR "/eos-external-apps-build-install",
+			      EXT_APPS_SYSTEM_REPO_NAME,
+			      gs_app_get_id (runtime), runtime_url,
+			      runtime_type,
+			      NULL};
 
-	if (!run_command (repo_dir, argv2, error))
-		return FALSE;
+	g_debug ("Building and installing runtime extension '%s'...",
+		 gs_app_get_unique_id (runtime));
 
-	return TRUE;
-}
-
-static gboolean
-flatpak_repo_build_export (const char *repo_dir,
-			   const char *repo_name,
-			   GError **error)
-{
-	const char *argv[] = {"flatpak", "build-export",  "--runtime",
-			      repo_name, repo_dir, NULL};
-	return run_command (NULL, argv, error);
-}
-
-static gboolean
-flatpak_remote_add (const char *repo_dir,
-		    const char *repo_name,
-		    GError **error)
-{
-	const char *argv[] = {"flatpak", "remote-add",  "--user",
-			      "--no-gpg-verify", repo_name, repo_dir, NULL};
-	return run_command (NULL, argv, error);
-}
-
-static gboolean
-flatpak_remote_delete (const char *repo_name,
-		       GError **error)
-{
-	const char *argv[] = {"flatpak", "remote-delete",  "--user", "--force",
-			      repo_name, NULL};
-	return run_command (NULL, argv, error);
-}
-
-static gboolean
-add_runtime_deb_asset (const gchar *build_dir,
-		       const gchar *repo_dir,
-		       const char *asset_path,
-		       GError **error)
-{
-	const char *argv[] = {"ar", "x",  asset_path, NULL};
-	const char **argv2 = NULL;
-	g_autofree char *data_tar_path = NULL;
-	gboolean ret = FALSE;
-
-	if (!run_command (build_dir, argv, error)) {
-		return FALSE;
-	}
-
-	data_tar_path = g_build_filename (build_dir, "data.tar.gz", NULL);
-	if (!g_file_test (data_tar_path, G_FILE_TEST_EXISTS)) {
-		g_free (data_tar_path);
-		data_tar_path = g_build_filename (build_dir, "data.tar.xz",
-						  NULL);
-
-		if (!g_file_test (data_tar_path, G_FILE_TEST_EXISTS)) {
-			g_set_error (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_FAILED,
-				     "Could not find data.tar.gz or "
-				     "data.tar.xz after decompressing Debian "
-				     "package '%s' in '%s'", asset_path,
-				     build_dir);
-
-			return FALSE;
-		}
-	}
-
-	/* Build array for command: tar xf TAR_FILE -C REPO_DIR */
-	argv2 = (const char **) g_new0 (char *, 6);
-	argv2[0] = "tar";
-	argv2[1] = "xf";
-	argv2[2] = data_tar_path;
-	argv2[3] = "-C";
-	argv2[4] = repo_dir;
-
-	ret = run_command (build_dir, argv2, error);
-
-	g_free (argv2);
-
-	return ret;
+	return run_command (argv, cancellable, error);
 }
 
 static inline GsPluginExternalType
@@ -332,190 +197,6 @@ get_type_from_string (const char *type)
 		return  GS_PLUGIN_EXTERNAL_TYPE_TAR;
 
 	return GS_PLUGIN_EXTERNAL_TYPE_UNKNOWN;
-}
-
-static gboolean
-add_runtime_tar_asset (const gchar *build_dir,
-		       const gchar *repo_dir,
-		       const char *asset_path,
-		       GError **error)
-{
-	/* flatpak build --runtime needs files in /usr, when coming from a
-	   debian package we can assume some files in /usr, when coming from
-	   a tgz, it's harder, so force that here. */
-	g_autofree gchar *extract_path = g_build_filename (repo_dir, "usr", NULL);
-	const char *argv[] = {"tar", "xvf",  asset_path, "-C", extract_path, NULL};
-
-	g_mkdir_with_parents (extract_path, 0700);
-
-	return run_command (build_dir, argv, error);
-}
-
-static gboolean
-add_runtime_asset (GsPlugin *plugin,
-		   GsApp *app,
-		   const gchar *build_dir,
-		   const gchar *repo_dir,
-		   const char *runtime,
-		   const char *archive_type,
-		   const char *asset,
-		   GError **error)
-{
-	g_autofree char *content_type = NULL;
-	g_autoptr(GFile) download_file = NULL;
-	g_autofree char *download_name = download_asset (plugin, app, runtime,
-							 asset, error);
-	GsPluginExternalType type = get_type_from_string (archive_type);
-
-	if (!download_name)
-		return FALSE;
-
-	download_file = g_file_new_for_path (download_name);
-	content_type = gs_utils_get_content_type (download_file, NULL,
-						  error);
-
-	if (!content_type)
-		return FALSE;
-
-	g_debug ("Adding runtime asset with type '%s'", content_type);
-
-	if ((type == GS_PLUGIN_EXTERNAL_TYPE_DEB) ||
-	    g_content_type_is_a (content_type, "application/x-deb")) {
-		return add_runtime_deb_asset (build_dir, repo_dir,
-					      download_name, error);
-	}
-
-	if ((type == GS_PLUGIN_EXTERNAL_TYPE_TAR) ||
-	    g_content_type_is_a (content_type, "application/x-tar")) {
-		return add_runtime_tar_asset (build_dir, repo_dir,
-					      download_name, error);
-	}
-
-	g_set_error (error,
-		     GS_PLUGIN_ERROR,
-		     GS_PLUGIN_ERROR_FAILED,
-		     "Cannot deal with asset type '%s'", content_type);
-
-	return FALSE;
-}
-
-static gboolean
-clean_runtime_build_dir (GsPlugin *plugin,
-			 GsApp *runtime,
-			 GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	GError *local_error = NULL;
-	const char *runtime_name = gs_app_get_id (runtime);
-	g_autofree char *build_dir = g_build_filename (priv->runtimes_build_dir,
-						       runtime_name,
-						       NULL);
-
-	if (!gs_utils_rmtree (build_dir, &local_error)) {
-		if (!g_error_matches (local_error, G_FILE_ERROR,
-				     G_FILE_ERROR_NOENT)) {
-			g_debug ("Cannot remove runtime build dir '%s': %s",
-				 build_dir, local_error->message);
-
-			g_propagate_error (error, local_error);
-
-			return FALSE;
-		}
-
-		g_clear_error (&local_error);
-	}
-
-	return TRUE;
-}
-
-static gboolean
-build_runtime (GsPlugin *plugin,
-	       GsApp *app,
-	       GsApp *runtime,
-	       GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autofree char *tmp_dir;
-	g_autofree char *repo_dir = NULL;
-	g_autofree char *build_dir = NULL;
-	g_autoptr(GFile) tmp_build_dir = NULL;
-	g_autofree char *repo_name = NULL;
-	g_autofree char *dir_basename = NULL;
-	const char *repo_build_dir = "3rd-party-repo";
-	const char *runtime_name = gs_app_get_id (runtime);
-	const char *runtime_url = gs_app_get_metadata_item (runtime,
-							    METADATA_URL);
-	const char *runtime_type = gs_app_get_metadata_item (runtime,
-							     METADATA_TYPE);
-
-	tmp_dir = g_build_filename (priv->runtimes_build_dir, runtime_name,
-				    NULL);
-
-	g_debug ("Building runtime extension '%s' in dir '%s'", runtime_name,
-		 tmp_dir);
-
-	/* Remove a directory if left over from a previous build */
-	if (!clean_runtime_build_dir (plugin, app, error))
-		return FALSE;
-
-	build_dir = g_build_filename (tmp_dir, repo_build_dir, NULL);
-	tmp_build_dir = g_file_new_for_path (build_dir);
-
-	if (!g_file_make_directory_with_parents (tmp_build_dir, NULL, error)) {
-		g_debug ("Failed to make build dir '%s'", build_dir);
-		return FALSE;
-	}
-
-	gs_app_set_progress (app, 10);
-
-	if (!flatpak_repo_build_init (build_dir, runtime_name, error)) {
-		g_debug ("Failed to initialize the repo build in directory "
-			 "'%s'", build_dir);
-		return FALSE;
-	}
-
-	gs_app_set_progress (app, 15);
-
-	if (!add_runtime_asset (plugin, app, tmp_dir, build_dir, runtime_name,
-				runtime_type, runtime_url, error)) {
-		g_debug ("Failed to add the asset '%s'", runtime_name);
-		return FALSE;
-	}
-
-	gs_app_set_progress (app, 30);
-
-	g_debug ("Exporting repo in '%s'... (this may take a while)", build_dir);
-
-	repo_dir = g_build_filename (tmp_dir, runtime_name, NULL);
-
-	if (!flatpak_repo_build_export (build_dir, repo_dir, error)) {
-		g_debug ("Failed to export repo '%s' in '%s'!", repo_dir,
-			 build_dir);
-		return FALSE;
-	}
-
-	gs_app_set_progress (app, 50);
-
-	g_debug ("Repo '%s' exported! Adding it now.", repo_dir);
-
-	repo_name = g_strconcat (TMP_ASSSETS_PREFIX, "_", runtime_name, NULL);
-
-	/* Delete any previously uncleaned remotes for this runtime */
-	flatpak_remote_delete (repo_name, NULL);
-
-	if (!flatpak_remote_add (repo_dir, repo_name, error)) {
-		g_debug ("Failed to add remote '%s' from dir '%s'",
-			 repo_name, repo_dir);
-		return FALSE;
-	}
-
-	gs_app_set_origin (runtime, repo_name);
-	gs_app_set_metadata (runtime, METADATA_BUILD_DIR, build_dir);
-	gs_app_set_state (runtime, AS_APP_STATE_AVAILABLE);
-
-	gs_app_set_progress (app, 70);
-
-	return TRUE;
 }
 
 static char *
@@ -641,7 +322,7 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	priv = gs_plugin_get_data (plugin);
 
 	full_id = g_strdup_printf ("%s%s",
-				   gs_flatpak_get_prefix (priv->usr_flatpak),
+				   gs_flatpak_get_prefix (priv->sys_flatpak),
 				   id);
 
 	runtime = gs_plugin_cache_lookup (plugin, full_id);
@@ -662,12 +343,11 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	gs_app_set_kind (runtime, AS_APP_KIND_RUNTIME);
 	gs_app_set_flatpak_name (runtime, id);
 	gs_app_set_flatpak_arch (runtime, flatpak_get_default_arch ());
-	gs_app_set_flatpak_branch (runtime, "master");
 	gs_app_set_management_plugin (runtime, gs_plugin_get_name (plugin));
 
 	gs_plugin_cache_add (plugin, full_id, runtime);
 
-	if (gs_flatpak_is_installed (priv->usr_flatpak, runtime, NULL, NULL)) {
+	if (gs_flatpak_is_installed (priv->sys_flatpak, runtime, NULL, NULL)) {
 		gs_app_set_state (runtime, AS_APP_STATE_INSTALLED);
 	}
 
@@ -747,8 +427,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 {
 	g_autofree char *runtime = NULL;
 	g_autofree char *url = NULL;
-	const char *remote_name;
-	GError *internal_error = NULL;
 	GsApp *ext_runtime;
 	GsPluginData *priv;
 	GsFlatpak *flatpak = NULL;
@@ -775,12 +453,20 @@ gs_plugin_app_install (GsPlugin *plugin,
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 
 	if (gs_app_get_state (ext_runtime) == AS_APP_STATE_UNKNOWN) {
-		if (!build_runtime (plugin, app, ext_runtime, error)) {
-			g_debug ("Failed to build runtime '%s'", runtime);
+		gs_app_set_progress (app, 50);
+
+		if (!build_and_install_external_runtime (ext_runtime,
+							 cancellable, error)) {
+			g_debug ("Failed to build and install external "
+				 "runtime '%s'", runtime);
 			return FALSE;
 		}
 
-		if (!gs_flatpak_refine_app (priv->usr_flatpak, ext_runtime,
+		gs_app_set_progress (app, 75);
+
+		gs_app_set_origin (ext_runtime, EXT_APPS_SYSTEM_REPO_NAME);
+
+		if (!gs_flatpak_refine_app (priv->sys_flatpak, ext_runtime,
 					    GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 					    cancellable, error)) {
 			g_debug ("Failed to refine '%s'",
@@ -808,17 +494,8 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 	case AS_APP_STATE_AVAILABLE:
 		g_debug ("Installing '%s'", gs_app_get_id (ext_runtime));
-		ret = gs_flatpak_app_install (priv->usr_flatpak, ext_runtime,
+		ret = gs_flatpak_app_install (priv->sys_flatpak, ext_runtime,
 					      cancellable, error);
-
-		/* Clean-up remote (we only needed it for installing the app) */
-		remote_name = gs_app_get_origin (ext_runtime);
-		if (!flatpak_remote_delete (remote_name,
-					    &internal_error)) {
-			g_debug ("Failed to delete remote '%s': %s",
-				 remote_name, internal_error->message);
-			g_clear_error (&internal_error);
-		}
 
 		if (!ret) {
 			g_debug ("Failed to install '%s'",
@@ -833,6 +510,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 		/* In case we may end up here somehow, just let the situation
 		 * be dealt with in the check for the 'installed' state below */
 		break;
+	}
+
+	if (g_cancellable_is_cancelled (cancellable)) {
+		g_debug ("Installation of '%s' was cancelled",
+			 gs_app_get_unique_id (ext_runtime));
+
+		return TRUE;
 	}
 
 	if (gs_app_get_state (ext_runtime) != AS_APP_STATE_INSTALLED) {
@@ -851,9 +535,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 		g_debug ("Failed to install '%s'", gs_app_get_id (app));
 		return FALSE;
 	}
-
-	/* Everything went fine so clean the runtime build directory */
-	clean_runtime_build_dir (plugin, ext_runtime, NULL);
 
 	return TRUE;
 }
@@ -896,7 +577,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		   gs_app_get_state (ext_runtime) == AS_APP_STATE_UPDATABLE) {
 		g_autoptr(GError) local_error = NULL;
 
-		if (!gs_flatpak_app_remove (priv->usr_flatpak, ext_runtime,
+		if (!gs_flatpak_app_remove (priv->sys_flatpak, ext_runtime,
 					    cancellable, &local_error)) {
 			g_debug ("Cannot remove '%s': %s. Will try to "
 				 "remove app '%s'.",

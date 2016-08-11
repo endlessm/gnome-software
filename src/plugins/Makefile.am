@@ -19,9 +19,11 @@ AM_CPPFLAGS =						\
 	-DI_KNOW_THE_GNOME_SOFTWARE_API_IS_SUBJECT_TO_CHANGE	\
 	-DBINDIR=\"$(bindir)\"				\
 	-DDATADIR=\"$(datadir)\"			\
+	-DEXT_APPS_HELPER_USER=\"$(EXT_APPS_HELPER_USER)\"	\
 	-DGS_DATA=\"$(pkgdatadir)\"			\
 	-DG_LOG_DOMAIN=\"GsPlugin\"			\
 	-DLIBDIR=\""$(libdir)"\"			\
+	-DLIBEXECDIR=\""$(libexecdir)"\"		\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\"		\
 	-DSBINDIR=\"$(sbindir)\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
@@ -400,5 +402,7 @@ gs_self_test_CFLAGS = $(WARN_CFLAGS)
 
 TESTS = gs-self-test
 endif
+
+dist_libexec_SCRIPTS = eos-external-apps-build-install
 
 -include $(top_srcdir)/git.mk

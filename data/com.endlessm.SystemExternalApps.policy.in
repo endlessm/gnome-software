@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+  <vendor>Endless</vendor>
+  <vendor_url>https://endlessm.com/</vendor_url>
+
+  <action id="com.endlessm.SystemExternalApps.build-install">
+    <description>Export a built runtime into the system repository and install it</description>
+    <message>Authentication is required to build and install the app</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">@libexecdir@/eos-external-apps-build-install</annotate>
+  </action>
+</policyconfig>
