@@ -116,4 +116,4 @@ echo "$APPNAME is now installed"
 
 # Remove installed app from system repo
 ostree refs --delete "runtime/$APPNAME" --repo="$REPO"
-ostree prune --refs-only --repo="$REPO"
+flatpak build-update-repo --prune "$REPO"
