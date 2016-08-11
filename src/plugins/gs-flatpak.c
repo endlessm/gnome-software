@@ -635,11 +635,6 @@ gs_flatpak_refresh (GsFlatpak *self,
 	/* give all the repos a second chance */
 	g_hash_table_remove_all (self->broken_remotes);
 
-	/* temporarily blacklist the external apps repo */
-	g_hash_table_insert (self->broken_remotes,
-			     g_strdup ("eos-external-apps"),
-			     GUINT_TO_POINTER (1));
-
 	/* update AppStream metadata */
 	if (flags & GS_PLUGIN_REFRESH_FLAGS_METADATA) {
 		if (!gs_flatpak_refresh_appstream (self,
@@ -1846,11 +1841,6 @@ gs_flatpak_init (GsFlatpak *self)
 {
 	self->broken_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 						      g_free, NULL);
-
-	/* temporarily blacklist the external apps repo */
-	g_hash_table_insert (self->broken_remotes,
-			     g_strdup ("eos-external-apps"),
-			     GUINT_TO_POINTER (1));
 }
 
 GsFlatpak *
