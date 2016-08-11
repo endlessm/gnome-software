@@ -1022,10 +1022,10 @@ gs_plugin_update_app (GsPlugin *plugin,
 
 	num_apps_to_update = proxied_apps->len;
 	for (i = 0; i < num_apps_to_update; ++i) {
+		g_autofree char *management = NULL;
 		GsApp *app = g_ptr_array_index (proxied_apps, i);
 		GsFlatpak *flatpak = gs_plugin_get_gs_flatpak_for_app (plugin,
 								       app);
-		const char *management;
 		gboolean update_result = FALSE;
 
 		g_debug ("Updating '%s' from proxy '%s' ",
@@ -1034,7 +1034,7 @@ gs_plugin_update_app (GsPlugin *plugin,
 
 		/* set the management plugin momentaneously so we can really
 		 * update it; we reset it back later */
-		management = gs_app_get_management_plugin (app);
+		management = g_strdup (gs_app_get_management_plugin (app));
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 
 		update_result = gs_flatpak_update_app (flatpak, app,
