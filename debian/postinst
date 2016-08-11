@@ -30,6 +30,14 @@ else
     install -d -m0755 -o ${g_s_helper_user} -g ${g_s_helper_user} "${ext_apps_repo}"
 fi
 
+# initialize the repo if necessary
+if [ ! -f "${ext_apps_repo}/config" ]; then
+    ostree --repo="${ext_apps_repo}" init --mode=bare-user
+fi
+
+# ensure appstream and summary data exist for gnome-software update
+flatpak build-update-repo "${ext_apps_repo}"
+
 # add or modify external apps repo if needed
 ext_apps_repo_name=eos-external-apps
 
