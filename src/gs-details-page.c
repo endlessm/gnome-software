@@ -1452,6 +1452,12 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 		break;
 	}
 
+	/* XXX: until we decide what to do regarding the styling and until we
+	 * fix the license generation in the flatpak apps, we hide the license
+	 * FIXME: https://phabricator.endlessm.com/T12886 */
+	gtk_widget_hide (self->label_details_license_title);
+	gtk_widget_hide (self->box_details_license_value);
+
 	gs_details_page_update_shortcut_button (self);
 
 	gs_details_page_update_copy_button (self);
