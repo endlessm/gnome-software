@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -u
+
+g_s_helper_user=g-s-helper
+g_s_helper_home=/var/lib/${g_s_helper_user}
+
+# creating g-s-helper user if it isn't already there
+if ! getent passwd ${g_s_helper_user} >/dev/null; then
+    adduser --system --force-badname --quiet \
+            --no-create-home \
+            --home "${g_s_helper_home}" \
+            --shell /usr/sbin/nologin \
+            --group ${g_s_helper_user}
+fi
+
+# create /var/lib/g-s-helper or update ownership of existing directory
+if [ -d "${g_s_helper_home}" ]; then
+    chown -R ${g_s_helper_user}:${g_s_helper_user} "${g_s_helper_home}"
+else
+    install -d -m0755 -o ${g_s_helper_user} -g ${g_s_helper_user} "${g_s_helper_home}"
+fi
+
+# create external apps repo or update ownership of existing directory
+ext_apps_repo=/var/lib/flatpak-external-apps
+
+if [ -d "${ext_apps_repo}" ]; then
+    chown -R ${g_s_helper_user}:${g_s_helper_user} "${ext_apps_repo}"
+else
+    install -d -m0755 -o ${g_s_helper_user} -g ${g_s_helper_user} "${ext_apps_repo}"
+fi
+
+# add or modify external apps repo if needed
+ext_apps_repo_name=eos-external-apps
+
+flatpak remote-add --no-gpg-verify ${ext_apps_repo_name} "${ext_apps_repo}" 2> /dev/null
+
+if [ $? != 0 ]; then
+    flatpak remote-modify ${ext_apps_repo_name} --no-gpg-verify --url "file://${ext_apps_repo}"
+fi
+
+#DEBHELPER#
+
+exit 0
