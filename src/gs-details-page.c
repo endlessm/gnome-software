@@ -114,6 +114,7 @@ struct _GsDetailsPage
 	GtkWidget		*label_failed;
 	GtkWidget		*label_license_nonfree_details;
 	GtkWidget		*label_licenses_intro;
+	GtkWidget		*label_details_license_title;
 	GtkWidget		*list_box_addons;
 	GtkWidget		*box_reviews;
 	GtkWidget		*box_details_screenshot_fallback;
@@ -1134,6 +1135,13 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_details_license_nonfree, TRUE);
 		gtk_widget_set_visible (self->button_details_license_unknown, FALSE);
 	}
+
+	/* XXX: until we decide what to do regarding the styling and until we
+	 * fix the license generation in the flatpak apps, we hide the license */
+	gtk_widget_hide (self->label_details_license_title);
+	gtk_widget_hide (self->button_details_license_free);
+	gtk_widget_hide (self->button_details_license_nonfree);
+	gtk_widget_hide (self->button_details_license_unknown);
 
 	/* set version */
 	tmp = gs_app_get_version (self->app);
@@ -2759,6 +2767,7 @@ gs_details_page_class_init (GsDetailsPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_rating_title);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, popover_permissions);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_permissions_details);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_license_title);
 }
 
 static void
