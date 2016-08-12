@@ -387,12 +387,15 @@ get_app_locale_cache_key (const char *app_name)
 	guint name_length = strlen (locale_cache_name);
 	char *suffix = NULL;
 	/* locales can be as long as 5 chars (e.g. pt_PT) so  */
-	if (name_length <= 5)
+	const guint locale_max_length = 5;
+
+	if (name_length <= locale_max_length)
 		return NULL;
 
 	/* get the suffix after the last '.' so we can get
 	 * e.g. com.endlessm.FooBar.pt or com.endlessm.FooBar.pt_BR */
-	suffix = g_strrstr (locale_cache_name + name_length - 5, ".");
+	suffix = g_strrstr (locale_cache_name + name_length - locale_max_length,
+			    ".");
 
 	if (suffix) {
 		/* get the language part of the eventual locale suffix
