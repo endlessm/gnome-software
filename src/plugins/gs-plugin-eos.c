@@ -422,6 +422,15 @@ gs_plugin_app_is_locale_best_match (GsPlugin *plugin,
 }
 
 static void
+blacklist_if_not_installed (GsApp *app)
+{
+	if (gs_app_is_installed (app))
+		return;
+
+	gs_app_add_category (app, "Blacklisted");
+}
+
+static void
 gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 				   const char *locale_cache_key,
 				   GsApp *app)
@@ -436,7 +445,7 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 		g_debug ("Blacklisting '%s': using '%s' due to its locale",
 			 gs_app_get_unique_id (cached_app),
 			 gs_app_get_unique_id (app));
-		gs_app_add_category (cached_app, "Blacklisted");
+		blacklist_if_not_installed (cached_app);
 	}
 
 	gs_plugin_cache_add (plugin, locale_cache_key, app);
@@ -471,7 +480,8 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	if (!gs_plugin_locale_is_compatible (plugin, last_token)) {
 		g_debug ("Blacklisting '%s': incompatible with the current "
 			 "locale", gs_app_get_unique_id (app));
-		gs_app_add_category (app, "Blacklisted");
+		blacklist_if_not_installed (app);
+
 		return TRUE;
 	}
 
@@ -487,7 +497,8 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 		g_debug ("Blacklisting '%s': cached app '%s' is best match",
 			 gs_app_get_unique_id (app),
 			 gs_app_get_unique_id (cached_app));
-		gs_app_add_category (app, "Blacklisted");
+		blacklist_if_not_installed (app);
+
 		return TRUE;
 	}
 
