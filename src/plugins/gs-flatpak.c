@@ -178,7 +178,9 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 								  cancellable,
 								  &error_local);
 		if (!ret) {
-			if (g_error_matches (error_local,
+			/* temporarily ignore any errors with external apps */
+			if (g_strcmp0 (remote_name, "eos-external-apps") == 0 ||
+			    g_error_matches (error_local,
 					     G_IO_ERROR,
 					     G_IO_ERROR_FAILED)) {
 				g_debug ("Failed to get AppStream metadata: %s",
