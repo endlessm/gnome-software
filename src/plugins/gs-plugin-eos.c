@@ -383,14 +383,18 @@ gs_plugin_locale_is_compatible (GsPlugin *plugin,
 static char *
 get_app_locale_cache_key (const char *app_name)
 {
-	g_autofree char *locale_cache_name = g_strdup (app_name);
-	guint name_length = strlen (locale_cache_name);
+	guint name_length = strlen (app_name);
 	char *suffix = NULL;
 	/* locales can be as long as 5 chars (e.g. pt_PT) so  */
 	const guint locale_max_length = 5;
+	char *locale_cache_name;
 
 	if (name_length <= locale_max_length)
 		return NULL;
+
+	locale_cache_name = g_strdup_printf ("locale:%s", app_name);
+	/* include the 'locale:' prefix */
+	name_length += 7;
 
 	/* get the suffix after the last '.' so we can get
 	 * e.g. com.endlessm.FooBar.pt or com.endlessm.FooBar.pt_BR */
@@ -406,7 +410,7 @@ get_app_locale_cache_key (const char *app_name)
 			*locale_split = '\0';
 	}
 
-	return g_strdup_printf ("locale:%s", locale_cache_name);
+	return locale_cache_name;
 }
 
 static gboolean
