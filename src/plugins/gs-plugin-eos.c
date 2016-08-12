@@ -383,19 +383,34 @@ gs_plugin_locale_is_compatible (GsPlugin *plugin,
 static char *
 get_app_locale_cache_key (const char *app_name)
 {
-	g_autofree char *locale_cache_name = g_strdup (app_name);
-	guint name_length = strlen (locale_cache_name);
-	char *locale_split = NULL;
-
+	guint name_length = strlen (app_name);
+	char *suffix = NULL;
 	/* locales can be as long as 5 chars (e.g. pt_PT) so  */
-	if (name_length <= 5)
+	const guint locale_max_length = 5;
+	char *locale_cache_name;
+
+	if (name_length <= locale_max_length)
 		return NULL;
 
-	locale_split = g_strrstr (locale_cache_name + name_length - 5, "_");
-	if (locale_split)
-		*locale_split = '\0';
+	locale_cache_name = g_strdup_printf ("locale:%s", app_name);
+	/* include the 'locale:' prefix */
+	name_length += 7;
 
-	return g_strdup_printf ("locale:%s", locale_cache_name);
+	/* get the suffix after the last '.' so we can get
+	 * e.g. com.endlessm.FooBar.pt or com.endlessm.FooBar.pt_BR */
+	suffix = g_strrstr (locale_cache_name + name_length - locale_max_length,
+			    ".");
+
+	if (suffix) {
+		/* get the language part of the eventual locale suffix
+		 * e.g. pt_BR -> pt */
+		char *locale_split = g_strrstr (suffix + 1, "_");
+
+		if (locale_split)
+			*locale_split = '\0';
+	}
+
+	return locale_cache_name;
 }
 
 static gboolean
