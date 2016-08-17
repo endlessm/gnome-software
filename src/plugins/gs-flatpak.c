@@ -393,6 +393,48 @@ gs_flatpak_create_installed (GsFlatpak *self,
 	return g_object_ref (app);
 }
 
+GPtrArray *
+gs_flatpak_get_installed_runtimes (GsFlatpak *self,
+				   GCancellable *cancellable,
+				   GError **error)
+{
+	g_autoptr(GError) error_md = NULL;
+	g_autoptr(GPtrArray) xrefs = NULL;
+	GPtrArray *runtimes = NULL;
+	guint i;
+
+	/* get apps and runtimes */
+	xrefs = flatpak_installation_list_installed_refs (self->installation,
+							  cancellable, error);
+	if (xrefs == NULL)
+		return NULL;
+
+	runtimes = g_ptr_array_new ();
+
+	for (i = 0; i < xrefs->len; i++) {
+		FlatpakInstalledRef *xref = g_ptr_array_index (xrefs, i);
+		g_autoptr(GError) error_local = NULL;
+		g_autoptr(GsApp) app = NULL;
+
+		/* only runtimes */
+		if (flatpak_ref_get_kind (FLATPAK_REF (xref)) != FLATPAK_REF_KIND_RUNTIME)
+			continue;
+
+		app = gs_flatpak_create_installed (self, xref, &error_local);
+		if (app == NULL) {
+			g_warning ("failed to add flatpak runtime: %s",
+				   error_local->message);
+			continue;
+		}
+		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+
+		g_ptr_array_add (runtimes, app);
+	}
+
+	return runtimes;
+}
+
 gboolean
 gs_flatpak_add_installed (GsFlatpak *self, GsAppList *list,
 			  GCancellable *cancellable,
