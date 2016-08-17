@@ -403,6 +403,8 @@ gs_self_test_CFLAGS = $(WARN_CFLAGS)
 TESTS = gs-self-test
 endif
 
-dist_libexec_SCRIPTS = eos-external-apps-build-install
+dist_libexec_SCRIPTS =			\
+	eos-external-apps-build-install \
+	eos-external-apps-remove
 
 -include $(top_srcdir)/git.mk
