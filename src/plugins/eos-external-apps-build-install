@@ -23,17 +23,19 @@
 function help {
     echo "$0"
     echo "Usage:"
-    echo "  $0 SYSTEM_REPO APP_NAME EXTERNAL_ASSET_URL EXTERNAL_ASSET_TYPE"
+    echo "  $0 SYSTEM_REPO APP_NAME EXTERNAL_ASSET_URL EXTERNAL_ASSET_TYPE EXTERNAL_ASSET_BRANCH"
     echo ""
     echo "APP_NAME              the app name (e.g. org.myorg.MyApp)"
     echo "EXTERNAL_ASSET_URL    the asset URL (e.g. https://www.myorg.org/MyOrg_0.1.2-1.deb)"
     echo "EXTERNAL_ASSET_TYPE   the type of the asset ('deb' or 'tar')"
+    echo "EXTERNAL_ASSET_BRANCH the branch of the asset"
 }
 
 SYSTEMREPO=$1
 APPNAME=$2
 ASSETURL=$3
 ASSETTYPE=$4
+ASSETBRANCH=$5
 
 if [ -z "$SYSTEMREPO" ]; then
    echo "$0: Need the system repo name"
@@ -57,6 +59,10 @@ if [ -z "$ASSETTYPE" ]; then
     echo "$0: Need the external asset type"
     help
     exit 1
+fi
+
+if [ -z "$ASSETBRANCH" ]; then
+    ASSETBRANCH="master"
 fi
 
 REPO="/var/lib/flatpak-external-apps"
@@ -100,7 +106,7 @@ fi
 echo "Exporting runtime..."
 
 # Export the runtime extension to the external apps repo
-flatpak build-export --runtime "$REPO" "$BUNDLEDIR"
+flatpak build-export --runtime "$REPO" "$BUNDLEDIR" "$ASSETBRANCH"
 
 # Delete build dirs
 rm -rf "$APPDIR"
@@ -110,7 +116,7 @@ echo "Built bundle $APPNAME and exported to $REPO"
 # Install the bundle
 echo "Install $APPNAME..."
 
-flatpak install "$SYSTEMREPO" "$APPNAME"
+flatpak install "$SYSTEMREPO" "$APPNAME" "$ASSETBRANCH"
 
 echo "$APPNAME is now installed"
 
