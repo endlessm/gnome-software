@@ -36,6 +36,7 @@
 #define JSON_RUNTIME_NAME_KEY "name"
 #define JSON_RUNTIME_URL_KEY "url"
 #define JSON_RUNTIME_TYPE_KEY "type"
+#define JSON_RUNTIME_SHA256_KEY "sha256"
 
 #define METADATA_URL "GnomeSoftware::external-app::url"
 #define METADATA_TYPE "GnomeSoftware::external-app::type"
@@ -173,16 +174,35 @@ build_and_install_external_runtime (GsApp *runtime,
 							    METADATA_URL);
 	const char *runtime_type = gs_app_get_metadata_item (runtime,
 							     METADATA_TYPE);
+	const char *branch = gs_app_get_flatpak_branch (runtime);
 
 	/* run the external apps builder script as the configured helper user */
 	const char *argv[] = {"pkexec", "--user", EXT_APPS_HELPER_USER,
 			      LIBEXECDIR "/eos-external-apps-build-install",
 			      EXT_APPS_SYSTEM_REPO_NAME,
 			      gs_app_get_id (runtime), runtime_url,
-			      runtime_type,
+			      runtime_type, branch,
 			      NULL};
 
 	g_debug ("Building and installing runtime extension '%s'...",
+		 gs_app_get_unique_id (runtime));
+
+	return run_command (argv, cancellable, error);
+}
+
+static gboolean
+remove_external_runtime (GsApp *runtime,
+			 GCancellable *cancellable,
+			 GError **error)
+{
+	const char *branch = gs_app_get_flatpak_branch (runtime);
+	/* run the external apps removal script as the configured helper user */
+	const char *argv[] = {"pkexec", "--user", EXT_APPS_HELPER_USER,
+			      LIBEXECDIR "/eos-external-apps-remove",
+			      gs_app_get_flatpak_name (runtime), branch,
+			      NULL};
+
+	g_debug ("Removing runtime extension '%s'...",
 		 gs_app_get_unique_id (runtime));
 
 	return run_command (argv, cancellable, error);
@@ -203,6 +223,7 @@ static char *
 extract_runtime_info_from_json_data (const char *data,
 				     char **url,
 				     char **type,
+				     char **branch,
 				     GError **error)
 {
 	gboolean ret;
@@ -213,6 +234,7 @@ extract_runtime_info_from_json_data (const char *data,
 	const char *runtime_name = NULL;
 	const char *json_url = NULL;
 	const char *type_str = NULL;
+	const char *branch_str = NULL;
 	guint spec = 0;
 
 	parser = json_parser_new ();
@@ -284,10 +306,53 @@ extract_runtime_info_from_json_data (const char *data,
 	if (node)
 		type_str = json_node_get_string (node);
 
+	node = json_object_get_member (runtime, JSON_RUNTIME_SHA256_KEY);
+	/* if there is no checksum then the branch should be 'master' */
+	if (node)
+		branch_str = json_node_get_string (node);
+	else
+		branch_str = "master";
+
 	*url = g_strdup (json_url);
 	*type = g_strdup (type_str);
+	*branch = g_strdup (branch_str);
 
 	return g_strdup (runtime_name);
+}
+
+static char *
+create_ext_runtime_id_with_branch (const char *id,
+				   const char *branch)
+{
+	char *runtime_id = g_strdup_printf ("%s%s/%s",
+					    GS_FLATPAK_SYSTEM_PREFIX, id,
+					    branch);
+	return runtime_id;
+}
+
+static char *
+get_installed_ext_runtime_id (const char *id)
+{
+	char *runtime_id = g_strdup_printf ("installed:%s", id);
+	return runtime_id;
+}
+
+static void
+cache_installed_ext_runtime (GsPlugin *plugin, GsApp *app)
+{
+	/* we use the name instead of the id because if the runtime comes
+	 * from the installed list, it will have a .runtime suffix as its id */
+	const char *name = gs_app_get_flatpak_name (app);
+	g_autofree char *id = get_installed_ext_runtime_id (name);
+
+	gs_plugin_cache_add (plugin, id, app);
+}
+
+static GsApp *
+get_installed_ext_runtime (GsPlugin *plugin, const char *runtime_id)
+{
+	g_autofree char *id = get_installed_ext_runtime_id (runtime_id);
+	return gs_plugin_cache_lookup (plugin, id);
 }
 
 static GsApp *
@@ -300,6 +365,7 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	g_autofree char *full_id = NULL;
 	g_autofree char *url = NULL;
 	g_autofree char *type = NULL;
+	g_autofree char *branch = NULL;
 	g_autofree char *json_data = NULL;
 	g_autoptr (GError) error = NULL;
 	const char *metadata;
@@ -311,7 +377,8 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 		return NULL;
 
 	json_data = g_uri_unescape_string (metadata, NULL);
-	id = extract_runtime_info_from_json_data (json_data, &url, &type, &error);
+	id = extract_runtime_info_from_json_data (json_data, &url, &type,
+						  &branch, &error);
 
 	if (!id) {
 		g_debug ("Error getting external runtime from "
@@ -321,9 +388,7 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 
 	priv = gs_plugin_get_data (plugin);
 
-	full_id = g_strdup_printf ("%s%s",
-				   gs_flatpak_get_prefix (priv->sys_flatpak),
-				   id);
+	full_id = create_ext_runtime_id_with_branch (id, branch);
 
 	runtime = gs_plugin_cache_lookup (plugin, full_id);
 	if (runtime) {
@@ -343,12 +408,14 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	gs_app_set_kind (runtime, AS_APP_KIND_RUNTIME);
 	gs_app_set_flatpak_name (runtime, id);
 	gs_app_set_flatpak_arch (runtime, flatpak_get_default_arch ());
+	gs_app_set_flatpak_branch (runtime, branch);
 	gs_app_set_management_plugin (runtime, gs_plugin_get_name (plugin));
 
 	gs_plugin_cache_add (plugin, full_id, runtime);
 
 	if (gs_flatpak_is_installed (priv->sys_flatpak, runtime, NULL, NULL)) {
 		gs_app_set_state (runtime, AS_APP_STATE_INSTALLED);
+		cache_installed_ext_runtime (plugin, runtime);
 	}
 
 	return runtime;
@@ -380,17 +447,11 @@ gs_plugin_refine_app (GsPlugin *plugin,
 
 	/* We cache all runtimes because an external runtime may have been
 	 * adopted by the flatpak plugins */
-	if (app_is_flatpak (app) && gs_flatpak_app_is_runtime (app)) {
-		gs_plugin_cache_add (plugin, gs_app_get_id (app), app);
+	if (app_is_flatpak (app) && gs_flatpak_app_is_runtime (app) &&
+	    gs_app_is_installed (app)) {
+		cache_installed_ext_runtime (plugin, app);
 		g_debug ("Caching remote '%s'", gs_app_get_id (app));
 	}
-
-	/* only process this app if was created by this plugin */
-	if (g_strcmp0 (gs_app_get_management_plugin (app),
-		       gs_plugin_get_name (plugin)) != 0)
-		return TRUE;
-
-	g_debug ("Refining external app %s", gs_app_get_id (app));
 
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
 
@@ -402,6 +463,15 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		return TRUE;
 	}
 
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	g_debug ("Refining external app %s", gs_app_get_id (app));
+
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
 
 	if (!gs_flatpak_refine_app (flatpak, app, flags, cancellable, error)) {
@@ -412,8 +482,54 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	/* We set the state to available because we assume that we can build
 	 * the runtime */
 	if (gs_app_get_state (ext_runtime) != AS_APP_STATE_INSTALLED) {
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		const char *ext_runtime_id = gs_app_get_id (ext_runtime);
+		GsApp *installed_runtime;
+		installed_runtime = get_installed_ext_runtime (plugin,
+							       ext_runtime_id);
+
+		/* verify the cached external runtime is really installed */
+		if (installed_runtime &&
+		    gs_app_is_installed (installed_runtime)) {
+			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+		} else {
+			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		}
+	}
+
+	return TRUE;
+}
+
+static gboolean
+gs_plugin_install_ext_runtime (GsPlugin *plugin,
+			       GsApp *app,
+			       GsApp *ext_runtime,
+			       GCancellable *cancellable,
+			       GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	gs_app_set_progress (app, 50);
+
+	if (!build_and_install_external_runtime (ext_runtime,
+						 cancellable, error)) {
+		g_debug ("Failed to build and install external "
+			 "runtime '%s'", gs_app_get_unique_id (ext_runtime));
+		return FALSE;
+	}
+
+	gs_app_set_progress (app, 75);
+
+	gs_app_set_origin (ext_runtime, EXT_APPS_SYSTEM_REPO_NAME);
+
+	if (!gs_flatpak_refine_app (priv->sys_flatpak, ext_runtime,
+				    GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+				    cancellable, error)) {
+		g_debug ("Failed to refine '%s'",
+			 gs_app_get_unique_id (ext_runtime));
+		return FALSE;
 	}
 
 	return TRUE;
@@ -452,27 +568,10 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 
-	if (gs_app_get_state (ext_runtime) == AS_APP_STATE_UNKNOWN) {
-		gs_app_set_progress (app, 50);
-
-		if (!build_and_install_external_runtime (ext_runtime,
-							 cancellable, error)) {
-			g_debug ("Failed to build and install external "
-				 "runtime '%s'", runtime);
-			return FALSE;
-		}
-
-		gs_app_set_progress (app, 75);
-
-		gs_app_set_origin (ext_runtime, EXT_APPS_SYSTEM_REPO_NAME);
-
-		if (!gs_flatpak_refine_app (priv->sys_flatpak, ext_runtime,
-					    GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+	if (gs_app_get_state (ext_runtime) == AS_APP_STATE_UNKNOWN &&
+	    !gs_plugin_install_ext_runtime (plugin, app, ext_runtime,
 					    cancellable, error)) {
-			g_debug ("Failed to refine '%s'",
-				 gs_app_get_id (ext_runtime));
-			return FALSE;
-		}
+		return FALSE;
 	}
 
 	switch (gs_app_get_state (ext_runtime)) {
@@ -589,4 +688,128 @@ gs_plugin_app_remove (GsPlugin *plugin,
 
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
 	return gs_flatpak_app_remove (flatpak, app, cancellable, error);
+}
+
+static gboolean
+compare_flatpak_branches (GsApp *app_a, GsApp *app_b)
+{
+	const char *branch_a;
+	const char *branch_b;
+
+	if (!app_a || !app_b)
+		return FALSE;
+
+	branch_a = gs_app_get_flatpak_branch (app_a);
+	branch_b = gs_app_get_flatpak_branch (app_b);
+
+	return (g_strcmp0 (branch_a, branch_b) == 0);
+}
+
+static gboolean
+gs_plugin_upgrade_external_runtime (GsPlugin *plugin,
+				    GsApp *headless_app,
+				    GsApp *new_runtime,
+				    GCancellable *cancellable,
+				    GError **error)
+{
+	const char *id = gs_app_get_flatpak_name (new_runtime);
+	g_autoptr(GError) local_error = NULL;
+	GsApp *old_runtime = NULL;
+
+	old_runtime = get_installed_ext_runtime (plugin, id);
+
+	if (compare_flatpak_branches (new_runtime, old_runtime)) {
+		g_debug ("New runtime is already installed %s",
+			 gs_app_get_unique_id (new_runtime));
+
+		return TRUE;
+	}
+
+	g_debug ("Installing external runtime %s",
+		 gs_app_get_unique_id (new_runtime));
+
+	if (!gs_plugin_install_ext_runtime (plugin, headless_app, new_runtime,
+					    cancellable, error)) {
+		g_debug ("Failed to install external runtime %s",
+			 gs_app_get_unique_id (new_runtime));
+		gs_app_set_state_recover (headless_app);
+
+		return FALSE;
+	}
+
+	if (old_runtime && !remove_external_runtime (old_runtime, cancellable,
+						     &local_error)) {
+		g_debug ("Failed to remove previous runtime extension '%s' "
+			 "after installing '%s' (but allowing to continue): %s",
+			 gs_app_get_unique_id (old_runtime),
+			 gs_app_get_unique_id (new_runtime),
+			 local_error->message);
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_update_app (GsPlugin *plugin,
+		      GsApp *app,
+		      GCancellable *cancellable,
+		      GError **error)
+{
+	GsPluginData *priv;
+	g_autofree char *runtime_id = NULL;
+	GsApp *ext_runtime;
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	priv = gs_plugin_get_data (plugin);
+
+	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
+
+	if (!ext_runtime) {
+		g_debug ("External app '%s' didn't have any asset! "
+			 "Not updating and marking as state unknown!",
+			 gs_app_get_unique_id (app));
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+
+		return FALSE;
+	}
+
+	if (!gs_app_is_installed (ext_runtime) &&
+	    !gs_plugin_upgrade_external_runtime (plugin, app, ext_runtime,
+						 cancellable, error)) {
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+
+		return FALSE;
+	}
+
+	g_debug ("Updating %s", gs_app_get_unique_id (app));
+
+	return gs_flatpak_update_app (priv->sys_flatpak, app, cancellable,
+				      error);
+}
+
+gboolean
+gs_plugin_refresh (GsPlugin *plugin,
+		   guint cache_age,
+		   GsPluginRefreshFlags flags,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GPtrArray) runtimes = NULL;
+	guint i = 0;
+
+	runtimes = gs_flatpak_get_installed_runtimes (priv->sys_flatpak,
+						      cancellable,
+						      error);
+
+	for (i = 0; i < runtimes->len; ++i) {
+		GsApp *app = g_ptr_array_index (runtimes, i);
+		cache_installed_ext_runtime (plugin, app);
+	}
+
+	return TRUE;
 }

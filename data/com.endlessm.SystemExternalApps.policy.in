@@ -17,4 +17,15 @@
     </defaults>
     <annotate key="org.freedesktop.policykit.exec.path">@libexecdir@/eos-external-apps-build-install</annotate>
   </action>
+
+  <action id="com.endlessm.SystemExternalApps.remove">
+    <description>Remove a runtime</description>
+    <message>Authentication is required to remove the runtime</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">@libexecdir@/eos-external-apps-remove</annotate>
+  </action>
 </policyconfig>

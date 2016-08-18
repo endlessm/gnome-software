@@ -116,6 +116,11 @@ GPtrArray	*gs_flatpak_get_remotes_names	(GsFlatpak		*flatpak,
 
 gboolean	gs_flatpak_app_is_runtime	(GsApp *app);
 
+GPtrArray	*gs_flatpak_get_installed_runtimes (GsFlatpak		*self,
+						    GCancellable       	*cancellable,
+						    GError	       	**error);
+
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */
