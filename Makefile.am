@@ -46,7 +46,8 @@ EXTRA_DIST =						\
 DISTCHECK_CONFIGURE_FLAGS = 				\
 	--enable-gtk-doc				\
 	--disable-tests					\
-	--disable-dogtail
+	--disable-dogtail				\
+	--with-systemd-systemunitdir='$${prefix}/lib/systemd/system'
 
 distclean-local:
 	if test $(srdcir) = .; then :; else \

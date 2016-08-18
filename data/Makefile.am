@@ -52,6 +52,8 @@ dist_tmpfiles_DATA =					\
 	g-s-helper.conf					\
 	eos-external-apps.conf
 
+systemdunit_DATA = eos-external-apps-enable.service
+
 EXTRA_DIST =						\
 	$(gsettings_SCHEMAS)				\
 	com.endlessm.SystemExternalApps.policy.in	\

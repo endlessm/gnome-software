@@ -1,0 +1,11 @@
+[Unit]
+Description=Initialize flatpak-external-apps repository
+ConditionNeedsUpdate=/var
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=@libexecdir@/eos-external-apps-enable
+
+[Install]
+WantedBy=multi-user.target
