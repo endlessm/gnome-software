@@ -50,6 +50,11 @@ polkit_policy_DATA = $(polkit_policy_in_files:.policy.in=.policy)
 %.policy: %.policy.in Makefile
 	$(AM_V_GEN) sed -e "s|@libexecdir[@]|$(libexecdir)|g" $< > $@
 
+tmpfilesdir = $(prefix)/lib/tmpfiles.d
+dist_tmpfiles_DATA =					\
+	g-s-helper.conf					\
+	eos-external-apps.conf
+
 EXTRA_DIST =							\
 	com.endlessm.SystemExternalApps.policy.in		\
 	org.gnome.software.external-appstream.policy.in		\
