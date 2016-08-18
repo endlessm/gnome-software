@@ -438,6 +438,14 @@ AC_ARG_WITH(ext_apps_helper_user,
 EXT_APPS_HELPER_USER=$with_ext_apps_helper_user
 AC_SUBST(EXT_APPS_HELPER_USER)
 
+# systemd units
+AC_ARG_WITH([systemd-systemunitdir],
+            [AS_HELP_STRING([--with-systemd-systemunitdir],
+                            [Path to the system directory for systemd units])],
+            [systemdunitdir="$withval"],
+            [systemdunitdir=`$PKG_CONFIG --variable=systemdsystemunitdir systemd`])
+AC_SUBST([systemdunitdir])
+
 GLIB_TESTS
 
 dnl ---------------------------------------------------------------------------

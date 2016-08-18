@@ -55,12 +55,20 @@ dist_tmpfiles_DATA =					\
 	g-s-helper.conf					\
 	eos-external-apps.conf
 
+systemdunit_in_files = eos-external-apps-enable.service.in
+systemdunit_DATA = $(systemdunit_in_files:.service.in=.service)
+
+$(systemdunit_DATA): $(systemdunit_in_files) Makefile
+	sed -e "s|@libexecdir[@]|$(libexecdir)|g" $< > $@
+
 EXTRA_DIST =							\
+	eos-external-apps-enable.service.in			\
 	com.endlessm.SystemExternalApps.policy.in		\
 	org.gnome.software.external-appstream.policy.in		\
 	$(gsettings_SCHEMAS)
 
 CLEANFILES =						\
+	eos-external-apps-enable.service		\
 	com.endlessm.SystemExternalApps.policy		\
 	org.gnome.software.external-appstream.policy
 
