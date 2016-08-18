@@ -47,6 +47,11 @@ polkit_policydir = $(datadir)/polkit-1/actions
 polkit_policy_DATA =					\
 	com.endlessm.SystemExternalApps.policy
 
+tmpfilesdir = $(prefix)/lib/tmpfiles.d
+dist_tmpfiles_DATA =					\
+	g-s-helper.conf					\
+	eos-external-apps.conf
+
 EXTRA_DIST =						\
 	$(gsettings_SCHEMAS)				\
 	com.endlessm.SystemExternalApps.policy.in	\
