@@ -50,6 +50,11 @@ polkit_policy_DATA = $(polkit_policy_in_files:.policy.in=.policy)
 $(polkit_policy_DATA): $(polkit_policy_in_files) Makefile
 	sed -e "s|@libexecdir[@]|$(libexecdir)|g" $< > $@
 
+tmpfilesdir = $(prefix)/lib/tmpfiles.d
+dist_tmpfiles_DATA =					\
+	g-s-helper.conf					\
+	eos-external-apps.conf
+
 EXTRA_DIST =						\
 	$(gsettings_SCHEMAS)				\
 	com.endlessm.SystemExternalApps.policy.in
