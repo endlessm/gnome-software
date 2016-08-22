@@ -413,6 +413,7 @@ endif
 
 dist_libexec_SCRIPTS =			\
 	eos-external-apps-build-install \
+	eos-external-apps-enable	\
 	eos-external-apps-remove
 
 -include $(top_srcdir)/git.mk

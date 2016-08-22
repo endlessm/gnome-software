@@ -105,6 +105,11 @@ fi
 
 echo "Exporting runtime..."
 
+# Ensure repository initialized
+if [ ! -f "${REPO}/config" ]; then
+    ostree --repo="${REPO}" init --mode=bare-user
+fi
+
 # Export the runtime extension to the external apps repo
 flatpak build-export --runtime "$REPO" "$BUNDLEDIR" "$ASSETBRANCH"
 
