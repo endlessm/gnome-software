@@ -32,20 +32,12 @@ fi
 
 # initialize the repo if necessary
 if [ ! -f "${ext_apps_repo}/config" ]; then
-    ostree --repo="${ext_apps_repo}" init --mode=bare-user
+    su -c "ostree --repo='${ext_apps_repo}' init --mode=bare-user" \
+       ${g_s_helper_user}
 fi
 
 # ensure appstream and summary data exist for gnome-software update
-flatpak build-update-repo "${ext_apps_repo}"
-
-# add or modify external apps repo if needed
-ext_apps_repo_name=eos-external-apps
-
-flatpak remote-add --no-gpg-verify ${ext_apps_repo_name} "${ext_apps_repo}" 2> /dev/null
-
-if [ $? != 0 ]; then
-    flatpak remote-modify ${ext_apps_repo_name} --no-gpg-verify --url "file://${ext_apps_repo}"
-fi
+su -c "flatpak build-update-repo '${ext_apps_repo}'" ${g_s_helper_user}
 
 #DEBHELPER#
 

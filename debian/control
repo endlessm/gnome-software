@@ -11,6 +11,7 @@ Uploaders: Matthias Klumpp <mak@debian.org>,
 Build-Depends: appstream-util,
                debhelper (>= 9.0.0),
                dh-autoreconf,
+               dh-systemd,
                docbook-xsl,
                gnome-pkg-tools (>= 0.10),
                gsettings-desktop-schemas-dev (>= 3.11.5),
@@ -30,7 +31,8 @@ Build-Depends: appstream-util,
                pkg-config,
                xsltproc,
                libflatpak-dev,
-               libsecret-1-dev
+               libsecret-1-dev,
+               systemd
 Standards-Version: 3.9.6
 Homepage: https://wiki.gnome.org/Apps/Software
 Vcs-Svn: svn://anonscm.debian.org/pkg-gnome/packages/unstable/gnome-software/
