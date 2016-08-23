@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-09 03:42+0000\n"
-"PO-Revision-Date: 2016-08-03 06:06+0000\n"
+"POT-Creation-Date: 2016-08-16 04:16+0000\n"
+"PO-Revision-Date: 2016-08-16 04:16+0000\n"
 "Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/id/)\n"
 "MIME-Version: 1.0\n"
@@ -162,7 +162,7 @@ msgstr "Tambah ke Folder Aplikasi"
 
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
-#: ../src/gs-shell-details.c:358 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:6
 #: ../src/gs-shell-installed.c:516 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_Batal"
@@ -243,7 +243,7 @@ msgstr "Tertunda"
 #. TRANSLATORS: this is the small blue label on the tile
 #. * that tells the user the application is being installed
 #: ../src/gs-app-addon-row.c:101 ../src/gs-app-row.c:219
-#: ../src/gs-shell-details.c:410 ../src/gs-summary-tile.c:86
+#: ../src/gs-shell-details.c:412 ../src/gs-summary-tile.c:86
 msgid "Installing"
 msgstr "Memasang"
 
@@ -856,14 +856,14 @@ msgstr "Gunakan esktensi dengan menanggung risiko sendiri. Jika Anda mengalami m
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: ../src/gs-shell-details.c:267 ../src/gs-shell-details.c:287
+#: ../src/gs-shell-details.c:269 ../src/gs-shell-details.c:289
 #: ../src/gs-shell-details.ui.h:2 ../src/gs-upgrade-banner.ui.h:6
 msgid "_Install"
 msgstr "_Pasang"
 
 #. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: ../src/gs-shell-details.c:292
+#: ../src/gs-shell-details.c:294
 msgid "_Update"
 msgstr "_Pembaruan"
 
@@ -871,71 +871,65 @@ msgstr "_Pembaruan"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: ../src/gs-shell-details.c:305
+#: ../src/gs-shell-details.c:307
 msgid "_Install…"
 msgstr "_Pasang..."
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:352 ../src/gs-shell-details.ui.h:5
+#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
 msgid "_Remove"
 msgstr "_Hapus"
 
-#: ../src/gs-shell-details.c:405 ../src/gs-sources-dialog.c:338
+#: ../src/gs-shell-details.c:407 ../src/gs-sources-dialog.c:338
 msgid "Removing…"
 msgstr "Menghapus…"
 
 #. TRANSLATORS: this is where the version is not known
-#: ../src/gs-shell-details.c:808
+#: ../src/gs-shell-details.c:819
 msgctxt "version"
 msgid "Unknown"
 msgstr "Tak diketahui"
 
-#. TRANSLATORS: this is where the updated date is not known
-#: ../src/gs-shell-details.c:840
-msgctxt "updated"
-msgid "Never"
-msgstr "Tak Pernah"
-
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: ../src/gs-shell-details.c:886
+#: ../src/gs-shell-details.c:898
 msgctxt "origin"
 msgid "Unknown"
 msgstr "Tak diketahui"
 
-#: ../src/gs-shell-details.c:1307
+#: ../src/gs-shell-details.c:1319
 #, c-format
 msgid "Could not find '%s'"
 msgstr "Tak dapat menemukan '%s'"
 
 #. TRANSLATORS: the file format was not recognised by
 #. * any plugin, e.g. if you try installing a .tar.gz
-#: ../src/gs-shell-details.c:1365
+#: ../src/gs-shell-details.c:1377
 msgid "The file is not supported."
 msgstr "File ini tidak didukung."
 
 #. TRANSLATORS: install or removed failed
-#: ../src/gs-shell-details.c:1375 ../src/gs-common.c:161
+#: ../src/gs-shell-details.c:1387 ../src/gs-common.c:161
 msgid "Sorry, this did not work"
 msgstr "Maaf, ini tidak bekerja"
 
 #. TRANSLATORS: see the wikipedia page
-#: ../src/gs-shell-details.c:1728
+#: ../src/gs-shell-details.c:1740
 msgid "Public domain"
 msgstr "Milik Publik"
 
 #. TRANSLATORS: see GNU page
-#: ../src/gs-shell-details.c:1744 ../src/gs-shell-details.ui.h:51
+#: ../src/gs-shell-details.c:1756 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
 msgstr "Peranti Lunak Bebas"
 
 #. TRANSLATORS: for the free software popover
-#: ../src/gs-shell-details.c:1799
+#: ../src/gs-shell-details.c:1811
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Pengguna harus mematuhi lisensi berikut:"
 
-#: ../src/gs-shell-details.c:1814 ../src/gs-shell-details.ui.h:55
+#: ../src/gs-shell-details.c:1826 ../src/gs-shell-details.ui.h:55
 msgid "More information"
 msgstr "Informasi lebih lanjut"
 
@@ -1480,18 +1474,18 @@ msgid "_Install All"
 msgstr "_Pasang Semua"
 
 #. TRANSLATORS: this is an offline update
-#: ../src/gs-shell-updates.c:494 ../src/gs-shell-updates.c:1345
+#: ../src/gs-shell-updates.c:494 ../src/gs-shell-updates.c:1350
 msgid "Restart & _Install"
 msgstr "Start Ulang & _Pasang"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: ../src/gs-shell-updates.c:826
+#: ../src/gs-shell-updates.c:831
 msgid "Charges may apply"
 msgstr "Mungkin ada biaya"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:830
+#: ../src/gs-shell-updates.c:835
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -1499,48 +1493,48 @@ msgstr "Memeriksa pemutakhiran ketika memakai data seluler bisa menyebabkan tamb
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:834
+#: ../src/gs-shell-updates.c:839
 msgid "Check Anyway"
 msgstr "Periksa Saja"
 
 #. TRANSLATORS: can't do updates check
-#: ../src/gs-shell-updates.c:850
+#: ../src/gs-shell-updates.c:855
 msgid "No Network"
 msgstr "Tak Ada Jaringan"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:854
+#: ../src/gs-shell-updates.c:859
 msgid "Internet access is required to check for updates."
 msgstr "Akses internet diperlukan untuk memeriksa pemutakhiran."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:858
+#: ../src/gs-shell-updates.c:863
 msgid "Network Settings"
 msgstr "Pengaturan Jaringan"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: ../src/gs-shell-updates.c:948
+#: ../src/gs-shell-updates.c:953
 msgid "Updates have been installed"
 msgstr "Pembaruan telah dipasang"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: ../src/gs-shell-updates.c:950
+#: ../src/gs-shell-updates.c:955
 msgid "A restart is required for them to take effect."
 msgstr "Perlu dimulai ulang agar hal itu dapat berlaku"
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:952 ../src/gs-update-monitor.c:102
+#: ../src/gs-shell-updates.c:957 ../src/gs-update-monitor.c:102
 msgid "Not Now"
 msgstr "Jangan Sekarang"
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:954
+#: ../src/gs-shell-updates.c:959
 msgid "Restart"
 msgstr "Mulai Ulang"
 
-#: ../src/gs-shell-updates.c:1363
+#: ../src/gs-shell-updates.c:1368
 msgid "Check for updates"
 msgstr "Periksa pemutakhiran"
 
@@ -2749,3 +2743,11 @@ msgstr "Pekerjaan"
 #: ../src/plugins/gs-desktop-common.c:306
 msgid "Utilities"
 msgstr "Utilitas"
+
+#: ../src/plugins/gs-plugin-eos.c:994
+msgid "Endless Platform"
+msgstr ""
+
+#: ../src/plugins/gs-plugin-eos.c:997
+msgid "Framework for applications"
+msgstr ""

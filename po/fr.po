@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-09 03:42+0000\n"
-"PO-Revision-Date: 2016-08-01 19:17+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-08-16 04:16+0000\n"
+"PO-Revision-Date: 2016-08-16 04:16+0000\n"
+"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: French (http://www.transifex.com/endless-mobile-inc/gnome-software/language/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -160,7 +160,7 @@ msgstr "Ajouter au dossier Applications"
 
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
-#: ../src/gs-shell-details.c:358 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:6
 #: ../src/gs-shell-installed.c:516 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "A_nnuler"
@@ -241,7 +241,7 @@ msgstr "En attente"
 #. TRANSLATORS: this is the small blue label on the tile
 #. * that tells the user the application is being installed
 #: ../src/gs-app-addon-row.c:101 ../src/gs-app-row.c:219
-#: ../src/gs-shell-details.c:410 ../src/gs-summary-tile.c:86
+#: ../src/gs-shell-details.c:412 ../src/gs-summary-tile.c:86
 msgid "Installing"
 msgstr "Installation en cours"
 
@@ -854,14 +854,14 @@ msgstr "Les extensions sont à utiliser à vos propres risques. Si vous avec des
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: ../src/gs-shell-details.c:267 ../src/gs-shell-details.c:287
+#: ../src/gs-shell-details.c:269 ../src/gs-shell-details.c:289
 #: ../src/gs-shell-details.ui.h:2 ../src/gs-upgrade-banner.ui.h:6
 msgid "_Install"
 msgstr "_Installer"
 
 #. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: ../src/gs-shell-details.c:292
+#: ../src/gs-shell-details.c:294
 msgid "_Update"
 msgstr "Mettre à _jour"
 
@@ -869,72 +869,66 @@ msgstr "Mettre à _jour"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: ../src/gs-shell-details.c:305
+#: ../src/gs-shell-details.c:307
 msgid "_Install…"
 msgstr "_Installer…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:352 ../src/gs-shell-details.ui.h:5
+#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
 msgid "_Remove"
 msgstr "_Supprimer"
 
-#: ../src/gs-shell-details.c:405 ../src/gs-sources-dialog.c:338
+#: ../src/gs-shell-details.c:407 ../src/gs-sources-dialog.c:338
 msgid "Removing…"
 msgstr "Suppression en cours…"
 
 #. TRANSLATORS: this is where the version is not known
-#: ../src/gs-shell-details.c:808
+#: ../src/gs-shell-details.c:819
 msgctxt "version"
 msgid "Unknown"
 msgstr "Inconnue"
 
-#. TRANSLATORS: this is where the updated date is not known
-#: ../src/gs-shell-details.c:840
-msgctxt "updated"
-msgid "Never"
-msgstr "Jamais"
-
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: ../src/gs-shell-details.c:886
+#: ../src/gs-shell-details.c:898
 msgctxt "origin"
 msgid "Unknown"
 msgstr "Inconnue"
 
-#: ../src/gs-shell-details.c:1307
+#: ../src/gs-shell-details.c:1319
 #, c-format
 msgid "Could not find '%s'"
 msgstr "« %s » est introuvable"
 
 #. TRANSLATORS: the file format was not recognised by
 #. * any plugin, e.g. if you try installing a .tar.gz
-#: ../src/gs-shell-details.c:1365
+#: ../src/gs-shell-details.c:1377
 msgid "The file is not supported."
 msgstr "Le fichier n'est pas pris en charge"
 
 #. TRANSLATORS: install or removed failed
-#: ../src/gs-shell-details.c:1375 ../src/gs-common.c:161
+#: ../src/gs-shell-details.c:1387 ../src/gs-common.c:161
 msgid "Sorry, this did not work"
 msgstr "Désolé, cela n'a pas marché"
 
 #. TRANSLATORS: see the wikipedia page
-#: ../src/gs-shell-details.c:1728
+#: ../src/gs-shell-details.c:1740
 msgid "Public domain"
 msgstr "Domaine public"
 
 #. TRANSLATORS: see GNU page
-#: ../src/gs-shell-details.c:1744 ../src/gs-shell-details.ui.h:51
+#: ../src/gs-shell-details.c:1756 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
 msgstr "Logiciel libre"
 
 #. TRANSLATORS: for the free software popover
-#: ../src/gs-shell-details.c:1799
+#: ../src/gs-shell-details.c:1811
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Les utilisateurs sont tenus de respecter la licence suivante :"
 msgstr[1] "Les utilisateurs sont tenus de respecter les licences suivantes :"
 
-#: ../src/gs-shell-details.c:1814 ../src/gs-shell-details.ui.h:55
+#: ../src/gs-shell-details.c:1826 ../src/gs-shell-details.ui.h:55
 msgid "More information"
 msgstr "Plus d'informations"
 
@@ -1482,18 +1476,18 @@ msgid "_Install All"
 msgstr "_Installer tout"
 
 #. TRANSLATORS: this is an offline update
-#: ../src/gs-shell-updates.c:494 ../src/gs-shell-updates.c:1345
+#: ../src/gs-shell-updates.c:494 ../src/gs-shell-updates.c:1350
 msgid "Restart & _Install"
 msgstr "Redémarrer et _installer"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: ../src/gs-shell-updates.c:826
+#: ../src/gs-shell-updates.c:831
 msgid "Charges may apply"
 msgstr "Il peut y avoir facturation"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:830
+#: ../src/gs-shell-updates.c:835
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -1501,48 +1495,48 @@ msgstr "Rechercher des mises à jour avec votre connexion mobile peut faire l'ob
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:834
+#: ../src/gs-shell-updates.c:839
 msgid "Check Anyway"
 msgstr "Rechercher quand même"
 
 #. TRANSLATORS: can't do updates check
-#: ../src/gs-shell-updates.c:850
+#: ../src/gs-shell-updates.c:855
 msgid "No Network"
 msgstr "Aucun réseau"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:854
+#: ../src/gs-shell-updates.c:859
 msgid "Internet access is required to check for updates."
 msgstr "L'accès à Internet est nécessaire pour rechercher des mises à jour."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:858
+#: ../src/gs-shell-updates.c:863
 msgid "Network Settings"
 msgstr "Paramètres réseau"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: ../src/gs-shell-updates.c:948
+#: ../src/gs-shell-updates.c:953
 msgid "Updates have been installed"
 msgstr "Des mises à jour ont été installées sur ce système."
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: ../src/gs-shell-updates.c:950
+#: ../src/gs-shell-updates.c:955
 msgid "A restart is required for them to take effect."
 msgstr "Un redémarrage est requis pour qu'ils soient pris en compte."
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:952 ../src/gs-update-monitor.c:102
+#: ../src/gs-shell-updates.c:957 ../src/gs-update-monitor.c:102
 msgid "Not Now"
 msgstr "Pas maintenant"
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:954
+#: ../src/gs-shell-updates.c:959
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: ../src/gs-shell-updates.c:1363
+#: ../src/gs-shell-updates.c:1368
 msgid "Check for updates"
 msgstr "Rechercher des mises à jour"
 
@@ -2758,3 +2752,11 @@ msgstr "Travail"
 #: ../src/plugins/gs-desktop-common.c:306
 msgid "Utilities"
 msgstr "Utilitaires"
+
+#: ../src/plugins/gs-plugin-eos.c:994
+msgid "Endless Platform"
+msgstr ""
+
+#: ../src/plugins/gs-plugin-eos.c:997
+msgid "Framework for applications"
+msgstr ""
