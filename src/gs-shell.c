@@ -295,7 +295,7 @@ gs_shell_change_mode (GsShell *shell,
 	gtk_style_context_remove_class (context, "selection-mode");
 	/* set the window title back to default */
 	/* TRANSLATORS: this is the main window title */
-	gtk_window_set_title (priv->main_window, _("Software"));
+	gtk_window_set_title (priv->main_window, _("App Center"));
 
 	/* update main buttons according to mode */
 	priv->ignore_primary_buttons = TRUE;
