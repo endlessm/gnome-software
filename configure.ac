@@ -337,9 +337,7 @@ AC_CONFIG_FILES([
 Makefile
 po/Makefile.in
 data/appdata/Makefile
-data/com.endlessm.SystemExternalApps.policy
 data/com.endlessm.SystemExternalApps.rules
-data/eos-external-apps-enable.service
 data/Makefile
 data/icons/Makefile
 data/icons/categories/Makefile
