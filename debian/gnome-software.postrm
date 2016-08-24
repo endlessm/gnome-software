@@ -1,0 +1,18 @@
+#!/bin/sh
+
+#DEBHELPER#
+
+ext_apps_remote=eos-external-apps
+ext_apps_repo=/var/lib/flatpak-external-apps
+g_s_helper_user=g-s-helper
+
+if [ "$1" = purge ]; then
+    # Remove the external apps remote and repo
+    if flatpak remote-list 2>/dev/null | grep -q "$ext_apps_remote"; then
+        flatpak remote-delete --force "$ext_apps_remote"
+    fi
+    rm -rf "$ext_apps_repo"
+
+    # Delete the g-s-helper user and home directory
+    deluser --quiet --system --remove-home "$g_s_helper_user"
+fi
