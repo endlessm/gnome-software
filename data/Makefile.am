@@ -64,15 +64,11 @@ $(systemdunit_DATA): $(systemdunit_in_files) Makefile
 EXTRA_DIST =						\
 	$(gsettings_SCHEMAS)				\
 	com.endlessm.SystemExternalApps.policy.in	\
-	com.endlessm.SystemExternalApps.rules.in	\
 	eos-external-apps-enable.service.in
 
 CLEANFILES =						\
 	com.endlessm.SystemExternalApps.policy		\
 	eos-external-apps-enable.service
-
-DISTCLEANFILES =					\
-	com.endlessm.SystemExternalApps.rules
 
 MAINTAINERCLEANFILES =					\
 	*~						\
