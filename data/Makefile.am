@@ -44,23 +44,34 @@ polkit_rules_DATA =					\
 	com.endlessm.SystemExternalApps.rules
 
 polkit_policydir = $(datadir)/polkit-1/actions
-polkit_policy_DATA =					\
-	com.endlessm.SystemExternalApps.policy
+polkit_policy_in_files = com.endlessm.SystemExternalApps.policy.in
+polkit_policy_DATA = $(polkit_policy_in_files:.policy.in=.policy)
+
+$(polkit_policy_DATA): $(polkit_policy_in_files) Makefile
+	sed -e "s|@libexecdir[@]|$(libexecdir)|g" $< > $@
 
 tmpfilesdir = $(prefix)/lib/tmpfiles.d
 dist_tmpfiles_DATA =					\
 	g-s-helper.conf					\
 	eos-external-apps.conf
 
-systemdunit_DATA = eos-external-apps-enable.service
+systemdunit_in_files = eos-external-apps-enable.service.in
+systemdunit_DATA = $(systemdunit_in_files:.service.in=.service)
+
+$(systemdunit_DATA): $(systemdunit_in_files) Makefile
+	sed -e "s|@libexecdir[@]|$(libexecdir)|g" $< > $@
 
 EXTRA_DIST =						\
 	$(gsettings_SCHEMAS)				\
 	com.endlessm.SystemExternalApps.policy.in	\
-	com.endlessm.SystemExternalApps.rules.in
+	com.endlessm.SystemExternalApps.rules.in	\
+	eos-external-apps-enable.service.in
+
+CLEANFILES =						\
+	com.endlessm.SystemExternalApps.policy		\
+	eos-external-apps-enable.service
 
 DISTCLEANFILES =					\
-	com.endlessm.SystemExternalApps.policy		\
 	com.endlessm.SystemExternalApps.rules
 
 MAINTAINERCLEANFILES =					\
