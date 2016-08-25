@@ -72,7 +72,7 @@ BUILDDIR="$APPDIR/build"
 BUNDLEDIR="$APPDIR/bundle"
 
 # Remove any previous left build dir and create it again
-rm -rf "$APPDIR"
+rm -rf "$BUNDLEDIR"
 mkdir -p "$BUILDDIR" "$BUNDLEDIR"
 
 echo "Downloading into $BUILDDIR"
