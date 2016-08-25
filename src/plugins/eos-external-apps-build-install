@@ -31,6 +31,18 @@ function help {
     echo "EXTERNAL_ASSET_BRANCH the branch of the asset"
 }
 
+function validate_checksum {
+    filename=$1
+    sha256=$2
+    filechecksum=$(sha256sum "$filename" | cut -d' ' -f1)
+
+    if [ "$filechecksum" == "$sha256" ]; then
+	echo "true"
+    else
+	echo ""
+    fi
+}
+
 SYSTEMREPO=$1
 APPNAME=$2
 ASSETURL=$3
@@ -72,16 +84,23 @@ BUILDDIR="$APPDIR/build"
 BUNDLEDIR="$APPDIR/bundle"
 
 # Remove any previous left build dir and create it again
-rm -rf "$APPDIR"
+rm -rf "$BUNDLEDIR"
 mkdir -p "$BUILDDIR" "$BUNDLEDIR"
 
+# Download the app if needed
 echo "Downloading into $BUILDDIR"
 
-# Download the app
 cd "$BUILDDIR"
-wget -c "$ASSETURL"
 
 assetfile=$(basename "$ASSETURL")
+if [ ! -f "$assetfile" ] || [ -z `validate_checksum "$assetfile" "$ASSETBRANCH"` ]; then
+    wget -c "$ASSETURL"
+fi
+if [ -z `validate_checksum "$assetfile" "$ASSETBRANCH"` ]; then
+    echo "Checksum of downloaded file from $ASSETURL doesn't match $ASSETBRANCH"
+    echo `sha256sum "$assetfile"`
+    exit 1
+fi
 
 echo "Building bundle..."
 
