@@ -934,9 +934,7 @@ side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
 
 	row = GS_SIDE_FILTER_ROW (gtk_list_box_get_selected_row (GTK_LIST_BOX (priv->side_filter)));
 
-	/* if the mode if already selected, we do nothing; this not only
-	 * optimizes things but also prevents us from always selecting the
-	 * first category-mode row when a category view is displayed */
+	/* if the mode is already selected, we do nothing */
 	if (row && gs_side_filter_row_get_mode (row) == mode) {
 		gs_shell_side_filter_set_visible (shell, TRUE);
 		return;
@@ -954,6 +952,18 @@ side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
 		GsSideFilterRow *current = GS_SIDE_FILTER_ROW (l->data);
 		if (gs_side_filter_row_get_mode (current) == mode) {
 			row = current;
+
+			/* special-case the category mode because we need to
+			 * select the right one, not the first one with this
+			 * mode; without this, clicking on a category works fine
+			 * but not when using the arrows */
+			if (mode == GS_SHELL_MODE_CATEGORY) {
+				GsCategory *category =
+					gs_shell_category_get_category (priv->shell_category);
+				if (gs_side_filter_row_get_category (row) != category)
+					continue;
+			}
+
 			break;
 		}
 	}
