@@ -50,6 +50,10 @@ static gboolean
 gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 			      GCancellable *cancellable, GError **error);
 
+static FlatpakInstalledRef *
+gs_flatpak_get_installed_ref (GsFlatpak *self, GsApp *app,
+			      GCancellable *cancellable, GError **error);
+
 static void
 gs_plugin_flatpak_changed_cb (GFileMonitor *monitor,
 			      GFile *child,
@@ -992,12 +996,29 @@ gs_flatpak_create_fake_ref (GsApp *app, GError **error)
 static gboolean
 gs_plugin_refine_item_state (GsFlatpak *self,
 			     GsApp *app,
+			     GsPluginRefineFlags flags,
 			     GCancellable *cancellable,
 			     GError **error)
 {
 	guint i;
 	g_autoptr(GPtrArray) xrefs = NULL;
 	g_autoptr(AsProfileTask) ptask = NULL;
+
+	/* XXX: This is a work-around for a problem related to uninstalling
+	 * an app from the installed view and having the other app views
+	 * (e.g. in the category views) not aware of the new state */
+	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION) &&
+	    gs_app_is_installed (app)) {
+		g_autoptr(FlatpakInstalledRef) ref = NULL;
+		ref = gs_flatpak_get_installed_ref (self, app,
+						    cancellable, NULL);
+		if (!ref) {
+			g_debug ("Setting '%s' state as unknown so it "
+				 "force-refines its state.",
+				 gs_app_get_unique_id (app));
+			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		}
+	}
 
 	/* already found */
 	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN)
@@ -1271,6 +1292,7 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 		app_runtime = gs_app_get_runtime (app);
 		if (!gs_plugin_refine_item_state (self,
 						  app_runtime,
+						  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 						  cancellable,
 						  error))
 			return FALSE;
@@ -1359,7 +1381,7 @@ gs_flatpak_refine_app (GsFlatpak *self,
 		return FALSE;
 
 	/* check the installed state */
-	if (!gs_plugin_refine_item_state (self, app, cancellable, error))
+	if (!gs_plugin_refine_item_state (self, app, flags, cancellable, error))
 		return FALSE;
 
 	/* version fallback */
@@ -1462,7 +1484,9 @@ gs_flatpak_app_remove (GsFlatpak *self,
 	gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 
 	/* refresh the state */
-	if (!gs_plugin_refine_item_state (self, app, cancellable, error))
+	if (!gs_plugin_refine_item_state (self, app,
+					  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+					  cancellable, error))
 		return FALSE;
 
 	/* success */
@@ -1504,6 +1528,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 						   runtime, cancellable, error))
 			return FALSE;
 		if (!gs_plugin_refine_item_state (self, runtime,
+						  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 						  cancellable, error))
 			return FALSE;
 		if (gs_app_get_state (runtime) == AS_APP_STATE_UNKNOWN) {
