@@ -2822,6 +2822,24 @@ gs_app_is_updatable (GsApp *app)
 }
 
 /**
+ * gs_app_is_flatpak:
+ * @app: a #GsApp
+ *
+ * Gets whether the app represents a Flatpak bundle or not.
+ *
+ * Returns: %TRUE if the app is installed, %FALSE otherwise.
+ *
+ * Since: 3.22
+ **/
+gboolean
+gs_app_is_flatpak (GsApp *app)
+{
+	g_return_val_if_fail (GS_IS_APP (app), FALSE);
+
+	return gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_FLATPAK;
+}
+
+/**
  * gs_app_get_categories:
  * @app: a #GsApp
  *
