@@ -2262,39 +2262,14 @@ gs_app_get_management_plugin (GsApp *app)
  * The management plugin is the plugin that can handle doing install and remove
  * operations on the #GsApp.
  * Typical values include "packagekit" and "flatpak"
- *
- * It is an error to attempt to change the management plugin once it has been
- * previously set or to try to use this function on a wildcard application.
- *
- * Since: 3.22
  **/
 void
 gs_app_set_management_plugin (GsApp *app, const gchar *management_plugin)
 {
 	g_return_if_fail (GS_IS_APP (app));
 
-	/* plugins cannot adopt wildcard packages */
-	if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
-		g_warning ("plugins should not set the management plugin on "
-			   "%s to %s -- create a new GsApp in refine()!",
-			   gs_app_get_unique_id (app),
-			   management_plugin);
-		return;
-	}
-
-	/* same */
 	if (g_strcmp0 (app->management_plugin, management_plugin) == 0)
 		return;
-
-	/* trying to change */
-	if (app->management_plugin != NULL && management_plugin != NULL) {
-		g_warning ("automatically prevented from changing "
-			   "management plugin on %s from %s to %s!",
-			   gs_app_get_unique_id (app),
-			   app->management_plugin,
-			   management_plugin);
-		return;
-	}
 
 	g_free (app->management_plugin);
 	app->management_plugin = g_strdup (management_plugin);
