@@ -445,13 +445,8 @@ gs_plugin_refine_app (GsPlugin *plugin,
 
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
 
-	if (!ext_runtime) {
-		g_debug ("Could not understand the asset from the "
-			 "metadata in "
-			 "app %s: %s",
-			 gs_app_get_id (app), metadata);
+	if (!ext_runtime)
 		return TRUE;
-	}
 
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 
