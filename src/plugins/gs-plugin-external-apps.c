@@ -96,7 +96,7 @@ gs_plugin_adopt_app (GsPlugin *plugin,
 	    !gs_app_get_metadata_item (app, METADATA_EXTERNAL_ASSETS))
 		return;
 
-	g_debug ("Adopt '%s' as an external app", gs_app_get_id (app));
+	g_debug ("Adopt '%s' as an external app", gs_app_get_unique_id (app));
 
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 }
@@ -440,7 +440,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	if (gs_app_is_flatpak (app) && gs_flatpak_app_is_runtime (app) &&
 	    gs_app_is_installed (app)) {
 		cache_installed_ext_runtime (plugin, app);
-		g_debug ("Caching remote '%s'", gs_app_get_id (app));
+		g_debug ("Caching remote '%s'", gs_app_get_unique_id (app));
 	}
 
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
@@ -455,7 +455,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 
-	g_debug ("Refining external app %s", gs_app_get_id (app));
+	g_debug ("Refining external app %s", gs_app_get_unique_id (app));
 
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
 
@@ -548,7 +548,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 	if (!ext_runtime) {
 		g_debug ("External app '%s' didn't have any asset! "
 			 "Not installing and marking as state unknown!",
-			 gs_app_get_id (app));
+			 gs_app_get_unique_id (app));
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 
 		return TRUE;
@@ -565,28 +565,28 @@ gs_plugin_app_install (GsPlugin *plugin,
 	switch (gs_app_get_state (ext_runtime)) {
 	case AS_APP_STATE_INSTALLED:
 		g_debug ("App asset '%s' is already installed",
-			 gs_app_get_id (ext_runtime));
+			 gs_app_get_unique_id (ext_runtime));
 		break;
 
 	case AS_APP_STATE_UPDATABLE:
-		g_debug ("Updating '%s'", gs_app_get_id (ext_runtime));
+		g_debug ("Updating '%s'", gs_app_get_unique_id (ext_runtime));
 
 		if (!gs_flatpak_update_app (priv->usr_flatpak, ext_runtime,
 					    cancellable, error)) {
 			g_debug ("Failed to update '%s'",
-				 gs_app_get_id (ext_runtime));
+				 gs_app_get_unique_id (ext_runtime));
 			return FALSE;
 		}
 		break;
 
 	case AS_APP_STATE_AVAILABLE:
-		g_debug ("Installing '%s'", gs_app_get_id (ext_runtime));
+		g_debug ("Installing '%s'", gs_app_get_unique_id (ext_runtime));
 		ret = gs_flatpak_app_install (priv->sys_flatpak, ext_runtime,
 					      cancellable, error);
 
 		if (!ret) {
 			g_debug ("Failed to install '%s'",
-				 gs_app_get_id (ext_runtime));
+				 gs_app_get_unique_id (ext_runtime));
 			return FALSE;
 		}
 
@@ -612,14 +612,14 @@ gs_plugin_app_install (GsPlugin *plugin,
 			     GS_PLUGIN_ERROR_NOT_SUPPORTED,
 			     "Could not install external app '%s' because its "
 			     "extension runtime '%s' is not installed",
-			     gs_app_get_id (app),
-			     gs_app_get_id (ext_runtime));
+			     gs_app_get_unique_id (app),
+			     gs_app_get_unique_id (ext_runtime));
 		return FALSE;
 	}
 
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
 	if (!gs_flatpak_app_install (flatpak, app, cancellable, error)) {
-		g_debug ("Failed to install '%s'", gs_app_get_id (app));
+		g_debug ("Failed to install '%s'", gs_app_get_unique_id (app));
 		return FALSE;
 	}
 
@@ -659,7 +659,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 
 	if (!ext_runtime) {
 		g_debug ("External app '%s' has no external runtime to be"
-			 "removed", gs_app_get_id (app));
+			 "removed", gs_app_get_unique_id (app));
 	} else if (gs_app_get_state (ext_runtime) == AS_APP_STATE_INSTALLED ||
 		   gs_app_get_state (ext_runtime) == AS_APP_STATE_UPDATABLE) {
 		g_autoptr(GError) local_error = NULL;
@@ -668,9 +668,9 @@ gs_plugin_app_remove (GsPlugin *plugin,
 					    cancellable, &local_error)) {
 			g_debug ("Cannot remove '%s': %s. Will try to "
 				 "remove app '%s'.",
-				 gs_app_get_id (ext_runtime),
+				 gs_app_get_unique_id (ext_runtime),
 				 local_error->message,
-				 gs_app_get_id (app));
+				 gs_app_get_unique_id (app));
 		}
 	}
 
