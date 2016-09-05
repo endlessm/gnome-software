@@ -179,23 +179,13 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 								  cancellable,
 								  &error_local);
 		if (!ret) {
-			if (g_error_matches (error_local,
-					     G_IO_ERROR,
-					     G_IO_ERROR_FAILED)) {
-				g_debug ("Failed to get AppStream metadata: %s",
-					 error_local->message);
-				/* don't try to fetch this again until refresh() */
-				g_hash_table_insert (self->broken_remotes,
-						     g_strdup (remote_name),
-						     GUINT_TO_POINTER (1));
-				continue;
-			}
-			g_set_error (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_NOT_SUPPORTED,
-				     "Failed to get AppStream metadata: %s",
-				     error_local->message);
-			return FALSE;
+			g_warning ("Failed to get AppStream metadata: %s",
+				   error_local->message);
+			/* don't try to fetch this again until refresh() */
+			g_hash_table_insert (self->broken_remotes,
+					     g_strdup (remote_name),
+					     GUINT_TO_POINTER (1));
+			continue;
 		}
 
 		/* add the new AppStream repo to the shared store */
