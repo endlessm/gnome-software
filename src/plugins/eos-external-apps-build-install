@@ -23,12 +23,13 @@
 function help {
     echo "$0"
     echo "Usage:"
-    echo "  $0 SYSTEM_REPO APP_NAME EXTERNAL_ASSET_URL EXTERNAL_ASSET_TYPE EXTERNAL_ASSET_BRANCH"
+    echo "  $0 SYSTEM_REPO APP_NAME EXTERNAL_ASSET_URL EXTERNAL_ASSET_TYPE EXTERNAL_ASSET_BRANCH IS_INSTALLER"
     echo ""
     echo "APP_NAME              the app name (e.g. org.myorg.MyApp)"
     echo "EXTERNAL_ASSET_URL    the asset URL (e.g. https://www.myorg.org/MyOrg_0.1.2-1.deb)"
     echo "EXTERNAL_ASSET_TYPE   the type of the asset ('deb' or 'tar')"
     echo "EXTERNAL_ASSET_BRANCH the branch of the asset"
+    echo "IS_INSTALLER		should we treat this runtime as an installer and run it"
 }
 
 function validate_checksum {
@@ -48,6 +49,7 @@ APPNAME=$2
 ASSETURL=$3
 ASSETTYPE=$4
 ASSETBRANCH=$5
+IS_INSTALLER=$6
 
 if [ -z "$SYSTEMREPO" ]; then
    echo "$0: Need the system repo name"
@@ -143,6 +145,8 @@ echo "Install $APPNAME..."
 flatpak install "$SYSTEMREPO" "$APPNAME" "$ASSETBRANCH"
 
 echo "$APPNAME is now installed"
+
+test -z "$IS_INSTALLER" || flatpak run "$APPNAME"
 
 # Remove installed app from system repo
 ostree refs --delete "runtime/$APPNAME" --repo="$REPO"
