@@ -30,6 +30,7 @@ function help {
     echo "EXTERNAL_ASSET_TYPE   the type of the asset ('deb' or 'tar')"
     echo "EXTERNAL_ASSET_BRANCH the branch of the asset"
     echo "IS_INSTALLER		should we treat this runtime as an installer and run it"
+    echo "ARCH			install runtime and app with --arch=$ARCH"
 }
 
 function validate_checksum {
@@ -50,6 +51,7 @@ ASSETURL=$3
 ASSETTYPE=$4
 ASSETBRANCH=$5
 IS_INSTALLER=$6
+ARCH=$7
 
 if [ -z "$SYSTEMREPO" ]; then
    echo "$0: Need the system repo name"
@@ -77,6 +79,12 @@ fi
 
 if [ -z "$ASSETBRANCH" ]; then
     ASSETBRANCH="master"
+fi
+
+if [ -z "$ARCH" ]; then
+    ARGARCH=""
+else
+        ARGARCH="--arch $ARCH"
 fi
 
 REPO="/var/lib/flatpak-external-apps"
@@ -132,7 +140,7 @@ if [ ! -f "${REPO}/config" ]; then
 fi
 
 # Export the runtime extension to the external apps repo
-flatpak build-export --runtime "$REPO" "$BUNDLEDIR" "$ASSETBRANCH"
+flatpak build-export --runtime "$ARGARCH" "$REPO" "$BUNDLEDIR" "$ASSETBRANCH"
 
 # Delete build dirs
 rm -rf "$APPDIR"

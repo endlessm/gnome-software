@@ -39,12 +39,14 @@
 #define JSON_RUNTIME_SHA256_KEY "sha256"
 
 #define JSON_INSTALLER_KEY "installer"
+#define JSON_ARCH_KEY "arch"
 
 #define METADATA_URL "GnomeSoftware::external-app::url"
 #define METADATA_TYPE "GnomeSoftware::external-app::type"
 #define METADATA_HEADLESS_APP "GnomeSoftware::external-app::headless-app"
 #define METADATA_BUILD_DIR "GnomeSoftware::external-app::build-dir"
 #define METADATA_IS_INSTALLER "GnomeSoftware::external-app::installer"
+#define METADATA_ARCH "GnomeSoftware::external-app::arch"
 #define METADATA_EXTERNAL_ASSETS "flatpak-3rdparty::external-assets"
 
 #define TMP_ASSSETS_PREFIX "gs-external-apps"
@@ -173,12 +175,14 @@ build_and_install_external_runtime (GsApp *runtime,
 
 	const char *is_installer = gs_app_get_metadata_item (runtime, METADATA_IS_INSTALLER);
 
+	const char *arch = gs_app_get_metadata_item (runtime, METADATA_ARCH);
+
 	/* run the external apps builder script as the configured helper user */
 	const char *argv[] = {"pkexec", "--user", EXT_APPS_HELPER_USER,
 			      LIBEXECDIR "/eos-external-apps-build-install",
 			      EXT_APPS_SYSTEM_REPO_NAME,
 			      gs_app_get_id (runtime), runtime_url,
-			      runtime_type, branch, is_installer,
+			      runtime_type, branch, is_installer, arch,
 			      NULL};
 
 	g_debug ("Building and installing runtime extension '%s'...",
@@ -221,6 +225,7 @@ extract_runtime_info_from_json_data (const char *data,
 				     char **url,
 				     char **type,
 				     char **branch,
+				     char **arch,
 				     gboolean *is_installer,
 				     GError **error)
 {
@@ -266,6 +271,10 @@ extract_runtime_info_from_json_data (const char *data,
 	node = json_object_get_member (root, JSON_INSTALLER_KEY);
 	if (node)
 		*is_installer = json_node_get_boolean (node);
+
+	node = json_object_get_member (root, JSON_ARCH_KEY);
+	if (node)
+		*arch = json_node_get_string (node);
 
 	node = json_object_get_member (root, JSON_RUNTIME_KEY);
 	if (!node) {
@@ -368,6 +377,8 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	g_autofree char *url = NULL;
 	g_autofree char *type = NULL;
 	g_autofree char *branch = NULL;
+	g_autofree char *arch = NULL;
+
 	g_autofree char *json_data = NULL;
 	g_autoptr (GError) error = NULL;
 	const char *metadata;
@@ -380,7 +391,8 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 
 	json_data = g_uri_unescape_string (metadata, NULL);
 	id = extract_runtime_info_from_json_data (json_data, &url, &type,
-						  &branch, &is_installer,
+						  &branch, &arch,
+						  &is_installer,
 						  &error);
 
 	if (!id) {
@@ -408,6 +420,9 @@ gs_plugin_get_app_external_runtime (GsPlugin *plugin,
 	gs_app_set_metadata (runtime, METADATA_URL, url);
 	gs_app_set_metadata (runtime, METADATA_TYPE, type);
 	gs_app_set_metadata (runtime, METADATA_IS_INSTALLER, is_installer?"TRUE":"FALSE");
+	if (arch) {
+		gs_app_set_metadata (runtime, METADATA_ARCH, arch);
+	}
 
 	gs_app_set_metadata (runtime, "flatpak::kind", "runtime");
 	gs_app_set_kind (runtime, AS_APP_KIND_RUNTIME);
