@@ -252,7 +252,7 @@ extract_runtime_info_from_json_data (const char *data,
 		             GS_PLUGIN_ERROR,
 		             GS_PLUGIN_ERROR_FAILED,
 		             "External asset's json spec version '%u' does "
-			     "not match the plugin. Expected '%u'", spec,
+			     "not match the plugin. Expected '%d'", spec,
 			     EXTERNAL_ASSETS_SPEC_VERSION);
 		return NULL;
 	}
