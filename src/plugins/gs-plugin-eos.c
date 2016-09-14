@@ -474,11 +474,12 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	last_token = tokens[num_tokens - 1];
 
 	if (!gs_plugin_locale_is_compatible (plugin, last_token)) {
-		if (!gs_app_is_installed (app)) {
-			g_debug ("Blacklisting '%s': incompatible with the "
-				 "current locale", gs_app_get_unique_id (app));
-			gs_app_add_category (app, "Blacklisted");
-		}
+		if (gs_app_is_installed (app))
+			return FALSE;
+
+		g_debug ("Blacklisting '%s': incompatible with the current "
+			 "locale", gs_app_get_unique_id (app));
+		gs_app_add_category (app, "Blacklisted");
 
 		return TRUE;
 	}
