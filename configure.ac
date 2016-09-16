@@ -460,7 +460,7 @@ data/Makefile
 data/icons/Makefile
 data/icons/categories/Makefile
 data/icons/hicolor/Makefile
-data/icons/hicolor/22x22/Makefile
+data/icons/hicolor/16x16/Makefile
 data/icons/hicolor/64x64/Makefile
 data/icons/hicolor/scalable/Makefile
 data/tests/Makefile
