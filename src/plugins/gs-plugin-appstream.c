@@ -780,6 +780,8 @@ gs_plugin_add_popular (GsPlugin *plugin,
 		if (!as_app_has_kudo (item, "GnomeSoftware::popular"))
 			continue;
 		app = gs_plugin_appstream_create_app (plugin, item);
+		if (!gs_appstream_refine_app (plugin, app, item, error))
+			return FALSE;
 		gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
 		gs_app_list_add (list, app);
 	}
