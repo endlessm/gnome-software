@@ -339,7 +339,7 @@ gs_app_row_refresh (GsAppRow *app_row)
 			origin_tmp = g_strdup_printf ("%s: %s", _("Source"), tmp);
 			gtk_label_set_label (GTK_LABEL (priv->label_origin), origin_tmp);
 		}
-		gtk_widget_set_visible (priv->label_origin, tmp != NULL);
+		gtk_widget_set_visible (priv->label_origin, FALSE);
 	} else {
 		gtk_widget_set_visible (priv->label_origin, FALSE);
 	}
