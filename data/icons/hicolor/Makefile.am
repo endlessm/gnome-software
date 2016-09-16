@@ -1,5 +1,5 @@
 SUBDIRS =						\
-	22x22						\
+	16x16						\
 	64x64						\
 	scalable
 
