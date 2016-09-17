@@ -858,9 +858,31 @@ gs_plugin_loader_filter_qt_for_gtk (GsApp *app, gpointer user_data)
 }
 
 static gboolean
+gs_plugin_loader_app_has_endless_icon (GsApp *app)
+{
+	GPtrArray *icons = gs_app_get_icons (app);
+	guint i;
+
+	/*
+	 * If the app has an 'eos-' prefixed icon, we always include it regardless
+	 * of the COMPULSORY quirk.
+	 */
+	for (i = 0; i < icons->len; i++) {
+		AsIcon *icon = g_ptr_array_index (icons, i);
+
+		if (g_str_has_prefix (as_icon_get_name (icon), "eos-")) {
+			return TRUE;
+			break;
+		}
+	}
+
+	return FALSE;
+}
+
+static gboolean
 gs_plugin_loader_app_is_non_compulsory (GsApp *app, gpointer user_data)
 {
-	return !gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	return !gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) || gs_plugin_loader_app_has_endless_icon (app);
 }
 
 static gboolean
