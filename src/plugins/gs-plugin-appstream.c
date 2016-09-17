@@ -745,8 +745,6 @@ gs_plugin_add_categories (GsPlugin *plugin,
 		app = g_ptr_array_index (array, i);
 		if (as_app_get_id (app) == NULL)
 			continue;
-		if (as_app_get_priority (app) < 0)
-			continue;
 		for (j = 0; j < list->len; j++) {
 			GsCategory *parent = GS_CATEGORY (g_ptr_array_index (list, j));
 			gs_plugin_add_categories_for_app (parent, app);
