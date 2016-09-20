@@ -42,6 +42,7 @@ struct _GsFlatpak {
 	GFileMonitor		*monitor;
 	GsFlatpakScope		 scope;
 	GsPlugin		*plugin;
+	gboolean		 download_updates;
 };
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
@@ -615,20 +616,57 @@ gs_flatpak_app_install_source (GsFlatpak *self, GsApp *app,
 	return TRUE;
 }
 
-gboolean
-gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
-			GCancellable *cancellable,
-			GError **error)
+static gboolean
+gs_flatpak_add_available_updates (GsFlatpak *self, GsAppList *list,
+				  GCancellable *cancellable,
+				  GError **error)
 {
 	guint i;
 	g_autoptr(GPtrArray) xrefs = NULL;
 
-	/* manually drop the cache */
-	if (0&&!flatpak_installation_drop_caches (self->installation,
-						  cancellable,
-						  error)) {
+	/* get all the updates available from all remotes */
+	xrefs = flatpak_installation_list_installed_refs_for_update (self->installation,
+								     cancellable,
+								     error);
+
+	if (xrefs == NULL)
 		return FALSE;
+
+	for (i = 0; i < xrefs->len; i++) {
+		FlatpakInstalledRef *xref = g_ptr_array_index (xrefs, i);
+		g_autoptr(GsApp) app = NULL;
+		g_autoptr(GError) error_local = NULL;
+
+		/* try to create a GsApp so we can do progress reporting */
+		app = gs_flatpak_create_installed (self, xref, &error_local);
+
+		if (app == NULL) {
+			g_warning ("failed to add available update for "
+				   "flatpak %s/%s: %s",
+				   flatpak_ref_get_name (FLATPAK_REF (xref)),
+				   flatpak_ref_get_branch (FLATPAK_REF (xref)),
+				   error_local->message);
+			continue;
+		}
+
+		/* we have an update to show */
+		g_debug ("%s has an available update",
+			 gs_app_get_unique_id (app));
+
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+		gs_app_list_add (list, app);
 	}
+
+	return TRUE;
+}
+static gboolean
+gs_flatpak_add_downloaded_updates (GsFlatpak *self, GsAppList *list,
+				   GCancellable *cancellable,
+				   GError **error)
+{
+	guint i;
+	g_autoptr(GPtrArray) xrefs = NULL;
 
 	/* get all the installed apps (no network I/O) */
 	xrefs = flatpak_installation_list_installed_refs (self->installation,
@@ -653,19 +691,62 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 			continue;
 		}
 
-		/* we have an update to show */
-		g_debug ("%s has a downloaded update %s->%s",
-			 flatpak_ref_get_name (FLATPAK_REF (xref)),
-			 commit, latest_commit);
 		app = gs_flatpak_create_installed (self, xref, &error_local);
 		if (app == NULL) {
-			g_warning ("failed to add flatpak: %s", error_local->message);
+			g_warning ("failed to add downloaded update for "
+				   "flatpak %s/%s: %s",
+				   flatpak_ref_get_name (FLATPAK_REF (xref)),
+				   flatpak_ref_get_branch (FLATPAK_REF (xref)),
+				   error_local->message);
 			continue;
 		}
-		if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED)
-			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+
+		/* we have an update to show */
+		g_debug ("%s has a downloaded update %s->%s",
+			 gs_app_get_unique_id (app), commit, latest_commit);
+
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
 		gs_app_list_add (list, app);
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
+			GCancellable *cancellable,
+			GError **error)
+{
+	/* manually drop the cache */
+	if (0&&!flatpak_installation_drop_caches (self->installation,
+						  cancellable,
+						  error)) {
+		return FALSE;
+	}
+
+	if (!gs_flatpak_add_downloaded_updates (self, list, cancellable,
+						error)) {
+		if (error)
+			g_debug ("Failed to get downloaded updates: %s",
+				 (*error)->message);
+
+		return FALSE;
+	}
+
+	/* if 'download updates' is enabled, then we just deploy the installed
+	 * updates instead, so we should only show as updatable apps that have
+	 * downloaded updates */
+	if (self->download_updates)
+		return TRUE;
+
+	if (!gs_flatpak_add_available_updates (self, list, cancellable,
+					       error)) {
+		if (error)
+			g_debug ("Failed to get available updates: %s",
+				 (*error)->message);
+
+		return FALSE;
 	}
 
 	return TRUE;
@@ -704,6 +785,10 @@ gs_flatpak_refresh (GsFlatpak *self,
 
 	/* no longer interesting */
 	if ((flags & GS_PLUGIN_REFRESH_FLAGS_PAYLOAD) == 0)
+		return TRUE;
+
+	/* check if we should download any eventual updates */
+	if (!self->download_updates)
 		return TRUE;
 
 	/* get all the updates available from all remotes */
@@ -1654,16 +1739,22 @@ gs_flatpak_update_app (GsFlatpak *self,
 		       GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
+	FlatpakUpdateFlags update_flags = FLATPAK_UPDATE_FLAGS_NONE;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (self->plugin)) != 0)
 		return TRUE;
 
+	/* if 'download updates' is enabled, then we just deploy the installed
+	 * updates instead of fetching any eventual new ones */
+	if (self->download_updates)
+		update_flags |= FLATPAK_UPDATE_FLAGS_NO_PULL;
+
 	/* install */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 	xref = flatpak_installation_update (self->installation,
-					    FLATPAK_UPDATE_FLAGS_NO_PULL,
+					    update_flags,
 					    gs_app_get_flatpak_kind (app),
 					    gs_app_get_flatpak_name (app),
 					    gs_app_get_flatpak_arch (app),
@@ -1994,6 +2085,7 @@ gs_flatpak_init (GsFlatpak *self)
 {
 	self->broken_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 						      g_free, NULL);
+	self->download_updates = TRUE;
 }
 
 GsFlatpak *
@@ -2038,4 +2130,11 @@ gboolean
 gs_flatpak_app_is_runtime (GsApp *app)
 {
 	return g_strcmp0 (gs_app_get_flatpak_kind_as_str (app), "runtime") == 0;
+}
+
+void
+gs_flatpak_set_download_updates (GsFlatpak *self,
+				 gboolean download_updates)
+{
+	self->download_updates = download_updates;
 }

@@ -39,12 +39,32 @@ struct GsPluginData {
 	GSettings		*settings;
 };
 
+static void
+download_updates_setting_changed (GSettings *settings,
+				  const gchar *key,
+				  GsPlugin *self)
+{
+	GsPluginData *priv = gs_plugin_get_data (self);
+	gboolean download_updates = g_settings_get_boolean (settings,
+							    "download-updates");
+	gs_flatpak_set_download_updates (priv->flatpak, download_updates);
+}
+
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+	gboolean download_updates;
+
 	priv->flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
 	priv->settings = g_settings_new ("org.gnome.software");
+	download_updates = g_settings_get_boolean (priv->settings,
+						   "download-updates");
+
+	gs_flatpak_set_download_updates (priv->flatpak, download_updates);
+	g_signal_connect (priv->settings, "changed::download-updates",
+			  G_CALLBACK (download_updates_setting_changed),
+			  plugin);
 
 	/* set plugin flags */
 	gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_GLOBAL_CACHE);

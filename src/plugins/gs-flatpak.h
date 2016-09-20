@@ -107,6 +107,8 @@ GPtrArray	*gs_flatpak_get_installed_runtimes (GsFlatpak		*self,
 						    GCancellable       	*cancellable,
 						    GError	       	**error);
 
+void		gs_flatpak_set_download_updates (GsFlatpak		*self,
+						 gboolean 		 download_updates);
 
 G_END_DECLS
 
