@@ -44,7 +44,8 @@ G_DECLARE_FINAL_TYPE (GsFlatpak, gs_flatpak, GS, FLATPAK, GObject)
 
 typedef enum {
 	GS_FLATPAK_SCOPE_SYSTEM,
-	GS_FLATPAK_SCOPE_USER
+	GS_FLATPAK_SCOPE_USER,
+	GS_FLATPAK_SCOPE_CUSTOM
 } GsFlatpakScope;
 
 GsFlatpak	*gs_flatpak_new			(GsPlugin		*plugin,

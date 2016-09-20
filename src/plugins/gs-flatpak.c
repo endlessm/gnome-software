@@ -42,6 +42,7 @@ struct _GsFlatpak {
 	GFileMonitor		*monitor;
 	GsFlatpakScope		 scope;
 	GsPlugin		*plugin;
+	GSettings               *settings;
 };
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
@@ -104,6 +105,16 @@ gs_flatpak_setup (GsFlatpak *self, GCancellable *cancellable, GError **error)
 	} else if (self->scope == GS_FLATPAK_SCOPE_USER) {
 		self->installation = flatpak_installation_new_user (cancellable,
 								    error);
+	} else if (self->scope == GS_FLATPAK_SCOPE_CUSTOM) {
+		g_autofree gchar *custom_location = NULL;
+		g_autoptr(GFile) file = NULL;
+
+		custom_location = g_settings_get_string (self->settings,
+							 "install-bundles-custom-location");
+		file = g_file_new_for_path (custom_location);
+		self->installation = flatpak_installation_new_custom (file,
+								      cancellable,
+								      error);
 	}
 
 	if (self->installation == NULL)
@@ -1979,6 +1990,8 @@ gs_flatpak_finalize (GObject *object)
 	g_object_unref (self->plugin);
 	g_hash_table_unref (self->broken_remotes);
 
+	g_clear_object (&self->settings);
+
 	G_OBJECT_CLASS (gs_flatpak_parent_class)->finalize (object);
 }
 
@@ -1994,6 +2007,7 @@ gs_flatpak_init (GsFlatpak *self)
 {
 	self->broken_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 						      g_free, NULL);
+	self->settings = g_settings_new ("org.gnome.software");
 }
 
 GsFlatpak *
