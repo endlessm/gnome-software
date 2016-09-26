@@ -1071,9 +1071,15 @@ gs_plugin_loader_filter_qt_for_gtk (GsApp *app, gpointer user_data)
 }
 
 static gboolean
-gs_plugin_loader_app_is_non_compulsory (GsApp *app, gpointer user_data)
+gs_plugin_loader_app_is_non_installed (GsApp *app, gpointer user_data)
 {
-	return !gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED)
+		return FALSE;
+	if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE)
+		return FALSE;
+	if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE_LIVE)
+		return FALSE;
+	return TRUE;
 }
 
 static gboolean
@@ -2407,7 +2413,6 @@ gs_plugin_loader_get_category_apps_thread_cb (GTask *task,
 	}
 
 	/* filter package list */
-	gs_app_list_filter (job->list, gs_plugin_loader_app_is_non_compulsory, NULL);
 	gs_app_list_filter (job->list, gs_plugin_loader_app_is_valid, job);
 	gs_app_list_filter (job->list, gs_plugin_loader_filter_qt_for_gtk, NULL);
 	gs_app_list_filter (job->list, gs_plugin_loader_get_app_is_compatible, plugin_loader);
