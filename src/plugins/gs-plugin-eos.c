@@ -26,6 +26,7 @@
 #include <libsoup/soup.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
 #include <gs-common.h>
 #include <gs-plugin.h>
 #include <gs-utils.h>
@@ -43,6 +44,10 @@
 #define EOS_IMAGE_VERSION_ALT_PATH "/"
 
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
+
+#define EOS_EXTRA_APPSTREAM "eos-extra.xml.gz"
+#define EOS_EXTRA_APPSTREAM_URL "https://d3lapyynmdp1i9.cloudfront.net/app-info/" EOS_EXTRA_APPSTREAM
+#define EOS_EXTRA_APPSTREAM_SHA256SUM EOS_EXTRA_APPSTREAM_URL ".sha256sum"
 
 /*
  * SECTION:
@@ -178,6 +183,126 @@ reload_default_branches (GsPlugin *plugin)
 
 	if (g_hash_table_size (priv->default_branches) == 0)
 		g_debug ("No default branches configured!");
+}
+
+static gboolean
+verify_file_checksum (const char *file_path, const char *sha256sum)
+{
+	g_autofree char *data;
+	g_autofree gchar *checksum = NULL;
+	gsize length;
+	g_autoptr(GError) error = NULL;
+
+	if (!g_file_get_contents (file_path, &data, &length, &error)) {
+		g_debug ("Failed read file '%s' for performing checksum: %s",
+			 file_path, error->message);
+
+		return FALSE;
+	}
+
+	checksum = g_compute_checksum_for_data (G_CHECKSUM_SHA256,
+						(const guchar *) data,
+						length);
+
+	return g_strcmp0 (sha256sum, checksum) == 0;
+}
+
+static gboolean
+update_eos_extra_appstream (GsPlugin *plugin,
+			    const char *local_appstream_path,
+			    const char *file_checksum,
+			    GCancellable *cancellable,
+			    GError **error)
+{
+	const char *download_file = NULL;
+	g_autoptr(GFile) new_file = NULL;
+	g_autoptr(GError) local_error = NULL;
+	g_autoptr(GFileIOStream) iostream = NULL;
+	g_autoptr(GFile) old_file = g_file_new_tmp ("eos-extra_XXXXXX.xml",
+						    &iostream, error);
+
+	if (!old_file)
+		return FALSE;
+
+	/* close file IO stream as we only want its temporary name*/
+	if (!g_io_stream_close (G_IO_STREAM (iostream), cancellable, error))
+		return FALSE;
+
+	download_file = g_file_get_path (old_file);
+
+	if (!gs_plugin_download_file (plugin, NULL, EOS_EXTRA_APPSTREAM_URL,
+				      download_file, cancellable, error)) {
+		return FALSE;
+	}
+
+	if (!verify_file_checksum (download_file, file_checksum)) {
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
+			     "The downloaded eos-extra appstream file %s does "
+			     "not match the sha256 checksum '%s'",
+			     download_file, file_checksum);
+		return FALSE;
+	}
+
+	new_file = g_file_new_for_path (local_appstream_path);
+
+	if (!g_file_move (old_file, new_file, G_FILE_COPY_OVERWRITE,
+			  cancellable, NULL, NULL, &local_error)) {
+		g_debug ("Failed to move downloaded %s to %s: %s",
+			 download_file, local_appstream_path,
+			 local_error->message);
+
+		if (error) {
+			g_propagate_error (error, local_error);
+			local_error = NULL;
+		}
+
+		return FALSE;
+	}
+
+	g_debug ("Updated appstream file %s", local_appstream_path);
+
+	return TRUE;
+}
+
+static gboolean
+refresh_eos_extra_appstream (GsPlugin *plugin, GCancellable *cancellable,
+			     GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(SoupMessage) message = NULL;
+	g_autofree char *local_appstream_file = NULL;
+	const char *checksum = NULL;
+	guint status_code;
+
+	message = soup_message_new (SOUP_METHOD_GET,
+				    EOS_EXTRA_APPSTREAM_SHA256SUM);
+
+	status_code = soup_session_send_message (priv->soup_session, message);
+
+	if (status_code != SOUP_STATUS_OK) {
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+			     "Failed to access %s: %s",
+			     EOS_EXTRA_APPSTREAM_SHA256SUM,
+			     soup_status_get_phrase (status_code));
+		return FALSE;
+	}
+
+	local_appstream_file = g_build_filename (g_get_user_data_dir (),
+						 "app-info", "xmls",
+						 EOS_EXTRA_APPSTREAM,
+						 NULL);
+
+	checksum = message->response_body->data;
+
+	if (verify_file_checksum (local_appstream_file, checksum)) {
+		g_debug ("Local eos-extra appstream file is up to date");
+		return TRUE;
+	}
+
+	g_debug ("Updating the eos-extra appstream file...");
+
+	return update_eos_extra_appstream (plugin, local_appstream_file,
+					   checksum, cancellable, error);
 }
 
 static char *
@@ -957,7 +1082,14 @@ gs_plugin_refresh (GsPlugin *plugin,
 		   GCancellable *cancellable,
 		   GError **error)
 {
+	g_autoptr(GError) local_error = NULL;
+
 	reload_default_branches (plugin);
+
+	if (!refresh_eos_extra_appstream (plugin, cancellable, &local_error))
+		g_warning ("Failed to refresh eos-extra appstream file: %s",
+			   local_error->message);
+
 	return TRUE;
 }
 
