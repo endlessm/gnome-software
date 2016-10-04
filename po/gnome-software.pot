@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-13 03:13+0000\n"
+"POT-Creation-Date: 2016-10-04 03:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -395,13 +395,16 @@ msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
-#. TRANSLATORS: this is a button in the updates panel
-#. * that allows the app to be easily updated live
 #. TRANSLATORS: update the fw
 #. TRANSLATORS: button text
-#: ../src/gs-app-row.c:193 ../src/gs-app-row.c:200 ../src/gs-page.c:385
-#: ../src/gs-common.c:341
+#: ../src/gs-app-row.c:193 ../src/gs-page.c:385 ../src/gs-common.c:341
 msgid "Install"
+msgstr ""
+
+#. TRANSLATORS: this is a button in the updates panel
+#. * that allows the app to be easily updated live
+#: ../src/gs-app-row.c:200
+msgid "Update"
 msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
@@ -658,24 +661,24 @@ msgstr ""
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1048
+#: ../src/gs-plugin-loader.c:1042
 msgid "OS Updates"
 msgstr ""
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1053
+#: ../src/gs-plugin-loader.c:1047
 msgid "Includes performance, stability and security improvements."
 msgstr ""
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1729 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1723 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr ""
 
-#: ../src/gs-plugin-loader.c:1732
+#: ../src/gs-plugin-loader.c:1726
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -1546,12 +1549,12 @@ msgstr ""
 
 #. TRANSLATORS: all updates will be installed
 #: ../src/gs-shell-updates.c:497
-msgid "_Install All"
+msgid "U_pdate All"
 msgstr ""
 
 #. TRANSLATORS: this is an offline update
-#: ../src/gs-shell-updates.c:501 ../src/gs-shell-updates.c:1357
-msgid "Restart & _Install"
+#: ../src/gs-shell-updates.c:501
+msgid "_Restart & Update"
 msgstr ""
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
@@ -1608,6 +1611,10 @@ msgstr ""
 #. TRANSLATORS: button text
 #: ../src/gs-shell-updates.c:966
 msgid "Restart"
+msgstr ""
+
+#: ../src/gs-shell-updates.c:1357
+msgid "Restart & _Install"
 msgstr ""
 
 #: ../src/gs-shell-updates.c:1375
@@ -2842,10 +2849,10 @@ msgstr ""
 msgid "Utilities"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:989
+#: ../src/plugins/gs-plugin-eos.c:991
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:992
+#: ../src/plugins/gs-plugin-eos.c:994
 msgid "Framework for applications"
 msgstr ""
