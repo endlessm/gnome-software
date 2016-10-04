@@ -10,9 +10,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-27 03:17+0000\n"
-"PO-Revision-Date: 2016-09-02 17:27+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-04 03:39+0000\n"
+"PO-Revision-Date: 2016-10-04 03:39+0000\n"
+"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -401,14 +401,17 @@ msgstr "Batal"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
-#. TRANSLATORS: this is a button in the updates panel
-#. * that allows the app to be easily updated live
 #. TRANSLATORS: update the fw
 #. TRANSLATORS: button text
-#: ../src/gs-app-row.c:193 ../src/gs-app-row.c:200 ../src/gs-page.c:385
-#: ../src/gs-common.c:341
+#: ../src/gs-app-row.c:193 ../src/gs-page.c:385 ../src/gs-common.c:341
 msgid "Install"
 msgstr "Pasang"
+
+#. TRANSLATORS: this is a button in the updates panel
+#. * that allows the app to be easily updated live
+#: ../src/gs-app-row.c:200
+msgid "Update"
+msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily removed
@@ -1564,13 +1567,13 @@ msgstr "Terakhir diperiksa: %s"
 
 #. TRANSLATORS: all updates will be installed
 #: ../src/gs-shell-updates.c:497
-msgid "_Install All"
-msgstr "_Pasang Semua"
+msgid "U_pdate All"
+msgstr ""
 
 #. TRANSLATORS: this is an offline update
-#: ../src/gs-shell-updates.c:501 ../src/gs-shell-updates.c:1357
-msgid "Restart & _Install"
-msgstr "Start Ulang & _Pasang"
+#: ../src/gs-shell-updates.c:501
+msgid "_Restart & Update"
+msgstr ""
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: ../src/gs-shell-updates.c:838
@@ -1627,6 +1630,10 @@ msgstr "Jangan Sekarang"
 #: ../src/gs-shell-updates.c:966
 msgid "Restart"
 msgstr "Mulai Ulang"
+
+#: ../src/gs-shell-updates.c:1357
+msgid "Restart & _Install"
+msgstr "Start Ulang & _Pasang"
 
 #: ../src/gs-shell-updates.c:1375
 msgid "Check for updates"

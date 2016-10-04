@@ -3,6 +3,7 @@
 # This file is distributed under the same license as the PACKAGE package.
 # 
 # Translators:
+# Khaled Hosny <khaledhosny@eglug.org>, 2016
 # Muhannad Alrusayni <muhannad.alrusayni@gmail.com>, 2016
 # Roddy Shuler <roddy@endlessm.com>, 2016
 # safa1996alfulaij <safa1996alfulaij@gmail.com>, 2014
@@ -12,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-27 03:17+0000\n"
-"PO-Revision-Date: 2016-09-02 19:05+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-04 03:39+0000\n"
+"PO-Revision-Date: 2016-10-04 23:32+0000\n"
+"Last-Translator: Vicki Niu <vicki@endlessm.com>\n"
 "Language-Team: Arabic (http://www.transifex.com/endless-mobile-inc/gnome-software/language/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -130,7 +131,7 @@ msgstr "الختم الزمني لآخر التماس للتحديثات"
 
 #: ../data/org.gnome.software.gschema.xml.h:14
 msgid "The last upgrade notification timestamp"
-msgstr "الطابع الزمني لإشعار أحدث ترقية"
+msgstr "الختم الزمني لآخر ترقية"
 
 #: ../data/org.gnome.software.gschema.xml.h:15
 msgid "The timestamp of the first security update, cleared after update"
@@ -189,19 +190,19 @@ msgstr "اعرض عناصر في الواجهة الرسومية تُخبر ال
 
 #: ../data/org.gnome.software.gschema.xml.h:28
 msgid "Show the prompt to install nonfree software sources"
-msgstr "عرض موجه الأوامر لتثبيت مصادر البرامج غير المجانية"
+msgstr "اعرض محثًا لتثبيت مصادر البرمجيات غير الحرة"
 
 #: ../data/org.gnome.software.gschema.xml.h:29
 msgid "Show non-free software in search results"
-msgstr "عرض البرامج غير المجانية في نتائج البحث"
+msgstr "اعرض البرمجيات غير الحرة في نتائج البحث"
 
 #: ../data/org.gnome.software.gschema.xml.h:30
 msgid "The URI that explains nonfree and proprietary software"
-msgstr "URI (معرف الموارد الموحد) الذي يوضح برامج الملكية غير المجانية"
+msgstr "المسار الذي يشرح البرمجيات غير الحرة و المحتكرة"
 
 #: ../data/org.gnome.software.gschema.xml.h:31
 msgid "A list of non-free sources that can be optionally enabled"
-msgstr "قائمة المصادر غير المجانية التي يمكن تفعيلها اختيارياً"
+msgstr "قائمة المصادر غير الحرة التي يمكن تفعيلها اختياريًا"
 
 #: ../src/gs-app-folder-dialog.ui.h:1
 msgid "Add to Application Folder"
@@ -403,14 +404,17 @@ msgstr "ألغِ"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
-#. TRANSLATORS: this is a button in the updates panel
-#. * that allows the app to be easily updated live
 #. TRANSLATORS: update the fw
 #. TRANSLATORS: button text
-#: ../src/gs-app-row.c:193 ../src/gs-app-row.c:200 ../src/gs-page.c:385
-#: ../src/gs-common.c:341
+#: ../src/gs-app-row.c:193 ../src/gs-page.c:385 ../src/gs-common.c:341
 msgid "Install"
 msgstr "ثبّت"
+
+#. TRANSLATORS: this is a button in the updates panel
+#. * that allows the app to be easily updated live
+#: ../src/gs-app-row.c:200
+msgid "Update"
+msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily removed
@@ -1135,7 +1139,7 @@ msgstr "حرة"
 #. This refers to the license of the application
 #: ../src/gs-shell-details.ui.h:40
 msgid "Proprietary"
-msgstr "مملوك"
+msgstr "محتكرة"
 
 #. This refers to the license of the application
 #: ../src/gs-shell-details.ui.h:42
@@ -1178,7 +1182,7 @@ msgstr "يعني هذا أنه يمكن تشغيل البرمجية، ونسخه
 
 #: ../src/gs-shell-details.ui.h:53
 msgid "Proprietary Software"
-msgstr "برمجية مملوكة"
+msgstr "برمجية محتكرة"
 
 #: ../src/gs-shell-details.ui.h:54
 msgid ""
@@ -1451,24 +1455,24 @@ msgstr "التّطبيقات الإنتاجيّة المُزكّاة"
 #: ../src/gs-shell-overview.c:790
 msgid ""
 "Provides access to additional software, including web browsers and games."
-msgstr "يوفر لك الوصول إلى برامج إضافية، بما في ذلك متصفحات الإنترنت والألعاب."
+msgstr "يتيح الوصول لبرمجياتت إضافية، بما فيها متصفحات الوب و الألعاب."
 
 #. TRANSLATORS: this is the proprietary info bar
 #: ../src/gs-shell-overview.c:794
 msgid ""
 "Proprietary software has restrictions on use and access to source code."
-msgstr "توجد قيود على استخدام برامج الملكية والوصول إلى كود المصدر."
+msgstr "تضع البرمجيات المحتكرة قيودًا على استخدام الكود المصدري و الوصول إليه."
 
 #. TRANSLATORS: this is the clickable
 #. * link on the proprietary info bar
 #: ../src/gs-shell-overview.c:801 ../src/gs-sources-dialog.c:263
 msgid "Find out more…"
-msgstr "تعرف على المزيد..."
+msgstr "اطّلع على المزيد…"
 
 #. TRANSLATORS: button to turn on proprietary software sources
 #: ../src/gs-shell-overview.c:835
 msgid "Enable"
-msgstr "تفعيل"
+msgstr "فعّل"
 
 #. vim: set noexpandtab:
 #: ../src/gs-shell-overview.ui.h:1
@@ -1477,7 +1481,7 @@ msgstr "صفحة النّظرة العامّة"
 
 #: ../src/gs-shell-overview.ui.h:2
 msgid "Enable Proprietary Software Sources?"
-msgstr "هل تريد تفعيل مصادر برامج الملكية؟"
+msgstr "أأفعّل مصادر البرمجيات المحتكرة؟"
 
 #: ../src/gs-shell-overview.ui.h:3
 msgid "Categories"
@@ -1586,13 +1590,13 @@ msgstr "آخر التماس: %s"
 
 #. TRANSLATORS: all updates will be installed
 #: ../src/gs-shell-updates.c:497
-msgid "_Install All"
-msgstr "_ثبّتها كلها"
+msgid "U_pdate All"
+msgstr ""
 
 #. TRANSLATORS: this is an offline update
-#: ../src/gs-shell-updates.c:501 ../src/gs-shell-updates.c:1357
-msgid "Restart & _Install"
-msgstr "أعد التشغيل و_ثبّت"
+#: ../src/gs-shell-updates.c:501
+msgid "_Restart & Update"
+msgstr ""
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: ../src/gs-shell-updates.c:838
@@ -1649,6 +1653,10 @@ msgstr "ليس الآن"
 #: ../src/gs-shell-updates.c:966
 msgid "Restart"
 msgstr "أعد التشغيل"
+
+#: ../src/gs-shell-updates.c:1357
+msgid "Restart & _Install"
+msgstr "أعد التشغيل و_ثبّت"
 
 #: ../src/gs-shell-updates.c:1375
 msgid "Check for updates"
@@ -1767,12 +1775,12 @@ msgstr[5] "%s و%s مثبّتة"
 #. TRANSLATORS: nonfree software
 #: ../src/gs-sources-dialog.c:253
 msgid "Typically has restrictions on use and access to source code."
-msgstr "وتوجد قيود عادةً على الاستخدام والوصول إلى كود المصدر."
+msgstr "تضع عادة قيودًا على استخدام الكود المصدري و الوصول إليه."
 
 #. TRANSLATORS: list header
 #: ../src/gs-sources-dialog.c:274
 msgid "Proprietary Software Sources"
-msgstr "مصادر برامج الملكية"
+msgstr "مصادر البرمجيات المحتكرة"
 
 #: ../src/gs-sources-dialog.c:490 ../src/gs-sources-dialog.ui.h:12
 msgid "Remove Source"
@@ -1801,7 +1809,7 @@ msgstr "مصادر البرمجيّات"
 
 #: ../src/gs-sources-dialog.ui.h:3
 msgid "Additional Sources"
-msgstr "المصادر الإضافية"
+msgstr "مصادر إضافية"
 
 #: ../src/gs-sources-dialog.ui.h:4
 msgid ""
@@ -2202,7 +2210,7 @@ msgstr "بلا"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:429
 msgid "Mildly realistic characters in unsafe situations"
-msgstr "الشخصيات الأقل واقعيةً في الحالات غير الآمنة"
+msgstr "شخصيات واقعية معتدلة في حالات غير آمنة"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:432
@@ -2381,7 +2389,7 @@ msgstr "السلبية تجاه مجموعة من الأشخاص"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:531
 msgid "Discrimination designed to cause emotional harm"
-msgstr "تمييز مختلق لإلحاق الضرر العاطفي"
+msgstr "تمييز مفتعل للتسبب بضرر عاطفي"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:534
@@ -2837,7 +2845,7 @@ msgstr "السير الذاتية"
 #: ../src/plugins/gs-desktop-common.c:257
 msgctxt "Menu of Reference"
 msgid "Comics"
-msgstr "القصص المصورة"
+msgstr "القصص المصوّرة"
 
 #: ../src/plugins/gs-desktop-common.c:260
 msgctxt "Menu of Reference"
