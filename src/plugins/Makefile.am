@@ -48,6 +48,10 @@ plugin_LTLIBRARIES =					\
 	libgs_plugin_icons.la				\
 	libgs_plugin_ubuntuone.la
 
+if HAVE_EXTERNAL_APPSTREAM
+plugin_LTLIBRARIES += libgs_plugin_external-appstream.la
+endif
+
 if HAVE_SNAP
 plugin_LTLIBRARIES += libgs_plugin_snap.la
 endif
@@ -120,6 +124,12 @@ libgs_plugin_dpkg_la_SOURCES = gs-plugin-dpkg.c
 libgs_plugin_dpkg_la_LIBADD = $(GS_PLUGIN_LIBS)
 libgs_plugin_dpkg_la_LDFLAGS = -module -avoid-version
 libgs_plugin_dpkg_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
+
+libgs_plugin_external_appstream_la_SOURCES =		\
+	gs-plugin-external-appstream.c
+libgs_plugin_external_appstream_la_LIBADD = $(GS_PLUGIN_LIBS)
+libgs_plugin_external_appstream_la_LDFLAGS = -module -avoid-version
+libgs_plugin_external_appstream_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
 
 libgs_plugin_key_colors_la_SOURCES = gs-plugin-key-colors.c
 libgs_plugin_key_colors_la_LIBADD = $(GS_PLUGIN_LIBS)
