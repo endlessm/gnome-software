@@ -23,8 +23,12 @@
 
 #include <config.h>
 
+#include <errno.h>
+#include <glib/gstdio.h>
 #include <gnome-software.h>
 #include <gs-common.h>
+
+#define APPSTREAM_SYSTEM_DIR LOCALSTATEDIR "/cache/app-info/xmls"
 
 struct GsPluginData {
 	GSettings *settings;
@@ -60,6 +64,44 @@ should_update_appstream_file (const char *appstream_path,
 }
 
 static gboolean
+install_appstream (const char *appstream_file,
+		   const char *target_file_name,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	g_autoptr(GSubprocess) subprocess = NULL;
+	const char *argv[] = {"pkexec",
+			      LIBEXECDIR "/gnome-software-install-appstream",
+			      appstream_file, target_file_name, NULL};
+
+	g_debug ("Installing the appstream file %s in the system",
+		 appstream_file);
+
+	subprocess = g_subprocess_newv (argv,
+					G_SUBPROCESS_FLAGS_STDOUT_PIPE |
+					G_SUBPROCESS_FLAGS_STDIN_PIPE, error);
+
+	if (subprocess == NULL)
+		return FALSE;
+
+	return g_subprocess_wait_check (subprocess, cancellable, error);
+}
+
+static gboolean
+create_tmp_file (const char *tmp_file_tmpl,
+		 char **tmp_file_name,
+		 GError **error)
+{
+	gint handle = g_file_open_tmp (tmp_file_tmpl, tmp_file_name, error);
+
+	if (handle != -1) {
+		close (handle);
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static gboolean
 update_external_appstream (GsPlugin *plugin,
 			   const char *url,
 			   guint cache_age,
@@ -67,23 +109,36 @@ update_external_appstream (GsPlugin *plugin,
 			   GError **error)
 {
 	g_autofree char *file_name = g_path_get_basename (url);
-	g_autofree char *local_appstream_file =
-		g_build_filename (g_get_user_data_dir (), "app-info", "xmls",
-				  file_name, NULL);
+	g_autofree char *tmp_file_name = g_strdup_printf ("XXXXXX_%s",
+							  file_name);
+	g_autofree char *tmp_file = NULL;
+	guint status_code;
+	g_autofree char *target_file_path =
+		g_build_filename (APPSTREAM_SYSTEM_DIR, file_name, NULL);
 
-	if (!should_update_appstream_file (local_appstream_file, cache_age)) {
+	if (!should_update_appstream_file (target_file_path, cache_age)) {
 		g_debug ("Skipping updating external appstream file %s: "
 			 "cache age is older than file",
-			 local_appstream_file);
+			 target_file_path);
 		return TRUE;
 	}
 
-	if (!gs_plugin_download_file (plugin, NULL, url, local_appstream_file,
-				      cancellable, error)) {
+	/* Create a temporary file that will hold the contents of the appstream
+	 * file to avoid clashes with existing files */
+	if (!create_tmp_file (tmp_file_name, &tmp_file, error))
+		return FALSE;
+
+	if (!gs_plugin_download_file (plugin, NULL, url, tmp_file, cancellable,
+				      error)) {
 		return FALSE;
 	}
 
-	g_debug ("Updated appstream file %s", local_appstream_file);
+	g_debug ("Downloaded appstream file %s", tmp_file);
+
+	if (!install_appstream (tmp_file, file_name, cancellable, error))
+		return FALSE;
+
+	g_debug ("Installed appstream file %s as %s", tmp_file, file_name);
 
 	return TRUE;
 }
