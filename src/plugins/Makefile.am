@@ -131,9 +131,9 @@ libgs_plugin_dpkg_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
 
 libgs_plugin_external_appstream_la_SOURCES =		\
 	gs-plugin-external-appstream.c
-libgs_plugin_external_appstream_la_LIBADD = $(GS_PLUGIN_LIBS)
+libgs_plugin_external_appstream_la_LIBADD = $(GS_PLUGIN_LIBS) $(SOUP_LIBS)
 libgs_plugin_external_appstream_la_LDFLAGS = -module -avoid-version
-libgs_plugin_external_appstream_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS)
+libgs_plugin_external_appstream_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS) $(SOUP_CFLAGS)
 
 gnome-software-install-appstream: gnome-software-install-appstream.in Makefile
 	sed -e "s|@localstatedir[@]|$(localstatedir)|g" $< > $@

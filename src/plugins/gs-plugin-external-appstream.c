@@ -27,6 +27,10 @@
 #include <glib/gstdio.h>
 #include <gnome-software.h>
 #include <gs-common.h>
+#include <libsoup/soup.h>
+#include <locale.h>
+
+#define APPSTREAM_SYSTEM_DIR LOCALSTATEDIR "/cache/app-info/xmls"
 
 #define APPSTREAM_SYSTEM_DIR LOCALSTATEDIR "/cache/app-info/xmls"
 
@@ -43,6 +47,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	/* run it before the appstream plugin */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_BEFORE, "appstream");
+
+	g_debug ("appstream system dir: %s", APPSTREAM_SYSTEM_DIR);
 }
 
 void
@@ -101,6 +107,32 @@ create_tmp_file (const char *tmp_file_tmpl,
 	return FALSE;
 }
 
+static char *
+get_modification_date (const char *file_path)
+{
+	g_autoptr(GFile) file = NULL;
+	g_autoptr(GFileInfo) info = NULL;
+	char *mdate = NULL;
+	g_autoptr(GDateTime) date_time = NULL;
+	GTimeVal time_val;
+
+	file = g_file_new_for_path (file_path);
+	info = g_file_query_info (file,
+				  G_FILE_ATTRIBUTE_TIME_MODIFIED,
+				  G_FILE_QUERY_INFO_NONE,
+				  NULL,
+				  NULL);
+	if (info == NULL)
+		return NULL;
+
+	g_file_info_get_modification_time (info, &time_val);
+
+	date_time = g_date_time_new_from_timeval_local (&time_val);
+	mdate = g_date_time_format (date_time, "%a, %d %b %Y %H:%M:%S %Z");
+
+	return mdate;
+}
+
 static gboolean
 update_external_appstream (GsPlugin *plugin,
 			   const char *url,
@@ -108,6 +140,9 @@ update_external_appstream (GsPlugin *plugin,
 			   GCancellable *cancellable,
 			   GError **error)
 {
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GError) local_error = NULL;
+	g_autoptr(SoupMessage) msg = NULL;
 	g_autofree char *file_name = g_path_get_basename (url);
 	g_autofree char *tmp_file_name = g_strdup_printf ("XXXXXX_%s",
 							  file_name);
@@ -115,6 +150,8 @@ update_external_appstream (GsPlugin *plugin,
 	guint status_code;
 	g_autofree char *target_file_path =
 		g_build_filename (APPSTREAM_SYSTEM_DIR, file_name, NULL);
+	g_autofree char *local_mod_date = NULL;
+	SoupSession *soup_session;
 
 	if (!should_update_appstream_file (target_file_path, cache_age)) {
 		g_debug ("Skipping updating external appstream file %s: "
@@ -128,8 +165,51 @@ update_external_appstream (GsPlugin *plugin,
 	if (!create_tmp_file (tmp_file_name, &tmp_file, error))
 		return FALSE;
 
-	if (!gs_plugin_download_file (plugin, NULL, url, tmp_file, cancellable,
-				      error)) {
+	msg = soup_message_new (SOUP_METHOD_GET, url);
+
+	/* Set the If-Modified-Since header if the target file exists */
+	target_file_path = g_build_filename (APPSTREAM_SYSTEM_DIR, file_name,
+					     NULL);
+	local_mod_date = get_modification_date (target_file_path);
+
+	if (local_mod_date != NULL) {
+		g_debug ("Requesting contents of %s if modified since %s",
+			 url, local_mod_date);
+		soup_message_headers_append (msg->request_headers,
+					     "If-Modified-Since",
+					     local_mod_date);
+	}
+
+	soup_session = gs_plugin_get_soup_session (plugin);
+	status_code = soup_session_send_message (soup_session, msg);
+
+	if (status_code != SOUP_STATUS_OK) {
+		/* The temporary file will no longer be moved so remove it */
+		if (g_unlink (tmp_file) == -1)
+			g_debug ("Could not delete temporary file %s",
+				 tmp_file);
+
+		if (status_code == SOUP_STATUS_NOT_MODIFIED) {
+			g_debug ("Not updating %s has not modified since %s",
+				 target_file_path, local_mod_date);
+			return TRUE;
+		}
+
+		g_set_error (error, GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
+			     "Failed to download appstream file %s: %s",
+			     url, soup_status_get_phrase (status_code));
+		return FALSE;
+	}
+
+	/* A new version of the appstream file was retrieved so set the
+	 * contents in the temporary file we created */
+	if (!g_file_set_contents (tmp_file, msg->response_body->data,
+				  msg->response_body->length, &local_error)) {
+		g_set_error (error, GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_WRITE_FAILED,
+			     "Failed to create appstream file: %s",
+			     local_error->message);
 		return FALSE;
 	}
 
