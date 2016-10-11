@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-27 03:17+0000\n"
-"PO-Revision-Date: 2016-09-02 17:30+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-04 03:39+0000\n"
+"PO-Revision-Date: 2016-10-04 23:33+0000\n"
+"Last-Translator: Vicki Niu <vicki@endlessm.com>\n"
 "Language-Team: French (http://www.transifex.com/endless-mobile-inc/gnome-software/language/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -185,19 +185,19 @@ msgstr "Affiche quelques éléments d'interface montrant à l'utilisateur qu'une
 
 #: ../data/org.gnome.software.gschema.xml.h:28
 msgid "Show the prompt to install nonfree software sources"
-msgstr "Afficher l'invitation à installer les sources de logiciel non libres"
+msgstr "Afficher l'invite de commandes pour installer les sources logicielles non-libres"
 
 #: ../data/org.gnome.software.gschema.xml.h:29
 msgid "Show non-free software in search results"
-msgstr "Afficher les logiciels non libres dans les résultats de la recherche"
+msgstr "Afficher les logiciels non-libres dans les résultats de recherche"
 
 #: ../data/org.gnome.software.gschema.xml.h:30
 msgid "The URI that explains nonfree and proprietary software"
-msgstr "L'URI qui explique les logiciels non libres et propriétaires"
+msgstr "L'URI qui fournit une explication sur les logiciels propriétaires et non-libres"
 
 #: ../data/org.gnome.software.gschema.xml.h:31
 msgid "A list of non-free sources that can be optionally enabled"
-msgstr "Une liste de sources non libres qui peuvent être autorisées de manière optionnelle"
+msgstr "Une liste des sources non-libres qui peuvent être activées optionnellement"
 
 #: ../src/gs-app-folder-dialog.ui.h:1
 msgid "Add to Application Folder"
@@ -399,14 +399,17 @@ msgstr "Annuler"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
-#. TRANSLATORS: this is a button in the updates panel
-#. * that allows the app to be easily updated live
 #. TRANSLATORS: update the fw
 #. TRANSLATORS: button text
-#: ../src/gs-app-row.c:193 ../src/gs-app-row.c:200 ../src/gs-page.c:385
-#: ../src/gs-common.c:341
+#: ../src/gs-app-row.c:193 ../src/gs-page.c:385 ../src/gs-common.c:341
 msgid "Install"
 msgstr "Installer"
+
+#. TRANSLATORS: this is a button in the updates panel
+#. * that allows the app to be easily updated live
+#: ../src/gs-app-row.c:200
+msgid "Update"
+msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily removed
@@ -1431,33 +1434,33 @@ msgstr "Applications de bureautique recommandées"
 #: ../src/gs-shell-overview.c:790
 msgid ""
 "Provides access to additional software, including web browsers and games."
-msgstr "Fournit un accès à des logiciels additionnels, comme des navigateurs web et des jeux."
+msgstr "Fournit l'accès à des logiciels supplémentaires, dont des navigateurs Web et des jeux."
 
 #. TRANSLATORS: this is the proprietary info bar
 #: ../src/gs-shell-overview.c:794
 msgid ""
 "Proprietary software has restrictions on use and access to source code."
-msgstr "Les logiciels propriétaires souffrent de restrictions d'utilisation et d'accès au code source"
+msgstr "Les logiciels propriétaires ont des restrictions concernant l'utilisation et l'accès au code source."
 
 #. TRANSLATORS: this is the clickable
 #. * link on the proprietary info bar
 #: ../src/gs-shell-overview.c:801 ../src/gs-sources-dialog.c:263
 msgid "Find out more…"
-msgstr "En savoir plus..."
+msgstr "En savoir plus…"
 
 #. TRANSLATORS: button to turn on proprietary software sources
 #: ../src/gs-shell-overview.c:835
 msgid "Enable"
-msgstr "Autoriser"
+msgstr "Activer"
 
 #. vim: set noexpandtab:
 #: ../src/gs-shell-overview.ui.h:1
 msgid "Overview page"
-msgstr "Aperçu de la page"
+msgstr "Page d'aperçu"
 
 #: ../src/gs-shell-overview.ui.h:2
 msgid "Enable Proprietary Software Sources?"
-msgstr "Autoriser les sources de logiciel propriétaires ?"
+msgstr "Activer les sources logicielles propriétaires ?"
 
 #: ../src/gs-shell-overview.ui.h:3
 msgid "Categories"
@@ -1566,13 +1569,13 @@ msgstr "Dernière vérification : %s"
 
 #. TRANSLATORS: all updates will be installed
 #: ../src/gs-shell-updates.c:497
-msgid "_Install All"
-msgstr "_Installer tout"
+msgid "U_pdate All"
+msgstr ""
 
 #. TRANSLATORS: this is an offline update
-#: ../src/gs-shell-updates.c:501 ../src/gs-shell-updates.c:1357
-msgid "Restart & _Install"
-msgstr "Redémarrer et _installer"
+#: ../src/gs-shell-updates.c:501
+msgid "_Restart & Update"
+msgstr ""
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: ../src/gs-shell-updates.c:838
@@ -1629,6 +1632,10 @@ msgstr "Pas maintenant"
 #: ../src/gs-shell-updates.c:966
 msgid "Restart"
 msgstr "Redémarrer"
+
+#: ../src/gs-shell-updates.c:1357
+msgid "Restart & _Install"
+msgstr "Redémarrer et _installer"
 
 #: ../src/gs-shell-updates.c:1375
 msgid "Check for updates"
@@ -1727,12 +1734,12 @@ msgstr[1] "%s et %s installées"
 #. TRANSLATORS: nonfree software
 #: ../src/gs-sources-dialog.c:253
 msgid "Typically has restrictions on use and access to source code."
-msgstr "Ne souffre généralement d'une restriction d'utilisation et d'accès au code source."
+msgstr "A généralement des restrictions concernant l'utilisation et l'accès au code source."
 
 #. TRANSLATORS: list header
 #: ../src/gs-sources-dialog.c:274
 msgid "Proprietary Software Sources"
-msgstr "Sources de logiciels propriétaires"
+msgstr "Sources logicielles propriétaires"
 
 #: ../src/gs-sources-dialog.c:490 ../src/gs-sources-dialog.ui.h:12
 msgid "Remove Source"
@@ -2154,7 +2161,7 @@ msgstr "Aucune"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:429
 msgid "Mildly realistic characters in unsafe situations"
-msgstr "Des personnages vaguement réaliste dans des situations périlleuses"
+msgstr "Personnages moyennement réalistes en situation dangereuse"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:432
@@ -2333,7 +2340,7 @@ msgstr "Attitudes négatives vis à vis de groupes spécifiques de gens"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:531
 msgid "Discrimination designed to cause emotional harm"
-msgstr "Discrimination conçue pour causer un préjudice émotionnelle"
+msgstr "Discriminations destinées à blesser émotionnellement"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:534
