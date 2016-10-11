@@ -22,7 +22,6 @@
 #include <config.h>
 
 #include <gio/gdesktopappinfo.h>
-#include <flatpak.h>
 #include <libsoup/soup.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
@@ -34,8 +33,6 @@
 
 #include "gs-flatpak.h"
 
-#define FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX "remote:"
-#define FLATPAK_EXTRA_CONF_REMOTE_DEFAULT_BRANCH "default-branch"
 #define ENDLESS_ID_PREFIX "com.endlessm."
 
 #define EOS_IMAGE_VERSION_XATTR "user.eos-image-version"
@@ -55,7 +52,8 @@ struct GsPluginData
 	GHashTable *desktop_apps;
 	int applications_changed_id;
 	SoupSession *soup_session;
-	GHashTable *default_branches;
+	GHashTable *usr_default_branches;
+	GHashTable *sys_default_branches;
 	char *personality;
 	GsFlatpak	*usr_flatpak;
 	GsFlatpak	*sys_flatpak;
@@ -105,79 +103,27 @@ on_desktop_apps_changed (GDBusConnection *connection,
 		g_hash_table_destroy (apps);
 }
 
-static GKeyFile *
-load_branches_config_file (const char *path)
-{
-	g_autoptr(GKeyFile) config_file = g_key_file_new ();
-	g_autoptr(GError) error = NULL;
-
-	g_debug ("Reloading default branches from '%s'...", path);
-
-	if (!g_key_file_load_from_file (config_file, path,
-					G_KEY_FILE_NONE, &error)) {
-		g_debug ("Error loading Flatpak extra config file '%s': %s",
-			 path, error->message);
-		return NULL;
-	}
-
-	return g_steal_pointer (&config_file);
-}
-
 static void
-reload_default_branches (GsPlugin *plugin)
+reload_default_branches (GsPlugin *plugin, GsFlatpakScope scope)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GKeyFile) config_file = g_key_file_new ();
-	g_auto(GStrv) groups = NULL;
-	g_autofree char *extra_conf_file = NULL;
-	int idx;
-	const guint group_prefix_len =
-		strlen (FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX);;
+	GHashTable *default_branches = NULL;
+	GsFlatpak *flatpak = NULL;
 
-	g_hash_table_remove_all (priv->default_branches);
-
-	extra_conf_file = g_build_filename (SYSCONFDIR, "gnome-software",
-					    "flatpak-extra.conf", NULL);
-	config_file = load_branches_config_file (extra_conf_file);
-
-	if (!config_file) {
-		/* Try loading the file from our pkgdatadir instead */
-		g_free (extra_conf_file);
-		extra_conf_file = g_build_filename (GS_DATA, "flatpak-extra.conf", NULL);
-
-		config_file = load_branches_config_file (extra_conf_file);
+	if (scope == GS_FLATPAK_SCOPE_USER) {
+		flatpak = priv->usr_flatpak;
+		default_branches = priv->usr_default_branches;
+	} else {
+		flatpak = priv->sys_flatpak;
+		default_branches = priv->sys_default_branches;
 	}
 
-	if (!config_file)
-		return;
+	g_hash_table_remove_all (default_branches);
+	gs_flatpak_fill_default_branches (flatpak, default_branches);
 
-	groups = g_key_file_get_groups (config_file, NULL);
-	for (idx = 0; groups[idx] != NULL; idx++) {
-		const char *group = groups[idx];
-		char *remote = NULL;
-		char *default_branch = NULL;
-
-		if (!g_str_has_prefix (group,
-				       FLATPAK_EXTRA_CONF_REMOTE_GROUP_PREFIX))
-			continue;
-
-		default_branch = g_key_file_get_string (config_file,
-							group,
-							FLATPAK_EXTRA_CONF_REMOTE_DEFAULT_BRANCH,
-							NULL);
-
-		if (!default_branch)
-			continue;
-
-		remote = g_strdup (group + group_prefix_len);
-		g_hash_table_insert (priv->default_branches, remote,
-				     default_branch);
-		g_debug ("Found default branch '%s' for remote '%s'",
-			 default_branch, remote);
-	}
-
-	if (g_hash_table_size (priv->default_branches) == 0)
-		g_debug ("No default branches configured!");
+	if (g_hash_table_size (default_branches) == 0)
+		g_debug ("No default branches configured for %s!",
+			 scope == GS_FLATPAK_SCOPE_USER ? "USER" : "SYSTEM");
 }
 
 static char *
@@ -256,8 +202,10 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 	priv->desktop_apps = g_hash_table_new_full (g_str_hash, g_str_equal,
 						    g_free, NULL);
-	priv->default_branches = g_hash_table_new_full (g_str_hash, g_str_equal,
-							g_free, g_free);
+	priv->usr_default_branches = g_hash_table_new_full (g_str_hash, g_str_equal,
+							    g_free, g_free);
+	priv->sys_default_branches = g_hash_table_new_full (g_str_hash, g_str_equal,
+							    g_free, g_free);
 	priv->applications_changed_id =
 		g_dbus_connection_signal_subscribe (priv->session_bus,
 						    "org.gnome.Shell",
@@ -321,7 +269,8 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_clear_object (&priv->usr_flatpak);
 	g_clear_object (&priv->sys_flatpak);
 	g_hash_table_destroy (priv->desktop_apps);
-	g_hash_table_destroy (priv->default_branches);
+	g_hash_table_destroy (priv->usr_default_branches);
+	g_hash_table_destroy (priv->sys_default_branches);
 	g_free (priv->personality);
 }
 
@@ -778,7 +727,11 @@ gs_plugin_eos_blacklist_by_branch_if_needed (GsPlugin *plugin, GsApp *app)
 		return FALSE;
 
 	priv = gs_plugin_get_data (plugin);
-	default_branch = g_hash_table_lookup (priv->default_branches, origin);
+
+	if (gs_app_get_scope (app) == AS_APP_SCOPE_SYSTEM)
+		default_branch = g_hash_table_lookup (priv->sys_default_branches, origin);
+	else
+		default_branch = g_hash_table_lookup (priv->usr_default_branches, origin);
 
 	/* if we do not have a configured default branch for this repo then
 	 * do nothing */
@@ -980,7 +933,8 @@ gs_plugin_refresh (GsPlugin *plugin,
 		   GCancellable *cancellable,
 		   GError **error)
 {
-	reload_default_branches (plugin);
+	reload_default_branches (plugin, GS_FLATPAK_SCOPE_USER);
+	reload_default_branches (plugin, GS_FLATPAK_SCOPE_SYSTEM);
 	return TRUE;
 }
 
