@@ -93,20 +93,6 @@ install_appstream (const char *appstream_file,
 	return g_subprocess_wait_check (subprocess, cancellable, error);
 }
 
-static gboolean
-create_tmp_file (const char *tmp_file_tmpl,
-		 char **tmp_file_name,
-		 GError **error)
-{
-	gint handle = g_file_open_tmp (tmp_file_tmpl, tmp_file_name, error);
-
-	if (handle != -1) {
-		close (handle);
-		return TRUE;
-	}
-	return FALSE;
-}
-
 static char *
 get_modification_date (const char *file_path)
 {
@@ -141,17 +127,19 @@ update_external_appstream (GsPlugin *plugin,
 			   GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GError) local_error = NULL;
 	g_autoptr(SoupMessage) msg = NULL;
 	g_autofree char *file_name = g_path_get_basename (url);
-	g_autofree char *tmp_file_name = g_strdup_printf ("XXXXXX_%s",
+	g_autofree char *tmp_file_tmpl = g_strdup_printf ("XXXXXX_%s",
 							  file_name);
-	g_autofree char *tmp_file = NULL;
+	g_autoptr(GFile) tmp_file = NULL;
+	g_autoptr(GFileIOStream) iostream = NULL;
+	GOutputStream *outstream = NULL;
 	guint status_code;
 	g_autofree char *target_file_path =
 		g_build_filename (APPSTREAM_SYSTEM_DIR, file_name, NULL);
 	g_autofree char *local_mod_date = NULL;
 	SoupSession *soup_session;
+	const char *tmp_file_path = NULL;
 
 	if (!should_update_appstream_file (target_file_path, cache_age)) {
 		g_debug ("Skipping updating external appstream file %s: "
@@ -159,11 +147,6 @@ update_external_appstream (GsPlugin *plugin,
 			 target_file_path);
 		return TRUE;
 	}
-
-	/* Create a temporary file that will hold the contents of the appstream
-	 * file to avoid clashes with existing files */
-	if (!create_tmp_file (tmp_file_name, &tmp_file, error))
-		return FALSE;
 
 	msg = soup_message_new (SOUP_METHOD_GET, url);
 
@@ -184,11 +167,6 @@ update_external_appstream (GsPlugin *plugin,
 	status_code = soup_session_send_message (soup_session, msg);
 
 	if (status_code != SOUP_STATUS_OK) {
-		/* The temporary file will no longer be moved so remove it */
-		if (g_unlink (tmp_file) == -1)
-			g_debug ("Could not delete temporary file %s",
-				 tmp_file);
-
 		if (status_code == SOUP_STATUS_NOT_MODIFIED) {
 			g_debug ("Not updating %s has not modified since %s",
 				 target_file_path, local_mod_date);
@@ -202,23 +180,30 @@ update_external_appstream (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	/* A new version of the appstream file was retrieved so set the
-	 * contents in the temporary file we created */
-	if (!g_file_set_contents (tmp_file, msg->response_body->data,
-				  msg->response_body->length, &local_error)) {
-		g_set_error (error, GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_WRITE_FAILED,
-			     "Failed to create appstream file: %s",
-			     local_error->message);
+	/* Write the download contents into a temporary file that will be
+	 * moved into the system */
+	tmp_file = g_file_new_tmp (tmp_file_tmpl, &iostream, error);
+	if (tmp_file == NULL)
+		return FALSE;
+
+	tmp_file_path = g_file_get_path (tmp_file);
+	g_debug ("Downloaded appstream file %s", tmp_file_path);
+
+	outstream = g_io_stream_get_output_stream (G_IO_STREAM (iostream));
+	if (!g_output_stream_write_all (outstream, msg->response_body->data,
+					msg->response_body->length, NULL,
+					cancellable, error)) {
+		/* Try to clean up the temporary file if we could not write to
+		 * it */
+		g_file_delete (tmp_file, NULL, NULL);
 		return FALSE;
 	}
 
-	g_debug ("Downloaded appstream file %s", tmp_file);
 
-	if (!install_appstream (tmp_file, file_name, cancellable, error))
+	if (!install_appstream (tmp_file_path, file_name, cancellable, error))
 		return FALSE;
 
-	g_debug ("Installed appstream file %s as %s", tmp_file, file_name);
+	g_debug ("Installed appstream file %s as %s", tmp_file_path, file_name);
 
 	return TRUE;
 }
