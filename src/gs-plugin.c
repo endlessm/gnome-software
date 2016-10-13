@@ -1094,7 +1094,7 @@ gs_plugin_download_data (GsPlugin *plugin,
 		}
 		g_set_error (error,
 			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_FAILED,
+			     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
 			     "failed to download %s: %s",
 			     uri, str->str);
 		return NULL;
@@ -1152,7 +1152,7 @@ gs_plugin_download_file (GsPlugin *plugin,
 		}
 		g_set_error (error,
 			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_FAILED,
+			     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
 			     "failed to download %s: %s",
 			     uri, str->str);
 		return FALSE;
@@ -1266,6 +1266,46 @@ gs_plugin_cache_invalidate (GsPlugin *plugin)
 	g_return_if_fail (GS_IS_PLUGIN (plugin));
 
 	g_hash_table_remove_all (priv->cache);
+}
+
+/**
+ * gs_plugin_error_to_string:
+ * @error: a #GsPluginError, e.g. %GS_PLUGIN_ERROR_NO_NETWORK
+ *
+ * Converts the enumerated error to a string.
+ *
+ * Returns: a string, or %NULL for invalid
+ **/
+const gchar *
+gs_plugin_error_to_string (GsPluginError error)
+{
+	if (error == GS_PLUGIN_ERROR_FAILED)
+		return "failed";
+	if (error == GS_PLUGIN_ERROR_NOT_SUPPORTED)
+		return "not-supported";
+	if (error == GS_PLUGIN_ERROR_CANCELLED)
+		return "cancelled";
+	if (error == GS_PLUGIN_ERROR_NO_NETWORK)
+		return "no-network";
+	if (error == GS_PLUGIN_ERROR_NO_SECURITY)
+		return "no-security";
+	if (error == GS_PLUGIN_ERROR_NO_SPACE)
+		return "no-space";
+	if (error == GS_PLUGIN_ERROR_AUTH_REQUIRED)
+		return "auth-required";
+	if (error == GS_PLUGIN_ERROR_AUTH_INVALID)
+		return "auth-invalid";
+	if (error == GS_PLUGIN_ERROR_PIN_REQUIRED)
+		return "pin-required";
+	if (error == GS_PLUGIN_ERROR_ACCOUNT_SUSPENDED)
+		return "account-suspended";
+	if (error == GS_PLUGIN_ERROR_ACCOUNT_DEACTIVATED)
+		return "account-deactivated";
+	if (error == GS_PLUGIN_ERROR_PLUGIN_DEPSOLVE_FAILED)
+		return "plugin-depsolve-failed";
+	if (error == GS_PLUGIN_ERROR_DOWNLOAD_FAILED)
+		return "download-failed";
+	return NULL;
 }
 
 static void

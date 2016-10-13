@@ -395,6 +395,13 @@ AC_ARG_WITH([systemd-systemunitdir],
             [systemdunitdir=`$PKG_CONFIG --variable=systemdsystemunitdir systemd`])
 AC_SUBST([systemdunitdir])
 
+# External appstream
+AC_ARG_ENABLE(external-appstream,
+              [AS_HELP_STRING([--enable-external-appstream],
+                              [enable External Appstream support [default=yes]])],,
+              enable_external_appstream=yes)
+AM_CONDITIONAL(HAVE_EXTERNAL_APPSTREAM, test "x$enable_external_appstream" = "xyes")
+
 GLIB_TESTS
 
 dnl ---------------------------------------------------------------------------
@@ -449,4 +456,5 @@ echo "
         ODRS support:              ${enable_odrs}
         Webapps support:           ${enable_webapps}
         Ubuntu Reviews support:    ${enable_ubuntu_reviews}
+        Ext. appstream support:    ${enable_external_appstream}
 "

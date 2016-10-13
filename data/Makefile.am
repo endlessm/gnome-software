@@ -39,16 +39,17 @@ install-sample-data:
 	rm fedora-20-icons.tar.gz; \
 	cd -
 
+
 polkit_rulesdir = $(datadir)/polkit-1/rules.d
 polkit_rules_DATA =					\
 	com.endlessm.SystemExternalApps.rules
 
 polkit_policydir = $(datadir)/polkit-1/actions
-polkit_policy_in_files = com.endlessm.SystemExternalApps.policy.in
+polkit_policy_in_files = com.endlessm.SystemExternalApps.policy.in org.gnome.software.external-appstream.policy.in
 polkit_policy_DATA = $(polkit_policy_in_files:.policy.in=.policy)
 
-$(polkit_policy_DATA): $(polkit_policy_in_files) Makefile
-	sed -e "s|@libexecdir[@]|$(libexecdir)|g" $< > $@
+%.policy: %.policy.in Makefile
+	$(AM_V_GEN) sed -e "s|@libexecdir[@]|$(libexecdir)|g" $< > $@
 
 tmpfilesdir = $(prefix)/lib/tmpfiles.d
 dist_tmpfiles_DATA =					\
@@ -64,11 +65,13 @@ $(systemdunit_DATA): $(systemdunit_in_files) Makefile
 EXTRA_DIST =						\
 	$(gsettings_SCHEMAS)				\
 	com.endlessm.SystemExternalApps.policy.in	\
-	eos-external-apps-enable.service.in
+	eos-external-apps-enable.service.in		\
+	org.gnome.software.external-appstream.policy.in
 
 CLEANFILES =						\
 	com.endlessm.SystemExternalApps.policy		\
-	eos-external-apps-enable.service
+	eos-external-apps-enable.service		\
+	org.gnome.software.external-appstream.policy
 
 MAINTAINERCLEANFILES =					\
 	*~						\

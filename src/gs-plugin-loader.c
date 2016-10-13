@@ -3690,7 +3690,7 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 		if (dep_loop_check++ > 100) {
 			g_set_error (error,
 				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_FAILED,
+				     GS_PLUGIN_ERROR_PLUGIN_DEPSOLVE_FAILED,
 				     "got stuck in dep loop");
 			return FALSE;
 		}
@@ -3758,7 +3758,7 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 		if (dep_loop_check++ > 100) {
 			g_set_error (error,
 				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_FAILED,
+				     GS_PLUGIN_ERROR_PLUGIN_DEPSOLVE_FAILED,
 				     "got stuck in priority loop");
 			return FALSE;
 		}
