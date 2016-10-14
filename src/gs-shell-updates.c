@@ -768,7 +768,7 @@ gs_shell_updates_get_new_updates (GsShellUpdates *self)
 	if (g_settings_get_boolean (self->settings, "download-updates"))
 		refresh_flags |= GS_PLUGIN_REFRESH_FLAGS_PAYLOAD;
 	gs_plugin_loader_refresh_async (self->plugin_loader,
-					10 * 60,
+					0,
 					refresh_flags,
 					self->cancellable_refresh,
 					(GAsyncReadyCallback) gs_shell_updates_refresh_cb,
