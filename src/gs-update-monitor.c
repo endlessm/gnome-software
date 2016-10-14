@@ -326,15 +326,23 @@ static void
 check_updates (GsUpdateMonitor *monitor)
 {
 	gint64 tmp;
+	gboolean refresh_on_metered;
 	g_autoptr(GDateTime) last_refreshed = NULL;
 	g_autoptr(GDateTime) now_refreshed = NULL;
+	GsPluginRefreshFlags refresh_flags = GS_PLUGIN_REFRESH_FLAGS_METADATA;
 
 	/* we don't know the network state */
 	if (monitor->network_monitor == NULL)
 		return;
 
-	/* never refresh when offline or on mobile connections */
-	if (!g_network_monitor_get_network_available (monitor->network_monitor) ||
+	/* never check for updates when offline */
+	if (!g_network_monitor_get_network_available (monitor->network_monitor))
+		return;
+
+	refresh_on_metered = g_settings_get_boolean (monitor->settings,
+						     "refresh-when-metered");
+
+	if (!refresh_on_metered &&
 	    g_network_monitor_get_network_metered (monitor->network_monitor))
 		return;
 
@@ -368,14 +376,16 @@ check_updates (GsUpdateMonitor *monitor)
 	g_settings_set (monitor->settings, "check-timestamp", "x",
 			g_date_time_to_unix (now_refreshed));
 
-	/* NOTE: this doesn't actually refresh the cache, it actually just checks
-	 * for updates (which might happen to also refresh the cache as a side
-	 * effect) and then downloads new packages */
-	g_debug ("Refreshing cache");
+	if (g_settings_get_boolean (monitor->settings, "download-updates")) {
+		g_debug ("Refreshing for metadata and payload");
+		refresh_flags |= GS_PLUGIN_REFRESH_FLAGS_PAYLOAD;
+	} else {
+		g_debug ("Refreshing for metadata only");
+	}
+
 	gs_plugin_loader_refresh_async (monitor->plugin_loader,
 					60 * 60 * 24,
-					GS_PLUGIN_REFRESH_FLAGS_METADATA |
-					GS_PLUGIN_REFRESH_FLAGS_PAYLOAD,
+					refresh_flags,
 					monitor->cancellable,
 					refresh_cache_finished_cb,
 					monitor);
