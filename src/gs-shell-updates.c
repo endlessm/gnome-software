@@ -741,7 +741,7 @@ gs_shell_updates_get_new_updates (GsShellUpdates *self)
 	self->cancellable_refresh = g_cancellable_new ();
 
 	gs_plugin_loader_refresh_async (self->plugin_loader,
-					10 * 60,
+					0,
 					GS_PLUGIN_REFRESH_FLAGS_INTERACTIVE |
 					GS_PLUGIN_REFRESH_FLAGS_METADATA |
 					GS_PLUGIN_REFRESH_FLAGS_PAYLOAD,
