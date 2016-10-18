@@ -428,8 +428,10 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	    gs_app_get_state (app) == AS_APP_STATE_UPDATABLE_LIVE)
 		return FALSE;
 
-	return (g_strcmp0 (priv->personality, "es_GT") == 0) &&
-		(g_strcmp0 (id, "org.openarena.Openarena.desktop") == 0);
+	return ((g_strcmp0 (priv->personality, "es_GT") == 0) &&
+	        (g_strcmp0 (id, "org.openarena.Openarena.desktop") == 0)) ||
+	       ((g_strcmp0 (priv->personality, "zh_CN") == 0) &&
+	        g_str_has_prefix (id, "com.endlessm.encyclopedia"));
 }
 
 static gboolean
