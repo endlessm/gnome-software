@@ -35,7 +35,7 @@ try:
     search_page = app.child('Search page')
     details_page = app.child('Details page')
     install_button = details_page.child('Install')
-    remove_button = details_page.child('Remove')
+    remove_button = details_page.child('Uninstall')
 
     search_page_listbox = search_page.child(roleName='list box')
 
@@ -114,7 +114,7 @@ try:
             .child(roleName='push button', name='History')
             .states.contains(pyatspi.STATE_VISIBLE))
     assert (root.application(app_name).child('Details page')
-            .child(roleName='push button', name='Website')
+            .child(roleName='push button', name='Developer Website')
             .states.contains(pyatspi.STATE_VISIBLE))
 
     if install_button.showing:
