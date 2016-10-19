@@ -764,12 +764,19 @@ gs_plugin_update_app (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	if (!gs_app_is_installed (ext_runtime) &&
-	    !gs_plugin_upgrade_external_runtime (plugin, app, ext_runtime,
-						 cancellable, error)) {
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+	/* We also verify if it is already installed here because this may be
+	 * just the headless app's update */
+	if (!gs_app_is_installed (ext_runtime)) {
+		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 
-		return FALSE;
+		if (!gs_plugin_upgrade_external_runtime (plugin, app,
+							 ext_runtime,
+							 cancellable,
+							 error)) {
+			gs_app_set_state_recover (app);
+
+			return FALSE;
+		}
 	}
 
 	g_debug ("Updating %s", gs_app_get_unique_id (app));
