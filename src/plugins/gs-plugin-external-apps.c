@@ -457,6 +457,23 @@ force_set_app_state (GsApp *app, AsAppState state)
 	gs_app_set_state (app, state);
 }
 
+static gboolean
+refine_ext_runtime_state (GsPlugin *plugin,
+			  GsApp *ext_runtime,
+			  GCancellable *cancellable)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	if (gs_flatpak_is_installed (priv->sys_flatpak, ext_runtime,
+				     cancellable, NULL)) {
+		force_set_app_state (ext_runtime, AS_APP_STATE_INSTALLED);
+		return TRUE;
+	}
+
+	force_set_app_state (ext_runtime, AS_APP_STATE_UNKNOWN);
+	return FALSE;
+}
+
 gboolean
 gs_plugin_refine_app (GsPlugin *plugin,
 		      GsApp *app,
@@ -484,6 +501,8 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	if (!ext_runtime)
 		return TRUE;
 
+	refine_ext_runtime_state (plugin, ext_runtime, cancellable);
+
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 
 	g_debug ("Refining external app %s", gs_app_get_unique_id (app));
@@ -510,7 +529,8 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	ext_runtime_available = ext_runtime_is_reachable (plugin, ext_runtime);
 
 	/* Verify that the cached external runtime is really installed */
-	if (installed_runtime && gs_app_is_installed (installed_runtime)) {
+	if (installed_runtime &&
+	    refine_ext_runtime_state (plugin, installed_runtime, cancellable)) {
 		/* Since the external runtime is different than the installed
 		 * one and its reachable, then there is an update to be
 		 * performed */
