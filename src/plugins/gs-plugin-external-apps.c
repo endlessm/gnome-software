@@ -639,39 +639,57 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		      GError **error)
 {
 	GsApp *ext_runtime;
-	GsPluginData *priv;
+	const char *runtime_id;
 	GsFlatpak *flatpak = NULL;
+	g_autoptr(GError) local_error = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
-	gs_app_set_state (app, AS_APP_STATE_REMOVING);
+	g_debug ("Removing %s", gs_app_get_unique_id (app));
 
-	priv = gs_plugin_get_data (plugin);
+	/* we remove the app before its external runtime because if the
+	 * removal fails for some reason we still have a working app */
+	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
+	if (!gs_flatpak_app_remove (flatpak, app, cancellable, error))
+		return FALSE;
+
+	g_debug ("Successfully removed app %s", gs_app_get_unique_id (app));
 
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
-
 	if (!ext_runtime) {
 		g_debug ("External app '%s' has no external runtime to be"
 			 "removed", gs_app_get_unique_id (app));
-	} else if (gs_app_get_state (ext_runtime) == AS_APP_STATE_INSTALLED ||
-		   gs_app_get_state (ext_runtime) == AS_APP_STATE_UPDATABLE) {
-		g_autoptr(GError) local_error = NULL;
-
-		if (!gs_flatpak_app_remove (priv->sys_flatpak, ext_runtime,
-					    cancellable, &local_error)) {
-			g_debug ("Cannot remove '%s': %s. Will try to "
-				 "remove app '%s'.",
-				 gs_app_get_unique_id (ext_runtime),
-				 local_error->message,
-				 gs_app_get_unique_id (app));
-		}
+		return TRUE;
 	}
 
-	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
-	return gs_flatpak_app_remove (flatpak, app, cancellable, error);
+	/* we need to retrieve the installed runtime, not the one specified
+	 * by the appstream, which can be a new version */
+	runtime_id = gs_app_get_id (ext_runtime);
+	ext_runtime = get_installed_ext_runtime (plugin, runtime_id);
+	if (!ext_runtime || !gs_app_is_installed (ext_runtime)) {
+		g_debug ("External app '%s' has no installed external runtime "
+			 "to be removed", gs_app_get_unique_id (app));
+		return TRUE;
+	}
+
+	g_debug ("Removing external runtime %s",
+		 gs_app_get_unique_id (ext_runtime));
+
+	if (!remove_external_runtime (ext_runtime, cancellable, &local_error)) {
+		g_debug ("Removed app %s but cannot remove external runtime "
+			 "'%s': %s.", gs_app_get_unique_id (app),
+			 gs_app_get_unique_id (ext_runtime),
+			 local_error->message);
+		return TRUE;
+	}
+
+	g_debug ("Successfully removed external runtime %s",
+		 gs_app_get_unique_id (ext_runtime));
+
+	return TRUE;
 }
 
 static gboolean
