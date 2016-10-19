@@ -533,16 +533,14 @@ gs_plugin_app_install (GsPlugin *plugin,
 	g_autofree char *runtime = NULL;
 	g_autofree char *url = NULL;
 	GsApp *ext_runtime;
-	GsPluginData *priv;
 	GsFlatpak *flatpak = NULL;
 	gboolean ret = FALSE;
+	g_autoptr(GError) local_error = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
-
-	priv = gs_plugin_get_data (plugin);
 
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
 
@@ -557,47 +555,22 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 
-	if (gs_app_get_state (ext_runtime) == AS_APP_STATE_UNKNOWN &&
-	    !gs_plugin_install_ext_runtime (plugin, app, ext_runtime,
-					    cancellable, error)) {
-		return FALSE;
-	}
+	if (!gs_app_is_installed (ext_runtime)) {
+		if (!gs_plugin_install_ext_runtime (plugin, app, ext_runtime,
+						    cancellable,
+						    &local_error)) {
+			gs_app_set_state_recover (app);
 
-	switch (gs_app_get_state (ext_runtime)) {
-	case AS_APP_STATE_INSTALLED:
-		g_debug ("App asset '%s' is already installed",
-			 gs_app_get_unique_id (ext_runtime));
-		break;
-
-	case AS_APP_STATE_UPDATABLE:
-		g_debug ("Updating '%s'", gs_app_get_unique_id (ext_runtime));
-
-		if (!gs_flatpak_update_app (priv->usr_flatpak, ext_runtime,
-					    cancellable, error)) {
-			g_debug ("Failed to update '%s'",
-				 gs_app_get_unique_id (ext_runtime));
+			/* TRANSLATORS: this an error we show the user when an
+			 * external app could not be installed */
+			g_set_error (error, GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_FAILED,
+				     _("Failed to download the application. "
+				       "Please try installing again later."));
+			g_debug ("Error installing external runtime: %s",
+				 local_error->message);
 			return FALSE;
 		}
-		break;
-
-	case AS_APP_STATE_AVAILABLE:
-		g_debug ("Installing '%s'", gs_app_get_unique_id (ext_runtime));
-		ret = gs_flatpak_app_install (priv->sys_flatpak, ext_runtime,
-					      cancellable, error);
-
-		if (!ret) {
-			g_debug ("Failed to install '%s'",
-				 gs_app_get_unique_id (ext_runtime));
-			return FALSE;
-		}
-
-		break;
-
-	case AS_APP_STATE_UNKNOWN:
-	default:
-		/* In case we may end up here somehow, just let the situation
-		 * be dealt with in the check for the 'installed' state below */
-		break;
 	}
 
 	if (g_cancellable_is_cancelled (cancellable)) {
@@ -607,20 +580,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 		return TRUE;
 	}
 
-	if (gs_app_get_state (ext_runtime) != AS_APP_STATE_INSTALLED) {
-		gs_app_set_state (app, gs_app_get_state (ext_runtime));
-		g_set_error (error, GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_NOT_SUPPORTED,
-			     "Could not install external app '%s' because its "
-			     "extension runtime '%s' is not installed",
-			     gs_app_get_unique_id (app),
-			     gs_app_get_unique_id (ext_runtime));
-		return FALSE;
-	}
-
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
-	if (!gs_flatpak_app_install (flatpak, app, cancellable, error)) {
-		g_debug ("Failed to install '%s'", gs_app_get_unique_id (app));
+	if (gs_flatpak_is_installed (flatpak, app, cancellable, NULL)) {
+		g_debug ("External app %s is already installed. "
+			 "Skipping installation and marking as installed.",
+			 gs_app_get_unique_id (app));
+		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	} else if (!gs_flatpak_app_install (flatpak, app, cancellable, error)) {
 		return FALSE;
 	}
 
