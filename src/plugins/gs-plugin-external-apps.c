@@ -492,14 +492,18 @@ gs_plugin_install_ext_runtime (GsPlugin *plugin,
 			       GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GError *local_error;
 
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 	gs_app_set_progress (app, 50);
 
 	if (!build_and_install_external_runtime (ext_runtime,
-						 cancellable, error)) {
+						 cancellable, &local_error)) {
 		g_debug ("Failed to build and install external "
-			 "runtime '%s'", gs_app_get_unique_id (ext_runtime));
+			 "runtime '%s': %s",
+			 gs_app_get_unique_id (ext_runtime),
+			 local_error->message);
+		g_propagate_error (error, local_error);
 		return FALSE;
 	}
 
