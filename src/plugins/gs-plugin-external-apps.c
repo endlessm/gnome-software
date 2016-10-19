@@ -24,6 +24,7 @@
 #include <config.h>
 #include <flatpak.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <gnome-software.h>
 #include <json-glib/json-glib.h>
 #include <string.h>
@@ -763,6 +764,7 @@ gs_plugin_update_app (GsPlugin *plugin,
 {
 	GsPluginData *priv;
 	g_autofree char *runtime_id = NULL;
+	g_autoptr(GError) local_error = NULL;
 	GsApp *ext_runtime;
 
 	/* only process this app if was created by this plugin */
@@ -791,8 +793,19 @@ gs_plugin_update_app (GsPlugin *plugin,
 		if (!gs_plugin_upgrade_external_runtime (plugin, app,
 							 ext_runtime,
 							 cancellable,
-							 error)) {
+							 &local_error)) {
 			gs_app_set_state_recover (app);
+
+			/* TRANSLATORS: this an error we show the user when an
+			 * external app could not be upgraded */
+			g_set_error (error, GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_FAILED,
+				     _("Failed to download the application. "
+				       "Please try updating again later."));
+
+			g_debug ("Error upgrading external runtime %s: %s",
+				 gs_app_get_unique_id (ext_runtime),
+				 local_error->message);
 
 			return FALSE;
 		}
