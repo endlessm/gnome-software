@@ -73,6 +73,11 @@ gs_plugin_initialize (GsPlugin *plugin)
 						     TMP_ASSSETS_PREFIX,
 						     NULL);
 
+	/* XXX: we do not expect downloaded updates when using this plugin but
+	 * this should be configured in a more independent way */
+	gs_flatpak_set_download_updates (priv->usr_flatpak, FALSE);
+	gs_flatpak_set_download_updates (priv->sys_flatpak, FALSE);
+
 	/* Run plugin before the flatpak ones because we need them to install
 	 * the app's headless part first */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_BEFORE, "flatpak-system");

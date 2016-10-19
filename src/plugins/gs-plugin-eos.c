@@ -278,6 +278,11 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	priv->usr_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
 	priv->sys_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_SYSTEM);
+
+	/* XXX: we do not expect downloaded updates when using this plugin but
+	 * this should be configured in a more independent way */
+	gs_flatpak_set_download_updates (priv->usr_flatpak, FALSE);
+	gs_flatpak_set_download_updates (priv->sys_flatpak, FALSE);
 }
 
 /**
