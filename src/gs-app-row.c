@@ -364,20 +364,7 @@ gs_app_row_refresh (GsAppRow *app_row)
 	}
 
 	/* installed tag */
-	if (!priv->show_buttons) {
-		switch (gs_app_get_state (priv->app)) {
-		case AS_APP_STATE_UPDATABLE:
-		case AS_APP_STATE_UPDATABLE_LIVE:
-		case AS_APP_STATE_INSTALLED:
-			gtk_widget_set_visible (priv->label_installed, TRUE);
-			break;
-		default:
-			gtk_widget_set_visible (priv->label_installed, FALSE);
-			break;
-		}
-	} else {
-		gtk_widget_set_visible (priv->label_installed, FALSE);
-	}
+	gtk_widget_set_visible (priv->label_installed, FALSE);
 
 	/* name */
 	if (g_strcmp0 (gs_app_get_branch (priv->app), "master") == 0) {
