@@ -359,7 +359,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 			else
 				gtk_style_context_add_class (gtk_widget_get_style_context (self->button_remove), "destructive-action");
 			/* TRANSLATORS: button text in the header when an application can be erased */
-			gtk_button_set_label (GTK_BUTTON (self->button_remove), _("_Remove"));
+			gtk_button_set_label (GTK_BUTTON (self->button_remove), _("_Uninstall"));
 			break;
 		case AS_APP_STATE_QUEUED_FOR_INSTALL:
 			gtk_widget_set_visible (self->button_remove, TRUE);
