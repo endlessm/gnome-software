@@ -24,6 +24,7 @@
 #include <config.h>
 #include <flatpak.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <gnome-software.h>
 #include <json-glib/json-glib.h>
 #include <string.h>
@@ -425,6 +426,55 @@ gs_plugin_get_gs_flatpak_for_app (GsPlugin *plugin,
 	return priv->usr_flatpak;
 }
 
+static gboolean
+ext_runtime_is_reachable (GsPlugin *plugin, GsApp *runtime)
+{
+	g_autoptr(SoupMessage) msg = NULL;
+	guint status_code;
+	SoupSession *session = gs_plugin_get_soup_session (plugin);
+	const char *url = gs_app_get_metadata_item (runtime, METADATA_URL);
+
+	if (!url)
+		return FALSE;
+
+	msg = soup_message_new (SOUP_METHOD_HEAD, url);
+	status_code = soup_session_send_message (session, msg);
+
+	g_debug ("External runtime %s access status: %u", url, status_code);
+
+	return (status_code == SOUP_STATUS_OK);
+}
+
+static void
+force_set_app_state (GsApp *app, AsAppState state)
+{
+	/* This whole function is to avoid having to always set the state
+	 * to unknown before setting it to the right one throughout the code */
+	AsAppState current = gs_app_get_state (app);
+	if (current == state)
+		return;
+
+	gs_app_set_state (app, AS_APP_SCOPE_UNKNOWN);
+	gs_app_set_state (app, state);
+}
+
+static gboolean
+refine_ext_runtime_state (GsPlugin *plugin,
+			  GsApp *ext_runtime,
+			  GCancellable *cancellable)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	if (gs_flatpak_is_installed (priv->sys_flatpak, ext_runtime,
+				     cancellable, NULL)) {
+		force_set_app_state (ext_runtime, AS_APP_STATE_INSTALLED);
+		return TRUE;
+	}
+
+	force_set_app_state (ext_runtime, AS_APP_STATE_UNKNOWN);
+	return FALSE;
+}
+
 gboolean
 gs_plugin_refine_app (GsPlugin *plugin,
 		      GsApp *app,
@@ -433,8 +483,11 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		      GError **error)
 {
 	GsApp *ext_runtime;
+	GsApp *installed_runtime;
 	const char *metadata = NULL;
 	GsFlatpak *flatpak = NULL;
+	const char *ext_runtime_id;
+	gboolean ext_runtime_available;
 
 	/* We cache all runtimes because an external runtime may have been
 	 * adopted by the flatpak plugins */
@@ -449,6 +502,8 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	if (!ext_runtime)
 		return TRUE;
 
+	refine_ext_runtime_state (plugin, ext_runtime, cancellable);
+
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 
 	g_debug ("Refining external app %s", gs_app_get_unique_id (app));
@@ -460,26 +515,55 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	/* If the app is not installed, we don't need to refine its status
-	 * based on the external runtime */
+	/* If the app is not installed then we don't have to refine any further
+	 * info */
 	if (!gs_app_is_installed (app))
 		return TRUE;
 
-	if (gs_app_get_state (ext_runtime) != AS_APP_STATE_INSTALLED) {
-		const char *ext_runtime_id = gs_app_get_id (ext_runtime);
-		GsApp *installed_runtime;
-		installed_runtime = get_installed_ext_runtime (plugin,
-							       ext_runtime_id);
+	/* If the external runtime is installed then there is nothing else to
+	 * do as its headless app has already been refined and is up to date*/
+	if (gs_app_is_installed (ext_runtime))
+		return TRUE;
 
-		/* verify the cached external runtime is really installed */
-		if (installed_runtime &&
-		    gs_app_is_installed (installed_runtime)) {
-			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-		} else {
-			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	ext_runtime_id = gs_app_get_id (ext_runtime);
+	installed_runtime = get_installed_ext_runtime (plugin, ext_runtime_id);
+	ext_runtime_available = ext_runtime_is_reachable (plugin, ext_runtime);
+
+	/* Verify that the cached external runtime is really installed */
+	if (installed_runtime &&
+	    refine_ext_runtime_state (plugin, installed_runtime, cancellable)) {
+		/* Since the external runtime is different than the installed
+		 * one and its reachable, then there is an update to be
+		 * performed */
+		if (ext_runtime_available) {
+			g_debug ("External app %s has a new external runtime "
+				 "available. Setting its state to "
+				 "updatable-live.", gs_app_get_unique_id (app));
+			force_set_app_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+			return TRUE;
 		}
+		force_set_app_state (app, AS_APP_STATE_INSTALLED);
+	} else if (!ext_runtime_available) {
+		/* If the app has no external runtime installed or available
+		 * for download and this refine was not requested by the
+		 * details view, then we hide it as it will not be usable */
+		if ((flags & GS_PLUGIN_REFINE_FLAGS_DETAILS_VIEW) == 0) {
+			g_debug ("External app %s has no external runtime "
+				 "available or installed. Hiding it with "
+				 "'state unknown'.",
+				 gs_app_get_unique_id (app));
+			force_set_app_state (app, AS_APP_STATE_UNKNOWN);
+			return TRUE;
+		}
+
+		g_debug ("External app %s has no external runtime available or "
+			 "installed, but not hiding it since the request is "
+			 "for the details view.", gs_app_get_unique_id (app));
+	} else {
+		g_debug ("External app %s doesn't have its runtime installed "
+			 "but it is reachable. Setting its state to available.",
+			 gs_app_get_unique_id (app));
+		force_set_app_state (app, AS_APP_STATE_AVAILABLE);
 	}
 
 	return TRUE;
@@ -493,14 +577,18 @@ gs_plugin_install_ext_runtime (GsPlugin *plugin,
 			       GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GError *local_error;
 
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 	gs_app_set_progress (app, 50);
 
 	if (!build_and_install_external_runtime (ext_runtime,
-						 cancellable, error)) {
+						 cancellable, &local_error)) {
 		g_debug ("Failed to build and install external "
-			 "runtime '%s'", gs_app_get_unique_id (ext_runtime));
+			 "runtime '%s': %s",
+			 gs_app_get_unique_id (ext_runtime),
+			 local_error->message);
+		g_propagate_error (error, local_error);
 		return FALSE;
 	}
 
@@ -528,16 +616,14 @@ gs_plugin_app_install (GsPlugin *plugin,
 	g_autofree char *runtime = NULL;
 	g_autofree char *url = NULL;
 	GsApp *ext_runtime;
-	GsPluginData *priv;
 	GsFlatpak *flatpak = NULL;
 	gboolean ret = FALSE;
+	g_autoptr(GError) local_error = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
-
-	priv = gs_plugin_get_data (plugin);
 
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
 
@@ -552,47 +638,22 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 
-	if (gs_app_get_state (ext_runtime) == AS_APP_STATE_UNKNOWN &&
-	    !gs_plugin_install_ext_runtime (plugin, app, ext_runtime,
-					    cancellable, error)) {
-		return FALSE;
-	}
+	if (!gs_app_is_installed (ext_runtime)) {
+		if (!gs_plugin_install_ext_runtime (plugin, app, ext_runtime,
+						    cancellable,
+						    &local_error)) {
+			gs_app_set_state_recover (app);
 
-	switch (gs_app_get_state (ext_runtime)) {
-	case AS_APP_STATE_INSTALLED:
-		g_debug ("App asset '%s' is already installed",
-			 gs_app_get_unique_id (ext_runtime));
-		break;
-
-	case AS_APP_STATE_UPDATABLE:
-		g_debug ("Updating '%s'", gs_app_get_unique_id (ext_runtime));
-
-		if (!gs_flatpak_update_app (priv->usr_flatpak, ext_runtime,
-					    cancellable, error)) {
-			g_debug ("Failed to update '%s'",
-				 gs_app_get_unique_id (ext_runtime));
+			/* TRANSLATORS: this an error we show the user when an
+			 * external app could not be installed */
+			g_set_error (error, GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_FAILED,
+				     _("Failed to download the application. "
+				       "Please try installing again later."));
+			g_debug ("Error installing external runtime: %s",
+				 local_error->message);
 			return FALSE;
 		}
-		break;
-
-	case AS_APP_STATE_AVAILABLE:
-		g_debug ("Installing '%s'", gs_app_get_unique_id (ext_runtime));
-		ret = gs_flatpak_app_install (priv->sys_flatpak, ext_runtime,
-					      cancellable, error);
-
-		if (!ret) {
-			g_debug ("Failed to install '%s'",
-				 gs_app_get_unique_id (ext_runtime));
-			return FALSE;
-		}
-
-		break;
-
-	case AS_APP_STATE_UNKNOWN:
-	default:
-		/* In case we may end up here somehow, just let the situation
-		 * be dealt with in the check for the 'installed' state below */
-		break;
 	}
 
 	if (g_cancellable_is_cancelled (cancellable)) {
@@ -602,20 +663,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 		return TRUE;
 	}
 
-	if (gs_app_get_state (ext_runtime) != AS_APP_STATE_INSTALLED) {
-		gs_app_set_state (app, gs_app_get_state (ext_runtime));
-		g_set_error (error, GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_NOT_SUPPORTED,
-			     "Could not install external app '%s' because its "
-			     "extension runtime '%s' is not installed",
-			     gs_app_get_unique_id (app),
-			     gs_app_get_unique_id (ext_runtime));
-		return FALSE;
-	}
-
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
-	if (!gs_flatpak_app_install (flatpak, app, cancellable, error)) {
-		g_debug ("Failed to install '%s'", gs_app_get_unique_id (app));
+	if (gs_flatpak_is_installed (flatpak, app, cancellable, NULL)) {
+		g_debug ("External app %s is already installed. "
+			 "Skipping installation and marking as installed.",
+			 gs_app_get_unique_id (app));
+		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	} else if (!gs_flatpak_app_install (flatpak, app, cancellable, error)) {
 		return FALSE;
 	}
 
@@ -759,6 +813,7 @@ gs_plugin_update_app (GsPlugin *plugin,
 {
 	GsPluginData *priv;
 	g_autofree char *runtime_id = NULL;
+	g_autoptr(GError) local_error = NULL;
 	GsApp *ext_runtime;
 
 	/* only process this app if was created by this plugin */
@@ -779,12 +834,30 @@ gs_plugin_update_app (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	if (!gs_app_is_installed (ext_runtime) &&
-	    !gs_plugin_upgrade_external_runtime (plugin, app, ext_runtime,
-						 cancellable, error)) {
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+	/* We also verify if it is already installed here because this may be
+	 * just the headless app's update */
+	if (!gs_app_is_installed (ext_runtime)) {
+		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 
-		return FALSE;
+		if (!gs_plugin_upgrade_external_runtime (plugin, app,
+							 ext_runtime,
+							 cancellable,
+							 &local_error)) {
+			gs_app_set_state_recover (app);
+
+			/* TRANSLATORS: this an error we show the user when an
+			 * external app could not be upgraded */
+			g_set_error (error, GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_FAILED,
+				     _("Failed to download the application. "
+				       "Please try updating again later."));
+
+			g_debug ("Error upgrading external runtime %s: %s",
+				 gs_app_get_unique_id (ext_runtime),
+				 local_error->message);
+
+			return FALSE;
+		}
 	}
 
 	g_debug ("Updating %s", gs_app_get_unique_id (app));
