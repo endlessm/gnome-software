@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-10-18 22:31-0700\n"
-"PO-Revision-Date: 2016-10-19 08:17+0000\n"
+"PO-Revision-Date: 2016-10-20 06:00+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: French (http://www.transifex.com/endless-mobile-inc/gnome-software/language/fr/)\n"
 "MIME-Version: 1.0\n"
@@ -86,14 +86,14 @@ msgstr "Si activé, GNOME Logiciels téléchargera automatiquement les mises à 
 
 #: ../data/org.gnome.software.gschema.xml.h:5
 msgid "Whether to automatically refresh when on a metered connection"
-msgstr ""
+msgstr "Rafraîchir automatiquement ou non lorsque la connexion est limitée"
 
 #: ../data/org.gnome.software.gschema.xml.h:6
 msgid ""
 "If enabled, GNOME Software automatically refreshes in the background even "
 "when using a metered connection (eventually downloading some metadata, "
 "checking for updates, etc., which may incur in costs for the user)."
-msgstr ""
+msgstr "Si activé, le logiciel GNOME se rafraîchit automatiquement en arrière-plan, même avec l'utilisation d'une connexion limitée (avec éventuellement le téléchargement de métadonnées, la vérification des mises à jour, etc., pouvant entraîner des coûts pour l'utilisateur)."
 
 #: ../data/org.gnome.software.gschema.xml.h:7
 msgid "Whether it's the very first run of GNOME Software"
@@ -214,7 +214,7 @@ msgstr "Une liste des sources non-libres qui peuvent être activées optionnelle
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
-msgstr ""
+msgstr "Une liste d'URL pointant vers les fichiers AppStream qui seront téléchargés dans un dossier app-info"
 
 #: ../src/gs-app-folder-dialog.ui.h:1
 msgid "Add to Application Folder"
@@ -433,7 +433,7 @@ msgstr "Mise à jour"
 #. TRANSLATORS: this is button text to remove the application
 #: ../src/gs-app-row.c:204 ../src/gs-app-row.c:213 ../src/gs-page.c:531
 msgid "Uninstall"
-msgstr ""
+msgstr "Désinstaller"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -956,7 +956,7 @@ msgstr "_Installer…"
 #. TRANSLATORS: button text in the header when an application can be erased
 #: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
 msgid "_Uninstall"
-msgstr ""
+msgstr "_Désinstaller"
 
 #: ../src/gs-shell-details.c:407 ../src/gs-sources-dialog.c:504
 msgid "Removing…"
@@ -1039,7 +1039,7 @@ msgstr "_Ajouter au Bureau"
 #. application.
 #: ../src/gs-shell-details.ui.h:11
 msgid "_Remove from Desktop"
-msgstr ""
+msgstr "_Supprimer du Bureau"
 
 #: ../src/gs-shell-details.ui.h:12
 msgid "No screenshot provided"
@@ -1089,7 +1089,7 @@ msgstr "N'utilisez que les sources de logiciels auxquelles vous faites confiance
 
 #: ../src/gs-shell-details.ui.h:22
 msgid "Developer _Website"
-msgstr ""
+msgstr "_Site web du développeur"
 
 #: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
 msgid "Details"
@@ -1587,12 +1587,12 @@ msgstr "Dernière vérification : %s"
 #. TRANSLATORS: all updates will be installed
 #: ../src/gs-shell-updates.c:497
 msgid "U_pdate All"
-msgstr ""
+msgstr "Tout mettre à jour"
 
 #. TRANSLATORS: this is an offline update
 #: ../src/gs-shell-updates.c:501
 msgid "_Restart & Update"
-msgstr ""
+msgstr "_Redémarrer et mettre à jour"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: ../src/gs-shell-updates.c:838
