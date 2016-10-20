@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-11 03:27+0000\n"
-"PO-Revision-Date: 2016-10-04 23:28+0000\n"
-"Last-Translator: Vicki Niu <vicki@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-18 22:31-0700\n"
+"PO-Revision-Date: 2016-10-19 05:40+0000\n"
+"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/endless-mobile-inc/gnome-software/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -84,118 +84,135 @@ msgid ""
 msgstr "若啟用，GNOME《軟體》會自動在背景下載更新，並在準備就緒後提示使用者安裝。"
 
 #: ../data/org.gnome.software.gschema.xml.h:5
+msgid "Whether to automatically refresh when on a metered connection"
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:6
+msgid ""
+"If enabled, GNOME Software automatically refreshes in the background even "
+"when using a metered connection (eventually downloading some metadata, "
+"checking for updates, etc., which may incur in costs for the user)."
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:7
 msgid "Whether it's the very first run of GNOME Software"
 msgstr "是否是第一次執行 GNOME《軟體》"
 
-#: ../data/org.gnome.software.gschema.xml.h:6
+#: ../data/org.gnome.software.gschema.xml.h:8
 msgid "Show star ratings next to applications"
 msgstr "在應用程式旁顯示星級評等"
 
-#: ../data/org.gnome.software.gschema.xml.h:7
+#: ../data/org.gnome.software.gschema.xml.h:9
 msgid "Non-free applications show a warning dialog before install"
 msgstr "非自由的應用程式會在安裝前顯示警告對話盒"
 
-#: ../data/org.gnome.software.gschema.xml.h:8
+#: ../data/org.gnome.software.gschema.xml.h:10
 msgid ""
 "When non-free applications are installed a warning dialog can be shown. This"
 " controls if that dialog is suppressed."
 msgstr "安裝非自由應用程式之時會顯示警告對話盒。這個選項控制是否要解除該對話盒。"
 
-#: ../data/org.gnome.software.gschema.xml.h:9
+#: ../data/org.gnome.software.gschema.xml.h:11
 msgid "A list of popular applications"
 msgstr "熱門應用程式列表"
 
-#: ../data/org.gnome.software.gschema.xml.h:10
+#: ../data/org.gnome.software.gschema.xml.h:12
 msgid "A list of applications to use, overriding the system defined ones."
 msgstr "要使用的應用程式列表，凌駕系統定義的程式列表。"
 
-#: ../data/org.gnome.software.gschema.xml.h:11
+#: ../data/org.gnome.software.gschema.xml.h:13
 msgid "The list of extra sources that have been previously enabled"
 msgstr "之前已啟用過的額外來源列表"
 
-#: ../data/org.gnome.software.gschema.xml.h:12
+#: ../data/org.gnome.software.gschema.xml.h:14
 msgid ""
 "The list of sources that have been previously enabled when installing third-"
 "party applications."
 msgstr "之前在安裝第三方應用程式時啟用過的來源列表。"
 
-#: ../data/org.gnome.software.gschema.xml.h:13
+#: ../data/org.gnome.software.gschema.xml.h:15
 msgid "The last update check timestamp"
 msgstr "最近更新檢查時間戳記"
 
-#: ../data/org.gnome.software.gschema.xml.h:14
+#: ../data/org.gnome.software.gschema.xml.h:16
 msgid "The last upgrade notification timestamp"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:15
+#: ../data/org.gnome.software.gschema.xml.h:17
 msgid "The timestamp of the first security update, cleared after update"
 msgstr "第一次安全性更新的時間戳記，會在更新之後清除"
 
-#: ../data/org.gnome.software.gschema.xml.h:16
+#: ../data/org.gnome.software.gschema.xml.h:18
 msgid "The last update timestamp"
 msgstr "最近更新時間戳記"
 
-#: ../data/org.gnome.software.gschema.xml.h:17
+#: ../data/org.gnome.software.gschema.xml.h:19
 msgid "The server to use for application reviews"
 msgstr "用來顯示應用程式評論的伺服器"
 
-#: ../data/org.gnome.software.gschema.xml.h:18
+#: ../data/org.gnome.software.gschema.xml.h:20
 msgid "The minimum karma score for reviews"
 msgstr "評論的最低業值"
 
-#: ../data/org.gnome.software.gschema.xml.h:19
+#: ../data/org.gnome.software.gschema.xml.h:21
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "小於這個數字的業值將不會顯示。"
 
-#: ../data/org.gnome.software.gschema.xml.h:20
+#: ../data/org.gnome.software.gschema.xml.h:22
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "不應視為第三方的官方來源列表"
 
-#: ../data/org.gnome.software.gschema.xml.h:21
+#: ../data/org.gnome.software.gschema.xml.h:23
 msgid "A list of official sources that should be considered free software"
 msgstr "不應視為自由軟體的官方來源列表"
 
-#: ../data/org.gnome.software.gschema.xml.h:22
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
 msgstr "將應用程式視為自由軟體的授權方式 URL"
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid ""
 "Install bundled applications for all users on the system where possible"
 msgstr "只要可以便為系統上的所有使用者安裝應用程式套組"
 
-#: ../data/org.gnome.software.gschema.xml.h:24
+#: ../data/org.gnome.software.gschema.xml.h:26
 msgid "Show the folder management UI"
 msgstr "顯示資料夾管理之使用者介面"
 
-#: ../data/org.gnome.software.gschema.xml.h:25
+#: ../data/org.gnome.software.gschema.xml.h:27
 msgid "Allow access to the Software Sources dialog"
 msgstr "允許存取《軟體來源》對話盒"
 
-#: ../data/org.gnome.software.gschema.xml.h:26
+#: ../data/org.gnome.software.gschema.xml.h:28
 msgid "Offer upgrades for pre-releases"
 msgstr "提供預先發行版本的升級"
 
-#: ../data/org.gnome.software.gschema.xml.h:27
+#: ../data/org.gnome.software.gschema.xml.h:29
 msgid "Show some UI elements informing the user that an app is non-free"
 msgstr "顯示一些告知使用者某 App 並非自由軟體的操作介面元素"
 
-#: ../data/org.gnome.software.gschema.xml.h:28
+#: ../data/org.gnome.software.gschema.xml.h:30
 msgid "Show the prompt to install nonfree software sources"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:29
+#: ../data/org.gnome.software.gschema.xml.h:31
 msgid "Show non-free software in search results"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:30
+#: ../data/org.gnome.software.gschema.xml.h:32
 msgid "The URI that explains nonfree and proprietary software"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:31
+#: ../data/org.gnome.software.gschema.xml.h:33
 msgid "A list of non-free sources that can be optionally enabled"
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:34
+msgid ""
+"A list of URLs pointing to appstream files that will be downloaded into an "
+"app-info folder"
 msgstr ""
 
 #: ../src/gs-app-folder-dialog.ui.h:1
@@ -247,7 +264,7 @@ msgstr "全不選"
 #. TRANSLATORS: this is the application name
 #. set the window title back to default
 #. TRANSLATORS: this is the main window title
-#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:386
+#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:339
 #: ../src/gs-shell.c:274 ../src/org.gnome.Software.desktop.in.h:1
 msgid "App Center"
 msgstr ""
@@ -363,17 +380,17 @@ msgstr "AppStream 偏好使用本地端檔案來源"
 msgid "Show version number"
 msgstr "顯示版本號碼"
 
-#: ../src/gs-application.c:379
+#: ../src/gs-application.c:332
 msgid "translator-credits"
 msgstr "Cheng-Chia Tseng <pswo10680@gmail.com>, 2013-15."
 
 #. TRANSLATORS: this is the title of the about window
-#: ../src/gs-application.c:383
+#: ../src/gs-application.c:336
 msgid "About Software"
 msgstr "關於《軟體》"
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: ../src/gs-application.c:389
+#: ../src/gs-application.c:342
 msgid "A nice way to manage the software on your system."
 msgstr "管理系統中軟體的絕佳方式。"
 
@@ -414,8 +431,8 @@ msgstr ""
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: ../src/gs-app-row.c:204 ../src/gs-app-row.c:213 ../src/gs-page.c:531
-msgid "Remove"
-msgstr "移除"
+msgid "Uninstall"
+msgstr ""
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -937,8 +954,8 @@ msgstr "安裝(_I)…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
-msgid "_Remove"
-msgstr "移除(_R)"
+msgid "_Uninstall"
+msgstr ""
 
 #: ../src/gs-shell-details.c:407 ../src/gs-sources-dialog.c:504
 msgid "Removing…"
@@ -1013,14 +1030,14 @@ msgstr "啟動(_L)"
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
 #: ../src/gs-shell-details.ui.h:9
-msgid "_Add shortcut"
-msgstr "加入捷徑(_A)"
+msgid "_Add to Desktop"
+msgstr ""
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: ../src/gs-shell-details.ui.h:11
-msgid "Re_move shortcut"
-msgstr "移除捷徑(_M)"
+msgid "_Remove from Desktop"
+msgstr ""
 
 #: ../src/gs-shell-details.ui.h:12
 msgid "No screenshot provided"
@@ -1069,8 +1086,8 @@ msgid "Only use software sources that you trust."
 msgstr "請務必只使用您信任的軟體來源。"
 
 #: ../src/gs-shell-details.ui.h:22
-msgid "_Website"
-msgstr "網站(_W)"
+msgid "Developer _Website"
+msgstr ""
 
 #: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
 msgid "Details"
@@ -1865,27 +1882,27 @@ msgid "Software Upgrade Available"
 msgstr "有可用的軟體升級"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: ../src/gs-update-monitor.c:462
+#: ../src/gs-update-monitor.c:472
 msgid "Software Updates Failed"
 msgstr "軟體更新失敗"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: ../src/gs-update-monitor.c:464
+#: ../src/gs-update-monitor.c:474
 msgid "An important OS update failed to be installed."
 msgstr "重要的作業系統更新安裝失敗。"
 
-#: ../src/gs-update-monitor.c:465
+#: ../src/gs-update-monitor.c:475
 msgid "Show Details"
 msgstr "顯示細節"
 
 #. TRANSLATORS: title when we've done offline updates
-#: ../src/gs-update-monitor.c:487
+#: ../src/gs-update-monitor.c:497
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "軟體更新已安裝"
 
 #. TRANSLATORS: message when we've done offline updates
-#: ../src/gs-update-monitor.c:491
+#: ../src/gs-update-monitor.c:501
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "重要的作業系統更新已安裝。"
@@ -1895,50 +1912,50 @@ msgstr[0] "重要的作業系統更新已安裝。"
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: ../src/gs-update-monitor.c:502
+#: ../src/gs-update-monitor.c:512
 msgctxt "updates"
 msgid "Review"
 msgstr "檢閱"
 
 #. TRANSLATORS: this is when the offline update failed
-#: ../src/gs-update-monitor.c:546
+#: ../src/gs-update-monitor.c:556
 msgid "Failed To Update"
 msgstr "無法更新"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: ../src/gs-update-monitor.c:552
+#: ../src/gs-update-monitor.c:562
 msgid "The system was already up to date."
 msgstr "該系統已經是最新的。"
 
 #. TRANSLATORS: the user aborted the update manually
-#: ../src/gs-update-monitor.c:557
+#: ../src/gs-update-monitor.c:567
 msgid "The update was cancelled."
 msgstr "更新已取消。"
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: ../src/gs-update-monitor.c:563
+#: ../src/gs-update-monitor.c:573
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "需要存取網際網路但無法使用。請確定您能使用網際網路後再試一次。"
 
 #. TRANSLATORS: if the package is not signed correctly
-#: ../src/gs-update-monitor.c:569
+#: ../src/gs-update-monitor.c:579
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "這次更新中有安全性問題。請詢問您的軟體供應商以了解更多資訊。"
 
 #. TRANSLATORS: we ran out of disk space
-#: ../src/gs-update-monitor.c:575
+#: ../src/gs-update-monitor.c:585
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "沒有足夠的磁碟空間。請空出部分空間後再試一次。"
 
 #. TRANSLATORS: We didn't handle the error type
-#: ../src/gs-update-monitor.c:580
+#: ../src/gs-update-monitor.c:590
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -2856,10 +2873,10 @@ msgstr ""
 msgid "Utilities"
 msgstr "公用程式"
 
-#: ../src/plugins/gs-plugin-eos.c:991
+#: ../src/plugins/gs-plugin-eos.c:993
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:994
+#: ../src/plugins/gs-plugin-eos.c:996
 msgid "Framework for applications"
 msgstr ""

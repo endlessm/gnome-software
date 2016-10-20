@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-11 03:27+0000\n"
-"PO-Revision-Date: 2016-10-04 23:33+0000\n"
-"Last-Translator: Vicki Niu <vicki@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-18 22:31-0700\n"
+"PO-Revision-Date: 2016-10-19 05:40+0000\n"
+"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Croatian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/hr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -85,118 +85,135 @@ msgid ""
 msgstr "Ako je omogućeno, GNOME Softver automatski preuzima nadopune u pozadini i upozori korisnika za njihovu instalaciju."
 
 #: ../data/org.gnome.software.gschema.xml.h:5
+msgid "Whether to automatically refresh when on a metered connection"
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:6
+msgid ""
+"If enabled, GNOME Software automatically refreshes in the background even "
+"when using a metered connection (eventually downloading some metadata, "
+"checking for updates, etc., which may incur in costs for the user)."
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:7
 msgid "Whether it's the very first run of GNOME Software"
 msgstr "Je li ovo prvo pokretanje GNOME Softvera"
 
-#: ../data/org.gnome.software.gschema.xml.h:6
+#: ../data/org.gnome.software.gschema.xml.h:8
 msgid "Show star ratings next to applications"
 msgstr "Prikaži zvjezdice ocjene pokraj aplikacija"
 
-#: ../data/org.gnome.software.gschema.xml.h:7
+#: ../data/org.gnome.software.gschema.xml.h:9
 msgid "Non-free applications show a warning dialog before install"
 msgstr "Vlasničke aplikacije prikazuju dijalog upozorenja prije instalacije"
 
-#: ../data/org.gnome.software.gschema.xml.h:8
+#: ../data/org.gnome.software.gschema.xml.h:10
 msgid ""
 "When non-free applications are installed a warning dialog can be shown. This"
 " controls if that dialog is suppressed."
 msgstr "Kada se vlasničke aplikacije instaliraju može se prikazati dijalog upozorenja. Ovo upravlja prikazom tog dijaloga."
 
-#: ../data/org.gnome.software.gschema.xml.h:9
+#: ../data/org.gnome.software.gschema.xml.h:11
 msgid "A list of popular applications"
 msgstr "Popis popularnih aplikacija"
 
-#: ../data/org.gnome.software.gschema.xml.h:10
+#: ../data/org.gnome.software.gschema.xml.h:12
 msgid "A list of applications to use, overriding the system defined ones."
 msgstr "Popis aplikacija koje se koriste, bez određenih aplikacija sustavom."
 
-#: ../data/org.gnome.software.gschema.xml.h:11
+#: ../data/org.gnome.software.gschema.xml.h:13
 msgid "The list of extra sources that have been previously enabled"
 msgstr "Popis dodatnih repozitorija koji su prije omogućeni"
 
-#: ../data/org.gnome.software.gschema.xml.h:12
+#: ../data/org.gnome.software.gschema.xml.h:14
 msgid ""
 "The list of sources that have been previously enabled when installing third-"
 "party applications."
 msgstr "Popis repozitorija koji su prije omogućeni prilikom instalacije aplikacija treće strane."
 
-#: ../data/org.gnome.software.gschema.xml.h:13
+#: ../data/org.gnome.software.gschema.xml.h:15
 msgid "The last update check timestamp"
 msgstr "Vrijeme posljednje provjere nadopune"
 
-#: ../data/org.gnome.software.gschema.xml.h:14
+#: ../data/org.gnome.software.gschema.xml.h:16
 msgid "The last upgrade notification timestamp"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:15
+#: ../data/org.gnome.software.gschema.xml.h:17
 msgid "The timestamp of the first security update, cleared after update"
 msgstr "Vrijeme prve sigurnosne nadopune, uklonjeno nakon nadopune"
 
-#: ../data/org.gnome.software.gschema.xml.h:16
+#: ../data/org.gnome.software.gschema.xml.h:18
 msgid "The last update timestamp"
 msgstr "Vrijeme posljednje nadopune"
 
-#: ../data/org.gnome.software.gschema.xml.h:17
+#: ../data/org.gnome.software.gschema.xml.h:19
 msgid "The server to use for application reviews"
 msgstr "Poslužitelj koji će se koristiti za recenzije aplikacija"
 
-#: ../data/org.gnome.software.gschema.xml.h:18
+#: ../data/org.gnome.software.gschema.xml.h:20
 msgid "The minimum karma score for reviews"
 msgstr "Najmanje karma bodova za recenziju"
 
-#: ../data/org.gnome.software.gschema.xml.h:19
+#: ../data/org.gnome.software.gschema.xml.h:21
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "Recenzije s karmom manjom od ovog broja neće biti prikazane."
 
-#: ../data/org.gnome.software.gschema.xml.h:20
+#: ../data/org.gnome.software.gschema.xml.h:22
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "Popis službenih repozitorija koji se ne bi trebali smatrati repozitorijima treće strane"
 
-#: ../data/org.gnome.software.gschema.xml.h:21
+#: ../data/org.gnome.software.gschema.xml.h:23
 msgid "A list of official sources that should be considered free software"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:22
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid ""
 "Install bundled applications for all users on the system where possible"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:24
+#: ../data/org.gnome.software.gschema.xml.h:26
 msgid "Show the folder management UI"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:25
+#: ../data/org.gnome.software.gschema.xml.h:27
 msgid "Allow access to the Software Sources dialog"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:26
+#: ../data/org.gnome.software.gschema.xml.h:28
 msgid "Offer upgrades for pre-releases"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:27
+#: ../data/org.gnome.software.gschema.xml.h:29
 msgid "Show some UI elements informing the user that an app is non-free"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:28
+#: ../data/org.gnome.software.gschema.xml.h:30
 msgid "Show the prompt to install nonfree software sources"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:29
+#: ../data/org.gnome.software.gschema.xml.h:31
 msgid "Show non-free software in search results"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:30
+#: ../data/org.gnome.software.gschema.xml.h:32
 msgid "The URI that explains nonfree and proprietary software"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:31
+#: ../data/org.gnome.software.gschema.xml.h:33
 msgid "A list of non-free sources that can be optionally enabled"
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:34
+msgid ""
+"A list of URLs pointing to appstream files that will be downloaded into an "
+"app-info folder"
 msgstr ""
 
 #: ../src/gs-app-folder-dialog.ui.h:1
@@ -248,7 +265,7 @@ msgstr "Ukloni odabir"
 #. TRANSLATORS: this is the application name
 #. set the window title back to default
 #. TRANSLATORS: this is the main window title
-#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:386
+#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:339
 #: ../src/gs-shell.c:274 ../src/org.gnome.Software.desktop.in.h:1
 msgid "App Center"
 msgstr ""
@@ -364,17 +381,17 @@ msgstr "Preferiraj lokalne izvore paketa za AppStream"
 msgid "Show version number"
 msgstr "Prikaži broj inačice"
 
-#: ../src/gs-application.c:379
+#: ../src/gs-application.c:332
 msgid "translator-credits"
 msgstr "Launchpad Contributions:\n  gogo https://launchpad.net/~trebelnik-stefina"
 
 #. TRANSLATORS: this is the title of the about window
-#: ../src/gs-application.c:383
+#: ../src/gs-application.c:336
 msgid "About Software"
 msgstr "O softveru"
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: ../src/gs-application.c:389
+#: ../src/gs-application.c:342
 msgid "A nice way to manage the software on your system."
 msgstr "Jednostavniji način za upravljanje softverom na vašem sustavu."
 
@@ -415,8 +432,8 @@ msgstr ""
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: ../src/gs-app-row.c:204 ../src/gs-app-row.c:213 ../src/gs-page.c:531
-msgid "Remove"
-msgstr "Ukloni"
+msgid "Uninstall"
+msgstr ""
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -938,8 +955,8 @@ msgstr "_Instaliraj…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
-msgid "_Remove"
-msgstr "_Ukloni"
+msgid "_Uninstall"
+msgstr ""
 
 #: ../src/gs-shell-details.c:407 ../src/gs-sources-dialog.c:504
 msgid "Removing…"
@@ -1016,13 +1033,13 @@ msgstr "_Pokreni"
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
 #: ../src/gs-shell-details.ui.h:9
-msgid "_Add shortcut"
+msgid "_Add to Desktop"
 msgstr ""
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: ../src/gs-shell-details.ui.h:11
-msgid "Re_move shortcut"
+msgid "_Remove from Desktop"
 msgstr ""
 
 #: ../src/gs-shell-details.ui.h:12
@@ -1072,8 +1089,8 @@ msgid "Only use software sources that you trust."
 msgstr "Koristite samo repozitorije softvera kojima vjerujete."
 
 #: ../src/gs-shell-details.ui.h:22
-msgid "_Website"
-msgstr "_Web stranica"
+msgid "Developer _Website"
+msgstr ""
 
 #: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
 msgid "Details"
@@ -1884,21 +1901,21 @@ msgid "Software Upgrade Available"
 msgstr "Dostupna je nadogradnja softvera"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: ../src/gs-update-monitor.c:462
+#: ../src/gs-update-monitor.c:472
 msgid "Software Updates Failed"
 msgstr "Neuspjelo nadopunjavanje softvera"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: ../src/gs-update-monitor.c:464
+#: ../src/gs-update-monitor.c:474
 msgid "An important OS update failed to be installed."
 msgstr "Važna nadopuna operativnog sustava je neuspješno instalirana."
 
-#: ../src/gs-update-monitor.c:465
+#: ../src/gs-update-monitor.c:475
 msgid "Show Details"
 msgstr "Prikaži pojedinosti"
 
 #. TRANSLATORS: title when we've done offline updates
-#: ../src/gs-update-monitor.c:487
+#: ../src/gs-update-monitor.c:497
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Softverska nadopuna je instalirana"
@@ -1906,7 +1923,7 @@ msgstr[1] "Softverske nadopune su instalirane"
 msgstr[2] "Softverske nadopune su instalirane"
 
 #. TRANSLATORS: message when we've done offline updates
-#: ../src/gs-update-monitor.c:491
+#: ../src/gs-update-monitor.c:501
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "Važna nadopuna operativnog sustava je instalirana."
@@ -1918,50 +1935,50 @@ msgstr[2] "Važne nadopune operativnog sustava su instalirane."
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: ../src/gs-update-monitor.c:502
+#: ../src/gs-update-monitor.c:512
 msgctxt "updates"
 msgid "Review"
 msgstr "Recenzija"
 
 #. TRANSLATORS: this is when the offline update failed
-#: ../src/gs-update-monitor.c:546
+#: ../src/gs-update-monitor.c:556
 msgid "Failed To Update"
 msgstr "Neuspjea nadopuna"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: ../src/gs-update-monitor.c:552
+#: ../src/gs-update-monitor.c:562
 msgid "The system was already up to date."
 msgstr "Sustav ima najnovije nadopune."
 
 #. TRANSLATORS: the user aborted the update manually
-#: ../src/gs-update-monitor.c:557
+#: ../src/gs-update-monitor.c:567
 msgid "The update was cancelled."
 msgstr "Nadopunjivanje je prekinuto."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: ../src/gs-update-monitor.c:563
+#: ../src/gs-update-monitor.c:573
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "Potreban je pristup Internetu ali nije dostupan. Pobrinite se da ste povezani s Internetom i pokušajte ponovno."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: ../src/gs-update-monitor.c:569
+#: ../src/gs-update-monitor.c:579
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "Postoji sigurnosni problem s nadopunom. Obratite se svome pružatelju softvera za više pojedinosti."
 
 #. TRANSLATORS: we ran out of disk space
-#: ../src/gs-update-monitor.c:575
+#: ../src/gs-update-monitor.c:585
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "Nema dovoljno slobodnog diskovnog prostora. Oslobodite nešto prostora i pokušajte ponovno."
 
 #. TRANSLATORS: We didn't handle the error type
-#: ../src/gs-update-monitor.c:580
+#: ../src/gs-update-monitor.c:590
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -2879,10 +2896,10 @@ msgstr ""
 msgid "Utilities"
 msgstr "Pomagala"
 
-#: ../src/plugins/gs-plugin-eos.c:991
+#: ../src/plugins/gs-plugin-eos.c:993
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:994
+#: ../src/plugins/gs-plugin-eos.c:996
 msgid "Framework for applications"
 msgstr ""

@@ -9,9 +9,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-11 03:27+0000\n"
-"PO-Revision-Date: 2016-10-04 03:39+0000\n"
-"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-18 22:31-0700\n"
+"PO-Revision-Date: 2016-10-19 10:56+0000\n"
+"Last-Translator: e2f_in c7 <e2f_in_c7@outlook.com>\n"
 "Language-Team: Hindi (http://www.transifex.com/endless-mobile-inc/gnome-software/language/hi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -86,119 +86,136 @@ msgid ""
 msgstr "सक्षम होने पर, GNOME सॉफ़्टवेयर स्वचालित रूप से पृष्ठभूमि में अपडेट को डाउनलोड करता है और उनके तैयार होने पर स्थापित करने करने के लिए उपयोगकर्ता को संकेत देता है."
 
 #: ../data/org.gnome.software.gschema.xml.h:5
+msgid "Whether to automatically refresh when on a metered connection"
+msgstr "चाहे मीटर्ड कनेक्शन को स्वचालित रूप से रिफ़्रेश करना हो"
+
+#: ../data/org.gnome.software.gschema.xml.h:6
+msgid ""
+"If enabled, GNOME Software automatically refreshes in the background even "
+"when using a metered connection (eventually downloading some metadata, "
+"checking for updates, etc., which may incur in costs for the user)."
+msgstr "यदि सक्षम किया गया, तो मीटर्ड कनेक्शन (अंततः कुछ मेटाडाटा डाउनलोड करना, अपडेट के लिए जांचना इत्यादि से हो सकता है कि उपयोगकर्ता पर शुल्क लगेे) का उपयोग करने पर GNOME सॉफ़्टवेयर स्वचालित रूप से पृष्ठभूमि में रिफ़्रेश होता है."
+
+#: ../data/org.gnome.software.gschema.xml.h:7
 msgid "Whether it's the very first run of GNOME Software"
 msgstr "चाहे GNOME सॉफ़्टवेयर को सबसे पहली बार चलाया गया हो "
 
-#: ../data/org.gnome.software.gschema.xml.h:6
+#: ../data/org.gnome.software.gschema.xml.h:8
 msgid "Show star ratings next to applications"
 msgstr "एप्लिकेशन के पास तारा रेटिंग दिखाएँ"
 
-#: ../data/org.gnome.software.gschema.xml.h:7
+#: ../data/org.gnome.software.gschema.xml.h:9
 msgid "Non-free applications show a warning dialog before install"
 msgstr "सशुल्क एप्लिकेशन स्थापित होने के पहले चेतावनी संवाद दिखाते हैं"
 
-#: ../data/org.gnome.software.gschema.xml.h:8
+#: ../data/org.gnome.software.gschema.xml.h:10
 msgid ""
 "When non-free applications are installed a warning dialog can be shown. This"
 " controls if that dialog is suppressed."
 msgstr "सशुल्क एप्लिकेशन के स्थापित होने पर चेतावनी संवाद दिखाई दे सकता है. उस संवाद के दबे होने पर वह इसे नियंत्रित करता है."
 
-#: ../data/org.gnome.software.gschema.xml.h:9
+#: ../data/org.gnome.software.gschema.xml.h:11
 msgid "A list of popular applications"
 msgstr "लोकप्रिय एप्लिकेशन की सूची"
 
-#: ../data/org.gnome.software.gschema.xml.h:10
+#: ../data/org.gnome.software.gschema.xml.h:12
 msgid "A list of applications to use, overriding the system defined ones."
 msgstr "परिभाषित किए गए सिस्टम को ओवरराइड करने पर उपयोग किए जाने वाले एप्लिकेशन की सूची."
 
-#: ../data/org.gnome.software.gschema.xml.h:11
+#: ../data/org.gnome.software.gschema.xml.h:13
 msgid "The list of extra sources that have been previously enabled"
 msgstr "पूर्व में सक्षम किए गए अतिरिक्त स्रोतों की सूची"
 
-#: ../data/org.gnome.software.gschema.xml.h:12
+#: ../data/org.gnome.software.gschema.xml.h:14
 msgid ""
 "The list of sources that have been previously enabled when installing third-"
 "party applications."
 msgstr "तृतीय-पक्ष एप्लिकेशन को स्थापित करते समय पूर्व में सक्षम किए गए स्रोतों की सूची."
 
-#: ../data/org.gnome.software.gschema.xml.h:13
+#: ../data/org.gnome.software.gschema.xml.h:15
 msgid "The last update check timestamp"
 msgstr "अंतिम अपडेट जाँच टाइमस्टैम्प"
 
-#: ../data/org.gnome.software.gschema.xml.h:14
+#: ../data/org.gnome.software.gschema.xml.h:16
 msgid "The last upgrade notification timestamp"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:15
+#: ../data/org.gnome.software.gschema.xml.h:17
 msgid "The timestamp of the first security update, cleared after update"
 msgstr "पहले सुरक्षा अपडेट का टाइमस्टैम्प, जो अपडेट के बाद साफ़ किया गया"
 
-#: ../data/org.gnome.software.gschema.xml.h:16
+#: ../data/org.gnome.software.gschema.xml.h:18
 msgid "The last update timestamp"
 msgstr "अंतिम अपडेट टाइमस्टैम्प"
 
-#: ../data/org.gnome.software.gschema.xml.h:17
+#: ../data/org.gnome.software.gschema.xml.h:19
 msgid "The server to use for application reviews"
 msgstr "एप्लिकेशन समीक्षाओं के लिए उपयोग किया जाने वाला सर्वर"
 
-#: ../data/org.gnome.software.gschema.xml.h:18
+#: ../data/org.gnome.software.gschema.xml.h:20
 msgid "The minimum karma score for reviews"
 msgstr "समीक्षाओं के लिए न्यूनतम कर्मा स्कोर"
 
-#: ../data/org.gnome.software.gschema.xml.h:19
+#: ../data/org.gnome.software.gschema.xml.h:21
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "इस संख्या से कम कर्मा वाली समीक्षाओं को दिखाया नहीं जाएगा."
 
-#: ../data/org.gnome.software.gschema.xml.h:20
+#: ../data/org.gnome.software.gschema.xml.h:22
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "आधिकारिक स्रोतों की सूची जिन्हें 3रा पक्ष नहीं माना जाना चाहिए"
 
-#: ../data/org.gnome.software.gschema.xml.h:21
+#: ../data/org.gnome.software.gschema.xml.h:23
 msgid "A list of official sources that should be considered free software"
 msgstr "उन आधिकारिक स्रोतों की सूची जिन्हें निःशुल्क सॉफ़्टवेयर के रूप में माना जाना चाहिए"
 
-#: ../data/org.gnome.software.gschema.xml.h:22
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
 msgstr "किसी एप्लिकेशन को निःशुल्क सॉफ़्टवेयर के रूप में माने जाने पर उपयोग किए जाने के लिए लाइसेंस URL"
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid ""
 "Install bundled applications for all users on the system where possible"
 msgstr "जहाँ भी संभव हो सिस्टम पर सभी उपयोगकर्ताओं के लिए बंडल किए गए एप्लिकेशन स्थापित करें"
 
-#: ../data/org.gnome.software.gschema.xml.h:24
+#: ../data/org.gnome.software.gschema.xml.h:26
 msgid "Show the folder management UI"
 msgstr "फ़ोल्डर प्रबंधन UI दिखाएँ"
 
-#: ../data/org.gnome.software.gschema.xml.h:25
+#: ../data/org.gnome.software.gschema.xml.h:27
 msgid "Allow access to the Software Sources dialog"
 msgstr "सॉफ़्टवेयर स्रोत संवाद पर पहुँच की अनुमति दें"
 
-#: ../data/org.gnome.software.gschema.xml.h:26
+#: ../data/org.gnome.software.gschema.xml.h:28
 msgid "Offer upgrades for pre-releases"
 msgstr "पूर्व-रिलीज़ के लिए नवीनीकरण ऑफ़र करें"
 
-#: ../data/org.gnome.software.gschema.xml.h:27
+#: ../data/org.gnome.software.gschema.xml.h:29
 msgid "Show some UI elements informing the user that an app is non-free"
 msgstr "उपयोगकर्ता को यह सूचित करने वाले कुछ UI घटक दिखाएँ कि कोई ऐप निशुल्क नहीं है"
 
-#: ../data/org.gnome.software.gschema.xml.h:28
+#: ../data/org.gnome.software.gschema.xml.h:30
 msgid "Show the prompt to install nonfree software sources"
-msgstr ""
+msgstr "शुल्क सहित सॉफ़्टवेयर सोर्स इंस्टॉल करने के लिए संकेत दिखाएं"
 
-#: ../data/org.gnome.software.gschema.xml.h:29
+#: ../data/org.gnome.software.gschema.xml.h:31
 msgid "Show non-free software in search results"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:30
+#: ../data/org.gnome.software.gschema.xml.h:32
 msgid "The URI that explains nonfree and proprietary software"
-msgstr ""
+msgstr "URI जो शुल्क सहित और स्वामित्व संबंधी सॉफ़्टवेयर बनाते हैं"
 
-#: ../data/org.gnome.software.gschema.xml.h:31
+#: ../data/org.gnome.software.gschema.xml.h:33
 msgid "A list of non-free sources that can be optionally enabled"
-msgstr ""
+msgstr "शुल्क सहित सोर्स की सूची जो वैकल्पिक रूप से सक्षम की जा सकती है"
+
+#: ../data/org.gnome.software.gschema.xml.h:34
+msgid ""
+"A list of URLs pointing to appstream files that will be downloaded into an "
+"app-info folder"
+msgstr "ऐपस्ट्रीम फ़ाइलों को संकेत कर रहेे URLs की सूची को ऐप-इन्फ़ो फ़ोल्डर में डाउनलोड किया जाएगा"
 
 #: ../src/gs-app-folder-dialog.ui.h:1
 msgid "Add to Application Folder"
@@ -249,7 +266,7 @@ msgstr "कोई भी नहीं चुनें"
 #. TRANSLATORS: this is the application name
 #. set the window title back to default
 #. TRANSLATORS: this is the main window title
-#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:386
+#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:339
 #: ../src/gs-shell.c:274 ../src/org.gnome.Software.desktop.in.h:1
 msgid "App Center"
 msgstr "ऐप सेंटर "
@@ -365,17 +382,17 @@ msgstr "AppStream के लिए स्थानीय फ़ाइल स्�
 msgid "Show version number"
 msgstr "संस्करण संख्या दिखाएँ"
 
-#: ../src/gs-application.c:379
+#: ../src/gs-application.c:332
 msgid "translator-credits"
 msgstr "अनुवादक-श्रेय"
 
 #. TRANSLATORS: this is the title of the about window
-#: ../src/gs-application.c:383
+#: ../src/gs-application.c:336
 msgid "About Software"
 msgstr "सॉफ़्टवेयर के बारे में "
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: ../src/gs-application.c:389
+#: ../src/gs-application.c:342
 msgid "A nice way to manage the software on your system."
 msgstr "आपके सिस्टम पर सॉफ़्टवेयर को प्रबंधित करने का बेहतर तरीका."
 
@@ -410,14 +427,14 @@ msgstr "स्थापित करें"
 #. * that allows the app to be easily updated live
 #: ../src/gs-app-row.c:200
 msgid "Update"
-msgstr ""
+msgstr "अपडेट करें"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: ../src/gs-app-row.c:204 ../src/gs-app-row.c:213 ../src/gs-page.c:531
-msgid "Remove"
-msgstr "निकालें"
+msgid "Uninstall"
+msgstr "अनइंस्टॉल करें"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -647,7 +664,7 @@ msgstr "%s को तैयार करें"
 #: ../src/gs-page.c:500
 #, c-format
 msgid "Are you sure you want to remove the %s source?"
-msgstr ""
+msgstr "क्या आप वाकई %s सोर्स को निकालना चाहते हैं?"
 
 #. TRANSLATORS: longer dialog text
 #: ../src/gs-page.c:504
@@ -655,7 +672,7 @@ msgstr ""
 msgid ""
 "All applications from %s will be removed, and you will have to re-install "
 "the source to use them again."
-msgstr ""
+msgstr "%s से सभी ऐप्लिकेशन निकाल दी जाएंगी और आपको फिर से उनका उपयोग करने के लिए सोर्स को पुनः इंस्टॉल करना होगा."
 
 #. TRANSLATORS: this is a prompt message, and '%s' is an
 #. * application summary, e.g. 'GNOME Clocks'
@@ -939,8 +956,8 @@ msgstr "_स्थापित करना…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
-msgid "_Remove"
-msgstr "_निकालें"
+msgid "_Uninstall"
+msgstr "_अनइंस्टॉल करें"
 
 #: ../src/gs-shell-details.c:407 ../src/gs-sources-dialog.c:504
 msgid "Removing…"
@@ -1016,14 +1033,14 @@ msgstr "_लॉन्च करें"
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
 #: ../src/gs-shell-details.ui.h:9
-msgid "_Add shortcut"
-msgstr "_शॉर्टकट जोड़ें"
+msgid "_Add to Desktop"
+msgstr "_डेस्कटॉप पर जोड़ें"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: ../src/gs-shell-details.ui.h:11
-msgid "Re_move shortcut"
-msgstr "शॉर्टकट नि_कालें"
+msgid "_Remove from Desktop"
+msgstr "_डेस्कटॉप से निकालें"
 
 #: ../src/gs-shell-details.ui.h:12
 msgid "No screenshot provided"
@@ -1072,8 +1089,8 @@ msgid "Only use software sources that you trust."
 msgstr "केवल वे सॉफ़्टवेयर स्रोत उपयोग करें जिन पर आप विश्वास करते हैं."
 
 #: ../src/gs-shell-details.ui.h:22
-msgid "_Website"
-msgstr "_वेबसाइट"
+msgid "Developer _Website"
+msgstr "डेवलपर _वेबसाइट"
 
 #: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
 msgid "Details"
@@ -1435,13 +1452,13 @@ msgstr "सुझाए गए उत्पादकता एप्लिके
 #: ../src/gs-shell-overview.c:790
 msgid ""
 "Provides access to additional software, including web browsers and games."
-msgstr ""
+msgstr "वेब ब्राउज़र और गेम सहित अतिरिक्त सॉफ़्टवेयर तक पहुंच प्रदान करता है."
 
 #. TRANSLATORS: this is the proprietary info bar
 #: ../src/gs-shell-overview.c:794
 msgid ""
 "Proprietary software has restrictions on use and access to source code."
-msgstr ""
+msgstr "स्वामित्व संबंंधी सॉफ़्टवेयर का उपयोग करने और सोर्स कोड तक पहुंच प्राप्त करने पर प्रतिबंध है."
 
 #. TRANSLATORS: this is the clickable
 #. * link on the proprietary info bar
@@ -1461,7 +1478,7 @@ msgstr "ओवरव्यू पृष्ठ"
 
 #: ../src/gs-shell-overview.ui.h:2
 msgid "Enable Proprietary Software Sources?"
-msgstr ""
+msgstr "स्वामित्व संबंधी सॉफ़्टवेयर सक्षम करें?"
 
 #: ../src/gs-shell-overview.ui.h:3
 msgid "Categories"
@@ -1571,12 +1588,12 @@ msgstr "अंतिम बार जाँचा गया: %s"
 #. TRANSLATORS: all updates will be installed
 #: ../src/gs-shell-updates.c:497
 msgid "U_pdate All"
-msgstr ""
+msgstr "सभी अ_पडेट करें"
 
 #. TRANSLATORS: this is an offline update
 #: ../src/gs-shell-updates.c:501
 msgid "_Restart & Update"
-msgstr ""
+msgstr "_रिस्टार्ट और अपडेट करें"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: ../src/gs-shell-updates.c:838
@@ -1698,8 +1715,8 @@ msgstr[1] ""
 #, c-format
 msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u एड-ऑन इंस्टॉल किया गया"
+msgstr[1] "%u एड-ऑन्स इंस्टॉल किए गए"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software source.
@@ -1735,12 +1752,12 @@ msgstr[1] "%s और %s स्थापित"
 #. TRANSLATORS: nonfree software
 #: ../src/gs-sources-dialog.c:253
 msgid "Typically has restrictions on use and access to source code."
-msgstr ""
+msgstr "आमतौर पर सोर्स कोड का उपयोग करने और उस तक पहुंच प्राप्त करने पर प्रतिबंध होता है."
 
 #. TRANSLATORS: list header
 #: ../src/gs-sources-dialog.c:274
 msgid "Proprietary Software Sources"
-msgstr ""
+msgstr "स्वामित्व संबंधी सॉफ़्टवेयर"
 
 #: ../src/gs-sources-dialog.c:490 ../src/gs-sources-dialog.ui.h:12
 msgid "Remove Source"
@@ -1769,7 +1786,7 @@ msgstr "सॉफ़्टवेयर स्रोत"
 
 #: ../src/gs-sources-dialog.ui.h:3
 msgid "Additional Sources"
-msgstr ""
+msgstr "अतिरिक्त सोर्स"
 
 #: ../src/gs-sources-dialog.ui.h:4
 msgid ""
@@ -1876,28 +1893,28 @@ msgid "Software Upgrade Available"
 msgstr "सॉफ़्टवेयर नवीनीकरण उपलब्ध"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: ../src/gs-update-monitor.c:462
+#: ../src/gs-update-monitor.c:472
 msgid "Software Updates Failed"
 msgstr "सॉफ़्टवेयर अपडेट विफल"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: ../src/gs-update-monitor.c:464
+#: ../src/gs-update-monitor.c:474
 msgid "An important OS update failed to be installed."
 msgstr "कोई महत्वपूर्ण OS अपडेट स्थापित करना विफल."
 
-#: ../src/gs-update-monitor.c:465
+#: ../src/gs-update-monitor.c:475
 msgid "Show Details"
 msgstr "विवरण दिखाएँ"
 
 #. TRANSLATORS: title when we've done offline updates
-#: ../src/gs-update-monitor.c:487
+#: ../src/gs-update-monitor.c:497
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "सॉफ़्टवेयर अपडेट स्थापित"
 msgstr[1] "सॉफ़्टवेयर अपडेट स्थापित"
 
 #. TRANSLATORS: message when we've done offline updates
-#: ../src/gs-update-monitor.c:491
+#: ../src/gs-update-monitor.c:501
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "महत्वपूर्ण OS अपेडट स्थापित कर दिया गया है."
@@ -1908,50 +1925,50 @@ msgstr[1] "महत्वपूर्ण OS अपेडट स्थापि�
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: ../src/gs-update-monitor.c:502
+#: ../src/gs-update-monitor.c:512
 msgctxt "updates"
 msgid "Review"
 msgstr "समीक्षा"
 
 #. TRANSLATORS: this is when the offline update failed
-#: ../src/gs-update-monitor.c:546
+#: ../src/gs-update-monitor.c:556
 msgid "Failed To Update"
 msgstr "अपेडट करना विफल"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: ../src/gs-update-monitor.c:552
+#: ../src/gs-update-monitor.c:562
 msgid "The system was already up to date."
 msgstr "सिस्टम पहले से अप टू डेट था."
 
 #. TRANSLATORS: the user aborted the update manually
-#: ../src/gs-update-monitor.c:557
+#: ../src/gs-update-monitor.c:567
 msgid "The update was cancelled."
 msgstr "अपडेट रद्द कर दिया गया था."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: ../src/gs-update-monitor.c:563
+#: ../src/gs-update-monitor.c:573
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "इंटरनेट पहुँच आवश्यक थी लेकिन उपलब्ध नहीं थी. कृपया सुनिश्चित करें कि आपके पास इंटरनेट पहुँच है और पुनः प्रयास करें."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: ../src/gs-update-monitor.c:569
+#: ../src/gs-update-monitor.c:579
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "अपडेट के साथ सुरक्षा समस्याएँ थीं. कृपया अधिक विवरण के लिए अपने सॉफ़्टवेयर प्रदाता से परामर्श लें."
 
 #. TRANSLATORS: we ran out of disk space
-#: ../src/gs-update-monitor.c:575
+#: ../src/gs-update-monitor.c:585
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "पर्याप्त डिस्क स्थान नहीं था. कृपया कुछ स्थान रिक्त करें और पुनः प्रयास करें."
 
 #. TRANSLATORS: We didn't handle the error type
-#: ../src/gs-update-monitor.c:580
+#: ../src/gs-update-monitor.c:590
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -2162,7 +2179,7 @@ msgstr "कोई नहीं"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:429
 msgid "Mildly realistic characters in unsafe situations"
-msgstr ""
+msgstr "असुरक्षित परिस्थितियों में माइल्डली रियलिस्टिक कैरेक्टर"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:432
@@ -2341,7 +2358,7 @@ msgstr "लोगों के किसी विशेष समूह के 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:531
 msgid "Discrimination designed to cause emotional harm"
-msgstr ""
+msgstr "भावनात्मक नुकसान पहुंचाने के लिए डिज़ाइन किया गया भेदभाव"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:534
@@ -2797,7 +2814,7 @@ msgstr "जीवनी"
 #: ../src/plugins/gs-desktop-common.c:257
 msgctxt "Menu of Reference"
 msgid "Comics"
-msgstr ""
+msgstr "कॉमिक्स"
 
 #: ../src/plugins/gs-desktop-common.c:260
 msgctxt "Menu of Reference"
@@ -2869,10 +2886,10 @@ msgstr "संदर्भ और समाचार"
 msgid "Utilities"
 msgstr "उपयोगिता"
 
-#: ../src/plugins/gs-plugin-eos.c:991
+#: ../src/plugins/gs-plugin-eos.c:993
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:994
+#: ../src/plugins/gs-plugin-eos.c:996
 msgid "Framework for applications"
 msgstr ""
