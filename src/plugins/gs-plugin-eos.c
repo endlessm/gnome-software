@@ -276,8 +276,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	if (!priv->personality)
 		g_warning ("No system personality could be set!");
 
-	priv->usr_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
-	priv->sys_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_SYSTEM);
+	priv->usr_flatpak = gs_flatpak_new (plugin, AS_APP_SCOPE_USER);
+	priv->sys_flatpak = gs_flatpak_new (plugin, AS_APP_SCOPE_SYSTEM);
 }
 
 /**

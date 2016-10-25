@@ -125,7 +125,10 @@ gboolean	gs_flatpak_app_is_runtime	(GsApp *app);
 GPtrArray	*gs_flatpak_get_installed_runtimes (GsFlatpak		*self,
 						    GCancellable       	*cancellable,
 						    GError	       	**error);
-
+gboolean	gs_flatpak_add_popular		(GsFlatpak		*self,
+						 GsAppList		*list,
+						 GCancellable		*cancellable,
+						 GError			**error);
 
 G_END_DECLS
 

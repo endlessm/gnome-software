@@ -409,11 +409,8 @@ out:
 	gs_shell_side_filter_set_visible (priv->shell, TRUE);
 
 	priv->loading_categories = FALSE;
-	priv->refresh_count--;
-	if (priv->refresh_count == 0) {
-		priv->cache_valid = TRUE;
-		g_signal_emit (self, signals[SIGNAL_REFRESHED], 0);
-	}
+
+	gs_shell_overview_decrement_action_cnt (self);
 }
 
 static void

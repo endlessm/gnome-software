@@ -67,8 +67,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
 	const char *ext_apps_build_dir = g_get_user_cache_dir ();
 
-	priv->usr_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
-	priv->sys_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_SYSTEM);
+	priv->usr_flatpak = gs_flatpak_new (plugin, AS_APP_SCOPE_USER);
+	priv->sys_flatpak = gs_flatpak_new (plugin, AS_APP_SCOPE_SYSTEM);
 	priv->runtimes_build_dir = g_build_filename (ext_apps_build_dir,
 						     TMP_ASSSETS_PREFIX,
 						     NULL);

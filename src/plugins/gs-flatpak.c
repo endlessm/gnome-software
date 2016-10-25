@@ -2746,3 +2746,34 @@ gs_flatpak_app_is_runtime (GsApp *app)
 {
 	return g_strcmp0 (gs_app_get_flatpak_kind_as_str (app), "runtime") == 0;
 }
+
+gboolean
+gs_flatpak_add_popular (GsFlatpak *self,
+			GsAppList *list,
+			GCancellable *cancellable,
+			GError **error)
+{
+	AsApp *item;
+	GPtrArray *array;
+	guint i;
+	g_autoptr(AsProfileTask) ptask = NULL;
+
+	/* find out how many packages are in each category */
+	ptask = as_profile_start_literal (gs_plugin_get_profile (self->plugin),
+					  "flatpak::add-popular");
+	g_assert (ptask != NULL);
+	array = as_store_get_apps (self->store);
+	for (i = 0; i < array->len; i++) {
+		g_autoptr(GsApp) app = NULL;
+		item = g_ptr_array_index (array, i);
+		if (as_app_get_id (item) == NULL)
+			continue;
+		if (!as_app_has_kudo (item, "GnomeSoftware::popular"))
+			continue;
+		app = gs_app_new (as_app_get_id (item));
+		gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+		gs_app_list_add (list, app);
+	}
+	return TRUE;
+}
+
