@@ -437,8 +437,11 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 				   GsApp *app)
 {
 	GsApp *cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
-	const char *cached_app_id = gs_app_get_unique_id (cached_app);
 	const char *app_id = gs_app_get_unique_id (app);
+	const char *cached_app_id = NULL;
+
+	if (cached_app)
+		cached_app_id = gs_app_get_unique_id (cached_app);
 
 	/* avoid blacklisting the same app that's already cached */
 	if (cached_app == app || g_strcmp0 (cached_app_id, app_id) == 0)
