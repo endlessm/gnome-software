@@ -582,7 +582,7 @@ gs_plugin_install_ext_runtime (GsPlugin *plugin,
 			       GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	GError *local_error;
+	GError *local_error = NULL;
 
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 	gs_app_set_progress (app, 50);
