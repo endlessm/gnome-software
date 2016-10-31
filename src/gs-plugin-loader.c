@@ -71,6 +71,12 @@ enum {
 	SIGNAL_LAST
 };
 
+enum {
+	PROP_0,
+	PROP_ALLOW_UPDATES,
+	PROP_LAST
+};
+
 static guint signals [SIGNAL_LAST] = { 0 };
 
 typedef void		 (*GsPluginFunc)		(GsPlugin	*plugin);
@@ -3297,6 +3303,13 @@ gs_plugin_loader_app_action_finish (GsPluginLoader *plugin_loader,
 
 /******************************************************************************/
 
+gboolean
+gs_plugin_loader_get_allow_updates (GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	return g_settings_get_boolean (priv->settings, "allow-updates");
+}
+
 GsAppList *
 gs_plugin_loader_get_pending (GsPluginLoader *plugin_loader)
 {
@@ -3835,6 +3848,23 @@ gs_plugin_loader_dump_state (GsPluginLoader *plugin_loader)
 }
 
 static void
+gs_plugin_loader_get_property (GObject *object, guint prop_id,
+			       GValue *value, GParamSpec *pspec)
+{
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (object);
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+
+	switch (prop_id) {
+	case PROP_ALLOW_UPDATES:
+		g_value_set_boolean (value, gs_plugin_loader_get_allow_updates (plugin_loader));
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
 gs_plugin_loader_dispose (GObject *object)
 {
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (object);
@@ -3877,10 +3907,17 @@ gs_plugin_loader_finalize (GObject *object)
 static void
 gs_plugin_loader_class_init (GsPluginLoaderClass *klass)
 {
+	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+	object_class->get_property = gs_plugin_loader_get_property;
 	object_class->dispose = gs_plugin_loader_dispose;
 	object_class->finalize = gs_plugin_loader_finalize;
+
+	pspec = g_param_spec_boolean ("allow-updates", NULL, NULL,
+				      TRUE,
+				      G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_ALLOW_UPDATES, pspec);
 
 	signals [SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
@@ -3909,6 +3946,14 @@ gs_plugin_loader_class_init (GsPluginLoaderClass *klass)
 }
 
 static void
+allow_updates_changed_cb (GSettings *settings,
+			  const gchar *key,
+			  GsPluginLoader *plugin_loader)
+{
+	g_object_notify (G_OBJECT (plugin_loader), "allow-updates");
+}
+
+static void
 gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
@@ -3925,6 +3970,8 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	priv->auth_array = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->profile = as_profile_new ();
 	priv->settings = g_settings_new ("org.gnome.software");
+	g_signal_connect (priv->settings, "changed::allow-updates",
+			  G_CALLBACK (allow_updates_changed_cb), plugin_loader);
 
 	/* share a soup session (also disable the double-compression) */
 	priv->soup_session = soup_session_new_with_options (SOUP_SESSION_USER_AGENT, gs_user_agent (),
