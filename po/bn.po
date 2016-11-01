@@ -10,9 +10,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-18 22:31-0700\n"
-"PO-Revision-Date: 2016-10-21 11:15+0000\n"
-"Last-Translator: Aditi Kabir <aditi.kabir@gmail.com>\n"
+"POT-Creation-Date: 2016-10-25 03:21+0000\n"
+"PO-Revision-Date: 2016-10-28 07:34+0000\n"
+"Last-Translator: Shimon Sharmin <oparthib@gmail.com>\n"
 "Language-Team: Bengali (http://www.transifex.com/endless-mobile-inc/gnome-software/language/bn/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -224,7 +224,7 @@ msgstr "এ্যাপ্লিকেশন ফোল্ডারে সংয�
 
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
-#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:9
 #: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_বাতিল"
@@ -295,8 +295,8 @@ msgstr "_সংস্থাপিত"
 msgid "_Updates"
 msgstr "_আপডেটসমূহ"
 
-#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:439
-#: ../src/gs-shell-details.ui.h:7
+#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:426
+#: ../src/gs-shell-details.ui.h:10
 msgid "Pending"
 msgstr "অমীমাংসিত"
 
@@ -690,24 +690,24 @@ msgstr "%s মুছে ফেলা হবে, এবং এটা ব্যব
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1042
+#: ../src/gs-plugin-loader.c:1049
 msgid "OS Updates"
 msgstr "OS আপডেট"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1047
+#: ../src/gs-plugin-loader.c:1054
 msgid "Includes performance, stability and security improvements."
 msgstr "কর্মক্ষমতা, স্থিতিশীলতা ও নিরাপত্তার অগ্রগতি সংযোজিত।"
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1723 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1730 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "%s ফরম্যাটে কোন এ্যাডঅন কোডেক পাওয়া যায়নি।"
 
-#: ../src/gs-plugin-loader.c:1726
+#: ../src/gs-plugin-loader.c:1733
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -956,7 +956,7 @@ msgid "_Install…"
 msgstr "_সংস্থাপন..."
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
+#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:21
 msgid "_Uninstall"
 msgstr "_আনইনস্টল "
 
@@ -1001,23 +1001,23 @@ msgid "Sorry, this did not work"
 msgstr "দুঃখিত, এটি কাজ করেনি।"
 
 #. TRANSLATORS: see the wikipedia page
-#: ../src/gs-shell-details.c:1738
+#: ../src/gs-shell-details.c:1739
 msgid "Public domain"
 msgstr "সর্বজনীন ডোমেইন"
 
 #. TRANSLATORS: see GNU page
-#: ../src/gs-shell-details.c:1754 ../src/gs-shell-details.ui.h:51
+#: ../src/gs-shell-details.c:1755 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
 msgstr "উন্মুক্ত সফটওয়্যার"
 
 #. TRANSLATORS: for the free software popover
-#: ../src/gs-shell-details.c:1809
+#: ../src/gs-shell-details.c:1810
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "ব্যবহারকারীরা নিম্নোক্ত লাইসেন্সসমূহ দ্বারা আবদ্ধ:"
 msgstr[1] "ব্যবহারকারীরা নিম্নোক্ত লাইসেন্সসমূহ দ্বারা আবদ্ধ:"
 
-#: ../src/gs-shell-details.c:1825 ../src/gs-shell-details.ui.h:55
+#: ../src/gs-shell-details.c:1826 ../src/gs-shell-details.ui.h:55
 msgid "More information"
 msgstr "আরো তথ্য"
 
@@ -1033,41 +1033,41 @@ msgstr "_আরম্ভ"
 
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:9
+#: ../src/gs-shell-details.ui.h:6
 msgid "_Add to Desktop"
 msgstr "_ডেস্কটপে যোগ করুন "
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:11
+#: ../src/gs-shell-details.ui.h:8
 msgid "_Remove from Desktop"
 msgstr "_ডেস্কটপ থেকে সরান "
 
-#: ../src/gs-shell-details.ui.h:12
+#: ../src/gs-shell-details.ui.h:11
 msgid "No screenshot provided"
 msgstr "কোন স্ক্রিনশট দেয়া হয়নি"
 
-#: ../src/gs-shell-details.ui.h:13
+#: ../src/gs-shell-details.ui.h:12
 msgid "Software Source Included"
 msgstr "সফটওয়্যার উৎস সংযোজিত"
 
-#: ../src/gs-shell-details.ui.h:14
+#: ../src/gs-shell-details.ui.h:13
 msgid ""
 "This application includes a software source which provides updates, as well "
 "as access to other software."
 msgstr "এই এ্যাপ্লিকেশনে একটি সফটওয়্যার উৎস সংযোজিত আছে যাতে আপডেট, ও সেইসাথে অন্যান্য সফটওয়্যারে প্রবেশাধিকার সরবরাহ করা হয়েছে।"
 
-#: ../src/gs-shell-details.ui.h:15
+#: ../src/gs-shell-details.ui.h:14
 msgid "No Software Source Included"
 msgstr "কোন সফটওয়্যার উৎস সংযোজিত হয়নি"
 
-#: ../src/gs-shell-details.ui.h:16
+#: ../src/gs-shell-details.ui.h:15
 msgid ""
 "This application does not include a software source. It will not be updated "
 "with new versions."
 msgstr "এই এ্যাপ্লিকেশনে কোন সফটওয়্যার উৎস উল্লেখ করা হয়নি। কোন নতুন ভার্সন দ্বারা এটি আপডেট হবে না।"
 
-#: ../src/gs-shell-details.ui.h:17
+#: ../src/gs-shell-details.ui.h:16
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1075,27 +1075,27 @@ msgstr "আপনার বিতরণকারী দ্বারা এই �
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: ../src/gs-shell-details.ui.h:19
+#: ../src/gs-shell-details.ui.h:18
 msgid "Software Source Identified"
 msgstr "সফটওয়্যার উৎস চিহ্নিত"
 
-#: ../src/gs-shell-details.ui.h:20
+#: ../src/gs-shell-details.ui.h:19
 msgid ""
 "Adding this software source will give you access to additional software and "
 "upgrades."
 msgstr "এই সফটওয়্যার উৎস সংযুক্ত করলে এটি আপনাকে অন্যান্য সফটওয়্যার ও আপগ্রেডে প্রবেশাধিকার দেবে।"
 
-#: ../src/gs-shell-details.ui.h:21
+#: ../src/gs-shell-details.ui.h:20
 msgid "Only use software sources that you trust."
 msgstr "শুধুমাত্র যে সকল সফটওয়্যার উৎসে আস্থা আছে তাদের ব্যবহার করুন।"
 
-#: ../src/gs-shell-details.ui.h:22
-msgid "Developer _Website"
-msgstr "ওয়েবসাইট_উন্নয়নকারী "
-
-#: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
+#: ../src/gs-shell-details.ui.h:22 ../src/gs-common.c:790
 msgid "Details"
 msgstr "বিশদ"
+
+#: ../src/gs-shell-details.ui.h:23
+msgid "Developer _Website"
+msgstr "ওয়েবসাইট_উন্নয়নকারী "
 
 #: ../src/gs-shell-details.ui.h:24
 msgid "Localized in your Language"
@@ -2887,10 +2887,20 @@ msgstr "প্রসঙ্গক্রম এবং খবর"
 msgid "Utilities"
 msgstr "উপযোগিতা"
 
-#: ../src/plugins/gs-plugin-eos.c:993
+#: ../src/plugins/gs-plugin-eos.c:998
 msgid "Endless Platform"
 msgstr "এন্ডলেস প্রাঙ্গণ"
 
-#: ../src/plugins/gs-plugin-eos.c:996
+#: ../src/plugins/gs-plugin-eos.c:1001
 msgid "Framework for applications"
 msgstr "এ্যাপ্লিকেশনসমূহের জন্য ফ্রেমওয়ার্ক"
+
+#: ../src/plugins/gs-plugin-external-apps.c:656
+#, c-format
+msgid "Failed to download the application. Please try installing again later."
+msgstr "এ্যাপ্লিকেশনটি ডাউনলোড করতে ব্যর্থ। অনুগ্রহপূর্বক পরে আবার সংস্থাপন করার চেষ্টা করুন।"
+
+#: ../src/plugins/gs-plugin-external-apps.c:857
+#, c-format
+msgid "Failed to download the application. Please try updating again later."
+msgstr "এ্যাপ্লিকেশনটি ডাউনলোড করতে ব্যর্থ। অনুগ্রহপূর্বক পরে আবার হালনাগাদ করার চেষ্টা করুন।"

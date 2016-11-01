@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-18 22:31-0700\n"
-"PO-Revision-Date: 2016-10-19 05:40+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-25 03:21+0000\n"
+"PO-Revision-Date: 2016-10-25 03:22+0000\n"
+"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Khmer (http://www.transifex.com/endless-mobile-inc/gnome-software/language/km/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -221,7 +221,7 @@ msgstr "បន្ថែម​ទៅ​ថត​កម្មវិធី"
 
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
-#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:9
 #: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "បោះបង់"
@@ -292,8 +292,8 @@ msgstr "បាន​ដំឡើង"
 msgid "_Updates"
 msgstr "បច្ចុប្បន្នភាព"
 
-#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:439
-#: ../src/gs-shell-details.ui.h:7
+#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:426
+#: ../src/gs-shell-details.ui.h:10
 msgid "Pending"
 msgstr "រង់ចាំ"
 
@@ -687,24 +687,24 @@ msgstr "%s នឹង​ត្រូវ​បាន​លុប​ចេញ ហ�
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1042
+#: ../src/gs-plugin-loader.c:1049
 msgid "OS Updates"
 msgstr "បច្ចុប្បន្នភាព​ប្រព័ន្ធ​ប្រតិបត្តិការ"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1047
+#: ../src/gs-plugin-loader.c:1054
 msgid "Includes performance, stability and security improvements."
 msgstr ""
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1723 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1730 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "មិនមាន​កូឌិក​បន្ថែម​សម្រាប់​ទ្រង់ទ្រាយ %s ។"
 
-#: ../src/gs-plugin-loader.c:1726
+#: ../src/gs-plugin-loader.c:1733
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -953,7 +953,7 @@ msgid "_Install…"
 msgstr ""
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
+#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:21
 msgid "_Uninstall"
 msgstr ""
 
@@ -998,22 +998,22 @@ msgid "Sorry, this did not work"
 msgstr "សូម​ទោស វា​មិន​ដំណើរការ​ទេ"
 
 #. TRANSLATORS: see the wikipedia page
-#: ../src/gs-shell-details.c:1738
+#: ../src/gs-shell-details.c:1739
 msgid "Public domain"
 msgstr ""
 
 #. TRANSLATORS: see GNU page
-#: ../src/gs-shell-details.c:1754 ../src/gs-shell-details.ui.h:51
+#: ../src/gs-shell-details.c:1755 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
 msgstr ""
 
 #. TRANSLATORS: for the free software popover
-#: ../src/gs-shell-details.c:1809
+#: ../src/gs-shell-details.c:1810
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] ""
 
-#: ../src/gs-shell-details.c:1825 ../src/gs-shell-details.ui.h:55
+#: ../src/gs-shell-details.c:1826 ../src/gs-shell-details.ui.h:55
 msgid "More information"
 msgstr ""
 
@@ -1029,41 +1029,41 @@ msgstr "ចាប់ផ្ដើម"
 
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:9
+#: ../src/gs-shell-details.ui.h:6
 msgid "_Add to Desktop"
 msgstr ""
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:11
+#: ../src/gs-shell-details.ui.h:8
 msgid "_Remove from Desktop"
 msgstr ""
 
-#: ../src/gs-shell-details.ui.h:12
+#: ../src/gs-shell-details.ui.h:11
 msgid "No screenshot provided"
 msgstr ""
 
-#: ../src/gs-shell-details.ui.h:13
+#: ../src/gs-shell-details.ui.h:12
 msgid "Software Source Included"
 msgstr "រួម​បញ្ចូល​ប្រភព​កម្មវិធី"
 
-#: ../src/gs-shell-details.ui.h:14
+#: ../src/gs-shell-details.ui.h:13
 msgid ""
 "This application includes a software source which provides updates, as well "
 "as access to other software."
 msgstr "កម្មវិធី​នេះរួមមាន​ប្រភពកម្មវិធី​ដែល​ផ្ដល់បច្ចុប្បន្នភាព ព្រម​ទាំង​ចូល​ដំណើរការ​កម្មវិធី​ផ្សេង។"
 
-#: ../src/gs-shell-details.ui.h:15
+#: ../src/gs-shell-details.ui.h:14
 msgid "No Software Source Included"
 msgstr "គ្មាន​ប្រភព​កម្មវិធី​បាន​ដាក់​បញ្ចូល"
 
-#: ../src/gs-shell-details.ui.h:16
+#: ../src/gs-shell-details.ui.h:15
 msgid ""
 "This application does not include a software source. It will not be updated "
 "with new versions."
 msgstr "កម្មវិធីនេះ​មិន​ដាក់បញ្ចូល​ប្រភព​កម្មវិធី។ វា​នឹង​មិន​ត្រូវ​បាន​ធ្វើបច្ចុប្បន្នភាព​ជា​មួយ​កំណែ​ថ្មី​ទេ។"
 
-#: ../src/gs-shell-details.ui.h:17
+#: ../src/gs-shell-details.ui.h:16
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1071,27 +1071,27 @@ msgstr "កម្មវិធី​នេះ​ត្រូវ​បាន​ផ
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: ../src/gs-shell-details.ui.h:19
+#: ../src/gs-shell-details.ui.h:18
 msgid "Software Source Identified"
 msgstr "បាន​បញ្ជាក់អត្តសញ្ញាណ​ប្រភព​កម្មវិធី"
 
-#: ../src/gs-shell-details.ui.h:20
+#: ../src/gs-shell-details.ui.h:19
 msgid ""
 "Adding this software source will give you access to additional software and "
 "upgrades."
 msgstr "ការ​បន្ថែម​ប្រភព​កម្មវិធី​នេះ​ផ្ដល់ឲ្យ​អ្នកចូល​ដំណើរការ​កម្មវិធី និង​បច្ចុប្បន្នភាព​បន្ថែម។"
 
-#: ../src/gs-shell-details.ui.h:21
+#: ../src/gs-shell-details.ui.h:20
 msgid "Only use software sources that you trust."
 msgstr "ប្រើ​តែ​ប្រភព​កម្មវិធី​ដែលអ្នក​ទុក​ចិត្ត។"
 
-#: ../src/gs-shell-details.ui.h:22
-msgid "Developer _Website"
-msgstr ""
-
-#: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
+#: ../src/gs-shell-details.ui.h:22 ../src/gs-common.c:790
 msgid "Details"
 msgstr "ព័ត៌មាន​លម្អិត"
+
+#: ../src/gs-shell-details.ui.h:23
+msgid "Developer _Website"
+msgstr ""
 
 #: ../src/gs-shell-details.ui.h:24
 msgid "Localized in your Language"
@@ -2873,10 +2873,20 @@ msgstr ""
 msgid "Utilities"
 msgstr "ការ​​ប្រើប្រាស់"
 
-#: ../src/plugins/gs-plugin-eos.c:993
+#: ../src/plugins/gs-plugin-eos.c:998
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:996
+#: ../src/plugins/gs-plugin-eos.c:1001
 msgid "Framework for applications"
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:656
+#, c-format
+msgid "Failed to download the application. Please try installing again later."
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:857
+#, c-format
+msgid "Failed to download the application. Please try updating again later."
 msgstr ""

@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-18 22:31-0700\n"
-"PO-Revision-Date: 2016-10-19 05:40+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-25 03:21+0000\n"
+"PO-Revision-Date: 2016-10-25 03:22+0000\n"
+"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Friulian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/fur/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -222,7 +222,7 @@ msgstr "Zonte ae cartele aplicazions"
 
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
-#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:9
 #: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_Anule"
@@ -293,8 +293,8 @@ msgstr "_Instalât"
 msgid "_Updates"
 msgstr "_Inzornaments"
 
-#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:439
-#: ../src/gs-shell-details.ui.h:7
+#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:426
+#: ../src/gs-shell-details.ui.h:10
 msgid "Pending"
 msgstr "In spiete"
 
@@ -688,24 +688,24 @@ msgstr "%s e vegnarà gjavade e par podêle doprâ di gnûf tu varâs di instal�
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1042
+#: ../src/gs-plugin-loader.c:1049
 msgid "OS Updates"
 msgstr "Inzornament dal SO"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1047
+#: ../src/gs-plugin-loader.c:1054
 msgid "Includes performance, stability and security improvements."
 msgstr "Al inclût mioraments di prestazion, stabilitât e sigurece."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1723 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1730 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "Nol è disponibil nissun codec pal formât %s."
 
-#: ../src/gs-plugin-loader.c:1726
+#: ../src/gs-plugin-loader.c:1733
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -954,7 +954,7 @@ msgid "_Install…"
 msgstr "_Instale..."
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
+#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:21
 msgid "_Uninstall"
 msgstr ""
 
@@ -999,23 +999,23 @@ msgid "Sorry, this did not work"
 msgstr "Chest nol à funzionât"
 
 #. TRANSLATORS: see the wikipedia page
-#: ../src/gs-shell-details.c:1738
+#: ../src/gs-shell-details.c:1739
 msgid "Public domain"
 msgstr "Domini public"
 
 #. TRANSLATORS: see GNU page
-#: ../src/gs-shell-details.c:1754 ../src/gs-shell-details.ui.h:51
+#: ../src/gs-shell-details.c:1755 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
 msgstr "Software Libar"
 
 #. TRANSLATORS: for the free software popover
-#: ../src/gs-shell-details.c:1809
+#: ../src/gs-shell-details.c:1810
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "I utents a son limitâts de licence chi daurman:"
 msgstr[1] "I utents a son limitâts des licencis chi daurman:"
 
-#: ../src/gs-shell-details.c:1825 ../src/gs-shell-details.ui.h:55
+#: ../src/gs-shell-details.c:1826 ../src/gs-shell-details.ui.h:55
 msgid "More information"
 msgstr "Plui informazions"
 
@@ -1031,41 +1031,41 @@ msgstr "_Invie"
 
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:9
+#: ../src/gs-shell-details.ui.h:6
 msgid "_Add to Desktop"
 msgstr ""
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:11
+#: ../src/gs-shell-details.ui.h:8
 msgid "_Remove from Desktop"
 msgstr ""
 
-#: ../src/gs-shell-details.ui.h:12
+#: ../src/gs-shell-details.ui.h:11
 msgid "No screenshot provided"
 msgstr "Cature di schermi no furnide"
 
-#: ../src/gs-shell-details.ui.h:13
+#: ../src/gs-shell-details.ui.h:12
 msgid "Software Source Included"
 msgstr "Sorzint software includude"
 
-#: ../src/gs-shell-details.ui.h:14
+#: ../src/gs-shell-details.ui.h:13
 msgid ""
 "This application includes a software source which provides updates, as well "
 "as access to other software."
 msgstr "Cheste aplicazion e inclût une sorzint software che e furnìs inzornaments, cussì ancje l'acès a altri software."
 
-#: ../src/gs-shell-details.ui.h:15
+#: ../src/gs-shell-details.ui.h:14
 msgid "No Software Source Included"
 msgstr "Nissune sorzint software includude"
 
-#: ../src/gs-shell-details.ui.h:16
+#: ../src/gs-shell-details.ui.h:15
 msgid ""
 "This application does not include a software source. It will not be updated "
 "with new versions."
 msgstr "Cheste aplicazion no inclût une sorzint software. No vegnarà inzornade cun gnovis versions."
 
-#: ../src/gs-shell-details.ui.h:17
+#: ../src/gs-shell-details.ui.h:16
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1073,27 +1073,27 @@ msgstr "Chest software al è za furnît de tô distribuzion e no varès di jessi
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: ../src/gs-shell-details.ui.h:19
+#: ../src/gs-shell-details.ui.h:18
 msgid "Software Source Identified"
 msgstr "Sorzint software identificade"
 
-#: ../src/gs-shell-details.ui.h:20
+#: ../src/gs-shell-details.ui.h:19
 msgid ""
 "Adding this software source will give you access to additional software and "
 "upgrades."
 msgstr "Zontant cheste sorzint software tu varâs acès a software in plui e inzornaments."
 
-#: ../src/gs-shell-details.ui.h:21
+#: ../src/gs-shell-details.ui.h:20
 msgid "Only use software sources that you trust."
 msgstr "Dopre nome lis sorzints software che tu ti fidis."
 
-#: ../src/gs-shell-details.ui.h:22
-msgid "Developer _Website"
-msgstr ""
-
-#: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
+#: ../src/gs-shell-details.ui.h:22 ../src/gs-common.c:790
 msgid "Details"
 msgstr "Detais"
+
+#: ../src/gs-shell-details.ui.h:23
+msgid "Developer _Website"
+msgstr ""
 
 #: ../src/gs-shell-details.ui.h:24
 msgid "Localized in your Language"
@@ -2885,10 +2885,20 @@ msgstr ""
 msgid "Utilities"
 msgstr "Utilitâts"
 
-#: ../src/plugins/gs-plugin-eos.c:993
+#: ../src/plugins/gs-plugin-eos.c:998
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:996
+#: ../src/plugins/gs-plugin-eos.c:1001
 msgid "Framework for applications"
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:656
+#, c-format
+msgid "Failed to download the application. Please try installing again later."
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:857
+#, c-format
+msgid "Failed to download the application. Please try updating again later."
 msgstr ""

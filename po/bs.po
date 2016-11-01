@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-18 22:31-0700\n"
-"PO-Revision-Date: 2016-10-19 05:40+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-25 03:21+0000\n"
+"PO-Revision-Date: 2016-10-25 03:22+0000\n"
+"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Bosnian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/bs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -222,7 +222,7 @@ msgstr "Dodaj u Aplikacijski direktorij"
 
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
-#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:9
 #: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_Odustani"
@@ -293,8 +293,8 @@ msgstr "_Instalirano"
 msgid "_Updates"
 msgstr "_Ažuriranja"
 
-#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:439
-#: ../src/gs-shell-details.ui.h:7
+#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:426
+#: ../src/gs-shell-details.ui.h:10
 msgid "Pending"
 msgstr "U čekanju"
 
@@ -688,24 +688,24 @@ msgstr "%s će biti obrisan, i morat ćete ga instalirati za ponovo korišzenje.
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1042
+#: ../src/gs-plugin-loader.c:1049
 msgid "OS Updates"
 msgstr "Auriranje OS"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1047
+#: ../src/gs-plugin-loader.c:1054
 msgid "Includes performance, stability and security improvements."
 msgstr "Uključuje performanse, stabilnost i sigurnosna poboljšanja."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1723 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1730 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "Proširenja koda nisu dostupna za %s format."
 
-#: ../src/gs-plugin-loader.c:1726
+#: ../src/gs-plugin-loader.c:1733
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -954,7 +954,7 @@ msgid "_Install…"
 msgstr "_Instaliraj"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
+#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:21
 msgid "_Uninstall"
 msgstr ""
 
@@ -999,24 +999,24 @@ msgid "Sorry, this did not work"
 msgstr "Žao nam je, to ne radi"
 
 #. TRANSLATORS: see the wikipedia page
-#: ../src/gs-shell-details.c:1738
+#: ../src/gs-shell-details.c:1739
 msgid "Public domain"
 msgstr ""
 
 #. TRANSLATORS: see GNU page
-#: ../src/gs-shell-details.c:1754 ../src/gs-shell-details.ui.h:51
+#: ../src/gs-shell-details.c:1755 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
 msgstr ""
 
 #. TRANSLATORS: for the free software popover
-#: ../src/gs-shell-details.c:1809
+#: ../src/gs-shell-details.c:1810
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
 
-#: ../src/gs-shell-details.c:1825 ../src/gs-shell-details.ui.h:55
+#: ../src/gs-shell-details.c:1826 ../src/gs-shell-details.ui.h:55
 msgid "More information"
 msgstr ""
 
@@ -1032,41 +1032,41 @@ msgstr "_Pokreni"
 
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:9
+#: ../src/gs-shell-details.ui.h:6
 msgid "_Add to Desktop"
 msgstr ""
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:11
+#: ../src/gs-shell-details.ui.h:8
 msgid "_Remove from Desktop"
 msgstr ""
 
-#: ../src/gs-shell-details.ui.h:12
+#: ../src/gs-shell-details.ui.h:11
 msgid "No screenshot provided"
 msgstr ""
 
-#: ../src/gs-shell-details.ui.h:13
+#: ../src/gs-shell-details.ui.h:12
 msgid "Software Source Included"
 msgstr "Softverski izvor uključen"
 
-#: ../src/gs-shell-details.ui.h:14
+#: ../src/gs-shell-details.ui.h:13
 msgid ""
 "This application includes a software source which provides updates, as well "
 "as access to other software."
 msgstr "Ova aplikacije uključuje izvor softvera koji omogućava ažuriranje, kao i pristup ostalom softveru."
 
-#: ../src/gs-shell-details.ui.h:15
+#: ../src/gs-shell-details.ui.h:14
 msgid "No Software Source Included"
 msgstr "Izvor softvera nije uključen"
 
-#: ../src/gs-shell-details.ui.h:16
+#: ../src/gs-shell-details.ui.h:15
 msgid ""
 "This application does not include a software source. It will not be updated "
 "with new versions."
 msgstr "Ova aplikacija ne uključuje izvor softvera. I neće biti ažuriran sa novom verzijom."
 
-#: ../src/gs-shell-details.ui.h:17
+#: ../src/gs-shell-details.ui.h:16
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1074,27 +1074,27 @@ msgstr "Ovaj softver je već dobijate sa svojom distribucijom i ne treba ga zami
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: ../src/gs-shell-details.ui.h:19
+#: ../src/gs-shell-details.ui.h:18
 msgid "Software Source Identified"
 msgstr "Izvor softvera identifikovan"
 
-#: ../src/gs-shell-details.ui.h:20
+#: ../src/gs-shell-details.ui.h:19
 msgid ""
 "Adding this software source will give you access to additional software and "
 "upgrades."
 msgstr "Dodavanjem ovog izvornog softvera daće ti pristup dodatnim softverima i nadogradnjama."
 
-#: ../src/gs-shell-details.ui.h:21
+#: ../src/gs-shell-details.ui.h:20
 msgid "Only use software sources that you trust."
 msgstr "Koristiti samo izvorni softver kojem vjerujete."
 
-#: ../src/gs-shell-details.ui.h:22
-msgid "Developer _Website"
-msgstr ""
-
-#: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
+#: ../src/gs-shell-details.ui.h:22 ../src/gs-common.c:790
 msgid "Details"
 msgstr "Detalji"
+
+#: ../src/gs-shell-details.ui.h:23
+msgid "Developer _Website"
+msgstr ""
 
 #: ../src/gs-shell-details.ui.h:24
 msgid "Localized in your Language"
@@ -2896,10 +2896,20 @@ msgstr ""
 msgid "Utilities"
 msgstr "Uslužni programi"
 
-#: ../src/plugins/gs-plugin-eos.c:993
+#: ../src/plugins/gs-plugin-eos.c:998
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:996
+#: ../src/plugins/gs-plugin-eos.c:1001
 msgid "Framework for applications"
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:656
+#, c-format
+msgid "Failed to download the application. Please try installing again later."
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:857
+#, c-format
+msgid "Failed to download the application. Please try updating again later."
 msgstr ""

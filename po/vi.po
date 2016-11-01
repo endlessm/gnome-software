@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-18 22:31-0700\n"
-"PO-Revision-Date: 2016-10-19 07:45+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"POT-Creation-Date: 2016-10-25 03:21+0000\n"
+"PO-Revision-Date: 2016-10-25 03:22+0000\n"
+"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Vietnamese (http://www.transifex.com/endless-mobile-inc/gnome-software/language/vi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -222,7 +222,7 @@ msgstr "Thêm vào Thư Mục Ứng Dụng"
 
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
-#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:9
 #: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_Hủy"
@@ -293,8 +293,8 @@ msgstr "_Đã cài đặt"
 msgid "_Updates"
 msgstr "_Bản cập nhật"
 
-#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:439
-#: ../src/gs-shell-details.ui.h:7
+#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:426
+#: ../src/gs-shell-details.ui.h:10
 msgid "Pending"
 msgstr "Đang chờ xử lý"
 
@@ -688,24 +688,24 @@ msgstr "%s sẽ được xóa bỏ, và bạn sẽ phải cài đặt lại đ�
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1042
+#: ../src/gs-plugin-loader.c:1049
 msgid "OS Updates"
 msgstr "Cập nhật Hệ điều hành"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1047
+#: ../src/gs-plugin-loader.c:1054
 msgid "Includes performance, stability and security improvements."
 msgstr "Bao gồm cải thiện về hiệu suất, tính ổn định và bảo mật."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1723 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1730 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "Không có sẵn các bộ mã hóa-giải mã add-on cho định dạng %s."
 
-#: ../src/gs-plugin-loader.c:1726
+#: ../src/gs-plugin-loader.c:1733
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -954,7 +954,7 @@ msgid "_Install…"
 msgstr "_Cài đặt..."
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:5
+#: ../src/gs-shell-details.c:354 ../src/gs-shell-details.ui.h:21
 msgid "_Uninstall"
 msgstr "_Gỡ cài đặt"
 
@@ -999,22 +999,22 @@ msgid "Sorry, this did not work"
 msgstr "Xin lỗi, tác vụ không có hiệu lực"
 
 #. TRANSLATORS: see the wikipedia page
-#: ../src/gs-shell-details.c:1738
+#: ../src/gs-shell-details.c:1739
 msgid "Public domain"
 msgstr "Phạm vi công cộng"
 
 #. TRANSLATORS: see GNU page
-#: ../src/gs-shell-details.c:1754 ../src/gs-shell-details.ui.h:51
+#: ../src/gs-shell-details.c:1755 ../src/gs-shell-details.ui.h:51
 msgid "Free Software"
 msgstr "Phần mềm Miễn phí"
 
 #. TRANSLATORS: for the free software popover
-#: ../src/gs-shell-details.c:1809
+#: ../src/gs-shell-details.c:1810
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Người dùng chịu sự ràng buộc của các giấy phép sau đây:"
 
-#: ../src/gs-shell-details.c:1825 ../src/gs-shell-details.ui.h:55
+#: ../src/gs-shell-details.c:1826 ../src/gs-shell-details.ui.h:55
 msgid "More information"
 msgstr "Thêm thông tin"
 
@@ -1030,41 +1030,41 @@ msgstr "_Khởi chạy"
 
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:9
+#: ../src/gs-shell-details.ui.h:6
 msgid "_Add to Desktop"
 msgstr "_Thêm vào Màn hình nền"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
-#: ../src/gs-shell-details.ui.h:11
+#: ../src/gs-shell-details.ui.h:8
 msgid "_Remove from Desktop"
 msgstr "_Gỡ từ Màn hình nền"
 
-#: ../src/gs-shell-details.ui.h:12
+#: ../src/gs-shell-details.ui.h:11
 msgid "No screenshot provided"
 msgstr "Không có ảnh chụp màn hình nào được cung cấp"
 
-#: ../src/gs-shell-details.ui.h:13
+#: ../src/gs-shell-details.ui.h:12
 msgid "Software Source Included"
 msgstr "Bao gồm Mã nguồn Phần mềm"
 
-#: ../src/gs-shell-details.ui.h:14
+#: ../src/gs-shell-details.ui.h:13
 msgid ""
 "This application includes a software source which provides updates, as well "
 "as access to other software."
 msgstr "Ứng dụng này bao gồm một nguồn phần mềm cung cấp các cập nhật cũng như quyền truy cập đến phần mềm khác."
 
-#: ../src/gs-shell-details.ui.h:15
+#: ../src/gs-shell-details.ui.h:14
 msgid "No Software Source Included"
 msgstr "Không bao gồm Mã nguồn Phần mềm"
 
-#: ../src/gs-shell-details.ui.h:16
+#: ../src/gs-shell-details.ui.h:15
 msgid ""
 "This application does not include a software source. It will not be updated "
 "with new versions."
 msgstr "Ứng dụng này không bao gồm mã nguồn phần mềm. Ứng dụng sẽ không được cập nhật các phiên bản mới."
 
-#: ../src/gs-shell-details.ui.h:17
+#: ../src/gs-shell-details.ui.h:16
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1072,27 +1072,27 @@ msgstr "Phần mềm này đã được nhà phân phối của bạn cung cấp
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: ../src/gs-shell-details.ui.h:19
+#: ../src/gs-shell-details.ui.h:18
 msgid "Software Source Identified"
 msgstr "Đã Xác định Nguồn Phần mềm"
 
-#: ../src/gs-shell-details.ui.h:20
+#: ../src/gs-shell-details.ui.h:19
 msgid ""
 "Adding this software source will give you access to additional software and "
 "upgrades."
 msgstr "Việc thêm mã nguồn phần mềm này sẽ cho phép bạn truy cập vào phần mềm bổ sung và các bản nâng cấp."
 
-#: ../src/gs-shell-details.ui.h:21
+#: ../src/gs-shell-details.ui.h:20
 msgid "Only use software sources that you trust."
 msgstr "Chỉ sử dụng các mã nguồn phần mềm mà bạn tin tưởng."
 
-#: ../src/gs-shell-details.ui.h:22
-msgid "Developer _Website"
-msgstr "Lập trình viên _Trang web"
-
-#: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
+#: ../src/gs-shell-details.ui.h:22 ../src/gs-common.c:790
 msgid "Details"
 msgstr "Chi tiết"
+
+#: ../src/gs-shell-details.ui.h:23
+msgid "Developer _Website"
+msgstr "Lập trình viên _Trang web"
 
 #: ../src/gs-shell-details.ui.h:24
 msgid "Localized in your Language"
@@ -2874,10 +2874,20 @@ msgstr "Tham khảo & Tin tức"
 msgid "Utilities"
 msgstr "Các tiện ích"
 
-#: ../src/plugins/gs-plugin-eos.c:993
+#: ../src/plugins/gs-plugin-eos.c:998
 msgid "Endless Platform"
 msgstr "Nền tảng Vô tận"
 
-#: ../src/plugins/gs-plugin-eos.c:996
+#: ../src/plugins/gs-plugin-eos.c:1001
 msgid "Framework for applications"
 msgstr "Bộ khung phát triển các ứng dụng"
+
+#: ../src/plugins/gs-plugin-external-apps.c:656
+#, c-format
+msgid "Failed to download the application. Please try installing again later."
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:857
+#, c-format
+msgid "Failed to download the application. Please try updating again later."
+msgstr ""
