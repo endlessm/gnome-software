@@ -898,6 +898,24 @@ add_app_to_shell (GsPlugin	*plugin,
 		return FALSE;
 	}
 
+	g_dbus_connection_call_sync (priv->session_bus,
+				     "org.gnome.Shell",
+				     "/org/gnome/Shell",
+				     "org.gnome.Shell",
+				     "FocusSearch",
+				     NULL,
+				     NULL,
+				     G_DBUS_CALL_FLAGS_NONE,
+				     -1,
+				     cancellable,
+				     &error);
+
+	if (error != NULL) {
+		g_debug ("Error showing desktop: %s", error->message);
+		g_propagate_error (error_out, error);
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
