@@ -244,9 +244,7 @@ extract_runtime_info_from_json_data (const char *data,
 
 	root = json_node_get_object (json_parser_get_root (parser));
 	if (!root) {
-		g_set_error (error,
-		             GS_PLUGIN_ERROR,
-		             GS_PLUGIN_ERROR_FAILED,
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
 		             "no root object");
 		return NULL;
 	}
@@ -255,9 +253,7 @@ extract_runtime_info_from_json_data (const char *data,
 	if (node)
 		spec = json_node_get_int (node);
 	if (spec != EXTERNAL_ASSETS_SPEC_VERSION) {
-		g_set_error (error,
-		             GS_PLUGIN_ERROR,
-		             GS_PLUGIN_ERROR_FAILED,
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
 		             "External asset's json spec version '%u' does "
 			     "not match the plugin. Expected '%u'", spec,
 			     EXTERNAL_ASSETS_SPEC_VERSION);
@@ -266,9 +262,7 @@ extract_runtime_info_from_json_data (const char *data,
 
 	node = json_object_get_member (root, JSON_RUNTIME_KEY);
 	if (!node) {
-		g_set_error (error,
-		             GS_PLUGIN_ERROR,
-		             GS_PLUGIN_ERROR_FAILED,
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
 		             "External asset's json has no '%s' member set",
 			     JSON_RUNTIME_KEY);
 		return NULL;
@@ -278,9 +272,7 @@ extract_runtime_info_from_json_data (const char *data,
 
 	node = json_object_get_member (runtime, JSON_RUNTIME_NAME_KEY);
 	if (!node) {
-		g_set_error (error,
-		             GS_PLUGIN_ERROR,
-		             GS_PLUGIN_ERROR_FAILED,
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
 		             "External asset's runtime member has no '%s' key "
 			     "set", JSON_RUNTIME_NAME_KEY);
 		return NULL;
@@ -290,9 +282,7 @@ extract_runtime_info_from_json_data (const char *data,
 
 	node = json_object_get_member (runtime, JSON_RUNTIME_URL_KEY);
 	if (!node) {
-		g_set_error (error,
-		             GS_PLUGIN_ERROR,
-		             GS_PLUGIN_ERROR_FAILED,
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
 		             "External asset's runtime member has no '%s' key "
 			     "set", JSON_RUNTIME_URL_KEY);
 		return NULL;
