@@ -512,6 +512,15 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	if (!gs_app_is_installed (app))
 		return TRUE;
 
+	/* Refine app's external runtime metadata from its own installed
+	 * appstream and get the external runtime again to ensure we have the
+	 * real one that the app needs */
+	gs_flatpak_refine_metadata_from_installation (flatpak, app, cancellable,
+						      error);
+	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
+	if (!ext_runtime)
+		return TRUE;
+
 	/* If the external runtime is installed then there is nothing else to
 	 * do as its headless app has already been refined and is up to date*/
 	if (gs_app_is_installed (ext_runtime))

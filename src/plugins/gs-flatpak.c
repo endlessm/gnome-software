@@ -2138,3 +2138,105 @@ gs_flatpak_set_download_updates (GsFlatpak *self,
 {
 	self->download_updates = download_updates;
 }
+
+static gboolean
+gs_flatpak_get_appstream_for_commit (GsFlatpak *self,
+				     GsApp *app,
+				     const char *commit,
+				     GBytes **appstream_contents,
+				     GCancellable *cancellable,
+				     GError **error)
+{
+	g_autoptr(GBytes) std_out = NULL;
+	g_autoptr(GFile) path_file =
+		flatpak_installation_get_path (self->installation);
+	g_autoptr(GSubprocess) subprocess = NULL;
+	g_autofree char *repo_arg =
+		g_strdup_printf ("--repo=%s/repo", g_file_get_path (path_file));
+	g_autofree char *appstream_arg =
+		g_strdup_printf ("%s.appdata.xml",
+				 gs_app_get_flatpak_name (app));
+	g_autofree char *appstream_path = g_build_filename ("files", "share",
+							    "app-info", "xmls",
+							    appstream_arg,
+							    NULL);
+	const char *argv[] = {"ostree", repo_arg, "cat", commit,
+			      appstream_path, NULL};
+	int exit_status;
+
+	subprocess = g_subprocess_newv (argv,
+					G_SUBPROCESS_FLAGS_STDOUT_PIPE |
+					G_SUBPROCESS_FLAGS_STDERR_PIPE,
+					error);
+	if (!subprocess)
+		return FALSE;
+
+	if (!g_subprocess_communicate (subprocess, NULL, cancellable,
+				       &std_out, NULL, error))
+		return FALSE;
+
+	exit_status = g_subprocess_get_exit_status (subprocess);
+	if (!g_spawn_check_exit_status (exit_status, error))
+		return FALSE;
+
+	*appstream_contents = g_steal_pointer (&std_out);
+
+	return TRUE;
+}
+
+static AsApp *
+gs_flatpak_get_as_app_for_commit (GsFlatpak *self,
+				  GsApp *app,
+				  const char *commit,
+				  GCancellable *cancellable,
+				  GError **error)
+{
+	AsApp *as_app;
+	g_autoptr(GBytes) appstream = NULL;
+	g_autoptr(AsStore) store = NULL;
+
+	if (!gs_flatpak_get_appstream_for_commit (self, app, commit,
+						  &appstream, cancellable,
+						  error))
+		return NULL;
+
+	store = as_store_new ();
+	as_store_set_add_flags (store,
+				AS_STORE_ADD_FLAG_USE_UNIQUE_ID |
+				AS_STORE_ADD_FLAG_USE_MERGE_HEURISTIC);
+	if (!as_store_from_bytes (store, appstream, cancellable, error))
+		return NULL;
+
+	as_app = as_store_get_app_by_id (store, gs_app_get_id (app));
+	if (!as_app)
+		g_set_error (error, AS_STORE_ERROR, AS_STORE_ERROR_FAILED,
+			     "Failed to get app %s from its own installation "
+			     "AppStream file.", gs_app_get_unique_id (app));
+
+	return g_object_ref (as_app);
+}
+
+gboolean
+gs_flatpak_refine_metadata_from_installation (GsFlatpak *self,
+					      GsApp *app,
+					      GCancellable *cancellable,
+					      GError **error)
+{
+	g_autoptr(AsApp) as_app = NULL;
+	g_autoptr(FlatpakInstalledRef) ref = NULL;
+	const char *commit = NULL;
+
+	ref = gs_flatpak_get_installed_ref (self, app, cancellable, error);
+	commit = flatpak_ref_get_commit (FLATPAK_REF (ref));
+
+	if (!commit)
+		return FALSE;
+
+	as_app = gs_flatpak_get_as_app_for_commit (self, app, commit,
+						   cancellable, error);
+	if (!as_app)
+		return FALSE;
+
+	gs_appstream_copy_metadata (app, as_app, TRUE);
+	return TRUE;
+}
