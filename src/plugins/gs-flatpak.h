@@ -110,6 +110,12 @@ GPtrArray	*gs_flatpak_get_installed_runtimes (GsFlatpak		*self,
 void		gs_flatpak_set_download_updates (GsFlatpak		*self,
 						 gboolean 		 download_updates);
 
+gboolean	gs_flatpak_app_install_with_progress	(GsFlatpak			*self,
+							 GsApp				*app,
+							 FlatpakProgressCallback	progress_cb,
+							 GCancellable			*cancellable,
+							 GError				**error);
+
 gboolean	gs_flatpak_refine_metadata_from_installation (GsFlatpak		*self,
 							      GsApp		*app,
 							      GCancellable	*cancellable,

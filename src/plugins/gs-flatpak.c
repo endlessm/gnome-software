@@ -1628,10 +1628,11 @@ gs_flatpak_app_remove (GsFlatpak *self,
 }
 
 gboolean
-gs_flatpak_app_install (GsFlatpak *self,
-			GsApp *app,
-			GCancellable *cancellable,
-			GError **error)
+gs_flatpak_app_install_with_progress (GsFlatpak *self,
+				      GsApp *app,
+				      FlatpakProgressCallback progress_cb,
+				      GCancellable *cancellable,
+				      GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 
@@ -1691,7 +1692,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 							     gs_app_get_flatpak_name (runtime),
 							     gs_app_get_flatpak_arch (runtime),
 							     gs_app_get_flatpak_branch (runtime),
-							     gs_flatpak_progress_cb, app,
+							     progress_cb, app,
 							     cancellable, error);
 			if (xref == NULL) {
 				gs_app_set_state_recover (runtime);
@@ -1708,7 +1709,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 	if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE_LOCAL) {
 		xref = flatpak_installation_install_bundle (self->installation,
 							    gs_app_get_local_file (app),
-							    gs_flatpak_progress_cb,
+							    progress_cb,
 							    app,
 							    cancellable, error);
 	} else {
@@ -1719,7 +1720,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 						     gs_app_get_flatpak_name (app),
 						     gs_app_get_flatpak_arch (app),
 						     gs_app_get_flatpak_branch (app),
-						     gs_flatpak_progress_cb, app,
+						     progress_cb, app,
 						     cancellable, error);
 	}
 	if (xref == NULL) {
@@ -1727,7 +1728,20 @@ gs_flatpak_app_install (GsFlatpak *self,
 		return FALSE;
 	}
 
-	/* state is known */
+	return TRUE;
+}
+
+gboolean
+gs_flatpak_app_install (GsFlatpak *self,
+			GsApp *app,
+			GCancellable *cancellable,
+			GError **error)
+{
+	if (!gs_flatpak_app_install_with_progress (self, app,
+						   gs_flatpak_progress_cb,
+						   cancellable, error))
+		return FALSE;
+
 	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 	return TRUE;
 }
