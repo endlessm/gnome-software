@@ -110,6 +110,11 @@ GPtrArray	*gs_flatpak_get_installed_runtimes (GsFlatpak		*self,
 void		gs_flatpak_set_download_updates (GsFlatpak		*self,
 						 gboolean 		 download_updates);
 
+gboolean	gs_flatpak_refine_metadata_from_installation (GsFlatpak		*self,
+							      GsApp		*app,
+							      GCancellable	*cancellable,
+							      GError		**error);
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */

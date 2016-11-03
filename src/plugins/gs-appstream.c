@@ -236,8 +236,8 @@ gs_appstream_are_screenshots_perfect (AsApp *app)
 	return TRUE;
 }
 
-static void
-gs_appstream_copy_metadata (GsApp *app, AsApp *item)
+void
+gs_appstream_copy_metadata (GsApp *app, AsApp *item, gboolean force)
 {
 	GHashTable *hash;
 	GList *l;
@@ -248,8 +248,11 @@ gs_appstream_copy_metadata (GsApp *app, AsApp *item)
 	for (l = keys; l != NULL; l = l->next) {
 		const gchar *key = l->data;
 		const gchar *value = g_hash_table_lookup (hash, key);
-		if (gs_app_get_metadata_item (app, key) != NULL)
-			continue;
+		if (gs_app_get_metadata_item (app, key) != NULL) {
+			if (!force)
+				continue;
+			gs_app_set_metadata (app, key, NULL);
+		}
 		gs_app_set_metadata (app, key, value);
 	}
 }
@@ -624,7 +627,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		gs_app_set_kind (app, as_app_get_kind (item));
 
 	/* copy all the metadata */
-	gs_appstream_copy_metadata (app, item);
+	gs_appstream_copy_metadata (app, item, FALSE);
 
 	/* set package names */
 	pkgnames = as_app_get_pkgnames (item);
