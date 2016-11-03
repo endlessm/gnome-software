@@ -488,10 +488,8 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		      GError **error)
 {
 	GsApp *ext_runtime;
-	GsApp *installed_runtime;
 	const char *metadata = NULL;
 	GsFlatpak *flatpak = NULL;
-	const char *ext_runtime_id;
 	gboolean ext_runtime_available;
 
 	/* We cache all runtimes because an external runtime may have been
@@ -530,25 +528,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	if (gs_app_is_installed (ext_runtime))
 		return TRUE;
 
-	ext_runtime_id = gs_app_get_id (ext_runtime);
-	installed_runtime = get_installed_ext_runtime (plugin, ext_runtime_id);
-	ext_runtime_available = ext_runtime_is_reachable (plugin, ext_runtime);
-
-	/* Verify that the cached external runtime is really installed */
-	if (installed_runtime &&
-	    refine_ext_runtime_state (plugin, installed_runtime, cancellable)) {
-		/* Since the external runtime is different than the installed
-		 * one and its reachable, then there is an update to be
-		 * performed */
-		if (ext_runtime_available) {
-			g_debug ("External app %s has a new external runtime "
-				 "available. Setting its state to "
-				 "updatable-live.", gs_app_get_unique_id (app));
-			force_set_app_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-			return TRUE;
-		}
-		force_set_app_state (app, AS_APP_STATE_INSTALLED);
-	} else if (!ext_runtime_available) {
+	if (!ext_runtime_is_reachable (plugin, ext_runtime)) {
 		/* If the app has no external runtime installed or available
 		 * for download and this refine was not requested by the
 		 * details view, then we hide it as it will not be usable */
