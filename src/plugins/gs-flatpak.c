@@ -1747,10 +1747,13 @@ gs_flatpak_app_install (GsFlatpak *self,
 }
 
 gboolean
-gs_flatpak_update_app (GsFlatpak *self,
-		       GsApp *app,
-		       GCancellable *cancellable,
-		       GError **error)
+gs_flatpak_update_app_with_progress (GsFlatpak *self,
+				     GsApp *app,
+				     gboolean pull,
+				     gboolean deploy,
+				     FlatpakProgressCallback progress_cb,
+				     GCancellable *cancellable,
+				     GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 	FlatpakUpdateFlags update_flags = FLATPAK_UPDATE_FLAGS_NONE;
@@ -1760,10 +1763,11 @@ gs_flatpak_update_app (GsFlatpak *self,
 		       gs_plugin_get_name (self->plugin)) != 0)
 		return TRUE;
 
-	/* if 'download updates' is enabled, then we just deploy the installed
-	 * updates instead of fetching any eventual new ones */
-	if (self->download_updates)
+	if (!pull)
 		update_flags |= FLATPAK_UPDATE_FLAGS_NO_PULL;
+
+	if (!deploy)
+		update_flags |= FLATPAK_UPDATE_FLAGS_NO_DEPLOY;
 
 	/* install */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
@@ -1773,7 +1777,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 					    gs_app_get_flatpak_name (app),
 					    gs_app_get_flatpak_arch (app),
 					    gs_app_get_flatpak_branch (app),
-					    gs_flatpak_progress_cb, app,
+					    progress_cb, app,
 					    cancellable, error);
 	if (xref == NULL) {
 		gs_app_set_state_recover (app);
@@ -1783,7 +1787,23 @@ gs_flatpak_update_app (GsFlatpak *self,
 	/* update UI */
 	gs_plugin_updates_changed (self->plugin);
 
-	/* state is known */
+	return TRUE;
+}
+
+gboolean
+gs_flatpak_update_app (GsFlatpak *self,
+		       GsApp *app,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	if (!gs_flatpak_update_app_with_progress (self, app,
+						  !self->download_updates,
+						  FALSE,
+						  gs_flatpak_progress_cb,
+						  cancellable,
+						  error))
+		return FALSE;
+
 	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 	return TRUE;
 }
@@ -2196,7 +2216,7 @@ gs_flatpak_get_appstream_for_commit (GsFlatpak *self,
 	return TRUE;
 }
 
-static AsApp *
+AsApp *
 gs_flatpak_get_as_app_for_commit (GsFlatpak *self,
 				  GsApp *app,
 				  const char *commit,
@@ -2226,6 +2246,18 @@ gs_flatpak_get_as_app_for_commit (GsFlatpak *self,
 			     "AppStream file.", gs_app_get_unique_id (app));
 
 	return g_object_ref (as_app);
+}
+
+char *
+gs_flatpak_get_latest_commit (GsFlatpak *self,
+			      GsApp *app,
+			      GCancellable *cancellable,
+			      GError **error)
+{
+	g_autoptr(FlatpakInstalledRef) ref = NULL;
+
+	ref = gs_flatpak_get_installed_ref (self, app, cancellable, error);
+	return g_strdup (flatpak_installed_ref_get_latest_commit (ref));
 }
 
 static char *
