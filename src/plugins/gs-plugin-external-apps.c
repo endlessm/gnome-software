@@ -561,9 +561,13 @@ gs_plugin_install_ext_runtime (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	GError *local_error = NULL;
+	guint progress = CLAMP (gs_app_get_progress (app), 1, 90);
 
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
-	gs_app_set_progress (app, 50);
+	/* Add 30% more of the remaining progress to the current one that
+	 * the app installation has */
+	progress += (100 - progress) * .35;
+	gs_app_set_progress (app, progress);
 
 	if (!build_and_install_external_runtime (ext_runtime,
 						 cancellable, &local_error)) {
@@ -575,7 +579,10 @@ gs_plugin_install_ext_runtime (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	gs_app_set_progress (app, 75);
+	/* Add 30% more of the remaining progress to the current one that
+	 * the app installation has */
+	progress += (100 - progress) * .35;
+	gs_app_set_progress (app, progress);
 
 	gs_app_set_origin (ext_runtime, EXT_APPS_SYSTEM_REPO_NAME);
 
@@ -590,6 +597,42 @@ gs_plugin_install_ext_runtime (GsPlugin *plugin,
 	return TRUE;
 }
 
+static void
+ext_apps_progress_cb (const gchar *status,
+		      guint progress,
+		      gboolean estimating,
+		      gpointer user_data)
+{
+	GsApp *app = GS_APP (user_data);
+	gs_app_set_progress (app, progress * 73 / 100);
+}
+
+static gboolean
+flatpak_branches_are_equal (GsApp *app_a, GsApp *app_b)
+{
+	const char *branch_a;
+	const char *branch_b;
+
+	if (!app_a || !app_b)
+		return FALSE;
+
+	branch_a = gs_app_get_flatpak_branch (app_a);
+	branch_b = gs_app_get_flatpak_branch (app_b);
+
+	return (g_strcmp0 (branch_a, branch_b) == 0);
+}
+
+static void
+report_installation_error (GError **error)
+{
+	/* TRANSLATORS: this is an error we show the user when an
+	 * external app could not be installed */
+	g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+		     _("Failed to install the application. Please try again "
+		       "later. If the problem persists, please contact "
+		       "support."));
+}
+
 gboolean
 gs_plugin_app_install (GsPlugin *plugin,
 		       GsApp *app,
@@ -598,6 +641,8 @@ gs_plugin_app_install (GsPlugin *plugin,
 {
 	g_autofree char *runtime = NULL;
 	g_autofree char *url = NULL;
+	GsApp *dangling_runtime = NULL;
+	const char *runtime_id;
 	GsApp *ext_runtime;
 	GsFlatpak *flatpak = NULL;
 	gboolean ret = FALSE;
@@ -608,53 +653,89 @@ gs_plugin_app_install (GsPlugin *plugin,
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+
+	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
+	if (gs_flatpak_is_installed (flatpak, app, cancellable, NULL)) {
+		g_debug ("External app '%s' is already installed. "
+			 "Skipping installation.",
+			 gs_app_get_unique_id (app));
+	} else if (!gs_flatpak_app_install_with_progress (flatpak, app,
+							  AS_APP_STATE_INSTALLING,
+							  ext_apps_progress_cb,
+							  cancellable,
+							  &local_error)) {
+		if (!g_error_matches (local_error, FLATPAK_ERROR,
+				      FLATPAK_ERROR_ALREADY_INSTALLED)) {
+			gs_app_set_state_recover (app);
+			report_installation_error (error);
+			g_warning ("Failed to install external app '%s': %s",
+				   gs_app_get_unique_id (app),
+				   local_error->message);
+
+			return FALSE;
+		}
+		g_clear_error (&local_error);
+	}
+
+	if (!gs_flatpak_refine_metadata_from_installation (flatpak, app,
+							   cancellable,
+							   &local_error)) {
+		gs_app_set_state_recover (app);
+		report_installation_error (error);
+		g_warning ("Refining external app '%s' metadata from "
+			   "installation failed: %s",
+			   gs_app_get_unique_id (app),
+			   local_error->message);
+
+		return FALSE;
+	}
+
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
 
 	if (!ext_runtime) {
-		g_debug ("External app '%s' didn't have any asset! "
-			 "Not installing and marking as state unknown!",
-			 gs_app_get_unique_id (app));
+		report_installation_error (error);
+		g_warning ("External app '%s' didn't have any asset! "
+			   "Not installing and marking as state unknown!",
+			   gs_app_get_unique_id (app));
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 
-		return TRUE;
+		return FALSE;
 	}
 
-	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	runtime_id = gs_app_get_flatpak_name (ext_runtime);
+	dangling_runtime = get_installed_ext_runtime (plugin, runtime_id);
 
 	if (!gs_app_is_installed (ext_runtime)) {
 		if (!gs_plugin_install_ext_runtime (plugin, app, ext_runtime,
 						    cancellable,
 						    &local_error)) {
 			gs_app_set_state_recover (app);
-
-			/* TRANSLATORS: this an error we show the user when an
-			 * external app could not be installed */
-			g_set_error (error, GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_FAILED,
-				     _("Failed to download the application. "
-				       "Please try installing again later."));
-			g_debug ("Error installing external runtime: %s",
-				 local_error->message);
+			report_installation_error (error);
+			g_warning ("Error installing external runtime for app "
+				   "'%s': %s",
+				   gs_app_get_unique_id (app),
+				   local_error->message);
 			return FALSE;
 		}
 	}
 
-	if (g_cancellable_is_cancelled (cancellable)) {
-		g_debug ("Installation of '%s' was cancelled",
-			 gs_app_get_unique_id (ext_runtime));
+	/* Avoid any possibilities of deleting the current runtime */
+	if (flatpak_branches_are_equal (ext_runtime, dangling_runtime))
+		dangling_runtime = NULL;
 
-		return TRUE;
+	/* Delete the old runtime */
+	if (dangling_runtime &&
+	    !remove_external_runtime (dangling_runtime, cancellable,
+				      &local_error)) {
+		g_debug ("Failed to remove previous runtime extension '%s' "
+			 "after installing '%s' (but allowing to continue): %s",
+			 gs_app_get_unique_id (dangling_runtime),
+			 gs_app_get_unique_id (ext_runtime),
+			 local_error->message);
 	}
 
-	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
-	if (gs_flatpak_is_installed (flatpak, app, cancellable, NULL)) {
-		g_debug ("External app %s is already installed. "
-			 "Skipping installation and marking as installed.",
-			 gs_app_get_unique_id (app));
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-	} else if (!gs_flatpak_app_install (flatpak, app, cancellable, error)) {
-		return FALSE;
-	}
+	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 
 	return TRUE;
 }
@@ -730,21 +811,6 @@ gs_plugin_app_remove (GsPlugin *plugin,
 }
 
 static gboolean
-compare_flatpak_branches (GsApp *app_a, GsApp *app_b)
-{
-	const char *branch_a;
-	const char *branch_b;
-
-	if (!app_a || !app_b)
-		return FALSE;
-
-	branch_a = gs_app_get_flatpak_branch (app_a);
-	branch_b = gs_app_get_flatpak_branch (app_b);
-
-	return (g_strcmp0 (branch_a, branch_b) == 0);
-}
-
-static gboolean
 gs_plugin_upgrade_external_runtime (GsPlugin *plugin,
 				    GsApp *headless_app,
 				    GsApp *new_runtime,
@@ -757,7 +823,7 @@ gs_plugin_upgrade_external_runtime (GsPlugin *plugin,
 
 	old_runtime = get_installed_ext_runtime (plugin, id);
 
-	if (compare_flatpak_branches (new_runtime, old_runtime)) {
+	if (flatpak_branches_are_equal (new_runtime, old_runtime)) {
 		g_debug ("New runtime is already installed %s",
 			 gs_app_get_unique_id (new_runtime));
 
