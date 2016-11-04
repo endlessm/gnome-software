@@ -27,6 +27,7 @@
 G_BEGIN_DECLS
 
 gboolean	 gs_flatpak_symlinks_rebuild	(FlatpakInstallation	*installation,
+						 GPtrArray		*force_remotes,
 						 GCancellable		*cancellable,
 						 GError			**error);
 

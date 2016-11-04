@@ -75,7 +75,8 @@ gs_plugin_flatpak_changed_cb (GFileMonitor *monitor,
 	}
 
 	/* ensure the AppStream symlink cache is up to date */
-	if (!gs_flatpak_symlinks_rebuild (self->installation, NULL, &error))
+	if (!gs_flatpak_symlinks_rebuild (self->installation, NULL, NULL,
+					  &error))
 		g_warning ("failed to check symlinks: %s", error->message);
 }
 
@@ -120,11 +121,34 @@ gs_flatpak_setup (GsFlatpak *self, GCancellable *cancellable, GError **error)
 			  G_CALLBACK (gs_plugin_flatpak_changed_cb), self);
 
 	/* ensure the AppStream symlink cache is up to date */
-	if (!gs_flatpak_symlinks_rebuild (self->installation, cancellable, error))
+	if (!gs_flatpak_symlinks_rebuild (self->installation, NULL, cancellable, error))
 		return FALSE;
 
 	/* success */
 	return TRUE;
+}
+
+static char *
+get_appstream_path (FlatpakRemote *remote)
+{
+	g_autoptr(GFile) path = flatpak_remote_get_appstream_dir (remote, NULL);
+	char *appstream_path = g_build_filename (g_file_get_path (path),
+						 "appstream.xml.gz",
+						 NULL);
+	return appstream_path;
+}
+
+static char *
+get_file_checksum (const char *path)
+{
+	g_autofree char *contents = NULL;
+	gsize length;
+
+	if (!g_file_get_contents (path, &contents, &length, NULL))
+		return NULL;
+
+	return g_compute_checksum_for_data (G_CHECKSUM_SHA256, contents,
+					    length);
 }
 
 static gboolean
@@ -134,13 +158,20 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 	gboolean ret;
 	gboolean something_changed = FALSE;
 	guint i;
+	g_autoptr(GPtrArray) changed_remotes = NULL;
 	g_autoptr(GPtrArray) xremotes = NULL;
 
 	xremotes = flatpak_installation_list_remotes (self->installation, cancellable,
 						      error);
 	if (xremotes == NULL)
 		return FALSE;
+
+	changed_remotes = g_ptr_array_new ();
+
 	for (i = 0; i < xremotes->len; i++) {
+		g_autofree char *appstream_checksum_1 = NULL;
+		g_autofree char *appstream_checksum_2 = NULL;
+		g_autofree char *appstream_path = NULL;
 		const gchar *remote_name;
 		guint tmp;
 		g_autoptr(GError) error_local = NULL;
@@ -173,6 +204,13 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 		/* download new data */
 		g_debug ("%s is %u seconds old, so downloading new data",
 			 remote_name, tmp);
+
+		/* get a checksum of the appstream file before and after
+		 * updating it because the 'out_changed' parameter of
+		 * flatpak_installation_update_appstream_sync is not used with
+		 * the privileged helper  */
+		appstream_path = get_appstream_path (xremote);
+		appstream_checksum_1 = get_file_checksum (appstream_path);
 		ret = flatpak_installation_update_appstream_sync (self->installation,
 								  remote_name,
 								  NULL, /* arch */
@@ -189,6 +227,13 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 			continue;
 		}
 
+		appstream_checksum_2 = get_file_checksum (appstream_path);
+
+		if (g_strcmp0 (appstream_checksum_1, appstream_checksum_2) != 0) {
+			g_ptr_array_add (changed_remotes, (char *) remote_name);
+			g_debug ("appstream for %s changed", remote_name);
+		}
+
 		/* add the new AppStream repo to the shared store */
 		file = flatpak_remote_get_appstream_dir (xremote, NULL);
 		appstream_fn = g_file_get_path (file);
@@ -201,6 +246,7 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 	/* ensure the AppStream symlink cache is up to date */
 	if (something_changed) {
 		if (!gs_flatpak_symlinks_rebuild (self->installation,
+						  changed_remotes,
 						  cancellable,
 						  error))
 			return FALSE;
