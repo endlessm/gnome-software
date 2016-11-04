@@ -676,8 +676,25 @@ gs_plugin_app_install (GsPlugin *plugin,
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
 	if (gs_flatpak_is_installed (flatpak, app, cancellable, NULL)) {
 		g_debug ("External app '%s' is already installed. "
-			 "Skipping installation.",
+			 "Updating it to ensure we don't have an old, "
+			 "unreachable external runtime.",
 			 gs_app_get_unique_id (app));
+		/* We update the app here (when it's installed but it's runtime
+		 * isn't) to ensure we have its updated appstream and avoid
+		 * eventually building an unreachable external runtime */
+		if (!gs_flatpak_update_app_with_progress (flatpak, app, TRUE,
+							  TRUE,
+							  AS_APP_STATE_INSTALLING,
+							  ext_apps_progress_cb,
+							  cancellable,
+							  &local_error)) {
+			g_debug ("Failed to update external app '%s': %s. "
+				 "Allowing to continue anyway because the "
+				 "update was only to ensure we have the latest "
+				 "appstream.", gs_app_get_unique_id (app),
+				 local_error->message);
+			g_clear_error (&local_error);
+		}
 	} else if (!gs_flatpak_app_install_with_progress (flatpak, app,
 							  AS_APP_STATE_INSTALLING,
 							  ext_apps_progress_cb,
