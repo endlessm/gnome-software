@@ -2333,6 +2333,33 @@ gs_flatpak_refine_metadata_from_installation (GsFlatpak *self,
 	return TRUE;
 }
 
+static void
+ensure_default_branches (GsFlatpak *self)
+{
+	g_autoptr(GPtrArray) xremotes = NULL;
+	guint i;
+
+	xremotes = flatpak_installation_list_remotes (self->installation, NULL, NULL);
+	if (xremotes == NULL || xremotes->len == 0)
+		return;
+
+	for (i = 0; i < xremotes->len; i++) {
+		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
+		const gchar *remote_name = flatpak_remote_get_name (xremote);
+		g_autofree char *default_branch = NULL;
+		g_autoptr(GError) error_local = NULL;
+
+		default_branch = flatpak_remote_get_default_branch (xremote);
+		if (default_branch != NULL)
+			continue;
+
+		if (!flatpak_installation_update_remote_sync (self->installation, remote_name, NULL, &error_local)) {
+			g_warning ("failed to update metadata from remote %s: %s",
+				   remote_name, error_local->message);
+		}
+	}
+}
+
 void
 gs_flatpak_fill_default_branches (GsFlatpak *self, GHashTable *table)
 {
@@ -2345,6 +2372,9 @@ gs_flatpak_fill_default_branches (GsFlatpak *self, GHashTable *table)
 	xremotes = flatpak_installation_list_remotes (self->installation, NULL, NULL);
 	if (xremotes == NULL || xremotes->len == 0)
 		return;
+
+	/* Make sure that default branches are pulled from the server if needed */
+	ensure_default_branches (self);
 
 	for (i = 0; i < xremotes->len; i++) {
 		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
