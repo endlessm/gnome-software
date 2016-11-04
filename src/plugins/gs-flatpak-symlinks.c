@@ -40,11 +40,12 @@ gs_flatpak_symlinks_remote_valid (FlatpakRemote *xremote)
 
 /* encode the symlink name with ${scope}:${name}[.xml.gz] */
 static gboolean
-gs_flatpak_symlinks_check_exist (FlatpakRemote *xremote,
-				 const gchar *cache_dir,
-				 const gchar *prefix,
-				 const gchar *kind,
-				 GError **error)
+gs_flatpak_symlinks_create_if_needed (FlatpakRemote *xremote,
+				      const gchar *cache_dir,
+				      const gchar *prefix,
+				      const gchar *kind,
+				      gboolean force_recreate,
+				      GError **error)
 {
 	g_autofree gchar *appstream_dir_fn = NULL;
 	g_autofree gchar *flatpak_remote_fn = NULL;
@@ -99,16 +100,22 @@ gs_flatpak_symlinks_check_exist (FlatpakRemote *xremote,
 		}
 
 		/* same */
-		if (g_strcmp0 (symlink_target_actual, symlink_target) == 0) {
-			g_debug ("symlink %s already points to %s",
-				 symlink_source, symlink_target);
-			return TRUE;
+		if (!force_recreate) {
+			if (g_strcmp0 (symlink_target_actual, symlink_target) == 0) {
+				g_debug ("symlink %s already points to %s",
+					 symlink_source, symlink_target);
+				return TRUE;
+			}
+			g_warning ("symlink incorrect expected %s target to "
+				   "be %s, got %s, deleting",
+				   symlink_source,
+				   symlink_target,
+				   symlink_target_actual);
+		} else {
+			g_debug ("removing correct symlink to force its "
+				 "recreation");
 		}
-		g_warning ("symlink incorrect expected %s target to "
-			   "be %s, got %s, deleting",
-			   symlink_source,
-			   symlink_target,
-			   symlink_target_actual);
+
 		if (!gs_utils_unlink (symlink_source, error))
 			return FALSE;
 	}
@@ -185,8 +192,26 @@ gs_flatpak_symlinks_check_valid (FlatpakInstallation *installation,
 	return TRUE;
 }
 
+static gboolean
+should_force (GPtrArray *remotes_to_force, FlatpakRemote *xremote)
+{
+	guint i;
+
+	if (!remotes_to_force)
+		return FALSE;
+
+	for (i = 0; i < remotes_to_force->len; ++i) {
+		const char *current = g_ptr_array_index (remotes_to_force, i);
+		if (g_strcmp0 (current, flatpak_remote_get_name (xremote)) == 0)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 gboolean
 gs_flatpak_symlinks_rebuild (FlatpakInstallation *installation,
+			     GPtrArray *remotes_to_force,
 			     GCancellable *cancellable,
 			     GError **error)
 {
@@ -210,22 +235,29 @@ gs_flatpak_symlinks_rebuild (FlatpakInstallation *installation,
 		return FALSE;
 	for (i = 0; i < xremotes->len; i++) {
 		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
+		gboolean force_recreation = FALSE;
+
 		if (!gs_flatpak_symlinks_remote_valid (xremote))
 			continue;
 		g_debug ("found remote %s:%s",
 			 prefix,
 			 flatpak_remote_get_name (xremote));
-		if (!gs_flatpak_symlinks_check_exist (xremote,
-						      cache_dir,
-						      prefix,
-						      "icons",
-						      error))
+
+		force_recreation = should_force (remotes_to_force, xremote);
+
+		if (!gs_flatpak_symlinks_create_if_needed (xremote,
+							   cache_dir,
+							   prefix,
+							   "icons",
+							   force_recreation,
+							   error))
 			return FALSE;
-		if (!gs_flatpak_symlinks_check_exist (xremote,
-						      cache_dir,
-						      prefix,
-						      "xmls",
-						      error))
+		if (!gs_flatpak_symlinks_create_if_needed (xremote,
+							   cache_dir,
+							   prefix,
+							   "xmls",
+							   force_recreation,
+							   error))
 			return FALSE;
 	}
 

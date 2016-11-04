@@ -75,7 +75,8 @@ gs_plugin_flatpak_changed_cb (GFileMonitor *monitor,
 	}
 
 	/* ensure the AppStream symlink cache is up to date */
-	if (!gs_flatpak_symlinks_rebuild (self->installation, NULL, &error))
+	if (!gs_flatpak_symlinks_rebuild (self->installation, NULL, NULL,
+					  &error))
 		g_warning ("failed to check symlinks: %s", error->message);
 }
 
@@ -120,11 +121,34 @@ gs_flatpak_setup (GsFlatpak *self, GCancellable *cancellable, GError **error)
 			  G_CALLBACK (gs_plugin_flatpak_changed_cb), self);
 
 	/* ensure the AppStream symlink cache is up to date */
-	if (!gs_flatpak_symlinks_rebuild (self->installation, cancellable, error))
+	if (!gs_flatpak_symlinks_rebuild (self->installation, NULL, cancellable, error))
 		return FALSE;
 
 	/* success */
 	return TRUE;
+}
+
+static char *
+get_appstream_path (FlatpakRemote *remote)
+{
+	g_autoptr(GFile) path = flatpak_remote_get_appstream_dir (remote, NULL);
+	char *appstream_path = g_build_filename (g_file_get_path (path),
+						 "appstream.xml.gz",
+						 NULL);
+	return appstream_path;
+}
+
+static char *
+get_file_checksum (const char *path)
+{
+	g_autofree char *contents = NULL;
+	gsize length;
+
+	if (!g_file_get_contents (path, &contents, &length, NULL))
+		return NULL;
+
+	return g_compute_checksum_for_data (G_CHECKSUM_SHA256, contents,
+					    length);
 }
 
 static gboolean
@@ -134,13 +158,20 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 	gboolean ret;
 	gboolean something_changed = FALSE;
 	guint i;
+	g_autoptr(GPtrArray) changed_remotes = NULL;
 	g_autoptr(GPtrArray) xremotes = NULL;
 
 	xremotes = flatpak_installation_list_remotes (self->installation, cancellable,
 						      error);
 	if (xremotes == NULL)
 		return FALSE;
+
+	changed_remotes = g_ptr_array_new ();
+
 	for (i = 0; i < xremotes->len; i++) {
+		g_autofree char *appstream_checksum_1 = NULL;
+		g_autofree char *appstream_checksum_2 = NULL;
+		g_autofree char *appstream_path = NULL;
 		const gchar *remote_name;
 		guint tmp;
 		g_autoptr(GError) error_local = NULL;
@@ -173,6 +204,13 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 		/* download new data */
 		g_debug ("%s is %u seconds old, so downloading new data",
 			 remote_name, tmp);
+
+		/* get a checksum of the appstream file before and after
+		 * updating it because the 'out_changed' parameter of
+		 * flatpak_installation_update_appstream_sync is not used with
+		 * the privileged helper  */
+		appstream_path = get_appstream_path (xremote);
+		appstream_checksum_1 = get_file_checksum (appstream_path);
 		ret = flatpak_installation_update_appstream_sync (self->installation,
 								  remote_name,
 								  NULL, /* arch */
@@ -189,6 +227,13 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 			continue;
 		}
 
+		appstream_checksum_2 = get_file_checksum (appstream_path);
+
+		if (g_strcmp0 (appstream_checksum_1, appstream_checksum_2) != 0) {
+			g_ptr_array_add (changed_remotes, (char *) remote_name);
+			g_debug ("appstream for %s changed", remote_name);
+		}
+
 		/* add the new AppStream repo to the shared store */
 		file = flatpak_remote_get_appstream_dir (xremote, NULL);
 		appstream_fn = g_file_get_path (file);
@@ -201,6 +246,7 @@ gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 	/* ensure the AppStream symlink cache is up to date */
 	if (something_changed) {
 		if (!gs_flatpak_symlinks_rebuild (self->installation,
+						  changed_remotes,
 						  cancellable,
 						  error))
 			return FALSE;
@@ -1628,10 +1674,12 @@ gs_flatpak_app_remove (GsFlatpak *self,
 }
 
 gboolean
-gs_flatpak_app_install (GsFlatpak *self,
-			GsApp *app,
-			GCancellable *cancellable,
-			GError **error)
+gs_flatpak_app_install_with_progress (GsFlatpak *self,
+				      GsApp *app,
+				      AsAppState final_state,
+				      FlatpakProgressCallback progress_cb,
+				      GCancellable *cancellable,
+				      GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 
@@ -1691,7 +1739,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 							     gs_app_get_flatpak_name (runtime),
 							     gs_app_get_flatpak_arch (runtime),
 							     gs_app_get_flatpak_branch (runtime),
-							     gs_flatpak_progress_cb, app,
+							     progress_cb, app,
 							     cancellable, error);
 			if (xref == NULL) {
 				gs_app_set_state_recover (runtime);
@@ -1708,7 +1756,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 	if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE_LOCAL) {
 		xref = flatpak_installation_install_bundle (self->installation,
 							    gs_app_get_local_file (app),
-							    gs_flatpak_progress_cb,
+							    progress_cb,
 							    app,
 							    cancellable, error);
 	} else {
@@ -1719,7 +1767,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 						     gs_app_get_flatpak_name (app),
 						     gs_app_get_flatpak_arch (app),
 						     gs_app_get_flatpak_branch (app),
-						     gs_flatpak_progress_cb, app,
+						     progress_cb, app,
 						     cancellable, error);
 	}
 	if (xref == NULL) {
@@ -1728,15 +1776,31 @@ gs_flatpak_app_install (GsFlatpak *self,
 	}
 
 	/* state is known */
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, final_state);
 	return TRUE;
 }
 
 gboolean
-gs_flatpak_update_app (GsFlatpak *self,
-		       GsApp *app,
-		       GCancellable *cancellable,
-		       GError **error)
+gs_flatpak_app_install (GsFlatpak *self,
+			GsApp *app,
+			GCancellable *cancellable,
+			GError **error)
+{
+	return gs_flatpak_app_install_with_progress (self, app,
+						     AS_APP_STATE_INSTALLED,
+						     gs_flatpak_progress_cb,
+						     cancellable, error);
+}
+
+gboolean
+gs_flatpak_update_app_with_progress (GsFlatpak *self,
+				     GsApp *app,
+				     gboolean pull,
+				     gboolean deploy,
+				     AsAppState final_state,
+				     FlatpakProgressCallback progress_cb,
+				     GCancellable *cancellable,
+				     GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 	FlatpakUpdateFlags update_flags = FLATPAK_UPDATE_FLAGS_NONE;
@@ -1746,10 +1810,11 @@ gs_flatpak_update_app (GsFlatpak *self,
 		       gs_plugin_get_name (self->plugin)) != 0)
 		return TRUE;
 
-	/* if 'download updates' is enabled, then we just deploy the installed
-	 * updates instead of fetching any eventual new ones */
-	if (self->download_updates)
+	if (!pull)
 		update_flags |= FLATPAK_UPDATE_FLAGS_NO_PULL;
+
+	if (!deploy)
+		update_flags |= FLATPAK_UPDATE_FLAGS_NO_DEPLOY;
 
 	/* install */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
@@ -1759,7 +1824,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 					    gs_app_get_flatpak_name (app),
 					    gs_app_get_flatpak_arch (app),
 					    gs_app_get_flatpak_branch (app),
-					    gs_flatpak_progress_cb, app,
+					    progress_cb, app,
 					    cancellable, error);
 	if (xref == NULL) {
 		gs_app_set_state_recover (app);
@@ -1770,8 +1835,23 @@ gs_flatpak_update_app (GsFlatpak *self,
 	gs_plugin_updates_changed (self->plugin);
 
 	/* state is known */
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, final_state);
 	return TRUE;
+}
+
+gboolean
+gs_flatpak_update_app (GsFlatpak *self,
+		       GsApp *app,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	return gs_flatpak_update_app_with_progress (self, app,
+						    !self->download_updates,
+						    TRUE,
+						    AS_APP_STATE_INSTALLED,
+						    gs_flatpak_progress_cb,
+						    cancellable,
+						    error);
 }
 
 static gboolean
@@ -2137,4 +2217,118 @@ gs_flatpak_set_download_updates (GsFlatpak *self,
 				 gboolean download_updates)
 {
 	self->download_updates = download_updates;
+}
+
+static gboolean
+gs_flatpak_get_appstream_for_commit (GsFlatpak *self,
+				     GsApp *app,
+				     const char *commit,
+				     GBytes **appstream_contents,
+				     GCancellable *cancellable,
+				     GError **error)
+{
+	g_autoptr(GBytes) std_out = NULL;
+	g_autoptr(GFile) path_file =
+		flatpak_installation_get_path (self->installation);
+	g_autoptr(GSubprocess) subprocess = NULL;
+	g_autofree char *repo_arg =
+		g_strdup_printf ("--repo=%s/repo", g_file_get_path (path_file));
+	g_autofree char *appstream_arg =
+		g_strdup_printf ("%s.appdata.xml",
+				 gs_app_get_flatpak_name (app));
+	g_autofree char *appstream_path = g_build_filename ("files", "share",
+							    "app-info", "xmls",
+							    appstream_arg,
+							    NULL);
+	const char *argv[] = {"ostree", repo_arg, "cat", commit,
+			      appstream_path, NULL};
+	int exit_status;
+
+	subprocess = g_subprocess_newv (argv,
+					G_SUBPROCESS_FLAGS_STDOUT_PIPE |
+					G_SUBPROCESS_FLAGS_STDERR_PIPE,
+					error);
+	if (!subprocess)
+		return FALSE;
+
+	if (!g_subprocess_communicate (subprocess, NULL, cancellable,
+				       &std_out, NULL, error))
+		return FALSE;
+
+	exit_status = g_subprocess_get_exit_status (subprocess);
+	if (!g_spawn_check_exit_status (exit_status, error))
+		return FALSE;
+
+	*appstream_contents = g_steal_pointer (&std_out);
+
+	return TRUE;
+}
+
+AsApp *
+gs_flatpak_get_as_app_for_commit (GsFlatpak *self,
+				  GsApp *app,
+				  const char *commit,
+				  GCancellable *cancellable,
+				  GError **error)
+{
+	AsApp *as_app;
+	g_autoptr(GBytes) appstream = NULL;
+	g_autoptr(AsStore) store = NULL;
+
+	if (!gs_flatpak_get_appstream_for_commit (self, app, commit,
+						  &appstream, cancellable,
+						  error))
+		return NULL;
+
+	store = as_store_new ();
+	as_store_set_add_flags (store,
+				AS_STORE_ADD_FLAG_USE_UNIQUE_ID |
+				AS_STORE_ADD_FLAG_USE_MERGE_HEURISTIC);
+	if (!as_store_from_bytes (store, appstream, cancellable, error))
+		return NULL;
+
+	as_app = as_store_get_app_by_id (store, gs_app_get_id (app));
+	if (!as_app)
+		g_set_error (error, AS_STORE_ERROR, AS_STORE_ERROR_FAILED,
+			     "Failed to get app %s from its own installation "
+			     "AppStream file.", gs_app_get_unique_id (app));
+
+	return g_object_ref (as_app);
+}
+
+char *
+gs_flatpak_get_latest_commit (GsFlatpak *self,
+			      GsApp *app,
+			      GCancellable *cancellable,
+			      GError **error)
+{
+	g_autoptr(FlatpakInstalledRef) ref = NULL;
+
+	ref = gs_flatpak_get_installed_ref (self, app, cancellable, error);
+	return g_strdup (flatpak_installed_ref_get_latest_commit (ref));
+}
+
+gboolean
+gs_flatpak_refine_metadata_from_installation (GsFlatpak *self,
+					      GsApp *app,
+					      GCancellable *cancellable,
+					      GError **error)
+{
+	g_autoptr(AsApp) as_app = NULL;
+	g_autoptr(FlatpakInstalledRef) ref = NULL;
+	const char *commit = NULL;
+
+	ref = gs_flatpak_get_installed_ref (self, app, cancellable, error);
+	commit = flatpak_ref_get_commit (FLATPAK_REF (ref));
+
+	if (!commit)
+		return FALSE;
+
+	as_app = gs_flatpak_get_as_app_for_commit (self, app, commit,
+						   cancellable, error);
+	if (!as_app)
+		return FALSE;
+
+	gs_appstream_copy_metadata (app, as_app, TRUE);
+	return TRUE;
 }

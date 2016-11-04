@@ -110,6 +110,38 @@ GPtrArray	*gs_flatpak_get_installed_runtimes (GsFlatpak		*self,
 void		gs_flatpak_set_download_updates (GsFlatpak		*self,
 						 gboolean 		 download_updates);
 
+gboolean	gs_flatpak_app_install_with_progress	(GsFlatpak			*self,
+							 GsApp				*app,
+							 AsAppState                      final_state,
+							 FlatpakProgressCallback	progress_cb,
+							 GCancellable			*cancellable,
+							 GError				**error);
+
+gboolean	gs_flatpak_update_app_with_progress	(GsFlatpak			*self,
+							 GsApp				*app,
+							 gboolean                        pull,
+							 gboolean                        deploy,
+							 AsAppState                      final_state,
+							 FlatpakProgressCallback	progress_cb,
+							 GCancellable			*cancellable,
+							 GError				**error);
+
+AsApp		*gs_flatpak_get_as_app_for_commit	(GsFlatpak	*self,
+							 GsApp		*app,
+							 const char	*commit,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+char		*gs_flatpak_get_latest_commit		(GsFlatpak	*self,
+							 GsApp		*app,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+gboolean	gs_flatpak_refine_metadata_from_installation (GsFlatpak		*self,
+							      GsApp		*app,
+							      GCancellable	*cancellable,
+							      GError		**error);
+
 G_END_DECLS
 
 #endif /* __GS_FLATPAK_H */

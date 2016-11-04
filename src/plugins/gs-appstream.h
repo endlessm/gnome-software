@@ -33,6 +33,7 @@ gboolean	 gs_appstream_refine_app		(GsPlugin	*plugin,
 GsApp		*gs_appstream_create_runtime		(GsPlugin	*plugin,
 							 GsApp		*parent,
 							 const gchar	*runtime);
+void		gs_appstream_copy_metadata (GsApp *app, AsApp *item, gboolean force);
 
 G_END_DECLS
 
