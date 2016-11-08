@@ -558,11 +558,22 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		 * for download and this refine was not requested by the
 		 * details view, then we hide it as it will not be usable */
 		if ((flags & GS_PLUGIN_REFINE_FLAGS_DETAILS_VIEW) == 0) {
-			g_debug ("External app %s has no external runtime "
-				 "available or installed. Hiding it with "
-				 "'state unknown'.",
-				 gs_app_get_unique_id (app));
-			force_set_app_state (app, AS_APP_STATE_UNKNOWN);
+			if (gs_app_is_updatable (app)) {
+				g_debug ("External app %s has no external "
+					 "runtime available or installed but "
+					 "is updatable which may bring a new "
+					 "runtime, so setting it's state to "
+					 "'available'.",
+					 gs_app_get_unique_id (app));
+				force_set_app_state (app,
+						     AS_APP_STATE_AVAILABLE);
+			} else {
+				g_debug ("External app %s has no external "
+					 "runtime available or installed. "
+					 "Hiding it with 'state unknown'.",
+					 gs_app_get_unique_id (app));
+				force_set_app_state (app, AS_APP_STATE_UNKNOWN);
+			}
 			return TRUE;
 		}
 
