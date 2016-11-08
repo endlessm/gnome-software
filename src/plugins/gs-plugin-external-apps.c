@@ -346,6 +346,19 @@ get_installed_ext_runtime (GsPlugin *plugin, const char *runtime_id)
 	return gs_plugin_cache_lookup (plugin, id);
 }
 
+static void
+force_set_app_state (GsApp *app, AsAppState state)
+{
+	/* This whole function is to avoid having to always set the state
+	 * to unknown before setting it to the right one throughout the code */
+	AsAppState current = gs_app_get_state (app);
+	if (current == state)
+		return;
+
+	gs_app_set_state (app, AS_APP_SCOPE_UNKNOWN);
+	gs_app_set_state (app, state);
+}
+
 static GsApp *
 get_external_runtime_from_json (GsPlugin *plugin,
 				const char *json_data)
@@ -375,9 +388,18 @@ get_external_runtime_from_json (GsPlugin *plugin,
 
 	runtime = gs_plugin_cache_lookup (plugin, full_id);
 	if (runtime) {
-		g_debug ("Found cached '%s'", full_id);
 		gs_app_set_management_plugin (runtime,
 					      gs_plugin_get_name (plugin));
+
+		if (gs_flatpak_is_installed (priv->sys_flatpak, runtime, NULL,
+					     NULL)) {
+			force_set_app_state (runtime, AS_APP_STATE_INSTALLED);
+			cache_installed_ext_runtime (plugin, runtime);
+		} else {
+			gs_app_set_state (runtime, AS_APP_STATE_UNKNOWN);
+		}
+		g_debug ("Found cached '%s' (state=%s)", full_id,
+			 as_app_state_to_string (gs_app_get_state (runtime)));
 
 		return runtime;
 	}
@@ -456,19 +478,6 @@ ext_runtime_is_reachable (GsPlugin *plugin, GsApp *runtime)
 	g_debug ("External runtime %s access status: %u", url, status_code);
 
 	return (status_code == SOUP_STATUS_OK);
-}
-
-static void
-force_set_app_state (GsApp *app, AsAppState state)
-{
-	/* This whole function is to avoid having to always set the state
-	 * to unknown before setting it to the right one throughout the code */
-	AsAppState current = gs_app_get_state (app);
-	if (current == state)
-		return;
-
-	gs_app_set_state (app, AS_APP_SCOPE_UNKNOWN);
-	gs_app_set_state (app, state);
 }
 
 static gboolean
