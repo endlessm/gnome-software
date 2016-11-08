@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-25 03:21+0000\n"
-"PO-Revision-Date: 2016-10-28 07:34+0000\n"
+"POT-Creation-Date: 2016-11-01 03:22+0000\n"
+"PO-Revision-Date: 2016-11-02 14:29+0000\n"
 "Last-Translator: Shimon Sharmin <oparthib@gmail.com>\n"
 "Language-Team: Bengali (http://www.transifex.com/endless-mobile-inc/gnome-software/language/bn/)\n"
 "MIME-Version: 1.0\n"
@@ -77,142 +77,152 @@ msgid ""
 msgstr "এটি উপযুক্ত প্রজেক্টসমূহের একটি তালিকা যা আমাদের প্রদর্শন করতে হবে যেমন GNOME, KDE এবং XFCE ।"
 
 #: ../data/org.gnome.software.gschema.xml.h:3
+msgid "Whether to manage updates in GNOME Software"
+msgstr "GNOME সফটওয়্যারের হালনাগাদগুলো নিয়ন্ত্রণ করা হবে কিনা"
+
+#: ../data/org.gnome.software.gschema.xml.h:4
+msgid ""
+"If disabled, GNOME Software will hide the updates panel and not perform any "
+"automatic updates actions."
+msgstr "নিষ্ক্রিয় করা হলে, GNOME সফটওয়্যার এর হালনাগাদ সূচী লুকিয়ে রাখবে এবং স্বয়ংক্রিয়ভাবে হালনাগাদ করার কোন পদক্ষেপ নেবে না।"
+
+#: ../data/org.gnome.software.gschema.xml.h:5
 msgid "Whether to automatically download updates"
 msgstr "আপডেটসমূহ স্বয়ংক্রিয়ভাবে ডাউনলোড করা হবে কিনা"
 
-#: ../data/org.gnome.software.gschema.xml.h:4
+#: ../data/org.gnome.software.gschema.xml.h:6
 msgid ""
 "If enabled, GNOME Software automatically downloads updates in the background"
 " and prompts the user to install them when ready."
 msgstr "যদি সক্রিয় করা হয়, GNOME সফটওয়্যার পটভূমিতে স্বয়ংক্রিয়ভাবে আপডেটসমূহ ডাউনলোড করে ফেলে এবং প্রস্তুত হয়ে গেলে ব্যবহারকারীকে সংস্থাপন করার জন্য জানান দেয়।"
 
-#: ../data/org.gnome.software.gschema.xml.h:5
+#: ../data/org.gnome.software.gschema.xml.h:7
 msgid "Whether to automatically refresh when on a metered connection"
 msgstr "মিটার সংযোগকালে স্বংক্রিয়ভাবে রিফ্রেশ হবে কিনা "
 
-#: ../data/org.gnome.software.gschema.xml.h:6
+#: ../data/org.gnome.software.gschema.xml.h:8
 msgid ""
 "If enabled, GNOME Software automatically refreshes in the background even "
 "when using a metered connection (eventually downloading some metadata, "
 "checking for updates, etc., which may incur in costs for the user)."
 msgstr "যদি সক্রিয় করা থাকে, নোম সফটওয়্যার পেছনে স্বয়ংক্রিয়ভাবে রিফ্রেশ হবে এমনকি মিটারকৃত সংযোগ ব্যবহারকালেও (অবশেষে কিছু মেটাডাটা ডাউনলোড করে, হালনাগাদ করণ দেখে ইত্যাদি, যা ব্যবহারকারীকেই খরচ বহন করতে হবে)।  "
 
-#: ../data/org.gnome.software.gschema.xml.h:7
+#: ../data/org.gnome.software.gschema.xml.h:9
 msgid "Whether it's the very first run of GNOME Software"
 msgstr "GNOME সফটওয়্যার সর্বপ্রথম চালু করা হলো কিনা"
 
-#: ../data/org.gnome.software.gschema.xml.h:8
+#: ../data/org.gnome.software.gschema.xml.h:10
 msgid "Show star ratings next to applications"
 msgstr "এ্যাপ্লিকেশনের পাশে নক্ষত্র দিয়ে রেটিং প্রদর্শন করুন"
 
-#: ../data/org.gnome.software.gschema.xml.h:9
+#: ../data/org.gnome.software.gschema.xml.h:11
 msgid "Non-free applications show a warning dialog before install"
 msgstr "সংস্থাপনের আগে নন-ফ্রি এ্যাপ্লিকেশনসমূহে একটি সতর্কতামূলক বাণী দেখানো হয়"
 
-#: ../data/org.gnome.software.gschema.xml.h:10
+#: ../data/org.gnome.software.gschema.xml.h:12
 msgid ""
 "When non-free applications are installed a warning dialog can be shown. This"
 " controls if that dialog is suppressed."
 msgstr "যখন নন-ফ্রি এ্যাপ্লিকেশনসমূহ সংস্থাপন করা হয় তখন একটি সতর্কতামূলক বাণী দেখানো যায়। সেই বাণীটি দেখানো হবে কি হবে না এটি তা নিয়ন্ত্রণ করে।"
 
-#: ../data/org.gnome.software.gschema.xml.h:11
+#: ../data/org.gnome.software.gschema.xml.h:13
 msgid "A list of popular applications"
 msgstr "জনপ্রিয় এ্যাপ্লিকেশনসমূহের একটি তালিকা"
 
-#: ../data/org.gnome.software.gschema.xml.h:12
+#: ../data/org.gnome.software.gschema.xml.h:14
 msgid "A list of applications to use, overriding the system defined ones."
 msgstr "সিস্টেম কর্তৃক নির্ধারিতগুলো বাতিল করে ব্যবহারযোগ্য এ্যাপ্লিকেশনসমূহের একটি তালিকা।"
 
-#: ../data/org.gnome.software.gschema.xml.h:13
+#: ../data/org.gnome.software.gschema.xml.h:15
 msgid "The list of extra sources that have been previously enabled"
 msgstr "অতিরিক্ত উৎসসমূহের একটি তালিকা যা আগে সক্রিয় করা হয়েছিল।"
 
-#: ../data/org.gnome.software.gschema.xml.h:14
+#: ../data/org.gnome.software.gschema.xml.h:16
 msgid ""
 "The list of sources that have been previously enabled when installing third-"
 "party applications."
 msgstr "তৃতীয় পক্ষ এ্যাপ্লিকেশন সংস্থাপনের সময় আগে থেকে সক্রিয় করা উৎসের একটি তালিকা।"
 
-#: ../data/org.gnome.software.gschema.xml.h:15
+#: ../data/org.gnome.software.gschema.xml.h:17
 msgid "The last update check timestamp"
 msgstr "শেষবার আপডেট পরীক্ষা করার সময়"
 
-#: ../data/org.gnome.software.gschema.xml.h:16
+#: ../data/org.gnome.software.gschema.xml.h:18
 msgid "The last upgrade notification timestamp"
 msgstr "সর্বশেষ হালনাগাদ বিজ্ঞপ্তির সময়"
 
-#: ../data/org.gnome.software.gschema.xml.h:17
+#: ../data/org.gnome.software.gschema.xml.h:19
 msgid "The timestamp of the first security update, cleared after update"
 msgstr "আপডেট হবার পর হওয়া প্রথম নিরাপত্তা আপডেটের সময়"
 
-#: ../data/org.gnome.software.gschema.xml.h:18
+#: ../data/org.gnome.software.gschema.xml.h:20
 msgid "The last update timestamp"
 msgstr "শেষবার আপডেট হবার সময়"
 
-#: ../data/org.gnome.software.gschema.xml.h:19
+#: ../data/org.gnome.software.gschema.xml.h:21
 msgid "The server to use for application reviews"
 msgstr "এ্যাপ্লিকেশন রিভিউ করার জন্য সার্ভারের ব্যবহার"
 
-#: ../data/org.gnome.software.gschema.xml.h:20
+#: ../data/org.gnome.software.gschema.xml.h:22
 msgid "The minimum karma score for reviews"
 msgstr "রিভিউয়ের জন্য সর্বনিম্ন কার্মা স্কোর"
 
-#: ../data/org.gnome.software.gschema.xml.h:21
+#: ../data/org.gnome.software.gschema.xml.h:23
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "এই সংখ্যার চেয়ে কম কার্মাসহ রিভিউ প্রদর্শিত হবে না"
 
-#: ../data/org.gnome.software.gschema.xml.h:22
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "আনুষ্ঠানিক উৎসের একটি তালিকা যাদের তৃতীয় পক্ষ বিবেচনা করা হবে না"
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid "A list of official sources that should be considered free software"
 msgstr "আনুষ্ঠানিক উৎসের একটি তালিকা যাদের মুক্ত সফটওয়্যার বিবেচনা করা হবে"
 
-#: ../data/org.gnome.software.gschema.xml.h:24
+#: ../data/org.gnome.software.gschema.xml.h:26
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
 msgstr "যখন একটি এ্যাপ্লিকেশনকে মুক্ত সফটওয়্যার বিবেচনা করা হবে তখন যে লাইসেন্স URL ব্যবহার করা হবে"
 
-#: ../data/org.gnome.software.gschema.xml.h:25
+#: ../data/org.gnome.software.gschema.xml.h:27
 msgid ""
 "Install bundled applications for all users on the system where possible"
 msgstr "সিস্টেমে যেখানে সম্ভব সেখানে সকল ব্যবহারকারীর জন্য বান্ডিল এ্যাপ্লিকেশন সংস্থাপন করুন"
 
-#: ../data/org.gnome.software.gschema.xml.h:26
+#: ../data/org.gnome.software.gschema.xml.h:28
 msgid "Show the folder management UI"
 msgstr "ম্যানেজমেন্ট UI ফোল্ডার প্রদর্শন করুন"
 
-#: ../data/org.gnome.software.gschema.xml.h:27
+#: ../data/org.gnome.software.gschema.xml.h:29
 msgid "Allow access to the Software Sources dialog"
 msgstr "সফটওয়্যার উৎস বাণীতে প্রবেশাধিকার দিন"
 
-#: ../data/org.gnome.software.gschema.xml.h:28
+#: ../data/org.gnome.software.gschema.xml.h:30
 msgid "Offer upgrades for pre-releases"
 msgstr "প্রাক-মুক্তির জন্য আপগ্রেড প্রস্তাব করুন"
 
-#: ../data/org.gnome.software.gschema.xml.h:29
+#: ../data/org.gnome.software.gschema.xml.h:31
 msgid "Show some UI elements informing the user that an app is non-free"
 msgstr "একটি এ্যাপ অ-বিনামূল্য সেটা ব্যবহারকারীকে বুঝাতে কিছু UI উপাদান প্রদর্শন করুন"
 
-#: ../data/org.gnome.software.gschema.xml.h:30
+#: ../data/org.gnome.software.gschema.xml.h:32
 msgid "Show the prompt to install nonfree software sources"
 msgstr "অ-বিনামূল্যের সফটওয়্যার উৎসগুলো সংস্থাপন করার বিজ্ঞপ্তি প্রদর্শন"
 
-#: ../data/org.gnome.software.gschema.xml.h:31
+#: ../data/org.gnome.software.gschema.xml.h:33
 msgid "Show non-free software in search results"
 msgstr "অনুসন্ধান ফলাফলে অ-বিনামূল্যের সফটওয়্যার প্রদর্শন"
 
-#: ../data/org.gnome.software.gschema.xml.h:32
+#: ../data/org.gnome.software.gschema.xml.h:34
 msgid "The URI that explains nonfree and proprietary software"
 msgstr "যে URI অ-বিনামূল্য ও স্বত্বসহ সফটওয়্যার ব্যাখ্যা করে"
 
-#: ../data/org.gnome.software.gschema.xml.h:33
+#: ../data/org.gnome.software.gschema.xml.h:35
 msgid "A list of non-free sources that can be optionally enabled"
 msgstr "অ-বিনামূল্য উৎসগুলোর একটি তালিকা যা ঐচ্ছিকভাবে সক্রিয় করা যায়"
 
-#: ../data/org.gnome.software.gschema.xml.h:34
+#: ../data/org.gnome.software.gschema.xml.h:36
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
@@ -514,7 +524,7 @@ msgid "All"
 msgstr "সকল"
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: ../src/gs-category.c:202 ../src/gs-shell.c:1026
+#: ../src/gs-category.c:202 ../src/gs-shell.c:1016
 msgid "Featured"
 msgstr "বৈশিষ্ট্যসম্পন্ন"
 
@@ -690,24 +700,24 @@ msgstr "%s মুছে ফেলা হবে, এবং এটা ব্যব
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1049
+#: ../src/gs-plugin-loader.c:1055
 msgid "OS Updates"
 msgstr "OS আপডেট"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1054
+#: ../src/gs-plugin-loader.c:1060
 msgid "Includes performance, stability and security improvements."
 msgstr "কর্মক্ষমতা, স্থিতিশীলতা ও নিরাপত্তার অগ্রগতি সংযোজিত।"
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1730 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1736 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "%s ফরম্যাটে কোন এ্যাডঅন কোডেক পাওয়া যায়নি।"
 
-#: ../src/gs-plugin-loader.c:1733
+#: ../src/gs-plugin-loader.c:1739
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -1597,13 +1607,13 @@ msgid "_Restart & Update"
 msgstr "_পুনঃ চালু ও হালনাগাদ "
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: ../src/gs-shell-updates.c:838
+#: ../src/gs-shell-updates.c:839
 msgid "Charges may apply"
 msgstr "মূল্য পরিশোধ করতে হতে পারে"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:842
+#: ../src/gs-shell-updates.c:843
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -1611,52 +1621,52 @@ msgstr "মোবাইলে ব্রডব্যান্ড ব্যবহ�
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:846
+#: ../src/gs-shell-updates.c:847
 msgid "Check Anyway"
 msgstr "তবুও খোঁজ করুন"
 
 #. TRANSLATORS: can't do updates check
-#: ../src/gs-shell-updates.c:862
+#: ../src/gs-shell-updates.c:863
 msgid "No Network"
 msgstr "নেটওয়ার্ক নেই"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:866
+#: ../src/gs-shell-updates.c:867
 msgid "Internet access is required to check for updates."
 msgstr "আপডেট খোঁজ করতে ইন্টারনেট সংযোগ প্রয়োজন।"
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:870
+#: ../src/gs-shell-updates.c:871
 msgid "Network Settings"
 msgstr "নেটওয়ার্ক সেটিংস"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: ../src/gs-shell-updates.c:960
+#: ../src/gs-shell-updates.c:961
 msgid "Updates have been installed"
 msgstr "আপডেটসমূহ সংস্থাপন করা হয়েছে"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: ../src/gs-shell-updates.c:962
+#: ../src/gs-shell-updates.c:963
 msgid "A restart is required for them to take effect."
 msgstr "এগুলো কার্যকরী হতে পুনরায় চালু করা দরকার।"
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:964 ../src/gs-update-monitor.c:102
+#: ../src/gs-shell-updates.c:965 ../src/gs-update-monitor.c:102
 msgid "Not Now"
 msgstr "এখন নয়"
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:966
+#: ../src/gs-shell-updates.c:967
 msgid "Restart"
 msgstr "পুনরায় চালু করুন"
 
-#: ../src/gs-shell-updates.c:1357
+#: ../src/gs-shell-updates.c:1349
 msgid "Restart & _Install"
 msgstr "পুনরায় চালু করুন এবং _সংস্থাপন করুন"
 
-#: ../src/gs-shell-updates.c:1375
+#: ../src/gs-shell-updates.c:1367
 msgid "Check for updates"
 msgstr "আপডেট খোঁজ করেন"
 
@@ -1894,28 +1904,28 @@ msgid "Software Upgrade Available"
 msgstr "সফটওয়্যার আপগ্রেড পাওয়া যাবে"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: ../src/gs-update-monitor.c:472
+#: ../src/gs-update-monitor.c:512
 msgid "Software Updates Failed"
 msgstr "সফটওয়্যার আপডেট করা ব্যর্থ"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: ../src/gs-update-monitor.c:474
+#: ../src/gs-update-monitor.c:514
 msgid "An important OS update failed to be installed."
 msgstr "একটি গুরুত্বপূর্ণ OS আপডেট সংস্থাপনে ব্যর্থ হয়েছে।"
 
-#: ../src/gs-update-monitor.c:475
+#: ../src/gs-update-monitor.c:515
 msgid "Show Details"
 msgstr "বিশদ প্রদর্শন করুন"
 
 #. TRANSLATORS: title when we've done offline updates
-#: ../src/gs-update-monitor.c:497
+#: ../src/gs-update-monitor.c:537
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "সফটওয়্যার আপডেট সংস্থাপন করা হয়েছে"
 msgstr[1] "সফটওয়্যার আপডেট সংস্থাপন করা হয়েছে"
 
 #. TRANSLATORS: message when we've done offline updates
-#: ../src/gs-update-monitor.c:501
+#: ../src/gs-update-monitor.c:541
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "একটি গুরুত্বপূর্ণ OS আপডেট সংস্থাপন করা হয়েছে।"
@@ -1926,50 +1936,50 @@ msgstr[1] "গুরুত্বপূর্ণ OS আপডেট সংস্�
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: ../src/gs-update-monitor.c:512
+#: ../src/gs-update-monitor.c:552
 msgctxt "updates"
 msgid "Review"
 msgstr "রিভিউ"
 
 #. TRANSLATORS: this is when the offline update failed
-#: ../src/gs-update-monitor.c:556
+#: ../src/gs-update-monitor.c:596
 msgid "Failed To Update"
 msgstr "আপডেট করতে ব্যর্থ"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: ../src/gs-update-monitor.c:562
+#: ../src/gs-update-monitor.c:602
 msgid "The system was already up to date."
 msgstr "সিস্টেম ইতিমধ্যেই হালনাগাদকৃত।"
 
 #. TRANSLATORS: the user aborted the update manually
-#: ../src/gs-update-monitor.c:567
+#: ../src/gs-update-monitor.c:607
 msgid "The update was cancelled."
 msgstr "আপডেট বাতিল করা হয়েছে।"
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: ../src/gs-update-monitor.c:573
+#: ../src/gs-update-monitor.c:613
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "ইন্টারনেট সংযোগ প্রয়োজন হলেও ইন্টারনেট সংযোগ পাওয়া যায়নি। অনুগ্রহ করে নিশ্চিত করুন আপনার ইন্টারনেট সংযোগ রয়েছে এবং আবার চেষ্টা করুন।"
 
 #. TRANSLATORS: if the package is not signed correctly
-#: ../src/gs-update-monitor.c:579
+#: ../src/gs-update-monitor.c:619
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "আপডেট সম্পর্কিত নিরাপত্তা ইস্যু দেখা দিয়েছে। আরো তথ্যের জন্য অনুগ্রহ করে আপনার সফটওয়্যার সরবরাহকারীর সাথে যোগাযোগ করুন।"
 
 #. TRANSLATORS: we ran out of disk space
-#: ../src/gs-update-monitor.c:585
+#: ../src/gs-update-monitor.c:625
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "ডিস্কে পর্যাপ্ত জায়গা ছিল না। অনুগ্রহ করে কিছু জায়গা খালি করুন এবং আবার চেষ্টা করুন।"
 
 #. TRANSLATORS: We didn't handle the error type
-#: ../src/gs-update-monitor.c:590
+#: ../src/gs-update-monitor.c:630
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -2887,11 +2897,11 @@ msgstr "প্রসঙ্গক্রম এবং খবর"
 msgid "Utilities"
 msgstr "উপযোগিতা"
 
-#: ../src/plugins/gs-plugin-eos.c:998
+#: ../src/plugins/gs-plugin-eos.c:1001
 msgid "Endless Platform"
 msgstr "এন্ডলেস প্রাঙ্গণ"
 
-#: ../src/plugins/gs-plugin-eos.c:1001
+#: ../src/plugins/gs-plugin-eos.c:1004
 msgid "Framework for applications"
 msgstr "এ্যাপ্লিকেশনসমূহের জন্য ফ্রেমওয়ার্ক"
 
