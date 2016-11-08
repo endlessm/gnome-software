@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-10-25 03:21+0000\n"
-"PO-Revision-Date: 2016-10-25 03:22+0000\n"
+"POT-Creation-Date: 2016-11-01 03:22+0000\n"
+"PO-Revision-Date: 2016-11-01 03:23+0000\n"
 "Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: French (http://www.transifex.com/endless-mobile-inc/gnome-software/language/fr/)\n"
 "MIME-Version: 1.0\n"
@@ -75,142 +75,152 @@ msgid ""
 msgstr "Ceci est un liste de projets compatibles à afficher, tels que GNOME, KDE ou XFCE."
 
 #: ../data/org.gnome.software.gschema.xml.h:3
+msgid "Whether to manage updates in GNOME Software"
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:4
+msgid ""
+"If disabled, GNOME Software will hide the updates panel and not perform any "
+"automatic updates actions."
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:5
 msgid "Whether to automatically download updates"
 msgstr "Indique s'il faut télécharger automatiquement les mises à jour."
 
-#: ../data/org.gnome.software.gschema.xml.h:4
+#: ../data/org.gnome.software.gschema.xml.h:6
 msgid ""
 "If enabled, GNOME Software automatically downloads updates in the background"
 " and prompts the user to install them when ready."
 msgstr "Si activé, GNOME Logiciels téléchargera automatiquement les mises à jour en arrière-plan et proposera à l'utilisateur de les installer une fois celles-ci téléchargées."
 
-#: ../data/org.gnome.software.gschema.xml.h:5
+#: ../data/org.gnome.software.gschema.xml.h:7
 msgid "Whether to automatically refresh when on a metered connection"
 msgstr "Rafraîchir automatiquement ou non lorsque la connexion est limitée"
 
-#: ../data/org.gnome.software.gschema.xml.h:6
+#: ../data/org.gnome.software.gschema.xml.h:8
 msgid ""
 "If enabled, GNOME Software automatically refreshes in the background even "
 "when using a metered connection (eventually downloading some metadata, "
 "checking for updates, etc., which may incur in costs for the user)."
 msgstr "Si activé, le logiciel GNOME se rafraîchit automatiquement en arrière-plan, même avec l'utilisation d'une connexion limitée (avec éventuellement le téléchargement de métadonnées, la vérification des mises à jour, etc., pouvant entraîner des coûts pour l'utilisateur)."
 
-#: ../data/org.gnome.software.gschema.xml.h:7
+#: ../data/org.gnome.software.gschema.xml.h:9
 msgid "Whether it's the very first run of GNOME Software"
 msgstr "Indique s'il s'agit du premier lancement de GNOME Logiciels"
 
-#: ../data/org.gnome.software.gschema.xml.h:8
+#: ../data/org.gnome.software.gschema.xml.h:10
 msgid "Show star ratings next to applications"
 msgstr "Afficher les notes à coté des applications"
 
-#: ../data/org.gnome.software.gschema.xml.h:9
+#: ../data/org.gnome.software.gschema.xml.h:11
 msgid "Non-free applications show a warning dialog before install"
 msgstr "Les application non-libres affichent un avertissement avant installation"
 
-#: ../data/org.gnome.software.gschema.xml.h:10
+#: ../data/org.gnome.software.gschema.xml.h:12
 msgid ""
 "When non-free applications are installed a warning dialog can be shown. This"
 " controls if that dialog is suppressed."
 msgstr "Quand les applications non-libres sont installées, un avertissement peut être affiché. Ceci contrôle cet affichage."
 
-#: ../data/org.gnome.software.gschema.xml.h:11
+#: ../data/org.gnome.software.gschema.xml.h:13
 msgid "A list of popular applications"
 msgstr "Une liste d'applications populaires"
 
-#: ../data/org.gnome.software.gschema.xml.h:12
+#: ../data/org.gnome.software.gschema.xml.h:14
 msgid "A list of applications to use, overriding the system defined ones."
 msgstr "Une liste d'application à utiliser, passant outre celle définie par le système."
 
-#: ../data/org.gnome.software.gschema.xml.h:13
+#: ../data/org.gnome.software.gschema.xml.h:15
 msgid "The list of extra sources that have been previously enabled"
 msgstr "La liste des sources supplémentaires qui ont été précédemment activées"
 
-#: ../data/org.gnome.software.gschema.xml.h:14
+#: ../data/org.gnome.software.gschema.xml.h:16
 msgid ""
 "The list of sources that have been previously enabled when installing third-"
 "party applications."
 msgstr "La liste de sources ayant été précédemment activées lors de l'installation d'applications tierces."
 
-#: ../data/org.gnome.software.gschema.xml.h:15
+#: ../data/org.gnome.software.gschema.xml.h:17
 msgid "The last update check timestamp"
 msgstr "L'horodatage de la dernière vérification des mises à jour"
 
-#: ../data/org.gnome.software.gschema.xml.h:16
+#: ../data/org.gnome.software.gschema.xml.h:18
 msgid "The last upgrade notification timestamp"
 msgstr "L'horodatage de la dernière notification de mise à jour"
 
-#: ../data/org.gnome.software.gschema.xml.h:17
+#: ../data/org.gnome.software.gschema.xml.h:19
 msgid "The timestamp of the first security update, cleared after update"
 msgstr "L'horodatage de la première mise à jour de sécurité, effacé après mise à jour"
 
-#: ../data/org.gnome.software.gschema.xml.h:18
+#: ../data/org.gnome.software.gschema.xml.h:20
 msgid "The last update timestamp"
 msgstr "L'horodatage de la dernière mise à jour"
 
-#: ../data/org.gnome.software.gschema.xml.h:19
+#: ../data/org.gnome.software.gschema.xml.h:21
 msgid "The server to use for application reviews"
 msgstr "Le serveur à utiliser pour les appréciations d'applications"
 
-#: ../data/org.gnome.software.gschema.xml.h:20
+#: ../data/org.gnome.software.gschema.xml.h:22
 msgid "The minimum karma score for reviews"
 msgstr "Le score minimum pour les appréciations"
 
-#: ../data/org.gnome.software.gschema.xml.h:21
+#: ../data/org.gnome.software.gschema.xml.h:23
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "Les appréciations dont le karma est inférieur à cette valeur seront masquées."
 
-#: ../data/org.gnome.software.gschema.xml.h:22
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "Une liste de source officielles qui ne doivent pas être considérées comme tierces parties"
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid "A list of official sources that should be considered free software"
 msgstr "Une liste des sources officielles qui ne doivent pas être considérées comme des logiciels libres"
 
-#: ../data/org.gnome.software.gschema.xml.h:24
+#: ../data/org.gnome.software.gschema.xml.h:26
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
 msgstr "L'URL de la licence à utiliser lorsqu'une application doit être considérée comme un logiciel libre"
 
-#: ../data/org.gnome.software.gschema.xml.h:25
+#: ../data/org.gnome.software.gschema.xml.h:27
 msgid ""
 "Install bundled applications for all users on the system where possible"
 msgstr "Installe si possible les applications enveloppées sur le système pour tout les utilisateurs"
 
-#: ../data/org.gnome.software.gschema.xml.h:26
+#: ../data/org.gnome.software.gschema.xml.h:28
 msgid "Show the folder management UI"
 msgstr "Affiche l'interface utilisateur de gestion des dossiers"
 
-#: ../data/org.gnome.software.gschema.xml.h:27
+#: ../data/org.gnome.software.gschema.xml.h:29
 msgid "Allow access to the Software Sources dialog"
 msgstr "Autorise l'accès à la boîte de dialogue des sources du logiciel"
 
-#: ../data/org.gnome.software.gschema.xml.h:28
+#: ../data/org.gnome.software.gschema.xml.h:30
 msgid "Offer upgrades for pre-releases"
 msgstr "Propose des mises à jour pour les versions à l'essai"
 
-#: ../data/org.gnome.software.gschema.xml.h:29
+#: ../data/org.gnome.software.gschema.xml.h:31
 msgid "Show some UI elements informing the user that an app is non-free"
 msgstr "Affiche quelques éléments d'interface montrant à l'utilisateur qu'une application est non-libre"
 
-#: ../data/org.gnome.software.gschema.xml.h:30
+#: ../data/org.gnome.software.gschema.xml.h:32
 msgid "Show the prompt to install nonfree software sources"
 msgstr "Afficher l'invite de commandes pour installer les sources logicielles non-libres"
 
-#: ../data/org.gnome.software.gschema.xml.h:31
+#: ../data/org.gnome.software.gschema.xml.h:33
 msgid "Show non-free software in search results"
 msgstr "Afficher les logiciels non-libres dans les résultats de recherche"
 
-#: ../data/org.gnome.software.gschema.xml.h:32
+#: ../data/org.gnome.software.gschema.xml.h:34
 msgid "The URI that explains nonfree and proprietary software"
 msgstr "L'URI qui fournit une explication sur les logiciels propriétaires et non-libres"
 
-#: ../data/org.gnome.software.gschema.xml.h:33
+#: ../data/org.gnome.software.gschema.xml.h:35
 msgid "A list of non-free sources that can be optionally enabled"
 msgstr "Une liste des sources non-libres qui peuvent être activées optionnellement"
 
-#: ../data/org.gnome.software.gschema.xml.h:34
+#: ../data/org.gnome.software.gschema.xml.h:36
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
@@ -512,7 +522,7 @@ msgid "All"
 msgstr "Tout"
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: ../src/gs-category.c:202 ../src/gs-shell.c:1026
+#: ../src/gs-category.c:202 ../src/gs-shell.c:1016
 msgid "Featured"
 msgstr "Mises en avant"
 
@@ -688,24 +698,24 @@ msgstr "%s va être supprimée et il vous faudra la réinstaller pour pouvoir l'
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:1049
+#: ../src/gs-plugin-loader.c:1055
 msgid "OS Updates"
 msgstr "Mises à jour du système d'exploitation"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:1054
+#: ../src/gs-plugin-loader.c:1060
 msgid "Includes performance, stability and security improvements."
 msgstr "Elle inclut des améliorations de performances, de stabilité et de sécurité."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1730 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1736 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "Aucun codec au format %s n'est disponible pour l'extension."
 
-#: ../src/gs-plugin-loader.c:1733
+#: ../src/gs-plugin-loader.c:1739
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -1595,13 +1605,13 @@ msgid "_Restart & Update"
 msgstr "_Redémarrer et mettre à jour"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: ../src/gs-shell-updates.c:838
+#: ../src/gs-shell-updates.c:839
 msgid "Charges may apply"
 msgstr "Il peut y avoir facturation"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:842
+#: ../src/gs-shell-updates.c:843
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -1609,52 +1619,52 @@ msgstr "Rechercher des mises à jour avec votre connexion mobile peut faire l'ob
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:846
+#: ../src/gs-shell-updates.c:847
 msgid "Check Anyway"
 msgstr "Rechercher quand même"
 
 #. TRANSLATORS: can't do updates check
-#: ../src/gs-shell-updates.c:862
+#: ../src/gs-shell-updates.c:863
 msgid "No Network"
 msgstr "Aucun réseau"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:866
+#: ../src/gs-shell-updates.c:867
 msgid "Internet access is required to check for updates."
 msgstr "L'accès à Internet est nécessaire pour rechercher des mises à jour."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:870
+#: ../src/gs-shell-updates.c:871
 msgid "Network Settings"
 msgstr "Paramètres réseau"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: ../src/gs-shell-updates.c:960
+#: ../src/gs-shell-updates.c:961
 msgid "Updates have been installed"
 msgstr "Des mises à jour ont été installées sur ce système."
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: ../src/gs-shell-updates.c:962
+#: ../src/gs-shell-updates.c:963
 msgid "A restart is required for them to take effect."
 msgstr "Un redémarrage est nécessaire pour terminer l'installation."
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:964 ../src/gs-update-monitor.c:102
+#: ../src/gs-shell-updates.c:965 ../src/gs-update-monitor.c:102
 msgid "Not Now"
 msgstr "Pas maintenant"
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:966
+#: ../src/gs-shell-updates.c:967
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: ../src/gs-shell-updates.c:1357
+#: ../src/gs-shell-updates.c:1349
 msgid "Restart & _Install"
 msgstr "Redémarrer et _installer"
 
-#: ../src/gs-shell-updates.c:1375
+#: ../src/gs-shell-updates.c:1367
 msgid "Check for updates"
 msgstr "Rechercher des mises à jour"
 
@@ -1892,28 +1902,28 @@ msgid "Software Upgrade Available"
 msgstr "Des mises à niveau logicielles sont disponibles"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: ../src/gs-update-monitor.c:472
+#: ../src/gs-update-monitor.c:512
 msgid "Software Updates Failed"
 msgstr "Échec des mises à jour logicielles"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: ../src/gs-update-monitor.c:474
+#: ../src/gs-update-monitor.c:514
 msgid "An important OS update failed to be installed."
 msgstr "Échec d'installation d'une importante mise à jour du système d'exploitation."
 
-#: ../src/gs-update-monitor.c:475
+#: ../src/gs-update-monitor.c:515
 msgid "Show Details"
 msgstr "Afficher les détails"
 
 #. TRANSLATORS: title when we've done offline updates
-#: ../src/gs-update-monitor.c:497
+#: ../src/gs-update-monitor.c:537
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Mise à jour logicielle installée"
 msgstr[1] "Mises à jour logicielles installées"
 
 #. TRANSLATORS: message when we've done offline updates
-#: ../src/gs-update-monitor.c:501
+#: ../src/gs-update-monitor.c:541
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "Une importante mise à jour du système d'exploitation a été installée."
@@ -1924,50 +1934,50 @@ msgstr[1] "D'importantes mises à jour du système d'exploitation ont été inst
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: ../src/gs-update-monitor.c:512
+#: ../src/gs-update-monitor.c:552
 msgctxt "updates"
 msgid "Review"
 msgstr "Passer en revue"
 
 #. TRANSLATORS: this is when the offline update failed
-#: ../src/gs-update-monitor.c:556
+#: ../src/gs-update-monitor.c:596
 msgid "Failed To Update"
 msgstr "Échec de mise à jour"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: ../src/gs-update-monitor.c:562
+#: ../src/gs-update-monitor.c:602
 msgid "The system was already up to date."
 msgstr "Le système était déjà à jour."
 
 #. TRANSLATORS: the user aborted the update manually
-#: ../src/gs-update-monitor.c:567
+#: ../src/gs-update-monitor.c:607
 msgid "The update was cancelled."
 msgstr "La mise à jour a été annulée."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: ../src/gs-update-monitor.c:573
+#: ../src/gs-update-monitor.c:613
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "L'accès à Internet est nécessaire mais n'est pas disponible. Assurez-vous d'avoir un accès à Internet puis réessayez."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: ../src/gs-update-monitor.c:579
+#: ../src/gs-update-monitor.c:619
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "Il y a eu un problème de sécurité avec la mise à jour. Veuillez consulter votre fournisseur de logiciel pour plus d'informations."
 
 #. TRANSLATORS: we ran out of disk space
-#: ../src/gs-update-monitor.c:585
+#: ../src/gs-update-monitor.c:625
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "Il n'y avait pas assez d'espace disque. Veuillez en libérer et réessayez."
 
 #. TRANSLATORS: We didn't handle the error type
-#: ../src/gs-update-monitor.c:590
+#: ../src/gs-update-monitor.c:630
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -2885,11 +2895,11 @@ msgstr "Référence et actualités"
 msgid "Utilities"
 msgstr "Utilitaires"
 
-#: ../src/plugins/gs-plugin-eos.c:998
+#: ../src/plugins/gs-plugin-eos.c:1001
 msgid "Endless Platform"
 msgstr "Plateforme infinie..."
 
-#: ../src/plugins/gs-plugin-eos.c:1001
+#: ../src/plugins/gs-plugin-eos.c:1004
 msgid "Framework for applications"
 msgstr "Cadres d'applications"
 
