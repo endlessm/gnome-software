@@ -56,6 +56,7 @@ struct _GsShellInstalled
 	GtkWidget		*button_folder_remove;
 	GtkWidget		*list_box_install;
 	GtkWidget		*scrolledwindow_install;
+	GtkWidget		*search_button;
 	GtkWidget		*spinner_install;
 	GtkWidget		*stack_install;
 };
@@ -283,6 +284,8 @@ gs_shell_installed_switch_to (GsPage *page, gboolean scroll_up)
 			   gs_shell_get_mode_string (self->shell));
 		return;
 	}
+
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->search_button), FALSE);
 
 	set_selection_mode (self, FALSE);
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
@@ -698,6 +701,7 @@ gs_shell_installed_setup (GsShellInstalled *self,
 			  GtkBuilder *builder,
 			  GCancellable *cancellable)
 {
+	GtkSearchBar *search_bar;
 	AtkObject *accessible;
 	GtkWidget *widget;
 
@@ -745,6 +749,12 @@ gs_shell_installed_setup (GsShellInstalled *self,
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "select_none_menuitem"));
 	g_signal_connect (widget, "activate",
 			  G_CALLBACK (select_none_cb), self);
+
+	/* search button */
+	search_bar = GTK_SEARCH_BAR (gtk_builder_get_object (self->builder,
+							     "search_bar"));
+	self->search_button = gs_search_button_new (search_bar);
+	gs_page_set_header_end_widget (GS_PAGE (self), self->search_button);
 
 	/* chain up */
 	gs_page_setup (GS_PAGE (self),
