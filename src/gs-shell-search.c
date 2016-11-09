@@ -418,9 +418,17 @@ gs_shell_search_app_removed (GsPage *page, GsApp *app)
 static void
 gs_shell_search_search_button_cb (GtkButton *button, GsShellSearch *self)
 {
+	GsShellMode mode;
+
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button)))
 		return;
-	gs_shell_change_mode (self->shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
+
+	mode = gs_shell_get_previous_mode (self->shell);
+
+	if (mode == GS_SHELL_MODE_UNKNOWN)
+		mode = GS_SHELL_MODE_OVERVIEW;
+
+	gs_shell_change_mode (self->shell, mode, NULL, TRUE);
 }
 
 void

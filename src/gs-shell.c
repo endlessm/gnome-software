@@ -784,6 +784,20 @@ gs_shell_set_mode (GsShell *shell, GsShellMode mode)
 }
 
 GsShellMode
+gs_shell_get_previous_mode (GsShell *shell)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	BackEntry *entry;
+
+	entry = g_queue_peek_head (priv->back_entry_stack);
+
+	if (entry == NULL)
+		return GS_SHELL_MODE_UNKNOWN;
+
+	return entry->mode;
+}
+
+GsShellMode
 gs_shell_get_mode (GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
