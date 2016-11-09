@@ -44,6 +44,7 @@ struct _GsShellCategory
 	GtkWidget	*button_category_shell_extensions;
 	GtkWidget	*category_detail_box;
 	GtkWidget	*listbox_filter;
+	GtkWidget       *search_button;
 	GtkWidget	*scrolledwindow_category;
 	GtkWidget	*scrolledwindow_filter;
 };
@@ -55,6 +56,8 @@ gs_shell_category_switch_to (GsPage *page, gboolean scroll_up)
 {
 	GsShellCategory *self = GS_SHELL_CATEGORY (page);
 	GtkWidget *widget;
+
+	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (self->search_button), FALSE);
 
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
 	gtk_widget_show (widget);
@@ -335,6 +338,7 @@ gs_shell_category_setup (GsShellCategory *self,
 			 GCancellable *cancellable)
 {
 	GtkAdjustment *adj;
+	GtkSearchBar *search_bar;
 
 	self->plugin_loader = g_object_ref (plugin_loader);
 	self->builder = g_object_ref (builder);
@@ -350,6 +354,12 @@ gs_shell_category_setup (GsShellCategory *self,
 
 	g_signal_connect (self->button_category_shell_extensions, "clicked",
 			  G_CALLBACK (button_shell_extensions_cb), self);
+
+	/* search button */
+	search_bar = GTK_SEARCH_BAR (gtk_builder_get_object (self->builder,
+							     "search_bar"));
+	self->search_button = gs_search_button_new (search_bar);
+	gs_page_set_header_end_widget (GS_PAGE (self), self->search_button);
 
 	/* chain up */
 	gs_page_setup (GS_PAGE (self),
