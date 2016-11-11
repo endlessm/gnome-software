@@ -45,6 +45,7 @@ struct _GsScreenshotImage
 	GtkWidget	*image1;
 	GtkWidget	*image2;
 	GtkWidget	*label_error;
+	GSettings	*settings;
 	SoupSession	*session;
 	SoupMessage	*message;
 	gchar		*filename;
@@ -53,6 +54,7 @@ struct _GsScreenshotImage
 	guint		 width;
 	guint		 height;
 	guint		 scale;
+	gboolean	 showing_image;
 };
 
 G_DEFINE_TYPE (GsScreenshotImage, gs_screenshot_image, GTK_TYPE_BIN)
@@ -76,6 +78,7 @@ gs_screenshot_image_set_error (GsScreenshotImage *ssimg, const gchar *message)
 		gtk_widget_hide (ssimg->label_error);
 	else
 		gtk_widget_show (ssimg->label_error);
+	ssimg->showing_image = FALSE;
 }
 
 static GdkPixbuf *
@@ -169,6 +172,7 @@ as_screenshot_show_image (GsScreenshotImage *ssimg)
 	}
 
 	gtk_widget_show (GTK_WIDGET (ssimg));
+	ssimg->showing_image = TRUE;
 }
 
 static void
@@ -198,6 +202,85 @@ gs_screenshot_image_show_blurred (GsScreenshotImage *ssimg,
 	}
 }
 
+static gboolean
+gs_screenshot_image_save_downloaded_img (GsScreenshotImage *ssimg,
+					 GdkPixbuf *pixbuf,
+					 GError **error)
+{
+	g_autoptr(AsImage) im = NULL;
+	gboolean ret;
+	const GPtrArray *images;
+	g_autoptr(GError) local_error = NULL;
+	g_autofree char *filename = NULL;
+	g_autofree char *size_dir = NULL;
+	g_autofree char *cache_kind = NULL;
+	g_autofree char *basename = NULL;
+	guint width = ssimg->width;
+	guint height = ssimg->height;
+
+	/* save to file, using the same code as the AppStream builder
+	 * so the preview looks the same */
+	im = as_image_new ();
+	as_image_set_pixbuf (im, pixbuf);
+	ret = as_image_save_filename (im, ssimg->filename,
+				      ssimg->width * ssimg->scale,
+				      ssimg->height * ssimg->scale,
+				      AS_IMAGE_SAVE_FLAG_PAD_16_9,
+				      error);
+
+	if (!ret)
+		return FALSE;
+
+	if (ssimg->screenshot == NULL)
+		return TRUE;
+
+	images = as_screenshot_get_images (ssimg->screenshot);
+	if (images->len > 1)
+		return TRUE;
+
+	if (width == AS_IMAGE_THUMBNAIL_WIDTH &&
+	    height == AS_IMAGE_THUMBNAIL_HEIGHT) {
+		width = AS_IMAGE_NORMAL_WIDTH;
+		height = AS_IMAGE_NORMAL_HEIGHT;
+	} else {
+		width = AS_IMAGE_THUMBNAIL_WIDTH;
+		height = AS_IMAGE_THUMBNAIL_HEIGHT;
+	}
+
+	width *= ssimg->scale;
+	height *= ssimg->scale;
+	basename = g_path_get_basename (ssimg->filename);
+	size_dir = g_strdup_printf ("%ux%u", width, height);
+	cache_kind = g_build_filename ("screenshots", size_dir, NULL);
+	filename = gs_utils_get_cache_filename (cache_kind, basename,
+						GS_UTILS_CACHE_FLAG_WRITEABLE,
+						&local_error);
+
+        if (filename == NULL) {
+		/* if we cannot get a cache filename, warn about that but do not
+		 * set a user's visible error because this is a complementary
+		 * operation */
+                g_warning ("Failed to get cache filename for counterpart "
+                           "screenshot '%s' in folder '%s': %s", basename,
+                           cache_kind, local_error->message);
+                return TRUE;
+        }
+
+	ret = as_image_save_filename (im, filename, width, height,
+				      AS_IMAGE_SAVE_FLAG_PAD_16_9,
+				      &local_error);
+
+	if (!ret) {
+		/* if we cannot save this screenshot, warn about that but do not
+		 * set a user's visible error because this is a complementary
+		 * operation */
+                g_warning ("Failed to save screenshot '%s': %s", filename,
+                           local_error->message);
+        }
+
+	return TRUE;
+}
+
 static void
 gs_screenshot_image_complete_cb (SoupSession *session,
 				 SoupMessage *msg,
@@ -214,11 +297,22 @@ gs_screenshot_image_complete_cb (SoupSession *session,
 	if (msg->status_code == SOUP_STATUS_CANCELLED || ssimg->session == NULL)
 		return;
 
+	if (msg->status_code == SOUP_STATUS_NOT_MODIFIED) {
+		g_debug ("screenshot has not been modified");
+		as_screenshot_show_image (ssimg);
+		return;
+	}
 	if (msg->status_code != SOUP_STATUS_OK) {
+                g_warning ("Result of screenshot downloading attempt with "
+			   "status code '%u': %s", msg->status_code,
+			   msg->reason_phrase);
+		/* if we're already showing an image, then don't set the error
+		 * as having an image (even if outdated) is better */
+		if (ssimg->showing_image)
+			return;
 		/* TRANSLATORS: this is when we try to download a screenshot and
 		 * we get back 404 */
 		gs_screenshot_image_set_error (ssimg, _("Screenshot not found"));
-		gtk_widget_hide (GTK_WIDGET (ssimg));
 		return;
 	}
 
@@ -249,19 +343,10 @@ gs_screenshot_image_complete_cb (SoupSession *session,
 			gs_screenshot_image_set_error (ssimg, error->message);
 			return;
 		}
-	} else {
-		/* save to file, using the same code as the AppStream builder
-		 * so the preview looks the same */
-		im = as_image_new ();
-		as_image_set_pixbuf (im, pixbuf);
-		ret = as_image_save_filename (im, ssimg->filename,
-					      ssimg->width * ssimg->scale,
-					      ssimg->height * ssimg->scale,
-					      AS_IMAGE_SAVE_FLAG_PAD_16_9, &error);
-		if (!ret) {
-			gs_screenshot_image_set_error (ssimg, error->message);
-			return;
-		}
+	} else if (!gs_screenshot_image_save_downloaded_img (ssimg, pixbuf,
+							     &error)) {
+		gs_screenshot_image_set_error (ssimg, error->message);
+		return;
 	}
 
 	/* got image, so show */
@@ -280,6 +365,11 @@ gs_screenshot_image_set_screenshot (GsScreenshotImage *ssimg,
 	if (ssimg->screenshot)
 		g_object_unref (ssimg->screenshot);
 	ssimg->screenshot = g_object_ref (screenshot);
+
+	/* we reset this flag here too because it referred to the previous
+	 * screenshot, and thus avoids potentially assuming that the new
+	 * screenshot is shown when it is the previous one instead */
+	ssimg->showing_image = FALSE;
 }
 
 void
@@ -311,6 +401,29 @@ gs_screenshot_get_cachefn_for_url (const gchar *url)
 	checksum = g_compute_checksum_for_string (G_CHECKSUM_SHA256, url, -1);
 	basename = g_path_get_basename (url);
 	return g_strdup_printf ("%s-%s", checksum, basename);
+}
+
+static void
+gs_screenshot_soup_msg_set_modified_request (SoupMessage *msg, GFile *file)
+{
+	GTimeVal time_val;
+	g_autoptr(GDateTime) date_time = NULL;
+	g_autoptr(GFileInfo) info = NULL;
+	g_autofree gchar *mod_date = NULL;
+
+	info = g_file_query_info (file,
+				  G_FILE_ATTRIBUTE_TIME_MODIFIED,
+				  G_FILE_QUERY_INFO_NONE,
+				  NULL,
+				  NULL);
+	if (info == NULL)
+		return;
+	g_file_info_get_modification_time (info, &time_val);
+	date_time = g_date_time_new_from_timeval_local (&time_val);
+	mod_date = g_date_time_format (date_time, "%a, %d %b %Y %H:%M:%S %Z");
+	soup_message_headers_append (msg->request_headers,
+				     "If-Modified-Since",
+				     mod_date);
 }
 
 void
@@ -379,14 +492,29 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 		return;
 	}
 
-	/* does local file already exist */
+	/* does local file already exist and has recently been downloaded */
 	if (g_file_test (ssimg->filename, G_FILE_TEST_EXISTS)) {
+		guint64 age_max;
+		g_autoptr(GFile) file = NULL;
+
+		/* show the image we have in cache while we're checking for the
+		 * new screenshot (which probably won't have changed) */
 		as_screenshot_show_image (ssimg);
-		return;
+
+		/* verify the cache age against the maximum allowed */
+		age_max = g_settings_get_uint (ssimg->settings,
+					       "screenshot-cache-age-maximum");
+		file = g_file_new_for_path (ssimg->filename);
+		if (age_max > 0 && gs_utils_get_file_age (file) < age_max) {
+			g_debug ("image new enough, not re-requesting from server");
+			return;
+		}
 	}
 
-	/* can we load a blurred smaller version of this straight away */
-	if (ssimg->width > AS_IMAGE_THUMBNAIL_WIDTH &&
+	/* if we're not showing a full-size image, we try loading a blurred
+	 * smaller version of it straight away */
+	if (!ssimg->showing_image &&
+	    ssimg->width > AS_IMAGE_THUMBNAIL_WIDTH &&
 	    ssimg->height > AS_IMAGE_THUMBNAIL_HEIGHT) {
 		const gchar *url_thumb;
 		g_autofree gchar *basename_thumb = NULL;
@@ -440,6 +568,13 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 		return;
 	}
 
+	/* not all servers support If-Modified-Since, but worst case we just
+	 * re-download the entire file again every 30 days */
+	if (g_file_test (ssimg->filename, G_FILE_TEST_EXISTS)) {
+		g_autoptr(GFile) file = g_file_new_for_path (ssimg->filename);
+		gs_screenshot_soup_msg_set_modified_request (ssimg->message, file);
+	}
+
 	/* send async */
 	soup_session_queue_message (ssimg->session,
 				    g_object_ref (ssimg->message) /* transfer full */,
@@ -460,6 +595,7 @@ gs_screenshot_image_destroy (GtkWidget *widget)
 	}
 	g_clear_object (&ssimg->screenshot);
 	g_clear_object (&ssimg->session);
+	g_clear_object (&ssimg->settings);
 
 	g_clear_pointer (&ssimg->filename, g_free);
 
@@ -472,6 +608,8 @@ gs_screenshot_image_init (GsScreenshotImage *ssimg)
 	AtkObject *accessible;
 
 	ssimg->use_desktop_background = TRUE;
+	ssimg->settings = g_settings_new ("org.gnome.software");
+	ssimg->showing_image = FALSE;
 
 	gtk_widget_set_has_window (GTK_WIDGET (ssimg), FALSE);
 	gtk_widget_init_template (GTK_WIDGET (ssimg));

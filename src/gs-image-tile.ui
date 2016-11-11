@@ -52,16 +52,26 @@
                   <object class="GtkBox" id="box">
 		    <property name="visible">True</property>
 		    <property name="orientation">vertical</property>
-		    <property name="spacing">6</property>
                     <property name="margin">12</property>
-                    <property name="margin-top">100</property>
 		    <property name="halign">start</property>
 		    <property name="valign">start</property>
+                    <property name="vexpand">True</property>
+                    <child>
+                      <object class="GtkImage" id="placeholder_icon">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="width-request">64</property>
+                        <property name="height-request">64</property>
+                        <property name="margin-bottom">12</property>
+                      </object>
+                    </child>
 		    <child>
 		      <object class="GtkLabel" id="app_name">
                         <property name="visible">True</property>
                         <property name="valign">end</property>
                         <property name="xalign">0</property>
+                        <property name="yalign">1</property>
+                        <property name="vexpand">True</property>
                         <property name="ellipsize">end</property>
                         <property name="width_chars">12</property>
                         <property name="max_width_chars">12</property>
@@ -216,20 +226,19 @@
 		</child>
               </object>
 	    </child>
-	    <child>
-	      <object class="GtkImage" id="fallback_icon">
-		<property name="width-request">64</property>
-		<property name="height-request">64</property>
-		<property name="visible">True</property>
-		<property name="valign">center</property>
-		<property name="xalign">0</property>
-		<property name="margin-left">6</property>
-		<property name="margin-bottom">40</property>
-		<style>
-		  <class name="fallback-icon"/>
-		</style>
-	      </object>
-	    </child>
+            <child>
+              <object class="GtkImage" id="fallback_icon">
+                <property name="width-request">64</property>
+                <property name="height-request">64</property>
+                <property name="visible">True</property>
+                <property name="halign">start</property>
+                <property name="valign">start</property>
+                <property name="margin">12</property>
+                <style>
+                  <class name="fallback-icon"/>
+                </style>
+              </object>
+            </child>
 	  </object>
 	  <packing>
 	    <property name="name">content</property>
