@@ -82,6 +82,7 @@ EXTAPPSBUILDDIR="$HOME/external-apps-build"
 APPDIR="$EXTAPPSBUILDDIR/$APPNAME"
 BUILDDIR="$APPDIR/build"
 BUNDLEDIR="$APPDIR/bundle"
+EXPORTDIR="$BUNDLEDIR/usr"
 
 # Remove any previous left build dir and create it again
 rm -rf "$BUNDLEDIR"
@@ -120,6 +121,11 @@ else
     echo "$0: Cannot support asset type $ASSETTYPE"
     exit 1
 fi
+
+# Fix permissions on export dir because some debs' tarballs base directory
+# has read permissions only for the user, and thus wouldn't be usable as a
+# Flatpak runtime
+chmod a+rx "$EXPORTDIR"
 
 echo "Exporting runtime..."
 
