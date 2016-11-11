@@ -110,7 +110,6 @@ sed -i s/Application/Runtime/ "$BUNDLEDIR/metadata"
 
 # Extract the asset into the build files
 mkdir -p "$BUNDLEDIR/usr"
-cd $BUILDDIR
 
 if [ "$ASSETTYPE" = "deb" ]; then
     ar x "$assetfile"
