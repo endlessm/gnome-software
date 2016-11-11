@@ -109,14 +109,14 @@ echo "Building bundle..."
 flatpak build-init "$BUNDLEDIR" "$APPNAME" "com.endlessm.Platform" "com.endlessm.Platform"
 sed -i s/Application/Runtime/ "$BUNDLEDIR/metadata"
 
-# Extract the asset into the build files
-mkdir -p "$BUNDLEDIR/usr"
+# Extract the asset into the export directory
+mkdir -p "$EXPORTDIR"
 
 if [ "$ASSETTYPE" = "deb" ]; then
     ar x "$assetfile"
-    tar xf data.tar.* -C "$BUNDLEDIR"
+    tar xf data.tar.* -C "$EXPORTDIR"
 elif [ "$ASSETTYPE" = "tar" ]; then
-    tar xf "$assetfile" -C "$BUNDLEDIR/usr"
+    tar xf "$assetfile" -C "$EXPORTDIR"
 else
     echo "$0: Cannot support asset type $ASSETTYPE"
     exit 1
