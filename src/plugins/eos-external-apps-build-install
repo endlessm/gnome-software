@@ -82,10 +82,11 @@ EXTAPPSBUILDDIR="$HOME/external-apps-build"
 APPDIR="$EXTAPPSBUILDDIR/$APPNAME"
 BUILDDIR="$APPDIR/build"
 BUNDLEDIR="$APPDIR/bundle"
+EXPORTDIR="$BUNDLEDIR/usr"
 
 # Remove any previous left build dir and create it again
 rm -rf "$BUNDLEDIR"
-mkdir -p "$BUILDDIR" "$BUNDLEDIR"
+mkdir -p "$BUILDDIR"
 
 # Download the app if needed
 echo "Downloading into $BUILDDIR"
