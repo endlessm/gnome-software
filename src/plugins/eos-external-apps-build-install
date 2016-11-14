@@ -114,9 +114,12 @@ mkdir -p "$EXPORTDIR"
 
 if [ "$ASSETTYPE" = "deb" ]; then
     ar x "$assetfile"
+    rm "$assetfile"
     tar xf data.tar.* -C "$EXPORTDIR"
+    rm data.tar.*
 elif [ "$ASSETTYPE" = "tar" ]; then
     tar xf "$assetfile" -C "$EXPORTDIR"
+    rm "$assetfile"
 else
     echo "$0: Cannot support asset type $ASSETTYPE"
     exit 1
