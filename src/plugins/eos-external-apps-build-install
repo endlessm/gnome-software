@@ -82,6 +82,7 @@ EXTAPPSBUILDDIR="$HOME/external-apps-build"
 APPDIR="$EXTAPPSBUILDDIR/$APPNAME"
 BUILDDIR="$APPDIR/build"
 BUNDLEDIR="$APPDIR/bundle"
+EXPORTDIR="$BUNDLEDIR/usr"
 
 # Remove any previous left build dir and create it again
 rm -rf "$BUNDLEDIR"
@@ -108,19 +109,23 @@ echo "Building bundle..."
 flatpak build-init "$BUNDLEDIR" "$APPNAME" "com.endlessm.Platform" "com.endlessm.Platform"
 sed -i s/Application/Runtime/ "$BUNDLEDIR/metadata"
 
-# Extract the asset into the build files
-mkdir -p "$BUNDLEDIR/usr"
-cd $BUILDDIR
+# Extract the asset into the export directory
+mkdir -p "$EXPORTDIR"
 
 if [ "$ASSETTYPE" = "deb" ]; then
     ar x "$assetfile"
-    tar xf data.tar.* -C "$BUNDLEDIR"
+    tar xf data.tar.* -C "$EXPORTDIR"
 elif [ "$ASSETTYPE" = "tar" ]; then
-    tar xf "$assetfile" -C "$BUNDLEDIR/usr"
+    tar xf "$assetfile" -C "$EXPORTDIR"
 else
     echo "$0: Cannot support asset type $ASSETTYPE"
     exit 1
 fi
+
+# Fix permissions on export dir because some debs' tarballs base directory
+# has read permissions only for the user, and thus wouldn't be usable as a
+# Flatpak runtime
+chmod a+rx "$EXPORTDIR"
 
 echo "Exporting runtime..."
 
