@@ -5,13 +5,14 @@
 # Translators:
 # bogdomania <mintoi.bogdan@gmail.com>, 2014
 # Daniel Șerbănescu <daniel [at] serbanescu [dot] dk>, 2014-2015
+# georgian balan <braila222@gmail.com>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-01 03:22+0000\n"
-"PO-Revision-Date: 2016-11-01 03:23+0000\n"
-"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
+"POT-Creation-Date: 2016-11-08 04:26+0000\n"
+"PO-Revision-Date: 2016-11-13 10:55+0000\n"
+"Last-Translator: georgian balan <braila222@gmail.com>\n"
 "Language-Team: Romanian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -43,61 +44,61 @@ msgstr "Aplicații GNOME prezintă aplicații recomandate și populare care con�
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:5
 msgid "Overview panel"
-msgstr ""
+msgstr "Prezentare pe scurt"
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:6
 msgid "Details panel"
-msgstr ""
+msgstr "Panou detalii"
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:7
 msgid "Installed panel"
-msgstr ""
+msgstr "Panou de instalare"
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:8
 msgid "Updates panel"
-msgstr ""
+msgstr "Panou actualizari"
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:9
 msgid "The update details"
-msgstr ""
+msgstr "Detalii actualizari"
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:10
 msgid "The GNOME Project"
-msgstr ""
+msgstr "Proiect GNOME"
 
 #: ../data/org.gnome.software.gschema.xml.h:1
 msgid "A list of compatible projects"
-msgstr ""
+msgstr "O lista cu proiecte compatibile"
 
 #: ../data/org.gnome.software.gschema.xml.h:2
 msgid ""
 "This is a list of compatible projects we should show such as GNOME, KDE and "
 "XFCE."
-msgstr ""
+msgstr "Asta este o lista cu proiecte compatibile cu GNOME,KDE si XFCE"
 
 #: ../data/org.gnome.software.gschema.xml.h:3
 msgid "Whether to manage updates in GNOME Software"
-msgstr ""
+msgstr "Daca administrezi actualizarile in softul GNOME"
 
 #: ../data/org.gnome.software.gschema.xml.h:4
 msgid ""
 "If disabled, GNOME Software will hide the updates panel and not perform any "
 "automatic updates actions."
-msgstr ""
+msgstr "Daca este dezactivat,softul GNOME va ascunde actualizarile si nu va actualiza automat softul"
 
 #: ../data/org.gnome.software.gschema.xml.h:5
 msgid "Whether to automatically download updates"
-msgstr ""
+msgstr "Daca descarci actualizari automat"
 
 #: ../data/org.gnome.software.gschema.xml.h:6
 msgid ""
 "If enabled, GNOME Software automatically downloads updates in the background"
 " and prompts the user to install them when ready."
-msgstr ""
+msgstr "Daca este activat,softul GNOME descarca automat in fundal actualizarile si informeaza utilizatorul cand sa le instaleze"
 
 #: ../data/org.gnome.software.gschema.xml.h:7
 msgid "Whether to automatically refresh when on a metered connection"
-msgstr ""
+msgstr "Daca se face refresh automat pe o conexiune contorizata"
 
 #: ../data/org.gnome.software.gschema.xml.h:8
 msgid ""
@@ -108,15 +109,15 @@ msgstr ""
 
 #: ../data/org.gnome.software.gschema.xml.h:9
 msgid "Whether it's the very first run of GNOME Software"
-msgstr ""
+msgstr "Daca este prima utilizare a softului GNOME"
 
 #: ../data/org.gnome.software.gschema.xml.h:10
 msgid "Show star ratings next to applications"
-msgstr ""
+msgstr "Arata evaluari langa aplicatii"
 
 #: ../data/org.gnome.software.gschema.xml.h:11
 msgid "Non-free applications show a warning dialog before install"
-msgstr ""
+msgstr "Aplicatiile care nu sunt gratuite arata un dialog de avertizare inainte de instalare"
 
 #: ../data/org.gnome.software.gschema.xml.h:12
 msgid ""
@@ -126,11 +127,11 @@ msgstr ""
 
 #: ../data/org.gnome.software.gschema.xml.h:13
 msgid "A list of popular applications"
-msgstr ""
+msgstr "O lista cu aplicatiile populare"
 
 #: ../data/org.gnome.software.gschema.xml.h:14
 msgid "A list of applications to use, overriding the system defined ones."
-msgstr ""
+msgstr "O lista cu aplicatii de folosit,peste cele definite de sistem"
 
 #: ../data/org.gnome.software.gschema.xml.h:15
 msgid "The list of extra sources that have been previously enabled"
@@ -2915,12 +2916,16 @@ msgstr ""
 msgid "Framework for applications"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-external-apps.c:656
+#: ../src/plugins/gs-plugin-external-apps.c:649
 #, c-format
-msgid "Failed to download the application. Please try installing again later."
+msgid ""
+"Failed to install the application. Please try again later. If the problem "
+"persists, please contact support."
 msgstr ""
 
-#: ../src/plugins/gs-plugin-external-apps.c:857
+#: ../src/plugins/gs-plugin-external-apps.c:877
 #, c-format
-msgid "Failed to download the application. Please try updating again later."
+msgid ""
+"Failed to update the application. Please try again later. If the problem "
+"persists, please contact support."
 msgstr ""
