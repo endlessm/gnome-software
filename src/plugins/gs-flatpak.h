@@ -24,6 +24,7 @@
 #define __GS_FLATPAK_H
 
 #include <gnome-software.h>
+#include <flatpak.h>
 
 G_BEGIN_DECLS
 
@@ -141,6 +142,8 @@ gboolean	gs_flatpak_refine_metadata_from_installation (GsFlatpak		*self,
 							      GsApp		*app,
 							      GCancellable	*cancellable,
 							      GError		**error);
+
+void            gs_flatpak_fill_default_branches (GsFlatpak *self, GHashTable *table);
 
 G_END_DECLS
 
