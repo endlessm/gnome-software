@@ -733,6 +733,10 @@ gs_plugin_eos_blacklist_by_branch_if_needed (GsPlugin *plugin, GsApp *app)
 	else
 		default_branch = g_hash_table_lookup (priv->usr_default_branches, origin);
 
+	/* Temporary fallback for users upgrading from EOS < 3.1 */
+	if (!default_branch && g_strcmp0(origin, "eos-apps") == 0)
+		default_branch = "eos3";
+
 	/* if we do not have a configured default branch for this repo then
 	 * do nothing */
 	if (!default_branch)
