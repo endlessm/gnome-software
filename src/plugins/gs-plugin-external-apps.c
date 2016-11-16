@@ -45,6 +45,7 @@
 #define METADATA_HEADLESS_APP "GnomeSoftware::external-app::headless-app"
 #define METADATA_BUILD_DIR "GnomeSoftware::external-app::build-dir"
 #define METADATA_EXTERNAL_ASSETS "flatpak-3rdparty::external-assets"
+#define METADATA_SYS_DESKTOP_FILE "flatpak-3rdparty::system-desktop-file"
 
 #define TMP_ASSSETS_PREFIX "gs-external-apps"
 
@@ -795,14 +796,50 @@ gs_plugin_app_install (GsPlugin *plugin,
 	return TRUE;
 }
 
+static gboolean
+launch_with_sys_desktop_file (GsApp *app,
+			      const char *desktop_file,
+			      GError **error)
+{
+	GdkDisplay *display;
+	g_autoptr(GAppInfo) appinfo = NULL;
+	g_autoptr(GAppLaunchContext) context = NULL;
+
+	appinfo = G_APP_INFO (gs_utils_get_desktop_app_info (desktop_file));
+	display = gdk_display_get_default ();
+	context = G_APP_LAUNCH_CONTEXT (gdk_display_get_app_launch_context (display));
+	return g_app_info_launch (appinfo, NULL, context, error);
+}
+
 gboolean
 gs_plugin_launch (GsPlugin *plugin,
 		  GsApp *app,
 		  GCancellable *cancellable,
 		  GError **error)
 {
-	GsFlatpak *flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
-	return gs_flatpak_launch (flatpak, app, cancellable, error);
+	const char *sys_desktop_file;
+	g_autoptr(GError) local_error = NULL;
+
+	sys_desktop_file = gs_app_get_metadata_item (app,
+						     METADATA_SYS_DESKTOP_FILE);
+
+	/* Check if the app needs to be launched with a system desktop file
+	 * or as a regular Flatpak app*/
+	if (!sys_desktop_file) {
+		GsFlatpak *flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
+		return gs_flatpak_launch (flatpak, app, cancellable, error);
+	}
+
+	if (!launch_with_sys_desktop_file (app, sys_desktop_file, &local_error)) {
+		g_warning ("Could not launch %s: %s",
+			   gs_app_get_unique_id (app), local_error->message);
+
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+			     _("Could not launch this application."));
+		return FALSE;
+	}
+
+	return TRUE;
 }
 
 gboolean
