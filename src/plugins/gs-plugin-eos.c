@@ -121,9 +121,16 @@ reload_default_branches (GsPlugin *plugin, GsFlatpakScope scope)
 	g_hash_table_remove_all (default_branches);
 	gs_flatpak_fill_default_branches (flatpak, default_branches);
 
-	if (g_hash_table_size (default_branches) == 0)
-		g_debug ("No default branches configured for %s!",
-			 scope == GS_FLATPAK_SCOPE_USER ? "USER" : "SYSTEM");
+	if (scope == GS_FLATPAK_SCOPE_SYSTEM &&
+	    !g_hash_table_lookup (default_branches, EOS_APPS_REMOTE_NAME)) {
+		g_warning ("No default branches configured for Endless' apps "
+			   "remote '%s'! Using fallback branches for Endless "
+			   "remotes (eos3)...",
+			   EOS_APPS_REMOTE_NAME);
+		g_hash_table_insert (priv->sys_default_branches,
+				     g_strdup (EOS_APPS_REMOTE_NAME),
+				     g_strdup ("eos3"));
+	}
 }
 
 static char *
