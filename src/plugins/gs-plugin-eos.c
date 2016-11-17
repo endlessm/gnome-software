@@ -59,6 +59,7 @@ struct GsPluginData
 	GHashTable *usr_default_branches;
 	GHashTable *sys_default_branches;
 	char *personality;
+	char *os_version_id;
 	GsFlatpak	*usr_flatpak;
 	GsFlatpak	*sys_flatpak;
 };
@@ -196,12 +197,24 @@ get_personality (void)
 	return g_strdup (personality);
 }
 
+static char *
+get_os_version_id (GError **error)
+{
+	g_autoptr(GsOsRelease) os_release = gs_os_release_new (error);
+
+	if (!os_release)
+		return NULL;
+
+	return g_strdup (gs_os_release_get_version_id (os_release));
+}
+
 /**
  * gs_plugin_initialize:
  */
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
+	g_autoptr(GError) error = NULL;
 	GsPluginData *priv = gs_plugin_alloc_data (plugin,
 						   sizeof(GsPluginData));
 
@@ -234,6 +247,11 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	if (!priv->personality)
 		g_warning ("No system personality could be set!");
+
+	priv->os_version_id = get_os_version_id (&error);
+	if (!priv->os_version_id)
+		g_warning ("No OS version ID could be set: %s",
+			   error->message);
 
 	priv->usr_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_USER);
 	priv->sys_flatpak = gs_flatpak_new (plugin, GS_FLATPAK_SCOPE_SYSTEM);
@@ -283,6 +301,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_hash_table_destroy (priv->usr_default_branches);
 	g_hash_table_destroy (priv->sys_default_branches);
 	g_free (priv->personality);
+	g_free (priv->os_version_id);
 }
 
 static GHashTable *
@@ -514,6 +533,25 @@ app_is_proxy (GsApp *app)
 }
 
 static gboolean
+app_is_compatible_with_os (GsPlugin *plugin, GsApp *app)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const char *app_available_since;
+
+	if (!priv->os_version_id)
+		return TRUE;
+
+	app_available_since =
+		gs_app_get_metadata_item (app, "EndlessOS::available-since");
+	if (!app_available_since)
+		return TRUE;
+
+	/* if the OS version is greater than or equal to the app
+	 * "available-since" metadata item, it means it is compatible */
+	return as_utils_vercmp (priv->os_version_id, app_available_since) >= 0;
+}
+
+static gboolean
 gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
@@ -532,6 +570,11 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 		} else if (app_is_renamed (app)) {
 			blacklist_app = TRUE;
 		} else if (app_is_banned_for_personality (plugin, app)) {
+			blacklist_app = TRUE;
+		} else if (!gs_app_is_installed (app) &&
+			   !app_is_compatible_with_os (plugin, app)) {
+			g_debug ("Banning '%s' because it's incompatible with "
+				 "the OS version!", gs_app_get_unique_id (app));
 			blacklist_app = TRUE;
 		}
 	}
