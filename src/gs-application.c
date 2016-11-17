@@ -281,6 +281,9 @@ gs_application_initialize_ui (GsApplication *app)
 
 	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
 	gtk_application_add_window (GTK_APPLICATION (app), gs_shell_get_window (app->shell));
+
+	/* monitor the network as the many UI operations need the network */
+	gs_application_monitor_network (app);
 }
 
 static void
@@ -737,7 +740,6 @@ gs_application_activate (GApplication *application)
 	GsApplication *app = GS_APPLICATION (application);
 
 	gs_application_initialize_ui (GS_APPLICATION (application));
-	gs_application_monitor_network (GS_APPLICATION (application));
 
 	/* start metadata loading screen */
 	if (gs_shell_get_mode (app->shell) == GS_SHELL_MODE_UNKNOWN) {
