@@ -41,6 +41,8 @@
 
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
 
+#define EOS_APPS_REMOTE_NAME "eos-apps"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
