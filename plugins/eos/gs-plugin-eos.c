@@ -55,6 +55,7 @@ struct GsPluginData
 	int applications_changed_id;
 	SoupSession *soup_session;
 	char *personality;
+	char *os_version_id;
 };
 
 static gboolean
@@ -196,21 +197,34 @@ get_personality (void)
 	return g_strdup (personality);
 }
 
+static char *
+get_os_version_id (GError **error)
+{
+	g_autoptr(GsOsRelease) os_release = gs_os_release_new (error);
+
+	if (!os_release)
+		return NULL;
+
+	return g_strdup (gs_os_release_get_version_id (os_release));
+}
+
 gboolean
 gs_plugin_setup (GsPlugin *plugin,
 		 GCancellable *cancellable,
 		 GError **error)
 {
-	g_autoptr(GError) local_error = NULL;
 	GApplication *app = g_application_get_default ();
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
 	priv->session_bus = g_application_get_dbus_connection (app);
 
-	if (!get_applications_with_shortcuts (plugin, &priv->desktop_apps,
-					      cancellable, &local_error))
-		g_warning ("Couldn't get the apps with shortcuts: %s",
-			   local_error->message);
+	{
+		g_autoptr(GError) local_error = NULL;
+		if (!get_applications_with_shortcuts (plugin, &priv->desktop_apps,
+						      cancellable, &local_error))
+			g_warning ("Couldn't get the apps with shortcuts: %s",
+				   local_error->message);
+	}
 
 	priv->applications_changed_id =
 		g_dbus_connection_signal_subscribe (priv->session_bus,
@@ -223,6 +237,15 @@ gs_plugin_setup (GsPlugin *plugin,
 						    (GDBusSignalCallback) on_desktop_apps_changed,
 						    plugin, NULL);
 	priv->soup_session = gs_plugin_get_soup_session (plugin);
+
+	{
+		g_autoptr(GError) local_error = NULL;
+		priv->os_version_id = get_os_version_id (&local_error);
+		if (!priv->os_version_id)
+			g_warning ("No OS version ID could be set: %s",
+				   local_error->message);
+	}
+
 	priv->personality = get_personality ();
 
 	if (!priv->personality)
@@ -254,6 +277,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 
 	g_hash_table_destroy (priv->desktop_apps);
 	g_free (priv->personality);
+	g_free (priv->os_version_id);
 }
 
 static gboolean
@@ -443,6 +467,25 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
+app_is_compatible_with_os (GsPlugin *plugin, GsApp *app)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const char *app_available_since;
+
+	if (!priv->os_version_id)
+		return TRUE;
+
+	app_available_since =
+		gs_app_get_metadata_item (app, "EndlessOS::available-since");
+	if (!app_available_since)
+		return TRUE;
+
+	/* if the OS version is greater than or equal to the app
+	 * "available-since" metadata item, it means it is compatible */
+	return as_utils_vercmp (priv->os_version_id, app_available_since) >= 0;
+}
+
+static gboolean
 gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
@@ -469,6 +512,11 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	} else if (app_is_banned_for_personality (plugin, app)) {
 		g_debug ("Blacklisting '%s': app is banned for personality",
 			 gs_app_get_unique_id (app));
+		blacklist_app = TRUE;
+	} else if (!gs_app_is_installed (app) &&
+		   !app_is_compatible_with_os (plugin, app)) {
+		g_debug ("Blacklisting '%s': it's incompatible with the OS "
+			 "version", gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	}
 
