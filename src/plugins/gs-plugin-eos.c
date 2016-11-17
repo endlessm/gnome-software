@@ -43,6 +43,8 @@
 
 #define EOS_APPS_REMOTE_NAME "eos-apps"
 
+#define METADATA_SYS_DESKTOP_FILE "flatpak-3rdparty::system-desktop-file"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -540,6 +542,18 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	return blacklist_app;
 }
 
+static GDesktopAppInfo *
+get_desktop_app_info (GsApp *app)
+{
+	const char *desktop_file_id =
+		gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE);
+
+	if (!desktop_file_id)
+		desktop_file_id = gs_app_get_id (app);
+
+	return gs_utils_get_desktop_app_info (desktop_file_id);
+}
+
 static void
 gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 					 GsApp *app,
@@ -556,8 +570,7 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	}
 
 	priv = gs_plugin_get_data (plugin);
-	app_id = gs_app_get_id (app);
-	app_info = gs_utils_get_desktop_app_info (app_id);
+	app_info = get_desktop_app_info (app);
 	if (!app_info)
 		return;
 
@@ -816,9 +829,7 @@ remove_app_from_shell (GsPlugin		*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *id = gs_app_get_id (app);
-	g_autoptr (GDesktopAppInfo) app_info =
-		gs_utils_get_desktop_app_info (id);
+	g_autoptr (GDesktopAppInfo) app_info = get_desktop_app_info (app);
 	const char *app_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	g_dbus_connection_call_sync (priv->session_bus,
@@ -850,9 +861,7 @@ add_app_to_shell (GsPlugin	*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *id = gs_app_get_id (app);
-	g_autoptr (GDesktopAppInfo) app_info =
-		gs_utils_get_desktop_app_info (id);
+	g_autoptr (GDesktopAppInfo) app_info = get_desktop_app_info (app);
 	const char *app_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	g_dbus_connection_call_sync (priv->session_bus,
