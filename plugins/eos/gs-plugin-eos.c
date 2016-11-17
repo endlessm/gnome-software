@@ -30,6 +30,8 @@
 #include <gs-utils.h>
 #include <libsoup/soup.h>
 
+#define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -181,6 +183,19 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_hash_table_destroy (priv->desktop_apps);
 }
 
+static const char*
+get_desktop_file_id (GsApp *app)
+{
+	const char *desktop_file_id =
+		gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE);
+
+	if (!desktop_file_id)
+		desktop_file_id = gs_app_get_id (app);
+
+	g_assert (desktop_file_id != NULL);
+	return desktop_file_id;
+}
+
 static void
 gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 					 GsApp *app)
@@ -195,7 +210,7 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	}
 
 	priv = gs_plugin_get_data (plugin);
-	desktop_file_id = gs_app_get_id (app);
+	desktop_file_id = get_desktop_file_id (app);
 	kde_desktop_file_id =
 		g_strdup_printf ("%s-%s", "kde4", desktop_file_id);
 
@@ -402,7 +417,7 @@ remove_app_from_shell (GsPlugin		*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *desktop_file_id = gs_app_get_id (app);
+	const char *desktop_file_id = get_desktop_file_id (app);
 	g_autoptr(GDesktopAppInfo) app_info =
 		gs_utils_get_desktop_app_info (desktop_file_id);
 	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
@@ -436,7 +451,7 @@ add_app_to_shell (GsPlugin	*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *desktop_file_id = gs_app_get_id (app);
+	const char *desktop_file_id = get_desktop_file_id (app);
 	g_autoptr(GDesktopAppInfo) app_info =
 		gs_utils_get_desktop_app_info (desktop_file_id);
 	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
