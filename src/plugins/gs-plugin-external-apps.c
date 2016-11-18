@@ -530,6 +530,11 @@ gs_plugin_refine_app (GsPlugin *plugin,
 
 	flatpak = gs_plugin_get_gs_flatpak_for_app (plugin, app);
 
+	/* We need to unblacklist all external apps (because they can be
+	 * blacklisted by default) and let the code sort out whether it should
+	 * be blacklisted later */
+	gs_app_remove_category (app, "Blacklisted");
+
 	if (!gs_flatpak_refine_app (flatpak, app, flags, cancellable, error)) {
 		g_debug ("Refining app %s failed!", gs_app_get_unique_id (app));
 		return FALSE;
