@@ -533,6 +533,12 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 			blacklist_app = TRUE;
 		} else if (app_is_banned_for_personality (plugin, app)) {
 			blacklist_app = TRUE;
+		} else {
+			const char *metadata =
+				gs_app_get_metadata_item (app,
+							  "X-GnomeSoftware-NoDisplay");
+			if (g_strcmp0 (metadata, "true") == 0)
+				blacklist_app = TRUE;
 		}
 	}
 
