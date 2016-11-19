@@ -451,7 +451,10 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	return ((g_strcmp0 (priv->personality, "es_GT") == 0) &&
 	        (g_strcmp0 (id, "org.openarena.Openarena.desktop") == 0)) ||
 	       ((g_strcmp0 (priv->personality, "zh_CN") == 0) &&
-	        g_str_has_prefix (id, "com.endlessm.encyclopedia"));
+	        ((g_strcmp0 (id, "com.google.Chrome.desktop") == 0) ||
+	         (g_strcmp0 (id, "com.endlessm.translation.desktop") == 0) ||
+	         (g_strcmp0 (id, "com.endlessm.videonet.desktop") == 0) ||
+	         g_str_has_prefix (id, "com.endlessm.encyclopedia")));
 }
 
 static gboolean
