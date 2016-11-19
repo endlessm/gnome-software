@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-08 04:26+0000\n"
-"PO-Revision-Date: 2016-11-08 04:27+0000\n"
+"POT-Creation-Date: 2016-11-15 04:27+0000\n"
+"PO-Revision-Date: 2016-11-15 04:28+0000\n"
 "Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Hebrew (http://www.transifex.com/endless-mobile-inc/gnome-software/language/he/)\n"
 "MIME-Version: 1.0\n"
@@ -159,69 +159,80 @@ msgid "The last update timestamp"
 msgstr "The last update timestamp"
 
 #: ../data/org.gnome.software.gschema.xml.h:21
+msgid "The age in seconds to verify the upstream screenshot is still valid"
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:22
+msgid ""
+"Choosing a larger value will mean less round-trips to the remote server but "
+"updates to the screenshots may take longer to show to the user. A value of 0"
+" means to never check the server if the image already exists in the cache."
+msgstr ""
+
+#: ../data/org.gnome.software.gschema.xml.h:23
 msgid "The server to use for application reviews"
 msgstr "The server to use for application reviews"
 
-#: ../data/org.gnome.software.gschema.xml.h:22
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid "The minimum karma score for reviews"
 msgstr "The minimum karma score for reviews"
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "Reviews with karma less than this number will not be shown."
 
-#: ../data/org.gnome.software.gschema.xml.h:24
+#: ../data/org.gnome.software.gschema.xml.h:26
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "A list of official sources that should not be considered 3rd party"
 
-#: ../data/org.gnome.software.gschema.xml.h:25
+#: ../data/org.gnome.software.gschema.xml.h:27
 msgid "A list of official sources that should be considered free software"
 msgstr "A list of official sources that should be considered free software"
 
-#: ../data/org.gnome.software.gschema.xml.h:26
+#: ../data/org.gnome.software.gschema.xml.h:28
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
 msgstr "The licence URL to use when an application should be considered free software"
 
-#: ../data/org.gnome.software.gschema.xml.h:27
+#: ../data/org.gnome.software.gschema.xml.h:29
 msgid ""
 "Install bundled applications for all users on the system where possible"
 msgstr "Install bundled applications for all users on the system where possible"
 
-#: ../data/org.gnome.software.gschema.xml.h:28
+#: ../data/org.gnome.software.gschema.xml.h:30
 msgid "Show the folder management UI"
 msgstr "Show the folder management UI"
 
-#: ../data/org.gnome.software.gschema.xml.h:29
+#: ../data/org.gnome.software.gschema.xml.h:31
 msgid "Allow access to the Software Sources dialog"
 msgstr "Allow access to the Software Sources dialog"
 
-#: ../data/org.gnome.software.gschema.xml.h:30
+#: ../data/org.gnome.software.gschema.xml.h:32
 msgid "Offer upgrades for pre-releases"
 msgstr "Offer upgrades for pre-releases"
 
-#: ../data/org.gnome.software.gschema.xml.h:31
+#: ../data/org.gnome.software.gschema.xml.h:33
 msgid "Show some UI elements informing the user that an app is non-free"
 msgstr "Show some UI elements informing the user that an app is non-free"
 
-#: ../data/org.gnome.software.gschema.xml.h:32
+#: ../data/org.gnome.software.gschema.xml.h:34
 msgid "Show the prompt to install nonfree software sources"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:33
+#: ../data/org.gnome.software.gschema.xml.h:35
 msgid "Show non-free software in search results"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:34
+#: ../data/org.gnome.software.gschema.xml.h:36
 msgid "The URI that explains nonfree and proprietary software"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:35
+#: ../data/org.gnome.software.gschema.xml.h:37
 msgid "A list of non-free sources that can be optionally enabled"
 msgstr ""
 
-#: ../data/org.gnome.software.gschema.xml.h:36
+#: ../data/org.gnome.software.gschema.xml.h:38
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
@@ -234,7 +245,7 @@ msgstr "הוספה לתיקיית יישומים"
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
 #: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:9
-#: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
+#: ../src/gs-shell-installed.c:532 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_ביטול"
 
@@ -523,7 +534,7 @@ msgid "All"
 msgstr "הכל"
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: ../src/gs-category.c:202 ../src/gs-shell.c:1016
+#: ../src/gs-category.c:202 ../src/gs-shell.c:1030
 msgid "Featured"
 msgstr "מומלצים"
 
@@ -894,39 +905,39 @@ msgstr "הסרה…"
 
 #. TRANSLATORS: this is when we try to download a screenshot and
 #. * we get back 404
-#: ../src/gs-screenshot-image.c:220
+#: ../src/gs-screenshot-image.c:315
 msgid "Screenshot not found"
 msgstr "לא נמצא צילום מסך"
 
 #. TRANSLATORS: possibly image file corrupt or not an image
-#: ../src/gs-screenshot-image.c:236
+#: ../src/gs-screenshot-image.c:330
 msgid "Failed to load image"
 msgstr "ארע כשל בטעינת התמונה"
 
 #. TRANSLATORS: this is when we request a screenshot size that
 #. * the generator did not create or the parser did not add
-#: ../src/gs-screenshot-image.c:350
+#: ../src/gs-screenshot-image.c:463
 msgid "Screenshot size not found"
 msgstr "גודל צילום מסך לא נמצא"
 
 #. TRANSLATORS: this is when we try create the cache directory
 #. * but we were out of space or permission was denied
-#: ../src/gs-screenshot-image.c:378
+#: ../src/gs-screenshot-image.c:491
 msgid "Could not create cache"
 msgstr "לא ניתן ליצור מטמון"
 
 #. TRANSLATORS: this is when we try to download a screenshot
 #. * that was not a valid URL
-#: ../src/gs-screenshot-image.c:424
+#: ../src/gs-screenshot-image.c:552
 msgid "Screenshot not valid"
 msgstr "צילום מסך לא תקף"
 
 #. TRANSLATORS: this is when networking is not available
-#: ../src/gs-screenshot-image.c:439
+#: ../src/gs-screenshot-image.c:567
 msgid "Screenshot not available"
 msgstr "לא זמין צילום מסך"
 
-#: ../src/gs-screenshot-image.c:482
+#: ../src/gs-screenshot-image.c:620
 msgid "Screenshot"
 msgstr "צילום מסך"
 
@@ -1167,7 +1178,7 @@ msgstr "לא ידוע"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#: ../src/gs-shell-details.ui.h:43 ../src/gs-shell-installed.c:437
+#: ../src/gs-shell-details.ui.h:43 ../src/gs-shell-installed.c:440
 #: ../src/gs-update-list.c:128
 msgid "Add-ons"
 msgstr "תוספים"
@@ -1392,15 +1403,15 @@ msgstr "דף מקודדים"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the system ones
-#: ../src/gs-shell-installed.c:427
+#: ../src/gs-shell-installed.c:430
 msgid "System Applications"
 msgstr "יישומי מערכת"
 
-#: ../src/gs-shell-installed.c:537
+#: ../src/gs-shell-installed.c:540
 msgid "Click on items to select them"
 msgstr "יש ללחוץ על פריטים כדי לבחור אותם"
 
-#: ../src/gs-shell-installed.c:737
+#: ../src/gs-shell-installed.c:741
 msgid "Select"
 msgstr "בחירה"
 
@@ -2896,22 +2907,22 @@ msgstr ""
 msgid "Utilities"
 msgstr "עזרים"
 
-#: ../src/plugins/gs-plugin-eos.c:1001
+#: ../src/plugins/gs-plugin-eos.c:968
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:1004
+#: ../src/plugins/gs-plugin-eos.c:971
 msgid "Framework for applications"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-external-apps.c:649
+#: ../src/plugins/gs-plugin-external-apps.c:669
 #, c-format
 msgid ""
 "Failed to install the application. Please try again later. If the problem "
 "persists, please contact support."
 msgstr ""
 
-#: ../src/plugins/gs-plugin-external-apps.c:877
+#: ../src/plugins/gs-plugin-external-apps.c:897
 #, c-format
 msgid ""
 "Failed to update the application. Please try again later. If the problem "

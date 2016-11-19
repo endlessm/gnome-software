@@ -18,9 +18,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-08 04:26+0000\n"
-"PO-Revision-Date: 2016-11-08 04:27+0000\n"
-"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
+"POT-Creation-Date: 2016-11-15 04:27+0000\n"
+"PO-Revision-Date: 2016-11-18 11:57+0000\n"
+"Last-Translator: Mariana Barbosa <mariana@endlessm.com>\n"
 "Language-Team: Portuguese (Brazil) (http://www.transifex.com/endless-mobile-inc/gnome-software/language/pt_BR/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -86,7 +86,7 @@ msgstr "Esta é uma lista de projetos compatíveis que devemos mostrar como GNOM
 
 #: ../data/org.gnome.software.gschema.xml.h:3
 msgid "Whether to manage updates in GNOME Software"
-msgstr ""
+msgstr "Se para gerenciar as atualizações no GNOME Software"
 
 #: ../data/org.gnome.software.gschema.xml.h:4
 msgid ""
@@ -117,7 +117,7 @@ msgstr "Se habilitado, o Software GNOME automaticamente fará a atualização em
 
 #: ../data/org.gnome.software.gschema.xml.h:9
 msgid "Whether it's the very first run of GNOME Software"
-msgstr "Se é a primeira execução do GNOME Software"
+msgstr "Se for a primeira execução do GNOME Software"
 
 #: ../data/org.gnome.software.gschema.xml.h:10
 msgid "Show star ratings next to applications"
@@ -168,69 +168,80 @@ msgid "The last update timestamp"
 msgstr "A marca de tempo da última atualização"
 
 #: ../data/org.gnome.software.gschema.xml.h:21
+msgid "The age in seconds to verify the upstream screenshot is still valid"
+msgstr "O tempo em segundos para verificar o upstream da imagem de tela ainda está válido"
+
+#: ../data/org.gnome.software.gschema.xml.h:22
+msgid ""
+"Choosing a larger value will mean less round-trips to the remote server but "
+"updates to the screenshots may take longer to show to the user. A value of 0"
+" means to never check the server if the image already exists in the cache."
+msgstr "A escolha de um valor maior representa menos idas e voltas para o servidor remoto, mas as atualizações de imagens de tela podem demorar mais tempo para aparecer para o usuário. Ao escolher 0, sempre que a imagem já existir em cache o sistema não vai acessar o servidor. "
+
+#: ../data/org.gnome.software.gschema.xml.h:23
 msgid "The server to use for application reviews"
 msgstr "O servidor a ser usado para avaliações de aplicativos"
 
-#: ../data/org.gnome.software.gschema.xml.h:22
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid "The minimum karma score for reviews"
 msgstr "A pontuação carma mínima para ser avaliada"
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "Avaliações com carma menor do que este número não serão mostradas."
 
-#: ../data/org.gnome.software.gschema.xml.h:24
+#: ../data/org.gnome.software.gschema.xml.h:26
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "Uma lista de fontes oficiais que não deveriam ser consideradas como de terceiros"
 
-#: ../data/org.gnome.software.gschema.xml.h:25
+#: ../data/org.gnome.software.gschema.xml.h:27
 msgid "A list of official sources that should be considered free software"
 msgstr "Uma lista de fontes oficiais que deveriam ser consideradas como programa livre"
 
-#: ../data/org.gnome.software.gschema.xml.h:26
+#: ../data/org.gnome.software.gschema.xml.h:28
 msgid ""
 "The licence URL to use when an application should be considered free "
 "software"
 msgstr "A URL da licença a ser usada quando um aplicativo deveria ser considerado como um programa livre"
 
-#: ../data/org.gnome.software.gschema.xml.h:27
+#: ../data/org.gnome.software.gschema.xml.h:29
 msgid ""
 "Install bundled applications for all users on the system where possible"
 msgstr "Instalar aplicativos empacotados para os todos usuários no sistema, se possível"
 
-#: ../data/org.gnome.software.gschema.xml.h:28
+#: ../data/org.gnome.software.gschema.xml.h:30
 msgid "Show the folder management UI"
 msgstr "Mostrar a interface gráfica de gerenciamento de pasta"
 
-#: ../data/org.gnome.software.gschema.xml.h:29
+#: ../data/org.gnome.software.gschema.xml.h:31
 msgid "Allow access to the Software Sources dialog"
 msgstr "Permitir acesso ao diálogo de fontes de programas"
 
-#: ../data/org.gnome.software.gschema.xml.h:30
+#: ../data/org.gnome.software.gschema.xml.h:32
 msgid "Offer upgrades for pre-releases"
 msgstr "Oferecer atualizações para pré-lançamentos"
 
-#: ../data/org.gnome.software.gschema.xml.h:31
+#: ../data/org.gnome.software.gschema.xml.h:33
 msgid "Show some UI elements informing the user that an app is non-free"
 msgstr "Mostrar alguns elementos de interface gráfica informando ao usuário que um aplicativo é não-livre"
 
-#: ../data/org.gnome.software.gschema.xml.h:32
+#: ../data/org.gnome.software.gschema.xml.h:34
 msgid "Show the prompt to install nonfree software sources"
 msgstr "Mostrar pergunta quanto a instalação de fontes de programas não-livres"
 
-#: ../data/org.gnome.software.gschema.xml.h:33
+#: ../data/org.gnome.software.gschema.xml.h:35
 msgid "Show non-free software in search results"
 msgstr "Mostrar programas não-livres nos resultados de pesquisa"
 
-#: ../data/org.gnome.software.gschema.xml.h:34
+#: ../data/org.gnome.software.gschema.xml.h:36
 msgid "The URI that explains nonfree and proprietary software"
 msgstr "A URI que explica programas não-livres e proprietários"
 
-#: ../data/org.gnome.software.gschema.xml.h:35
+#: ../data/org.gnome.software.gschema.xml.h:37
 msgid "A list of non-free sources that can be optionally enabled"
 msgstr "Uma lista de fontes não-livres que podem ser habilitadas opcionalmente"
 
-#: ../data/org.gnome.software.gschema.xml.h:36
+#: ../data/org.gnome.software.gschema.xml.h:38
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
@@ -243,7 +254,7 @@ msgstr "Adicionar à pasta de aplicativo"
 #: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
 #: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
 #: ../src/gs-shell-details.c:360 ../src/gs-shell-details.ui.h:9
-#: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
+#: ../src/gs-shell-installed.c:532 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_Cancelar"
 
@@ -532,7 +543,7 @@ msgid "All"
 msgstr "Todos"
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: ../src/gs-category.c:202 ../src/gs-shell.c:1016
+#: ../src/gs-category.c:202 ../src/gs-shell.c:1030
 msgid "Featured"
 msgstr "Destaques"
 
@@ -903,39 +914,39 @@ msgstr "Remover…"
 
 #. TRANSLATORS: this is when we try to download a screenshot and
 #. * we get back 404
-#: ../src/gs-screenshot-image.c:220
+#: ../src/gs-screenshot-image.c:315
 msgid "Screenshot not found"
 msgstr "A captura de tela não foi localizada"
 
 #. TRANSLATORS: possibly image file corrupt or not an image
-#: ../src/gs-screenshot-image.c:236
+#: ../src/gs-screenshot-image.c:330
 msgid "Failed to load image"
 msgstr "Ocorreu falha ao carregar imagem"
 
 #. TRANSLATORS: this is when we request a screenshot size that
 #. * the generator did not create or the parser did not add
-#: ../src/gs-screenshot-image.c:350
+#: ../src/gs-screenshot-image.c:463
 msgid "Screenshot size not found"
 msgstr "O tamanho da captura de tela não foi localizada"
 
 #. TRANSLATORS: this is when we try create the cache directory
 #. * but we were out of space or permission was denied
-#: ../src/gs-screenshot-image.c:378
+#: ../src/gs-screenshot-image.c:491
 msgid "Could not create cache"
 msgstr "Não foi possível criar o cache"
 
 #. TRANSLATORS: this is when we try to download a screenshot
 #. * that was not a valid URL
-#: ../src/gs-screenshot-image.c:424
+#: ../src/gs-screenshot-image.c:552
 msgid "Screenshot not valid"
 msgstr "A captura de tela não é válida"
 
 #. TRANSLATORS: this is when networking is not available
-#: ../src/gs-screenshot-image.c:439
+#: ../src/gs-screenshot-image.c:567
 msgid "Screenshot not available"
 msgstr "A captura de tela não está disponível"
 
-#: ../src/gs-screenshot-image.c:482
+#: ../src/gs-screenshot-image.c:620
 msgid "Screenshot"
 msgstr "Captura de tela"
 
@@ -1176,7 +1187,7 @@ msgstr "Desconhecido"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#: ../src/gs-shell-details.ui.h:43 ../src/gs-shell-installed.c:437
+#: ../src/gs-shell-details.ui.h:43 ../src/gs-shell-installed.c:440
 #: ../src/gs-update-list.c:128
 msgid "Add-ons"
 msgstr "Complementos"
@@ -1401,15 +1412,15 @@ msgstr "Página de codecs"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the system ones
-#: ../src/gs-shell-installed.c:427
+#: ../src/gs-shell-installed.c:430
 msgid "System Applications"
 msgstr "Aplicativos de sistema"
 
-#: ../src/gs-shell-installed.c:537
+#: ../src/gs-shell-installed.c:540
 msgid "Click on items to select them"
 msgstr "Clique nos itens para selecioná-los"
 
-#: ../src/gs-shell-installed.c:737
+#: ../src/gs-shell-installed.c:741
 msgid "Select"
 msgstr "Selecionar"
 
@@ -2905,24 +2916,24 @@ msgstr "Notícias e Informações"
 msgid "Utilities"
 msgstr "Utilitários"
 
-#: ../src/plugins/gs-plugin-eos.c:1001
+#: ../src/plugins/gs-plugin-eos.c:968
 msgid "Endless Platform"
 msgstr "Plataforma Endless"
 
-#: ../src/plugins/gs-plugin-eos.c:1004
+#: ../src/plugins/gs-plugin-eos.c:971
 msgid "Framework for applications"
 msgstr "Framework para aplicações"
 
-#: ../src/plugins/gs-plugin-external-apps.c:649
+#: ../src/plugins/gs-plugin-external-apps.c:669
 #, c-format
 msgid ""
 "Failed to install the application. Please try again later. If the problem "
 "persists, please contact support."
-msgstr ""
+msgstr "Erro na instalação do aplicativo. Favor tentar novamente mais tarde. Se o problema persistir, favor entrar em contato com o suporte."
 
-#: ../src/plugins/gs-plugin-external-apps.c:877
+#: ../src/plugins/gs-plugin-external-apps.c:897
 #, c-format
 msgid ""
 "Failed to update the application. Please try again later. If the problem "
 "persists, please contact support."
-msgstr ""
+msgstr "Erro na atualização do aplicativo. Favor tentar novamente mais tarde. Se o problema persistir, favor entrar em contato com o suporte."
