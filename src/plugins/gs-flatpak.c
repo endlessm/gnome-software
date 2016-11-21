@@ -2319,6 +2319,10 @@ gs_flatpak_refine_metadata_from_installation (GsFlatpak *self,
 	const char *commit = NULL;
 
 	ref = gs_flatpak_get_installed_ref (self, app, cancellable, error);
+
+	if (!ref)
+		return FALSE;
+
 	commit = flatpak_ref_get_commit (FLATPAK_REF (ref));
 
 	if (!commit)

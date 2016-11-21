@@ -508,6 +508,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	GsApp *ext_runtime;
 	const char *metadata = NULL;
 	GsFlatpak *flatpak = NULL;
+	g_autoptr(GError) local_error = NULL;
 
 	/* We cache all runtimes because an external runtime may have been
 	 * adopted by the flatpak plugins */
@@ -548,8 +549,21 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	/* Refine app's external runtime metadata from its own installed
 	 * appstream and get the external runtime again to ensure we have the
 	 * real one that the app needs */
-	gs_flatpak_refine_metadata_from_installation (flatpak, app, cancellable,
-						      error);
+	if (!gs_flatpak_refine_metadata_from_installation (flatpak, app,
+							   cancellable,
+							   &local_error)) {
+		g_warning ("Could not refine metadata from "
+			   "installation for app '%s': %s",
+			   gs_app_get_unique_id (app), local_error->message);
+		/* The app could have been uninstalled before its GsApp's state
+		 * was changed, so reset the state */
+		if (g_error_matches (local_error, FLATPAK_ERROR,
+				     FLATPAK_ERROR_NOT_INSTALLED)) {
+			force_set_app_state (app, AS_APP_STATE_AVAILABLE);
+			return TRUE;
+		}
+	}
+
 	ext_runtime = gs_plugin_get_app_external_runtime (plugin, app);
 	if (!ext_runtime)
 		return TRUE;
