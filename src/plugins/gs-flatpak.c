@@ -1630,6 +1630,8 @@ gs_flatpak_app_remove (GsFlatpak *self,
 		       GCancellable *cancellable,
 		       GError **error)
 {
+	GError *local_error = NULL;
+
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (self->plugin)) != 0)
@@ -1657,8 +1659,25 @@ gs_flatpak_app_remove (GsFlatpak *self,
 					     gs_app_get_flatpak_arch (app),
 					     gs_app_get_flatpak_branch (app),
 					     gs_flatpak_progress_cb, app,
-					     cancellable, error)) {
+					     cancellable, &local_error)) {
 		gs_app_set_state_recover (app);
+
+		/* if there has been an authentication issue we need to return
+		 * that plugin error, otherwise it will be ignored by the
+		 * plugin loader */
+		if (g_error_matches (local_error, G_DBUS_ERROR,
+				     G_DBUS_ERROR_AUTH_FAILED) ||
+		    g_error_matches (local_error, G_DBUS_ERROR,
+				     G_DBUS_ERROR_ACCESS_DENIED)) {
+			g_set_error (error, GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_AUTH_REQUIRED,
+				     "Authentication problem when uninstalling "
+				     "'%s': %s", gs_app_get_unique_id (app),
+				     local_error->message);
+		} else {
+			g_propagate_error (error, local_error);
+		}
+
 		return FALSE;
 	}
 
