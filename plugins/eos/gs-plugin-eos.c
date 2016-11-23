@@ -740,6 +740,11 @@ gs_plugin_refine (GsPlugin		*plugin,
 
 		gs_plugin_eos_refine_core_app (app);
 
+		/* if we don't know yet the state of an app then we shouldn't
+		 * do any further operations on it */
+		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+			continue;
+
 		if (gs_plugin_eos_blacklist_if_needed (plugin, app))
 			continue;
 
