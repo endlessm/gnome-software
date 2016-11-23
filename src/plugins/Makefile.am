@@ -25,6 +25,7 @@ AM_CPPFLAGS =						\
 	-DLIBDIR=\""$(libdir)"\"			\
 	-DLIBEXECDIR=\""$(libexecdir)"\"		\
 	-DLOCALSTATEDIR=\""$(localstatedir)"\"		\
+	-DLOCALEDIR=\""$(localedir)"\"			\
 	-DSBINDIR=\"$(sbindir)\"			\
 	-DSYSCONFDIR=\""$(sysconfdir)"\"		\
 	-DTESTDATADIR=\""$(top_srcdir)/data/tests"\"	\
@@ -53,8 +54,8 @@ plugin_LTLIBRARIES =					\
 if HAVE_EXTERNAL_APPSTREAM
 plugin_LTLIBRARIES += libgs_plugin_external-appstream.la
 
-libexec_SCRIPTS =			\
-	gnome-software-install-appstream
+libexec_PROGRAMS = gnome-software-install-appstream
+
 endif
 
 if HAVE_PACKAGEKIT
@@ -132,14 +133,10 @@ libgs_plugin_external_appstream_la_LIBADD = $(GS_PLUGIN_LIBS) $(SOUP_LIBS)
 libgs_plugin_external_appstream_la_LDFLAGS = -module -avoid-version
 libgs_plugin_external_appstream_la_CFLAGS = $(GS_PLUGIN_CFLAGS) $(WARN_CFLAGS) $(SOUP_CFLAGS)
 
-gnome-software-install-appstream: gnome-software-install-appstream.in Makefile
-	$(AM_V_GEN) sed -e "s|@localstatedir[@]|$(localstatedir)|g" $< > $@
-
-EXTRA_DIST =						\
-	gnome-software-install-appstream.in
-
-CLEANFILES =						\
-	gnome-software-install-appstream
+gnome_software_install_appstream_SOURCES = gs-install-appstream.c
+gnome_software_install_appstream_LDADD = $(GLIB_LIBS) $(APPSTREAM_LIBS)
+gnome_software_install_appstream_CFLAGS = $(WARN_CFLAGS)
+gnome_software_install_appstream_LDFLAGS = $(PIE_LDFLAGS) $(RELRO_LDFLAGS)
 
 libgs_plugin_key_colors_la_SOURCES = gs-plugin-key-colors.c
 libgs_plugin_key_colors_la_LIBADD = $(GS_PLUGIN_LIBS)
