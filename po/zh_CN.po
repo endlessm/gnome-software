@@ -25,8 +25,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-15 04:27+0000\n"
-"PO-Revision-Date: 2016-11-15 04:28+0000\n"
+"POT-Creation-Date: 2016-11-22 04:26+0000\n"
+"PO-Revision-Date: 2016-11-22 04:27+0000\n"
 "Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/endless-mobile-inc/gnome-software/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
@@ -303,7 +303,7 @@ msgstr "全不选"
 #. TRANSLATORS: this is the application name
 #. set the window title back to default
 #. TRANSLATORS: this is the main window title
-#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:339
+#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:342
 #: ../src/gs-shell.c:274 ../src/org.gnome.Software.desktop.in.h:1
 msgid "App Center"
 msgstr "APP中心"
@@ -419,17 +419,17 @@ msgstr "对 AppStream 优先使用本地文件源"
 msgid "Show version number"
 msgstr "显示版本号"
 
-#: ../src/gs-application.c:332
+#: ../src/gs-application.c:335
 msgid "translator-credits"
 msgstr "eternalhui <www.eternalhui@gmail.com>, 2013\ntuhaihe <1132321739qq@gmail.com>, 2013\nTong Hui <tonghuix@gmail.com>, 2014\nMingye Wang <arthur2e5@gmail.com>, 2015\nJeff Bai <jeffbai@aosc.xyz>, 2015, 2016\nBin Li <binli@gnome.org>, 2016\nDingzhong Chen <wsxy162@gmail.com>, 2015, 2016"
 
 #. TRANSLATORS: this is the title of the about window
-#: ../src/gs-application.c:336
+#: ../src/gs-application.c:339
 msgid "About Software"
 msgstr "关于软件"
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: ../src/gs-application.c:342
+#: ../src/gs-application.c:345
 msgid "A nice way to manage the software on your system."
 msgstr "一种管理您系统中软件的好方法。"
 
@@ -2912,22 +2912,27 @@ msgstr "参考消息&新闻"
 msgid "Utilities"
 msgstr "实用工具"
 
-#: ../src/plugins/gs-plugin-eos.c:968
+#: ../src/plugins/gs-plugin-eos.c:1032
 msgid "Endless Platform"
 msgstr "Endless平台"
 
-#: ../src/plugins/gs-plugin-eos.c:971
+#: ../src/plugins/gs-plugin-eos.c:1035
 msgid "Framework for applications"
 msgstr "应用框架"
 
-#: ../src/plugins/gs-plugin-external-apps.c:669
+#: ../src/plugins/gs-plugin-external-apps.c:689
 #, c-format
 msgid ""
 "Failed to install the application. Please try again later. If the problem "
 "persists, please contact support."
 msgstr ""
 
-#: ../src/plugins/gs-plugin-external-apps.c:897
+#: ../src/plugins/gs-plugin-external-apps.c:857
+#, c-format
+msgid "Could not launch this application."
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:953
 #, c-format
 msgid ""
 "Failed to update the application. Please try again later. If the problem "

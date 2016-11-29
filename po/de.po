@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-15 04:27+0000\n"
-"PO-Revision-Date: 2016-11-15 04:28+0000\n"
+"POT-Creation-Date: 2016-11-22 04:26+0000\n"
+"PO-Revision-Date: 2016-11-22 04:27+0000\n"
 "Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: German (http://www.transifex.com/endless-mobile-inc/gnome-software/language/de/)\n"
 "MIME-Version: 1.0\n"
@@ -291,7 +291,7 @@ msgstr "Nichts auswählen"
 #. TRANSLATORS: this is the application name
 #. set the window title back to default
 #. TRANSLATORS: this is the main window title
-#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:339
+#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:342
 #: ../src/gs-shell.c:274 ../src/org.gnome.Software.desktop.in.h:1
 msgid "App Center"
 msgstr ""
@@ -407,17 +407,17 @@ msgstr "Lokale Quelldateien dem AppStream vorziehen"
 msgid "Show version number"
 msgstr "Versionsnummer anzeigen"
 
-#: ../src/gs-application.c:332
+#: ../src/gs-application.c:335
 msgid "translator-credits"
 msgstr "Eduard Gotwig <gotwig@ubuntu.com>, 2013\nChristian Kirbach <christian.kirbach@gmail.com>, 2013\nBenjamin Steinwender <b@stbe.at>, 2014\nPaul Seyfert <pseyfert@mathphys.fsk.uni-heidelberg.de>, 2015\nBernd Homuth <dev@hmt.im>, 2015, 2016\nChristian Kirbach <christian.kirbach@gmail.com>, 2015\nJ.M. Ruetter <jm@jublo.net>, 2015\nMario Blättermann <mario.blaettermann@gmail.com>, 2016"
 
 #. TRANSLATORS: this is the title of the about window
-#: ../src/gs-application.c:336
+#: ../src/gs-application.c:339
 msgid "About Software"
 msgstr "Info zu GNOME-Software"
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: ../src/gs-application.c:342
+#: ../src/gs-application.c:345
 msgid "A nice way to manage the software on your system."
 msgstr "Ein angenehmer Weg, um Software auf Ihrem System zu verwalten."
 
@@ -2911,22 +2911,27 @@ msgstr ""
 msgid "Utilities"
 msgstr "Zubehör"
 
-#: ../src/plugins/gs-plugin-eos.c:968
+#: ../src/plugins/gs-plugin-eos.c:1032
 msgid "Endless Platform"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-eos.c:971
+#: ../src/plugins/gs-plugin-eos.c:1035
 msgid "Framework for applications"
 msgstr ""
 
-#: ../src/plugins/gs-plugin-external-apps.c:669
+#: ../src/plugins/gs-plugin-external-apps.c:689
 #, c-format
 msgid ""
 "Failed to install the application. Please try again later. If the problem "
 "persists, please contact support."
 msgstr ""
 
-#: ../src/plugins/gs-plugin-external-apps.c:897
+#: ../src/plugins/gs-plugin-external-apps.c:857
+#, c-format
+msgid "Could not launch this application."
+msgstr ""
+
+#: ../src/plugins/gs-plugin-external-apps.c:953
 #, c-format
 msgid ""
 "Failed to update the application. Please try again later. If the problem "
