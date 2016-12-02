@@ -85,7 +85,7 @@ BUNDLEDIR="$APPDIR/bundle"
 EXPORTDIR="$BUNDLEDIR/usr"
 
 # Remove any previous left build dir and create it again
-rm -rf "$BUNDLEDIR"
+rm -rf "$APPDIR"
 mkdir -p "$BUILDDIR" "$BUNDLEDIR"
 
 # Download the app if needed
@@ -95,11 +95,12 @@ cd "$BUILDDIR"
 
 assetfile=$(basename "$ASSETURL")
 if [ ! -f "$assetfile" ] || [ -z `validate_checksum "$assetfile" "$ASSETBRANCH"` ]; then
-    wget -c "$ASSETURL"
+    wget "$ASSETURL"
 fi
 if [ -z `validate_checksum "$assetfile" "$ASSETBRANCH"` ]; then
     echo "Checksum of downloaded file from $ASSETURL doesn't match $ASSETBRANCH"
     echo `sha256sum "$assetfile"`
+    rm -rf "$APPDIR"
     exit 1
 fi
 
@@ -122,6 +123,7 @@ elif [ "$ASSETTYPE" = "tar" ]; then
     rm "$assetfile"
 else
     echo "$0: Cannot support asset type $ASSETTYPE"
+    rm -rf "$APPDIR"
     exit 1
 fi
 
