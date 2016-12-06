@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-11-22 04:26+0000\n"
-"PO-Revision-Date: 2016-11-23 16:23+0000\n"
+"POT-Creation-Date: 2016-11-29 04:26+0000\n"
+"PO-Revision-Date: 2016-12-01 13:19+0000\n"
 "Last-Translator: georgian balan <braila222@gmail.com>\n"
 "Language-Team: Romanian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/ro/)\n"
 "MIME-Version: 1.0\n"
@@ -472,7 +472,7 @@ msgstr "Sursă"
 #. security sandbox
 #: ../src/gs-app-row.ui.h:3 ../src/gs-shell-details.ui.h:28
 msgid "Sandboxed"
-msgstr ""
+msgstr "Trimis in Sandbox"
 
 #. TRANSLATORS: this is when the service name is not known
 #: ../src/gs-auth-dialog.c:70
@@ -2365,7 +2365,7 @@ msgstr "Nici unul"
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:516
 msgid "Slapstick humor"
-msgstr ""
+msgstr "Umor de prost gust"
 
 #. TRANSLATORS: content rating description: comments welcome
 #: ../src/gs-common.c:519
@@ -2782,7 +2782,7 @@ msgstr "Codecuri"
 #: ../src/plugins/gs-desktop-common.c:212
 msgctxt "Menu of Development"
 msgid "Debuggers"
-msgstr ""
+msgstr "Depanatori"
 
 #: ../src/plugins/gs-desktop-common.c:215
 msgctxt "Menu of Addons"
@@ -2919,11 +2919,11 @@ msgstr "Referinte & Noutati"
 msgid "Utilities"
 msgstr "Utilități"
 
-#: ../src/plugins/gs-plugin-eos.c:1032
+#: ../src/plugins/gs-plugin-eos.c:1037
 msgid "Endless Platform"
 msgstr "Platforma Endless"
 
-#: ../src/plugins/gs-plugin-eos.c:1035
+#: ../src/plugins/gs-plugin-eos.c:1040
 msgid "Framework for applications"
 msgstr "Cadru pentru aplicații"
 
@@ -2945,3 +2945,32 @@ msgid ""
 "Failed to update the application. Please try again later. If the problem "
 "persists, please contact support."
 msgstr "Esuat in actualizarea aplcatiei.Incercati mai tarziu.Daca problema persita,contactati administratorul softului."
+
+#. TRANSLATORS: tool that is used when copying profiles system-wide
+#: ../src/plugins/gs-install-appstream.c:118
+msgid "GNOME Software AppStream system-wide installer"
+msgstr "Instalare Software-ul AppStream GNOME la nivel de sistem"
+
+#: ../src/plugins/gs-install-appstream.c:120
+msgid "Failed to parse command line arguments"
+msgstr "Nu sa putut analiza argumente în linia de comandă"
+
+#. TRANSLATORS: user did not specify a valid filename
+#: ../src/plugins/gs-install-appstream.c:127
+msgid "You need to specify exactly one filename"
+msgstr "Trebuie să indicați exact un nume de fișier "
+
+#. TRANSLATORS: only able to install files as root
+#: ../src/plugins/gs-install-appstream.c:134
+msgid "This program can only be used by the root user"
+msgstr "Acest program poate fi folosit numai de către administrator"
+
+#. TRANSLATORS: error details
+#: ../src/plugins/gs-install-appstream.c:142
+msgid "Failed to validate content type"
+msgstr "Nu a reușit să valideze tipul de conținut"
+
+#. TRANSLATORS: error details
+#: ../src/plugins/gs-install-appstream.c:149
+msgid "Failed to copy"
+msgstr "Copierea a esuat"
