@@ -252,7 +252,9 @@ gs_shell_change_mode (GsShell *shell,
 	/* only show the search button in overview and search pages */
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_button"));
 	gtk_widget_set_visible (widget, mode == GS_SHELL_MODE_OVERVIEW ||
-					mode == GS_SHELL_MODE_SEARCH);
+					mode == GS_SHELL_MODE_SEARCH ||
+					mode == GS_SHELL_MODE_CATEGORY ||
+					mode == GS_SHELL_MODE_INSTALLED);
 	/* hide unless we're going to search */
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_bar"));
 	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (widget),
