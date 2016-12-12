@@ -109,6 +109,9 @@ gs_application_init (GsApplication *application)
 		  _("Install the application (using application ID)"), _("ID") },
 		{ "local-filename", '\0', 0, G_OPTION_ARG_FILENAME, NULL,
 		  _("Open a local package file"), _("FILENAME") },
+		{ "no-ui", 0, 0, G_OPTION_ARG_NONE, NULL,
+		  _("Do not show the UI; this is currently used with the "
+		    "'--install' option"), NULL },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, NULL,
 		  _("Show verbose debugging information"), NULL },
 		{ "profile", 0, 0, G_OPTION_ARG_NONE, NULL,
@@ -568,16 +571,20 @@ install_activated (GSimpleAction *action,
 {
 	GsApplication *app = GS_APPLICATION (data);
 	const gchar *id;
+	gboolean no_ui;
 	g_autoptr (GsApp) a = NULL;
 
-	g_variant_get (parameter, "(&s)", &id);
+	g_variant_get (parameter, "(&sb)", &id, &no_ui);
 	if (!as_utils_unique_id_valid (id)) {
 		g_warning ("Need to use a valid unique-id: %s",
 			   id);
 		return;
 	}
 
-	initialize_ui_and_present_window (app, NULL);
+	if (no_ui)
+		gs_application_initialize_ui (app);
+	else
+		initialize_ui_and_present_window (app, NULL);
 
 	a = gs_app_new_from_unique_id (id);
 	if (a == NULL) {
@@ -688,7 +695,7 @@ static GActionEntry actions[] = {
 	{ "search", search_activated, "s", NULL, NULL },
 	{ "details", details_activated, "(ss)", NULL, NULL },
 	{ "details-pkg", details_pkg_activated, "s", NULL, NULL },
-	{ "install", install_activated, "(s)", NULL, NULL },
+	{ "install", install_activated, "(sb)", NULL, NULL },
 	{ "filename", filename_activated, "(s)", NULL, NULL },
 	{ "launch", launch_activated, "s", NULL, NULL },
 	{ "show-offline-update-error", show_offline_updates_error, NULL, NULL, NULL },
@@ -805,6 +812,7 @@ gs_application_handle_local_options (GApplication *app, GVariantDict *options)
 	const gchar *search;
 	gint rc = -1;
 	g_autoptr(GError) error = NULL;
+	gboolean no_ui;
 
 	if (g_variant_dict_contains (options, "verbose"))
 		g_setenv ("GS_DEBUG", "1", TRUE);
@@ -856,9 +864,10 @@ gs_application_handle_local_options (GApplication *app, GVariantDict *options)
 						g_variant_new_string (pkgname));
 		rc = 0;
 	} else if (g_variant_dict_lookup (options, "install", "&s", &id)) {
+		no_ui = g_variant_dict_contains (options, "no-ui");
 		g_action_group_activate_action (G_ACTION_GROUP (app),
 						"install",
-						g_variant_new ("(s)", id));
+						g_variant_new ("(sb)", id, no_ui));
 		rc = 0;
 	} else if (g_variant_dict_lookup (options, "local-filename", "^&ay", &local_filename)) {
 		g_action_group_activate_action (G_ACTION_GROUP (app),
