@@ -86,6 +86,7 @@ typedef struct
 	gchar			*events_info_uri;
 	gboolean		 profile_mode;
 	gboolean		 in_mode_change;
+	gboolean		 ever_shown;
 } GsShellPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsShell, gs_shell, G_TYPE_OBJECT)
@@ -152,6 +153,7 @@ gs_shell_activate (GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	gtk_window_present (priv->main_window);
+	priv->ever_shown = TRUE;
 }
 
 void
@@ -1737,6 +1739,13 @@ gs_shell_get_mode_string (GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	return page_name[priv->mode];
+}
+
+gboolean
+gs_shell_get_ever_shown (GsShell *shell)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	return priv->ever_shown;
 }
 
 void

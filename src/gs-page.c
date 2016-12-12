@@ -174,10 +174,12 @@ gs_page_app_installed_cb (GObject *source,
 		return;
 	}
 
-	/* only show this if the window is not active */
+	/* only show this if the window is not active but has been shown at
+	 * least once, otherwise this may have been a "silent" installation */
 	if (gs_app_is_installed (helper->app) &&
 	    helper->action == GS_PLUGIN_ACTION_INSTALL &&
-	    !gs_shell_is_active (priv->shell))
+	    !gs_shell_is_active (priv->shell) &&
+	    gs_shell_get_ever_shown (priv->shell))
 		gs_app_notify_installed (helper->app);
 
 	if (gs_app_is_installed (helper->app) &&
