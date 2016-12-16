@@ -43,7 +43,7 @@ Architecture: any
 Depends: libappstream-glib8 (>= 0.6.2),
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.11.5),
-         libflatpak0,
+         libflatpak0 (>= 0.6.13),
          ${misc:Depends},
          ${shlibs:Depends}
 Replaces: gnome-packagekit-session (<< 3.16.0-2~)
