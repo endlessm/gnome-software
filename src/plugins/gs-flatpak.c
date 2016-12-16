@@ -404,6 +404,35 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 	return TRUE;
 }
 
+static void
+ensure_default_branches (GsFlatpak *self)
+{
+	g_autoptr(GPtrArray) xremotes = NULL;
+	guint i;
+
+	xremotes = flatpak_installation_list_remotes (self->installation, NULL, NULL);
+	if (xremotes == NULL || xremotes->len == 0)
+		return;
+
+	for (i = 0; i < xremotes->len; i++) {
+		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
+		const gchar *remote_name = flatpak_remote_get_name (xremote);
+		g_autofree char *default_branch = NULL;
+		g_autoptr(GError) error_local = NULL;
+
+		default_branch = flatpak_remote_get_default_branch (xremote);
+		if (default_branch != NULL)
+			continue;
+
+		if (!flatpak_installation_update_remote_sync (self->installation,
+							      remote_name, NULL,
+							      &error_local)) {
+			g_warning ("failed to update metadata from remote %s: %s",
+				   remote_name, error_local->message);
+		}
+	}
+}
+
 gboolean
 gs_flatpak_setup (GsFlatpak *self, GCancellable *cancellable, GError **error)
 {
@@ -420,6 +449,8 @@ gs_flatpak_setup (GsFlatpak *self, GCancellable *cancellable, GError **error)
 		g_warning ("failed to get initial available data on setup: %s",
 			   error_md->message);
 	}
+
+	ensure_default_branches (self);
 
 	/* load just the wildcards */
 	if (!as_store_load (self->store,
