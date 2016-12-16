@@ -17,7 +17,7 @@ Build-Depends: appstream-util,
                gsettings-desktop-schemas-dev (>= 3.11.5),
                gtk-doc-tools,
                intltool (>= 0.35.0),
-               libappstream-glib-dev (>= 0.6.2),
+               libappstream-glib-dev (>= 0.6.6),
                libgdk-pixbuf2.0-dev (>= 2.31.5),
                libglib2.0-dev (>= 2.46),
                libgnome-desktop-3-dev (>= 3.18),
@@ -40,7 +40,7 @@ Vcs-Browser: https://anonscm.debian.org/viewvc/pkg-gnome/packages/unstable/gnome
 
 Package: gnome-software
 Architecture: any
-Depends: libappstream-glib8 (>= 0.6.2),
+Depends: libappstream-glib8 (>= 0.6.6),
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.11.5),
          libflatpak0 (>= 0.6.13),
