@@ -8,7 +8,8 @@ Priority: optional
 Maintainer: Joaquim Rocha <jrocha@endlessm.com>
 Uploaders: Matthias Klumpp <mak@debian.org>,
            Laurent Bigonville <bigon@debian.org>, Michael Biebl <biebl@debian.org>
-Build-Depends: appstream-util,
+Build-Depends: appstream,
+               appstream-util,
                debhelper (>= 9.0.0),
                dh-autoreconf,
                dh-systemd,
