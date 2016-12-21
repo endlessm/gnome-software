@@ -180,7 +180,9 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 		gtk_container_add (GTK_CONTAINER (priv->box_popular), tile);
 	}
 	gtk_widget_set_visible (priv->box_popular, TRUE);
-	gtk_widget_set_visible (priv->popular_heading, TRUE);
+	/* always hide the popular heading because we do not have a visible
+	 * featured banner and thus it looks better if we do not have this label */
+	gtk_widget_set_visible (priv->popular_heading, FALSE);
 
 	priv->empty = FALSE;
 
