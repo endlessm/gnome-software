@@ -904,11 +904,11 @@ gs_plugin_eos_create_updates_proxy_app (GsPlugin *plugin)
 	return proxy;
 }
 
-gboolean
-gs_plugin_add_updates_pending (GsPlugin *plugin,
-			       GsAppList *list,
-			       GCancellable *cancellable,
-			       GError **error)
+static gboolean
+add_updates (GsPlugin *plugin,
+	     GsAppList *list,
+	     GCancellable *cancellable,
+	     GError **error)
 {
 	g_autoptr(GsApp) updates_proxy_app = NULL;
 	g_autoptr(GSList) proxied_updates = NULL;
@@ -944,6 +944,15 @@ gs_plugin_add_updates_pending (GsPlugin *plugin,
 }
 
 gboolean
+gs_plugin_add_updates_pending (GsPlugin *plugin,
+			       GsAppList *list,
+			       GCancellable *cancellable,
+			       GError **error)
+{
+	return add_updates (plugin, list, cancellable, error);
+}
+
+gboolean
 gs_plugin_add_updates (GsPlugin *plugin,
 		       GsAppList *list,
 		       GCancellable *cancellable,
@@ -952,5 +961,5 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	/* only the gs_plugin_add_updates_pending should be used in EOS
 	 * but in case the user has changed the "download-updates" setting then
 	 * this will still work correctly */
-	return gs_plugin_add_updates_pending (plugin, list, cancellable, error);
+	return add_updates (plugin, list, cancellable, error);
 }
