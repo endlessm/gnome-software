@@ -30,6 +30,7 @@
 #include <config.h>
 
 #include <flatpak.h>
+#include <libsoup/soup.h>
 
 #include "gs-appstream.h"
 #include "gs-flatpak.h"
@@ -181,6 +182,46 @@ gs_flatpak_remove_prefixed_names (AsApp *app)
 }
 
 static gboolean
+app_is_duplicated_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *xremote)
+{
+	static const char *duplicated_ids[] = {
+		"org.gnome.Builder.desktop",
+		"org.gnome.Calculator.desktop",
+		"org.gnome.Evince.desktop",
+		"org.gnome.Nautilus.desktop",
+		"org.gnome.Rhythmbox3.desktop",
+		"org.gnome.Totem.desktop",
+		"org.gnome.clocks.desktop",
+		"org.gnome.eog.desktop",
+		"org.gnome.gedit.desktop",
+		NULL
+	};
+
+	g_autoptr(SoupURI) soup_uri = NULL;
+	const char *remote_url = NULL;
+	const char *remote_host = NULL;
+	const char *remote_path = NULL;
+
+	if (scope != AS_APP_SCOPE_SYSTEM)
+		return FALSE;
+
+	remote_url = flatpak_remote_get_url (xremote);
+	if (remote_url == NULL)
+		return FALSE;
+
+	soup_uri = soup_uri_new (remote_url);
+	remote_host = soup_uri_get_host(soup_uri);
+	if (g_strcmp0 (remote_host, "sdk.gnome.org") != 0)
+		return FALSE;
+
+	remote_path = soup_uri_get_path(soup_uri);
+	if (remote_path == NULL || !g_str_has_prefix (remote_path, "/repo-apps"))
+		return FALSE;
+
+	return g_strv_contains (duplicated_ids, as_app_get_id (app));
+}
+
+static gboolean
 gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 				  FlatpakRemote *xremote,
 				  GCancellable *cancellable,
@@ -274,6 +315,13 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 		    g_strcmp0 (as_app_get_branch (app), default_branch) != 0) {
 			g_debug ("not adding app with branch %s as filtering to %s",
 				 as_app_get_branch (app), default_branch);
+			continue;
+		}
+
+		/* filter duplicated apps that we provide via OSTree */
+		if (app_is_duplicated_gnome_flatpak (app, self->scope, xremote)) {
+			g_debug ("not adding duplicated app from GNOME repository: %s",
+				 as_app_get_unique_id (app));
 			continue;
 		}
 
