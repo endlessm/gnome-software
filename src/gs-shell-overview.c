@@ -560,7 +560,8 @@ gs_shell_overview_load (GsShellOverview *self)
 
 	priv->empty = TRUE;
 
-	if (!priv->loading_featured) {
+	/* disable the featured app for now until we have a plan for it */
+	if (FALSE && !priv->loading_featured) {
 		priv->loading_featured = TRUE;
 		gs_plugin_loader_get_featured_async (priv->plugin_loader,
 						     GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
