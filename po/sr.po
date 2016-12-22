@@ -1,23 +1,27 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# 
+# Serbian translation of gnome-software
+# Courtesy of Prevod.org team (http://prevod.org/) -- 2012—2016.
+# Copyright (C) 2013 gnome-software's COPYRIGHT HOLDER
+# This file is distributed under the same license as the gnome-software package.
 # Translators:
-# Марко М. Костић (Marko M. Kostić) <marko.m.kostic@gmail.com>, 2016
-# Miloš Popović <gpopac@gmail.com>, 2015
+# Мирослав Николић <miroslavnikolic@rocketmail.com>, 2013—2016.
+# Милош Поповић <gpopac@gmail.com>, 2015.
+# Марко М. Костић <marko.m.kostic@gmail.com>, 2016.
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-23 14:04-0700\n"
-"PO-Revision-Date: 2016-12-20 04:40+0000\n"
-"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
-"Language-Team: Serbian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/sr/)\n"
+"Report-Msgid-Bugs-To: http://bugzilla.gnome.org/enter_bug.cgi?product=gnome-"
+"software&keywords=I18N+L10N&component=General\n"
+"POT-Creation-Date: 2016-09-02 18:23+0000\n"
+"PO-Revision-Date: 2016-09-03 17:50+0200\n"
+"Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
+"Language-Team: српски <gnome-sr@googlegroups.org>\n"
+"Language: sr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: sr\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=4; plural=n==1? 3 : n%10==1 && n%100!=11 ? 0 : "
+"n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Project-Style: gnome\n"
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:1
 msgid "GNOME Software"
@@ -31,7 +35,9 @@ msgstr "Гномов управник програма"
 msgid ""
 "Software allows you to find and install new applications and system "
 "extensions and remove existing installed applications."
-msgstr "Програми вам дозвољавају да пронађете и инсталирате нове програме и проширења система и да уклоните постојеће инсталиране програме."
+msgstr ""
+"Програми вам дозвољавају да пронађете и инсталирате нове програме и "
+"проширења система и да уклоните постојеће инсталиране програме."
 
 #: ../data/appdata/org.gnome.Software.appdata.xml.in.h:4
 msgid ""
@@ -39,7 +45,35 @@ msgid ""
 "descriptions and multiple screenshots per application. Applications can be "
 "found either through browsing the list of categories or by searching. It "
 "also allows you to update your system using an offline update."
-msgstr "Гномови програми приказују издвојене и популарне програме са корисним описима и неколико снимака екрана по програму. Програми могу бити пронађени прегледањем списка категорија или претраживањем. Такође вам омогућава одржавање ажурног система коришћењем технологије ванмрежних ажурирања."
+msgstr ""
+"Гномови програми приказују издвојене и популарне програме са корисним "
+"описима и неколико снимака екрана по програму. Програми могу бити пронађени "
+"прегледањем списка категорија или претраживањем. Такође вам омогућава "
+"одржавање ажурног система коришћењем технологије ванмрежних ажурирања."
+
+#: ../data/appdata/org.gnome.Software.appdata.xml.in.h:5
+msgid "Overview panel"
+msgstr "Панел прегледа"
+
+#: ../data/appdata/org.gnome.Software.appdata.xml.in.h:6
+msgid "Details panel"
+msgstr "Панел појединости"
+
+#: ../data/appdata/org.gnome.Software.appdata.xml.in.h:7
+msgid "Installed panel"
+msgstr "Панел инсталираних"
+
+#: ../data/appdata/org.gnome.Software.appdata.xml.in.h:8
+msgid "Updates panel"
+msgstr "Панел ажурирања"
+
+#: ../data/appdata/org.gnome.Software.appdata.xml.in.h:9
+msgid "The update details"
+msgstr "Појединости ажурирања"
+
+#: ../data/appdata/org.gnome.Software.appdata.xml.in.h:10
+msgid "The GNOME Project"
+msgstr "Гномов пројекат"
 
 #: ../data/org.gnome.software.gschema.xml.h:1
 msgid "A list of compatible projects"
@@ -49,7 +83,9 @@ msgstr "Списак сагласних пројеката"
 msgid ""
 "This is a list of compatible projects we should show such as GNOME, KDE and "
 "XFCE."
-msgstr "Ово је списак сагласних пројеката које треба приказати као што је Гном, КДЕ и ИксФЦЕ."
+msgstr ""
+"Ово је списак сагласних пројеката које треба приказати као што је Гном, КДЕ "
+"и ИксФЦЕ."
 
 #: ../data/org.gnome.software.gschema.xml.h:3
 msgid "Whether to automatically download updates"
@@ -57,9 +93,11 @@ msgstr "Да ли ће сам преузети ажурирања"
 
 #: ../data/org.gnome.software.gschema.xml.h:4
 msgid ""
-"If enabled, GNOME Software automatically downloads updates in the background"
-" and prompts the user to install them when ready."
-msgstr "Ако је укључено, Гномови програми ће сам преузети ажурирања у позадини и тражити од корисника да их инсталира када буде био спреман."
+"If enabled, GNOME Software automatically downloads updates in the background "
+"and prompts the user to install them when ready."
+msgstr ""
+"Ако је укључено, Гномови програми ће сам преузети ажурирања у позадини и "
+"тражити од корисника да их инсталира када буде био спреман."
 
 #: ../data/org.gnome.software.gschema.xml.h:5
 msgid "Whether it's the very first run of GNOME Software"
@@ -75,9 +113,11 @@ msgstr "Неслободни програми приказују прозорч�
 
 #: ../data/org.gnome.software.gschema.xml.h:8
 msgid ""
-"When non-free applications are installed a warning dialog can be shown. This"
-" controls if that dialog is suppressed."
-msgstr "Када се инсталирају неслободни програми може бити приказано прозорче упозорења. Ово одлучује да ли је то прозорче потиснуто."
+"When non-free applications are installed a warning dialog can be shown. This "
+"controls if that dialog is suppressed."
+msgstr ""
+"Када се инсталирају неслободни програми може бити приказано прозорче "
+"упозорења. Ово одлучује да ли је то прозорче потиснуто."
 
 #: ../data/org.gnome.software.gschema.xml.h:9
 msgid "A list of popular applications"
@@ -95,73 +135,115 @@ msgstr "Списак додатних извора који су претход�
 msgid ""
 "The list of sources that have been previously enabled when installing third-"
 "party applications."
-msgstr "Списак додатних извора који су претходно били укључени приликом инсталације програма трећих лица."
+msgstr ""
+"Списак додатних извора који су претходно били укључени приликом инсталације "
+"програма трећих лица."
 
 #: ../data/org.gnome.software.gschema.xml.h:13
 msgid "The last update check timestamp"
 msgstr "Временска ознака последње провере ажурирања"
 
 #: ../data/org.gnome.software.gschema.xml.h:14
-msgid "The timestamp of the first security update, cleared after update"
-msgstr "Временска ознака првог безбедносног ажурирања, очишћеног након ажурирања"
+msgid "The last upgrade notification timestamp"
+msgstr "Временска ознака обавештења последње надоградње"
 
 #: ../data/org.gnome.software.gschema.xml.h:15
+msgid "The timestamp of the first security update, cleared after update"
+msgstr ""
+"Временска ознака првог безбедносног ажурирања, очишћеног након ажурирања"
+
+#: ../data/org.gnome.software.gschema.xml.h:16
 msgid "The last update timestamp"
 msgstr "Временска ознака последњег ажурирања"
 
-#: ../data/org.gnome.software.gschema.xml.h:16
+#: ../data/org.gnome.software.gschema.xml.h:17
 msgid "The server to use for application reviews"
 msgstr "Сервер који ће се користити за прегледе програма"
 
-#: ../data/org.gnome.software.gschema.xml.h:17
+#: ../data/org.gnome.software.gschema.xml.h:18
 msgid "The minimum karma score for reviews"
 msgstr "Најмањи резултат карме за прегледе"
 
-#: ../data/org.gnome.software.gschema.xml.h:18
+#: ../data/org.gnome.software.gschema.xml.h:19
 msgid "Reviews with karma less than this number will not be shown."
 msgstr "Прегледи са кармом са мањим бројем од овог се неће приказивати."
 
-#: ../data/org.gnome.software.gschema.xml.h:19
+#: ../data/org.gnome.software.gschema.xml.h:20
 msgid "A list of official sources that should not be considered 3rd party"
 msgstr "Списак званичних извора који се не требају сматрати трећом страном"
 
-#: ../data/org.gnome.software.gschema.xml.h:20
+#: ../data/org.gnome.software.gschema.xml.h:21
 msgid "A list of official sources that should be considered free software"
 msgstr "Списак званичних извора који се требају сматрати слободним софтвером"
 
-#: ../data/org.gnome.software.gschema.xml.h:21
-msgid ""
-"The licence URL to use when an application should be considered free "
-"software"
-msgstr "Адреса дозволе за коришћење када се програм треба сматрати слободним софтвером"
-
 #: ../data/org.gnome.software.gschema.xml.h:22
+msgid ""
+"The licence URL to use when an application should be considered free software"
+msgstr ""
+"Адреса дозволе за коришћење када се програм треба сматрати слободним "
+"софтвером"
+
+#: ../data/org.gnome.software.gschema.xml.h:23
+msgid "Install bundled applications for all users on the system where possible"
+msgstr "Инсталира скуп програма за све кориснике на систему где је то могуће"
+
+#: ../data/org.gnome.software.gschema.xml.h:24
 msgid "Show the folder management UI"
 msgstr "Приказује сучеље управљања фасциклама"
 
-#: ../data/org.gnome.software.gschema.xml.h:23
+#: ../data/org.gnome.software.gschema.xml.h:25
 msgid "Allow access to the Software Sources dialog"
 msgstr "Допушта приступ прозорчету извора софтвера"
+
+#: ../data/org.gnome.software.gschema.xml.h:26
+msgid "Offer upgrades for pre-releases"
+msgstr "Нуди надоградње за предиздања"
+
+#: ../data/org.gnome.software.gschema.xml.h:27
+msgid "Show some UI elements informing the user that an app is non-free"
+msgstr ""
+"Приказује неке УИ елементе обавештавајући корисника да неки програм није "
+"слободан"
+
+#: ../data/org.gnome.software.gschema.xml.h:28
+msgid "Show the prompt to install nonfree software sources"
+msgstr "Приказује упит за инсталирање неслободних извора софтвера"
+
+#: ../data/org.gnome.software.gschema.xml.h:29
+msgid "Show non-free software in search results"
+msgstr "Приказује неслободан софтвер у резултатима претраге"
+
+#: ../data/org.gnome.software.gschema.xml.h:30
+msgid "The URI that explains nonfree and proprietary software"
+msgstr "Путања која објашњава неслободан и власнички софтвер"
+
+#: ../data/org.gnome.software.gschema.xml.h:31
+msgid "A list of non-free sources that can be optionally enabled"
+msgstr "Списак неслободних извора који се могу по избору укључити"
 
 #: ../src/gs-app-folder-dialog.ui.h:1
 msgid "Add to Application Folder"
 msgstr "Додај у фасциклу програма"
 
-#: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:316
-#: ../src/gs-review-dialog.ui.h:3 ../src/gs-shell-details.c:361
-#: ../src/gs-shell-installed.c:524 ../src/gs-upgrade-banner.ui.h:5
+#: ../src/gs-app-folder-dialog.ui.h:2 ../src/gs-app-folder-dialog.c:322
+#: ../src/gs-removal-dialog.ui.h:2 ../src/gs-review-dialog.ui.h:3
+#: ../src/gs-shell-details.c:358 ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-installed.c:529 ../src/gs-upgrade-banner.ui.h:5
 msgid "_Cancel"
 msgstr "_Откажи"
 
-#: ../src/gs-app-folder-dialog.ui.h:3 ../src/gs-app-folder-dialog.c:321
+#: ../src/gs-app-folder-dialog.ui.h:3 ../src/gs-app-folder-dialog.c:327
 msgid "_Add"
 msgstr "_Додај"
 
+#. vim: set noexpandtab:
 #. TRANSLATORS: this is the small blue label on the tile
 #. * that tells the user the application is installed
+#. vim: set noexpandtab:
 #: ../src/gs-app-tile.ui.h:1 ../src/gs-app-addon-row.c:97
-#: ../src/gs-app-tile.c:78 ../src/gs-app-tile.c:81 ../src/gs-feature-tile.c:68
-#: ../src/gs-popular-tile.c:74 ../src/gs-popular-tile.c:77
+#: ../src/gs-app-row.ui.h:1 ../src/gs-feature-tile.c:66
+#: ../src/gs-popular-tile.c:72 ../src/gs-popular-tile.c:75
+#: ../src/gs-summary-tile.c:78 ../src/gs-summary-tile.ui.h:1
 #: ../src/gs-popular-tile.ui.h:1
 msgid "Installed"
 msgstr "Инсталиран"
@@ -185,10 +267,10 @@ msgstr "Поништи избор"
 #. TRANSLATORS: this is the application name
 #. set the window title back to default
 #. TRANSLATORS: this is the main window title
-#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:386
-#: ../src/gs-shell.c:274 ../src/org.gnome.Software.desktop.in.h:1
-msgid "App Center"
-msgstr ""
+#: ../src/gnome-software.ui.h:3 ../src/gs-application.c:378
+#: ../src/gs-shell.c:266 ../src/org.gnome.Software.desktop.in.h:1
+msgid "Software"
+msgstr "Програми"
 
 #. vim: set noexpandtab:
 #: ../src/gnome-software.ui.h:4 ../src/gs-sources-dialog.ui.h:2
@@ -201,22 +283,18 @@ msgstr "Идите назад"
 msgid "_All"
 msgstr "_Све"
 
-#. Translators: A label for a button to show only software which is already
-#. installed.
+#. Translators: A label for a button to show only software which is already installed.
 #: ../src/gnome-software.ui.h:8
 msgid "_Installed"
 msgstr "_Инсталирани"
 
-#. Translators: A label for a button to show only updates which are available
-#. to install.
+#. Translators: A label for a button to show only updates which are available to install.
 #: ../src/gnome-software.ui.h:10
 msgid "_Updates"
 msgstr "Аж_урирања"
 
-#. TRANSLATORS: this is a label that describes an application
-#. * that has been queued for installation
-#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:277
-#: ../src/gs-shell-details.ui.h:4
+#: ../src/gs-app-addon-row.c:91 ../src/gs-app-row.c:439
+#: ../src/gs-shell-details.ui.h:7
 msgid "Pending"
 msgstr "На чекању"
 
@@ -224,8 +302,8 @@ msgstr "На чекању"
 #. * shows the status of an application being installed
 #. TRANSLATORS: this is the small blue label on the tile
 #. * that tells the user the application is being installed
-#: ../src/gs-app-addon-row.c:101 ../src/gs-app-row.c:315
-#: ../src/gs-app-tile.c:87 ../src/gs-app-tile.c:90
+#: ../src/gs-app-addon-row.c:101 ../src/gs-app-row.c:219
+#: ../src/gs-shell-details.c:410 ../src/gs-summary-tile.c:86
 msgid "Installing"
 msgstr "Инсталирам"
 
@@ -233,51 +311,21 @@ msgstr "Инсталирам"
 #. * shows the status of an application being erased
 #. TRANSLATORS: this is the small blue label on the tile
 #. * that tells the user the application is being removed
-#: ../src/gs-app-addon-row.c:105 ../src/gs-app-row.c:324
-#: ../src/gs-app-tile.c:96 ../src/gs-app-tile.c:99
+#: ../src/gs-app-addon-row.c:105 ../src/gs-app-row.c:225
+#: ../src/gs-summary-tile.c:94
 msgid "Removing"
 msgstr "Уклањам"
 
-#. TRANSLATORS: This is how we join the licenses and can
-#. * be considered a "Conjunctive AND Operator" according
-#. * to the SPDX specification. For example:
-#. * "LGPL-2.1 and MIT and BSD-2-Clause"
-#. TRANSLATORS: separator for a list of items
-#: ../src/gs-app.c:1434 ../src/gs-shell-extras.c:145
-msgid " and "
-msgstr " и "
-
-#. TRANSLATORS: This is how we join the licenses and can
-#. * be considered a "Disjunctive OR Operator" according
-#. * to the SPDX specification. For example:
-#. * "LGPL-2.1 or MIT"
-#: ../src/gs-app.c:1442
-msgid " or "
-msgstr ""
-
-#. TRANSLATORS: non-free app
-#: ../src/gs-app.c:1465
-msgid "Proprietary"
-msgstr "Власнички"
-
-#. TRANSLATORS: see the wikipedia page
-#: ../src/gs-app.c:1475
-msgid "Public domain"
-msgstr "Јавно власништво"
-
-#. TRANSLATORS: see GNU page
-#: ../src/gs-app.c:1492
-msgid "Free Software"
-msgstr "Слободан софтвер"
-
-#: ../src/gs-app-folder-dialog.c:305
+#: ../src/gs-app-folder-dialog.c:311
 msgid "Folder Name"
 msgstr "Назив фасцикле"
 
 #. TRANSLATORS: this is a command line option
 #: ../src/gs-application.c:98
 msgid "Start up mode: either ‘updates’, ‘updated’, ‘installed’ or ‘overview’"
-msgstr "Режим покретања: „updates“ (ажурирања), „updated“ (ажурно), „installed“ (инсталирано) или „overview“ (преглед)"
+msgstr ""
+"Режим покретања: „updates“ (ажурирања), „updated“ (ажурно), "
+"„installed“ (инсталирано) или „overview“ (преглед)"
 
 #: ../src/gs-application.c:98
 msgid "MODE"
@@ -324,49 +372,51 @@ msgid "Show profiling information for the service"
 msgstr "Приказује податке профилисања за услугу"
 
 #: ../src/gs-application.c:112
+msgid "Quit the running instance"
+msgstr "Затвара покренути примерак"
+
+#: ../src/gs-application.c:114
 msgid "Prefer local file sources to AppStream"
 msgstr "Даје предност локалним изворима датотека над током програма"
 
-#: ../src/gs-application.c:114
+#: ../src/gs-application.c:116
 msgid "Show version number"
 msgstr "Приказује број издања"
 
-#: ../src/gs-application.c:367
+#: ../src/gs-application.c:371
 msgid "translator-credits"
-msgstr "Мирослав Николић <miroslavnikolic@rocketmail.com>\nМарко М. Костић <marko.m.kostic@gmail.com>\n\nhttp://prevod.org — превод на српски језик."
+msgstr ""
+"Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
+"Марко М. Костић <marko.m.kostic@gmail.com>\n"
+"\n"
+"http://prevod.org — превод на српски језик."
 
 #. TRANSLATORS: this is the title of the about window
-#: ../src/gs-application.c:371
+#: ../src/gs-application.c:375
 msgid "About Software"
 msgstr "О Програмима"
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: ../src/gs-application.c:377
+#: ../src/gs-application.c:381
 msgid "A nice way to manage the software on your system."
 msgstr "Фин начин за управљање програмима на вашем систему."
 
-#. TRANSLATORS: during the update the device
-#. * will restart into a special update-only mode
-#: ../src/gs-app-row.c:153
-msgid "Device cannot be used during update."
-msgstr "Уређај не може бити коришћен за време ажурирања."
-
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
-#: ../src/gs-app-row.c:261
+#: ../src/gs-app-row.c:172
 msgid "Visit website"
 msgstr "Посети веб страницу"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed.
 #. * The ellipsis indicates that further steps are required
-#: ../src/gs-app-row.c:266
+#: ../src/gs-app-row.c:177
 msgid "Install…"
 msgstr "Инсталирај…"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
-#: ../src/gs-app-row.c:274
+#: ../src/gs-app-row.c:184
 msgid "Cancel"
 msgstr "Откажи"
 
@@ -374,126 +424,163 @@ msgstr "Откажи"
 #. * allows the application to be easily installed
 #. TRANSLATORS: this is a button in the updates panel
 #. * that allows the app to be easily updated live
-#. TRANSLATORS: this is button text to update the firware
+#. TRANSLATORS: update the fw
 #. TRANSLATORS: button text
-#: ../src/gs-app-row.c:284 ../src/gs-app-row.c:291 ../src/gs-page.c:278
-#: ../src/gs-utils.c:378
+#: ../src/gs-app-row.c:193 ../src/gs-app-row.c:200 ../src/gs-page.c:385
+#: ../src/gs-common.c:341
 msgid "Install"
 msgstr "Инсталирај"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
-#: ../src/gs-app-row.c:295 ../src/gs-app-row.c:306 ../src/gs-page.c:346
+#: ../src/gs-app-row.c:204 ../src/gs-app-row.c:213 ../src/gs-page.c:531
 msgid "Remove"
-msgstr ""
+msgstr "Уклони"
+
+#. TRANSLATORS: during the update the device
+#. * will restart into a special update-only mode
+#: ../src/gs-app-row.c:329
+msgid "Device cannot be used during update."
+msgstr "Уређај не може бити коришћен за време ажурирања."
+
+#. TRANSLATORS: this refers to where the app came from
+#: ../src/gs-app-row.c:339 ../src/gs-shell-details.ui.h:34
+msgid "Source"
+msgstr "Извор"
+
+#. security sandbox
+#: ../src/gs-app-row.ui.h:3 ../src/gs-shell-details.ui.h:28
+msgid "Sandboxed"
+msgstr "Изоловани"
+
+#. TRANSLATORS: this is when the service name is not known
+#: ../src/gs-auth-dialog.c:70
+msgid "To continue you need to sign in."
+msgstr "Да наставите треба да се пријавите."
+
+#. TRANSLATORS: the %s is a service name, e.g. "Ubuntu One"
+#: ../src/gs-auth-dialog.c:74
+#, c-format
+msgid "To continue you need to sign in to %s."
+msgstr "Да наставите треба да се пријавите на „%s“."
 
 #. vim: set noexpandtab:
-#. This is shown in the search result row as a tag
-#: ../src/gs-app-row.ui.h:2 ../src/gs-shell-details.ui.h:35
-msgid "3rd party"
-msgstr ""
+#: ../src/gs-auth-dialog.ui.h:1
+msgid "Email address"
+msgstr "Адреса е-поште"
 
-#. This is shown in the search result row as a tag
-#: ../src/gs-app-row.ui.h:4 ../src/gs-shell-details.ui.h:36
-msgid "web app"
-msgstr ""
+#: ../src/gs-auth-dialog.ui.h:2
+msgid "I have an account already"
+msgstr "Већ имам налог"
 
-#. This is shown in the search result row as a tag
-#: ../src/gs-app-row.ui.h:6
-msgid "nonfree"
-msgstr ""
+#: ../src/gs-auth-dialog.ui.h:3
+msgid "Password"
+msgstr "Лозинка"
 
-#. This is shown in the search result row as a tag
-#: ../src/gs-app-row.ui.h:8 ../src/gs-shell-details.ui.h:37
-msgid "shell extension"
-msgstr ""
+#: ../src/gs-auth-dialog.ui.h:4
+msgid "I want to register for an account now"
+msgstr "Желим сада да се региструјем за налог"
+
+#: ../src/gs-auth-dialog.ui.h:5
+msgid "I have forgotten my password"
+msgstr "Заборавио сам лозинку"
+
+#: ../src/gs-auth-dialog.ui.h:6
+msgid "Sign in automatically next time"
+msgstr "Сам се пријави следећи пут"
+
+#: ../src/gs-auth-dialog.ui.h:7
+msgid "Enter your one-time pin for two-factor authentication."
+msgstr "Унесите ваш једновремени пин за потврђивање идентитета са два чиниоца."
+
+#: ../src/gs-auth-dialog.ui.h:8
+msgid "PIN"
+msgstr "ПИН"
+
+#: ../src/gs-auth-dialog.ui.h:9
+msgid "Continue"
+msgstr "Настави"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
-#: ../src/gs-category.c:235
+#: ../src/gs-category.c:193
 msgid "Other"
 msgstr "Друго"
 
 #. TRANSLATORS: this is a subcategory matching all the
 #. * different apps in the parent category, e.g. "Games"
-#: ../src/gs-category.c:239
+#: ../src/gs-category.c:198
 msgid "All"
 msgstr "Све"
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: ../src/gs-category.c:242
+#: ../src/gs-category.c:202
 msgid "Featured"
 msgstr "Издвојено"
 
-#. TRANSLATORS: this is a what we use in notifications if the app's name is
-#. unknown
-#: ../src/gs-dbus-helper.c:307
+#. TRANSLATORS: this is a what we use in notifications if the app's name is unknown
+#: ../src/gs-dbus-helper.c:293
 msgid "An application"
 msgstr "Програм"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional
-#. MIME types.
-#: ../src/gs-dbus-helper.c:313
+#. TRANSLATORS: this is a notification displayed when an app needs additional MIME types.
+#: ../src/gs-dbus-helper.c:299
 #, c-format
 msgid "%s is requesting additional file format support."
 msgstr "„%s“ захтева додатну подршку за коришћење ове врсте датотеке."
 
 #. TRANSLATORS: notification title
-#: ../src/gs-dbus-helper.c:315
+#: ../src/gs-dbus-helper.c:301
 msgid "Additional MIME Types Required"
 msgstr "Потребне су додатни МИМЕ формати"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional
-#. fonts.
-#: ../src/gs-dbus-helper.c:319
+#. TRANSLATORS: this is a notification displayed when an app needs additional fonts.
+#: ../src/gs-dbus-helper.c:305
 #, c-format
 msgid "%s is requesting additional fonts."
 msgstr "„%s“ захтева додатне словне ликове."
 
 #. TRANSLATORS: notification title
-#: ../src/gs-dbus-helper.c:321
+#: ../src/gs-dbus-helper.c:307
 msgid "Additional Fonts Required"
 msgstr "Потребни су додатни словни ликови"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional
-#. codecs.
-#: ../src/gs-dbus-helper.c:325
+#. TRANSLATORS: this is a notification displayed when an app needs additional codecs.
+#: ../src/gs-dbus-helper.c:311
 #, c-format
 msgid "%s is requesting additional multimedia codecs."
 msgstr "„%s“ захтева додатне мултимедијалне кодеке."
 
 #. TRANSLATORS: notification title
-#: ../src/gs-dbus-helper.c:327
+#: ../src/gs-dbus-helper.c:313
 msgid "Additional Multimedia Codecs Required"
 msgstr "Потребни су додатни мултимедијални кодеци"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional
-#. printer drivers.
-#: ../src/gs-dbus-helper.c:331
+#. TRANSLATORS: this is a notification displayed when an app needs additional printer drivers.
+#: ../src/gs-dbus-helper.c:317
 #, c-format
 msgid "%s is requesting additional printer drivers."
 msgstr "„%s“ захтева додатне управљачке програме за штампаче."
 
 #. TRANSLATORS: notification title
-#: ../src/gs-dbus-helper.c:333
+#: ../src/gs-dbus-helper.c:319
 msgid "Additional Printer Drivers Required"
 msgstr "Потребни су додатни управљачки програми штампача"
 
-#. TRANSLATORS: this is a notification displayed when an app wants to install
-#. additional packages.
-#: ../src/gs-dbus-helper.c:337
+#. TRANSLATORS: this is a notification displayed when an app wants to install additional packages.
+#: ../src/gs-dbus-helper.c:323
 #, c-format
 msgid "%s is requesting additional packages."
 msgstr "„%s“ захтева додатне пакете."
 
 #. TRANSLATORS: notification title
-#: ../src/gs-dbus-helper.c:339
+#: ../src/gs-dbus-helper.c:325
 msgid "Additional Packages Required"
 msgstr "Потребни су додатни пакети"
 
 #. TRANSLATORS: this is a button that launches gnome-software
-#: ../src/gs-dbus-helper.c:348
+#: ../src/gs-dbus-helper.c:334
 msgid "Find in Software"
 msgstr "Нађи у Програмима"
 
@@ -508,10 +595,13 @@ msgstr "Добро дошли у Програме"
 
 #: ../src/gs-first-run-dialog.ui.h:3
 msgid ""
-"Software lets you install all the software you need, all from one place. See"
-" our recommendations, browse the categories, or search for the applications "
+"Software lets you install all the software you need, all from one place. See "
+"our recommendations, browse the categories, or search for the applications "
 "you want."
-msgstr "Програми вам омогућавају да инсталирате све програме који вам требају, све са једног места. Погледајте наше препоруке, разгледајте категорије, или потражите програм који желите."
+msgstr ""
+"Програми вам омогућавају да инсталирате све програме који вам требају, све "
+"са једног места. Погледајте наше препоруке, разгледајте категорије, или "
+"потражите програм који желите."
 
 #: ../src/gs-first-run-dialog.ui.h:4
 msgid "_Let’s Go Shopping"
@@ -519,11 +609,11 @@ msgstr "_Ајмо у куповину"
 
 #. TRANSLATORS: Here are 2 strings the same as in gtk/gtkbox.c
 #. in GTK+ project. Please use the same translation.
-#: ../src/gs-hiding-box.c:384
+#: ../src/gs-hiding-box.c:383
 msgid "Spacing"
 msgstr "Размаци"
 
-#: ../src/gs-hiding-box.c:385
+#: ../src/gs-hiding-box.c:384
 msgid "The amount of space between children"
 msgstr "Количина размака међу садржаним елементима"
 
@@ -563,113 +653,152 @@ msgstr "Историјат"
 
 #. TRANSLATORS: this is a prompt message, and
 #. * '%s' is an application summary, e.g. 'GNOME Clocks'
-#: ../src/gs-page.c:272
+#: ../src/gs-page.c:376
 #, c-format
 msgid "Prepare %s"
 msgstr "Припремам „%s“"
 
-#. TRANSLATORS: this is a prompt message, and
-#. * '%s' is an application summary, e.g. 'GNOME Clocks'
-#: ../src/gs-page.c:337
+#. TRANSLATORS: this is a prompt message, and '%s' is an
+#. * source name, e.g. 'GNOME Nightly'
+#: ../src/gs-page.c:500
+#, c-format
+msgid "Are you sure you want to remove the %s source?"
+msgstr "Да ли сигурно желите да уклоните извор „%s“?"
+
+#. TRANSLATORS: longer dialog text
+#: ../src/gs-page.c:504
+#, c-format
+msgid ""
+"All applications from %s will be removed, and you will have to re-install "
+"the source to use them again."
+msgstr ""
+"Све програми са „%s“ биће уклоњени, а мораћете поново да инсталирате извор "
+"да бисте их поново користили."
+
+#. TRANSLATORS: this is a prompt message, and '%s' is an
+#. * application summary, e.g. 'GNOME Clocks'
+#: ../src/gs-page.c:512
 #, c-format
 msgid "Are you sure you want to remove %s?"
 msgstr "Да ли сигурно желите да уклоните „%s“?"
 
 #. TRANSLATORS: longer dialog text
-#: ../src/gs-page.c:342
+#: ../src/gs-page.c:515
 #, c-format
 msgid "%s will be removed, and you will have to install it to use it again."
-msgstr "Биће уклоњен „%s“, и мораћете да га инсталирате да бисте га поново користили."
+msgstr ""
+"Биће уклоњен „%s“, и мораћете да га инсталирате да бисте га поново користили."
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
-#: ../src/gs-plugin-loader.c:860
+#: ../src/gs-plugin-loader.c:1048
 msgid "OS Updates"
 msgstr "Надоградње система"
 
 #. TRANSLATORS: this is a longer description of the
 #. * "OS Updates" string
-#: ../src/gs-plugin-loader.c:865
+#: ../src/gs-plugin-loader.c:1053
 msgid "Includes performance, stability and security improvements."
-msgstr "У надоградње су укључена побољшања стабилности, безбедности и рада система."
+msgstr ""
+"У надоградње су укључена побољшања стабилности, безбедности и рада система."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: ../src/gs-plugin-loader.c:1591 ../src/gs-shell-extras.c:386
+#: ../src/gs-plugin-loader.c:1729 ../src/gs-shell-extras.c:386
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "Нема додатних кодека за формат датотеке „%s“."
 
-#: ../src/gs-plugin-loader.c:1594
+#: ../src/gs-plugin-loader.c:1732
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
 "play this format can be found on the website."
-msgstr "Податке о „%s“, као и податке о набављању кодека који може пуштати ову врсту датотеке можете пронаћи на веб страници."
+msgstr ""
+"Податке о „%s“, као и податке о набављању кодека који може пуштати ову врсту "
+"датотеке можете пронаћи на веб страници."
+
+#: ../src/gs-removal-dialog.c:128
+#, c-format
+msgid ""
+"Some of the currently installed software is not compatible with %s. If you "
+"continue, the following will be automatically removed during the upgrade:"
+msgstr ""
+"Неки од тренутно инсталираних програма нису сагласни са „%s“. Ако наставите, "
+"следећи ће бити сами уклоњени за време надоградње:"
+
+#. vim: set noexpandtab:
+#: ../src/gs-removal-dialog.ui.h:1
+msgid "Incompatible Software"
+msgstr "Несагласан софтвер"
+
+#: ../src/gs-removal-dialog.ui.h:3
+msgid "_Continue"
+msgstr "_Настави"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A really bad application
-#: ../src/gs-review-dialog.c:93
+#: ../src/gs-review-dialog.c:98
 msgid "Hate it"
 msgstr "Никакав"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		Not a great application
-#: ../src/gs-review-dialog.c:97
+#: ../src/gs-review-dialog.c:102
 msgid "Don't like it"
 msgstr "Не допада ми се"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A fairly-good application
-#: ../src/gs-review-dialog.c:101
+#: ../src/gs-review-dialog.c:106
 msgid "It's OK"
 msgstr "У реду је"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A good application
-#: ../src/gs-review-dialog.c:105
+#: ../src/gs-review-dialog.c:110
 msgid "Like it"
 msgstr "Добар је"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A really awesome application
-#: ../src/gs-review-dialog.c:109
+#: ../src/gs-review-dialog.c:114
 msgid "Love it"
 msgstr "Одличан"
 
 #. TRANSLATORS: the review can't just be copied and pasted
-#: ../src/gs-review-dialog.c:131
+#: ../src/gs-review-dialog.c:136
 msgid "Please take more time writing the review"
 msgstr "Утрошите мало више времена за писање прегледа"
 
 #. TRANSLATORS: the review is not acceptable
-#: ../src/gs-review-dialog.c:135
+#: ../src/gs-review-dialog.c:140
 msgid "Please choose a star rating"
 msgstr "Изаберите оцену звездицом"
 
 #. TRANSLATORS: the review is not acceptable
-#: ../src/gs-review-dialog.c:139
+#: ../src/gs-review-dialog.c:144
 msgid "The summary is too short"
 msgstr "Сажетак је прекратак"
 
 #. TRANSLATORS: the review is not acceptable
-#: ../src/gs-review-dialog.c:143
+#: ../src/gs-review-dialog.c:148
 msgid "The summary is too long"
 msgstr "Сажетак је предуг"
 
 #. TRANSLATORS: the review is not acceptable
-#: ../src/gs-review-dialog.c:147
+#: ../src/gs-review-dialog.c:152
 msgid "The description is too short"
 msgstr "Опис је прекратак"
 
 #. TRANSLATORS: the review is not acceptable
-#: ../src/gs-review-dialog.c:151
+#: ../src/gs-review-dialog.c:156
 msgid "The description is too long"
 msgstr "Опис је предуг"
 
+# Мислим да се ова ниска односи на део Програма који је посвећен рецензијама програма.
 #. vim: set noexpandtab:
-#. Translators: Title of the dialog box where the users can write and publish
-#. their opinions about the apps.
+#. Translators: Title of the dialog box where the users can write and publish their opinions about the apps.
 #: ../src/gs-review-dialog.ui.h:2
 msgid "Post Review"
 msgstr "Објави преглед"
@@ -691,8 +820,11 @@ msgstr "Сажетак"
 msgid ""
 "Give a short summary of your review, for example: “Great app, would "
 "recommend”."
-msgstr "Укратко опишите ваше мишљење, на пример: „Одличан програм, препоручио бих га“."
+msgstr ""
+"Укратко опишите ваше мишљење, на пример: „Одличан програм, препоручио бих "
+"га“."
 
+# Мислим да се ова ниска односи на део Програма који је посвећен рецензијама програма.
 #. Translators: This is where the users enter their opinions about the apps.
 #: ../src/gs-review-dialog.ui.h:10
 msgctxt "app review"
@@ -710,15 +842,20 @@ msgstr "Укупно"
 #. TRANSLATORS: we explain what the action is going to do
 #: ../src/gs-review-row.c:207
 msgid "You can report reviews for abusive, rude, or discriminatory behavior."
-msgstr "Можете да пријавите да су прегледи увредљивог, грубог или дискриминаторског понашања."
+msgstr ""
+"Можете да пријавите да су прегледи увредљивог, грубог или дискриминаторског "
+"понашања."
 
 #. TRANSLATORS: we ask the user if they really want to do this
 #: ../src/gs-review-row.c:212
 msgid ""
 "Once reported, a review will be hidden until it has been checked by an "
 "administrator."
-msgstr "Након подношења, преглед ће бити скривен све док га не провери неко од администратора."
+msgstr ""
+"Након подношења, преглед ће бити скривен све док га не провери неко од "
+"администратора."
 
+# Мислим да се ова ниска односи на део Програма који је посвећен рецензијама програма.
 #. TRANSLATORS: window title when
 #. * reporting a user-submitted review
 #. * for moderation
@@ -733,8 +870,7 @@ msgid "Report"
 msgstr "Објави"
 
 #. vim: set noexpandtab:
-#. Translators: Users can express their opinions about other users' opinions
-#. about the apps.
+#. Translators: Users can express their opinions about other users' opinions about the apps.
 #: ../src/gs-review-row.ui.h:2
 msgid "Was this review useful to you?"
 msgstr "Да ли вам је овај преглед користио?"
@@ -762,39 +898,39 @@ msgstr "Уклони…"
 
 #. TRANSLATORS: this is when we try to download a screenshot and
 #. * we get back 404
-#: ../src/gs-screenshot-image.c:232
+#: ../src/gs-screenshot-image.c:220
 msgid "Screenshot not found"
 msgstr "Нема снимака екрана"
 
 #. TRANSLATORS: possibly image file corrupt or not an image
-#: ../src/gs-screenshot-image.c:248
+#: ../src/gs-screenshot-image.c:236
 msgid "Failed to load image"
 msgstr "Нисам успео да учитам слику"
 
 #. TRANSLATORS: this is when we request a screenshot size that
 #. * the generator did not create or the parser did not add
-#: ../src/gs-screenshot-image.c:379
+#: ../src/gs-screenshot-image.c:350
 msgid "Screenshot size not found"
 msgstr "Нисам пронашао величину снимка екрана"
 
 #. TRANSLATORS: this is when we try create the cache directory
 #. * but we were out of space or permission was denied
-#: ../src/gs-screenshot-image.c:405
+#: ../src/gs-screenshot-image.c:378
 msgid "Could not create cache"
 msgstr "Не могу да направим оставу"
 
 #. TRANSLATORS: this is when we try to download a screenshot
 #. * that was not a valid URL
-#: ../src/gs-screenshot-image.c:433
+#: ../src/gs-screenshot-image.c:424
 msgid "Screenshot not valid"
 msgstr "Неисправан снимак екрана"
 
 #. TRANSLATORS: this is when networking is not available
-#: ../src/gs-screenshot-image.c:449
+#: ../src/gs-screenshot-image.c:439
 msgid "Screenshot not available"
 msgstr "Снимак екрана није доступан"
 
-#: ../src/gs-screenshot-image.c:500
+#: ../src/gs-screenshot-image.c:482
 msgid "Screenshot"
 msgstr "Снимак екрана"
 
@@ -805,28 +941,24 @@ msgstr "Подешавања проширења"
 
 #: ../src/gs-shell-category.ui.h:2
 msgid ""
-"Extensions are used at your own risk. If you have any system problems, it is"
-" recommended to disable them."
-msgstr "Проширења користите на сопствену одговорност. Ако имате проблема са системом, препоручује вам се да их искључите."
+"Extensions are used at your own risk. If you have any system problems, it is "
+"recommended to disable them."
+msgstr ""
+"Проширења користите на сопствену одговорност. Ако имате проблема са "
+"системом, препоручује вам се да их искључите."
 
 #. TRANSLATORS: button text in the header when an application
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: ../src/gs-shell-details.c:257 ../src/gs-shell-details.c:283
+#: ../src/gs-shell-details.c:267 ../src/gs-shell-details.c:287
 #: ../src/gs-shell-details.ui.h:2 ../src/gs-upgrade-banner.ui.h:6
 msgid "_Install"
 msgstr "_Инсталирај"
 
 #. TRANSLATORS: button text in the header when an application
-#. * is in the process of being installed
-#: ../src/gs-shell-details.c:268
-msgid "_Installing"
-msgstr ""
-
-#. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: ../src/gs-shell-details.c:288
+#: ../src/gs-shell-details.c:292
 msgid "_Update"
 msgstr "Аж_урирај"
 
@@ -834,90 +966,83 @@ msgstr "Аж_урирај"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: ../src/gs-shell-details.c:301
+#: ../src/gs-shell-details.c:305
 msgid "_Install…"
 msgstr "_Инсталирај…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: ../src/gs-shell-details.c:348 ../src/gs-shell-details.ui.h:3
+#: ../src/gs-shell-details.c:352 ../src/gs-shell-details.ui.h:5
 msgid "_Remove"
-msgstr ""
+msgstr "_Уклони"
 
-#. TRANSLATORS: button text in the header when an application can be installed
-#: ../src/gs-shell-details.c:355
-msgid "_Removing"
-msgstr ""
-
-#. TRANSLATORS: this is where the license is not known
-#: ../src/gs-shell-details.c:742
-msgctxt "license"
-msgid "Unknown"
-msgstr ""
-
-#. TRANSLATORS: this is where the version is not known
-#: ../src/gs-shell-details.c:755
-msgctxt "version"
-msgid "Unknown"
-msgstr "Непознато"
-
-#. TRANSLATORS: this is where the updated date is not known
-#: ../src/gs-shell-details.c:787
-msgctxt "updated"
-msgid "Never"
-msgstr ""
-
-#. TRANSLATORS: this is the application isn't in any
-#. * defined menu category
-#: ../src/gs-shell-details.c:813
-msgctxt "menu category"
-msgid "None"
-msgstr ""
-
-#. TRANSLATORS: this is where we don't know the origin of the
-#. * application
-#: ../src/gs-shell-details.c:830
-msgctxt "origin"
-msgid "Unknown"
-msgstr "Непознато"
+#: ../src/gs-shell-details.c:405 ../src/gs-sources-dialog.c:504
+msgid "Removing…"
+msgstr "Уклањам…"
 
 #. TRANSLATORS: this is the warning box
-#: ../src/gs-shell-details.c:876
+#: ../src/gs-shell-details.c:682
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "Овај програм се може користити само ако постоји веза са интернетом."
 
-#. TRANSLATORS: this is the warning box
-#: ../src/gs-shell-details.c:887
-msgid "This software comes from a 3rd party."
-msgstr ""
+#. TRANSLATORS: this is where the version is not known
+#: ../src/gs-shell-details.c:809
+msgctxt "version"
+msgid "Unknown"
+msgstr "Непознато"
 
-#. TRANSLATORS: this is the warning box
-#: ../src/gs-shell-details.c:896
-msgid ""
-"This software comes from a 3rd party and may contain non-free components."
-msgstr ""
+#. TRANSLATORS: this is where the updated date is not known
+#: ../src/gs-shell-details.c:843
+msgctxt "updated"
+msgid "Never"
+msgstr "Никада"
 
-#. TRANSLATORS: this is the warning box
-#: ../src/gs-shell-details.c:905
-msgid "This software may contain non-free components."
-msgstr ""
+#. TRANSLATORS: this is where we don't know the origin of the
+#. * application
+#: ../src/gs-shell-details.c:889
+msgctxt "origin"
+msgid "Unknown"
+msgstr "Непознато"
 
-#: ../src/gs-shell-details.c:1218
+#: ../src/gs-shell-details.c:1307
 #, c-format
 msgid "Could not find '%s'"
 msgstr "Не могу да нађем „%s“"
 
 #. TRANSLATORS: the file format was not recognised by
 #. * any plugin, e.g. if you try installing a .tar.gz
-#: ../src/gs-shell-details.c:1279
+#: ../src/gs-shell-details.c:1365
 msgid "The file is not supported."
 msgstr "Датотека није подржана."
 
 #. TRANSLATORS: install or removed failed
-#: ../src/gs-shell-details.c:1289 ../src/gs-utils.c:169
+#: ../src/gs-shell-details.c:1375 ../src/gs-common.c:161
 msgid "Sorry, this did not work"
 msgstr "Нажалост, ово није успело"
+
+#. TRANSLATORS: see the wikipedia page
+#: ../src/gs-shell-details.c:1734
+msgid "Public domain"
+msgstr "Јавно власништво"
+
+#. TRANSLATORS: see GNU page
+#: ../src/gs-shell-details.c:1750 ../src/gs-shell-details.ui.h:51
+msgid "Free Software"
+msgstr "Слободан софтвер"
+
+#. TRANSLATORS: for the free software popover
+#: ../src/gs-shell-details.c:1805
+msgid "Users are bound by the following license:"
+msgid_plural "Users are bound by the following licenses:"
+msgstr[0] "Корисници су везани следећом дозволом:"
+msgstr[1] "Корисници су везани следећим дозволама:"
+msgstr[2] "Корисници су везани следећим дозволама:"
+msgstr[3] "Корисници су везани следећом дозволом:"
+
+#: ../src/gs-shell-details.c:1821 ../src/gs-shell-details.ui.h:55
+msgid "More information"
+msgstr "Још података"
 
 #. vim: set noexpandtab:
 #: ../src/gs-shell-details.ui.h:1
@@ -925,152 +1050,202 @@ msgid "Details page"
 msgstr "Страница појединости"
 
 #. Translators: A label for a button to execute the selected application.
-#: ../src/gs-shell-details.ui.h:6
+#: ../src/gs-shell-details.ui.h:4
 msgid "_Launch"
 msgstr "_Покрени"
 
-#. Translators: A label for a button to add a shortcut to the selected
-#. application.
-#: ../src/gs-shell-details.ui.h:8
+#. Translators: A label for a button to add a shortcut to the selected application.
+#: ../src/gs-shell-details.ui.h:9
 msgid "_Add shortcut"
-msgstr ""
+msgstr "_Додај пречицу"
 
-#. Translators: A label for a button to remove a shortcut to the selected
-#. application.
-#: ../src/gs-shell-details.ui.h:10
-msgid "Re_move shortcut"
-msgstr ""
-
+#. Translators: A label for a button to remove a shortcut to the selected application.
 #: ../src/gs-shell-details.ui.h:11
+msgid "Re_move shortcut"
+msgstr "_Уклони пречицу"
+
+#: ../src/gs-shell-details.ui.h:12
+msgid "No screenshot provided"
+msgstr "Није достављен снимак екрана"
+
+#: ../src/gs-shell-details.ui.h:13
 msgid "Software Source Included"
 msgstr "Извор програма се користи"
 
-#: ../src/gs-shell-details.ui.h:12
+#: ../src/gs-shell-details.ui.h:14
 msgid ""
 "This application includes a software source which provides updates, as well "
 "as access to other software."
-msgstr "Овај програм користи извор програма из којег ћете добијати ажурирања, као и приступ другим програмима."
+msgstr ""
+"Овај програм користи извор програма из којег ћете добијати ажурирања, као и "
+"приступ другим програмима."
 
-#: ../src/gs-shell-details.ui.h:13
+#: ../src/gs-shell-details.ui.h:15
 msgid "No Software Source Included"
 msgstr "Извор програма се не користи"
 
-#: ../src/gs-shell-details.ui.h:14
+#: ../src/gs-shell-details.ui.h:16
 msgid ""
 "This application does not include a software source. It will not be updated "
 "with new versions."
-msgstr "Овај програм нема извор. Овај програм неће бити аутоматски ажуриран новим издањима овог програма."
+msgstr ""
+"Овај програм нема извор. Овај програм неће бити аутоматски ажуриран новим "
+"издањима овог програма."
 
-#: ../src/gs-shell-details.ui.h:15
+#: ../src/gs-shell-details.ui.h:17
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
-msgstr "Овај програм је већ доступан у ризницама ваше дистрибуције и не би требали да га замените."
+msgstr ""
+"Овај програм је већ доступан у ризницама ваше дистрибуције и не би требали "
+"да га замените."
 
-#. Translators: a repository file used for installing software has been
-#. discovered.
-#: ../src/gs-shell-details.ui.h:17
+#. Translators: a repository file used for installing software has been discovered.
+#: ../src/gs-shell-details.ui.h:19
 msgid "Software Source Identified"
 msgstr "Извор програма је препознат"
 
-#: ../src/gs-shell-details.ui.h:18
+#: ../src/gs-shell-details.ui.h:20
 msgid ""
 "Adding this software source will give you access to additional software and "
 "upgrades."
-msgstr "Додавање овог извора програма ће вам омогућити приступ додатним програмима и надоградњама."
+msgstr ""
+"Додавање овог извора програма ће вам омогућити приступ додатним програмима и "
+"надоградњама."
 
-#: ../src/gs-shell-details.ui.h:19
+#: ../src/gs-shell-details.ui.h:21
 msgid "Only use software sources that you trust."
 msgstr "Користите само проверене изворе програма."
 
-#: ../src/gs-shell-details.ui.h:20
+#: ../src/gs-shell-details.ui.h:22
 msgid "_Website"
-msgstr ""
+msgstr "_Веб страница"
 
-#: ../src/gs-shell-details.ui.h:21 ../src/gs-update-monitor.c:561
+#: ../src/gs-shell-details.ui.h:23 ../src/gs-common.c:790
 msgid "Details"
 msgstr "Појединости"
 
-#: ../src/gs-shell-details.ui.h:22
+#: ../src/gs-shell-details.ui.h:24
 msgid "Localized in your Language"
 msgstr "Преведен на српски"
 
-#: ../src/gs-shell-details.ui.h:23
+#: ../src/gs-shell-details.ui.h:25
 msgid "Documentation"
 msgstr "Документација"
 
-#: ../src/gs-shell-details.ui.h:24
+#: ../src/gs-shell-details.ui.h:26
 msgid "Release Activity"
 msgstr "Активност пројекта"
 
-#: ../src/gs-shell-details.ui.h:25
+#: ../src/gs-shell-details.ui.h:27
 msgid "System Integration"
 msgstr "Усклађеност са системом"
 
-#: ../src/gs-shell-details.ui.h:26 ../src/gs-sources-dialog.ui.h:8
+#: ../src/gs-shell-details.ui.h:29 ../src/gs-sources-dialog.ui.h:8
 msgid "Version"
 msgstr "Издање"
 
-#: ../src/gs-shell-details.ui.h:27
+#: ../src/gs-shell-details.ui.h:30
 msgid "Updated"
 msgstr "Ажуриран"
 
-#: ../src/gs-shell-details.ui.h:28
+#: ../src/gs-shell-details.ui.h:31
 msgid "Category"
 msgstr "Категорија"
 
-#: ../src/gs-shell-details.ui.h:29
+#: ../src/gs-shell-details.ui.h:32
 msgid "Installed Size"
 msgstr "Величина инсталираног"
 
-#: ../src/gs-shell-details.ui.h:30
+#: ../src/gs-shell-details.ui.h:33
 msgid "Download Size"
 msgstr "Величина преузетог"
 
-#: ../src/gs-shell-details.ui.h:31
-msgid "Source"
-msgstr "Извор"
-
-#: ../src/gs-shell-details.ui.h:32
+#: ../src/gs-shell-details.ui.h:35
 msgid "Developer"
 msgstr "Програмер"
 
-#: ../src/gs-shell-details.ui.h:33
+#: ../src/gs-shell-details.ui.h:36
 msgid "License"
 msgstr "Дозвола"
 
-#: ../src/gs-shell-details.ui.h:34
-msgid "non-free"
-msgstr ""
+#. This refers to the license of the application
+#: ../src/gs-shell-details.ui.h:38
+msgid "Free"
+msgstr "Слободан"
+
+#. This refers to the license of the application
+#: ../src/gs-shell-details.ui.h:40
+msgid "Proprietary"
+msgstr "Власнички"
+
+#. This refers to the license of the application
+#: ../src/gs-shell-details.ui.h:42
+msgid "Unknown"
+msgstr "Непознато"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#. TRANSLATORS: this is the main category for Add-ons
-#: ../src/gs-shell-details.ui.h:38 ../src/gs-shell-installed.c:442
-#: ../src/gs-update-list.c:129 ../src/plugins/menu-spec-common.c:210
+#. TRANSLATORS: this is the menu spec main category for Add-ons
+#: ../src/gs-shell-details.ui.h:43 ../src/gs-shell-installed.c:437
+#: ../src/gs-update-list.c:128 ../src/plugins/gs-desktop-common.c:344
 msgid "Add-ons"
 msgstr "Додаци"
 
-#: ../src/gs-shell-details.ui.h:39
+#: ../src/gs-shell-details.ui.h:44
 msgid "Selected add-ons will be installed with the application."
 msgstr "Изабрани додаци биће инсталирани са програмом."
 
-#. Translators: Header of the section with other users' opinions about the
-#. app.
-#: ../src/gs-shell-details.ui.h:41
+# Мислим да се ова ниска односи на део Програма који је посвећен рецензијама програма.
+#. Translators: Header of the section with other users' opinions about the app.
+#: ../src/gs-shell-details.ui.h:46
 msgid "Reviews"
 msgstr "Прегледи"
 
-#. Translators: Button opening a dialog where the users can write and publish
-#. their opinions about the apps.
-#: ../src/gs-shell-details.ui.h:43
+#. Translators: Button opening a dialog where the users can write and publish their opinions about the apps.
+#: ../src/gs-shell-details.ui.h:48
 msgid "_Write a Review"
 msgstr "_Напиши преглед"
 
 #. Translators: Button to return more application-submitted reviews.
-#: ../src/gs-shell-details.ui.h:45
+#: ../src/gs-shell-details.ui.h:50
 msgid "_Show More"
 msgstr "_Прикажи још"
+
+#: ../src/gs-shell-details.ui.h:52
+msgid ""
+"This means that the software can be freely run, copied, distributed, studied "
+"and modified."
+msgstr ""
+"То значи да софтвер може бити слободно покренут, умножен, расподељен, "
+"проучаван и измењен."
+
+#: ../src/gs-shell-details.ui.h:53
+msgid "Proprietary Software"
+msgstr "Власнички софтвер"
+
+#: ../src/gs-shell-details.ui.h:54
+msgid ""
+"This means that the software is owned by an individual or a company. There "
+"are often restrictions on its use and its source code cannot usually be "
+"accessed."
+msgstr ""
+"То значи да је софтвер у власништву појединца или компаније. Често постоје "
+"ограничења његовог коришћења и његовом изворном кȏду обично се не може "
+"приступити."
+
+#: ../src/gs-shell-details.ui.h:56
+msgid "Unknown Software License"
+msgstr "Непозната дозвола софтвера"
+
+#: ../src/gs-shell-details.ui.h:57
+msgid "The license terms of this software are unknown."
+msgstr "Одредбе дозволе овог софтвера су непознате."
+
+#. TRANSLATORS: separator for a list of items
+#: ../src/gs-shell-extras.c:145
+msgid " and "
+msgstr " и "
 
 #. TRANSLATORS: separator for a list of items
 #: ../src/gs-shell-extras.c:148
@@ -1083,9 +1258,10 @@ msgstr ", "
 #, c-format
 msgid "Available fonts for the %s script"
 msgid_plural "Available fonts for the %s scripts"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Доступан је словни лик за писмо „%s“"
+msgstr[1] "Доступни су словни ликови за писмо „%s“"
+msgstr[2] "Доступни су словни ликови за писмо „%s“"
+msgstr[3] "Доступан је словни лик за писмо „%s“"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -1093,9 +1269,10 @@ msgstr[2] ""
 #, c-format
 msgid "Available software for %s"
 msgid_plural "Available software for %s"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Доступан је програм за „%s“"
+msgstr[1] "Доступни су програми за „%s“"
+msgstr[2] "Доступни су програми за „%s“"
+msgstr[3] "Доступан је програм за „%s“"
 
 #: ../src/gs-shell-extras.c:224
 msgid "Unable to Find Requested Software"
@@ -1125,9 +1302,11 @@ msgstr "Нису доступни програми који обезбеђују
 #: ../src/gs-shell-extras.c:357
 #, c-format
 msgid ""
-"Information about %s, as well as options for how to get missing applications"
-" might be found %s."
-msgstr "Податке о „%s“, као и начин набављања недостајућих програма можете пронаћи на %s."
+"Information about %s, as well as options for how to get missing applications "
+"might be found %s."
+msgstr ""
+"Податке о „%s“, као и начин набављања недостајућих програма можете пронаћи "
+"на %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -1150,7 +1329,9 @@ msgstr "„%s“ није доступан."
 msgid ""
 "Information about %s, as well as options for how to get an application that "
 "can support this format might be found %s."
-msgstr "Податке о „%s“, као и начин набављања програма који може да подржи ову врсту датотека можете наћи на %s."
+msgstr ""
+"Податке о „%s“, као и начин набављања програма који може да подржи ову врсту "
+"датотека можете наћи на %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -1166,7 +1347,8 @@ msgstr "Нема доступних фонтова за писмо „%s“."
 msgid ""
 "Information about %s, as well as options for how to get additional fonts "
 "might be found %s."
-msgstr "Податке о „%s“, као и начин набављања додатних фонтова можете пронаћи на %s."
+msgstr ""
+"Податке о „%s“, као и начин набављања додатних фонтова можете пронаћи на %s."
 
 #. TRANSLATORS: first %s is the codec name, and second %s is a
 #. * hyperlink with the "on the website" text
@@ -1175,7 +1357,9 @@ msgstr "Податке о „%s“, као и начин набављања до
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
 "play this format might be found %s."
-msgstr "Податке о „%s“, као и начин набављања кодека који може да пусти ову врсту записа можете наћи на %s."
+msgstr ""
+"Податке о „%s“, као и начин набављања кодека који може да пусти ову врсту "
+"записа можете наћи на %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -1191,7 +1375,9 @@ msgstr "Нису доступна изворишта Плазме за „%s“ 
 msgid ""
 "Information about %s, as well as options for how to get additional Plasma "
 "resources might be found %s."
-msgstr "Податке о „%s“, као и начин набављања додатних изворишта Плазме можете пронаћи на %s."
+msgstr ""
+"Податке о „%s“, као и начин набављања додатних изворишта Плазме можете "
+"пронаћи на %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -1207,14 +1393,15 @@ msgstr "Нису доступни управљачки програми штам
 msgid ""
 "Information about %s, as well as options for how to get a driver that "
 "supports this printer might be found %s."
-msgstr "Податке о „%s“, као и начин набављања управљачког програма који може да подржи овај штампач можете наћи на %s."
+msgstr ""
+"Податке о „%s“, као и начин набављања управљачког програма који може да "
+"подржи овај штампач можете наћи на %s."
 
 #: ../src/gs-shell-extras.c:457
 msgid "this website"
 msgstr "овом веб сајту"
 
-#. TRANSLATORS: no codecs were found. First %s will be replaced by actual
-#. codec name(s), second %s is a link titled "this website"
+#. TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "this website"
 #: ../src/gs-shell-extras.c:461
 #, c-format
 msgid ""
@@ -1223,16 +1410,17 @@ msgid ""
 msgid_plural ""
 "Unfortunately, the %s you were searching for could not be found. Please see "
 "%s for more information."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "На жалост, не могу пронаћи „%s“. На „%s“ можете наћи више података."
+msgstr[1] "На жалост, не могу пронаћи „%s“. На „%s“ можете наћи више података."
+msgstr[2] "На жалост, не могу пронаћи „%s“. На „%s“ можете наћи више података."
+msgstr[3] "На жалост, не могу пронаћи „%s“. На „%s“ можете наћи више података."
 
-#: ../src/gs-shell-extras.c:541 ../src/gs-shell-extras.c:589
-#: ../src/gs-shell-extras.c:639
+#: ../src/gs-shell-extras.c:542 ../src/gs-shell-extras.c:590
+#: ../src/gs-shell-extras.c:640
 msgid "Failed to find any search results"
 msgstr "Неуспех при добављању резултата претраге"
 
-#: ../src/gs-shell-extras.c:810
+#: ../src/gs-shell-extras.c:814
 #, c-format
 msgid "%s file format"
 msgstr "%s формат датотеке"
@@ -1244,15 +1432,15 @@ msgstr "Страница кодека"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the system ones
-#: ../src/gs-shell-installed.c:432
+#: ../src/gs-shell-installed.c:427
 msgid "System Applications"
 msgstr "Системски програми"
 
-#: ../src/gs-shell-installed.c:532
+#: ../src/gs-shell-installed.c:537
 msgid "Click on items to select them"
 msgstr "Притисните на ставке да их изаберете"
 
-#: ../src/gs-shell-installed.c:733
+#: ../src/gs-shell-installed.c:737
 msgid "Select"
 msgstr "Изабери"
 
@@ -1281,29 +1469,58 @@ msgstr "Страница уређења"
 msgid "There are no reviews to moderate"
 msgstr "Нема прегледа за уређење"
 
-#. TRANSLATORS: this is a heading for audio applications which have been
-#. featured ('recommended') by the distribution
-#: ../src/gs-shell-overview.c:367
-msgid "Recommended Audio Applications"
-msgstr ""
+#. add button
+#: ../src/gs-shell-overview.c:243
+msgid "More…"
+msgstr "Још…"
 
-#. TRANSLATORS: this is a heading for games which have been featured
-#. ('recommended') by the distribution
-#: ../src/gs-shell-overview.c:372
+#. TRANSLATORS: this is a heading for audio applications which
+#. * have been featured ('recommended') by the distribution
+#: ../src/gs-shell-overview.c:422
+msgid "Recommended Audio & Video Applications"
+msgstr "Препоручени аудио и видео програми"
+
+#. TRANSLATORS: this is a heading for games which have been
+#. * featured ('recommended') by the distribution
+#: ../src/gs-shell-overview.c:427
 msgid "Recommended Games"
 msgstr "Препоручене игре"
 
-#. TRANSLATORS: this is a heading for graphics applications which have been
-#. featured ('recommended') by the distribution
-#: ../src/gs-shell-overview.c:377
+#. TRANSLATORS: this is a heading for graphics applications
+#. * which have been featured ('recommended') by the distribution
+#: ../src/gs-shell-overview.c:432
 msgid "Recommended Graphics Applications"
 msgstr "Препоручени графички програми"
 
-#. TRANSLATORS: this is a heading for office applications which have been
-#. featured ('recommended') by the distribution
-#: ../src/gs-shell-overview.c:382
-msgid "Recommended Office Applications"
+#. TRANSLATORS: this is a heading for office applications which
+#. * have been featured ('recommended') by the distribution
+#: ../src/gs-shell-overview.c:437
+msgid "Recommended Productivity Applications"
+msgstr "Препоручени стваралачки програми"
+
+#. TRANSLATORS: this is the proprietary info bar
+#: ../src/gs-shell-overview.c:712
+msgid ""
+"Provides access to additional software, including web browsers and games."
 msgstr ""
+"Обезбеђује приступ додатном софтверу, укључујући веб прегледнике и игре."
+
+#. TRANSLATORS: this is the proprietary info bar
+#: ../src/gs-shell-overview.c:716
+msgid "Proprietary software has restrictions on use and access to source code."
+msgstr ""
+"Власнички софтвер има ограничења на коришћење и на приступ изворном коду."
+
+#. TRANSLATORS: this is the clickable
+#. * link on the proprietary info bar
+#: ../src/gs-shell-overview.c:723 ../src/gs-sources-dialog.c:263
+msgid "Find out more…"
+msgstr "Сазнај више…"
+
+#. TRANSLATORS: button to turn on proprietary software sources
+#: ../src/gs-shell-overview.c:757
+msgid "Enable"
+msgstr "Укључи"
 
 #. vim: set noexpandtab:
 #: ../src/gs-shell-overview.ui.h:1
@@ -1311,18 +1528,17 @@ msgid "Overview page"
 msgstr "Страница прегледа"
 
 #: ../src/gs-shell-overview.ui.h:2
-msgid "Featured Application"
-msgstr ""
+msgid "Enable Proprietary Software Sources?"
+msgstr "Да укључим изворе власничког софтвера?"
 
-#. Translators: This is a heading for software which has been featured
-#. ('picked') by the distribution.
-#: ../src/gs-shell-overview.ui.h:4
-msgid "Editor's Picks"
-msgstr "Избори уредника"
-
-#: ../src/gs-shell-overview.ui.h:5
+#: ../src/gs-shell-overview.ui.h:3
 msgid "Categories"
 msgstr "Категорије"
+
+#. Translators: This is a heading for software which has been featured ('picked') by the distribution.
+#: ../src/gs-shell-overview.ui.h:5
+msgid "Editor's Picks"
+msgstr "Избори уредника"
 
 #: ../src/gs-shell-overview.ui.h:6
 msgid "No Application Data Found"
@@ -1338,154 +1554,156 @@ msgid "No Application Found"
 msgstr "Нисам пронашао програме"
 
 #. TRANSLATORS: Time in 24h format
-#: ../src/gs-shell-updates.c:201
+#: ../src/gs-shell-updates.c:197
 msgid "%R"
 msgstr "%R"
 
 #. TRANSLATORS: Time in 12h format
-#: ../src/gs-shell-updates.c:204
+#: ../src/gs-shell-updates.c:200
 msgid "%l:%M %p"
 msgstr "%l:%M %p"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: ../src/gs-shell-updates.c:210
+#: ../src/gs-shell-updates.c:206
 msgid "Yesterday, %R"
 msgstr "Јуче, у %R"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 PM"
-#: ../src/gs-shell-updates.c:214
+#: ../src/gs-shell-updates.c:210
 msgid "Yesterday, %l:%M %p"
 msgstr "Јуче, у %l:%M %p"
 
-#: ../src/gs-shell-updates.c:217
+#: ../src/gs-shell-updates.c:213
 msgid "Two days ago"
 msgstr "Пре два дана"
 
-#: ../src/gs-shell-updates.c:219
+#: ../src/gs-shell-updates.c:215
 msgid "Three days ago"
 msgstr "Пре три дана"
 
-#: ../src/gs-shell-updates.c:221
+#: ../src/gs-shell-updates.c:217
 msgid "Four days ago"
 msgstr "Пре четири дана"
 
-#: ../src/gs-shell-updates.c:223
+#: ../src/gs-shell-updates.c:219
 msgid "Five days ago"
 msgstr "Пре пет дана"
 
-#: ../src/gs-shell-updates.c:225
+#: ../src/gs-shell-updates.c:221
 msgid "Six days ago"
 msgstr "Пре шест дана"
 
-#: ../src/gs-shell-updates.c:227
+#: ../src/gs-shell-updates.c:223
 msgid "One week ago"
 msgstr "Пре недељу дана"
 
-#: ../src/gs-shell-updates.c:229
+#: ../src/gs-shell-updates.c:225
 msgid "Two weeks ago"
 msgstr "Пре две недеље"
 
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
-#: ../src/gs-shell-updates.c:233
+#: ../src/gs-shell-updates.c:229
 msgid "%e %B %Y"
 msgstr "%e. %B %Y."
 
 #. TRANSLATORS: the updates are being downloaded
-#: ../src/gs-shell-updates.c:249
+#: ../src/gs-shell-updates.c:242
 msgid "Downloading new updates…"
 msgstr "Преузимам нова ажурирања…"
 
 #. TRANSLATORS: the update panel is doing *something* vague
-#: ../src/gs-shell-updates.c:253
+#: ../src/gs-shell-updates.c:246
 msgid "Looking for new updates…"
 msgstr "Тражим нова ажурирања…"
 
 #. TRANSLATORS: the updates panel is starting up
-#: ../src/gs-shell-updates.c:296
+#: ../src/gs-shell-updates.c:286
 msgid "Setting up updates…"
 msgstr "Подешавам ажурирања…"
 
 #. TRANSLATORS: the updates panel is starting up
-#: ../src/gs-shell-updates.c:297 ../src/gs-shell-updates.c:304
+#: ../src/gs-shell-updates.c:287 ../src/gs-shell-updates.c:294
 msgid "(This could take a while)"
 msgstr "(Ово може да потраје)"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: ../src/gs-shell-updates.c:434
+#: ../src/gs-shell-updates.c:424
 #, c-format
 msgid "Last checked: %s"
 msgstr "Последња провера: %s"
 
 #. TRANSLATORS: all updates will be installed
-#: ../src/gs-shell-updates.c:501
+#: ../src/gs-shell-updates.c:497
 msgid "_Install All"
-msgstr ""
+msgstr "_Инсталирај све"
 
 #. TRANSLATORS: this is an offline update
-#: ../src/gs-shell-updates.c:505 ../src/gs-shell-updates.c:1291
+#: ../src/gs-shell-updates.c:501 ../src/gs-shell-updates.c:1347
 msgid "Restart & _Install"
 msgstr "Поново покрени и _инсталирај"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: ../src/gs-shell-updates.c:867
+#: ../src/gs-shell-updates.c:828
 msgid "Charges may apply"
 msgstr "Ажурирањем могу настати додатни новчани трошкови"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:871
+#: ../src/gs-shell-updates.c:832
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
-msgstr "Провера ажурности приликом коришћења мобилне широкопојасне мреже може довести до повећања трошкова на вашој картици."
+msgstr ""
+"Провера ажурности приликом коришћења мобилне широкопојасне мреже може "
+"довести до повећања трошкова на вашој картици."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:875
+#: ../src/gs-shell-updates.c:836
 msgid "Check Anyway"
 msgstr "Ипак провери"
 
 #. TRANSLATORS: can't do updates check
-#: ../src/gs-shell-updates.c:891
+#: ../src/gs-shell-updates.c:852
 msgid "No Network"
 msgstr "Нема мреже"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: ../src/gs-shell-updates.c:895
+#: ../src/gs-shell-updates.c:856
 msgid "Internet access is required to check for updates."
 msgstr "Потребан је приступ Интернету за проверу ажурирања."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: ../src/gs-shell-updates.c:899
+#: ../src/gs-shell-updates.c:860
 msgid "Network Settings"
 msgstr "Подешавања мреже"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: ../src/gs-shell-updates.c:998
+#: ../src/gs-shell-updates.c:950
 msgid "Updates have been installed"
 msgstr "Ажурирања су инсталирана"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: ../src/gs-shell-updates.c:1000
+#: ../src/gs-shell-updates.c:952
 msgid "A restart is required for them to take effect."
 msgstr "Потребно је поновно покретање како би ступила у дејство."
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:1002 ../src/gs-update-monitor.c:101
+#: ../src/gs-shell-updates.c:954 ../src/gs-update-monitor.c:102
 msgid "Not Now"
 msgstr "Не сада"
 
 #. TRANSLATORS: button text
-#: ../src/gs-shell-updates.c:1004
+#: ../src/gs-shell-updates.c:956
 msgid "Restart"
 msgstr "Покрени поново"
 
-#: ../src/gs-shell-updates.c:1309
+#: ../src/gs-shell-updates.c:1365
 msgid "Check for updates"
 msgstr "Провери да ли има ажурирања"
 
@@ -1506,7 +1724,9 @@ msgstr "Програми су ажурирани"
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges"
-msgstr "Провера ажурности приликом коришћења мобилне широкопојасне мреже може довести до повећања трошкова на картици"
+msgstr ""
+"Провера ажурности приликом коришћења мобилне широкопојасне мреже може "
+"довести до повећања трошкова на картици"
 
 #: ../src/gs-shell-updates.ui.h:5
 msgid "_Check Anyway"
@@ -1526,87 +1746,102 @@ msgstr "Самостално управљање ажурирањима је ук
 
 #. TRANSLATORS: This string describes a software source that
 #. has no software installed from it.
-#: ../src/gs-sources-dialog.c:94
+#: ../src/gs-sources-dialog.c:99
 msgid "No applications or addons installed; other software might still be"
-msgstr "Нема инсталираних програма или додатака, друге врсте програма могу бити инсталиране"
+msgstr ""
+"Нема инсталираних програма или додатака, друге врсте програма могу бити "
+"инсталиране"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. installed' sentence, describing a software source.
-#: ../src/gs-sources-dialog.c:98
+#: ../src/gs-sources-dialog.c:104
 #, c-format
-msgid "%i application installed"
-msgid_plural "%i applications installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgid "%u application installed"
+msgid_plural "%u applications installed"
+msgstr[0] "%u инсталирани програм"
+msgstr[1] "%u инсталирана програма"
+msgstr[2] "%u инсталираних програма"
+msgstr[3] "Један инсталирани програм"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software source.
-#: ../src/gs-sources-dialog.c:104
+#: ../src/gs-sources-dialog.c:111
 #, c-format
-msgid "%i add-on installed"
-msgid_plural "%i add-ons installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgid "%u add-on installed"
+msgid_plural "%u add-ons installed"
+msgstr[0] "%u инсталирани додатак"
+msgstr[1] "%u инсталирана додатка"
+msgstr[2] "%u инсталираних додатака"
+msgstr[3] "Један инсталирани додатак"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software source.
 #. The correct form here depends on the number of applications.
-#: ../src/gs-sources-dialog.c:111
+#: ../src/gs-sources-dialog.c:119
 #, c-format
-msgid "%i application"
-msgid_plural "%i applications"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgid "%u application"
+msgid_plural "%u applications"
+msgstr[0] "%u програм"
+msgstr[1] "%u програма"
+msgstr[2] "%u програма"
+msgstr[3] "Један програм"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software source.
 #. The correct form here depends on the number of add-ons.
-#: ../src/gs-sources-dialog.c:117
+#: ../src/gs-sources-dialog.c:125
 #, c-format
-msgid "%i add-on"
-msgid_plural "%i add-ons"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgid "%u add-on"
+msgid_plural "%u add-ons"
+msgstr[0] "%u додатак"
+msgstr[1] "%u додатка"
+msgstr[2] "%u додатака"
+msgstr[3] "Један додатак"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software source.
 #. The correct form here depends on the total number of
 #. applications and add-ons.
-#: ../src/gs-sources-dialog.c:124
+#: ../src/gs-sources-dialog.c:132
 #, c-format
 msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%s и %s су инсталирани"
+msgstr[1] "%s и %s су инсталирана"
+msgstr[2] "%s и %s је инсталирано"
+msgstr[3] "%s и %s су инсталирани"
 
-#: ../src/gs-sources-dialog.c:322 ../src/gs-sources-dialog.ui.h:12
+#. TRANSLATORS: nonfree software
+#: ../src/gs-sources-dialog.c:253
+msgid "Typically has restrictions on use and access to source code."
+msgstr "Обично има ограничења на коришћење и на приступ изворном коду."
+
+#. TRANSLATORS: list header
+#: ../src/gs-sources-dialog.c:274
+msgid "Proprietary Software Sources"
+msgstr "Извори власничког софтвера"
+
+#: ../src/gs-sources-dialog.c:490 ../src/gs-sources-dialog.ui.h:12
 msgid "Remove Source"
 msgstr "Уклони извор"
 
-#: ../src/gs-sources-dialog.c:336
-msgid "Removing…"
-msgstr "Уклањам…"
-
 #. TRANSLATORS: this is the fallback text we use if we can't
 #. figure out the name of the operating system
-#: ../src/gs-sources-dialog.c:402
+#: ../src/gs-sources-dialog.c:573
 msgid "the operating system"
 msgstr "оперативни систем"
 
 #. TRANSLATORS: This is the text displayed in the Software Sources
 #. dialog when no OS-provided software sources are enabled. %s gets
 #. replaced by the name of the actual distro, e.g. Fedora.
-#: ../src/gs-sources-dialog.c:473
+#: ../src/gs-sources-dialog.c:666
 #, c-format
 msgid ""
 "Software sources can be downloaded from the internet. They give you access "
 "to additional software that is not provided by %s."
-msgstr "Додатни извори програма се могу преузети са интернета. Они ће вам омогућити инсталирање програма који нису доступни у оперативном систему %s."
+msgstr ""
+"Додатни извори програма се могу преузети са интернета. Они ће вам омогућити "
+"инсталирање програма који нису доступни у оперативном систему %s."
 
 #. vim: set noexpandtab:
 #: ../src/gs-sources-dialog.ui.h:1
@@ -1614,13 +1849,15 @@ msgid "Software Sources"
 msgstr "Извори програма"
 
 #: ../src/gs-sources-dialog.ui.h:3
-msgid "Software sources give you access to additional software."
-msgstr ""
+msgid "Additional Sources"
+msgstr "Додатни извори"
 
 #: ../src/gs-sources-dialog.ui.h:4
 msgid ""
 "Removing a source will also remove any software you have installed from it."
-msgstr "Уклањањем извора уклонићете такође и све програме које сте са њега инсталирали."
+msgstr ""
+"Уклањањем извора уклонићете такође и све програме које сте са њега "
+"инсталирали."
 
 #: ../src/gs-sources-dialog.ui.h:5
 msgid "No software installed from this source"
@@ -1646,25 +1883,20 @@ msgstr "Додат"
 msgid "Website"
 msgstr "Веб страница"
 
-#: ../src/gs-star-widget.ui.h:1
-msgid "One Star"
-msgstr ""
+#: ../src/gs-summary-tile.c:74
+#, c-format
+msgid "%s (Installed)"
+msgstr "%s (Инсталиран)"
 
-#: ../src/gs-star-widget.ui.h:2
-msgid "Two Stars"
-msgstr ""
+#: ../src/gs-summary-tile.c:82
+#, c-format
+msgid "%s (Installing)"
+msgstr "%s (Инсталирам)"
 
-#: ../src/gs-star-widget.ui.h:3
-msgid "Three Stars"
-msgstr ""
-
-#: ../src/gs-star-widget.ui.h:4
-msgid "Four Stars"
-msgstr ""
-
-#: ../src/gs-star-widget.ui.h:5
-msgid "Five Stars"
-msgstr ""
+#: ../src/gs-summary-tile.c:90
+#, c-format
+msgid "%s (Removing)"
+msgstr "%s (Уклањам)"
 
 #. TRANSLATORS: this is where the packager did not write
 #. * a description for the update
@@ -1676,13 +1908,13 @@ msgstr "Нема доступног описа ажурирања."
 #. %s will be replaced by the date when the updates were installed.
 #. The date format is defined by the locale's preferred date representation
 #. ("%x" in strftime.)
-#: ../src/gs-update-dialog.c:215
+#: ../src/gs-update-dialog.c:216
 #, c-format
 msgid "Installed on %s"
 msgstr "Инсталиран је %s"
 
 #. TRANSLATORS: this is the title of the installed updates dialog window
-#: ../src/gs-update-dialog.c:235
+#: ../src/gs-update-dialog.c:236
 msgid "Installed Updates"
 msgstr "Инсталирана ажурирања"
 
@@ -1690,133 +1922,138 @@ msgstr "Инсталирана ажурирања"
 msgid "No updates have been installed on this system."
 msgstr "Ниједно ажурирање није инсталирано на овај систем."
 
-#: ../src/gs-update-monitor.c:89
+#: ../src/gs-update-monitor.c:90
 msgid "Security Updates Pending"
 msgstr "Има безбедносних ажурирања"
 
-#: ../src/gs-update-monitor.c:90
+#: ../src/gs-update-monitor.c:91
 msgid "It is recommended that you install important updates now"
 msgstr "Препоручено је што раније инсталирање ових ажурирања"
 
-#: ../src/gs-update-monitor.c:93
+#: ../src/gs-update-monitor.c:94
 msgid "Restart & Install"
 msgstr "Поново покрени и инсталирај"
 
-#: ../src/gs-update-monitor.c:97
+#: ../src/gs-update-monitor.c:98
 msgid "Software Updates Available"
 msgstr "Доступна су ажурирања програма"
 
-#: ../src/gs-update-monitor.c:98
+#: ../src/gs-update-monitor.c:99
 msgid "Important OS and application updates are ready to be installed"
-msgstr "Има важних ажурирања за систем и програме која су спремна за инсталирање"
+msgstr ""
+"Има важних ажурирања за систем и програме која су спремна за инсталирање"
 
-#: ../src/gs-update-monitor.c:102
+#: ../src/gs-update-monitor.c:103
 msgid "View"
 msgstr "Погледај"
 
 #. TRANSLATORS: this is a distro upgrade, the replacement would be the
 #. * distro name, e.g. 'Fedora'
-#: ../src/gs-update-monitor.c:234
+#: ../src/gs-update-monitor.c:271
 #, c-format
 msgid "A new version of %s is available to install"
 msgstr "Нова верзија дистрибуције %s је доступна за инсталацију"
 
 #. TRANSLATORS: this is a distro upgrade
-#: ../src/gs-update-monitor.c:238
+#: ../src/gs-update-monitor.c:275
 msgid "Software Upgrade Available"
 msgstr "Доступна су ажурирања програма"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: ../src/gs-update-monitor.c:433
+#: ../src/gs-update-monitor.c:462
 msgid "Software Updates Failed"
 msgstr "Ажурирање програма није успело"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: ../src/gs-update-monitor.c:435
+#: ../src/gs-update-monitor.c:464
 msgid "An important OS update failed to be installed."
 msgstr "Није успело инсталирање важног ажурирања система."
 
-#. TRANSLATORS: this is an expander title
-#: ../src/gs-update-monitor.c:437 ../src/gs-utils.c:239
+#: ../src/gs-update-monitor.c:465
 msgid "Show Details"
 msgstr "Прикажи појединости\t"
 
 #. TRANSLATORS: title when we've done offline updates
-#: ../src/gs-update-monitor.c:452
+#: ../src/gs-update-monitor.c:487
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Програм је ажуриран"
+msgstr[1] "Програми су ажурирани"
+msgstr[2] "Програми су ажурирани"
+msgstr[3] "Један програм је ажуриран"
 
 #. TRANSLATORS: message when we've done offline updates
-#: ../src/gs-update-monitor.c:456
+#: ../src/gs-update-monitor.c:491
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Важно ажурирање система је инсталирано."
+msgstr[1] "Важна ажурирања система су инсталирана."
+msgstr[2] "Важна ажурирања система су инсталирана."
+msgstr[3] "Једно важно ажурирање система је инсталирано."
 
+# Мислим да се ова ниска односи на део Програма који је посвећен рецензијама програма.
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: ../src/gs-update-monitor.c:467
+#: ../src/gs-update-monitor.c:502
 msgctxt "updates"
 msgid "Review"
 msgstr "Преглед"
 
-#. TRANSLATORS: these are show_detailed_error messages from the
-#. * package manager no mortal is supposed to understand,
-#. * but google might know what they mean
-#: ../src/gs-update-monitor.c:542
-msgid "Detailed errors from the package manager follow:"
-msgstr "Опширније грешке управника пакета следе:"
-
 #. TRANSLATORS: this is when the offline update failed
-#: ../src/gs-update-monitor.c:603
+#: ../src/gs-update-monitor.c:546
 msgid "Failed To Update"
 msgstr "Неуспех при инсталирању ажурирања"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: ../src/gs-update-monitor.c:609
+#: ../src/gs-update-monitor.c:552
 msgid "The system was already up to date."
 msgstr "Систем је већ ажуран."
 
 #. TRANSLATORS: the user aborted the update manually
-#: ../src/gs-update-monitor.c:614
+#: ../src/gs-update-monitor.c:557
 msgid "The update was cancelled."
 msgstr "Ажурирање је отказано."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: ../src/gs-update-monitor.c:620
+#: ../src/gs-update-monitor.c:563
 msgid ""
-"Internet access was required but wasn’t available. Please make sure that you"
-" have internet access and try again."
-msgstr "Нема излаза на интернет иако је то потребно. Постарајте се да имате приступ интернету и покушајте поново."
+"Internet access was required but wasn’t available. Please make sure that you "
+"have internet access and try again."
+msgstr ""
+"Нема излаза на интернет иако је то потребно. Постарајте се да имате приступ "
+"интернету и покушајте поново."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: ../src/gs-update-monitor.c:626
+#: ../src/gs-update-monitor.c:569
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
-msgstr "Програми су наишли на безбедносне проблеме са ажурирањем.  Поразговарајте са добављачем ваших програма за више појединости."
+msgstr ""
+"Програми су наишли на безбедносне проблеме са ажурирањем.  Поразговарајте са "
+"добављачем ваших програма за више појединости."
 
 #. TRANSLATORS: we ran out of disk space
-#: ../src/gs-update-monitor.c:632
+#: ../src/gs-update-monitor.c:575
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
-msgstr "Нема довољно слободног простора на диску. Ослободите простор на диску па покушајте поново."
+msgstr ""
+"Нема довољно слободног простора на диску. Ослободите простор на диску па "
+"покушајте поново."
 
 #. TRANSLATORS: We didn't handle the error type
-#: ../src/gs-update-monitor.c:637
+#: ../src/gs-update-monitor.c:580
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
-msgstr "Нажалост, догодила се грешка приликом ажурирања. Сачекајте ново ажурирање па покушајте поново. Уколико се ова грешка опет догоди, пријавите то добављачу ваших програма."
+msgstr ""
+"Нажалост, догодила се грешка приликом ажурирања. Сачекајте ново ажурирање па "
+"покушајте поново. Уколико се ова грешка опет догоди, пријавите то добављачу "
+"ваших програма."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -1855,7 +2092,9 @@ msgstr "_Сазнај више"
 #: ../src/gs-upgrade-banner.ui.h:3
 msgid ""
 "It is recommended that you back up your data and files before upgrading."
-msgstr "Препоручује вам се да направите резерву ваших података и датотека пре надограђивања."
+msgstr ""
+"Препоручује вам се да направите резерву ваших података и датотека пре "
+"надограђивања."
 
 #: ../src/gs-upgrade-banner.ui.h:4
 msgid "_Download"
@@ -1863,469 +2102,485 @@ msgstr "_Преузми"
 
 #. TRANSLATORS: this is the summary of a notification that an application
 #. * has been successfully installed
-#: ../src/gs-utils.c:141
+#: ../src/gs-common.c:137
 #, c-format
 msgid "%s is now installed"
 msgstr "„%s“ је сада инсталиран"
 
 #. TRANSLATORS: this is button that opens the newly installed application
-#: ../src/gs-utils.c:145
+#: ../src/gs-common.c:141
 msgid "Launch"
 msgstr "Покрени"
 
 #. TRANSLATORS: this is when the install fails
-#: ../src/gs-utils.c:176
+#: ../src/gs-common.c:168
 #, c-format
 msgid "Installation of %s failed."
 msgstr "Нисам успео да инсталирам „%s“."
 
 #. TRANSLATORS: this is when the remove fails
-#: ../src/gs-utils.c:181
+#: ../src/gs-common.c:173
 #, c-format
 msgid "Removal of %s failed."
 msgstr "Нисам успео да уклоним „%s“."
 
 #. TRANSLATORS: this is when the upgrade download fails
-#: ../src/gs-utils.c:186
+#: ../src/gs-common.c:182
 #, c-format
 msgid "Upgrade to %s failed."
 msgstr "Надоградња на „%s“ није успела."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: ../src/gs-utils.c:200
+#: ../src/gs-common.c:196
 msgid "Internet access was required but wasn’t available."
 msgstr "Био је потребан приступ интернету али није био доступан."
 
 #. TRANSLATORS: plug in the network cable...
-#: ../src/gs-utils.c:203
+#: ../src/gs-common.c:199
 msgid "Please make sure that you have internet access and try again."
 msgstr "Уверите се да имате приступ интернету и покушајте поново."
 
 #. TRANSLATORS: we ran out of disk space
-#: ../src/gs-utils.c:208
+#: ../src/gs-common.c:204
 msgid "There wasn’t enough disk space."
 msgstr "Нема довољно простора на диску."
 
 #. TRANSLATORS: delete some stuff!
-#: ../src/gs-utils.c:211
+#: ../src/gs-common.c:207
 msgid "Please free up some space and try again."
 msgstr "Ослободите простор на диску па покушајте поново."
 
 #. TRANSLATORS: we didn't handle the error type
-#: ../src/gs-utils.c:216
+#: ../src/gs-common.c:212
 msgid "If the problem persists, contact your software provider."
 msgstr "Ако се проблем понови, обратите се достављачу софтвера."
 
 #. TRANSLATORS: window title
-#: ../src/gs-utils.c:309
+#: ../src/gs-common.c:272
 msgid "Install Third-Party Software?"
 msgstr "Да инсталирам програме треће стране?"
 
 #. TRANSLATORS: window title
-#: ../src/gs-utils.c:313
+#: ../src/gs-common.c:276
 msgid "Enable Third-Party Software Source?"
 msgstr "Да укључим извор програма треће стране?"
 
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
 #. * 2. Software source name, e.g. fedora-optional
-#: ../src/gs-utils.c:331
+#.
+#: ../src/gs-common.c:294
 #, c-format
 msgid ""
 "%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">free and open source software</a>, and is provided by "
-"“%s”."
-msgstr "„%s“ није <a href=\"https://en.wikipedia.org/wiki/Free_and_open-source_software\">није слободан софтвер и софтвер отвореног изворног кода</a>, а обезбеђује га „%s“."
+"source_software\">free and open source software</a>, and is provided by “%s”."
+msgstr ""
+"„%s“ није <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
+"source_software\">није слободан софтвер и софтвер отвореног изворног кода</"
+"a>, а обезбеђује га „%s“."
 
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
 #. * 2. Software source name, e.g. fedora-optional
-#: ../src/gs-utils.c:341
+#: ../src/gs-common.c:304
 #, c-format
 msgid "%s is provided by “%s”."
 msgstr "%s обезбеђује „%s“"
 
 #. TRANSLATORS: a software source is a repo
-#: ../src/gs-utils.c:351
+#: ../src/gs-common.c:314
 msgid "This software source must be enabled to continue installation."
 msgstr "Овај извор програма мора бити укључен да бисте наставили инсталацију."
 
 #. TRANSLATORS: Laws are geographical, urgh...
-#: ../src/gs-utils.c:361
+#: ../src/gs-common.c:324
 #, c-format
 msgid "It may be illegal to install or use %s in some countries."
-msgstr "Инсталација или коришћење „%s“ може бити противзаконито у неком државама."
+msgstr ""
+"Инсталација или коришћење „%s“ може бити противзаконито у неком државама."
 
 #. TRANSLATORS: Laws are geographical, urgh...
-#: ../src/gs-utils.c:367
+#: ../src/gs-common.c:330
 msgid "It may be illegal to install or use this codec in some countries."
-msgstr "Инсталација или коришћење овог кодека може бити противзаконито у неком државама."
+msgstr ""
+"Инсталација или коришћење овог кодека може бити противзаконито у неком "
+"државама."
 
 #. TRANSLATORS: this is button text to not ask about non-free content again
-#: ../src/gs-utils.c:374
+#: ../src/gs-common.c:337
 msgid "Don't Warn Again"
 msgstr "Не упозоравај више"
 
 #. TRANSLATORS: button text
-#: ../src/gs-utils.c:383
+#: ../src/gs-common.c:346
 msgid "Enable and Install"
 msgstr "Укључи и инсталирај"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:571
+#: ../src/gs-common.c:402
 msgctxt "content rating violence-cartoon"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:574
+#: ../src/gs-common.c:405
 msgid "Cartoon characters in unsafe situations"
 msgstr "Ликови из цртаћа у непожељним ситуацијама"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:577
+#: ../src/gs-common.c:408
 msgid "Cartoon characters in aggressive conflict"
 msgstr "Ликови из цртаћа у агресивном сукобу"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:580
+#: ../src/gs-common.c:411
 msgid "Graphic violence involving cartoon characters"
 msgstr "Графичко насиље које укључује ликове из цртаћа"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:583
+#: ../src/gs-common.c:414
 msgctxt "content rating violence-fantasy"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:586
+#: ../src/gs-common.c:417
 msgid "Characters in unsafe situations easily distinguishable from reality"
 msgstr "Ликови у несигурним ситуацијама које се лако разликују од стварности"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:589
+#: ../src/gs-common.c:420
 msgid "Characters in aggressive conflict easily distinguishable from reality"
 msgstr "Ликови у агресивном сукобу који се лако разликује од стварности"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:592
+#: ../src/gs-common.c:423
 msgid "Graphic violence easily distinguishable from reality"
 msgstr "Графичко насиље које се лако разликује од стварности"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:595
+#: ../src/gs-common.c:426
 msgctxt "content rating violence-realistic"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:598
-msgid "Mild realistic characters in unsafe situations"
-msgstr ""
+#: ../src/gs-common.c:429
+msgid "Mildly realistic characters in unsafe situations"
+msgstr "Благо стварни ликови у несигурним ситуацијама"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:601
+#: ../src/gs-common.c:432
 msgid "Depictions of realistic characters in aggressive conflict"
 msgstr "Приказ стварних ликова у агресивном сукобу"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:604
+#: ../src/gs-common.c:435
 msgid "Graphic violence involving realistic characters"
 msgstr "Графичко насиље које укључује стварне ликове"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:607
+#: ../src/gs-common.c:438
 msgctxt "content rating violence-bloodshed"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:610
+#: ../src/gs-common.c:441
 msgid "Unrealistic bloodshed"
 msgstr "Нереално крвопролиће"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:613
+#: ../src/gs-common.c:444
 msgid "Realistic bloodshed"
 msgstr "Реално крвопролиће"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:616
+#: ../src/gs-common.c:447
 msgid "Depictions of bloodshed and the mutilation of body parts"
 msgstr "Приказ крвопролића и сакаћење делова тела"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:619
+#: ../src/gs-common.c:450
 msgctxt "content rating violence-sexual"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:622
+#: ../src/gs-common.c:453
 msgid "Rape or other violent sexual behavior"
 msgstr "Силовање или друго насилно сексуално понашање"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:625
+#: ../src/gs-common.c:456
 msgctxt "content rating drugs-alcohol"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:628
+#: ../src/gs-common.c:459
 msgid "References to alcoholic beverages"
 msgstr "Упућивање на алкохолна пића"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:631
+#: ../src/gs-common.c:462
 msgid "Use of alcoholic beverages"
 msgstr "Употреба алкохолних пића"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:634
+#: ../src/gs-common.c:465
 msgctxt "content rating drugs-narcotics"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:637
+#: ../src/gs-common.c:468
 msgid "References to illicit drugs"
 msgstr "Упућивање на забрањене дроге"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:640
+#: ../src/gs-common.c:471
 msgid "Use of illicit drugs"
 msgstr "Употреба забрањених дрога"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:643
+#: ../src/gs-common.c:474
 msgid "References to tobacco products"
 msgstr "Упућивање на дуванске производе"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:646
+#: ../src/gs-common.c:477
 msgid "Use of tobacco products"
 msgstr "Употреба дуванских производа"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:649
+#: ../src/gs-common.c:480
 msgctxt "content rating sex-nudity"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:652
+#: ../src/gs-common.c:483
 msgid "Brief artistic nudity"
 msgstr "Кратка уметничка голотиња"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:655
+#: ../src/gs-common.c:486
 msgid "Prolonged nudity"
 msgstr "Продужена голотиња"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:658
+#: ../src/gs-common.c:489
 msgctxt "content rating sex-themes"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:661
+#: ../src/gs-common.c:492
 msgid "Provocative references or depictions"
 msgstr "Провокативне упуте или прикази"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:664
+#: ../src/gs-common.c:495
 msgid "Sexual references or depictions"
 msgstr "Сексуалне упуте или прикази"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:667
+#: ../src/gs-common.c:498
 msgid "Graphic sexual behavior"
 msgstr "Графичко сексуално понашање"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:670
+#: ../src/gs-common.c:501
 msgctxt "content rating language-profanity"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:673
+#: ../src/gs-common.c:504
 msgid "Mild or infrequent use of profanity"
 msgstr "Блага или ретка употреба псовки"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:676
+#: ../src/gs-common.c:507
 msgid "Moderate use of profanity"
 msgstr "Умерена употреба псовки"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:679
+#: ../src/gs-common.c:510
 msgid "Strong or frequent use of profanity"
 msgstr "Јака или честа употреба псовки"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:682
+#: ../src/gs-common.c:513
 msgctxt "content rating language-humor"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:685
+#: ../src/gs-common.c:516
 msgid "Slapstick humor"
 msgstr "Урнебесна комедија"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:688
+#: ../src/gs-common.c:519
 msgid "Vulgar or bathroom humor"
 msgstr "Вулгаран или неумесни хумор"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:691
+#: ../src/gs-common.c:522
 msgid "Mature or sexual humor"
 msgstr "Еротски и хумор за одрасле"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:694
+#: ../src/gs-common.c:525
 msgctxt "content rating language-discrimination"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:697
+#: ../src/gs-common.c:528
 msgid "Negativity towards a specific group of people"
 msgstr "Негативност према одређеној групи људи"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:700
-msgid "Discrimation designed to cause emotional harm"
-msgstr ""
+#: ../src/gs-common.c:531
+msgid "Discrimination designed to cause emotional harm"
+msgstr "Дискриминација осмишљена да изазове емотивну повреду"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:703
+#: ../src/gs-common.c:534
 msgid "Explicit discrimination based on gender, sexuality, race or religion"
-msgstr "Експлицитна дискриминација на основу пола, сексуалности, расе или вероисповести"
+msgstr ""
+"Експлицитна дискриминација на основу пола, сексуалности, расе или "
+"вероисповести"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:706
+#: ../src/gs-common.c:537
 msgctxt "content rating money-advertising"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:709
+#: ../src/gs-common.c:540
 msgid "Product placement"
 msgstr "Пласман производа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:712
+#: ../src/gs-common.c:543
 msgid "Explicit references to specific brands or trademarked products"
 msgstr "Експлицитно упућивање на нарочите робне марке или заштићене производе"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:715
+#: ../src/gs-common.c:546
 msgid "Players are encouraged to purchase specific real-world items"
 msgstr "Играчи се охрабрују да купују нарочите ставке у стварном свету"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:718
+#: ../src/gs-common.c:549
 msgctxt "content rating money-gambling"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:721
+#: ../src/gs-common.c:552
 msgid "Gambling on random events using tokens or credits"
 msgstr "Коцкање на насумичним догађајима који користе жетоне или кредите"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:724
+#: ../src/gs-common.c:555
 msgid "Gambling using \"play\" money"
 msgstr "Коцкање које користи „играчки“ новац (play)"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:727
+#: ../src/gs-common.c:558
 msgid "Gambling using real money"
 msgstr "Коцкање које користи стварни новац"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:730
+#: ../src/gs-common.c:561
 msgctxt "content rating money-purchasing"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:733
+#: ../src/gs-common.c:564
 msgid "Ability to spend real money in-game"
 msgstr "Способност потрошње стварног новца у игри"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:736
+#: ../src/gs-common.c:567
 msgctxt "content rating social-chat"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:739
+#: ../src/gs-common.c:570
 msgid "Player-to-player game interactions without chat functionality"
 msgstr "Међудејство између играча без могућности ћаскања"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:742
+#: ../src/gs-common.c:573
 msgid "Player-to-player preset interactions without chat functionality"
 msgstr "Претподешено међудејство између играча без могућности ћаскања"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:745
+#: ../src/gs-common.c:576
 msgid "Uncontrolled chat functionality between players"
 msgstr "Неконтролисана могућност ћаскања између играча"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:748
+#: ../src/gs-common.c:579
 msgctxt "content rating social-audio"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:751
+#: ../src/gs-common.c:582
 msgid "Uncontrolled audio or video chat functionality between players"
 msgstr "Неконтролисана могућност аудио и видео ћаскања између играча"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:754
+#: ../src/gs-common.c:585
 msgctxt "content rating social-contacts"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:757
+#: ../src/gs-common.c:588
 msgid "Sharing social network usernames or email addresses"
-msgstr "Размена корисничких имена друштвених мрежа или адреса електронске поште"
+msgstr ""
+"Размена корисничких имена друштвених мрежа или адреса електронске поште"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:760
+#: ../src/gs-common.c:591
 msgctxt "content rating social-info"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:763
+#: ../src/gs-common.c:594
 msgid "Sharing user information with 3rd parties"
 msgstr "Размена корисничких података са трећим странама"
 
 #. TRANSLATORS: content rating description
-#: ../src/gs-utils.c:766
+#: ../src/gs-common.c:597
 msgctxt "content rating social-location"
 msgid "None"
 msgstr "Ништа"
 
 #. TRANSLATORS: content rating description: comments welcome
-#: ../src/gs-utils.c:769
+#: ../src/gs-common.c:600
 msgid "Sharing physical location to other users"
 msgstr "Размена стварних локација са другим корисницима"
+
+#. TRANSLATORS: these are show_detailed_error messages from the
+#. * package manager no mortal is supposed to understand,
+#. * but google might know what they mean
+#: ../src/gs-common.c:771
+msgid "Detailed errors from the package manager follow:"
+msgstr "Опширније грешке управника пакета следе:"
 
 #. vim: set noexpandtab:
 #: ../src/gs-menus.ui.h:1
@@ -2346,891 +2601,19 @@ msgstr "Додајте, уклоните или ажурирајте прогр�
 
 #: ../src/org.gnome.Software.desktop.in.h:3
 msgid ""
-"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;"
-msgstr "ажурирања;освежења;доградње;надоградње;извори;ризнице;складишта;поставке;инсталација;уклањање;програм;софтвер;апликација;радња;"
-
-#. TRANSLATORS: this is the menu spec main category for Audio
-#: ../src/plugins/menu-spec-common.c:30
-msgid "Audio"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:31
-msgctxt "Menu subcategory of Audio"
-msgid "Editing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:32
-msgctxt "Menu subcategory of Audio"
-msgid "Databases"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:33
-msgctxt "Menu subcategory of Audio"
-msgid "Disc Burning"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:34
-msgctxt "Menu subcategory of Audio"
-msgid "Ham Radio"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:35
-msgctxt "Menu subcategory of Audio"
-msgid "MIDI"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:36
-msgctxt "Menu subcategory of Audio"
-msgid "Mixer"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:37
-msgctxt "Menu subcategory of Audio"
-msgid "Music"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:38
-msgctxt "Menu subcategory of Audio"
-msgid "Players"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:39
-msgctxt "Menu subcategory of Audio"
-msgid "Recorders"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:40
-msgctxt "Menu subcategory of Audio"
-msgid "Sequencers"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:41
-msgctxt "Menu subcategory of Audio"
-msgid "Tuners"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Development
-#: ../src/plugins/menu-spec-common.c:43
-msgid "Development Tools"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:44
-msgctxt "Menu subcategory of Development Tools"
-msgid "Building"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:45
-msgctxt "Menu subcategory of Development Tools"
-msgid "Databases"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:46
-msgctxt "Menu subcategory of Development Tools"
-msgid "Debuggers"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:47
-msgctxt "Menu subcategory of Development Tools"
-msgid "GUI Designers"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:48
-msgctxt "Menu subcategory of Development Tools"
-msgid "IDE"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:49
-msgctxt "Menu subcategory of Development Tools"
-msgid "Profiling"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:50
-msgctxt "Menu subcategory of Development Tools"
-msgid "Project Management"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:51
-msgctxt "Menu subcategory of Development Tools"
-msgid "Revision Control"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:52
-msgctxt "Menu subcategory of Development Tools"
-msgid "Translation"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:53
-msgctxt "Menu subcategory of Development Tools"
-msgid "Web Development"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Education
-#: ../src/plugins/menu-spec-common.c:55
-msgid "Education"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:56
-msgctxt "Menu subcategory of Education"
-msgid "Art"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:57
-msgctxt "Menu subcategory of Education"
-msgid "Artificial Intelligence"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:58
-msgctxt "Menu subcategory of Education"
-msgid "Astronomy"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:59
-msgctxt "Menu subcategory of Education"
-msgid "Biology"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:60
-msgctxt "Menu subcategory of Education"
-msgid "Chemistry"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:61
-msgctxt "Menu subcategory of Education"
-msgid "Computer Science"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:62
-msgctxt "Menu subcategory of Education"
-msgid "Construction"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:63
-msgctxt "Menu subcategory of Education"
-msgid "Data Visualization"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:64
-msgctxt "Menu subcategory of Education"
-msgid "Economy"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:65
-msgctxt "Menu subcategory of Education"
-msgid "Electricity"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:66
-msgctxt "Menu subcategory of Education"
-msgid "Electronics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:67
-msgctxt "Menu subcategory of Education"
-msgid "Engineering"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:68
-msgctxt "Menu subcategory of Education"
-msgid "Geography"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:69
-msgctxt "Menu subcategory of Education"
-msgid "Geology"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:70
-msgctxt "Menu subcategory of Education"
-msgid "Geoscience"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:71
-msgctxt "Menu subcategory of Education"
-msgid "History"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:72
-msgctxt "Menu subcategory of Education"
-msgid "Humanities"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:73
-msgctxt "Menu subcategory of Education"
-msgid "Image Processing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:74
-msgctxt "Menu subcategory of Education"
-msgid "Languages"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:75
-msgctxt "Menu subcategory of Education"
-msgid "Literature"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:76
-msgctxt "Menu subcategory of Education"
-msgid "Maps"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:77
-msgctxt "Menu subcategory of Education"
-msgid "Math"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:78
-msgctxt "Menu subcategory of Education"
-msgid "Medical"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:79
-msgctxt "Menu subcategory of Education"
-msgid "Music"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:80
-msgctxt "Menu subcategory of Education"
-msgid "Numerical Analysis"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:81
-msgctxt "Menu subcategory of Education"
-msgid "Parallel Computing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:82
-msgctxt "Menu subcategory of Education"
-msgid "Physics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:83
-msgctxt "Menu subcategory of Education"
-msgid "Robotics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:84
-msgctxt "Menu subcategory of Education"
-msgid "Spirituality"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:85
-msgctxt "Menu subcategory of Education"
-msgid "Sports"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Games
-#: ../src/plugins/menu-spec-common.c:87
-msgid "Games"
-msgstr "Игре"
-
-#: ../src/plugins/menu-spec-common.c:88
-msgctxt "Menu subcategory of Games"
-msgid "Action"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:89
-msgctxt "Menu subcategory of Games"
-msgid "Adventure"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:90
-msgctxt "Menu subcategory of Games"
-msgid "Arcade"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:91
-msgctxt "Menu subcategory of Games"
-msgid "Blocks"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:92
-msgctxt "Menu subcategory of Games"
-msgid "Board"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:93
-msgctxt "Menu subcategory of Games"
-msgid "Card"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:94
-msgctxt "Menu subcategory of Games"
-msgid "Emulators"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:95
-msgctxt "Menu subcategory of Games"
-msgid "Kids"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:96
-msgctxt "Menu subcategory of Games"
-msgid "Logic"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:97
-msgctxt "Menu subcategory of Games"
-msgid "Role Playing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:98
-msgctxt "Menu subcategory of Games"
-msgid "Shooter"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:99
-msgctxt "Menu subcategory of Games"
-msgid "Simulation"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:100
-msgctxt "Menu subcategory of Games"
-msgid "Sports"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:101
-msgctxt "Menu subcategory of Games"
-msgid "Strategy"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Graphics
-#: ../src/plugins/menu-spec-common.c:103
-msgid "Graphics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:104
-msgctxt "Menu subcategory of Graphics"
-msgid "2D Graphics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:105
-msgctxt "Menu subcategory of Graphics"
-msgid "3D Graphics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:106
-msgctxt "Menu subcategory of Graphics"
-msgid "OCR"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:107
-msgctxt "Menu subcategory of Graphics"
-msgid "Photography"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:108
-msgctxt "Menu subcategory of Graphics"
-msgid "Publishing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:109
-msgctxt "Menu subcategory of Graphics"
-msgid "Raster Graphics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:110
-msgctxt "Menu subcategory of Graphics"
-msgid "Scanning"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:111
-msgctxt "Menu subcategory of Graphics"
-msgid "Vector Graphics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:112
-msgctxt "Menu subcategory of Graphics"
-msgid "Viewer"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Network
-#: ../src/plugins/menu-spec-common.c:114
-msgid "Internet"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:115
-msgctxt "Menu subcategory of Internet"
-msgid "Chat"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:116
-msgctxt "Menu subcategory of Internet"
-msgid "Dialup"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:117
-msgctxt "Menu subcategory of Internet"
-msgid "Email"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:118
-msgctxt "Menu subcategory of Internet"
-msgid "Feed"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:119
-msgctxt "Menu subcategory of Internet"
-msgid "File Transfer"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:120
-msgctxt "Menu subcategory of Internet"
-msgid "Ham Radio"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:121
-msgctxt "Menu subcategory of Internet"
-msgid "Instant Messaging"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:122
-msgctxt "Menu subcategory of Internet"
-msgid "IRC Clients"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:123
-msgctxt "Menu subcategory of Internet"
-msgid "Monitor"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:124
-msgctxt "Menu subcategory of Internet"
-msgid "News"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:125
-msgctxt "Menu subcategory of Internet"
-msgid "P2P"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:126
-msgctxt "Menu subcategory of Internet"
-msgid "Remote Access"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:127
-msgctxt "Menu subcategory of Internet"
-msgid "Telephony"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:128
-msgctxt "Menu subcategory of Internet"
-msgid "Video Conference"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:129
-msgctxt "Menu subcategory of Internet"
-msgid "Web Browser"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:130
-msgctxt "Menu subcategory of Internet"
-msgid "Web Development"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Office
-#: ../src/plugins/menu-spec-common.c:132
-msgid "Office"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:133
-msgctxt "Menu subcategory of Office"
-msgid "Calendar"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:134
-msgctxt "Menu subcategory of Office"
-msgid "Chart"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:135
-msgctxt "Menu subcategory of Office"
-msgid "Contact Management"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:136
-msgctxt "Menu subcategory of Office"
-msgid "Database"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:137
-msgctxt "Menu subcategory of Office"
-msgid "Dictionary"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:138
-msgctxt "Menu subcategory of Office"
-msgid "Email"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:139
-msgctxt "Menu subcategory of Office"
-msgid "Finance"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:140
-msgctxt "Menu subcategory of Office"
-msgid "Flow Chart"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:141
-msgctxt "Menu subcategory of Office"
-msgid "PDA"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:142
-msgctxt "Menu subcategory of Office"
-msgid "Photography"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:143
-msgctxt "Menu subcategory of Office"
-msgid "Presentation"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:144
-msgctxt "Menu subcategory of Office"
-msgid "Project Management"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:145
-msgctxt "Menu subcategory of Office"
-msgid "Publishing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:146
-msgctxt "Menu subcategory of Office"
-msgid "Spreadsheet"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:147
-msgctxt "Menu subcategory of Office"
-msgid "Viewer"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:148
-msgctxt "Menu subcategory of Office"
-msgid "Word Processor"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Science
-#: ../src/plugins/menu-spec-common.c:150
-msgid "Science"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:151
-msgctxt "Menu subcategory of Science"
-msgid "Art"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:152
-msgctxt "Menu subcategory of Science"
-msgid "Artificial Intelligence"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:153
-msgctxt "Menu subcategory of Science"
-msgid "Astronomy"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:154
-msgctxt "Menu subcategory of Science"
-msgid "Biology"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:155
-msgctxt "Menu subcategory of Science"
-msgid "Chemistry"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:156
-msgctxt "Menu subcategory of Science"
-msgid "Computer Science"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:157
-msgctxt "Menu subcategory of Science"
-msgid "Construction"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:158
-msgctxt "Menu subcategory of Science"
-msgid "Data Visualization"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:159
-msgctxt "Menu subcategory of Science"
-msgid "Economy"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:160
-msgctxt "Menu subcategory of Science"
-msgid "Electricity"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:161
-msgctxt "Menu subcategory of Science"
-msgid "Electronics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:162
-msgctxt "Menu subcategory of Science"
-msgid "Engineering"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:163
-msgctxt "Menu subcategory of Science"
-msgid "Geography"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:164
-msgctxt "Menu subcategory of Science"
-msgid "Geology"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:165
-msgctxt "Menu subcategory of Science"
-msgid "Geoscience"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:166
-msgctxt "Menu subcategory of Science"
-msgid "History"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:167
-msgctxt "Menu subcategory of Science"
-msgid "Humanities"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:168
-msgctxt "Menu subcategory of Science"
-msgid "Image Processing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:169
-msgctxt "Menu subcategory of Science"
-msgid "Languages"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:170
-msgctxt "Menu subcategory of Science"
-msgid "Literature"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:171
-msgctxt "Menu subcategory of Science"
-msgid "Maps"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:172
-msgctxt "Menu subcategory of Science"
-msgid "Math"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:173
-msgctxt "Menu subcategory of Science"
-msgid "Medical"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:174
-msgctxt "Menu subcategory of Science"
-msgid "Numerical Analysis"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:175
-msgctxt "Menu subcategory of Science"
-msgid "Parallel Computing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:176
-msgctxt "Menu subcategory of Science"
-msgid "Physics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:177
-msgctxt "Menu subcategory of Science"
-msgid "Robotics"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:178
-msgctxt "Menu subcategory of Science"
-msgid "Spirituality"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:179
-msgctxt "Menu subcategory of Science"
-msgid "Sports"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for System
-#: ../src/plugins/menu-spec-common.c:181
-msgid "System"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:182
-msgctxt "Menu subcategory of System"
-msgid "Emulator"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:183
-msgctxt "Menu subcategory of System"
-msgid "File Manager"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:184
-msgctxt "Menu subcategory of System"
-msgid "File System"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:185
-msgctxt "Menu subcategory of System"
-msgid "File Tools"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:186
-msgctxt "Menu subcategory of System"
-msgid "Monitor"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:187
-msgctxt "Menu subcategory of System"
-msgid "Security"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:188
-msgctxt "Menu subcategory of System"
-msgid "Terminal Emulator"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Utility
-#: ../src/plugins/menu-spec-common.c:190
-msgid "Utilities"
-msgstr "Алатке"
-
-#: ../src/plugins/menu-spec-common.c:191
-msgctxt "Menu subcategory of Utilities"
-msgid "Accessibility"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:192
-msgctxt "Menu subcategory of Utilities"
-msgid "Archiving"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:193
-msgctxt "Menu subcategory of Utilities"
-msgid "Calculator"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:194
-msgctxt "Menu subcategory of Utilities"
-msgid "Clock"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:195
-msgctxt "Menu subcategory of Utilities"
-msgid "Compression"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:196
-msgctxt "Menu subcategory of Utilities"
-msgid "File Tools"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:197
-msgctxt "Menu subcategory of Utilities"
-msgid "Maps"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:198
-msgctxt "Menu subcategory of Utilities"
-msgid "Spirituality"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:199
-msgctxt "Menu subcategory of Utilities"
-msgid "Telephony Tools"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:200
-msgctxt "Menu subcategory of Utilities"
-msgid "Text Editor"
-msgstr ""
-
-#. TRANSLATORS: this is the menu spec main category for Video
-#: ../src/plugins/menu-spec-common.c:202
-msgid "Video"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:203
-msgctxt "Menu subcategory of Video"
-msgid "Editing"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:204
-msgctxt "Menu subcategory of Video"
-msgid "Database"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:205
-msgctxt "Menu subcategory of Video"
-msgid "Disc Burning"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:206
-msgctxt "Menu subcategory of Video"
-msgid "Players"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:207
-msgctxt "Menu subcategory of Video"
-msgid "Recorders"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:208
-msgctxt "Menu subcategory of Video"
-msgid "TV"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:211
-msgctxt "Menu subcategory of Add-ons"
-msgid "Fonts"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:212
-msgctxt "Menu subcategory of Add-ons"
-msgid "Codecs"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:213
-msgctxt "Menu subcategory of Add-ons"
-msgid "Input Sources"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:214
-msgctxt "Menu subcategory of Add-ons"
-msgid "Language Packs"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:215
-msgctxt "Menu subcategory of Add-ons"
-msgid "Shell Extensions"
-msgstr ""
-
-#: ../src/plugins/menu-spec-common.c:216
-msgctxt "Menu subcategory of Add-ons"
-msgid "Localization"
-msgstr ""
+"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;"
+"Software;App;Store;"
+msgstr ""
+"ажурирања;освежења;доградње;надоградње;извори;ризнице;складишта;поставке;"
+"инсталација;уклањање;програм;софтвер;апликација;радња;"
 
 #. TRANSLATORS: initial start
-#: ../src/gs-shell-loading.c:66
+#: ../src/gs-shell-loading.c:63
 msgid "Software catalog is being downloaded"
 msgstr "Каталог софтвера је преузет"
 
 #. TRANSLATORS: initial start
-#: ../src/gs-shell-loading.c:71
+#: ../src/gs-shell-loading.c:68
 msgid "Software catalog is being loaded"
 msgstr "Каталог софтвера је учитан"
 
@@ -3242,3 +2625,1136 @@ msgstr "Учитавам страницу"
 #: ../src/gs-shell-loading.ui.h:2
 msgid "Starting up…"
 msgstr "Покрећем…"
+
+#: ../src/plugins/gs-desktop-common.c:30
+msgctxt "Menu of AudioVideo"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:33
+msgctxt "Menu of AudioVideo"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:36
+msgctxt "Menu of AudioVideo"
+msgid "Audio Creation & Editing"
+msgstr "Стварање и уређивање звука"
+
+#: ../src/plugins/gs-desktop-common.c:42
+msgctxt "Menu of AudioVideo"
+msgid "Music Players"
+msgstr "Пуштачи музике"
+
+#: ../src/plugins/gs-desktop-common.c:51
+msgctxt "Menu of Development"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:54
+msgctxt "Menu of Development"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:57
+msgctxt "Menu of Development"
+msgid "Debuggers"
+msgstr "Прочишћавачи"
+
+#: ../src/plugins/gs-desktop-common.c:60
+msgctxt "Menu of Development"
+msgid "IDEs"
+msgstr "ИРО"
+
+#: ../src/plugins/gs-desktop-common.c:69
+msgctxt "Menu of Education"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:72
+msgctxt "Menu of Education"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:75
+msgctxt "Menu of Education"
+msgid "Astronomy"
+msgstr "Астрономија"
+
+#: ../src/plugins/gs-desktop-common.c:78
+msgctxt "Menu of Education"
+msgid "Chemistry"
+msgstr "Хемија"
+
+#: ../src/plugins/gs-desktop-common.c:81
+msgctxt "Menu of Education"
+msgid "Languages"
+msgstr "Језици"
+
+#: ../src/plugins/gs-desktop-common.c:85
+msgctxt "Menu of Education"
+msgid "Math"
+msgstr "Математика"
+
+#: ../src/plugins/gs-desktop-common.c:94
+msgctxt "Menu of Games"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:97
+msgctxt "Menu of Games"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:100
+msgctxt "Menu of Games"
+msgid "Action"
+msgstr "Акција"
+
+#: ../src/plugins/gs-desktop-common.c:103
+msgctxt "Menu of Games"
+msgid "Adventure"
+msgstr "Авантура"
+
+#: ../src/plugins/gs-desktop-common.c:106
+msgctxt "Menu of Games"
+msgid "Arcade"
+msgstr "Аркадне"
+
+#: ../src/plugins/gs-desktop-common.c:109
+msgctxt "Menu of Games"
+msgid "Blocks"
+msgstr "Блокови"
+
+#: ../src/plugins/gs-desktop-common.c:112
+msgctxt "Menu of Games"
+msgid "Board"
+msgstr "Табла"
+
+#: ../src/plugins/gs-desktop-common.c:115
+msgctxt "Menu of Games"
+msgid "Card"
+msgstr "Карте"
+
+#: ../src/plugins/gs-desktop-common.c:118
+msgctxt "Menu of Games"
+msgid "Emulators"
+msgstr "Опонашавачи"
+
+#: ../src/plugins/gs-desktop-common.c:121
+msgctxt "Menu of Games"
+msgid "Kids"
+msgstr "Дечје игре"
+
+#: ../src/plugins/gs-desktop-common.c:124
+msgctxt "Menu of Games"
+msgid "Logic"
+msgstr "Логика"
+
+#: ../src/plugins/gs-desktop-common.c:127
+msgctxt "Menu of Games"
+msgid "Role Playing"
+msgstr "Играње улоге"
+
+#: ../src/plugins/gs-desktop-common.c:130
+msgctxt "Menu of Games"
+msgid "Sports"
+msgstr "Спортови"
+
+#: ../src/plugins/gs-desktop-common.c:134
+msgctxt "Menu of Games"
+msgid "Strategy"
+msgstr "Стратегије"
+
+#: ../src/plugins/gs-desktop-common.c:142
+msgctxt "Menu of Graphics"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:145
+msgctxt "Menu of Graphics"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:148
+msgctxt "Menu of Graphics"
+msgid "3D Graphics"
+msgstr "3Д графика"
+
+#: ../src/plugins/gs-desktop-common.c:151
+msgctxt "Menu of Graphics"
+msgid "Photography"
+msgstr "Фотографија"
+
+#: ../src/plugins/gs-desktop-common.c:154
+msgctxt "Menu of Graphics"
+msgid "Scanning"
+msgstr "Скенирање"
+
+#: ../src/plugins/gs-desktop-common.c:157
+msgctxt "Menu of Graphics"
+msgid "Vector Graphics"
+msgstr "Векторска графика"
+
+#: ../src/plugins/gs-desktop-common.c:160
+msgctxt "Menu of Graphics"
+msgid "Viewers"
+msgstr "Прегледачи"
+
+#: ../src/plugins/gs-desktop-common.c:168
+msgctxt "Menu of Office"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:171
+msgctxt "Menu of Office"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:174
+msgctxt "Menu of Office"
+msgid "Calendar"
+msgstr "Календар"
+
+#: ../src/plugins/gs-desktop-common.c:178
+msgctxt "Menu of Office"
+msgid "Database"
+msgstr "База података"
+
+#: ../src/plugins/gs-desktop-common.c:181
+msgctxt "Menu of Office"
+msgid "Finance"
+msgstr "Финансије"
+
+#: ../src/plugins/gs-desktop-common.c:185
+msgctxt "Menu of Office"
+msgid "Word Processor"
+msgstr "Обрађивање текста"
+
+#: ../src/plugins/gs-desktop-common.c:194
+msgctxt "Menu of Addons"
+msgid "Fonts"
+msgstr "Слова"
+
+#: ../src/plugins/gs-desktop-common.c:197
+msgctxt "Menu of Addons"
+msgid "Codecs"
+msgstr "Kодеци"
+
+#: ../src/plugins/gs-desktop-common.c:200
+msgctxt "Menu of Addons"
+msgid "Input Sources"
+msgstr "Извори улаза"
+
+#: ../src/plugins/gs-desktop-common.c:203
+msgctxt "Menu of Addons"
+msgid "Language Packs"
+msgstr "Језички пакети"
+
+#: ../src/plugins/gs-desktop-common.c:206
+msgctxt "Menu of Addons"
+msgid "Shell Extensions"
+msgstr "Проширења шкољке"
+
+#: ../src/plugins/gs-desktop-common.c:209
+msgctxt "Menu of Addons"
+msgid "Localization"
+msgstr "Превод"
+
+#: ../src/plugins/gs-desktop-common.c:212
+msgctxt "Menu of Addons"
+msgid "Hardware Drivers"
+msgstr "Хардверски управљачки програми"
+
+#: ../src/plugins/gs-desktop-common.c:220
+msgctxt "Menu of Science"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:223
+msgctxt "Menu of Science"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:226
+msgctxt "Menu of Science"
+msgid "Artificial Intelligence"
+msgstr "Вештачка интелигенција"
+
+#: ../src/plugins/gs-desktop-common.c:229
+msgctxt "Menu of Science"
+msgid "Astronomy"
+msgstr "Астрономија"
+
+#: ../src/plugins/gs-desktop-common.c:232
+msgctxt "Menu of Science"
+msgid "Chemistry"
+msgstr "Хемија"
+
+#: ../src/plugins/gs-desktop-common.c:235
+msgctxt "Menu of Science"
+msgid "Math"
+msgstr "Математика"
+
+#: ../src/plugins/gs-desktop-common.c:240
+msgctxt "Menu of Science"
+msgid "Robotics"
+msgstr "Роботика"
+
+#: ../src/plugins/gs-desktop-common.c:248
+msgctxt "Menu of Communication"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:251
+msgctxt "Menu of Communication"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:254
+msgctxt "Menu of Communication"
+msgid "Chat"
+msgstr "Ћаскање"
+
+#: ../src/plugins/gs-desktop-common.c:261
+msgctxt "Menu of Communication"
+msgid "News"
+msgstr "Вести"
+
+#: ../src/plugins/gs-desktop-common.c:265
+msgctxt "Menu of Communication"
+msgid "Web Browsers"
+msgstr "Веб прегледници"
+
+#: ../src/plugins/gs-desktop-common.c:273
+msgctxt "Menu of Utility"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:276
+msgctxt "Menu of Utility"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:279
+msgctxt "Menu of Utility"
+msgid "Text Editors"
+msgstr "Уређивачи текста"
+
+#: ../src/plugins/gs-desktop-common.c:287
+msgctxt "Menu of Reference"
+msgid "All"
+msgstr "Све"
+
+#: ../src/plugins/gs-desktop-common.c:290
+msgctxt "Menu of Reference"
+msgid "Featured"
+msgstr "Издвојено"
+
+#: ../src/plugins/gs-desktop-common.c:293
+msgctxt "Menu of Art"
+msgid "Art"
+msgstr "Уметност"
+
+#: ../src/plugins/gs-desktop-common.c:296
+msgctxt "Menu of Reference"
+msgid "Biography"
+msgstr "Биографија"
+
+#: ../src/plugins/gs-desktop-common.c:299
+msgctxt "Menu of Reference"
+msgid "Comics"
+msgstr "Стрипови"
+
+#: ../src/plugins/gs-desktop-common.c:302
+msgctxt "Menu of Reference"
+msgid "Fiction"
+msgstr "Фантастика"
+
+#: ../src/plugins/gs-desktop-common.c:305
+msgctxt "Menu of Reference"
+msgid "Health"
+msgstr "Здравље"
+
+#: ../src/plugins/gs-desktop-common.c:308
+msgctxt "Menu of Reference"
+msgid "History"
+msgstr "Историја"
+
+#: ../src/plugins/gs-desktop-common.c:311
+msgctxt "Menu of Reference"
+msgid "Lifestyle"
+msgstr "Начин живљења"
+
+#: ../src/plugins/gs-desktop-common.c:314
+msgctxt "Menu of Reference"
+msgid "Politics"
+msgstr "Политика"
+
+#: ../src/plugins/gs-desktop-common.c:317
+msgctxt "Menu of Reference"
+msgid "Sports"
+msgstr "Спортови"
+
+#. TRANSLATORS: this is the menu spec main category for Audio & Video
+#: ../src/plugins/gs-desktop-common.c:326
+msgid "Audio & Video"
+msgstr "Звук и снимци"
+
+#. TRANSLATORS: this is the menu spec main category for Development
+#: ../src/plugins/gs-desktop-common.c:329
+msgid "Developer Tools"
+msgstr "Развојни алати"
+
+#. TRANSLATORS: this is the menu spec main category for Education
+#: ../src/plugins/gs-desktop-common.c:332
+msgid "Education"
+msgstr "Образовање"
+
+#. TRANSLATORS: this is the menu spec main category for Game
+#: ../src/plugins/gs-desktop-common.c:335
+msgid "Games"
+msgstr "Игре"
+
+#. TRANSLATORS: this is the menu spec main category for Graphics
+#: ../src/plugins/gs-desktop-common.c:338
+msgid "Graphics & Photography"
+msgstr "Графика и фотографија"
+
+#. TRANSLATORS: this is the menu spec main category for Office
+#: ../src/plugins/gs-desktop-common.c:341
+msgid "Productivity"
+msgstr "Продуктивност"
+
+#. TRANSLATORS: this is the menu spec main category for Science
+#: ../src/plugins/gs-desktop-common.c:347
+msgid "Science"
+msgstr "Наука"
+
+#. TRANSLATORS: this is the menu spec main category for Communication
+#: ../src/plugins/gs-desktop-common.c:350
+msgid "Communication & News"
+msgstr "Саопштења и вести"
+
+#. TRANSLATORS: this is the menu spec main category for Reference
+#: ../src/plugins/gs-desktop-common.c:353
+msgid "Reference"
+msgstr "Упуте"
+
+#. TRANSLATORS: this is the menu spec main category for Utilities
+#: ../src/plugins/gs-desktop-common.c:356
+msgid "Utilities"
+msgstr "Алатке"
+
+#~ msgid " or "
+#~ msgstr " или "
+
+#~ msgid "3rd party"
+#~ msgstr "трећих лица"
+
+#~ msgid "web app"
+#~ msgstr "програми веба"
+
+#~ msgid "nonfree"
+#~ msgstr "неслободни"
+
+#~ msgid "_Installing"
+#~ msgstr "_Инсталирам"
+
+#~ msgid "_Removing"
+#~ msgstr "_Уклањам"
+
+#~ msgctxt "license"
+#~ msgid "Unknown"
+#~ msgstr "Непозната"
+
+#~ msgctxt "size"
+#~ msgid "Calculating…"
+#~ msgstr "Израчунавам…"
+
+#~ msgctxt "size"
+#~ msgid "Unknown"
+#~ msgstr "Непозната"
+
+#~ msgid "This software comes from a 3rd party."
+#~ msgstr "Овај програм испоручују треће стране."
+
+#~ msgid ""
+#~ "This software comes from a 3rd party and may contain non-free components."
+#~ msgstr ""
+#~ "Овај програм испоручује трећа страна и можда садржи неслободне састојке."
+
+#~ msgid "This software may contain non-free components."
+#~ msgstr "Овај програм можда садржи неслободне састојке."
+
+#~ msgid "_History"
+#~ msgstr "_Историјат"
+
+#~ msgid "Size"
+#~ msgstr "Величина"
+
+#~ msgid "non-free"
+#~ msgstr "неслободни"
+
+#~ msgid "Recommended Office Applications"
+#~ msgstr "Препоручени канцеларијски програми"
+
+#~ msgid "Featured Application"
+#~ msgstr "Издвојени програми"
+
+#~ msgid "Software sources give you access to additional software."
+#~ msgstr "Извори програма вам дају приступ додатним програмима."
+
+#~ msgid "One Star"
+#~ msgstr "Једна звездица"
+
+#~ msgid "Two Stars"
+#~ msgstr "Две звездице"
+
+#~ msgid "Three Stars"
+#~ msgstr "Три звездице"
+
+#~ msgid "Four Stars"
+#~ msgstr "Четири звездице"
+
+#~ msgid "Five Stars"
+#~ msgstr "Пет звездица"
+
+#~ msgid "No AppStream data found"
+#~ msgstr "Нисам пронашао податке тока програма"
+
+#~ msgid "Audio"
+#~ msgstr "Звук"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Editing"
+#~ msgstr "Уређивање"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Databases"
+#~ msgstr "Базе података"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Disc Burning"
+#~ msgstr "Нарезивање диска"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Ham Radio"
+#~ msgstr "Хам радио"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "MIDI"
+#~ msgstr "МИДИ"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Mixer"
+#~ msgstr "Мешачи"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Music"
+#~ msgstr "Музика"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Recorders"
+#~ msgstr "Снимачи"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Sequencers"
+#~ msgstr "Секвенцери"
+
+#~ msgctxt "Menu subcategory of Audio"
+#~ msgid "Tuners"
+#~ msgstr "Тјунери"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "Building"
+#~ msgstr "Изградња"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "Databases"
+#~ msgstr "Базе података"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "GUI Designers"
+#~ msgstr "Израда ГКС-а"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "IDE"
+#~ msgstr "ИРО"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "Profiling"
+#~ msgstr "Профилисање"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "Revision Control"
+#~ msgstr "Управљање ревизијама"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "Translation"
+#~ msgstr "Превођење"
+
+#~ msgctxt "Menu subcategory of Development Tools"
+#~ msgid "Web Development"
+#~ msgstr "Веб програмирање"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Biology"
+#~ msgstr "Биологија"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Computer Science"
+#~ msgstr "Рачунарство"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Construction"
+#~ msgstr "Грађевинарство"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Data Visualization"
+#~ msgstr "Приказивање података"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Economy"
+#~ msgstr "Економија"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Electricity"
+#~ msgstr "Електрика"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Electronics"
+#~ msgstr "Електроника"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Engineering"
+#~ msgstr "Инжењерство"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Geology"
+#~ msgstr "Геологија"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Geoscience"
+#~ msgstr "Геонаука"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "History"
+#~ msgstr "Историја"
+
+# https://sr.wiktionary.org/sr/%D1%85%D1%83%D0%BC%D0%B0%D0%BD%D0%B8%D0%BE%D1%80%D0%B0
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Humanities"
+#~ msgstr "Хуманизам"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Image Processing"
+#~ msgstr "Обрада слика"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Literature"
+#~ msgstr "Литература"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Maps"
+#~ msgstr "Карте"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Medical"
+#~ msgstr "Медицина"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Music"
+#~ msgstr "Музика"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Numerical Analysis"
+#~ msgstr "Анализа бројева"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Parallel Computing"
+#~ msgstr "Паралелно рачунарство"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Physics"
+#~ msgstr "Физика"
+
+#~ msgctxt "Menu subcategory of Education"
+#~ msgid "Spirituality"
+#~ msgstr "Духовност"
+
+#~ msgctxt "Menu subcategory of Games"
+#~ msgid "Shooter"
+#~ msgstr "Пуцачине"
+
+#~ msgctxt "Menu subcategory of Games"
+#~ msgid "Simulation"
+#~ msgstr "Опонашање (симулације)"
+
+#~ msgctxt "Menu subcategory of Games"
+#~ msgid "Sports"
+#~ msgstr "Спортске игре"
+
+#~ msgid "Graphics"
+#~ msgstr "Графика"
+
+#~ msgctxt "Menu subcategory of Graphics"
+#~ msgid "2D Graphics"
+#~ msgstr "2Д графика"
+
+#~ msgctxt "Menu subcategory of Graphics"
+#~ msgid "OCR"
+#~ msgstr "ОЦР"
+
+#~ msgctxt "Menu subcategory of Graphics"
+#~ msgid "Publishing"
+#~ msgstr "Издаваштво"
+
+#~ msgctxt "Menu subcategory of Graphics"
+#~ msgid "Raster Graphics"
+#~ msgstr "Растер графика"
+
+#~ msgid "Internet"
+#~ msgstr "Интернет"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Dialup"
+#~ msgstr "Позивање (диал-ап)"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Email"
+#~ msgstr "Ел. пошта"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Feed"
+#~ msgstr "Довод"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "File Transfer"
+#~ msgstr "Пренос датотека"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Ham Radio"
+#~ msgstr "Хам радио"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Instant Messaging"
+#~ msgstr "Брзе поруке"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "IRC Clients"
+#~ msgstr "ИРЦ клијенти"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Monitor"
+#~ msgstr "Надзор"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "P2P"
+#~ msgstr "П2П"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Remote Access"
+#~ msgstr "Удаљени приступ"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Telephony"
+#~ msgstr "Телефонија"
+
+#~ msgctxt "Menu subcategory of Internet"
+#~ msgid "Web Development"
+#~ msgstr "Веб програмирање"
+
+#~ msgid "Office"
+#~ msgstr "Канцеларија"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Chart"
+#~ msgstr "Графикон"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Contact Management"
+#~ msgstr "Управљање контактима"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Dictionary"
+#~ msgstr "Речник"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Email"
+#~ msgstr "Ел. пошта"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Flow Chart"
+#~ msgstr "Дијаграм тока"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "PDA"
+#~ msgstr "ЛДП (PDA)"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Photography"
+#~ msgstr "Фотографија"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Presentation"
+#~ msgstr "Излагање"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Project Management"
+#~ msgstr "Управљање пројектима"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Publishing"
+#~ msgstr "Издаваштво"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Spreadsheet"
+#~ msgstr "Табеле"
+
+#~ msgctxt "Menu subcategory of Office"
+#~ msgid "Viewer"
+#~ msgstr "Прегледач"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Art"
+#~ msgstr "Уметност"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Artificial Intelligence"
+#~ msgstr "Вештачка интелигенција"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Astronomy"
+#~ msgstr "Астрономија"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Biology"
+#~ msgstr "Биологија"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Chemistry"
+#~ msgstr "Хемија"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Computer Science"
+#~ msgstr "Рачунарство"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Construction"
+#~ msgstr "Изградња"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Data Visualization"
+#~ msgstr "Приказивање података"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Economy"
+#~ msgstr "Економија"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Electricity"
+#~ msgstr "Електрика"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Electronics"
+#~ msgstr "Електроника"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Engineering"
+#~ msgstr "Инжењерство"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Geography"
+#~ msgstr "Географија"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Geology"
+#~ msgstr "Геологија"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Geoscience"
+#~ msgstr "Геонаука"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "History"
+#~ msgstr "Историја"
+
+# https://sr.wiktionary.org/sr/%D1%85%D1%83%D0%BC%D0%B0%D0%BD%D0%B8%D0%BE%D1%80%D0%B0
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Humanities"
+#~ msgstr "Хуманизам"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Image Processing"
+#~ msgstr "Обрада слика"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Languages"
+#~ msgstr "Језици"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Literature"
+#~ msgstr "Литература"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Maps"
+#~ msgstr "Карте"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Math"
+#~ msgstr "Математика"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Medical"
+#~ msgstr "Медицина"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Numerical Analysis"
+#~ msgstr "Анализа бројева"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Parallel Computing"
+#~ msgstr "Паралелно рачунарство"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Physics"
+#~ msgstr "Физика"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Robotics"
+#~ msgstr "Роботика"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Spirituality"
+#~ msgstr "Духовност"
+
+#~ msgctxt "Menu subcategory of Science"
+#~ msgid "Sports"
+#~ msgstr "Спортови"
+
+#~ msgid "System"
+#~ msgstr "Систем"
+
+#~ msgctxt "Menu subcategory of System"
+#~ msgid "Emulator"
+#~ msgstr "Опонашавач (емулатор)"
+
+#~ msgctxt "Menu subcategory of System"
+#~ msgid "File Manager"
+#~ msgstr "Управник датотека"
+
+#~ msgctxt "Menu subcategory of System"
+#~ msgid "File System"
+#~ msgstr "Систем датотека"
+
+#~ msgctxt "Menu subcategory of System"
+#~ msgid "File Tools"
+#~ msgstr "Алатке за датотеке"
+
+#~ msgctxt "Menu subcategory of System"
+#~ msgid "Monitor"
+#~ msgstr "Праћење"
+
+#~ msgctxt "Menu subcategory of System"
+#~ msgid "Security"
+#~ msgstr "Безбедност"
+
+#~ msgctxt "Menu subcategory of System"
+#~ msgid "Terminal Emulator"
+#~ msgstr "Емулатор терминала"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Accessibility"
+#~ msgstr "Приступачност"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Archiving"
+#~ msgstr "Архивирање"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Calculator"
+#~ msgstr "Калкулатор"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Clock"
+#~ msgstr "Часовник"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Compression"
+#~ msgstr "Паковање"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "File Tools"
+#~ msgstr "Алатке датотека"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Maps"
+#~ msgstr "Карте"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Spirituality"
+#~ msgstr "Духовност"
+
+#~ msgctxt "Menu subcategory of Utilities"
+#~ msgid "Telephony Tools"
+#~ msgstr "Алати за телефонију"
+
+#~ msgid "Video"
+#~ msgstr "Видео"
+
+#~ msgctxt "Menu subcategory of Video"
+#~ msgid "Editing"
+#~ msgstr "Уређивање"
+
+#~ msgctxt "Menu subcategory of Video"
+#~ msgid "Database"
+#~ msgstr "База података"
+
+#~ msgctxt "Menu subcategory of Video"
+#~ msgid "Disc Burning"
+#~ msgstr "Нарезивање диска"
+
+#~ msgctxt "Menu subcategory of Video"
+#~ msgid "Players"
+#~ msgstr "Пуштачи"
+
+#~ msgctxt "Menu subcategory of Video"
+#~ msgid "Recorders"
+#~ msgstr "Снимачи"
+
+#~ msgctxt "Menu subcategory of Video"
+#~ msgid "TV"
+#~ msgstr "ТВ"
+
+#~ msgid "A previous update was unfinished."
+#~ msgstr "Претходно ажурирање је остало недовршено."
+
+#~ msgid ""
+#~ "The update couldn’t be installed; this is often a problem with the update "
+#~ "itself. Please wait for another update and try again."
+#~ msgstr ""
+#~ "Ажурирање се не може инсталирати. Ово се често дешава уколико је проблем "
+#~ "у самом ажурирању. Сачекајте ново ажурирање и онда покушајте поново."
+
+#~ msgid "Internet Only Application"
+#~ msgstr "Мрежни програм"
+
+#~ msgid "Checking for updates…"
+#~ msgstr "Проверавам ажурирања…"
+
+#~ msgid "Enter GApplication service mode"
+#~ msgstr "Унеси режим услуге ГПрограма"
+
+#~ msgid "Updates"
+#~ msgstr "Освежења"
+
+#~ msgid "An update was not signed in the correct way."
+#~ msgstr "Једно ажурирање није означено на прави начин."
+
+#~ msgid "The update could not be completed."
+#~ msgstr "Ажурирање не може бити довршено."
+
+#~ msgid "An offline update was requested but no packages required updating."
+#~ msgstr ""
+#~ "Затражено је ажурирање ван мреже али ниједан пакет није затражио "
+#~ "ажурирање."
+
+#~ msgid "No space was left on the drive."
+#~ msgstr "Нема више простора на диску."
+
+#~ msgid "An update failed to install correctly."
+#~ msgstr "Једно ажурирање није успело да се исправно инсталира."
+
+#~ msgid "The offline update failed in an unexpected way."
+#~ msgstr "Ажурирање ван мреже није успело на очекивани начин."
+
+#~ msgid "No sources found."
+#~ msgstr "Нисам пронашао изворе."
+
+#~ msgid "OK"
+#~ msgstr "У реду"
+
+#~ msgid "%i application and %i add-ons installed"
+#~ msgid_plural "%i applications and %i add-ons installed"
+#~ msgstr[0] "%i инсталирани програм и %i додатак"
+#~ msgstr[1] "%i инсталирана програма и %i додатка"
+#~ msgstr[2] "%i инсталираних програма и %i додатака"
+#~ msgstr[3] "Један инсталирани програм и један додатак"
+
+#~ msgid "Picks"
+#~ msgstr "Изабрани"
+
+#~ msgid "Getting software details…"
+#~ msgstr "Добављам појединости софтвера…"
+
+#~ msgid "Done"
+#~ msgstr "Готово"
+
+#~ msgid "Set the specified debugging level"
+#~ msgstr "Подешава ниво наведеног прочишћавања"
+
+#~ msgid "_Pending"
+#~ msgstr "_На чекању"
+
+# timezone.
+#~ msgid "Complicated!"
+#~ msgstr "Замршено!"
+
+#~ msgid "Recent Software Updates"
+#~ msgstr "Скорашња освежења софтвера"
+
+#~ msgctxt "Menu subcategory of Development"
+#~ msgid "Databases"
+#~ msgstr "Базе података"
+
+#~ msgctxt "Menu subcategory of Network"
+#~ msgid "Ham Radio"
+#~ msgstr "Хам радио"
+
+#~ msgctxt "Menu subcategory of Network"
+#~ msgid "Web Development"
+#~ msgstr "Развој веба"
+
+#~ msgctxt "Menu subcategory of Utility"
+#~ msgid "File Tools"
+#~ msgstr "Алатке за датотеке"
+
+#~ msgctxt "Menu subcategory of Utility"
+#~ msgid "Maps"
+#~ msgstr "Карте"
+
+#~ msgctxt "Menu subcategory of Utility"
+#~ msgid "Spirituality"
+#~ msgstr "Духовност"
+
+#~ msgctxt "Menu subcategory of Addons"
+#~ msgid "Fonts"
+#~ msgstr "Словни ликови"
+
+#~ msgctxt "Menu subcategory of Addons"
+#~ msgid "Codecs"
+#~ msgstr "Kодеци"
+
+#~ msgctxt "Menu subcategory of Addons"
+#~ msgid "Input Sources"
+#~ msgstr "Извори улаза"
+
+#~ msgctxt "Menu subcategory of Addons"
+#~ msgid "Language Packs"
+#~ msgstr "Пакети језика"
+
+#~ msgid "Description"
+#~ msgstr "Опис"
+
+#~ msgid "Support"
+#~ msgstr "Подршка"
+
+#~ msgid "The search term to use when starting the UI"
+#~ msgstr "Обрасци претраге за коришћење приликом покретања сучеља"
+
+#~ msgid "_Installed (%d)"
+#~ msgstr "_Инсталираних (%d)"
+
+#~ msgid "_Updates (%d)"
+#~ msgstr "_Освежења (%d)"
