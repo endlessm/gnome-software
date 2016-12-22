@@ -183,7 +183,9 @@ gs_shell_overview_get_popular_cb (GObject *source_object,
 	/* get popular apps */
 	list = gs_plugin_loader_get_popular_finish (plugin_loader, res, &error);
 	gtk_widget_set_visible (priv->box_popular, list != NULL);
-	gtk_widget_set_visible (priv->popular_heading, list != NULL);
+	/* always hide the popular heading because we do not have a visible
+	 * featured banner and thus it looks better if we do not have this label */
+	gtk_widget_set_visible (priv->popular_heading, FALSE);
 	if (list == NULL) {
 		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
 			g_warning ("failed to get popular apps: %s", error->message);
