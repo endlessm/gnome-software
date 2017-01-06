@@ -182,9 +182,10 @@ gs_flatpak_remove_prefixed_names (AsApp *app)
 }
 
 static gboolean
-app_is_duplicated_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *xremote)
+app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *xremote)
 {
-	static const char *duplicated_ids[] = {
+	/* IDs of apps already provided by our core OS */
+	static const char *duplicated_apps[] = {
 		"org.gnome.Builder.desktop",
 		"org.gnome.Calculator.desktop",
 		"org.gnome.Evince.desktop",
@@ -194,6 +195,20 @@ app_is_duplicated_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *xr
 		"org.gnome.clocks.desktop",
 		"org.gnome.eog.desktop",
 		"org.gnome.gedit.desktop",
+		"org.gnome.iagno.desktop",
+		NULL
+	};
+
+	/* Flatpak apps known not to be working properly */
+	static const char *buggy_apps[] = {
+		/* Can't open LibreOffice documents */
+		"org.gnome.Documents.desktop",
+		/* Rendering issues in YouTube */
+		"org.gnome.Epiphany.desktop",
+		/* Doesn't work due to network related problems */
+		"org.gnome.Maps.desktop",
+		/* Requires Telepathy daemons running in the host */
+		"org.gnome.Polari.desktop",
 		NULL
 	};
 
@@ -210,7 +225,7 @@ app_is_duplicated_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *xr
 		return FALSE;
 
 	soup_uri = soup_uri_new (remote_url);
-	remote_host = soup_uri_get_host(soup_uri);
+	remote_host = soup_uri_get_host (soup_uri);
 	if (g_strcmp0 (remote_host, "sdk.gnome.org") != 0)
 		return FALSE;
 
@@ -218,7 +233,13 @@ app_is_duplicated_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *xr
 	if (remote_path == NULL || !g_str_has_prefix (remote_path, "/repo-apps"))
 		return FALSE;
 
-	return g_strv_contains (duplicated_ids, as_app_get_id (app));
+	if (g_strv_contains (duplicated_apps, as_app_get_id (app)))
+		return TRUE;
+
+	if (g_strv_contains (buggy_apps, as_app_get_id (app)))
+		return TRUE;
+
+	return FALSE;
 }
 
 static gboolean
@@ -318,9 +339,9 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 			continue;
 		}
 
-		/* filter duplicated apps that we provide via OSTree */
-		if (app_is_duplicated_gnome_flatpak (app, self->scope, xremote)) {
-			g_debug ("not adding duplicated app from GNOME repository: %s",
+		/* filter apps that we want to blacklist from the GNOME repository */
+		if (app_is_blacklisted_gnome_flatpak (app, self->scope, xremote)) {
+			g_debug ("not adding blacklisted app from GNOME repository: %s",
 				 as_app_get_unique_id (app));
 			continue;
 		}
