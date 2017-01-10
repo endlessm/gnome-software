@@ -184,7 +184,7 @@ gs_flatpak_remove_prefixed_names (AsApp *app)
 static gboolean
 app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *xremote)
 {
-	/* IDs of apps already provided by our core OS */
+	/* IDs of apps already provided by our core OS or our own flatpaks */
 	static const char *duplicated_apps[] = {
 		"org.gnome.Builder.desktop",
 		"org.gnome.Calculator.desktop",
@@ -192,6 +192,7 @@ app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *x
 		"org.gnome.Nautilus.desktop",
 		"org.gnome.Rhythmbox3.desktop",
 		"org.gnome.Totem.desktop",
+		"org.gnome.Weather.desktop",
 		"org.gnome.clocks.desktop",
 		"org.gnome.eog.desktop",
 		"org.gnome.gedit.desktop",
