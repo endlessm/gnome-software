@@ -40,7 +40,7 @@
 #define EOS_IMAGE_VERSION_PATH "/sysroot"
 #define EOS_IMAGE_VERSION_ALT_PATH "/"
 
-#define METADATA_SYS_DESKTOP_FILE "flatpak-3rdparty::system-desktop-file"
+#define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
 
 /*
@@ -746,6 +746,14 @@ gs_plugin_refine (GsPlugin		*plugin,
 			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
+
+		/* XXX: This is needed for launching Chrome from outside Flatpak
+		 * since it cannot be launched from within the sandbox; we
+		 * should remove this when we can either turn the sandbox off in
+		 * Flatpak or launch Chrome without issues from inside of it */
+		if (g_strcmp0 (gs_app_get_id (app), "com.google.Chrome.desktop") == 0)
+			gs_app_set_metadata (app, METADATA_SYS_DESKTOP_FILE,
+					     "google-chrome.desktop");
 	}
 
 	if (apps)
@@ -863,18 +871,47 @@ gs_plugin_app_install (GsPlugin *plugin,
 	return TRUE;
 }
 
+static gboolean
+launch_with_sys_desktop_file (GsApp *app,
+                              GError **error)
+{
+	GdkDisplay *display;
+	g_autoptr(GAppLaunchContext) context = NULL;
+	g_autoptr(GDesktopAppInfo) app_info = get_desktop_app_info (app);
+	g_autoptr(GError) local_error = NULL;
+	gboolean ret;
+
+	display = gdk_display_get_default ();
+	context = G_APP_LAUNCH_CONTEXT (gdk_display_get_app_launch_context (display));
+	ret = g_app_info_launch (G_APP_INFO (app_info), NULL, context, &local_error);
+
+	if (!ret) {
+		g_warning ("Could not launch %s: %s", gs_app_get_unique_id (app),
+			   local_error->message);
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+			     _("Could not launch this application."));
+	}
+
+	return ret;
+}
+
 gboolean
 gs_plugin_launch (GsPlugin *plugin,
 		  GsApp *app,
 		  GCancellable *cancellable,
 		  GError **error)
 {
-	/* only process the app if it belongs to this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
-		       gs_plugin_get_name (plugin)) != 0)
-		return TRUE;
+		       gs_plugin_get_name (plugin)) == 0) {
+		return gs_plugin_app_launch (plugin, app, error);
+	}
 
-	return gs_plugin_app_launch (plugin, app, error);
+	/* for apps that have a special desktop file (e.g. Google Chrome) */
+	if (gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE)) {
+		return launch_with_sys_desktop_file (app, error);
+	}
+
+	return TRUE;
 }
 
 static GsApp *
