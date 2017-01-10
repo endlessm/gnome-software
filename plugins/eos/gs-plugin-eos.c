@@ -28,6 +28,8 @@
 #include <glib/gi18n.h>
 #include <gs-plugin.h>
 
+#define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
+
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -45,6 +47,36 @@ static gboolean
 app_is_flatpak (GsApp *app)
 {
 	return gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_FLATPAK;
+}
+
+/* Copy of the implementation of gs_flatpak_app_get_ref_name(). */
+static const gchar *
+app_get_flatpak_ref_name (GsApp *app)
+{
+	return gs_app_get_metadata_item (app, "flatpak::RefName");
+}
+
+static char *
+get_desktop_file_id (GsApp *app)
+{
+	const char *desktop_file_id =
+		gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE);
+
+	if (!desktop_file_id) {
+		if (app_is_flatpak (app)) {
+			/* ensure we add the .desktop suffix to the app's ref name
+			 * since in Flatpak the app ID can have that suffix already
+			 * or not, depending on how the appdata has been generated */
+			const char *ref_name = app_get_flatpak_ref_name (app);
+			return g_strconcat (ref_name, ".desktop", NULL);
+		}
+
+		/* just use the app ID if this is not a Flatpak app */
+		desktop_file_id = gs_app_get_id (app);
+	}
+
+	g_assert (desktop_file_id != NULL);
+	return g_strdup (desktop_file_id);
 }
 
 void
@@ -92,6 +124,32 @@ gs_plugin_refine (GsPlugin		*plugin,
 	return TRUE;
 }
 
+static gboolean
+launch_with_sys_desktop_file (GsApp *app,
+                              GError **error)
+{
+	GdkDisplay *display;
+	g_autoptr(GAppLaunchContext) context = NULL;
+	g_autofree char *desktop_file_id = get_desktop_file_id (app);
+	g_autoptr(GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (desktop_file_id);
+	g_autoptr(GError) local_error = NULL;
+	gboolean ret;
+
+	display = gdk_display_get_default ();
+	context = G_APP_LAUNCH_CONTEXT (gdk_display_get_app_launch_context (display));
+	ret = g_app_info_launch (G_APP_INFO (app_info), NULL, context, &local_error);
+
+	if (!ret) {
+		g_warning ("Could not launch %s: %s", gs_app_get_unique_id (app),
+			   local_error->message);
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+			     _("Could not launch this application."));
+	}
+
+	return ret;
+}
+
 gboolean
 gs_plugin_launch (GsPlugin *plugin,
 		  GsApp *app,
@@ -103,6 +161,10 @@ gs_plugin_launch (GsPlugin *plugin,
 	if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 	    !app_is_flatpak (app))
 		return gs_plugin_app_launch (plugin, app, error);
+
+	/* for apps that have a special desktop file (e.g. Google Chrome) */
+	if (gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE))
+		return launch_with_sys_desktop_file (app, error);
 
 	return TRUE;
 }
