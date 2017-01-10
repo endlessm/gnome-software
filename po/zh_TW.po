@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: richard@hughsie.com\n"
 "POT-Creation-Date: 2016-12-22 10:41-0800\n"
-"PO-Revision-Date: 2016-12-22 18:47+0000\n"
+"PO-Revision-Date: 2017-01-09 06:05+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/endless-mobile-inc/gnome-software/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
@@ -277,7 +277,7 @@ msgstr "安裝選取的軟體到系統中"
 
 #: src/gnome-software-local-file.desktop.in:10
 msgid "system-software-install"
-msgstr ""
+msgstr "安裝系統軟體"
 
 #: src/gnome-software.ui:10
 msgid "Select All"
@@ -291,7 +291,7 @@ msgstr "全不選"
 #. TRANSLATORS: this is the main window title
 #: src/gnome-software.ui:24 src/gs-application.c:327 src/gs-shell.c:305
 msgid "App Center"
-msgstr ""
+msgstr "應用程式中心"
 
 #: src/gnome-software.ui:43 src/gs-sources-dialog.ui:23
 #: src/gs-update-dialog.ui:21
@@ -397,7 +397,7 @@ msgstr "PKGNAME"
 
 #: src/gs-application.c:109
 msgid "Install the application (using application ID)"
-msgstr ""
+msgstr "安裝應用程式（用應用程式 ID）"
 
 #: src/gs-application.c:111
 msgid "Open a local package file"
@@ -411,7 +411,7 @@ msgstr "FILENAME"
 msgid ""
 "The kind of interaction expected for this action: either ‘none’, ‘notify’, "
 "or ‘full’"
-msgstr ""
+msgstr "此行動預期的互動類型：「無」或「通知」或「完整」"
 
 #: src/gs-application.c:116
 msgid "Show verbose debugging information"
@@ -485,7 +485,7 @@ msgstr "更新"
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:203 src/gs-app-row.c:212 src/gs-page.c:517
 msgid "Uninstall"
-msgstr ""
+msgstr "解除安裝"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -1304,12 +1304,12 @@ msgstr "無法聯絡 %s"
 #: src/gs-shell.c:1431
 #, c-format
 msgid "%s needs to be restarted to use new plugins."
-msgstr ""
+msgstr "欲使用新外掛程式，須重新開啟 %s。"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1436
 msgid "This application needs to be restarted to use new plugins."
-msgstr ""
+msgstr "必須重新啟動此應用程式，才能使用新的外掛程式。"
 
 #: src/gs-shell-category.ui:81
 msgid "Extension Settings"
@@ -1347,7 +1347,7 @@ msgstr "安裝(_I)…"
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-shell-details.c:362 src/gs-shell-details.ui:547
 msgid "_Uninstall"
-msgstr ""
+msgstr "_解除安裝"
 
 #: src/gs-shell-details.c:415 src/gs-sources-dialog.c:506
 msgid "Removing…"
@@ -1376,7 +1376,7 @@ msgstr "不明"
 #. TRANSLATORS: we need a remote server to process
 #: src/gs-shell-details.c:1310
 msgid "You need internet access to write a review"
-msgstr ""
+msgstr "你需要有網路連接以撰寫評論"
 
 #: src/gs-shell-details.c:1433
 #, c-format
@@ -1416,13 +1416,13 @@ msgstr "啟動(_L)"
 #. application.
 #: src/gs-shell-details.ui:245
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_添加至桌面"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-shell-details.ui:259
 msgid "_Remove from Desktop"
-msgstr ""
+msgstr "從桌面移除(_R)"
 
 #: src/gs-shell-details.ui:450
 msgid "No screenshot provided"
@@ -1476,7 +1476,7 @@ msgstr "細節"
 
 #: src/gs-shell-details.ui:588
 msgid "Developer _Website"
-msgstr ""
+msgstr "開發者 _網站"
 
 #: src/gs-shell-details.ui:700
 msgid "Localized in your Language"
@@ -2396,7 +2396,7 @@ msgstr "作業系統更新現在已安裝"
 #. * have been successfully installed
 #: src/gs-common.c:142
 msgid "Recently installed updates are available to review"
-msgstr ""
+msgstr "近期安裝的更新已可審閱"
 
 #. TRANSLATORS: this is the summary of a notification that an application
 #. * has been successfully installed
@@ -2409,7 +2409,7 @@ msgstr "%s 現在已安裝"
 #. * has been successfully installed
 #: src/gs-common.c:149
 msgid "Application is ready to be used."
-msgstr ""
+msgstr "應用程式已可供使用。"
 
 #. TRANSLATORS: this is button that opens the newly installed application
 #: src/gs-common.c:155
@@ -2827,7 +2827,7 @@ msgstr "退出(_Q)"
 
 #: src/org.gnome.Software.desktop.in:6
 msgid "org.gnome.Software"
-msgstr ""
+msgstr "org.gnome.Software"
 
 #: src/org.gnome.Software.desktop.in:12
 msgid ""
@@ -2940,12 +2940,12 @@ msgstr "機器人"
 #: src/plugins/gs-desktop-common.c:108
 msgctxt "Menu of Family"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:111
 msgctxt "Menu of Family"
 msgid "Featured"
-msgstr ""
+msgstr "功能"
 
 #: src/plugins/gs-desktop-common.c:119
 msgctxt "Menu of Games"
@@ -3180,12 +3180,12 @@ msgstr "運動"
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: src/plugins/gs-desktop-common.c:292
 msgid "Learning"
-msgstr ""
+msgstr "教學"
 
 #. TRANSLATORS: this is the menu spec main category for Family
 #: src/plugins/gs-desktop-common.c:295
 msgid "Family"
-msgstr ""
+msgstr "系列"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: src/plugins/gs-desktop-common.c:298
@@ -3195,17 +3195,17 @@ msgstr "遊戲"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: src/plugins/gs-desktop-common.c:301
 msgid "Multimedia"
-msgstr ""
+msgstr "多媒體"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: src/plugins/gs-desktop-common.c:304
 msgid "Work"
-msgstr ""
+msgstr "工作"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: src/plugins/gs-desktop-common.c:307
 msgid "Reference & News"
-msgstr ""
+msgstr "參考資料與最新消息"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: src/plugins/gs-desktop-common.c:310
@@ -3243,11 +3243,11 @@ msgstr "無法複製"
 
 #: src/plugins/gs-plugin-eos.c:891
 msgid "Endless Platform"
-msgstr ""
+msgstr "Endless 平台"
 
 #: src/plugins/gs-plugin-eos.c:894
 msgid "Framework for applications"
-msgstr ""
+msgstr "應用程式的架構"
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
@@ -3263,56 +3263,56 @@ msgstr "包括效能、穩定性、安全性等改善。"
 
 #: src/plugins/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Wed Apps Support"
-msgstr ""
+msgstr "Wed 應用程式支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:7
 msgid "Run popular web applications in a browser"
-msgstr ""
+msgstr "在瀏覽器中執行常用的網路應用程式"
 
 #: src/plugins/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:6
 msgid "Flatpak Support"
-msgstr ""
+msgstr "Flatpak 支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:7
 msgid "Flatpak is a framework for desktop applications on Linux"
-msgstr ""
+msgstr "Flatpak 是  Linux 的桌面應用程式框架"
 
 #: src/plugins/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:6
 msgid "Firmware Upgrade Support"
-msgstr ""
+msgstr "韌體升級支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:7
 msgid "Provides support for firmware upgrades"
-msgstr ""
+msgstr "提供韌體更新支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Limba.metainfo.xml.in:6
 msgid "Limba Support"
-msgstr ""
+msgstr "林巴語支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Limba.metainfo.xml.in:7
 msgid "Limba provides developers a way to easily create software bundles"
-msgstr ""
+msgstr "Limba 讓開發者可輕鬆打造軟體包"
 
 #: src/plugins/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:6
 msgid "Open Desktop Ratings Support"
-msgstr ""
+msgstr "開啟桌面評級支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:7
 msgid "ODRS is a service providing user reviews of applications"
-msgstr ""
+msgstr "ODRS 是項供使用者評論應用程式的服務"
 
 #: src/plugins/org.gnome.Software.Plugin.Snap.metainfo.xml.in:6
 msgid "Snappy Support"
-msgstr ""
+msgstr "即時支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Snap.metainfo.xml.in:7
 msgid "A snap is a universal Linux package"
-msgstr ""
+msgstr "Snap 是一種通用的 Linux 套件"
 
 #: src/plugins/org.gnome.Software.Plugin.Steam.metainfo.xml.in:6
 msgid "Steam Support"
-msgstr ""
+msgstr "串流支援"
 
 #: src/plugins/org.gnome.Software.Plugin.Steam.metainfo.xml.in:7
 msgid "The ultimate entertainment platform from Valve"
-msgstr ""
+msgstr "維爾福公司推出的終極娛樂平台"

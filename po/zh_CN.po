@@ -10,6 +10,7 @@
 # Dianjin Wang <1132321739qq@gmail.com>, 2013
 # Dz Chen <wsxy162@gmail.com>, 2016
 # Dz Chen <wsxy162@gmail.com>, 2016
+# e2f_cn c5 <e2f_cn_c3@outlook.com>, 2017
 # eternalhui  <www.eternalhui@gmail.com>, 2013
 # Mingcong Bai <jeffbai@aosc.xyz>, 2015-2016
 # Marco Mai <marco@endlessm.com>, 2016
@@ -26,8 +27,8 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: richard@hughsie.com\n"
 "POT-Creation-Date: 2016-12-22 10:41-0800\n"
-"PO-Revision-Date: 2016-12-22 18:47+0000\n"
-"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
+"PO-Revision-Date: 2017-01-10 03:39+0000\n"
+"Last-Translator: e2f_cn c5 <e2f_cn_c3@outlook.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/endless-mobile-inc/gnome-software/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -59,27 +60,27 @@ msgstr "GNOME 软件 向您展示特色和流行的应用程序，并提供每�
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:25
 msgid "Overview panel"
-msgstr ""
+msgstr "概览面板"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:29
 msgid "Details panel"
-msgstr ""
+msgstr "详细信息面板"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:33
 msgid "Installed panel"
-msgstr ""
+msgstr "已安装面板"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:37
 msgid "Updates panel"
-msgstr ""
+msgstr "更新面板"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:41
 msgid "The update details"
-msgstr ""
+msgstr "更新详细信息"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:658
 msgid "The GNOME Project"
-msgstr ""
+msgstr "GNOME 项目"
 
 #: data/org.gnome.software.gschema.xml:5
 msgid "A list of compatible projects"
@@ -93,13 +94,13 @@ msgstr "这是一个应显示的兼容项目的列表，如 GNOME，KDE 和 XFCE
 
 #: data/org.gnome.software.gschema.xml:10
 msgid "Whether to manage updates in GNOME Software"
-msgstr ""
+msgstr "是否管理GNOME Software中的更新"
 
 #: data/org.gnome.software.gschema.xml:11
 msgid ""
 "If disabled, GNOME Software will hide the updates panel and not perform any "
 "automatic updates actions."
-msgstr ""
+msgstr "如果已禁用，则 GNOME Software 将隐藏更新面板且不会执行任何自动更新操作。"
 
 #: data/org.gnome.software.gschema.xml:15
 msgid "Whether to automatically download updates"
@@ -113,18 +114,18 @@ msgstr "如开启，GNOME 软件 将自动在后台下载更新并在准备好�
 
 #: data/org.gnome.software.gschema.xml:20
 msgid "Whether to automatically refresh when on a metered connection"
-msgstr ""
+msgstr "在使用按流量计费的连接时是否自动刷新"
 
 #: data/org.gnome.software.gschema.xml:21
 msgid ""
 "If enabled, GNOME Software automatically refreshes in the background even "
 "when using a metered connection (eventually downloading some metadata, "
 "checking for updates, etc., which may incur in costs for the user)."
-msgstr ""
+msgstr "如果已启用，即使使用按流量计费的连接，GNOME Software 仍会在后台自动刷新(最终会下载某些元数据、检查更新等，上述操作可能会消耗用户成本)。"
 
 #: data/org.gnome.software.gschema.xml:25
 msgid "Whether it’s the very first run of GNOME Software"
-msgstr ""
+msgstr "是否是首次运行 GNOME Software"
 
 #: data/org.gnome.software.gschema.xml:29
 msgid "Show star ratings next to applications"
@@ -132,7 +133,7 @@ msgstr "在应用程序旁显示星级评分"
 
 #: data/org.gnome.software.gschema.xml:33
 msgid "Filter applications based on the default branch set for the remote"
-msgstr ""
+msgstr "根据为远程服务器设置的默认分支过滤应用"
 
 #: data/org.gnome.software.gschema.xml:37
 msgid "Non-free applications show a warning dialog before install"
@@ -168,7 +169,7 @@ msgstr "最近更新检查的时间戳"
 
 #: data/org.gnome.software.gschema.xml:56
 msgid "The last upgrade notification timestamp"
-msgstr ""
+msgstr "上一次更新通知的时间"
 
 #: data/org.gnome.software.gschema.xml:60
 msgid "The timestamp of the first security update, cleared after update"
@@ -180,14 +181,14 @@ msgstr "上次更新的时间戳"
 
 #: data/org.gnome.software.gschema.xml:68
 msgid "The age in seconds to verify the upstream screenshot is still valid"
-msgstr ""
+msgstr "以秒为单位的时间用于验证上游截图是否仍有效"
 
 #: data/org.gnome.software.gschema.xml:69
 msgid ""
 "Choosing a larger value will mean less round-trips to the remote server but "
 "updates to the screenshots may take longer to show to the user. A value of 0"
 " means to never check the server if the image already exists in the cache."
-msgstr ""
+msgstr "选择较大值将意味着减少到远程服务器的往返行程，而用户需要更长时间才会看到截图的更新。如果图像已经存在于高速缓存中，则值0意味着从不检查服务器。"
 
 #: data/org.gnome.software.gschema.xml:78
 msgid "The server to use for application reviews"
@@ -218,7 +219,7 @@ msgstr "免费软件可使用的许可URL"
 #: data/org.gnome.software.gschema.xml:99
 msgid ""
 "Install bundled applications for all users on the system where possible"
-msgstr ""
+msgstr "为所有用户在系统上尽可能安装捆绑程序"
 
 #: data/org.gnome.software.gschema.xml:103
 msgid "Show the folder management UI"
@@ -230,37 +231,37 @@ msgstr "允许访问软件源对话框"
 
 #: data/org.gnome.software.gschema.xml:111
 msgid "Offer upgrades for pre-releases"
-msgstr ""
+msgstr "提供已发布版本的升级"
 
 #: data/org.gnome.software.gschema.xml:115
 msgid "Show some UI elements informing the user that an app is non-free"
-msgstr ""
+msgstr "显示用以提示用户该软件非免费的界面信息"
 
 #: data/org.gnome.software.gschema.xml:119
 msgid "Show the prompt to install nonfree software sources"
-msgstr ""
+msgstr "显示安装非免费软件来源的提示"
 
 #: data/org.gnome.software.gschema.xml:123
 msgid "Show non-free software in search results"
-msgstr ""
+msgstr "在搜索结果里显示收费软件"
 
 #: data/org.gnome.software.gschema.xml:127
 msgid "Show the installed size for apps in the list of installed applications"
-msgstr ""
+msgstr "显示已安装应用列表中应用的安装大小"
 
 #: data/org.gnome.software.gschema.xml:131
 msgid "The URI that explains nonfree and proprietary software"
-msgstr ""
+msgstr "用于解释非免费、专有软件的 URI"
 
 #: data/org.gnome.software.gschema.xml:135
 msgid "A list of non-free sources that can be optionally enabled"
-msgstr ""
+msgstr "可以选择启用的非免费来源的列表"
 
 #: data/org.gnome.software.gschema.xml:139
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
-msgstr ""
+msgstr "URL 的列表，这些 URL 将指向将下载到 app-info 文件夹的 AppStream 文件"
 
 #: src/gs-app-folder-dialog.ui:5
 msgid "Add to Application Folder"
@@ -295,7 +296,7 @@ msgstr "将选中软件安装到系统上"
 
 #: src/gnome-software-local-file.desktop.in:10
 msgid "system-software-install"
-msgstr ""
+msgstr "system-software-install"
 
 #: src/gnome-software.ui:10
 msgid "Select All"
@@ -335,7 +336,7 @@ msgstr "更新(_U)"
 
 #: src/gnome-software.ui:251
 msgid "Search"
-msgstr ""
+msgstr "搜索"
 
 #. button in the info bar
 #: src/gnome-software.ui:349 src/gs-sources-dialog.ui:6
@@ -346,7 +347,7 @@ msgstr "软件源"
 #. button in the info bar
 #: src/gnome-software.ui:360
 msgid "Examine Disk"
-msgstr ""
+msgstr "检查磁盘"
 
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
@@ -358,7 +359,7 @@ msgstr "网络设置"
 #. button in the info bar
 #: src/gnome-software.ui:382
 msgid "More Information"
-msgstr ""
+msgstr "更多信息"
 
 #: src/gs-app-addon-row.c:97 src/gs-app-row.c:429 src/gs-shell-details.ui:356
 msgid "Pending"
@@ -415,7 +416,7 @@ msgstr "包名"
 
 #: src/gs-application.c:109
 msgid "Install the application (using application ID)"
-msgstr ""
+msgstr "安装应用(使用应用ID)"
 
 #: src/gs-application.c:111
 msgid "Open a local package file"
@@ -429,7 +430,7 @@ msgstr "文件名"
 msgid ""
 "The kind of interaction expected for this action: either ‘none’, ‘notify’, "
 "or ‘full’"
-msgstr ""
+msgstr "此操作的预期交互类型为: “无”、“通知”或“全部”"
 
 #: src/gs-application.c:116
 msgid "Show verbose debugging information"
@@ -441,7 +442,7 @@ msgstr "显示服务分析信息"
 
 #: src/gs-application.c:120
 msgid "Quit the running instance"
-msgstr ""
+msgstr "退出正在运行的实例"
 
 #: src/gs-application.c:122
 msgid "Prefer local file sources to AppStream"
@@ -496,14 +497,14 @@ msgstr "安装"
 #. * that allows the app to be easily updated live
 #: src/gs-app-row.c:199
 msgid "Update"
-msgstr ""
+msgstr "更新"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:203 src/gs-app-row.c:212 src/gs-page.c:517
 msgid "Uninstall"
-msgstr ""
+msgstr "卸载"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -519,49 +520,49 @@ msgstr "源"
 #. TRANSLATORS: this is when the service name is not known
 #: src/gs-auth-dialog.c:70
 msgid "To continue you need to sign in."
-msgstr ""
+msgstr "您需要登录以继续。"
 
 #. TRANSLATORS: the %s is a service name, e.g. "Ubuntu One"
 #: src/gs-auth-dialog.c:74
 #, c-format
 msgid "To continue you need to sign in to %s."
-msgstr ""
+msgstr "您需要登录%s以继续。"
 
 #: src/gs-auth-dialog.ui:70
 msgid "Email address"
-msgstr ""
+msgstr "电子邮件地址"
 
 #: src/gs-auth-dialog.ui:94
 msgid "I have an account already"
-msgstr ""
+msgstr "我已经有一个帐户"
 
 #: src/gs-auth-dialog.ui:113
 msgid "Password"
-msgstr ""
+msgstr "密码"
 
 #: src/gs-auth-dialog.ui:137
 msgid "I want to register for an account now"
-msgstr ""
+msgstr "我想要现在注册一个帐户"
 
 #: src/gs-auth-dialog.ui:154
 msgid "I have forgotten my password"
-msgstr ""
+msgstr "我忘记了我的密码"
 
 #: src/gs-auth-dialog.ui:181
 msgid "Sign in automatically next time"
-msgstr ""
+msgstr "下次自动登录"
 
 #: src/gs-auth-dialog.ui:210
 msgid "Enter your one-time pin for two-factor authentication."
-msgstr ""
+msgstr "请输入您的一次性PIN码以双重认证。"
 
 #: src/gs-auth-dialog.ui:223
 msgid "PIN"
-msgstr ""
+msgstr "PIN"
 
 #: src/gs-auth-dialog.ui:337
 msgid "Continue"
-msgstr ""
+msgstr "继续"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -725,7 +726,7 @@ msgstr "准备 %s"
 #: src/gs-page.c:486
 #, c-format
 msgid "Are you sure you want to remove the %s source?"
-msgstr ""
+msgstr "您确定要移除%s源吗?"
 
 #. TRANSLATORS: longer dialog text
 #: src/gs-page.c:490
@@ -733,7 +734,7 @@ msgstr ""
 msgid ""
 "All applications from %s will be removed, and you will have to re-install "
 "the source to use them again."
-msgstr ""
+msgstr "将移除%s中的所有应用，并且您必须重新安装来源才能再次使用这些应用。"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is an
 #. * application summary, e.g. 'GNOME Clocks'
@@ -767,15 +768,15 @@ msgstr "可在网络上找到关于 %s 及如何获取播放该格式的编解�
 msgid ""
 "Some of the currently installed software is not compatible with %s. If you "
 "continue, the following will be automatically removed during the upgrade:"
-msgstr ""
+msgstr "您现在安装的某个软件与%s不兼容。如果您继续安装，以下软件将会在升级过程中自动移除:"
 
 #: src/gs-removal-dialog.ui:27
 msgid "Incompatible Software"
-msgstr ""
+msgstr "不兼容的软件"
 
 #: src/gs-removal-dialog.ui:40
 msgid "_Continue"
-msgstr ""
+msgstr "继续(_C)"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A really bad application
@@ -787,13 +788,13 @@ msgstr "讨厌"
 #. *		Not a great application
 #: src/gs-review-dialog.c:102
 msgid "Don’t like it"
-msgstr ""
+msgstr "不喜欢"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A fairly-good application
 #: src/gs-review-dialog.c:106
 msgid "It’s OK"
-msgstr ""
+msgstr "一般"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A good application
@@ -875,13 +876,13 @@ msgstr "你认为该应用怎么样？尝试为你的意见列出理由。"
 #. Translators: A label for the total number of reviews.
 #: src/gs-review-histogram.ui:413
 msgid "ratings in total"
-msgstr ""
+msgstr "总评分"
 
 #. TRANSLATORS: this is when a user doesn't specify a name
 #. This refers to the license of the application
 #: src/gs-review-row.c:72 src/gs-shell-details.ui:1108
 msgid "Unknown"
-msgstr ""
+msgstr "未知"
 
 #. TRANSLATORS: we explain what the action is going to do
 #: src/gs-review-row.c:235
@@ -980,7 +981,7 @@ msgstr "截图"
 #: src/gs-shell.c:801
 #, c-format
 msgid "“%s” [%s]"
-msgstr ""
+msgstr "“%s” [%s]"
 
 #. TRANSLATORS: this is part of the in-app notification,
 #. * where the %s is a possibly multi-word localised distro
@@ -994,66 +995,66 @@ msgstr ""
 #: src/gs-shell.c:808 src/gs-shell.c:814 src/gs-shell.c:830 src/gs-shell.c:834
 #, c-format
 msgid "“%s”"
-msgstr ""
+msgstr "“%s”"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
 #: src/gs-shell.c:854
 #, c-format
 msgid "Unable to download firmware updates from %s"
-msgstr ""
+msgstr "无法从%s下载固件更新"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
 #: src/gs-shell.c:860
 #, c-format
 msgid "Unable to download updates from %s"
-msgstr ""
+msgstr "无法从%s下载更新"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:867
 msgid "Unable to download updates"
-msgstr ""
+msgstr "无法下载更新"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:872
 msgid ""
 "Unable to download updates: internet access was required but wasn’t "
 "available"
-msgstr ""
+msgstr "无法下载更新:需要访问互联网但互联网不可用"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
 #: src/gs-shell.c:881
 #, c-format
 msgid "Unable to download updates from %s: not enough disk space"
-msgstr ""
+msgstr "无法从%s下载更新: 磁盘空间不足"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:886
 msgid "Unable to download updates: not enough disk space"
-msgstr ""
+msgstr "无法下载更新: 磁盘空间不足"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:894
 msgid "Unable to download updates: authentication was required"
-msgstr ""
+msgstr "无法下载更新: 要求进行身份验证"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:899
 msgid "Unable to download updates: authentication was invalid"
-msgstr ""
+msgstr "无法下载更新: 身份验证无效"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:904
 msgid ""
 "Unable to download updates: you do not have permission to install software"
-msgstr ""
+msgstr "无法下载更新:您没有安装软件的权限"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:909
 msgid "Unable to get list of updates"
-msgstr ""
+msgstr "无法获得更新列表"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the application name (e.g. "GIMP") and
@@ -1061,14 +1062,14 @@ msgstr ""
 #: src/gs-shell.c:951
 #, c-format
 msgid "Unable to install %s as download failed from %s"
-msgstr ""
+msgstr "由于从%s下载失败而无法安装%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:957
 #, c-format
 msgid "Unable to install %s as download failed"
-msgstr ""
+msgstr "由于下载失败而无法安装%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the application name (e.g. "GIMP")
@@ -1077,51 +1078,51 @@ msgstr ""
 #: src/gs-shell.c:969
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
-msgstr ""
+msgstr "由于运行时%s不可用而无法安装%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:975
 #, c-format
 msgid "Unable to install %s as not supported"
-msgstr ""
+msgstr "由于不支持而无法安装%s"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:982
 msgid "Unable to install: internet access was required but wasn’t available"
-msgstr ""
+msgstr "无法安装: 需要访问互联网但互联网不可用"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:988
 msgid "Unable to install: the application has an invalid format"
-msgstr ""
+msgstr "无法安装: 应用格式无效"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:993
 #, c-format
 msgid "Unable to install %s: not enough disk space"
-msgstr ""
+msgstr "无法安装%s: 磁盘空间不足"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1001
 #, c-format
 msgid "Unable to install %s: authentication was required"
-msgstr ""
+msgstr "无法安装%s:要求进行身份验证"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1008
 #, c-format
 msgid "Unable to install %s: authentication was invalid"
-msgstr ""
+msgstr "无法安装%s:身份验证无效"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1015
 #, c-format
 msgid "Unable to install %s: you do not have permission to install software"
-msgstr ""
+msgstr "无法安装%s: 您没有安装软件的权限"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * the %s is the name of the authentication service,
@@ -1129,12 +1130,12 @@ msgstr ""
 #: src/gs-shell.c:1028
 #, c-format
 msgid "Your %s account has been suspended."
-msgstr ""
+msgstr "您的%s帐户已被暂停。"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1032
 msgid "It is not possible to install software until this has been resolved."
-msgstr ""
+msgstr "解决此问题后才能安装软件。"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the clickable link (e.g.
@@ -1142,14 +1143,14 @@ msgstr ""
 #: src/gs-shell.c:1043
 #, c-format
 msgid "For more information, visit %s."
-msgstr ""
+msgstr "有关更多信息，请访问%s。"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1052
 #, c-format
 msgid "Unable to install %s"
-msgstr ""
+msgstr "无法安装%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the app name (e.g. "GIMP") and
@@ -1158,54 +1159,54 @@ msgstr ""
 #: src/gs-shell.c:1094
 #, c-format
 msgid "Unable to update %s from %s"
-msgstr ""
+msgstr "无法从%s更新%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1100
 #, c-format
 msgid "Unable to update %s as download failed"
-msgstr ""
+msgstr "由于下载失败而无法更新%s"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1106
 msgid "Unable to update: internet access was required but wasn’t available"
-msgstr ""
+msgstr "无法更新: 需要访问互联网但互联网不可用"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1114
 #, c-format
 msgid "Unable to update %s: not enough disk space"
-msgstr ""
+msgstr "无法更新%s:磁盘空间不足"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1123
 #, c-format
 msgid "Unable to update %s: authentication was required"
-msgstr ""
+msgstr "无法更新%s: 要求进行身份验证"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1130
 #, c-format
 msgid "Unable to update %s: authentication was invalid"
-msgstr ""
+msgstr "无法更新%s:身份验证无效"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1137
 #, c-format
 msgid "Unable to update %s: you do not have permission to update software"
-msgstr ""
+msgstr "无法更新%s: 您没有更新软件的权限"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1145
 #, c-format
 msgid "Unable to update %s"
-msgstr ""
+msgstr "无法更新%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the distro name (e.g. "Fedora 25") and
@@ -1213,82 +1214,82 @@ msgstr ""
 #: src/gs-shell.c:1186
 #, c-format
 msgid "Unable to upgrade to %s from %s"
-msgstr ""
+msgstr "无法从%s升级到%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the app name (e.g. "GIMP")
 #: src/gs-shell.c:1191
 #, c-format
 msgid "Unable to upgrade to %s as download failed"
-msgstr ""
+msgstr "由于下载失败而无法升级到%s"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1198
 msgid "Unable to upgrade: internet access was required but wasn’t available"
-msgstr ""
+msgstr "无法升级: 需要访问互联网但互联网不可用"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
 #: src/gs-shell.c:1206
 #, c-format
 msgid "Unable to upgrade to %s: not enough disk space"
-msgstr ""
+msgstr "无法升级到%s:磁盘空间不足"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
 #: src/gs-shell.c:1215
 #, c-format
 msgid "Unable to upgrade to %s: authentication was required"
-msgstr ""
+msgstr "无法升级到%s: 要求进行身份验证"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
 #: src/gs-shell.c:1222
 #, c-format
 msgid "Unable to upgrade to %s: authentication was invalid"
-msgstr ""
+msgstr "无法升级到%s: 身份验证无效"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
 #: src/gs-shell.c:1229
 #, c-format
 msgid "Unable to upgrade to %s: you do not have permission to upgrade"
-msgstr ""
+msgstr "无法升级到%s:您没有升级的权限"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
 #: src/gs-shell.c:1236
 #, c-format
 msgid "Unable to upgrade to %s"
-msgstr ""
+msgstr "无法升级到%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1274
 #, c-format
 msgid "Unable to remove %s: authentication was required"
-msgstr ""
+msgstr "无法删除%s: 要求进行身份验证"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1280
 #, c-format
 msgid "Unable to remove %s: authentication was invalid"
-msgstr ""
+msgstr "无法删除%s: 身份验证无效"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1286
 #, c-format
 msgid "Unable to remove %s: you do not have permission to remove software"
-msgstr ""
+msgstr "无法删除%s: 您没有删除软件的权限"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1293
 #, c-format
 msgid "Unable to remove %s"
-msgstr ""
+msgstr "无法删除%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the application name (e.g. "GIMP")
@@ -1297,17 +1298,17 @@ msgstr ""
 #: src/gs-shell.c:1335
 #, c-format
 msgid "Unable to launch %s: %s is not installed"
-msgstr ""
+msgstr "无法启动%s: %s未安装"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1342 src/gs-shell.c:1382 src/gs-shell.c:1422
 msgid "Not enough disk space — free up some space and try again"
-msgstr ""
+msgstr "磁盘空间不足 - 请释放一些空间后再试一次。"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1377
 msgid "Failed to install file: authentication failed"
-msgstr ""
+msgstr "无法安装文件: 身份验证失败"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * the %s is the origin, e.g. "Fedora" or
@@ -1315,19 +1316,19 @@ msgstr ""
 #: src/gs-shell.c:1416
 #, c-format
 msgid "Unable to contact %s"
-msgstr ""
+msgstr "无法联系%s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1431
 #, c-format
 msgid "%s needs to be restarted to use new plugins."
-msgstr ""
+msgstr "需要重新启动%s以使用新的插件。"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1436
 msgid "This application needs to be restarted to use new plugins."
-msgstr ""
+msgstr "需要重新启动此应用以使用新的插件。"
 
 #: src/gs-shell-category.ui:81
 msgid "Extension Settings"
@@ -1365,7 +1366,7 @@ msgstr "安装(_I)…"
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-shell-details.c:362 src/gs-shell-details.ui:547
 msgid "_Uninstall"
-msgstr ""
+msgstr "卸载(_U)"
 
 #: src/gs-shell-details.c:415 src/gs-sources-dialog.c:506
 msgid "Removing…"
@@ -1394,12 +1395,12 @@ msgstr "未知"
 #. TRANSLATORS: we need a remote server to process
 #: src/gs-shell-details.c:1310
 msgid "You need internet access to write a review"
-msgstr ""
+msgstr "您需要互联网连接来书写评价"
 
 #: src/gs-shell-details.c:1433
 #, c-format
 msgid "Could not find “%s”"
-msgstr ""
+msgstr "找不到“%s”"
 
 #. TRANSLATORS: see the wikipedia page
 #: src/gs-shell-details.c:1922
@@ -1415,11 +1416,11 @@ msgstr "免费软件"
 #: src/gs-shell-details.c:1993
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
-msgstr[0] ""
+msgstr[0] "使用者需有以下许可:"
 
 #: src/gs-shell-details.c:2009 src/gs-shell-details.ui:1490
 msgid "More information"
-msgstr ""
+msgstr "更多信息"
 
 #: src/gs-shell-details.ui:7
 msgid "Details page"
@@ -1434,17 +1435,17 @@ msgstr "启动(_L)"
 #. application.
 #: src/gs-shell-details.ui:245
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "添加到桌面(_A)"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-shell-details.ui:259
 msgid "_Remove from Desktop"
-msgstr ""
+msgstr "从桌面移除(_R)"
 
 #: src/gs-shell-details.ui:450
 msgid "No screenshot provided"
-msgstr ""
+msgstr "没有可用截图"
 
 #: src/gs-shell-details.ui:486
 msgid "Software Source Included"
@@ -1494,7 +1495,7 @@ msgstr "详细信息"
 
 #: src/gs-shell-details.ui:588
 msgid "Developer _Website"
-msgstr ""
+msgstr "开发者网站( _W)"
 
 #: src/gs-shell-details.ui:700
 msgid "Localized in your Language"
@@ -1514,7 +1515,7 @@ msgstr "系统集合"
 
 #: src/gs-shell-details.ui:748
 msgid "Sandboxed"
-msgstr ""
+msgstr "沙盒式"
 
 #: src/gs-shell-details.ui:773 src/gs-sources-dialog.ui:359
 msgid "Version"
@@ -1522,7 +1523,7 @@ msgstr "版本"
 
 #: src/gs-shell-details.ui:810
 msgid "Age Rating"
-msgstr ""
+msgstr "年龄分级"
 
 #: src/gs-shell-details.ui:848
 msgid "Updated"
@@ -1551,7 +1552,7 @@ msgstr "许可协议"
 #. This refers to the license of the application
 #: src/gs-shell-details.ui:1074
 msgid "Free"
-msgstr ""
+msgstr "免费"
 
 #. This refers to the license of the application
 #: src/gs-shell-details.ui:1091
@@ -1590,34 +1591,34 @@ msgstr "显示更多(_S)"
 msgid ""
 "This means that the software can be freely run, copied, distributed, studied"
 " and modified."
-msgstr ""
+msgstr "这表示该软件可以免费运行、复制、发行、学习和修改。"
 
 #: src/gs-shell-details.ui:1457
 msgid "Proprietary Software"
-msgstr ""
+msgstr "专有软件"
 
 #: src/gs-shell-details.ui:1474
 msgid ""
 "This means that the software is owned by an individual or a company. There "
 "are often restrictions on its use and its source code cannot usually be "
 "accessed."
-msgstr ""
+msgstr "这表示该软件为个人或公司所有，使用常常受限且无法访问其源代码。"
 
 #: src/gs-shell-details.ui:1519
 msgid "Unknown Software License"
-msgstr ""
+msgstr "未知软件许可证"
 
 #: src/gs-shell-details.ui:1536
 msgid "The license terms of this software are unknown."
-msgstr ""
+msgstr "该软件的许可条款未知。"
 
 #: src/gs-shell-details.ui:1563
 msgid "The application was rated this way because it features:"
-msgstr ""
+msgstr "应用根据下列特点进行分级:"
 
 #: src/gs-shell-details.ui:1589
 msgid "No details were available for this rating."
-msgstr ""
+msgstr "没有对应此评级的详细信息。"
 
 #. TRANSLATORS: separator for a list of items
 #: src/gs-shell-extras.c:145
@@ -1827,13 +1828,13 @@ msgstr "没有需要管理的评价"
 
 #: src/gs-shell-overview.c:285
 msgid "More…"
-msgstr ""
+msgstr "更多..."
 
 #. TRANSLATORS: this is a heading for audio applications which
 #. * have been featured ('recommended') by the distribution
 #: src/gs-shell-overview.c:500
 msgid "Recommended Audio & Video Applications"
-msgstr ""
+msgstr "推荐的音频&视频应用"
 
 #. TRANSLATORS: this is a heading for games which have been
 #. * featured ('recommended') by the distribution
@@ -1851,30 +1852,30 @@ msgstr "推荐的图形类应用"
 #. * have been featured ('recommended') by the distribution
 #: src/gs-shell-overview.c:515
 msgid "Recommended Productivity Applications"
-msgstr ""
+msgstr "推荐的效率型应用"
 
 #. TRANSLATORS: this is the proprietary info bar
 #: src/gs-shell-overview.c:823
 msgid ""
 "Provides access to additional software, including web browsers and games."
-msgstr ""
+msgstr "可访问其他软件，包括 Web 浏览器和游戏。"
 
 #. TRANSLATORS: this is the proprietary info bar
 #: src/gs-shell-overview.c:827
 msgid ""
 "Proprietary software has restrictions on use and access to source code."
-msgstr ""
+msgstr "专有软件针对源代码的使用和访问有一些限制。"
 
 #. TRANSLATORS: this is the clickable
 #. * link on the proprietary info bar
 #: src/gs-shell-overview.c:834 src/gs-sources-dialog.c:264
 msgid "Find out more…"
-msgstr ""
+msgstr "了解更多..."
 
 #. TRANSLATORS: button to turn on proprietary software sources
 #: src/gs-shell-overview.c:867
 msgid "Enable"
-msgstr ""
+msgstr "启用"
 
 #: src/gs-shell-overview.ui:7
 msgid "Overview page"
@@ -1882,7 +1883,7 @@ msgstr "概览页"
 
 #: src/gs-shell-overview.ui:49
 msgid "Enable Proprietary Software Sources?"
-msgstr ""
+msgstr "是否启用专有软件来源?"
 
 #: src/gs-shell-overview.ui:117
 msgid "Featured Application"
@@ -1896,7 +1897,7 @@ msgstr "软件分类"
 #. ('picked') by the distribution.
 #: src/gs-shell-overview.ui:310
 msgid "Editor’s Picks"
-msgstr ""
+msgstr "编辑推荐"
 
 #: src/gs-shell-overview.ui:388
 msgid "No Application Data Found"
@@ -1995,12 +1996,12 @@ msgstr "上次检查：%s"
 #. TRANSLATORS: all updates will be installed
 #: src/gs-shell-updates.c:516
 msgid "U_pdate All"
-msgstr ""
+msgstr "全部更新(_P)"
 
 #. TRANSLATORS: this is an offline update
 #: src/gs-shell-updates.c:520
 msgid "_Restart & Update"
-msgstr ""
+msgstr "重新启动并更新(_R)"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: src/gs-shell-updates.c:859
@@ -2106,7 +2107,7 @@ msgstr "未安装应用程序或扩展；可能还有其他软件"
 #, c-format
 msgid "%u application installed"
 msgid_plural "%u applications installed"
-msgstr[0] ""
+msgstr[0] "%u款应用已安装"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software source.
@@ -2114,7 +2115,7 @@ msgstr[0] ""
 #, c-format
 msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
-msgstr[0] ""
+msgstr[0] "已安装%u个附加组件"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software source.
@@ -2123,7 +2124,7 @@ msgstr[0] ""
 #, c-format
 msgid "%u application"
 msgid_plural "%u applications"
-msgstr[0] ""
+msgstr[0] "%u款应用"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software source.
@@ -2132,7 +2133,7 @@ msgstr[0] ""
 #, c-format
 msgid "%u add-on"
 msgid_plural "%u add-ons"
-msgstr[0] ""
+msgstr[0] "%u个插件"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software source.
@@ -2147,12 +2148,12 @@ msgstr[0] "%s 和 %s 已安装"
 #. TRANSLATORS: nonfree software
 #: src/gs-sources-dialog.c:254
 msgid "Typically has restrictions on use and access to source code."
-msgstr ""
+msgstr "通常针对源代码的使用和访问有一些限制。"
 
 #. TRANSLATORS: list header
 #: src/gs-sources-dialog.c:275
 msgid "Proprietary Software Sources"
-msgstr ""
+msgstr "专有软件来源"
 
 #: src/gs-sources-dialog.c:492 src/gs-sources-dialog.ui:487
 msgid "Remove Source"
@@ -2176,7 +2177,7 @@ msgstr "软件源可以从网络上下载程序。他们让您能访问未由 %s
 
 #: src/gs-sources-dialog.ui:155
 msgid "Additional Sources"
-msgstr ""
+msgstr "其他来源"
 
 #: src/gs-sources-dialog.ui:175
 msgid ""
@@ -2210,17 +2211,17 @@ msgstr "网站"
 #: src/gs-summary-tile.c:72
 #, c-format
 msgid "%s (Installed)"
-msgstr ""
+msgstr "%s(已安装)"
 
 #: src/gs-summary-tile.c:77
 #, c-format
 msgid "%s (Installing)"
-msgstr ""
+msgstr "%s(安装中)"
 
 #: src/gs-summary-tile.c:82
 #, c-format
 msgid "%s (Removing)"
-msgstr ""
+msgstr "%s(移除中)"
 
 #. TRANSLATORS: this is where the packager did not write
 #. * a description for the update
@@ -2408,13 +2409,13 @@ msgstr "下载(_D)"
 #. * have been successfully installed
 #: src/gs-common.c:139
 msgid "OS updates are now installed"
-msgstr ""
+msgstr "操作系统更新已安装"
 
 #. TRANSLATORS: this is the body of a notification that OS updates
 #. * have been successfully installed
 #: src/gs-common.c:142
 msgid "Recently installed updates are available to review"
-msgstr ""
+msgstr "最近安装的更新已可供查看"
 
 #. TRANSLATORS: this is the summary of a notification that an application
 #. * has been successfully installed
@@ -2427,7 +2428,7 @@ msgstr "%s 已安装"
 #. * has been successfully installed
 #: src/gs-common.c:149
 msgid "Application is ready to be used."
-msgstr ""
+msgstr "应用已可供使用。"
 
 #. TRANSLATORS: this is button that opens the newly installed application
 #: src/gs-common.c:155
@@ -2482,7 +2483,7 @@ msgstr "在一些国家安装或使用此编码解码器是非法的。"
 #. TRANSLATORS: this is button text to not ask about non-free content again
 #: src/gs-common.c:279
 msgid "Don’t Warn Again"
-msgstr ""
+msgstr "不再提醒"
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:288
@@ -2499,7 +2500,7 @@ msgstr "包管理器提供的详细错误如下："
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:75
 msgid "No cartoon violence"
-msgstr ""
+msgstr "无卡通暴力"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:78
@@ -2519,7 +2520,7 @@ msgstr "卡通人物暴力画面"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:87
 msgid "No fantasy violence"
-msgstr ""
+msgstr "无幻想暴力"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:90
@@ -2539,12 +2540,12 @@ msgstr "区别于真实的卡通人物暴力画面"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:99
 msgid "No realistic violence"
-msgstr ""
+msgstr "无现实暴力"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:102
 msgid "Mildly realistic characters in unsafe situations"
-msgstr ""
+msgstr "略显真实的人物处于不安全的情况"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:105
@@ -2559,7 +2560,7 @@ msgstr "真实人物暴力画面"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:111
 msgid "No bloodshed"
-msgstr ""
+msgstr "无流血画面"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:114
@@ -2579,7 +2580,7 @@ msgstr "身体受伤流血的描述"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:123
 msgid "No sexual violence"
-msgstr ""
+msgstr "无性暴力"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:126
@@ -2589,7 +2590,7 @@ msgstr "强奸或其他性暴力行为"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:129
 msgid "No references to alcohol"
-msgstr ""
+msgstr "不含酒精参考"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:132
@@ -2604,7 +2605,7 @@ msgstr "含酒精饮料的使用"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:138
 msgid "No references to illicit drugs"
-msgstr ""
+msgstr "不含违禁药品参考"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:141
@@ -2629,7 +2630,7 @@ msgstr "烟草制品的使用"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:153
 msgid "No nudity of any sort"
-msgstr ""
+msgstr "不含任何形式的裸露"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:156
@@ -2644,7 +2645,7 @@ msgstr "持续裸露"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:162
 msgid "No references or depictions of sexual nature"
-msgstr ""
+msgstr "不含性色彩的参考或描述"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:165
@@ -2664,7 +2665,7 @@ msgstr "性行为画面"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:174
 msgid "No profanity of any kind"
-msgstr ""
+msgstr "不含任何形式的亵渎"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:177
@@ -2684,7 +2685,7 @@ msgstr "较多或频繁使用不敬语言"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:186
 msgid "No innappropriate humor"
-msgstr ""
+msgstr "不含不适当的幽默"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:189
@@ -2704,7 +2705,7 @@ msgstr "成人幽默"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:198
 msgid "No discriminatory language of any kind"
-msgstr ""
+msgstr "不含任何形式的歧视性语言"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:201
@@ -2714,7 +2715,7 @@ msgstr "对特定人群的消极态度"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:204
 msgid "Discrimination designed to cause emotional harm"
-msgstr ""
+msgstr "会引起情感伤害的歧视"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:207
@@ -2724,7 +2725,7 @@ msgstr "明显的性别、性取向、种族、宗教歧视"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:210
 msgid "No advertising of any kind"
-msgstr ""
+msgstr "不含任何形式的广告"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:213
@@ -2744,7 +2745,7 @@ msgstr "建议玩家购买特定现实物品"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:222
 msgid "No gambling of any kind"
-msgstr ""
+msgstr "不含任何形式的赌博"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:225
@@ -2754,7 +2755,7 @@ msgstr "使用代币或积分随机赌博"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:228
 msgid "Gambling using “play” money"
-msgstr ""
+msgstr "使用虚拟货币赌博"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:231
@@ -2764,7 +2765,7 @@ msgstr "使用现实货币赌博"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:234
 msgid "No ability to spend money"
-msgstr ""
+msgstr "不含使用货币的能力"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:237
@@ -2774,7 +2775,7 @@ msgstr "虚拟世界中使用现实货币的能力"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:240
 msgid "No way to chat with other players"
-msgstr ""
+msgstr "无法与其他玩家聊天"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:243
@@ -2794,7 +2795,7 @@ msgstr "玩家间自由的聊天功能"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:252
 msgid "No way to talk with other players"
-msgstr ""
+msgstr "无法与其他玩家交谈"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:255
@@ -2804,7 +2805,7 @@ msgstr "玩家间自由的语音聊天或视频聊天功能"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:258
 msgid "No sharing of social network usernames or email addresses"
-msgstr ""
+msgstr "不会共享社交网络用户名或电子邮件地址"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:261
@@ -2814,7 +2815,7 @@ msgstr "共享社交网络用户名或电子邮件地址"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:264
 msgid "No sharing of user information with 3rd parties"
-msgstr ""
+msgstr "不与第三方共享用户信息"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:267
@@ -2824,7 +2825,7 @@ msgstr "与第三方共享用户信息"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:270
 msgid "No sharing of physical location to other users"
-msgstr ""
+msgstr "不与其他用户共享物理地址"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:273
@@ -2845,7 +2846,7 @@ msgstr "退出(_Q)"
 
 #: src/org.gnome.Software.desktop.in:6
 msgid "org.gnome.Software"
-msgstr ""
+msgstr "org.gnome.Software"
 
 #: src/org.gnome.Software.desktop.in:12
 msgid ""
@@ -2873,337 +2874,337 @@ msgstr "启动中..."
 #: src/plugins/gs-desktop-common.c:31
 msgctxt "Menu of AudioVideo"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:35
 msgctxt "Menu of AudioVideo"
 msgid "Featured"
-msgstr ""
+msgstr "特色软件"
 
 #: src/plugins/gs-desktop-common.c:39
 msgctxt "Menu of AudioVideo"
 msgid "Audio Creation & Editing"
-msgstr ""
+msgstr "音频创建&编辑"
 
 #: src/plugins/gs-desktop-common.c:45
 msgctxt "Menu of AudioVideo"
 msgid "Music Players"
-msgstr ""
+msgstr "音乐播放器"
 
 #: src/plugins/gs-desktop-common.c:49
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
-msgstr ""
+msgstr "3D图形"
 
 #: src/plugins/gs-desktop-common.c:52
 msgctxt "Menu of Graphics"
 msgid "Photography"
-msgstr ""
+msgstr "摄影"
 
 #: src/plugins/gs-desktop-common.c:55
 msgctxt "Menu of Graphics"
 msgid "Scanning"
-msgstr ""
+msgstr "扫描"
 
 #: src/plugins/gs-desktop-common.c:58
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
-msgstr ""
+msgstr "矢量图形"
 
 #: src/plugins/gs-desktop-common.c:61
 msgctxt "Menu of Graphics"
 msgid "Viewers"
-msgstr ""
+msgstr "查看器"
 
 #: src/plugins/gs-desktop-common.c:69
 msgctxt "Menu of Education and Science"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:73
 msgctxt "Menu of Education and Science"
 msgid "Featured"
-msgstr ""
+msgstr "特色软件"
 
 #: src/plugins/gs-desktop-common.c:77
 msgctxt "Menu of Education and Science"
 msgid "Artificial Intelligence"
-msgstr ""
+msgstr "人工智能"
 
 #: src/plugins/gs-desktop-common.c:80
 msgctxt "Menu of Education and Science"
 msgid "Astronomy"
-msgstr ""
+msgstr "天文学"
 
 #: src/plugins/gs-desktop-common.c:84
 msgctxt "Menu of Education and Science"
 msgid "Chemistry"
-msgstr ""
+msgstr "化学"
 
 #: src/plugins/gs-desktop-common.c:88
 msgctxt "Menu of Education and Science"
 msgid "Languages"
-msgstr ""
+msgstr "语言学"
 
 #: src/plugins/gs-desktop-common.c:92
 msgctxt "Menu of Education and Science"
 msgid "Math"
-msgstr ""
+msgstr "数学"
 
 #: src/plugins/gs-desktop-common.c:99
 msgctxt "Menu of Education and Science"
 msgid "Robotics"
-msgstr ""
+msgstr "机器人学"
 
 #: src/plugins/gs-desktop-common.c:108
 msgctxt "Menu of Family"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:111
 msgctxt "Menu of Family"
 msgid "Featured"
-msgstr ""
+msgstr "特色软件"
 
 #: src/plugins/gs-desktop-common.c:119
 msgctxt "Menu of Games"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:122
 msgctxt "Menu of Games"
 msgid "Featured"
-msgstr ""
+msgstr "特色软件"
 
 #: src/plugins/gs-desktop-common.c:125
 msgctxt "Menu of Games"
 msgid "Action"
-msgstr ""
+msgstr "动作"
 
 #: src/plugins/gs-desktop-common.c:128
 msgctxt "Menu of Games"
 msgid "Adventure"
-msgstr ""
+msgstr "冒险"
 
 #: src/plugins/gs-desktop-common.c:131
 msgctxt "Menu of Games"
 msgid "Arcade"
-msgstr ""
+msgstr "街机"
 
 #: src/plugins/gs-desktop-common.c:134
 msgctxt "Menu of Games"
 msgid "Blocks"
-msgstr ""
+msgstr "益智"
 
 #: src/plugins/gs-desktop-common.c:137
 msgctxt "Menu of Games"
 msgid "Board"
-msgstr ""
+msgstr "棋类"
 
 #: src/plugins/gs-desktop-common.c:140
 msgctxt "Menu of Games"
 msgid "Card"
-msgstr ""
+msgstr "纸牌"
 
 #: src/plugins/gs-desktop-common.c:143
 msgctxt "Menu of Games"
 msgid "Emulators"
-msgstr ""
+msgstr "模拟器"
 
 #: src/plugins/gs-desktop-common.c:146
 msgctxt "Menu of Games"
 msgid "Kids"
-msgstr ""
+msgstr "儿童"
 
 #: src/plugins/gs-desktop-common.c:149
 msgctxt "Menu of Games"
 msgid "Logic"
-msgstr ""
+msgstr "逻辑"
 
 #: src/plugins/gs-desktop-common.c:152
 msgctxt "Menu of Games"
 msgid "Role Playing"
-msgstr ""
+msgstr "角色扮演"
 
 #: src/plugins/gs-desktop-common.c:155
 msgctxt "Menu of Games"
 msgid "Sports"
-msgstr ""
+msgstr "体育"
 
 #: src/plugins/gs-desktop-common.c:159
 msgctxt "Menu of Games"
 msgid "Strategy"
-msgstr ""
+msgstr "策略"
 
 #: src/plugins/gs-desktop-common.c:167
 msgctxt "Menu of Office"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:170
 msgctxt "Menu of Office"
 msgid "Featured"
-msgstr ""
+msgstr "特色软件"
 
 #: src/plugins/gs-desktop-common.c:173
 msgctxt "Menu of Office"
 msgid "Calendar"
-msgstr ""
+msgstr "日历"
 
 #: src/plugins/gs-desktop-common.c:177
 msgctxt "Menu of Office"
 msgid "Database"
-msgstr ""
+msgstr "数据库"
 
 #: src/plugins/gs-desktop-common.c:180
 msgctxt "Menu of Office"
 msgid "Finance"
-msgstr ""
+msgstr "金融"
 
 #: src/plugins/gs-desktop-common.c:184
 msgctxt "Menu of Office"
 msgid "Word Processor"
-msgstr ""
+msgstr "文字处理"
 
 #: src/plugins/gs-desktop-common.c:193
 msgctxt "Menu of Utility"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:198
 msgctxt "Menu of Utility"
 msgid "Featured"
-msgstr ""
+msgstr "特色软件"
 
 #: src/plugins/gs-desktop-common.c:203
 msgctxt "Menu of Communication"
 msgid "Chat"
-msgstr ""
+msgstr "聊天"
 
 #: src/plugins/gs-desktop-common.c:210
 msgctxt "Menu of Addons"
 msgid "Codecs"
-msgstr ""
+msgstr "编码解码器"
 
 #: src/plugins/gs-desktop-common.c:213
 msgctxt "Menu of Development"
 msgid "Debuggers"
-msgstr ""
+msgstr "调试器"
 
 #: src/plugins/gs-desktop-common.c:216
 msgctxt "Menu of Addons"
 msgid "Hardware Drivers"
-msgstr ""
+msgstr "硬件驱动程序"
 
 #: src/plugins/gs-desktop-common.c:219
 msgctxt "Menu of Addons"
 msgid "Fonts"
-msgstr ""
+msgstr "字体"
 
 #: src/plugins/gs-desktop-common.c:222
 msgctxt "Menu of Development"
 msgid "IDEs"
-msgstr ""
+msgstr "IDEs"
 
 #: src/plugins/gs-desktop-common.c:226
 msgctxt "Menu of Addons"
 msgid "Input Sources"
-msgstr ""
+msgstr "输入源"
 
 #: src/plugins/gs-desktop-common.c:229
 msgctxt "Menu of Addons"
 msgid "Language Packs"
-msgstr ""
+msgstr "语言包"
 
 #: src/plugins/gs-desktop-common.c:232
 msgctxt "Menu of Addons"
 msgid "Localization"
-msgstr ""
+msgstr "本地化"
 
 #: src/plugins/gs-desktop-common.c:235
 msgctxt "Menu of Addons"
 msgid "Shell Extensions"
-msgstr ""
+msgstr "Shell 扩展"
 
 #: src/plugins/gs-desktop-common.c:238
 msgctxt "Menu of Utility"
 msgid "Text Editors"
-msgstr ""
+msgstr "文本编辑器"
 
 #: src/plugins/gs-desktop-common.c:241
 msgctxt "Menu of Communication"
 msgid "Web Browsers"
-msgstr ""
+msgstr "网页浏览器"
 
 #: src/plugins/gs-desktop-common.c:249
 msgctxt "Menu of Reference"
 msgid "All"
-msgstr ""
+msgstr "全部"
 
 #: src/plugins/gs-desktop-common.c:252
 msgctxt "Menu of Reference"
 msgid "Featured"
-msgstr ""
+msgstr "特色软件"
 
 #: src/plugins/gs-desktop-common.c:255
 msgctxt "Menu of Art"
 msgid "Art"
-msgstr ""
+msgstr "艺术"
 
 #: src/plugins/gs-desktop-common.c:258
 msgctxt "Menu of Reference"
 msgid "Biography"
-msgstr ""
+msgstr "传记"
 
 #: src/plugins/gs-desktop-common.c:261
 msgctxt "Menu of Reference"
 msgid "Comics"
-msgstr ""
+msgstr "漫画"
 
 #: src/plugins/gs-desktop-common.c:264
 msgctxt "Menu of Reference"
 msgid "Fiction"
-msgstr ""
+msgstr "小说"
 
 #: src/plugins/gs-desktop-common.c:267
 msgctxt "Menu of Reference"
 msgid "Health"
-msgstr ""
+msgstr "健康"
 
 #: src/plugins/gs-desktop-common.c:270
 msgctxt "Menu of Reference"
 msgid "History"
-msgstr ""
+msgstr "历史"
 
 #: src/plugins/gs-desktop-common.c:273
 msgctxt "Menu of Reference"
 msgid "Lifestyle"
-msgstr ""
+msgstr "生活"
 
 #: src/plugins/gs-desktop-common.c:276
 msgctxt "Menu of Communication"
 msgid "News"
-msgstr ""
+msgstr "新闻"
 
 #: src/plugins/gs-desktop-common.c:280
 msgctxt "Menu of Reference"
 msgid "Politics"
-msgstr ""
+msgstr "政治"
 
 #: src/plugins/gs-desktop-common.c:283
 msgctxt "Menu of Reference"
 msgid "Sports"
-msgstr ""
+msgstr "体育"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: src/plugins/gs-desktop-common.c:292
 msgid "Learning"
-msgstr ""
+msgstr "学习"
 
 #. TRANSLATORS: this is the menu spec main category for Family
 #: src/plugins/gs-desktop-common.c:295
 msgid "Family"
-msgstr ""
+msgstr "家庭"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: src/plugins/gs-desktop-common.c:298
@@ -3213,17 +3214,17 @@ msgstr "游戏"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: src/plugins/gs-desktop-common.c:301
 msgid "Multimedia"
-msgstr ""
+msgstr "多媒体"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: src/plugins/gs-desktop-common.c:304
 msgid "Work"
-msgstr ""
+msgstr "工作"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: src/plugins/gs-desktop-common.c:307
 msgid "Reference & News"
-msgstr ""
+msgstr "参考消息&新闻"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: src/plugins/gs-desktop-common.c:310
@@ -3233,39 +3234,39 @@ msgstr "实用工具"
 #. TRANSLATORS: tool that is used when copying profiles system-wide
 #: src/plugins/gs-install-appstream.c:118
 msgid "GNOME Software AppStream system-wide installer"
-msgstr ""
+msgstr "GNOME Software AppStream 系统范围安装程序"
 
 #: src/plugins/gs-install-appstream.c:120
 msgid "Failed to parse command line arguments"
-msgstr ""
+msgstr "无法解析命令行参数"
 
 #. TRANSLATORS: user did not specify a valid filename
 #: src/plugins/gs-install-appstream.c:127
 msgid "You need to specify exactly one filename"
-msgstr ""
+msgstr "您需要指定一个文件名"
 
 #. TRANSLATORS: only able to install files as root
 #: src/plugins/gs-install-appstream.c:134
 msgid "This program can only be used by the root user"
-msgstr ""
+msgstr "此程序仅供根用户使用"
 
 #. TRANSLATORS: error details
 #: src/plugins/gs-install-appstream.c:142
 msgid "Failed to validate content type"
-msgstr ""
+msgstr "无法验证内容类型"
 
 #. TRANSLATORS: error details
 #: src/plugins/gs-install-appstream.c:149
 msgid "Failed to copy"
-msgstr ""
+msgstr "无法复制"
 
 #: src/plugins/gs-plugin-eos.c:891
 msgid "Endless Platform"
-msgstr ""
+msgstr "Endless 平台"
 
 #: src/plugins/gs-plugin-eos.c:894
 msgid "Framework for applications"
-msgstr ""
+msgstr "应用框架"
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
@@ -3281,56 +3282,56 @@ msgstr "包括性能、稳定性及安全改进。"
 
 #: src/plugins/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Wed Apps Support"
-msgstr ""
+msgstr "Web 应用支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:7
 msgid "Run popular web applications in a browser"
-msgstr ""
+msgstr "在浏览器中运行受欢迎的 web 应用"
 
 #: src/plugins/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:6
 msgid "Flatpak Support"
-msgstr ""
+msgstr "Flatpak 支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:7
 msgid "Flatpak is a framework for desktop applications on Linux"
-msgstr ""
+msgstr "Flatpak 是 Linux 平台的桌面应用框架"
 
 #: src/plugins/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:6
 msgid "Firmware Upgrade Support"
-msgstr ""
+msgstr "固件升级支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:7
 msgid "Provides support for firmware upgrades"
-msgstr ""
+msgstr "为固件升级提供支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Limba.metainfo.xml.in:6
 msgid "Limba Support"
-msgstr ""
+msgstr "Limba 支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Limba.metainfo.xml.in:7
 msgid "Limba provides developers a way to easily create software bundles"
-msgstr ""
+msgstr "Limba 为开发人员提供轻松创建软件包的方法"
 
 #: src/plugins/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:6
 msgid "Open Desktop Ratings Support"
-msgstr ""
+msgstr "开放桌面评级支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:7
 msgid "ODRS is a service providing user reviews of applications"
-msgstr ""
+msgstr "ODRS 是为用户提供应用评价的服务"
 
 #: src/plugins/org.gnome.Software.Plugin.Snap.metainfo.xml.in:6
 msgid "Snappy Support"
-msgstr ""
+msgstr "Snappy 支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Snap.metainfo.xml.in:7
 msgid "A snap is a universal Linux package"
-msgstr ""
+msgstr "snap 是一款通用的 Linux 开发包"
 
 #: src/plugins/org.gnome.Software.Plugin.Steam.metainfo.xml.in:6
 msgid "Steam Support"
-msgstr ""
+msgstr "Steam 支持"
 
 #: src/plugins/org.gnome.Software.Plugin.Steam.metainfo.xml.in:7
 msgid "The ultimate entertainment platform from Valve"
-msgstr ""
+msgstr "来自 Valve 的旗舰娱乐平台"
