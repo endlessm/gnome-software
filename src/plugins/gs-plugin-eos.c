@@ -533,8 +533,7 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	const char *app_id = NULL;
 	g_autoptr (GDesktopAppInfo) app_info = NULL;
 
-	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLED &&
-	    gs_app_get_state (app) != AS_APP_STATE_UPDATABLE) {
+	if (!gs_app_is_installed (app)) {
 		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
 		return;
 	}
