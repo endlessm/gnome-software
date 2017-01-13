@@ -319,6 +319,35 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	if (g_settings_get_boolean (settings, "filter-default-branch"))
 		default_branch = flatpak_remote_get_default_branch (xremote);
 
+	/* on Endless we rely heavily on always having the default branch
+	 * defined for the 'eos-apps' repository, so we need a fallback value
+	 * to cover the case where GS is run without being connected to the
+	 * Internet before (otherwise it would have pulled it from the server).
+	 */
+	if (default_branch == NULL &&
+	    (self->scope == AS_APP_SCOPE_SYSTEM) &&
+	    (g_strcmp0 (flatpak_remote_get_name (xremote), "eos-apps") == 0)) {
+		const char *remote_url = flatpak_remote_get_url (xremote);
+
+		if (remote_url != NULL) {
+			g_autoptr(SoupURI) soup_uri = NULL;
+			const char *remote_host = NULL;
+			const char *remote_path = NULL;
+
+			soup_uri = soup_uri_new (remote_url);
+			remote_host = soup_uri_get_host (soup_uri);
+			remote_path = soup_uri_get_path(soup_uri);
+
+			/* support *.ostree.endlessm.com domains with '/eos-apps' end points */
+			if (g_str_has_suffix (remote_host, "ostree.endlessm.com") &&
+			    (remote_path != NULL && g_str_has_suffix (remote_path, "eos-apps"))) {
+				g_warning ("No default branch configured for Endless eos-apps "
+					   "remote! Using fallback value");
+				default_branch = g_strdup ("eos3");
+			}
+		}
+	}
+
 	/* get all the apps and fix them up */
 	apps = as_store_get_apps (store);
 	app_filtered = g_ptr_array_new ();
