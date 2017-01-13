@@ -287,21 +287,22 @@ gs_shell_details_switch_to (GsPage *page, gboolean scroll_up)
 	case AS_APP_STATE_REMOVING:
 	case AS_APP_STATE_UPDATABLE:
 		gtk_widget_set_visible (self->button_install, FALSE);
+		sc = gtk_widget_get_style_context (self->button_details_add_shortcut);
+		gtk_style_context_add_class (sc, "suggested-action");
 		break;
 	case AS_APP_STATE_UPDATABLE_LIVE:
 		gtk_widget_set_visible (self->button_install, TRUE);
-		sc = gtk_widget_get_style_context (self->button_install);
 		if (gs_app_get_kind (self->app) == AS_APP_KIND_FIRMWARE) {
 			/* TRANSLATORS: button text in the header when firmware
 			 * can be live-installed */
 			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install"));
-			gtk_style_context_add_class (sc, "suggested-action");
 		} else {
 			/* TRANSLATORS: button text in the header when an application
 			 * can be live-updated */
 			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Update"));
-			gtk_style_context_remove_class (sc, "suggested-action");
 		}
+		sc = gtk_widget_get_style_context (self->button_details_add_shortcut);
+		gtk_style_context_remove_class (sc, "suggested-action");
 		break;
 	case AS_APP_STATE_UNAVAILABLE:
 		if (gs_app_get_url (self->app, AS_URL_KIND_MISSING) != NULL) {
