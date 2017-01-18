@@ -870,6 +870,23 @@ gs_plugin_app_install (GsPlugin *plugin,
 	return TRUE;
 }
 
+gboolean
+gs_plugin_app_remove (GsPlugin *plugin,
+		      GsApp *app,
+		      GCancellable *cancellable,
+		      GError **error)
+{
+	if (!gs_app_is_flatpak (app))
+		return TRUE;
+
+	/* We're only interested in apps that have been successfully uninstalled */
+	if (gs_app_is_installed (app))
+		return TRUE;
+
+	remove_app_from_shell (plugin, app, cancellable, error);
+	return TRUE;
+}
+
 static gboolean
 launch_with_sys_desktop_file (GsApp *app,
                               GError **error)
