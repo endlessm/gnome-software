@@ -46,6 +46,9 @@
 #include "gs-utils.h"
 #include "gs-plugin.h"
 
+#define LOW_RESOLUTION_WIDTH  800
+#define LOW_RESOLUTION_HEIGHT 600
+
 /**
  * gs_mkdir_parent:
  * @path: A full pathname
@@ -828,6 +831,26 @@ gs_utils_error_convert_appstream (GError **perror)
 	}
 	error->domain = GS_PLUGIN_ERROR;
 	return TRUE;
+}
+
+/**
+ * gs_utils_is_low_resolution:
+ *
+ * Retrieves whether the primary monitor has a low resolution.
+ *
+ * Returns: %TRUE if the monitor has low resolution
+ **/
+gboolean
+gs_utils_is_low_resolution (void)
+{
+	GdkRectangle geometry;
+	GdkMonitor *monitor;
+
+	monitor = gdk_display_get_primary_monitor (gdk_display_get_default ());
+
+	gdk_monitor_get_geometry (monitor, &geometry);
+
+	return geometry.width < LOW_RESOLUTION_WIDTH || geometry.height < LOW_RESOLUTION_HEIGHT;
 }
 
 /* vim: set noexpandtab: */
