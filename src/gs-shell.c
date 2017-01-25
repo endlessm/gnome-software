@@ -40,6 +40,7 @@
 #include "gs-sources-dialog.h"
 #include "gs-update-dialog.h"
 #include "gs-update-monitor.h"
+#include "gs-utils.h"
 
 static const gchar *page_name[] = {
 	"unknown",
@@ -1775,6 +1776,24 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 
 	/* coldplug */
 	gs_shell_rescan_events (shell);
+
+	/* adapt the window for low resolution screens */
+	if (gs_utils_is_low_resolution ()) {
+		    GtkWidget *buttonbox = GTK_WIDGET (gtk_builder_get_object (priv->builder, "buttonbox_main"));
+
+		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
+					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_all")),
+					     "non-homogeneous", TRUE,
+					     NULL);
+		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
+					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_installed")),
+					     "non-homogeneous", TRUE,
+					     NULL);
+		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
+					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_updates")),
+					     "non-homogeneous", TRUE,
+					     NULL);
+	    }
 }
 
 void
