@@ -64,6 +64,24 @@ static const GsDesktopMap map_multimedia[] = {
 	{ NULL }
 };
 
+/* Development */
+static const GsDesktopMap map_developertools[] = {
+	{ "all",		NC_("Menu of Development", "All"),
+					{ "Development",
+					  NULL } },
+	{ "featured",		NC_("Menu of Development", "Featured"),
+					{ "Development::Featured",
+					  NULL} },
+	{ "debuggers",		NC_("Menu of Development", "Debuggers"),
+					{ "Development:Debugger",
+					  NULL} },
+	{ "ide",		NC_("Menu of Development", "IDEs"),
+					{ "Development::IDE",
+					  "Development::GUIDesigner",
+					  NULL} },
+	{ NULL }
+};
+
 /* Education & Science */
 static const GsDesktopMap map_education_science[] = {
 	{ "all",		NC_("Menu of Education and Science", "All"),
@@ -193,12 +211,10 @@ static const GsDesktopMap map_utilities[] = {
 	{ "all",		NC_("Menu of Utility", "All"),
 					{ "Utility",
 					  "Network",
-					  "Development",
 					  NULL } },
 	{ "featured",		NC_("Menu of Utility", "Featured"),
 					{ "Utility::Featured",
 					  "Network::Featured",
-					  "Development::Featured",
 					  NULL} },
 	{ "chat",		NC_("Menu of Communication", "Chat"),
 					{ "Network::Chat",
@@ -210,18 +226,11 @@ static const GsDesktopMap map_utilities[] = {
 	{ "codecs",		NC_("Menu of Addons", "Codecs"),
 					{ "Addons::Codecs",
 					  NULL} },
-	{ "debuggers",		NC_("Menu of Development", "Debuggers"),
-					{ "Development:Debugger",
-					  NULL} },
 	{ "drivers",		NC_("Menu of Addons", "Hardware Drivers"),
 					{ "Addons::Drivers",
 					  NULL} },
 	{ "fonts",		NC_("Menu of Addons", "Fonts"),
 					{ "Addons::Fonts",
-					  NULL} },
-	{ "ide",		NC_("Menu of Development", "IDEs"),
-					{ "Development::IDE",
-					  "Development::GUIDesigner",
 					  NULL} },
 	{ "input-sources",	NC_("Menu of Addons", "Input Sources"),
 					{ "Addons::InputSources",
@@ -309,6 +318,11 @@ static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Utilities */
 	{ "utilities",		map_utilities,		N_("Utilities"),
 				"applications-utilities-symbolic", "#3841c3", 10 },
+	/* TRANSLATORS: this is the menu spec main category for Dev Tools; it
+	 * should be a relatively short label; as an example, in Portuguese and
+	 * Spanish the direct translation of "Programming" (noun) is used */
+	{ "developer-tools",	map_developertools,	N_("Dev Tools"),
+				"preferences-other-symbolic", "#7b3eb5", 5 },
 	{ NULL }
 };
 
