@@ -770,8 +770,18 @@ remove_app_from_shell (GsPlugin		*plugin,
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr (GDesktopAppInfo) app_info = get_desktop_app_info (app);
-	const char *app_id = g_app_info_get_id (G_APP_INFO (app_info));
+	const char *app_id;
 
+	if (app_info == NULL) {
+		g_set_error (error_out, GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_FAILED,
+			     "Failed to get desktop app info for '%s'. "
+			     "Not adding the app to the desktop!",
+			     gs_app_get_unique_id (app));
+		return FALSE;
+	}
+
+	app_id = g_app_info_get_id (G_APP_INFO (app_info));
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
 				     "/org/gnome/Shell",
@@ -803,8 +813,18 @@ add_app_to_shell (GsPlugin	*plugin,
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr (GDesktopAppInfo) app_info = get_desktop_app_info (app);
-	const char *app_id = g_app_info_get_id (G_APP_INFO (app_info));
+	const char *app_id;
 
+	if (app_info == NULL) {
+		g_set_error (error_out, GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_FAILED,
+			     "Failed to get desktop app info for '%s'. "
+			     "Not adding the app to the desktop!",
+			     gs_app_get_unique_id (app));
+		return FALSE;
+	}
+
+	app_id = g_app_info_get_id (G_APP_INFO (app_info));
 	apps_with_shortcuts = get_applications_with_shortcuts (plugin, NULL, NULL);
 	if (g_hash_table_lookup (apps_with_shortcuts, app_id)) {
 		g_debug ("App '%s' already has its shortcut (%s) in the desktop; "
@@ -866,6 +886,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 		       GCancellable *cancellable,
 		       GError **error)
 {
+	g_autoptr(GError) local_error = NULL;
 	if (!gs_app_is_flatpak (app))
 		return TRUE;
 
@@ -874,8 +895,10 @@ gs_plugin_app_install (GsPlugin *plugin,
 	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLED)
 		return TRUE;
 
-	add_app_to_shell (plugin, app, cancellable, error);
-
+	if (!add_app_to_shell (plugin, app, cancellable, &local_error)) {
+		g_warning ("Failed to add shortcut: %s",
+			   local_error->message);
+	}
 	return TRUE;
 }
 
@@ -885,6 +908,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		      GCancellable *cancellable,
 		      GError **error)
 {
+	g_autoptr(GError) local_error = NULL;
 	if (!gs_app_is_flatpak (app))
 		return TRUE;
 
@@ -892,7 +916,10 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	if (gs_app_is_installed (app))
 		return TRUE;
 
-	remove_app_from_shell (plugin, app, cancellable, error);
+	if (!remove_app_from_shell (plugin, app, cancellable, &local_error)) {
+		g_warning ("Failed to remove shortcut: %s",
+			   local_error->message);
+	}
 	return TRUE;
 }
 
