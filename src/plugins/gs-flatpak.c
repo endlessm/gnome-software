@@ -186,7 +186,6 @@ app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *x
 {
 	/* IDs of apps already provided by our core OS or our own flatpaks */
 	static const char *duplicated_apps[] = {
-		"org.gnome.Builder.desktop",
 		"org.gnome.Calculator.desktop",
 		"org.gnome.Evince.desktop",
 		"org.gnome.Nautilus.desktop",
