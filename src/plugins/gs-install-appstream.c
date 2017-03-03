@@ -85,18 +85,6 @@ gs_install_appstream_check_content_type (GFile *file, GError **error)
 		return FALSE;
 	}
 
-	/* check is an AppStream file */
-	store = as_store_new ();
-	if (!as_store_from_file (store, file, NULL, NULL, error))
-		return FALSE;
-	if (as_store_get_size (store) == 0) {
-		g_set_error_literal (error,
-				     G_IO_ERROR,
-				     G_IO_ERROR_INVALID_DATA,
-				     "No applications found in the AppStream XML");
-		return FALSE;
-	}
-
 	return TRUE;
 }
 
