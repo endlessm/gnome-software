@@ -57,12 +57,7 @@ static gboolean
 gs_install_appstream_check_content_type (GFile *file, GError **error)
 {
 	const gchar *type;
-	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GFileInfo) info = NULL;
-	g_autoptr(GPtrArray) components = NULL;
-	g_autoptr(XbBuilder) builder = xb_builder_new ();
-	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
-	g_autoptr(XbSilo) silo = NULL;
 
 	/* check is correct type */
 	info = g_file_query_info (file,
@@ -78,42 +73,6 @@ gs_install_appstream_check_content_type (GFile *file, GError **error)
 			     G_IO_ERROR,
 			     G_IO_ERROR_INVALID_DATA,
 			     "Invalid type %s: ", type);
-		return FALSE;
-	}
-
-	/* check is an AppStream file */
-	if (!xb_builder_source_load_file (source, file,
-					  XB_BUILDER_SOURCE_FLAG_NONE,
-					  NULL, &error_local)) {
-		g_set_error (error,
-			     G_IO_ERROR,
-			     G_IO_ERROR_INVALID_DATA,
-			     "Failed to import XML: %s", error_local->message);
-		return FALSE;
-	}
-	xb_builder_import_source (builder, source);
-	silo = xb_builder_compile (builder, XB_BUILDER_COMPILE_FLAG_NONE,
-				   NULL, &error_local);
-	if (silo == NULL) {
-		g_set_error (error,
-			     G_IO_ERROR,
-			     G_IO_ERROR_INVALID_DATA,
-			     "Failed to parse XML: %s", error_local->message);
-		return FALSE;
-	}
-	components = xb_silo_query (silo, "components/component", 0, &error_local);
-	if (components == NULL) {
-		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
-			g_set_error_literal (error,
-					     G_IO_ERROR,
-					     G_IO_ERROR_INVALID_DATA,
-					     "No applications found in the AppStream XML");
-			return FALSE;
-		}
-		g_set_error (error,
-			     G_IO_ERROR,
-			     G_IO_ERROR_INVALID_DATA,
-			     "Failed to query XML: %s", error_local->message);
 		return FALSE;
 	}
 
