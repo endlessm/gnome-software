@@ -809,7 +809,6 @@ add_app_to_shell (GsPlugin	*plugin,
 		  GCancellable	*cancellable,
 		  GError	**error_out)
 {
-	GHashTable *apps_with_shortcuts;
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr (GDesktopAppInfo) app_info = get_desktop_app_info (app);
@@ -825,19 +824,12 @@ add_app_to_shell (GsPlugin	*plugin,
 	}
 
 	app_id = g_app_info_get_id (G_APP_INFO (app_info));
-	apps_with_shortcuts = get_applications_with_shortcuts (plugin, NULL, NULL);
-	if (g_hash_table_lookup (apps_with_shortcuts, app_id)) {
-		g_debug ("App '%s' already has its shortcut (%s) in the desktop; "
-			 "skipping adding it.", gs_app_get_unique_id (app),
-			 app_id);
-		return TRUE;
-	}
 
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
 				     "/org/gnome/Shell",
 				     "org.gnome.Shell.AppStore",
-				     "AddApplication",
+				     "AddAppIfNotVisible",
 				     g_variant_new ("(s)", app_id),
 				     NULL,
 				     G_DBUS_CALL_FLAGS_NONE,
