@@ -512,8 +512,8 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	return blacklist_app;
 }
 
-static GDesktopAppInfo *
-get_desktop_app_info (GsApp *app)
+static const char*
+get_desktop_file_id (GsApp *app)
 {
 	const char *desktop_file_id =
 		gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE);
@@ -521,7 +521,8 @@ get_desktop_app_info (GsApp *app)
 	if (!desktop_file_id)
 		desktop_file_id = gs_app_get_id (app);
 
-	return gs_utils_get_desktop_app_info (desktop_file_id);
+	g_assert (desktop_file_id != NULL);
+	return desktop_file_id;
 }
 
 static void
@@ -530,8 +531,7 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 					 GHashTable *apps_with_shortcuts)
 {
 	GsPluginData *priv = NULL;
-	const char *app_id = NULL;
-	g_autoptr (GDesktopAppInfo) app_info = NULL;
+	const char *shortcut_id = NULL;
 
 	if (!gs_app_is_installed (app)) {
 		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
@@ -539,18 +539,14 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	}
 
 	priv = gs_plugin_get_data (plugin);
-	app_info = get_desktop_app_info (app);
-	if (!app_info)
-		return;
+	shortcut_id = get_desktop_file_id (app);
 
-	app_id = g_app_info_get_id (G_APP_INFO (app_info));
-
-	gs_plugin_cache_add (plugin, app_id, app);
-	if (g_hash_table_lookup (apps_with_shortcuts, app_id)) {
-		g_hash_table_add (priv->desktop_apps, g_strdup (app_id));
+	gs_plugin_cache_add (plugin, shortcut_id, app);
+	if (g_hash_table_lookup (apps_with_shortcuts, shortcut_id)) {
+		g_hash_table_add (priv->desktop_apps, g_strdup (shortcut_id));
 		gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
 	} else {
-		g_hash_table_remove (priv->desktop_apps, app_id);
+		g_hash_table_remove (priv->desktop_apps, shortcut_id);
 		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
 	}
 }
@@ -769,25 +765,14 @@ remove_app_from_shell (GsPlugin		*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr (GDesktopAppInfo) app_info = get_desktop_app_info (app);
-	const char *app_id;
+	const char *shortcut_id = get_desktop_file_id (app);
 
-	if (app_info == NULL) {
-		g_set_error (error_out, GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_FAILED,
-			     "Failed to get desktop app info for '%s'. "
-			     "Not adding the app to the desktop!",
-			     gs_app_get_unique_id (app));
-		return FALSE;
-	}
-
-	app_id = g_app_info_get_id (G_APP_INFO (app_info));
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
 				     "/org/gnome/Shell",
 				     "org.gnome.Shell.AppStore",
 				     "RemoveApplication",
-				     g_variant_new ("(s)", app_id),
+				     g_variant_new ("(s)", shortcut_id),
 				     NULL,
 				     G_DBUS_CALL_FLAGS_NONE,
 				     -1,
@@ -811,26 +796,14 @@ add_app_to_shell (GsPlugin	*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr (GDesktopAppInfo) app_info = get_desktop_app_info (app);
-	const char *app_id;
-
-	if (app_info == NULL) {
-		g_set_error (error_out, GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_FAILED,
-			     "Failed to get desktop app info for '%s'. "
-			     "Not adding the app to the desktop!",
-			     gs_app_get_unique_id (app));
-		return FALSE;
-	}
-
-	app_id = g_app_info_get_id (G_APP_INFO (app_info));
+	const char *shortcut_id = get_desktop_file_id (app);
 
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
 				     "/org/gnome/Shell",
 				     "org.gnome.Shell.AppStore",
 				     "AddAppIfNotVisible",
-				     g_variant_new ("(s)", app_id),
+				     g_variant_new ("(s)", shortcut_id),
 				     NULL,
 				     G_DBUS_CALL_FLAGS_NONE,
 				     -1,
@@ -921,7 +894,9 @@ launch_with_sys_desktop_file (GsApp *app,
 {
 	GdkDisplay *display;
 	g_autoptr(GAppLaunchContext) context = NULL;
-	g_autoptr(GDesktopAppInfo) app_info = get_desktop_app_info (app);
+	const char *desktop_file_id = get_desktop_file_id (app);
+	g_autoptr(GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (desktop_file_id);
 	g_autoptr(GError) local_error = NULL;
 	gboolean ret;
 
