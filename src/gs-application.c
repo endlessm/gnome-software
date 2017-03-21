@@ -236,10 +236,6 @@ gs_application_initialize_ui (GsApplication *app)
 
 	initialized = TRUE;
 
-	/* prefer the dark theme */
-	g_object_set (gtk_settings_get_default (),
-		      "gtk-application-prefer-dark-theme", TRUE, NULL);
-
 	/* add custom icons */
 	gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
 					  "/org/gnome/Software/icons");
