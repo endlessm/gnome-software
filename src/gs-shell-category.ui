@@ -5,6 +5,11 @@
     <child>
       <object class="GtkBox" id="box_category">
         <property name="visible">True</property>
+
+        <style>
+          <class name="view" />
+        </style>
+
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow_filter">
             <property name="width-request">220</property>

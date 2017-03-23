@@ -412,12 +412,29 @@ flowboxchild {
 }
 
 .sidefilter row:hover {
-	background-color: @theme_bg_color;
+	background-color: alpha(#f3f3f3, 0.66);
+}
+
+/* The selected row always have 1px borders... */
+.sidefilter row:selected,
+.sidefilter:backdrop row:selected {
+	border: solid #cfcfcf;
+	border-width: 1px 0 1px 0;
+}
+
+/* ... except the first row */
+.sidefilter row:first-child:selected,
+.sidefilter:backdrop row:first-child:selected {
+	border: solid #cfcfcf;
+	border-width: 0 0 1px 0;
+}
+
+.sidefilter:backdrop row:selected {
+	background-color: #f3f3f3;
 }
 
 .sidefilter row:selected {
-	background-color: @theme_bg_color;
-	border-bottom: 1px #000;
+	background-color: #f6f6f6;
 }
 
 .sidefilter row {
@@ -441,12 +458,21 @@ flowboxchild {
 	opacity: 1;
 }
 
-.sidefilter_scrolledwindow {
+.sidefilter row label,
+.sidefilter row image {
+	color: #4d4d4d;
+}
+
+
+.image-tile stack {
+	background-color: #646464;
+	border-radius: 8px;
 	border: 0;
+	padding: 0;
 }
 
 .image-tile, .image-tile .main-image {
-	border-radius: 3%;
+	border-radius: 8px;
 	border: 0;
 	padding: 0;
 }
@@ -454,12 +480,12 @@ flowboxchild {
 .image-tile .app-info {
 	background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.6));
 	transition-duration: 500ms;
-	border-radius: 3%;
+	border-radius: 8px;
 	border: 0;
 }
 
 .image-tile:hover .app-info {
-	background: rgba(255, 255, 255, 0.8);
+	background: rgba(0, 0, 0, 0.75);
 	transition-duration: 0;
 }
 
@@ -474,6 +500,8 @@ flowboxchild {
 }
 
 .image-tile .app-name {
+	text-shadow: 0px 1px 2px black;
+	color: white;
 	font-size: 20px;
 }
 
@@ -493,16 +521,16 @@ flowboxchild {
 
 .image-tile .app-installed-indicator {
 	font-size: 80%;
-	background-color: @theme_bg_color;
+	background-color: #f6f6f6;
 	border-radius: 0;
-	color: @theme_selected_fg_color;
 	text-shadow: none;
 	opacity: 0;
 	transition-duration: 300ms;
 }
 
+.image-tile .app-installed-indicator:backdrop,
 .image-tile .app-installed-indicator:backdrop label {
-	color: @theme_selected_fg_color;
+	background-color: #f3f3f3;
 }
 
 .image-tile:hover .app-installed-indicator {
@@ -511,9 +539,20 @@ flowboxchild {
 }
 
 .image-tile .app-summary {
+	text-shadow: 0px 1px 2px black;
+	color: white;
 	font-size: 80%;
 }
 
 .application-details-website {
 	padding: 0;
+}
+
+/* Override the theme's .view class */
+.view {
+	background-color: #f6f6f6;
+}
+
+.view:backdrop {
+	background-color: #f3f3f3;
 }
