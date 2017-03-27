@@ -26,6 +26,7 @@
 #include <glib/gi18n.h>
 
 #include "gs-common.h"
+#include "gs-os-release.h"
 #include "gs-shell.h"
 #include "gs-shell-details.h"
 #include "gs-shell-installed.h"
@@ -90,6 +91,7 @@ typedef struct
 	gchar			*events_info_uri;
 	gboolean		 profile_mode;
 	gboolean		 in_mode_change;
+	gchar			*os_personality;
 } GsShellPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsShell, gs_shell, G_TYPE_OBJECT)
