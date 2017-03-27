@@ -127,18 +127,19 @@ filter_category (GsApp *app, gpointer user_data)
 static gint
 sort_with_popular_background (GsApp *a, GsApp *b, gpointer user_data)
 {
+	gint cmp = 0;
 	const char *image_a = gs_app_get_metadata_item (a,
 					"GnomeSoftware::popular-background");
 	const char *image_b = gs_app_get_metadata_item (b,
 					"GnomeSoftware::popular-background");
 
 	if (image_a && strlen (image_a) > 0)
-		return -1;
+		cmp -= 1;
 
 	if (image_b && strlen (image_b) > 0)
-		return 1;
+		cmp += 1;
 
-	return 0;
+	return cmp;
 }
 
 static void
