@@ -138,6 +138,17 @@ sort_with_popular_background (GsApp *a, GsApp *b, gpointer user_data)
 	return cmp;
 }
 
+static gint
+sort_by_alphabetical_order (GsApp *a, GsApp *b, gpointer user_data)
+{
+	gint cmp = sort_with_popular_background (a, b, user_data);
+
+	if (cmp == 0)
+		return g_strcmp0 (gs_app_get_name (a), gs_app_get_name (b));
+
+	return cmp;
+}
+
 static void
 gs_overview_page_decrement_action_cnt (GsOverviewPage *self)
 {
@@ -172,6 +183,7 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 	guint i;
 	GsApp *app;
 	GtkWidget *tile;
+	gboolean sort_alphabetically = FALSE;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 
@@ -196,9 +208,14 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 	gs_app_list_filter (list, filter_category, priv->category_of_day);
 	gs_app_list_randomize (list);
 
-	/* Sort the randomized list based on the presence of the popular
+	sort_alphabetically = g_settings_get_boolean (priv->settings,
+						      "sort-overview-alphabetically");
+	/* In any case always sort the randomized list based on the presence of the popular
 	 * background so it gives precedence to apps that have that asset */
-	gs_app_list_sort (list, sort_with_popular_background, NULL);
+	if (!sort_alphabetically)
+		gs_app_list_sort (list, sort_with_popular_background, NULL);
+	else
+		gs_app_list_sort (list, sort_by_alphabetical_order, NULL);
 
 	gs_container_remove_all (GTK_CONTAINER (priv->box_popular));
 
