@@ -36,6 +36,8 @@
 #include "gs-flatpak.h"
 #include "gs-flatpak-symlinks.h"
 
+#define RETRY_DELAY_SECONDS 3
+
 struct _GsFlatpak {
 	GObject			 parent_instance;
 	FlatpakInstallation	*installation;
@@ -2261,20 +2263,33 @@ install_runtime_for_app (GsFlatpak *self,
 	/* not installed */
 	if (gs_app_get_state (runtime) == AS_APP_STATE_AVAILABLE) {
 		g_autoptr(FlatpakInstalledRef) xref = NULL;
+		gboolean keep_trying = TRUE;
 
 		g_debug ("%s/%s is not already installed, so installing",
 			 gs_app_get_id (runtime),
 			 gs_app_get_flatpak_branch (runtime));
 		gs_app_set_state (runtime, AS_APP_STATE_INSTALLING);
 
-		xref = flatpak_installation_install (self->installation,
-						     gs_app_get_origin (runtime),
-						     gs_app_get_flatpak_kind (runtime),
-						     gs_app_get_flatpak_name (runtime),
-						     gs_app_get_flatpak_arch (runtime),
-						     gs_app_get_flatpak_branch (runtime),
-						     gs_flatpak_progress_cb, app,
-						     cancellable, error);
+		while (TRUE) {
+			xref = flatpak_installation_install (self->installation,
+							     gs_app_get_origin (runtime),
+							     gs_app_get_flatpak_kind (runtime),
+							     gs_app_get_flatpak_name (runtime),
+							     gs_app_get_flatpak_arch (runtime),
+							     gs_app_get_flatpak_branch (runtime),
+							     gs_flatpak_progress_cb, app,
+							     cancellable, error);
+			if (xref != NULL || !keep_trying)
+				break;
+
+			keep_trying = FALSE;
+
+			g_warning ("Error installing runtime %s: %s. Retrying in 3 seconds...",
+				   gs_app_get_id (runtime), (*error)->message);
+			g_clear_error (error);
+			g_usleep (G_USEC_PER_SEC * RETRY_DELAY_SECONDS);
+		}
+
 		if (xref == NULL) {
 			gs_app_set_state_recover (runtime);
 			gs_app_set_state_recover (app);
@@ -2295,6 +2310,8 @@ gs_flatpak_app_install (GsFlatpak *self,
 			GCancellable *cancellable,
 			GError **error)
 {
+	gboolean keep_trying = TRUE;
+
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 
 	/* ensure we have metadata and state */
@@ -2329,11 +2346,23 @@ gs_flatpak_app_install (GsFlatpak *self,
 			return FALSE;
 		}
 		g_debug ("installing bundle %s", gs_app_get_unique_id (app));
-		xref = flatpak_installation_install_bundle (self->installation,
-							    gs_app_get_local_file (app),
-							    gs_flatpak_progress_cb,
-							    app,
-							    cancellable, error);
+
+		while (TRUE) {
+			xref = flatpak_installation_install_bundle (self->installation,
+								    gs_app_get_local_file (app),
+								    gs_flatpak_progress_cb,
+								    app,
+								    cancellable, error);
+			if (xref != NULL || !keep_trying)
+				break;
+
+			keep_trying = FALSE;
+
+			g_warning ("Error installing bundle %s: %s. Retrying in 3 seconds...",
+				   gs_app_get_unique_id (app), (*error)->message);
+			g_clear_error (error);
+			g_usleep (G_USEC_PER_SEC * RETRY_DELAY_SECONDS);
+		}
 	} else {
 		/* no origin set */
 		if (gs_app_get_origin (app) == NULL) {
@@ -2345,14 +2374,25 @@ gs_flatpak_app_install (GsFlatpak *self,
 			return FALSE;
 		}
 		g_debug ("installing %s", gs_app_get_id (app));
-		xref = flatpak_installation_install (self->installation,
-						     gs_app_get_origin (app),
-						     gs_app_get_flatpak_kind (app),
-						     gs_app_get_flatpak_name (app),
-						     gs_app_get_flatpak_arch (app),
-						     gs_app_get_flatpak_branch (app),
-						     gs_flatpak_progress_cb, app,
-						     cancellable, error);
+		while (TRUE) {
+			xref = flatpak_installation_install (self->installation,
+							     gs_app_get_origin (app),
+							     gs_app_get_flatpak_kind (app),
+							     gs_app_get_flatpak_name (app),
+							     gs_app_get_flatpak_arch (app),
+							     gs_app_get_flatpak_branch (app),
+							     gs_flatpak_progress_cb, app,
+							     cancellable, error);
+			if (xref != NULL || !keep_trying)
+				break;
+
+			keep_trying = FALSE;
+
+			g_warning ("Error installing application %s: %s. Retrying in 3 seconds...",
+				   gs_app_get_id (app), (*error)->message);
+			g_clear_error (error);
+			g_usleep (G_USEC_PER_SEC * RETRY_DELAY_SECONDS);
+		}
 	}
 	if (xref == NULL) {
 		gs_plugin_flatpak_error_convert (error);
@@ -2372,6 +2412,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 		       GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
+	gboolean keep_trying = TRUE;
 
 	/* install */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
@@ -2381,14 +2422,26 @@ gs_flatpak_update_app (GsFlatpak *self,
 	    !install_runtime_for_app (self, app, cancellable, error))
 		return FALSE;
 
-	xref = flatpak_installation_update (self->installation,
-					    FLATPAK_UPDATE_FLAGS_NONE,
-					    gs_app_get_flatpak_kind (app),
-					    gs_app_get_flatpak_name (app),
-					    gs_app_get_flatpak_arch (app),
-					    gs_app_get_flatpak_branch (app),
-					    gs_flatpak_progress_cb, app,
-					    cancellable, error);
+	while (TRUE) {
+		xref = flatpak_installation_update (self->installation,
+						    FLATPAK_UPDATE_FLAGS_NONE,
+						    gs_app_get_flatpak_kind (app),
+						    gs_app_get_flatpak_name (app),
+						    gs_app_get_flatpak_arch (app),
+						    gs_app_get_flatpak_branch (app),
+						    gs_flatpak_progress_cb, app,
+						    cancellable, error);
+		if (xref != NULL || !keep_trying)
+			break;
+
+		keep_trying = FALSE;
+
+		g_warning ("Error updating %s: %s. Retrying in 3 seconds...",
+			   gs_app_get_flatpak_name (app), (*error)->message);
+		g_clear_error (error);
+		g_usleep (G_USEC_PER_SEC * RETRY_DELAY_SECONDS);
+	}
+
 	if (xref == NULL) {
 		gs_plugin_flatpak_error_convert (error);
 		gs_app_set_state_recover (app);
