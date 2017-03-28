@@ -32,6 +32,9 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GsAppList, gs_app_list, GS, APP_LIST, GObject)
 
+typedef gboolean (*GsAppListFilterFunc)		(GsApp		*app,
+						 gpointer	 user_data);
+
 GsAppList	*gs_app_list_new		(void);
 void		 gs_app_list_add		(GsAppList	*list,
 						 GsApp		*app);
@@ -44,6 +47,9 @@ GsApp		*gs_app_list_index		(GsAppList	*list,
 GsApp		*gs_app_list_lookup		(GsAppList	*list,
 						 const gchar	*unique_id);
 guint		 gs_app_list_length		(GsAppList	*list);
+void		 gs_app_list_filter		(GsAppList	*list,
+						 GsAppListFilterFunc func,
+						 gpointer	 user_data);
 
 G_END_DECLS
 

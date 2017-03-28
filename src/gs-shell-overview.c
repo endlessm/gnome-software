@@ -127,18 +127,30 @@ filter_category (GsApp *app, gpointer user_data)
 static gint
 sort_with_popular_background (GsApp *a, GsApp *b, gpointer user_data)
 {
+	gint cmp = 0;
 	const char *image_a = gs_app_get_metadata_item (a,
 					"GnomeSoftware::popular-background");
 	const char *image_b = gs_app_get_metadata_item (b,
 					"GnomeSoftware::popular-background");
 
 	if (image_a && strlen (image_a) > 0)
-		return -1;
+		cmp -= 1;
 
 	if (image_b && strlen (image_b) > 0)
-		return 1;
+		cmp += 1;
 
-	return 0;
+	return cmp;
+}
+
+static gint
+sort_by_alphabetical_order (GsApp *a, GsApp *b, gpointer user_data)
+{
+	gint cmp = sort_with_popular_background (a, b, user_data);
+
+	if (cmp == 0)
+		return g_strcmp0 (gs_app_get_name (a), gs_app_get_name (b));
+
+	return cmp;
 }
 
 static void
@@ -177,6 +189,7 @@ gs_shell_overview_get_popular_cb (GObject *source_object,
 	guint i;
 	GsApp *app;
 	GtkWidget *tile;
+	gboolean sort_alphabetically = FALSE;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 
@@ -193,9 +206,15 @@ gs_shell_overview_get_popular_cb (GObject *source_object,
 	}
 	gs_app_list_randomize (list);
 
-	/* Sort the randomized list based on the presence of the popular
+	sort_alphabetically = g_settings_get_boolean (priv->settings,
+						      "sort-overview-alphabetically");
+	/* In any case always sort the randomized list based on the presence of the popular
 	 * background so it gives precedence to apps that have that asset */
-	gs_app_list_sort (list, sort_with_popular_background, NULL);
+	if (!sort_alphabetically) {
+		gs_app_list_sort (list, sort_with_popular_background, NULL);
+	} else {
+		gs_app_list_sort (list, sort_by_alphabetical_order, NULL);
+	}
 
 	gs_container_remove_all (GTK_CONTAINER (priv->box_popular));
 

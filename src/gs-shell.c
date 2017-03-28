@@ -26,6 +26,7 @@
 #include <glib/gi18n.h>
 
 #include "gs-common.h"
+#include "gs-os-release.h"
 #include "gs-shell.h"
 #include "gs-shell-details.h"
 #include "gs-shell-installed.h"
@@ -90,6 +91,7 @@ typedef struct
 	gchar			*events_info_uri;
 	gboolean		 profile_mode;
 	gboolean		 in_mode_change;
+	gchar			*os_personality;
 } GsShellPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsShell, gs_shell, G_TYPE_OBJECT)
@@ -2007,6 +2009,7 @@ static void
 gs_shell_side_filter_add_mode (GsShell *shell,
 			       GsShellMode mode)
 {
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsSideFilterRow *row = NULL;
 	GsCategory *cat;
 	GdkRGBA color;
@@ -2018,9 +2021,16 @@ gs_shell_side_filter_add_mode (GsShell *shell,
 	switch (mode) {
 	case GS_SHELL_MODE_OVERVIEW:
 		id = "overview";
-		name = _("Featured");
 		icon = "starred-symbolic";
 		color_str = "#cf602a";
+		/* XXX: This is a custom change for FNDE branded images but an
+		 * approach that does not require touching the gs-shell code
+		 * should replace this soon. */
+		if (g_str_has_prefix (priv->os_personality, "fnde"))
+			name = "Ministério da Educação";
+		else
+			name = _("Featured");
+
 		break;
 	default:
 	        return;
@@ -2078,10 +2088,20 @@ static void
 gs_shell_init (GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GsOsRelease) os_release = gs_os_release_new (&error);
 
 	priv->back_entry_stack = g_queue_new ();
 	priv->ignore_primary_buttons = FALSE;
 	priv->modal_dialogs = g_ptr_array_new_with_free_func ((GDestroyNotify) gtk_widget_destroy);
+
+	if (!os_release) {
+		g_warning ("Could not get OS personality: %s",
+			   error->message);
+		return;
+	}
+	priv->os_personality =
+		g_strdup (gs_os_release_get_personality (os_release));
 }
 
 GsShell *

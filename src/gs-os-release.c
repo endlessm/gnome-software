@@ -37,6 +37,10 @@
 
 #include "gs-os-release.h"
 
+#define EOS_IMAGE_VERSION_XATTR "user.eos-image-version"
+#define EOS_IMAGE_VERSION_PATH "/sysroot"
+#define EOS_IMAGE_VERSION_ALT_PATH "/"
+
 struct _GsOsRelease
 {
 	GObject			 parent_instance;
@@ -46,12 +50,73 @@ struct _GsOsRelease
 	gchar			*version_id;
 	gchar			*pretty_name;
 	gchar			*distro_codename;
+	gchar			*personality;
 };
 
 static void gs_os_release_initable_iface_init (GInitableIface *iface);
 
 G_DEFINE_TYPE_WITH_CODE (GsOsRelease, gs_os_release, G_TYPE_OBJECT,
 			 G_IMPLEMENT_INTERFACE(G_TYPE_INITABLE, gs_os_release_initable_iface_init))
+
+static char *
+get_image_version_for_path (const char *path)
+{
+	ssize_t xattr_size = 0;
+	char *image_version = NULL;
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR, NULL, 0);
+
+	if (xattr_size == -1) {
+		return NULL;
+	}
+
+	image_version = g_malloc0 (xattr_size + 1);
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR,
+			       image_version, xattr_size);
+
+	/* this check is just in case the xattr has changed in between the
+	 * size checks */
+	if (xattr_size == -1) {
+		g_warning ("Error when getting the 'eos-image-version' from %s",
+			   path);
+		return NULL;
+	}
+
+	return image_version;
+}
+
+
+static char *
+get_image_version (void)
+{
+	char *image_version =
+		get_image_version_for_path (EOS_IMAGE_VERSION_PATH);
+
+	if (!image_version)
+		image_version =
+			get_image_version_for_path (EOS_IMAGE_VERSION_ALT_PATH);
+
+	return image_version;
+}
+
+static char *
+get_image_personality (void)
+{
+	g_autofree char *image_version = get_image_version ();
+	g_auto(GStrv) tokens = NULL;
+	guint num_tokens = 0;
+	char *personality = NULL;
+
+	if (!image_version)
+		return NULL;
+
+	tokens = g_strsplit (image_version, ".", 0);
+	num_tokens = g_strv_length (tokens);
+	personality = tokens[num_tokens - 1];
+
+	return g_strdup (personality);
+}
 
 static gboolean
 gs_os_release_initable_init (GInitable *initable,
@@ -122,6 +187,9 @@ gs_os_release_initable_init (GInitable *initable,
 			continue;
 		}
 	}
+
+	/* add Endless personality from the image*/
+	os_release->personality = get_image_personality ();
 	return TRUE;
 }
 
@@ -227,6 +295,23 @@ gs_os_release_get_distro_codename (GsOsRelease *os_release)
 	return os_release->distro_codename;
 }
 
+/**
+ * gs_os_release_get_personality:
+ * @os_release: A #GsOsRelease
+ *
+ * Gets the personality for the Endless image.
+ *
+ * Returns: a string, or %NULL
+ *
+ * Since: 3.24
+ **/
+const gchar *
+gs_os_release_get_personality (GsOsRelease *os_release)
+{
+	g_return_val_if_fail (GS_IS_OS_RELEASE (os_release), NULL);
+	return os_release->personality;
+}
+
 static void
 gs_os_release_finalize (GObject *object)
 {
@@ -237,6 +322,7 @@ gs_os_release_finalize (GObject *object)
 	g_free (os_release->version_id);
 	g_free (os_release->pretty_name);
 	g_free (os_release->distro_codename);
+	g_free (os_release->personality);
 	G_OBJECT_CLASS (gs_os_release_parent_class)->finalize (object);
 }
 
