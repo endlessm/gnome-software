@@ -859,6 +859,16 @@ gs_shell_overview_refresh_proprietary (GsShellOverview *self)
 	}
 }
 
+static void
+update_side_filter_featured_view (GsShellOverview *self)
+{
+	GsShellOverviewPrivate *priv = gs_shell_overview_get_instance_private (self);
+	g_autofree gchar *featured_view_name =
+		g_settings_get_string (priv->settings, "featured-category-name");
+
+	gs_shell_set_featured_category_name (priv->shell, featured_view_name);
+}
+
 void
 gs_shell_overview_setup (GsShellOverview *self,
 			 GsShell *shell,
@@ -906,6 +916,9 @@ gs_shell_overview_setup (GsShellOverview *self,
 			  G_CALLBACK (gs_shell_overview_categories_expander_down_cb), self);
 	g_signal_connect (priv->categories_expander_button_up, "clicked",
 			  G_CALLBACK (gs_shell_overview_categories_expander_up_cb), self);
+
+	/* featured view name in the side-filter */
+	update_side_filter_featured_view (self);
 
 	/* chain up */
 	gs_page_setup (GS_PAGE (self),
