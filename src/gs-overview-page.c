@@ -1093,6 +1093,16 @@ third_party_response_cb (GtkInfoBar *info_bar,
 	refresh_third_party_repo (self);
 }
 
+static void
+update_side_filter_featured_view (GsOverviewPage *self)
+{
+	GsOverviewPagePrivate *priv = gs_overview_page_get_instance_private (self);
+	g_autofree gchar *featured_view_name =
+		g_settings_get_string (priv->settings, "featured-category-name");
+
+	gs_shell_set_featured_category_name (priv->shell, featured_view_name);
+}
+
 static gboolean
 gs_overview_page_setup (GsPage *page,
                         GsShell *shell,
@@ -1162,6 +1172,10 @@ gs_overview_page_setup (GsPage *page,
 			  G_CALLBACK (gs_overview_page_categories_expander_down_cb), self);
 	g_signal_connect (priv->categories_expander_button_up, "clicked",
 			  G_CALLBACK (gs_overview_page_categories_expander_up_cb), self);
+
+	/* featured view name in the side-filter */
+	update_side_filter_featured_view (self);
+
 	return TRUE;
 }
 

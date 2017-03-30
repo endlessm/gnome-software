@@ -92,5 +92,6 @@ void		 gs_shell_side_filter_set_visible	(GsShell	*shell,
 GtkWidget	*gs_shell_side_filter_add_category	(GsShell	*shell,
 							 GsCategory	*cat);
 void		 gs_shell_side_filter_clear_categories	(GsShell	*shell);
-
+void		 gs_shell_set_featured_category_name (GsShell *shell,
+						      const gchar *name);
 G_END_DECLS

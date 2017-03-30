@@ -62,6 +62,7 @@ typedef struct
 	GtkWidget		*header_end_widget;
 	GtkWidget		*side_filter_scrolled_window;
 	GtkWidget		*side_filter;
+	GsCategory		*featured_category;
 	GtkBuilder		*builder;
 	GtkWindow		*main_window;
 	GQueue			*back_entry_stack;
@@ -1962,6 +1963,24 @@ gs_shell_add_about_menu_item (GsShell *shell)
 	g_menu_append_item (primary_menu, menu_item);
 }
 
+static GsCategory *
+create_category (const gchar *id,
+		 const gchar *name,
+		 const gchar *icon,
+		 const gchar *color_code)
+{
+	GsCategory *cat = gs_category_new (id);
+	GdkRGBA color;
+
+	gs_category_set_icon (cat, icon);
+	gdk_rgba_parse (&color, color_code);
+	gs_category_add_key_color (cat, &color);
+	if (name != NULL)
+		gs_category_set_name (cat, icon);
+
+	return cat;
+}
+
 void
 gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *cancellable)
 {
@@ -2014,6 +2033,10 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	priv->side_filter =
 		GTK_WIDGET (gtk_builder_get_object (priv->builder,
 						    "listbox_sidefilter"));
+	/* side-filter Featured category */
+	priv->featured_category = create_category ("overview", NULL,
+						   "starred-symbolic", "#cf602a");
+
 	g_signal_connect (priv->side_filter, "row-selected",
 			  G_CALLBACK (side_filter_row_selected), shell);
 
@@ -2423,40 +2446,38 @@ gs_shell_side_filter_add_category (GsShell *shell, GsCategory *cat)
 	return row;
 }
 
+void
+gs_shell_set_featured_category_name (GsShell *shell,
+				     const gchar *name)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	const char *featured_name = gs_category_get_name (priv->featured_category);
+
+	if (name == NULL || name[0] == '\0')
+		name = _("Featured");
+
+	if (g_strcmp0 (featured_name, name) != 0)
+		gs_category_set_name (priv->featured_category, name);
+}
+
 static void
 gs_shell_side_filter_add_mode (GsShell *shell,
 			       GsShellMode mode)
 {
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsSideFilterRow *row = NULL;
 	GsCategory *cat;
-	GdkRGBA color;
-	const char *id;
-	const char *name;
-	const char *icon;
-	const char *color_str;
 
 	switch (mode) {
 	case GS_SHELL_MODE_OVERVIEW:
-		id = "overview";
-		name = _("Featured");
-		icon = "starred-symbolic";
-		color_str = "#cf602a";
+		cat = priv->featured_category;
 		break;
 	default:
 	        return;
 	}
 
-	gdk_rgba_parse (&color, color_str);
-	cat = gs_category_new (id);
-	gs_category_set_name (cat, name);
-	gs_category_set_icon (cat, icon);
-	gs_category_add_key_color (cat, &color);
-
-	row = GS_SIDE_FILTER_ROW (gs_shell_side_filter_add_category (shell,
-								     cat));
+	row = GS_SIDE_FILTER_ROW (gs_shell_side_filter_add_category (shell, cat));
 	gs_side_filter_row_set_mode (row, mode);
-
-	g_object_unref (cat);
 }
 
 static void
@@ -2479,6 +2500,7 @@ gs_shell_dispose (GObject *object)
 	g_clear_pointer (&priv->events_info_uri, g_free);
 	g_clear_pointer (&priv->modal_dialogs, g_ptr_array_unref);
 	g_clear_object (&priv->auth_actions);
+	g_clear_object (&priv->featured_category);
 
 	G_OBJECT_CLASS (gs_shell_parent_class)->dispose (object);
 }
