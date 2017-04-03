@@ -141,6 +141,7 @@ gs_image_tile_set_app (GsAppTile *app_tile, GsApp *app)
 	} else {
 		gtk_widget_set_visible (tile->stars, FALSE);
 	}
+	gtk_style_context_remove_class (gtk_widget_get_style_context (GTK_WIDGET (app_tile)), "loading");
 	gtk_stack_set_visible_child_name (GTK_STACK (tile->stack), "content");
 
 	g_signal_connect (tile->app, "notify::state",
@@ -194,6 +195,9 @@ gs_image_tile_init (GsImageTile *tile)
 	gtk_widget_set_has_window (GTK_WIDGET (tile), FALSE);
 	gtk_widget_init_template (GTK_WIDGET (tile));
 	gs_star_widget_set_icon_size (GS_STAR_WIDGET (tile->stars), 12);
+
+	/* The .loading class is removed once the app is ready */
+	gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (tile)), "loading");
 }
 
 static gboolean
