@@ -26,7 +26,6 @@
 #include <glib/gi18n.h>
 
 #include "gs-common.h"
-#include "gs-os-release.h"
 #include "gs-shell.h"
 #include "gs-shell-details.h"
 #include "gs-shell-installed.h"
@@ -83,6 +82,7 @@ typedef struct
 	GtkWidget		*header_end_widget;
 	GtkWidget		*side_filter_scrolled_window;
 	GtkWidget		*side_filter;
+	GsCategory		*featured_category;
 	GtkBuilder		*builder;
 	GtkWindow		*main_window;
 	GQueue			*back_entry_stack;
@@ -91,7 +91,6 @@ typedef struct
 	gchar			*events_info_uri;
 	gboolean		 profile_mode;
 	gboolean		 in_mode_change;
-	gchar			*os_personality;
 } GsShellPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsShell, gs_shell, G_TYPE_OBJECT)
@@ -1556,6 +1555,24 @@ gs_shell_plugin_event_dismissed_cb (GtkButton *button, GsShell *shell)
 	gs_shell_rescan_events (shell);
 }
 
+static GsCategory *
+create_category (const gchar *id,
+		 const gchar *name,
+		 const gchar *icon,
+		 const gchar *color_code)
+{
+	GsCategory *cat = gs_category_new (id);
+	GdkRGBA color;
+
+	gs_category_set_icon (cat, icon);
+	gdk_rgba_parse (&color, color_code);
+	gs_category_add_key_color (cat, &color);
+	if (name != NULL)
+		gs_category_set_name (cat, icon);
+
+	return cat;
+}
+
 void
 gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *cancellable)
 {
@@ -1606,6 +1623,10 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	priv->side_filter =
 		GTK_WIDGET (gtk_builder_get_object (priv->builder,
 						    "listbox_sidefilter"));
+	/* side-filter Featured category */
+	priv->featured_category = create_category ("overview", NULL,
+						   "starred-symbolic", "#cf602a");
+
 	g_signal_connect (priv->side_filter, "row-selected",
 			  G_CALLBACK (side_filter_row_selected), shell);
 
@@ -2005,6 +2026,20 @@ gs_shell_side_filter_add_category (GsShell *shell, GsCategory *cat)
 	return row;
 }
 
+void
+gs_shell_set_featured_category_name (GsShell *shell,
+				     const gchar *name)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	const char *featured_name = gs_category_get_name (priv->featured_category);
+
+	if (name == NULL)
+		name = _("Featured");
+
+	if (g_strcmp0 (featured_name, name) != 0)
+		gs_category_set_name (priv->featured_category, name);
+}
+
 static void
 gs_shell_side_filter_add_mode (GsShell *shell,
 			       GsShellMode mode)
@@ -2012,41 +2047,17 @@ gs_shell_side_filter_add_mode (GsShell *shell,
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsSideFilterRow *row = NULL;
 	GsCategory *cat;
-	GdkRGBA color;
-	const char *id;
-	const char *name;
-	const char *icon;
-	const char *color_str;
 
 	switch (mode) {
 	case GS_SHELL_MODE_OVERVIEW:
-		id = "overview";
-		icon = "starred-symbolic";
-		color_str = "#cf602a";
-		/* XXX: This is a custom change for FNDE branded images but an
-		 * approach that does not require touching the gs-shell code
-		 * should replace this soon. */
-		if (g_str_has_prefix (priv->os_personality, "fnde"))
-			name = "Ministério da Educação";
-		else
-			name = _("Featured");
-
+		cat = priv->featured_category;
 		break;
 	default:
 	        return;
 	}
 
-	gdk_rgba_parse (&color, color_str);
-	cat = gs_category_new (id);
-	gs_category_set_name (cat, name);
-	gs_category_set_icon (cat, icon);
-	gs_category_add_key_color (cat, &color);
-
-	row = GS_SIDE_FILTER_ROW (gs_shell_side_filter_add_category (shell,
-								     cat));
+	row = GS_SIDE_FILTER_ROW (gs_shell_side_filter_add_category (shell, cat));
 	gs_side_filter_row_set_mode (row, mode);
-
-	g_object_unref (cat);
 }
 
 static void
@@ -2064,6 +2075,7 @@ gs_shell_dispose (GObject *object)
 	g_clear_object (&priv->plugin_loader);
 	g_clear_object (&priv->header_start_widget);
 	g_clear_object (&priv->header_end_widget);
+	g_clear_object (&priv->featured_category);
 	g_clear_pointer (&priv->events_info_uri, (GDestroyNotify) g_free);
 	g_clear_pointer (&priv->modal_dialogs, (GDestroyNotify) g_ptr_array_unref);
 
@@ -2088,20 +2100,10 @@ static void
 gs_shell_init (GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	g_autoptr(GError) error = NULL;
-	g_autoptr(GsOsRelease) os_release = gs_os_release_new (&error);
 
 	priv->back_entry_stack = g_queue_new ();
 	priv->ignore_primary_buttons = FALSE;
 	priv->modal_dialogs = g_ptr_array_new_with_free_func ((GDestroyNotify) gtk_widget_destroy);
-
-	if (!os_release) {
-		g_warning ("Could not get OS personality: %s",
-			   error->message);
-		return;
-	}
-	priv->os_personality =
-		g_strdup (gs_os_release_get_personality (os_release));
 }
 
 GsShell *
