@@ -765,7 +765,10 @@ remove_app_from_shell (GsPlugin		*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *shortcut_id = get_desktop_file_id (app);
+	const char *desktop_file_id = get_desktop_file_id (app);
+	g_autoptr(GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (desktop_file_id);
+	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
@@ -796,7 +799,10 @@ add_app_to_shell (GsPlugin	*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *shortcut_id = get_desktop_file_id (app);
+	const char *desktop_file_id = get_desktop_file_id (app);
+	g_autoptr(GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (desktop_file_id);
+	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
