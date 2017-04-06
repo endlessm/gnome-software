@@ -2377,6 +2377,7 @@ install_runtime_for_app (GsFlatpak *self,
 			 GError **error)
 {
 	GsApp *runtime;
+	GError *local_error = NULL;
 
 	/* only required for ostree-based flatpak apps */
 	if (g_strcmp0 (gs_app_get_flatpak_file_type (app), "flatpak") != 0) {
@@ -2444,11 +2445,23 @@ install_runtime_for_app (GsFlatpak *self,
 						     gs_app_get_flatpak_arch (runtime),
 						     gs_app_get_flatpak_branch (runtime),
 						     gs_flatpak_progress_cb, app,
-						     cancellable, error);
+						     cancellable, &local_error);
 		if (xref == NULL) {
-			gs_plugin_flatpak_error_convert (error);
-			gs_app_set_state_recover (runtime);
-			return FALSE;
+			gboolean already_installed =
+				g_error_matches (local_error,
+						 FLATPAK_ERROR,
+						 FLATPAK_ERROR_ALREADY_INSTALLED);
+			if (!already_installed) {
+				g_propagate_error (error, local_error);
+				gs_app_set_state_recover (runtime);
+				gs_app_set_state_recover (app);
+				return FALSE;
+			}
+
+			g_clear_error (&local_error);
+			g_debug ("Error: runtime %s is already installed; "
+				 "marking the GsApp as installed and continuing...",
+				 gs_app_get_unique_id (runtime));
 		}
 		gs_app_set_state (runtime, AS_APP_STATE_INSTALLED);
 	} else {
@@ -2581,6 +2594,7 @@ gs_flatpak_app_install (GsFlatpak *self,
 			GCancellable *cancellable,
 			GError **error)
 {
+	GError *local_error = NULL;
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 
 	/* ensure we have metadata and state */
@@ -2742,7 +2756,8 @@ gs_flatpak_app_install (GsFlatpak *self,
 							    gs_app_get_local_file (app),
 							    gs_flatpak_progress_cb,
 							    app,
-							    cancellable, error);
+							    cancellable,
+							    &local_error);
 	} else {
 		/* no origin set */
 		if (gs_app_get_origin (app) == NULL) {
@@ -2761,12 +2776,25 @@ gs_flatpak_app_install (GsFlatpak *self,
 						     gs_app_get_flatpak_arch (app),
 						     gs_app_get_flatpak_branch (app),
 						     gs_flatpak_progress_cb, app,
-						     cancellable, error);
+						     cancellable,
+						     &local_error);
 	}
 	if (xref == NULL) {
-		gs_plugin_flatpak_error_convert (error);
-		gs_app_set_state_recover (app);
-		return FALSE;
+		gboolean already_installed =
+			g_error_matches (local_error,
+					 FLATPAK_ERROR,
+					 FLATPAK_ERROR_ALREADY_INSTALLED);
+		if (!already_installed) {
+			g_propagate_error (error, local_error);
+			gs_plugin_flatpak_error_convert (error);
+			gs_app_set_state_recover (app);
+			return FALSE;
+		}
+
+		g_clear_error (&local_error);
+		g_debug ("Error: %s is already installed; "
+			 "marking the GsApp as installed and continuing...",
+			 gs_app_get_unique_id (app));
 	}
 
 	/* state is known */
@@ -2785,6 +2813,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 		       GCancellable *cancellable,
 		       GError **error)
 {
+	GError *local_error = NULL;
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 
 	/* install */
@@ -2804,11 +2833,23 @@ gs_flatpak_update_app (GsFlatpak *self,
 					    gs_app_get_flatpak_arch (app),
 					    gs_app_get_flatpak_branch (app),
 					    gs_flatpak_progress_cb, app,
-					    cancellable, error);
+					    cancellable, &local_error);
 	if (xref == NULL) {
-		gs_plugin_flatpak_error_convert (error);
-		gs_app_set_state_recover (app);
-		return FALSE;
+		gboolean already_installed =
+			g_error_matches (local_error,
+					 FLATPAK_ERROR,
+					 FLATPAK_ERROR_ALREADY_INSTALLED);
+		if (!already_installed) {
+			g_propagate_error (error, local_error);
+			gs_plugin_flatpak_error_convert (error);
+			gs_app_set_state_recover (app);
+			return FALSE;
+		}
+
+		g_clear_error (&local_error);
+		g_debug ("Error: update for %s is already installed; "
+			 "marking the GsApp as installed and continuing...",
+			 gs_app_get_unique_id (app));
 	}
 
 	/* update UI */
