@@ -36,6 +36,10 @@
 
 #define ENDLESS_ID_PREFIX "com.endlessm."
 
+#define EOS_IMAGE_VERSION_XATTR "user.eos-image-version"
+#define EOS_IMAGE_VERSION_PATH "/sysroot"
+#define EOS_IMAGE_VERSION_ALT_PATH "/"
+
 #define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
 
@@ -98,6 +102,76 @@ on_desktop_apps_changed (GDBusConnection *connection,
 		g_hash_table_destroy (apps);
 }
 
+static char *
+get_image_version_for_path (const char *path)
+{
+	ssize_t xattr_size = 0;
+	char *image_version = NULL;
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR, NULL, 0);
+
+	if (xattr_size == -1) {
+		return NULL;
+	}
+
+	image_version = g_malloc0 (xattr_size + 1);
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR,
+			       image_version, xattr_size);
+
+	/* this check is just in case the xattr has changed in between the
+	 * size checks */
+	if (xattr_size == -1) {
+		g_warning ("Error when getting the 'eos-image-version' from %s",
+			   path);
+		return NULL;
+	}
+
+	return image_version;
+}
+
+static char *
+get_image_version (void)
+{
+	char *image_version =
+		get_image_version_for_path (EOS_IMAGE_VERSION_PATH);
+
+	if (!image_version)
+		image_version =
+			get_image_version_for_path (EOS_IMAGE_VERSION_ALT_PATH);
+
+	return image_version;
+}
+
+static char *
+get_personality (void)
+{
+	g_autofree char *image_version = get_image_version ();
+	g_auto(GStrv) tokens = NULL;
+	guint num_tokens = 0;
+	char *personality = NULL;
+
+	if (!image_version)
+		return NULL;
+
+	tokens = g_strsplit (image_version, ".", 0);
+	num_tokens = g_strv_length (tokens);
+	personality = tokens[num_tokens - 1];
+
+	return g_strdup (personality);
+}
+
+static char *
+get_os_version_id (GError **error)
+{
+	g_autoptr(GsOsRelease) os_release = gs_os_release_new (error);
+
+	if (!os_release)
+		return NULL;
+
+	return g_strdup (gs_os_release_get_version_id (os_release));
+}
+
 /**
  * gs_plugin_initialize:
  */
@@ -105,7 +179,6 @@ void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GsOsRelease) os_release = gs_os_release_new (&error);
 	GsPluginData *priv = gs_plugin_alloc_data (plugin,
 						   sizeof(GsPluginData));
 
@@ -129,16 +202,15 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->soup_session = soup_session_new_with_options (SOUP_SESSION_USER_AGENT,
 	                                                    gs_user_agent (),
 	                                                    NULL);
-	if (!os_release) {
-		g_warning ("No OS version ID or personality could be set: %s",
-			   error->message);
-		return;
+	priv->personality = get_personality ();
 
-	}
-	priv->personality =
-		g_strdup (gs_os_release_get_personality (os_release));
-	priv->os_version_id =
-		g_strdup (gs_os_release_get_version_id (os_release));
+	if (!priv->personality)
+		g_warning ("No system personality could be set!");
+
+	priv->os_version_id = get_os_version_id (&error);
+	if (!priv->os_version_id)
+		g_warning ("No OS version ID could be set: %s",
+			   error->message);
 }
 
 /**
@@ -946,45 +1018,4 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	 * but in case the user has changed the "download-updates" setting then
 	 * this will still work correctly */
 	return add_updates (plugin, list, cancellable, error);
-}
-
-static gboolean
-filter_apps_by_prefix (GsApp *app, const char **prefixes)
-{
-	gboolean keep = FALSE;
-	guint i;
-	for (i = 0; prefixes[i] != NULL; ++i) {
-		if (g_str_has_prefix (gs_app_get_id (app), prefixes[i]))
-			return TRUE;
-	}
-	return FALSE;
-}
-
-static gboolean
-ensure_only_fnde_popular_apps (GsPlugin *plugin,
-			       GsAppList *list,
-			       GCancellable *cancellable,
-			       GError **error)
-{
-	guint i;
-	GsApp *app;
-	const char *prefixes[] = {"com.endlessm.fnde_",
-				  "com.endlessm.teachers_portal_",
-				  NULL};
-	gs_app_list_filter (list, filter_apps_by_prefix, prefixes);
-	return TRUE;
-}
-
-gboolean
-gs_plugin_add_popular (GsPlugin *plugin,
-		       GsAppList *list,
-		       GCancellable *cancellable,
-		       GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	if (!g_str_has_prefix (priv->personality, "fnde"))
-		return TRUE;
-
-	ensure_only_fnde_popular_apps (plugin, list, cancellable, error);
-	return TRUE;
 }

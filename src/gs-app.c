@@ -208,6 +208,29 @@ _as_app_quirk_flag_to_string (AsAppQuirk quirk)
 	return NULL;
 }
 
+/* mutex must be held */
+static const gchar *
+gs_app_get_unique_id_unlocked (GsApp *app)
+{
+	/* invalid */
+	if (app->id == NULL)
+		return NULL;
+
+	/* hmm, do what we can */
+	if (app->unique_id == NULL || !app->unique_id_valid) {
+		g_debug ("autogenerating unique-id for %s", app->id);
+		g_free (app->unique_id);
+		app->unique_id = as_utils_unique_id_build (app->scope,
+							   app->bundle_kind,
+							   app->origin,
+							   app->kind,
+							   app->id,
+							   app->branch);
+		app->unique_id_valid = TRUE;
+	}
+	return app->unique_id;
+}
+
 /**
  * _as_app_quirk_to_string:
  * @quirk: a #AsAppQuirk
@@ -708,6 +731,7 @@ gs_app_set_state_recover (GsApp *app)
 	gs_app_queue_notify (app, "state");
 }
 
+/* mutex must be held */
 static gboolean
 gs_app_set_state_internal (GsApp *app, AsAppState state)
 {
@@ -800,7 +824,7 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 	/* this state change was unexpected */
 	if (!state_change_ok) {
 		g_warning ("State change on %s from %s to %s is not OK",
-			   gs_app_get_unique_id (app),
+			   gs_app_get_unique_id_unlocked (app),
 			   as_app_state_to_string (app->state),
 			   as_app_state_to_string (state));
 		return FALSE;
@@ -822,7 +846,7 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 	default:
 		if (app->state_recover != state) {
 			g_debug ("%s non-transient state now %s",
-				 gs_app_get_unique_id (app),
+				 gs_app_get_unique_id_unlocked (app),
 				 as_app_state_to_string (state));
 			app->state_recover = state;
 		}
@@ -846,13 +870,14 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 void
 gs_app_set_progress (GsApp *app, guint percentage)
 {
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 	g_return_if_fail (GS_IS_APP (app));
 	if (app->progress == percentage)
 		return;
 	if (percentage > 100) {
 		g_warning ("Cannot set '%u' as the progress for app '%s'. "
 			   "Setting the maximum allowed value instead: 100.",
-			   percentage, gs_app_get_unique_id (app));
+			   percentage, gs_app_get_unique_id_unlocked (app));
 		percentage = 100;
 	}
 	app->progress = percentage;
@@ -886,6 +911,7 @@ gs_app_set_progress (GsApp *app, guint percentage)
 void
 gs_app_set_state (GsApp *app, AsAppState state)
 {
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 	g_return_if_fail (GS_IS_APP (app));
 
 	if (gs_app_set_state_internal (app, state))
@@ -929,6 +955,7 @@ gs_app_get_kind (GsApp *app)
 void
 gs_app_set_kind (GsApp *app, AsAppKind kind)
 {
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 	gboolean state_change_ok = FALSE;
 
 	g_return_if_fail (GS_IS_APP (app));
@@ -940,7 +967,7 @@ gs_app_set_kind (GsApp *app, AsAppKind kind)
 	    kind == AS_APP_KIND_UNKNOWN) {
 		g_warning ("automatically prevented from changing "
 			   "kind on %s from %s to %s!",
-			   gs_app_get_unique_id (app),
+			   gs_app_get_unique_id_unlocked (app),
 			   as_app_kind_to_string (app->kind),
 			   as_app_kind_to_string (kind));
 		return;
@@ -996,23 +1023,7 @@ gs_app_get_unique_id (GsApp *app)
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
 
-	/* invalid */
-	if (app->id == NULL)
-		return NULL;
-
-	/* hmm, do what we can */
-	if (app->unique_id == NULL || !app->unique_id_valid) {
-		g_debug ("autogenerating unique-id for %s", app->id);
-		g_free (app->unique_id);
-		app->unique_id = as_utils_unique_id_build (app->scope,
-							   app->bundle_kind,
-							   app->origin,
-							   app->kind,
-							   app->id,
-							   app->branch);
-		app->unique_id_valid = TRUE;
-	}
-	return app->unique_id;
+	return gs_app_get_unique_id_unlocked (app);
 }
 
 /**
@@ -1152,6 +1163,7 @@ gs_app_add_source (GsApp *app, const gchar *source)
 {
 	const gchar *tmp;
 	guint i;
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (source != NULL);
@@ -2007,7 +2019,7 @@ gs_app_set_origin (GsApp *app, const gchar *origin)
 	if (app->origin != NULL && origin != NULL) {
 		g_warning ("automatically prevented from changing "
 			   "origin on %s from %s to %s!",
-			   gs_app_get_unique_id (app),
+			   gs_app_get_unique_id_unlocked (app),
 			   app->origin, origin);
 		return;
 	}
@@ -2333,7 +2345,7 @@ gs_app_set_management_plugin (GsApp *app, const gchar *management_plugin)
 	if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
 		g_warning ("plugins should not set the management plugin on "
 			   "%s to %s -- create a new GsApp in refine()!",
-			   gs_app_get_unique_id (app),
+			   gs_app_get_unique_id_unlocked (app),
 			   management_plugin);
 		return;
 	}
@@ -2385,6 +2397,7 @@ gs_app_get_rating (GsApp *app)
 void
 gs_app_set_rating (GsApp *app, gint rating)
 {
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 	g_return_if_fail (GS_IS_APP (app));
 	app->rating = rating;
 	gs_app_queue_notify (app, "rating");
@@ -3308,6 +3321,7 @@ gs_app_has_quirk (GsApp *app, AsAppQuirk quirk)
 void
 gs_app_add_quirk (GsApp *app, AsAppQuirk quirk)
 {
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 	g_return_if_fail (GS_IS_APP (app));
 
 	app->quirk |= quirk;
@@ -3326,6 +3340,7 @@ gs_app_add_quirk (GsApp *app, AsAppQuirk quirk)
 void
 gs_app_remove_quirk (GsApp *app, AsAppQuirk quirk)
 {
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&app->mutex);
 	g_return_if_fail (GS_IS_APP (app));
 
 	app->quirk &= ~quirk;
