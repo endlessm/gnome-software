@@ -206,6 +206,8 @@ app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *x
 		"org.gnome.Documents.desktop",
 		/* Rendering issues in YouTube */
 		"org.gnome.Epiphany.desktop",
+		/* Crashes retrieving covers, wrong libretro installation*/
+		"org.gnome.Games.desktop",
 		/* Doesn't work due to network related problems */
 		"org.gnome.Maps.desktop",
 		/* Requires Telepathy daemons running in the host */
