@@ -531,7 +531,10 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 					 GHashTable *apps_with_shortcuts)
 {
 	GsPluginData *priv = NULL;
+	const char *desktop_file_id = NULL;
 	const char *shortcut_id = NULL;
+	g_autofree char *kde_desktop_file_id = NULL;
+	gboolean found = FALSE;
 
 	if (!gs_app_is_installed (app)) {
 		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
@@ -539,14 +542,29 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	}
 
 	priv = gs_plugin_get_data (plugin);
-	shortcut_id = get_desktop_file_id (app);
+	desktop_file_id = get_desktop_file_id (app);
+	kde_desktop_file_id =
+		g_strdup_printf ("%s-%s", "kde4", desktop_file_id);
 
-	gs_plugin_cache_add (plugin, shortcut_id, app);
-	if (g_hash_table_lookup (apps_with_shortcuts, shortcut_id)) {
-		g_hash_table_add (priv->desktop_apps, g_strdup (shortcut_id));
+	/* Cache both keys, since we may see either variant in the desktop
+	 * grid; see on_desktop_apps_changed().
+	 */
+	gs_plugin_cache_add (plugin, desktop_file_id, app);
+	gs_plugin_cache_add (plugin, kde_desktop_file_id, app);
+
+	if (g_hash_table_lookup (apps_with_shortcuts, desktop_file_id)) {
+		g_hash_table_add (priv->desktop_apps, g_strdup (desktop_file_id));
+		found = TRUE;
+	} else if (g_hash_table_lookup (apps_with_shortcuts, kde_desktop_file_id)) {
+		g_hash_table_add (priv->desktop_apps, g_strdup (kde_desktop_file_id));
+		found = TRUE;
+	}
+
+	if (found) {
 		gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
 	} else {
-		g_hash_table_remove (priv->desktop_apps, shortcut_id);
+		g_hash_table_remove (priv->desktop_apps, desktop_file_id);
+		g_hash_table_remove (priv->desktop_apps, kde_desktop_file_id);
 		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
 	}
 }
