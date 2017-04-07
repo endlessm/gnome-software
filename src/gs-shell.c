@@ -2033,7 +2033,7 @@ gs_shell_set_featured_category_name (GsShell *shell,
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const char *featured_name = gs_category_get_name (priv->featured_category);
 
-	if (name == NULL)
+	if (name == NULL || name[0] == '\0')
 		name = _("Featured");
 
 	if (g_strcmp0 (featured_name, name) != 0)
