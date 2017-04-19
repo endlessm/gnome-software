@@ -146,18 +146,17 @@ get_installed_appstream_app (GsPlugin *plugin,
 	return g_object_ref (as_app);
 }
 
-static gboolean
+static void
 setup_ext_runtime_version (GsPlugin *plugin,
 			   GsApp *app,
-			   GCancellable *cancellable,
-			   GError **error)
+			   GCancellable *cancellable)
 {
 	const char *runtime_version;
 	g_autoptr(GError) local_error = NULL;
 	g_autoptr(AsApp) as_app = NULL;
 
 	if (!app_is_legacy_external_app (app))
-		return TRUE;
+		return;
 
 	as_app = get_installed_appstream_app (plugin, app, cancellable,
 					      &local_error);
@@ -166,8 +165,7 @@ setup_ext_runtime_version (GsPlugin *plugin,
 		g_warning ("Failed to get AsApp from installed AppStream "
 			   "data of app '%s': %s", gs_app_get_unique_id (app),
 			   local_error->message);
-		g_propagate_error (error, g_steal_pointer (&local_error));
-		return FALSE;
+		return;
 	}
 
 	/* get the runtime version that is set in the installed AppStream data */
@@ -184,7 +182,7 @@ setup_ext_runtime_version (GsPlugin *plugin,
 	gs_app_set_metadata (app, LEGACY_RUNTIME_INSTALLED_MTD_KEY,
 			     runtime_version);
 
-	return TRUE;
+	return;
 }
 
 gboolean
@@ -207,7 +205,8 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		      GCancellable *cancellable,
 		      GError **error)
 {
-	return setup_ext_runtime_version (plugin, app, cancellable, error);
+	setup_ext_runtime_version (plugin, app, cancellable);
+	return TRUE;
 }
 
 gboolean
@@ -216,5 +215,6 @@ gs_plugin_update_app (GsPlugin *plugin,
 		      GCancellable *cancellable,
 		      GError **error)
 {
-	return setup_ext_runtime_version (plugin, app, cancellable, error);
+	setup_ext_runtime_version (plugin, app, cancellable);
+	return TRUE;
 }
