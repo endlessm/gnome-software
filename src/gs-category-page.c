@@ -483,7 +483,8 @@ gs_category_page_reload (GsPage *page)
 					 "category", self->subcategory,
 					 "filter-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					 NULL);
