@@ -752,7 +752,8 @@ gs_overview_page_load (GsOverviewPage *self)
 		priv->loading_featured = TRUE;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_FEATURED,
 						 "max-results", 5,
-						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 								 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 						 NULL);
@@ -772,7 +773,8 @@ gs_overview_page_load (GsOverviewPage *self)
 						 "max-results", 20,
 						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
-								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 								 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 						 NULL);
@@ -837,7 +839,8 @@ gs_overview_page_load (GsOverviewPage *self)
 							 "max-results", 20,
 							 "category", featured_category,
 							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 							 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 									 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 							 NULL);
