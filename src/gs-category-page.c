@@ -149,7 +149,8 @@ gs_category_page_reload (GsPage *page)
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader,
 					    plugin_job,

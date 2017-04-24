@@ -426,6 +426,61 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
+gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
+{
+	static const char *duplicated_apps[] = {
+		"org.gnome.Builder.desktop",
+		"org.gnome.iagno.desktop",
+		NULL
+	};
+
+	static const char *core_apps[] = {
+		"org.gnome.Calculator.desktop",
+		"org.gnome.Evince.desktop",
+		"org.gnome.Nautilus.desktop",
+		"org.gnome.Rhythmbox3.desktop",
+		"org.gnome.Totem.desktop",
+		"org.gnome.clocks.desktop",
+		"org.gnome.eog.desktop",
+		"org.gnome.gedit.desktop",
+		NULL
+	};
+
+	/* Flatpak apps known not to be working properly */
+	static const char *buggy_apps[] = {
+		/* Can't open LibreOffice documents */
+		"org.gnome.Documents.desktop",
+		/* Doesn't work due to network related problems */
+		"org.gnome.Maps.desktop",
+		NULL
+	};
+
+	const char *hostname = NULL;
+
+	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM)
+		return FALSE;
+
+	hostname = gs_app_get_origin_hostname (app);
+	if (hostname == NULL)
+		return FALSE;
+
+	/* We need to check for the app's origin, otherwise we'd be
+	 * blacklisting matching apps coming from any repo */
+	if (g_strcmp0 (hostname, "sdk.gnome.org") != 0 &&
+	    g_strcmp0 (hostname, "flathub.org") != 0)
+		return FALSE;
+
+	if (g_strv_contains (duplicated_apps, gs_app_get_id (app)) ||
+	    g_strv_contains (core_apps, gs_app_get_id (app)) ||
+	    g_strv_contains (buggy_apps, gs_app_get_id (app))) {
+		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static gboolean
 app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
@@ -748,6 +803,9 @@ gs_plugin_refine (GsPlugin		*plugin,
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
 
 		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
+			continue;
+
+		if (gs_plugin_eos_blacklist_upstream_app_if_needed (plugin, app))
 			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
