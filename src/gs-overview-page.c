@@ -842,7 +842,8 @@ gs_overview_page_load (GsOverviewPage *self)
 
 		query = gs_app_query_new ("is-featured", GS_APP_QUERY_TRISTATE_TRUE,
 					  "max-results", 5,
-					  "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					  "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					  "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 							  GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					  "filter-func", filter_hi_res_icon,
@@ -872,7 +873,8 @@ gs_overview_page_load (GsOverviewPage *self)
 					  "max-results", N_TILES,
 					  "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
-							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					  "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 							  GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					  "license-type", gs_page_get_query_license_type (GS_PAGE (self)),
@@ -926,7 +928,8 @@ gs_overview_page_load (GsOverviewPage *self)
 		query = gs_app_query_new ("released-since", released_since,
 					  "max-results", N_TILES,
 					  "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					  "dedupe-flags", GS_APP_LIST_FILTER_FLAG_KEY_ID |
 							  GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 							  GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,

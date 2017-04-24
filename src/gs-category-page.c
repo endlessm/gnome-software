@@ -712,7 +712,8 @@ gs_category_page_load_category (GsCategoryPage *self)
 		g_autoptr(GsAppQuery) featured_query = NULL;
 
 		featured_query = gs_app_query_new ("category", featured_subcat,
-						   "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS,
+						   "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
+								   GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						   "license-type", gs_page_get_query_license_type (GS_PAGE (self)),
 						   NULL);
 		featured_plugin_job = gs_plugin_job_list_apps_new (featured_query,
@@ -730,7 +731,8 @@ gs_category_page_load_category (GsCategoryPage *self)
 	main_query = gs_app_query_new ("category", self->subcategory,
 				       "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 						       GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-						       GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS,
+						       GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
+						       GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 				       "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 						       GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 				       "license-type", gs_page_get_query_license_type (GS_PAGE (self)),
