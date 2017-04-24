@@ -454,6 +454,182 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
+gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
+{
+	gboolean do_blacklist = FALSE;
+
+	static const char *duplicated_apps[] = {
+		"com.arduino.App.desktop",
+		"com.dropbox.Client.desktop",
+		"com.github.Slingshot.desktop",
+		"com.google.Chrome.desktop",
+		"com.microsoft.Skype.desktop",
+		"com.skype.Client.desktop",
+		"com.mojang.Minecraft.desktop",
+		"com.sparklinlabs.Superpowers.desktop",
+		"com.stencyl.Game.desktop",
+		"com.sublimetext.three.desktop",
+		"com.visualstudio.code.oss.desktop",
+		"de.billardgl.Billardgl.desktop",
+		"io.github.Supertux.desktop",
+		"org.supertuxproject.SuperTux.desktop",
+		"net.blockout.Blockout2.desktop",
+		"net.blockout.BlockOutII.desktop",
+		"net.gcompris.Gcompris.desktop",
+		"net.olofson.Kobodeluxe.desktop",
+		"net.olofson.KoboDeluxe.desktop",
+		"net.sourceforge.Atanks.desktop",
+		"net.sourceforge.atanks.desktop",
+		"net.sourceforge.Audacity.desktop",
+		"org.audacityteam.Audacity.desktop",
+		"net.sourceforge.Btanks.desktop",
+		"net.sourceforge.btanks.desktop",
+		"net.sourceforge.ChromiumBSU.desktop",
+		"net.sourceforge.chromium-bsu.desktop",
+		"net.sourceforge.Extremetuxracer.desktop",
+		"net.sourceforge.ExtremeTuxRacer.desktop",
+		"net.sourceforge.Frostwire.desktop",
+		"net.sourceforge.Rili.desktop",
+		"net.sourceforge.Ri-li.desktop",
+		"net.sourceforge.Supertuxkart.desktop",
+		"net.supertuxkart.SuperTuxKart.desktop",
+		"net.sourceforge.Torcs.desktop",
+		"net.sourceforge.torcs.desktop",
+		"net.sourceforge.Tuxfootball.desktop",
+		"net.sourceforge.TuxFootball.desktop",
+		"net.sourceforge.Warmux.desktop",
+		"org.gna.Warmux.desktop",
+		"net.wz2100.Warzone2100.desktop",
+		"org.armagetronad.Armagetronad.desktop",
+		"org.armagetronad.ArmagetronAdvanced.desktop",
+		"org.codeblocks.App.desktop",
+		"org.debian.Tuxpuck.desktop",
+		"org.debian.TuxPuck.desktop",
+		"org.debian.alioth.tux4kids.Tuxmath.desktop",
+		"com.tux4kids.tuxmath.desktop",
+		"org.debian.alioth.tux4kids.Tuxtype.desktop",
+		"com.tux4kids.tuxtype.desktop",
+		"org.eclipse.Eclipse.desktop",
+		"org.frozenbubble.FrozenBubble.desktop",
+		"org.frozen_bubble.frozen-bubble.desktop",
+		"org.gimp.Gimp.desktop",
+		"org.gimp.GIMP.desktop",
+		"org.gnome.Freecell.desktop",
+		"org.gnome.Iagno.desktop",
+		"org.gnome.iagno.desktop",
+		"org.gnome.Quadrapassel.desktop",
+		"org.gnome.quadrapassel.desktop",
+		"org.gnome.Solitaire.desktop",
+		"org.gnome.Aisleriot.desktop",
+		"org.gnome.Tetravex.desktop",
+		"org.gnome.tetravex.desktop",
+		"org.gnome.people.dscorgie.Labyrinth.desktop",
+		"org.kde.Kalzium.desktop",
+		"org.kde.Kapman.desktop",
+		"org.kde.Katomic.desktop",
+		"org.kde.Kblocks.desktop",
+		"org.kde.Kbounce.desktop",
+		"org.kde.Kbruch.desktop",
+		"org.kde.Kdiamond.desktop",
+		"org.kde.Kgeography.desktop",
+		"org.kde.Kgoldrunner.desktop",
+		"org.kde.Khangman.desktop",
+		"org.kde.Kigo.desktop",
+		"org.kde.Killbots.desktop",
+		"org.kde.Kjumpingcube.desktop",
+		"org.kde.Klines.desktop",
+		"org.kde.Knavalbattle.desktop",
+		"org.kde.Knetwalk.desktop",
+		"org.kde.Ksame.desktop",
+		"org.kde.Ksquares.desktop",
+		"org.kde.Ksudoku.desktop",
+		"org.kde.Ktuberling.desktop",
+		"org.kde.Kubrick.desktop",
+		"org.kde.Kwordquiz.desktop",
+		"org.kde.Palapeli.desktop",
+		"org.learningequality.KALite.desktop",
+		"org.maemo.Numptyphysics.desktop",
+		"io.thp.numptyphysics.desktop",
+		"org.marsshooter.Marsshooter.desktop",
+		"net.sourceforge.mars-game.desktop",
+		"org.mozilla.Firefox.desktop",
+		"org.openarena.Openarena.desktop",
+		"ws.openarena.OpenArena.desktop",
+		"org.openscad.Openscad.desktop",
+		"org.platformio.Ide.desktop",
+		"org.processing.App.desktop",
+		"org.seul.Pingus.desktop",
+		"org.seul.pingus.desktop",
+		"org.snap4arduino.App.desktop",
+		"org.squeakland.Etoys.desktop",
+		"org.squeakland.Scratch.desktop",
+		"org.stellarium.Stellarium.desktop",
+		"org.sugarlabs.Turtleblocks.desktop",
+		"org.tuxfamily.Xmoto.desktop",
+		"org.tuxfamily.XMoto.desktop",
+		NULL
+	};
+
+	static const char *core_apps[] = {
+		"org.gnome.Calculator.desktop",
+		"org.gnome.Evince.desktop",
+		"org.gnome.Nautilus.desktop",
+		"org.gnome.Rhythmbox3.desktop",
+		"org.gnome.Totem.desktop",
+		"org.gnome.clocks.desktop",
+		"org.gnome.eog.desktop",
+		"org.gnome.gedit.desktop",
+		"org.libreoffice.LibreOffice.desktop",
+		NULL
+	};
+
+	/* Flatpak apps known not to be working properly */
+	static const char *buggy_apps[] = {
+		/* Missing lots of keys and defaults specified in eos-theme */
+		"ca.desrt.dconf-editor.desktop",
+		/* Can't open LibreOffice documents */
+		"org.gnome.Documents.desktop",
+		NULL
+	};
+
+	const char *hostname = NULL;
+
+	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM ||
+	    gs_app_is_installed (app))
+		return FALSE;
+
+	hostname = gs_app_get_origin_hostname (app);
+	if (hostname == NULL)
+		return FALSE;
+
+	/* We need to check for the app's origin, otherwise we'd be
+	 * blacklisting matching apps coming from any repo */
+	if (g_strcmp0 (hostname, "sdk.gnome.org") != 0 &&
+	    g_strcmp0 (hostname, "flathub.org") != 0 &&
+	    !g_str_has_suffix (hostname, ".flathub.org"))
+		return FALSE;
+
+	if (g_strv_contains (duplicated_apps, gs_app_get_id (app))) {
+		g_debug ("Blacklisting '%s': app is in the duplicated list",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
+	} else if (g_strv_contains (core_apps, gs_app_get_id (app))) {
+		g_debug ("Blacklisting '%s': app is in the core apps list",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
+	} else if (g_strv_contains (buggy_apps, gs_app_get_id (app))) {
+		g_debug ("Blacklisting '%s': app is in the buggy list",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
+	}
+
+	if (do_blacklist)
+		gs_app_add_category (app, "Blacklisted");
+
+	return do_blacklist;
+}
+
+static gboolean
 app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
@@ -761,6 +937,9 @@ gs_plugin_refine (GsPlugin		*plugin,
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app);
 
 		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
+			continue;
+
+		if (gs_plugin_eos_blacklist_upstream_app_if_needed (plugin, app))
 			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
