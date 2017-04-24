@@ -676,7 +676,8 @@ gs_overview_page_load (GsOverviewPage *self)
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_FEATURED,
 						 "max-results", 5,
 						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
-						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,
@@ -693,7 +694,8 @@ gs_overview_page_load (GsOverviewPage *self)
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_POPULAR,
 						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,
@@ -753,7 +755,8 @@ gs_overview_page_load (GsOverviewPage *self)
 							 "category", featured_category,
 							 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 							 NULL);
 			gs_plugin_loader_job_process_async (priv->plugin_loader,
 							    plugin_job,
