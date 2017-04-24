@@ -424,7 +424,8 @@ gs_category_page_load_category (GsCategoryPage *self)
 		featured_plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORY_APPS,
 							  "interactive", TRUE,
 							  "category", featured_subcat,
-							  "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS,
+							  "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
+									  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 							  NULL);
 		gs_plugin_loader_job_process_async (self->plugin_loader,
 						    featured_plugin_job,
@@ -441,7 +442,8 @@ gs_category_page_load_category (GsCategoryPage *self)
 					      "category", self->subcategory,
 					      "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							      GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-							      GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS,
+							      GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
+							      GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					      "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 							      GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					      NULL);
