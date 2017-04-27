@@ -2399,6 +2399,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 		       GCancellable *cancellable,
 		       GError **error)
 {
+	GError *local_error = NULL;
 	g_autoptr(FlatpakInstalledRef) xref = NULL;
 
 	/* install */
@@ -2416,11 +2417,23 @@ gs_flatpak_update_app (GsFlatpak *self,
 					    gs_app_get_flatpak_arch (app),
 					    gs_app_get_flatpak_branch (app),
 					    gs_flatpak_progress_cb, app,
-					    cancellable, error);
+					    cancellable, &local_error);
 	if (xref == NULL) {
-		gs_plugin_flatpak_error_convert (error);
-		gs_app_set_state_recover (app);
-		return FALSE;
+		gboolean already_installed =
+			g_error_matches (local_error,
+					 FLATPAK_ERROR,
+					 FLATPAK_ERROR_ALREADY_INSTALLED);
+		if (!already_installed) {
+			g_propagate_error (error, local_error);
+			gs_plugin_flatpak_error_convert (error);
+			gs_app_set_state_recover (app);
+			return FALSE;
+		}
+
+		g_clear_error (&local_error);
+		g_debug ("Error: update for %s is already installed; "
+			 "marking the GsApp as installed and continuing...",
+			 gs_app_get_unique_id (app));
 	}
 
 	/* update UI */
