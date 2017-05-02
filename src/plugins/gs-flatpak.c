@@ -2418,6 +2418,26 @@ gs_flatpak_update_app (GsFlatpak *self,
 					    gs_app_get_flatpak_branch (app),
 					    gs_flatpak_progress_cb, app,
 					    cancellable, &local_error);
+	/* workaround for when file objects are missing and a static delta
+	 * cannot be used */
+	if (xref == NULL && g_error_matches (local_error, G_IO_ERROR,
+					     G_IO_ERROR_NOT_FOUND)) {
+		g_debug ("Error due to missing file when updating '%s': %s. "
+			 "Retrying the update without static deltas...",
+			 gs_app_get_unique_id (app),
+			 local_error->message);
+		g_clear_error (&local_error);
+
+		/* pull without static deltas */
+		xref = flatpak_installation_update (self->installation,
+						    FLATPAK_UPDATE_FLAGS_NO_STATIC_DELTAS,
+						    gs_app_get_flatpak_kind (app),
+						    gs_app_get_flatpak_name (app),
+						    gs_app_get_flatpak_arch (app),
+						    gs_app_get_flatpak_branch (app),
+						    gs_flatpak_progress_cb, app,
+						    cancellable, &local_error);
+	}
 	if (xref == NULL) {
 		gboolean already_installed =
 			g_error_matches (local_error,
