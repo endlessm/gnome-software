@@ -245,9 +245,6 @@ get_applications_with_shortcuts (GsPlugin	*plugin,
 	GHashTable *apps_table;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
-	apps_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-					    NULL);
-
 	apps = g_dbus_connection_call_sync (priv->session_bus,
 					    "org.gnome.Shell",
 					    "/org/gnome/Shell",
@@ -265,8 +262,10 @@ get_applications_with_shortcuts (GsPlugin	*plugin,
 		return NULL;
 	}
 
-	g_variant_get (apps, "(as)", &iter);
+	apps_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+					    NULL);
 
+	g_variant_get (apps, "(as)", &iter);
 	while (g_variant_iter_loop (iter, "s", &application))
 		g_hash_table_add (apps_table, g_strdup (application));
 
