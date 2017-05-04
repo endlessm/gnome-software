@@ -52,10 +52,11 @@
                   <object class="GtkBox" id="box">
 		    <property name="visible">True</property>
 		    <property name="orientation">vertical</property>
-                    <property name="margin">12</property>
-		    <property name="halign">start</property>
+		    <property name="halign">fill</property>
 		    <property name="valign">start</property>
                     <property name="vexpand">True</property>
+		    <property name="margin_left">12</property>
+		    <property name="margin_right">12</property>
                     <child>
                       <object class="GtkImage" id="placeholder_icon">
                         <property name="visible">True</property>
@@ -63,6 +64,7 @@
                         <property name="width-request">64</property>
                         <property name="height-request">64</property>
                         <property name="margin-bottom">12</property>
+                        <property name="margin_top">12</property>
                       </object>
                     </child>
 		    <child>
@@ -75,8 +77,7 @@
                         <property name="ellipsize">end</property>
                         <property name="width_chars">12</property>
                         <property name="max_width_chars">12</property>
-                        <property name="margin_top">18</property>
-                        <property name="margin_bottom">6</property>
+                        <property name="margin_top">8</property>
 			<style>
 			  <class name="app-name"/>
 			</style>
@@ -96,6 +97,7 @@
                         <property name="wrap">True</property>
 			<property name="width_chars">12</property>
                         <property name="max_width_chars">12</property>
+                        <property name="margin_top">6</property>
 			<style>
 			  <class name="app-summary"/>
 			</style>
@@ -235,7 +237,7 @@
                 <property name="visible">True</property>
                 <property name="halign">start</property>
                 <property name="valign">start</property>
-                <property name="margin_top">36</property>
+                <property name="margin_top">24</property>
                 <property name="margin_left">12</property>
                 <property name="margin_right">12</property>
                 <property name="margin_bottom">12</property>
