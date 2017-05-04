@@ -214,7 +214,7 @@ app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *x
 	};
 
 	g_autoptr(SoupURI) soup_uri = NULL;
-	const char *remote_url = NULL;
+	g_autofree char *remote_url = NULL;
 	const char *remote_host = NULL;
 	const char *remote_path = NULL;
 
