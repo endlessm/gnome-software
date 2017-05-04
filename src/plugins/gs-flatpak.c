@@ -214,7 +214,7 @@ app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *x
 	};
 
 	g_autoptr(SoupURI) soup_uri = NULL;
-	const char *remote_url = NULL;
+	g_autofree char *remote_url = NULL;
 	const char *remote_host = NULL;
 	const char *remote_path = NULL;
 
@@ -241,6 +241,31 @@ app_is_blacklisted_gnome_flatpak (AsApp *app, AsAppScope scope, FlatpakRemote *x
 		return TRUE;
 
 	return FALSE;
+}
+
+static gboolean
+remote_is_eos_apps (FlatpakRemote *remote)
+{
+	g_autoptr(SoupURI) soup_uri = NULL;
+	const char *remote_host = NULL;
+	const char *remote_path = NULL;
+	g_autofree char *remote_url = NULL;
+
+	if (g_strcmp0 (flatpak_remote_get_name (remote), "eos-apps") != 0)
+		return FALSE;
+
+	remote_url = flatpak_remote_get_url (remote);
+	if (remote_url == NULL)
+		return FALSE;
+
+	soup_uri = soup_uri_new (remote_url);
+	remote_host = soup_uri_get_host (soup_uri);
+	remote_path = soup_uri_get_path (soup_uri);
+
+	/* support *ostree.endlessm.com domains with '/eos-apps' end points */
+	return remote_path != NULL &&
+		(g_strstr_len (remote_path, -1, "eos-apps") != NULL) &&
+		g_str_has_suffix (remote_host, "ostree.endlessm.com");
 }
 
 static gboolean
@@ -324,28 +349,11 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	 * to cover the case where GS is run without being connected to the
 	 * Internet before (otherwise it would have pulled it from the server).
 	 */
-	if (default_branch == NULL &&
-	    (self->scope == AS_APP_SCOPE_SYSTEM) &&
-	    (g_strcmp0 (flatpak_remote_get_name (xremote), "eos-apps") == 0)) {
-		const char *remote_url = flatpak_remote_get_url (xremote);
-
-		if (remote_url != NULL) {
-			g_autoptr(SoupURI) soup_uri = NULL;
-			const char *remote_host = NULL;
-			const char *remote_path = NULL;
-
-			soup_uri = soup_uri_new (remote_url);
-			remote_host = soup_uri_get_host (soup_uri);
-			remote_path = soup_uri_get_path(soup_uri);
-
-			/* support *.ostree.endlessm.com domains with '/eos-apps' end points */
-			if (g_str_has_suffix (remote_host, "ostree.endlessm.com") &&
-			    (remote_path != NULL && g_str_has_suffix (remote_path, "eos-apps"))) {
-				g_warning ("No default branch configured for Endless eos-apps "
-					   "remote! Using fallback value");
-				default_branch = g_strdup ("eos3");
-			}
-		}
+	if (default_branch == NULL && self->scope == AS_APP_SCOPE_SYSTEM &&
+	    remote_is_eos_apps (xremote)) {
+		g_warning ("No default branch configured for Endless eos-apps remote! "
+			   "Using fallback value");
+		default_branch = g_strdup ("eos3");
 	}
 
 	/* get all the apps and fix them up */
@@ -515,14 +523,22 @@ ensure_default_branches (GsFlatpak *self)
 
 	for (i = 0; i < xremotes->len; i++) {
 		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
-		const gchar *remote_name = flatpak_remote_get_name (xremote);
+		const gchar *remote_name;
 		g_autofree char *default_branch = NULL;
 		g_autoptr(GError) error_local = NULL;
+
+		/* we only try to ensure the default branch is set for the repos
+		 * we officially support as other repos, especially the ones with
+		 * only runtimes may not have the default branch set, and trying
+		 * to fetch it takes a considerable amount of time */
+		if (!remote_is_eos_apps (xremote))
+			continue;
 
 		default_branch = flatpak_remote_get_default_branch (xremote);
 		if (default_branch != NULL)
 			continue;
 
+		remote_name = flatpak_remote_get_name (xremote);
 		if (!flatpak_installation_update_remote_sync (self->installation,
 							      remote_name, NULL,
 							      &error_local)) {
