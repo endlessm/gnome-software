@@ -12,7 +12,8 @@ GS_CONFIGURE_FLAGS = --libdir=/usr/lib \
 		--disable-steam			\
 		--disable-webapps		\
 		--enable-external-appstream	\
-		--enable-flatpak
+		--enable-flatpak		\
+		--disable-tests
 
 # Install target dir
 INSTALLDIR = $(CURDIR)/debian/tmp
