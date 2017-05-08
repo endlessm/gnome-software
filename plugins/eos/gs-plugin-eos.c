@@ -445,8 +445,6 @@ gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.gnome.Nautilus.desktop",
 		"org.gnome.Rhythmbox3.desktop",
 		"org.gnome.Totem.desktop",
-		"org.gnome.Weather.desktop",
-		"org.gnome.Weather.Application.desktop",
 		"org.gnome.clocks.desktop",
 		"org.gnome.eog.desktop",
 		"org.gnome.gedit.desktop",
