@@ -141,8 +141,8 @@ AM_CONDITIONAL(ENABLE_DOGTAIL, test "$enable_dogtail" != no)
 
 AC_ARG_ENABLE(tests,
               [AS_HELP_STRING([--enable-tests],
-                              [test using tests [default=yes]])],,
-              enable_tests=yes)
+                              [test using tests [default=no]])],,
+              enable_tests=no)
 AM_CONDITIONAL(ENABLE_TESTS, test "$enable_tests" != no)
 
 # spell checking
