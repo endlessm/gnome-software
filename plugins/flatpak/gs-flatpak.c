@@ -30,6 +30,7 @@
 #include <config.h>
 
 #include <flatpak.h>
+#include <string.h>
 
 #include "gs-appstream.h"
 #include "gs-flatpak.h"
@@ -338,6 +339,19 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	return TRUE;
 }
 
+static gchar *
+gs_flatpak_discard_desktop_suffix (const gchar *app_id)
+{
+	const gchar *desktop_suffix = ".desktop";
+	guint app_prefix_len;
+
+	if (!g_str_has_suffix (app_id, desktop_suffix))
+		return g_strdup (app_id);
+
+	app_prefix_len = strlen (app_id) - strlen (desktop_suffix);
+	return g_strndup (app_id, app_prefix_len);
+}
+
 static void
 gs_flatpak_rescan_installed (GsFlatpak *self,
 			     GCancellable *cancellable,
@@ -371,6 +385,8 @@ gs_flatpak_rescan_installed (GsFlatpak *self,
 		g_autofree gchar *fn_desktop = NULL;
 		g_autoptr(GError) error_local = NULL;
 		g_autoptr(AsApp) app = NULL;
+		g_autoptr(FlatpakInstalledRef) app_ref = NULL;
+		g_autofree gchar *app_id = NULL;
 
 		/* ignore */
 		if (g_strcmp0 (fn, "mimeinfo.cache") == 0)
@@ -412,6 +428,18 @@ gs_flatpak_rescan_installed (GsFlatpak *self,
 		as_app_set_source_kind (app, AS_APP_SOURCE_KIND_DESKTOP);
 		as_app_set_source_file (app, fn_desktop);
 #endif
+		app_id = gs_flatpak_discard_desktop_suffix (fn);
+		app_ref = flatpak_installation_get_current_installed_app (self->installation,
+									  app_id,
+									  cancellable,
+									  &error_local);
+		if (app_ref == NULL) {
+			g_warning ("Could not get app (from ID '%s') for installed desktop "
+				   "file %s: %s", app_id, fn_desktop, error_local->message);
+			continue;
+		}
+
+		as_app_set_branch (app, flatpak_ref_get_branch (FLATPAK_REF (app_ref)));
 		as_app_set_icon_path (app, path_exports);
 		as_app_add_keyword (app, NULL, "flatpak");
 		as_store_add_app (self->store, app);
