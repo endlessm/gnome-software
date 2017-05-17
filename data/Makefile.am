@@ -24,6 +24,9 @@ dist_resources_DATA =					\
 	featured-weather.png				\
 	featured-weather-bg.png
 
+mimedir = $(datadir)/mime/packages
+mime_DATA = org.gnome.Software.mime.xml
+
 @GSETTINGS_RULES@
 gsettings_SCHEMAS = org.gnome.software.gschema.xml
 
@@ -50,6 +53,7 @@ endif
 
 EXTRA_DIST =							\
 	org.gnome.software.external-appstream.policy.in		\
+	$(mime_DATA)						\
 	$(gsettings_SCHEMAS)
 
 CLEANFILES =						\
@@ -58,5 +62,15 @@ CLEANFILES =						\
 MAINTAINERCLEANFILES =					\
 	*~						\
 	Makefile.in
+
+install-data-hook:
+if ENABLE_UPDATE_MIMEDB
+	$(UPDATE_MIME_DATABASE) "$(DESTDIR)$(datadir)/mime"
+endif
+
+uninstall-hook:
+if ENABLE_UPDATE_MIMEDB
+	$(UPDATE_MIME_DATABASE) "$(DESTDIR)$(datadir)/mime"
+endif
 
 -include $(top_srcdir)/git.mk

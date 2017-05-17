@@ -94,6 +94,15 @@ PKG_CHECK_MODULES(LIBSECRET, libsecret-1)
 PKG_CHECK_MODULES(VALGRIND, valgrind)
 AC_PATH_PROG(APPSTREAM_UTIL, [appstream-util], [unfound])
 
+# Mime types
+AC_PATH_PROG([UPDATE_MIME_DATABASE], [update-mime-database], [no])
+AC_ARG_ENABLE([update-mimedb],
+              [AS_HELP_STRING([--disable-update-mimedb],
+                              [disable the update-mime-database after install [default=no]])],,
+              [enable_update_mimedb=yes])
+AM_CONDITIONAL([ENABLE_UPDATE_MIMEDB],
+               [test "$enable_update_mimedb" = "yes" && test "$UPDATE_MIME_DATABASE" != "no"])
+
 # Default, but it's ≥ 0.9.1 if we're building tests because there we need --timestamp
 # If you bump this to > 0.9.1, remove the setting of FLATPAK_REQUIRED in the
 # flatpak case below, otherwise you'll make the requirement go backwards if
