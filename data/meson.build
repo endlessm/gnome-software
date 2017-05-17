@@ -20,3 +20,6 @@ if get_option('external_appstream')
     configuration : conf_data
   )
 endif
+
+install_data('org.gnome.Software.mime.xml',
+             install_dir : join_paths(get_option('datadir'), 'mime', 'packages'))
