@@ -675,13 +675,17 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 		return FALSE;
 	}
 	for (guint i = 0; i < xremotes->len; i++) {
+		g_autoptr(GError) local_error = NULL;
 		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
 		if (flatpak_remote_get_disabled (xremote))
 			continue;
 		g_debug ("found remote %s",
 			 flatpak_remote_get_name (xremote));
-		if (!gs_flatpak_add_apps_from_xremote (self, builder, xremote, cancellable, error))
-			return FALSE;
+		if (!gs_flatpak_add_apps_from_xremote (self, builder, xremote, cancellable,
+						       &local_error)) {
+			g_debug ("Failed to add apps from remote: %s; skipping",
+				 local_error->message);
+		}
 	}
 
 	/* add any installed files without AppStream info */
