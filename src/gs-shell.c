@@ -2235,11 +2235,14 @@ side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
 	g_autoptr(GList) rows = NULL;
 	GtkListBoxRow *row;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "category"));
+	GsCategory *category = gs_category_page_get_category (GS_CATEGORY_PAGE (page));
 
 	row = gtk_list_box_get_selected_row (GTK_LIST_BOX (priv->side_filter));
 
 	/* if the mode is already selected, we do nothing */
-	if (row && gs_side_filter_row_get_mode (GS_SIDE_FILTER_ROW (row)) == mode) {
+	if (row && gs_side_filter_row_get_mode (GS_SIDE_FILTER_ROW (row)) == mode &&
+	    gs_side_filter_row_get_category (GS_SIDE_FILTER_ROW (row)) == category) {
 		gs_shell_side_filter_set_visible (shell, TRUE);
 		return;
 	}
@@ -2262,9 +2265,6 @@ side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
 			 * mode; without this, clicking on a category works fine
 			 * but not when using the arrows */
 			if (mode == GS_SHELL_MODE_CATEGORY) {
-				GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "category"));
-				GsCategory *category =
-					gs_category_page_get_category (GS_CATEGORY_PAGE (page));
 				if (gs_side_filter_row_get_category (current) != category)
 					continue;
 			}
