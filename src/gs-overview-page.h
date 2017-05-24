@@ -20,7 +20,8 @@ struct _GsOverviewPageClass
 {
 	GsPageClass		 parent_class;
 
-	void	(*refreshed)	(GsOverviewPage *self);
+	void	(*refreshed)		(GsOverviewPage *self);
+	void	(*categories_loaded)	(GsOverviewPage *self);
 };
 
 GsOverviewPage	*gs_overview_page_new		(void);

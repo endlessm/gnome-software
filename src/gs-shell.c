@@ -83,10 +83,16 @@ enum {
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
+typedef struct {
+	GsShell *shell;
+	gchar *category_name;
+} CategoriesLoadedData;
+
 static void gs_shell_side_filter_add_mode (GsShell *shell, GsShellMode mode);
 static void side_filter_select_by_mode (GsShell *shell, GsShellMode mode);
 static void side_filter_row_selected (GtkListBox *side_filter,
 				      GsSideFilterRow *row, gpointer data);
+static GsCategory *side_filter_get_category_by_name (GsShell *shell, const gchar *category_id);
 
 static void
 modal_dialog_unmapped_cb (GtkWidget *dialog,
@@ -571,6 +577,43 @@ initial_refresh_done (GsLoadingPage *loading_page, gpointer data)
 	/* now that we're finished with the loading page, connect the reload signal handler */
 	g_signal_connect (priv->plugin_loader, "reload",
 	                  G_CALLBACK (gs_shell_reload_cb), shell);
+}
+
+static void
+on_overview_categories_loaded (GsOverviewPage *page, gpointer user_data)
+{
+	g_autofree CategoriesLoadedData *data = (CategoriesLoadedData *) user_data;
+	GsCategory *category = side_filter_get_category_by_name (data->shell,
+								 data->category_name);
+
+	g_signal_handlers_disconnect_by_func (page, on_overview_categories_loaded,
+					      user_data);
+
+	if (category == NULL) {
+		g_warning ("No %s category after overview categories are refreshed!",
+			   data->category_name);
+		gs_shell_change_mode (data->shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
+		return;
+	}
+
+	gs_shell_change_mode (data->shell, GS_SHELL_MODE_CATEGORY, (gpointer) category,
+			      TRUE);
+}
+
+static void
+reload_overview_and_select_category (GsShell *shell, const gchar *category_name)
+{
+	GsPage *page;
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	CategoriesLoadedData *data = g_new (CategoriesLoadedData, 1);
+
+	data->shell = shell;
+	data->category_name = g_strdup (category_name);
+	page = GS_PAGE (g_hash_table_lookup (priv->pages, "overview"));
+
+	g_signal_connect (page, "categories-loaded",
+			  G_CALLBACK (on_overview_categories_loaded), data);
+	gs_page_reload (page);
 }
 
 static gboolean
@@ -2294,15 +2337,96 @@ gs_shell_show_search (GsShell *shell, const gchar *search)
 			      (gpointer) search, TRUE);
 }
 
+static void
+gs_shell_file_to_app_cb (GObject *source,
+			 GAsyncResult *res,
+			 gpointer user_data)
+{
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
+	GsShell *shell = GS_SHELL (user_data);
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *tmp = NULL;
+	const gchar *removable_media_cat = NULL;
+	g_autoptr(GsAppList) list = NULL;
+	GsApp *app;
+
+	list = gs_plugin_loader_job_process_finish (plugin_loader,
+						    res,
+						    &error);
+	if (list == NULL) {
+		g_warning ("failed to convert file to GsApp: %s", error->message);
+		/* go back to the overview */
+		gs_shell_change_mode (shell, GS_SHELL_MODE_OVERVIEW, NULL, FALSE);
+		return;
+	} else {
+		app = gs_app_list_index (list, 0);
+	}
+
+	/* print what we've got */
+	tmp = gs_app_to_string (app);
+	g_debug ("App from file:\n%s", tmp);
+
+	removable_media_cat = gs_app_get_metadata_item (app, "EndlessOS::RemovableMediaCategory");
+	if (removable_media_cat != NULL) {
+		GsCategory *category;
+		if (gs_app_get_metadata_item (app, "EndlessOS::ReloadOverview") == NULL) {
+			reload_overview_and_select_category (shell, removable_media_cat);
+		} else {
+			category = side_filter_get_category_by_name (shell, removable_media_cat);
+			if (category == NULL)
+				reload_overview_and_select_category (shell, removable_media_cat);
+			else {
+				gs_shell_change_mode (shell, GS_SHELL_MODE_CATEGORY,
+						      (gpointer) category, TRUE);
+			}
+		}
+		gs_shell_activate (shell);
+		return;
+	}
+
+	save_back_entry (shell);
+	/* change widgets */
+	gs_shell_change_mode (shell, GS_SHELL_MODE_DETAILS,
+			      app, TRUE);
+}
+
 void
 gs_shell_show_local_file (GsShell *shell, GFile *file)
 {
 	g_autoptr(GsApp) app = gs_app_new (NULL);
-	save_back_entry (shell);
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	GFileType file_type = g_file_query_file_type (file, G_FILE_QUERY_INFO_NONE,
+						      NULL);
+
+	/* check if this is rather a directory */
+	if (file_type == G_FILE_TYPE_DIRECTORY) {
+		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_FILE_TO_APP,
+						 "file", file,
+						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_HISTORY |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_MENU_PATH |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_URL |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RELATED |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
+						 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS,
+						 NULL);
+		gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
+						    priv->cancellable,
+						    gs_shell_file_to_app_cb,
+						    shell);
+		return;
+	}
 	gs_app_set_local_file (app, file);
 	gs_shell_change_mode (shell, GS_SHELL_MODE_DETAILS,
-			      (gpointer) app, TRUE);
-	gs_shell_activate (shell);
+			      app, TRUE);
 }
 
 void
@@ -2432,6 +2556,26 @@ side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
 					   side_filter_row_selected, shell);
 
 	gs_shell_side_filter_set_visible (shell, (row != NULL));
+}
+
+static GsCategory *
+side_filter_get_category_by_name (GsShell *shell, const gchar *category_id)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	g_autoptr(GList) rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
+
+	for (GList *l = rows; l != NULL; l = l->next) {
+		GsCategory *category;
+		GsSideFilterRow *current = GS_SIDE_FILTER_ROW (l->data);
+
+		if (gs_side_filter_row_get_mode (current) != GS_SHELL_MODE_CATEGORY)
+			continue;
+
+		category = gs_side_filter_row_get_category (current);
+		if (g_strcmp0 (gs_category_get_id (category), category_id) == 0)
+			return category;
+	}
+	return NULL;
 }
 
 GtkWidget *

@@ -123,5 +123,10 @@ gboolean	gs_flatpak_add_recent		(GsFlatpak		*self,
 						 guint64		 age,
 						 GCancellable		*cancellable,
 						 GError			**error);
+GsApp *
+gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
+				     GFile *file,
+				     GCancellable *cancellable,
+				     GError **error);
 
 G_END_DECLS
