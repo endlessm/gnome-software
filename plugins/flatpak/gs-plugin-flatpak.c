@@ -424,6 +424,24 @@ gs_plugin_flatpak_file_to_app_repo (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GsApp) app_tmp = NULL;
 	g_autoptr(GsAppList) list_tmp = NULL;
+	GFileType file_type = G_FILE_TYPE_UNKNOWN;
+
+	file_type = g_file_query_file_type (file, G_FILE_QUERY_INFO_NONE, cancellable);
+
+	/* check if this is rather a directory*/
+	if (file_type == G_FILE_TYPE_DIRECTORY) {
+		for (guint i = 0; i < priv->flatpaks->len; ++i) {
+			g_autoptr(GError) local_error = NULL;
+			GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
+			app_tmp = gs_flatpak_create_app_from_repo_dir (flatpak, file, cancellable,
+								       &local_error);
+			if (app_tmp)
+				break;
+		}
+		if (app_tmp != NULL)
+			gs_app_list_add (list, app_tmp);
+		return TRUE;
+	}
 
 	/* parse the repo file */
 	app_tmp = gs_flatpak_app_new_from_repo_file (file, cancellable, error);
@@ -644,6 +662,7 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 		NULL };
 	const gchar *mimetypes_repo[] = {
 		"application/vnd.flatpak.repo",
+		"inode/directory",
 		NULL };
 	const gchar *mimetypes_ref[] = {
 		"application/vnd.flatpak.ref",

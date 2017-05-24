@@ -78,6 +78,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (GsOverviewPage, gs_overview_page, GS_TYPE_PAGE)
 
 enum {
 	SIGNAL_REFRESHED,
+	SIGNAL_CATEGORIES_LOADED,
 	SIGNAL_LAST
 };
 
@@ -488,6 +489,8 @@ out:
 	gs_shell_side_filter_set_visible (priv->shell, TRUE);
 
 	priv->loading_categories = FALSE;
+
+	g_signal_emit (self, signals[SIGNAL_CATEGORIES_LOADED], 0);
 
 	gs_overview_page_decrement_action_cnt (self);
 }
@@ -1132,6 +1135,13 @@ gs_overview_page_class_init (GsOverviewPageClass *klass)
 
 	signals [SIGNAL_REFRESHED] =
 		g_signal_new ("refreshed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (GsOverviewPageClass, refreshed),
+			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      G_TYPE_NONE, 0);
+
+	signals [SIGNAL_CATEGORIES_LOADED] =
+		g_signal_new ("categories-loaded",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 			      G_STRUCT_OFFSET (GsOverviewPageClass, refreshed),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,

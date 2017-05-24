@@ -41,6 +41,7 @@ struct _GsFlatpak {
 	GsFlatpakFlags		 flags;
 	FlatpakInstallation	*installation;
 	GHashTable		*broken_remotes;
+	GHashTable		*loaded_usb_remotes;
 	GFileMonitor		*monitor;
 	AsAppScope		 scope;
 	GsPlugin		*plugin;
@@ -403,6 +404,7 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GPtrArray) refs = NULL;
 	g_autofree gchar *remote_url = flatpak_remote_get_url (remote);
+	gboolean loaded_remote = FALSE;
 
 	refs = flatpak_installation_list_remote_refs_sync (self->installation,
 							   remote_url,
@@ -442,9 +444,13 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 		 * category view when there are others with the same ID */
 		as_app_set_priority (as_app, 100);
 
-		if (found_usb_apps)
-			*found_usb_apps = TRUE;
+		loaded_remote = TRUE;
 	}
+	if (found_usb_apps)
+		*found_usb_apps = loaded_remote;
+	if (loaded_remote)
+		g_hash_table_add (self->loaded_usb_remotes,
+				  g_steal_pointer (&remote_url));
 	return TRUE;
 }
 
@@ -3177,6 +3183,66 @@ gs_flatpak_create_runtime_repo (GsFlatpak *self,
 	return g_steal_pointer (&app);
 }
 
+GsApp *
+gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
+				     GFile *file,
+				     GCancellable *cancellable,
+				     GError **error)
+{
+	g_autoptr(GPtrArray) remotes = NULL;
+	g_autofree gchar *uri = NULL;
+	gboolean dir_has_repo = FALSE;
+	gboolean reload_overview = FALSE;
+	GsApp *app = NULL;
+	FlatpakRemoteType usb_type[] = { FLATPAK_REMOTE_TYPE_USB };
+
+	remotes = flatpak_installation_list_remotes_by_type (self->installation,
+							     usb_type,
+							     G_N_ELEMENTS (usb_type),
+							     cancellable, error);
+	if (remotes == NULL)
+		return NULL;
+
+	uri = g_file_get_uri (file);
+
+	for (guint i = 0; i < remotes->len; ++i) {
+		FlatpakRemote *remote = g_ptr_array_index (remotes, i);
+		g_autofree gchar *url = flatpak_remote_get_url (remote);
+		g_autoptr(GError) local_error = NULL;
+
+		/* skip if the remote does not have the dir's path as a prefix */
+		if (!g_str_has_prefix (url, uri))
+			continue;
+
+		dir_has_repo = TRUE;
+
+		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote, &reload_overview,
+							   cancellable, &local_error)) {
+			g_debug ("Failed to mark USB apps from remote at %s: %s",
+				 url, local_error->message);
+			continue;
+		}
+	}
+
+	if (!dir_has_repo) {
+		g_set_error (error, G_IO_ERROR_FAILED, G_IO_ERROR_NOT_SUPPORTED,
+			     "No remotes from the given directory: %s", uri);
+		return NULL;
+	}
+
+	app = gs_flatpak_app_new ("com.endlessm.RemovableMediaRepo");
+	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Removable Media Repo");
+	gs_app_set_management_plugin (app, gs_plugin_get_name (self->plugin));
+	gs_app_set_metadata (app, "EndlessOS::RemovableMediaCategory", "usb");
+	if (reload_overview)
+		gs_app_set_metadata (app, "EndlessOS::ReloadOverview", "true");
+
+	return app;
+}
+
 gboolean
 gs_flatpak_app_install (GsFlatpak *self,
 			GsApp *app,
@@ -4058,6 +4124,8 @@ gs_flatpak_init (GsFlatpak *self)
 {
 	self->broken_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 						      g_free, NULL);
+	self->loaded_usb_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
+							  g_free, NULL);
 	self->store = as_store_new ();
 	g_signal_connect (self->store, "app-added",
 			  G_CALLBACK (gs_flatpak_store_app_added_cb),
