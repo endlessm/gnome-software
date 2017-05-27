@@ -218,13 +218,13 @@ handle_get_discovery_feed_apps (GsDiscoveryFeedInstallableApps  *skeleton,
 	pending_search->invocation = g_object_ref (invocation);
 
 	g_application_hold (g_application_get_default ());
-	gs_plugin_loader_search_async(self->plugin_loader,
-				      "com.endlessm",
-				      GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
-				      GS_PLUGIN_FAILURE_FLAGS_NONE,
-				      NULL,
-				      search_done_cb,
-				      pending_search);
+	gs_plugin_loader_search_async (self->plugin_loader,
+				       "com.endlessm",
+				       GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+				       GS_PLUGIN_FAILURE_FLAGS_NONE,
+				       NULL,
+				       search_done_cb,
+				       pending_search);
 
 	return TRUE;
 }
