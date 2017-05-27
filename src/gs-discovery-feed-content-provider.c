@@ -44,7 +44,6 @@ struct _GsDiscoveryFeedContentProvider {
 
 	GsDiscoveryFeedInstallableApps *skeleton;
 	GsPluginLoader *plugin_loader;
-	GCancellable *cancellable;
 };
 
 G_DEFINE_TYPE (GsDiscoveryFeedContentProvider, gs_discovery_feed_content_provider, G_TYPE_OBJECT)
@@ -218,18 +217,12 @@ handle_get_discovery_feed_apps (GsDiscoveryFeedInstallableApps  *skeleton,
 	pending_search->provider = self;
 	pending_search->invocation = g_object_ref (invocation);
 
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_clear_object (&self->cancellable);
-	}
-
 	g_application_hold (g_application_get_default ());
-	self->cancellable = g_cancellable_new ();
 	gs_plugin_loader_search_async(self->plugin_loader,
 				      "com.endlessm",
 				      GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
 				      GS_PLUGIN_FAILURE_FLAGS_NONE,
-				      self->cancellable,
+				      NULL,
 				      search_done_cb,
 				      pending_search);
 
@@ -256,11 +249,6 @@ static void
 discovery_feed_content_provider_dispose (GObject *obj)
 {
 	GsDiscoveryFeedContentProvider *self = GS_DISCOVERY_FEED_CONTENT_PROVIDER (obj);
-
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_clear_object (&self->cancellable);
-	}
 
 	g_clear_object (&self->plugin_loader);
 	g_clear_object (&self->skeleton);
