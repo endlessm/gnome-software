@@ -159,9 +159,9 @@ search_done_cb (GObject *source,
 
 	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
 	for (i = 0; i < app_list_length; i++) {
-	        gchar *app_thumbnail_filename;
-	        GdkPixbuf *pixbuf;
-	        GVariant *icon_serialized = NULL;
+		gchar *app_thumbnail_filename;
+		GdkPixbuf *pixbuf;
+		GVariant *icon_serialized = NULL;
 		GsApp *app = gs_app_list_index (list, i);
 
 		if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE)
