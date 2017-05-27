@@ -124,7 +124,7 @@ get_app_thumbnail_cached_filename (GsApp *app)
 		return cache_filename;
 	}
 
-    return cache_filename;
+	return cache_filename;
 }
 
 static const guint N_APPS_TO_INCLUDE_IN_RESULT = 5;
@@ -209,8 +209,8 @@ search_done_cb (GObject *source,
 
 static gboolean
 handle_get_discovery_feed_apps (GsDiscoveryFeedInstallableApps  *skeleton,
-                                GDBusMethodInvocation   *invocation,
-                                gpointer        user_data)
+				GDBusMethodInvocation   *invocation,
+				gpointer        user_data)
 {
 	GsDiscoveryFeedContentProvider *self = user_data;
 	PendingSearch *pending_search = g_slice_new0 (PendingSearch);
