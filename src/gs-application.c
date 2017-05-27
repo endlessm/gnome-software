@@ -178,13 +178,11 @@ gs_application_dbus_register (GApplication    *application,
 	app->search_provider = gs_shell_search_provider_new ();
 	app->discovery_feed_content_provider = gs_discovery_feed_content_provider_new ();
 
-	if (!gs_shell_search_provider_register (app->search_provider, connection, error)) {
+	if (!gs_shell_search_provider_register (app->search_provider, connection, error))
 		return FALSE;
-	}
 
-	if (!gs_discovery_feed_content_provider_register (app->discovery_feed_content_provider, connection, error)) {
+	if (!gs_discovery_feed_content_provider_register (app->discovery_feed_content_provider, connection, error))
 		return FALSE;
-	}
 
 	return TRUE;
 }
