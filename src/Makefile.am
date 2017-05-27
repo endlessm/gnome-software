@@ -78,6 +78,9 @@ org.gnome.Software.service: org.gnome.Software.service.in Makefile
 searchproviderdir = $(datadir)/gnome-shell/search-providers
 searchprovider_DATA = org.gnome.Software-search-provider.ini
 
+discoveryfeedcontentproviderdir = $(datadir)/eos-discovery-feed/content-providers
+discoveryfeedcontentprovider_DATA = org.gnome.Software-discovery-feed-content-provider.ini
+
 autostartdir = $(sysconfdir)/xdg/autostart
 autostart_DATA = gnome-software-service.desktop
 
@@ -113,6 +116,8 @@ gnome_software_SOURCES =				\
 	gs-content-rating.h				\
 	gs-details-page.c				\
 	gs-details-page.h				\
+	gs-discovery-feed-content-provider.c		\
+	gs-discovery-feed-content-provider.h		\
 	gs-extras-page.c				\
 	gs-extras-page.h				\
 	gs-feature-tile.c				\
@@ -193,7 +198,9 @@ nodist_gnome_software_SOURCES =				\
 	gs-resources.c					\
 	gs-resources.h					\
 	gs-shell-search-provider-generated.c		\
-	gs-shell-search-provider-generated.h
+	gs-shell-search-provider-generated.h	\
+	gs-discovery-feed-content-provider-generated.c	\
+	gs-discovery-feed-content-provider-generated.h
 
 gnome_software_LDADD =					\
 	$(top_builddir)/lib/libgnomesoftware.a		\
@@ -260,6 +267,13 @@ gs-shell-search-provider-generated.h gs-shell-search-provider-generated.c: Makef
 		--generate-c-code gs-shell-search-provider-generated \
 		$(srcdir)/shell-search-provider-dbus-interfaces.xml
 
+gs-discovery-feed-content-provider-generated.h gs-discovery-feed-content-provider-generated.c: Makefile.am $(srcdir)/discovery-feed-content-provider-dbus-interfaces.xml
+	$(AM_V_GEN) gdbus-codegen \
+	 	--interface-prefix com.endlessm. \
+		--c-namespace Gs \
+		--generate-c-code gs-discovery-feed-content-provider-generated \
+		$(srcdir)/discovery-feed-content-provider-dbus-interfaces.xml
+
 gs-resources.c: gnome-software.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --sourcedir="$(top_srcdir)/data/icons/categories" --generate-dependencies $(srcdir)/gnome-software.gresource.xml)
 	$(AM_V_GEN) $(GLIB_COMPILE_RESOURCES) --sourcedir=$(srcdir) --sourcedir="$(top_srcdir)/data/icons/categories" --target=$@ --generate-source --c-name gs $(srcdir)/gnome-software.gresource.xml
 
@@ -269,6 +283,8 @@ gs-resources.h: gnome-software.gresource.xml $(shell $(GLIB_COMPILE_RESOURCES) -
 BUILT_SOURCES =						\
 	$(packagekit_built_sources)			\
 	$(packagekit_modify2_built_sources)		\
+	gs-discovery-feed-content-provider-generated.h	\
+	gs-discovery-feed-content-provider-generated.c	\
 	gs-shell-search-provider-generated.c		\
 	gs-shell-search-provider-generated.h		\
 	gs-resources.c					\
@@ -276,6 +292,7 @@ BUILT_SOURCES =						\
 
 EXTRA_DIST =						\
 	shell-search-provider-dbus-interfaces.xml	\
+	discovery-feed-content-provider-dbus-interfaces.xml \
 	org.freedesktop.PackageKit.xml			\
 	org.freedesktop.PackageKit.Modify2.xml		\
 	gnome-software.gresource.xml			\
@@ -287,6 +304,7 @@ EXTRA_DIST =						\
 	org.gnome.Software.service.in			\
 	gnome-software-service.desktop.in		\
 	$(searchprovider_DATA)				\
+	$(discoveryfeedcontentprovider_DATA) \
 	$(UI_FILES)
 
 man_MANS =
