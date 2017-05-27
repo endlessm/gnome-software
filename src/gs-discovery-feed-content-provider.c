@@ -111,7 +111,7 @@ get_app_thumbnail_cached_filename (GsApp *app)
 	tile_cache_hash = g_compute_checksum_for_string (G_CHECKSUM_SHA256,
 	                                                 popular_background_url,
 	                                                 -1);
-	cache_identifier = g_strdup_printf("%s-%s", tile_cache_hash, url_basename);
+	cache_identifier = g_strdup_printf ("%s-%s", tile_cache_hash, url_basename);
 	cache_filename = gs_utils_get_cache_filename ("eos-popular-app-thumbnails",
 	                                              cache_identifier,
 	                                              GS_UTILS_CACHE_FLAG_NONE,
