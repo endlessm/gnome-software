@@ -194,13 +194,13 @@ gnome_software_SOURCES =				\
 	gs-vendor.c					\
 	gs-vendor.h
 
-nodist_gnome_software_SOURCES =				\
-	gs-resources.c					\
-	gs-resources.h					\
-	gs-shell-search-provider-generated.c		\
-	gs-shell-search-provider-generated.h	\
+nodist_gnome_software_SOURCES =						\
 	gs-discovery-feed-content-provider-generated.c	\
-	gs-discovery-feed-content-provider-generated.h
+	gs-discovery-feed-content-provider-generated.h	\
+	gs-resources.c									\
+	gs-resources.h									\
+	gs-shell-search-provider-generated.c			\
+	gs-shell-search-provider-generated.h
 
 gnome_software_LDADD =					\
 	$(top_builddir)/lib/libgnomesoftware.a		\
