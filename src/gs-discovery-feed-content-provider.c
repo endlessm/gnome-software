@@ -67,7 +67,7 @@ static const DiscoveryFeedKudoWeight discovery_feed_app_kudos[] =
 	{ GS_APP_KUDO_FEATURED_RECOMMENDED, 5 },
 	{ GS_APP_KUDO_POPULAR, 3 }
 };
-static const guint discovery_feed_app_kudos_len = sizeof (discovery_feed_app_kudos) / sizeof (DiscoveryFeedKudoWeight);
+static const guint discovery_feed_app_kudos_len = G_N_ELEMENTS (discovery_feed_app_kudos);
 
 static guint
 get_discovery_feed_app_kudo_score (GsApp *app)
