@@ -269,7 +269,7 @@ gs_discovery_feed_content_provider_init (GsDiscoveryFeedContentProvider *self)
 {
 	self->skeleton = gs_discovery_feed_installable_apps_skeleton_new ();
 
-	g_signal_connect (self->skeleton, "handle-get-relevant-installable-apps",
+	g_signal_connect (self->skeleton, "handle-get-installable-apps",
 			  G_CALLBACK (handle_get_discovery_feed_apps), self);
 }
 

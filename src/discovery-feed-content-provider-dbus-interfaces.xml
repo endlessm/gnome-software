@@ -18,7 +18,7 @@
 -->
 <node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
   <interface name="com.endlessm.DiscoveryFeedInstallableApps">
-    <method name="GetRelevantInstallableApps">
+    <method name="GetInstallableApps">
       <arg type="aa{sv}" name="Results" direction="out" />
     </method>
   </interface>
