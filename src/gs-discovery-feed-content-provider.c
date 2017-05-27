@@ -145,7 +145,9 @@ search_done_cb (GObject *source,
 
 	list = gs_plugin_loader_search_finish (self->plugin_loader, res, NULL);
 	if (list == NULL) {
-		g_dbus_method_invocation_return_value (search->invocation, g_variant_new ("(as)", NULL));
+		gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
+										  search->invocation,
+										  NULL);
 		pending_search_free (search);
 		g_application_release (g_application_get_default ());
 		return;
@@ -197,8 +199,10 @@ search_done_cb (GObject *source,
 		if (++count > N_APPS_TO_INCLUDE_IN_RESULT)
 			break;
 	}
-	g_dbus_method_invocation_return_value (search->invocation,
-	                                       g_variant_new ("(aa{sv})", &builder));
+
+	gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
+									  search->invocation,
+									  g_variant_builder_end (&builder));
 
 	pending_search_free (search);
 	g_application_release (g_application_get_default ());
