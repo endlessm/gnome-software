@@ -104,7 +104,7 @@ get_app_thumbnail_cached_filename (GsApp *app)
 	g_autofree char *tile_cache_hash = NULL;
 	g_autofree char *cache_identifier = NULL;
 	g_autofree char *url_basename = NULL;
-	char *cache_filename = NULL;
+	g_autofree char *cache_filename = NULL;
 
 	url_basename = g_path_get_basename (popular_background_url);
 	tile_cache_hash = g_compute_checksum_for_string (G_CHECKSUM_SHA256,
@@ -121,10 +121,10 @@ get_app_thumbnail_cached_filename (GsApp *app)
 	 * since it will have a thumbnail */
 	if (g_file_test (cache_filename, G_FILE_TEST_EXISTS)) {
 		g_debug ("Hit cache for thumbnail when loading discovery feed %s: %s", popular_background_url, cache_filename);
-		return cache_filename;
+		return g_steal_pointer(&cache_filename);
 	}
 
-	return cache_filename;
+	return NULL;
 }
 
 static const guint N_APPS_TO_INCLUDE_IN_RESULT = 5;
