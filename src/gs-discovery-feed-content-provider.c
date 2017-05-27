@@ -127,8 +127,6 @@ get_app_thumbnail_cached_filename (GsApp *app)
 	return NULL;
 }
 
-static const guint N_APPS_TO_INCLUDE_IN_RESULT = 5;
-
 static void
 search_done_cb (GObject *source,
 		GAsyncResult *res,
@@ -194,9 +192,6 @@ search_done_cb (GObject *source,
 		g_variant_unref (icon_serialized);
 
 		g_variant_builder_close (&builder);
-
-		if (++count > N_APPS_TO_INCLUDE_IN_RESULT)
-			break;
 	}
 
 	gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
