@@ -214,7 +214,7 @@ handle_get_discovery_feed_apps (GsDiscoveryFeedInstallableApps  *skeleton,
                                 gpointer        user_data)
 {
 	GsDiscoveryFeedContentProvider *self = user_data;
-	PendingSearch *pending_search = g_slice_new (PendingSearch);
+	PendingSearch *pending_search = g_slice_new0 (PendingSearch);
 	pending_search->provider = self;
 	pending_search->invocation = g_object_ref (invocation);
 
