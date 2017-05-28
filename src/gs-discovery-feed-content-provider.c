@@ -119,7 +119,7 @@ get_app_thumbnail_cached_filename (GsApp *app)
 	 * since it will have a thumbnail */
 	if (g_file_test (cache_filename, G_FILE_TEST_EXISTS)) {
 		g_debug ("Hit cache for thumbnail when loading discovery feed %s: %s", popular_background_url, cache_filename);
-		return g_steal_pointer(&cache_filename);
+		return g_steal_pointer (&cache_filename);
 	}
 
 	return NULL;
