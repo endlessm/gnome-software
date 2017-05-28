@@ -75,11 +75,9 @@ get_discovery_feed_app_kudo_score (GsApp *app)
 	guint score = 0;
 	guint64 kudos = gs_app_get_kudos (app);
 
-	for (; i < discovery_feed_app_kudos_len; ++i) {
-		if ((kudos & discovery_feed_app_kudos[i].kudo) != 0) {
+	for (; i < discovery_feed_app_kudos_len; ++i)
+		if ((kudos & discovery_feed_app_kudos[i].kudo) != 0)
 			score += discovery_feed_app_kudos[i].weight;
-		}
-	}
 
 	return score;
 }
