@@ -456,8 +456,6 @@ gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
 	static const char *buggy_apps[] = {
 		/* Can't open LibreOffice documents */
 		"org.gnome.Documents.desktop",
-		/* Rendering issues in YouTube */
-		"org.gnome.Epiphany.desktop",
 		/* Doesn't work due to network related problems */
 		"org.gnome.Maps.desktop",
 		/* Requires Telepathy daemons running in the host */
