@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: richard@hughsie.com\n"
-"POT-Creation-Date: 2017-05-23 03:54+0000\n"
-"PO-Revision-Date: 2017-05-23 03:57+0000\n"
-"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
+"POT-Creation-Date: 2017-05-30 03:27+0000\n"
+"PO-Revision-Date: 2017-05-31 03:37+0000\n"
+"Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/endless-mobile-inc/gnome-software/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -264,7 +264,7 @@ msgstr "安裝選取的軟體到系統中"
 
 #: src/gnome-software-local-file.desktop.in:10
 msgid "system-software-install"
-msgstr "安裝系統軟體"
+msgstr "system-software-install"
 
 #: src/gnome-software.ui:10
 msgid "Select All"
@@ -276,7 +276,7 @@ msgstr "全不選"
 
 #: src/gnome-software.ui:24
 msgid "Software"
-msgstr ""
+msgstr "軟體"
 
 #: src/gnome-software.ui:43 src/gs-sources-dialog.ui:23
 #: src/gs-update-dialog.ui:21
@@ -325,7 +325,7 @@ msgstr "網路設定值"
 #. button in the info bar
 #: src/gnome-software.ui:382
 msgid "Restart Now"
-msgstr ""
+msgstr "立刻重新啟動"
 
 #. button in the info bar
 #: src/gnome-software.ui:393
@@ -410,7 +410,7 @@ msgstr "PKGNAME"
 
 #: src/gs-application.c:107
 msgid "Install the application (using application ID)"
-msgstr "安裝應用程式（用應用程式 ID）"
+msgstr "安裝應用程式（使用應用程式 ID）"
 
 #: src/gs-application.c:109
 msgid "Open a local package file"
@@ -424,7 +424,7 @@ msgstr "FILENAME"
 msgid ""
 "The kind of interaction expected for this action: either ‘none’, ‘notify’, "
 "or ‘full’"
-msgstr "此行動預期的互動類型：「無」或「通知」或「完整」"
+msgstr "這個動作預期的互動種類：可以是「none」(沒有)、「notify」(通知)或「full」(完整)"
 
 #: src/gs-application.c:114
 msgid "Show verbose debugging information"
@@ -456,7 +456,7 @@ msgstr "Cheng-Chia Tseng <pswo10680@gmail.com>, 2013-15."
 #: src/gs-application.c:317
 #, c-format
 msgid "About %s"
-msgstr ""
+msgstr "關於 %s"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:321
@@ -598,7 +598,7 @@ msgstr "作業系統更新現在已安裝"
 #. * have been successfully installed
 #: src/gs-common.c:138
 msgid "Recently installed updates are available to review"
-msgstr "近期安裝的更新已可審閱"
+msgstr "最近安裝的更新可供評論"
 
 #. TRANSLATORS: this is the summary of a notification that an application
 #. * has been successfully installed
@@ -611,7 +611,7 @@ msgstr "%s 現在已安裝"
 #. * has been successfully installed
 #: src/gs-common.c:145
 msgid "Application is ready to be used."
-msgstr "應用程式已可供使用。"
+msgstr "應用程式已經準備好可以使用。"
 
 #. TRANSLATORS: this is button that opens the newly installed application
 #: src/gs-common.c:151
@@ -872,7 +872,7 @@ msgstr "強烈或經常使用辱駡"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:186
 msgid "No inappropriate humor"
-msgstr ""
+msgstr "沒有不適切之幽默"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:189
@@ -1145,12 +1145,12 @@ msgstr "不明"
 #. TRANSLATORS: we need a remote server to process
 #: src/gs-details-page.c:1318
 msgid "You need internet access to write a review"
-msgstr "你需要有網路連接以撰寫評論"
+msgstr "您需要網際網路存取才能寫評論"
 
 #: src/gs-details-page.c:1443
 #, c-format
 msgid "Unable to find “%s”"
-msgstr ""
+msgstr "找不到「%s」"
 
 #. TRANSLATORS: see the wikipedia page
 #: src/gs-details-page.c:1956
@@ -2185,7 +2185,7 @@ msgstr "若想瞭解詳細資訊，請造訪 %s。"
 #: src/gs-shell.c:1074
 #, c-format
 msgid "Unable to install %s: AC power is required"
-msgstr ""
+msgstr "無法安裝 %s：需要交流電源"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -2248,7 +2248,7 @@ msgstr "無法更新 %s：您的權限不足以更新軟體"
 #: src/gs-shell.c:1174
 #, c-format
 msgid "Unable to update %s: AC power is required"
-msgstr ""
+msgstr "無法更新 %s：需要交流電源"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -2310,7 +2310,7 @@ msgstr "無法升級成 %s：您的權限不足以升級"
 #: src/gs-shell.c:1272
 #, c-format
 msgid "Unable to upgrade to %s: AC power is required"
-msgstr ""
+msgstr "無法升級成 %s：需要交流電源"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -2345,7 +2345,7 @@ msgstr "無法移除 %s：您的權限不足以移除軟體"
 #: src/gs-shell.c:1336
 #, c-format
 msgid "Unable to remove %s: AC power is required"
-msgstr ""
+msgstr "無法移除 %s：需要交流電源"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -2386,17 +2386,17 @@ msgstr "無法聯絡 %s"
 #: src/gs-shell.c:1481
 #, c-format
 msgid "%s needs to be restarted to use new plugins."
-msgstr "欲使用新外掛程式，須重新開啟 %s。"
+msgstr "%s 需要重新開機才能使用新的外掛程式。"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1486
 msgid "This application needs to be restarted to use new plugins."
-msgstr "必須重新啟動此應用程式，才能使用新的外掛程式。"
+msgstr "這個應用程式需要重新開機才能使用新的外掛程式。"
 
 #. TRANSLATORS: need to be connected to the AC power
 #: src/gs-shell.c:1493
 msgid "AC power is required"
-msgstr ""
+msgstr "需要交流電源"
 
 #. TRANSLATORS: This string describes a software source that
 #. has no software installed from it.
@@ -2554,7 +2554,7 @@ msgstr "這個系統沒有安裝過更新。"
 #. * requires a reboot to apply
 #: src/gs-update-list.c:230
 msgid "Integrated Firmware"
-msgstr ""
+msgstr "整合的韌體"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * system firmware
@@ -2562,31 +2562,31 @@ msgstr ""
 #. * offline updates
 #: src/gs-update-list.c:233 src/gs-update-list.c:243
 msgid "Restart & Update"
-msgstr ""
+msgstr "重新啟動並更新"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
 #: src/gs-update-list.c:240
 msgid "Requires Restart"
-msgstr ""
+msgstr "需要重新啟動"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
 #: src/gs-update-list.c:250
 msgid "Application Updates"
-msgstr ""
+msgstr "應用程式更新"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
 #: src/gs-update-list.c:253
 msgid "Update All"
-msgstr ""
+msgstr "全部更新"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
 #: src/gs-update-list.c:260
 msgid "Device Firmware"
-msgstr ""
+msgstr "裝置韌體"
 
 #: src/gs-update-monitor.c:88
 msgid "Security Updates Pending"
@@ -3362,11 +3362,11 @@ msgstr "包括效能、穩定性、安全性等改善。"
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
-msgstr ""
+msgstr "網頁程式支援"
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:7
 msgid "Run popular web applications in a browser"
-msgstr "在瀏覽器中執行常用的網路應用程式"
+msgstr "在瀏覽器中執行熱門的網頁應用程式"
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:6
 msgid "Flatpak Support"
@@ -3374,7 +3374,7 @@ msgstr "Flatpak 支援"
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:7
 msgid "Flatpak is a framework for desktop applications on Linux"
-msgstr "Flatpak 是  Linux 的桌面應用程式框架"
+msgstr "Flatpak 是一個用於 Linux 桌面應用程式框架"
 
 #: plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:6
 msgid "Firmware Upgrade Support"
@@ -3382,36 +3382,36 @@ msgstr "韌體升級支援"
 
 #: plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:7
 msgid "Provides support for firmware upgrades"
-msgstr "提供韌體更新支援"
+msgstr "提供韌體升級的支援"
 
 #: plugins/limba/org.gnome.Software.Plugin.Limba.metainfo.xml.in:6
 msgid "Limba Support"
-msgstr "林巴語支援"
+msgstr "Limba 支援"
 
 #: plugins/limba/org.gnome.Software.Plugin.Limba.metainfo.xml.in:7
 msgid "Limba provides developers a way to easily create software bundles"
-msgstr "Limba 讓開發者可輕鬆打造軟體包"
+msgstr "Limba 為開發人員提供了一個輕鬆建立軟體捆綁的方法"
 
 #: plugins/odrs/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:6
 msgid "Open Desktop Ratings Support"
-msgstr "開啟桌面評級支援"
+msgstr "開放桌面評等支援"
 
 #: plugins/odrs/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:7
 msgid "ODRS is a service providing user reviews of applications"
-msgstr "ODRS 是項供使用者評論應用程式的服務"
+msgstr "ODR 是一種提供應用程式的使用者評論的服務"
 
 #: plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in:6
 msgid "Snappy Support"
-msgstr "即時支援"
+msgstr "Snappy 支援"
 
 #: plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in:7
 msgid "A snap is a universal Linux package"
-msgstr "Snap 是一種通用的 Linux 套件"
+msgstr "snap 是一個通用的 Linux 軟體包"
 
 #: plugins/steam/org.gnome.Software.Plugin.Steam.metainfo.xml.in:6
 msgid "Steam Support"
-msgstr "串流支援"
+msgstr "Steam 支援"
 
 #: plugins/steam/org.gnome.Software.Plugin.Steam.metainfo.xml.in:7
 msgid "The ultimate entertainment platform from Valve"
-msgstr "維爾福公司推出的終極娛樂平台"
+msgstr "來自 Valve 的終極娛樂平臺"
