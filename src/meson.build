@@ -9,9 +9,16 @@ resources_src = gnome.compile_resources(
   c_name : 'gs'
 )
 
-gdbus_src = gnome.gdbus_codegen(
+gdbus_shell_search_provider_src = gnome.gdbus_codegen(
   'gs-shell-search-provider-generated',
   'shell-search-provider-dbus-interfaces.xml',
+  interface_prefix : 'org.gnome.',
+  namespace : 'Gs'
+)
+
+gdbus_discovery_feed_content_provider_src = gnome.gdbus_codegen(
+  'gs-discovery-feed-content-provider-generated',
+  'discovery-feed-content-provider-dbus-interfaces.xml',
   interface_prefix : 'org.gnome.',
   namespace : 'Gs'
 )
@@ -33,6 +40,7 @@ gnome_software_sources = [
   'gs-content-rating.c',
   'gs-debug.c',
   'gs-details-page.c',
+  'gs-discovery-feed-content-provider.c',
   'gs-extras-page.c',
   'gs-feature-tile.c',
   'gs-first-run-dialog.c',
@@ -110,7 +118,8 @@ endif
 executable(
   'gnome-software',
   resources_src,
-  gdbus_src,
+  gdbus_shell_search_provider_src,
+  gdbus_discovery_feed_content_provider_src,
   sources : gnome_software_sources,
   include_directories : [
     include_directories('..'),
@@ -245,6 +254,9 @@ i18n.merge_file(
 
 install_data('org.gnome.Software-search-provider.ini',
              install_dir : 'share/gnome-shell/search-providers')
+
+install_data('org.gnome.Software-discovery-feed-content-provider.ini',
+             install_dir : 'share/eos-discovery-feed/content-providers')
 
 if get_option('enable-man')
   xsltproc = find_program('xsltproc')
