@@ -34,6 +34,8 @@
 #include "gs-discovery-feed-content-provider-generated.h"
 #include "gs-discovery-feed-content-provider.h"
 
+#define MAX_INSTALLABLE_APPS 3
+
 typedef struct {
 	GsDiscoveryFeedContentProvider *provider;
 	GDBusMethodInvocation *invocation;
@@ -59,6 +61,13 @@ typedef struct {
 	GsAppKudo kudo;
 	guint weight;
 } DiscoveryFeedKudoWeight ;
+
+static gint
+get_day_of_week (void)
+{
+  g_autoptr(GDateTime) datetime = g_date_time_new_now_local ();
+  return g_date_time_get_day_of_week (datetime);
+}
 
 static const DiscoveryFeedKudoWeight discovery_feed_app_kudos[] =
 {
@@ -135,7 +144,7 @@ search_done_cb (GObject *source,
 	guint i;
 	GVariantBuilder builder;
 	guint app_list_length;
-	guint count;
+	guint count = 0;
 	g_autoptr(GsAppList) list = NULL;
 
 	list = gs_plugin_loader_search_finish (self->plugin_loader, res, NULL);
@@ -149,7 +158,6 @@ search_done_cb (GObject *source,
 	}
 
 	app_list_length = gs_app_list_length (list);
-	count = 0;
 
 	/* sort by kudos, as there is no ratings data by default */
 	gs_app_list_sort (list, search_sort_by_kudo_cb, NULL);
@@ -159,7 +167,8 @@ search_done_cb (GObject *source,
 		gchar *app_thumbnail_filename;
 		GdkPixbuf *pixbuf;
 		GVariant *icon_serialized = NULL;
-		GsApp *app = gs_app_list_index (list, i);
+		gint index = (get_day_of_week () + i) % app_list_length;
+		GsApp *app = gs_app_list_index (list, index);
 
 		if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE)
 			continue;
@@ -190,6 +199,10 @@ search_done_cb (GObject *source,
 		g_variant_unref (icon_serialized);
 
 		g_variant_builder_close (&builder);
+
+		count += 1;
+		if (count == MAX_INSTALLABLE_APPS)
+			break;
 	}
 
 	gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
