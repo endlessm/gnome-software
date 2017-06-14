@@ -214,6 +214,7 @@ typedef enum {
  **/
 typedef enum {
 	GS_PLUGIN_FILTER_FLAGS_NONE			= 0,
+	GS_PLUGIN_FILTER_FLAGS_DISCOVERY_FEED		= 1 << 0,
 	/*< private >*/
 	GS_PLUGIN_FILTER_FLAGS_LAST
 } GsPluginFilterFlags;
