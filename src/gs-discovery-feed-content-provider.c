@@ -149,9 +149,10 @@ search_done_cb (GObject *source,
 
 	list = gs_plugin_loader_search_finish (self->plugin_loader, res, NULL);
 	if (list == NULL) {
+	        g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
 		gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
 										  search->invocation,
-										  NULL);
+										  g_variant_builder_end ("&builder"));
 		pending_search_free (search);
 		g_application_release (g_application_get_default ());
 		return;
