@@ -200,6 +200,7 @@ gs_search_page_load (GsSearchPage *self)
 				       GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
 				       GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME |
 				       GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
+				       GS_PLUGIN_FILTER_FLAGS_NONE,
 				       GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 				       self->search_cancellable,
 				       gs_search_page_get_search_cb,

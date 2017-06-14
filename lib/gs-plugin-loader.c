@@ -144,6 +144,11 @@ typedef gboolean	 (*GsPluginRefineAppFunc)	(GsPlugin	*plugin,
 							 GsPluginRefineFlags refine_flags,
 							 GCancellable	*cancellable,
 							 GError		**error);
+typedef gboolean	 (*GsPluginFilterAppListFunc)	(GsPlugin	*plugin,
+							 GsAppList	*app_list,
+							 GsPluginFilterFlags filter_flags,
+							 GCancellable	*cancellable,
+							 GError		**error);
 typedef gboolean	 (*GsPluginRefineWildcardFunc)	(GsPlugin	*plugin,
 							 GsApp		*app,
 							 GsAppList	*list,
@@ -181,6 +186,7 @@ typedef struct {
 	GPtrArray			*catlist;
 	GsPluginRefineFlags		 refine_flags;
 	GsPluginRefreshFlags		 refresh_flags;
+	GsPluginFilterFlags		 filter_flags;
 	GsPluginFailureFlags		 failure_flags;
 	gchar				*value;
 	gchar				**values;
@@ -561,6 +567,12 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderJob *job,
 			g_critical ("function_name %s invalid for %s",
 				    job->function_name,
 				    gs_plugin_action_to_string (job->action));
+		}
+		break;
+	case GS_PLUGIN_ACTION_FILTER_APP_LIST:
+		{
+			GsPluginFilterAppListFunc plugin_func = func;
+			ret = plugin_func (plugin, list, job->filter_flags, cancellable, &error_local);
 		}
 		break;
 	case GS_PLUGIN_ACTION_INSTALL:
@@ -1175,6 +1187,33 @@ gs_plugin_loader_get_app_is_compatible (GsApp *app, gpointer user_data)
 	g_debug ("removing incompatible %s from project group %s",
 		 gs_app_get_id (app), gs_app_get_project_group (app));
 	return FALSE;
+}
+
+static gboolean
+gs_plugin_loader_filter_app_list (GsPluginLoaderJob *job,
+				  GsAppList	    *app_list,
+				  GTask		    *task,
+				  GCancellable	    *cancellable)
+{
+	GsPluginLoader *plugin_loader = job->plugin_loader;
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	GError *error = NULL;
+
+	job->action = GS_PLUGIN_ACTION_FILTER_APP_LIST;
+	job->function_name = "gs_plugin_filter_app_list";
+
+	for (guint i = 0; i < priv->plugins->len; i++) {
+		GsPlugin *plugin = g_ptr_array_index (priv->plugins, i);
+		if (g_task_return_error_if_cancelled (task))
+			return FALSE;
+		if (!gs_plugin_loader_call_vfunc (job, plugin, NULL, NULL,
+						  cancellable, &error)) {
+			g_task_return_error (task, error);
+			return FALSE;
+		}
+	}
+
+	return TRUE;
 }
 
 /**
@@ -2009,6 +2048,9 @@ gs_plugin_loader_search_thread_cb (GTask *task,
 	gs_app_list_filter (job->list, gs_plugin_loader_filter_qt_for_gtk, NULL);
 	gs_app_list_filter (job->list, gs_plugin_loader_get_app_is_compatible, plugin_loader);
 
+	if (!gs_plugin_loader_filter_app_list (job, job->list, task, cancellable))
+		return;
+
 	/* filter duplicates with priority */
 	gs_app_list_filter (job->list, gs_plugin_loader_app_set_prio, plugin_loader);
 	gs_app_list_filter_duplicates (job->list, GS_APP_LIST_FILTER_FLAG_NONE);
@@ -2051,6 +2093,7 @@ void
 gs_plugin_loader_search_async (GsPluginLoader *plugin_loader,
 			       const gchar *value,
 			       GsPluginRefineFlags refine_flags,
+			       GsPluginFilterFlags filter_flags,
 			       GsPluginFailureFlags failure_flags,
 			       GCancellable *cancellable,
 			       GAsyncReadyCallback callback,
@@ -2065,6 +2108,7 @@ gs_plugin_loader_search_async (GsPluginLoader *plugin_loader,
 	/* save job */
 	job = gs_plugin_loader_job_new (plugin_loader);
 	job->refine_flags = refine_flags;
+	job->filter_flags = filter_flags;
 	job->failure_flags = failure_flags;
 	job->list = gs_app_list_new ();
 	job->value = g_strdup (value);

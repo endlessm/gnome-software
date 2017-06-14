@@ -133,6 +133,7 @@ execute_search (GsShellSearchProvider  *self,
 				       string,
 				       GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
 				       GS_PLUGIN_FAILURE_FLAGS_NONE,
+				       GS_PLUGIN_FILTER_FLAGS_NONE,
 				       self->cancellable,
 				       search_done_cb,
 				       pending_search);

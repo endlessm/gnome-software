@@ -309,6 +309,7 @@ main (int argc, char **argv)
 			list = gs_plugin_loader_search (plugin_loader,
 							argv[2],
 							refine_flags,
+							GS_PLUGIN_FILTER_FLAGS_NONE,
 							GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 							NULL,
 							&error);
