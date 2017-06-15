@@ -330,6 +330,13 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 		as_app_set_scope (app, self->scope);
 		as_app_set_origin (app, flatpak_remote_get_name (xremote));
 		as_app_add_keyword (app, NULL, "flatpak");
+
+		/* add additional keywords based on metadata */
+		if (as_app_get_metadata_item (app, "EndlessOS::legacy-ext-runtime-installed")) {
+			printf("Adding keyword to %s\n", as_app_get_id (app));
+			as_app_add_keyword (app, NULL, "endless::discoveryfeed");
+		}
+
 		g_debug ("adding %s", as_app_get_unique_id (app));
 		g_ptr_array_add (app_filtered, app);
 	}
