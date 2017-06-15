@@ -135,6 +135,52 @@ get_app_thumbnail_cached_filename (GsApp *app)
 }
 
 static void
+generate_random_indices_array (guint *array,
+			       guint length,
+			       guint min,
+			       guint max)
+{
+	guint i;
+	for (i = 0; i < length; ++i) {
+		/* Need to loop here in case we pick a dupe */
+		gboolean again = TRUE;
+		while (again) {
+			guint index = g_random_int_range(0, length);
+			guint j = 0;
+
+			/* We might pick something unique this time */
+			again = FALSE;
+
+			for (; j < i; ++j) {
+				/* Nope, not the time, try again */
+				if (array[i] == index) {
+					again = TRUE;
+					break;
+				}
+			}
+
+			array[i] = index;
+			break;
+		}
+	}
+}
+
+static gboolean
+index_is_in_random_indices_array (guint *indices,
+				  guint n_indices,
+				  guint index)
+{
+	guint i;
+	for (i = 0; i < n_indices; ++i) {
+		if (indices[i] == index) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+static void
 search_done_cb (GObject *source,
 		GAsyncResult *res,
 		gpointer user_data)
@@ -146,6 +192,11 @@ search_done_cb (GObject *source,
 	guint app_list_length;
 	guint count = 0;
 	g_autoptr(GsAppList) list = NULL;
+	g_autoptr(GSList) discovery_feed_apps = NULL;
+	GSList *iter = NULL;
+	guint random_indices[MAX_INSTALLABLE_APPS];
+	guint n_random_indices = 0;
+	gsize discovery_feed_apps_length = 0;
 
 	list = gs_plugin_loader_search_finish (self->plugin_loader, res, NULL);
 	if (list == NULL) {
@@ -162,7 +213,6 @@ search_done_cb (GObject *source,
 	/* sort by kudos, as there is no ratings data by default */
 	gs_app_list_sort (list, search_sort_by_kudo_cb, NULL);
 
-	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
 	for (i = 0; i < app_list_length; i++) {
 		gchar *app_thumbnail_filename;
 		GdkPixbuf *pixbuf;
@@ -192,6 +242,30 @@ search_done_cb (GObject *source,
 		if (!gs_app_get_metadata_item (app, "Endless::HasDiscoveryFeedContent"))
 			continue;
 
+		discovery_feed_apps = g_slist_prepend (discovery_feed_apps, app);
+	}
+
+	/* Now that we have a list of apps, select MAX_INSTALLABLE_APPS random
+	 * indices */
+	discovery_feed_apps_length = g_slist_length (discovery_feed_apps);
+	n_random_indices = MIN (MAX_INSTALLABLE_APPS, discovery_feed_apps_length);
+	generate_random_indices_array (random_indices,
+				       n_random_indices,
+				       0,
+				       discovery_feed_apps_length);
+
+	/* Now that we have our indices, start building up a variant based
+	 * on those indices */
+	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
+	for (iter = discovery_feed_apps, i = 0; iter; iter = g_slist_next (iter), ++i) {
+		GsApp *app = GS_APP (iter->data);
+		gchar *app_thumbnail_filename = get_app_thumbnail_cached_filename (app);
+		GVariant *icon_serialized = g_icon_serialize (G_ICON (gs_app_get_pixbuf (app)));
+
+		if (!index_is_in_random_indices_array (random_indices, n_random_indices, i)) {
+			continue;
+		}
+
 		g_variant_builder_open (&builder, G_VARIANT_TYPE("a{sv}"));
 		g_variant_builder_add (&builder, "{sv}", "app_id", g_variant_new_string (gs_app_get_id (app)));
 		g_variant_builder_add (&builder, "{sv}", "id", g_variant_new_string (gs_app_get_id (app)));
@@ -203,10 +277,6 @@ search_done_cb (GObject *source,
 		g_variant_unref (icon_serialized);
 
 		g_variant_builder_close (&builder);
-
-		count += 1;
-		if (count == MAX_INSTALLABLE_APPS)
-			break;
 	}
 
 	gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
