@@ -37,6 +37,7 @@ gs_plugins_modalias_func (GsPluginLoader *plugin_loader)
 	list = gs_plugin_loader_search (plugin_loader,
 					"colorhug2",
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					GS_PLUGIN_FILTER_FLAGS_NONE,
 					GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 					NULL,
 					&error);

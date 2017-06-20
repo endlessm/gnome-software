@@ -398,6 +398,25 @@ gboolean	 gs_plugin_add_unvoted_reviews		(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
+ * gs_plugin_filter_app_list:
+ * @plugin: a #GsPlugin
+ * @list: a #GsAppList
+ * @flags: a #GsPluginFilterFlags
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Filter a #GsAppList by given criteria. Plugins can narrow down the
+ * range of apps returned in a search query given some query flags.
+ *
+ * Returns: %TRUE for success or if not relevant
+ **/
+gboolean	 gs_plugin_filter_app_list	(GsPlugin	*plugin,
+						 GsAppList	*list,
+						 GsPluginFilterFlags flags,
+						 GCancellable	*cancellable,
+						 GError		**error);
+
+/**
  * gs_plugin_refine:
  * @plugin: a #GsPlugin
  * @list: a #GsAppList

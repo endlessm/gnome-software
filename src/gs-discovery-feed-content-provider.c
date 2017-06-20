@@ -149,9 +149,10 @@ search_done_cb (GObject *source,
 
 	list = gs_plugin_loader_search_finish (self->plugin_loader, res, NULL);
 	if (list == NULL) {
+	        g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
 		gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
 										  search->invocation,
-										  NULL);
+										  g_variant_builder_end ("&builder"));
 		pending_search_free (search);
 		g_application_release (g_application_get_default ());
 		return;
@@ -224,9 +225,13 @@ handle_get_discovery_feed_apps (GsDiscoveryFeedInstallableApps  *skeleton,
 	pending_search->invocation = g_object_ref (invocation);
 
 	g_application_hold (g_application_get_default ());
+	/* Searching for com.endlessm here isn't ideal, but it is necessary
+	 * until we ware able to search all apps from gnome-software
+	 * at once */
 	gs_plugin_loader_search_async (self->plugin_loader,
 				       "com.endlessm",
 				       GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+				       GS_PLUGIN_FILTER_FLAGS_DISCOVERY_FEED,
 				       GS_PLUGIN_FAILURE_FLAGS_NONE,
 				       NULL,
 				       search_done_cb,

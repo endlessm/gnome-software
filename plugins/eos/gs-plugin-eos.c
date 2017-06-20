@@ -772,6 +772,28 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	                            request_data);
 }
 
+static gboolean
+_filter_for_discovery_feed_apps (GsApp *app, gpointer user_data)
+{
+	return gs_app_get_metadata_item (app, "Endless::HasDiscoveryFeedContent") != NULL;
+}
+
+/**
+ * gs_plugin_filter_app_list
+ */
+gboolean
+gs_plugin_filter_app_list (GsPlugin *plugin,
+			   GsAppList *app_list,
+			   GsPluginFilterFlags flags,
+			   GCancellable *cancellable,
+			   GError **error)
+{
+	if (flags & GS_PLUGIN_FILTER_FLAGS_DISCOVERY_FEED)
+		gs_app_list_filter (app_list, _filter_for_discovery_feed_apps, NULL);
+
+	return TRUE;
+}
+
 /**
  * gs_plugin_refine:
  */

@@ -256,6 +256,7 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					GS_PLUGIN_FILTER_FLAGS_NONE,
 					GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 					NULL,
 					&error);
@@ -470,6 +471,7 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 	list = gs_plugin_loader_search (plugin_loader,
 					"Bingo",
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					GS_PLUGIN_FILTER_FLAGS_NONE,
 					GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 					NULL,
 					&error);
@@ -766,6 +768,7 @@ gs_plugins_flatpak_ref_func (GsPluginLoader *plugin_loader)
 	list = gs_plugin_loader_search (plugin_loader,
 					"runtime",
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					GS_PLUGIN_FILTER_FLAGS_NONE,
 					GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 					NULL,
 					&error);
@@ -855,6 +858,7 @@ gs_plugins_flatpak_ref_func (GsPluginLoader *plugin_loader)
 	search1 = gs_plugin_loader_search (plugin_loader,
 					   "chiron",
 					   GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					   GS_PLUGIN_FILTER_FLAGS_NONE,
 					   GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 					   NULL,
 					   &error);
@@ -906,6 +910,7 @@ gs_plugins_flatpak_ref_func (GsPluginLoader *plugin_loader)
 	search2 = gs_plugin_loader_search (plugin_loader,
 					   "chiron",
 					   GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					   GS_PLUGIN_FILTER_FLAGS_NONE,
 					   GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 					   NULL,
 					   &error);
@@ -1000,6 +1005,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	list = gs_plugin_loader_search (plugin_loader,
 					"Bingo",
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					GS_PLUGIN_FILTER_FLAGS_NONE,
 					GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
 					NULL,
 					&error);
