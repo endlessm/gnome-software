@@ -188,6 +188,10 @@ search_done_cb (GObject *source,
 		if (!app_thumbnail_filename)
 			continue;
 
+		/* App must also be tagged as having discovery feed content */
+		if (!gs_app_get_metadata_item (app, "Endless::HasDiscoveryFeedContent"))
+			continue;
+
 		g_variant_builder_open (&builder, G_VARIANT_TYPE("a{sv}"));
 		g_variant_builder_add (&builder, "{sv}", "app_id", g_variant_new_string (gs_app_get_id (app)));
 		g_variant_builder_add (&builder, "{sv}", "id", g_variant_new_string (gs_app_get_id (app)));
