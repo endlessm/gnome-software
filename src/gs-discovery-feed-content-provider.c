@@ -194,7 +194,7 @@ search_done_cb (GObject *source,
 
 		g_variant_builder_open (&builder, G_VARIANT_TYPE("a{sv}"));
 		g_variant_builder_add (&builder, "{sv}", "app_id", g_variant_new_string (gs_app_get_id (app)));
-		g_variant_builder_add (&builder, "{sv}", "id", g_variant_new_string (gs_app_get_id (app)));
+		g_variant_builder_add (&builder, "{sv}", "id", g_variant_new_string (gs_app_get_unique_id (app)));
 		g_variant_builder_add (&builder, "{sv}", "name", g_variant_new_string (gs_app_get_name (app)));
 		g_variant_builder_add (&builder, "{sv}", "synopsis", g_variant_new_string (gs_app_get_summary (app)));
 		g_variant_builder_add (&builder, "{sv}", "thumbnail_uri", g_variant_new_string (app_thumbnail_filename));
