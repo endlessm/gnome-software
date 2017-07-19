@@ -458,8 +458,6 @@ gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.gnome.Documents.desktop",
 		/* Doesn't work due to network related problems */
 		"org.gnome.Maps.desktop",
-		/* Requires Telepathy daemons running in the host */
-		"org.gnome.Polari.desktop",
 		NULL
 	};
 
