@@ -1044,8 +1044,8 @@ add_updates (GsPlugin *plugin,
 {
 	g_autoptr(GsApp) updates_proxy_app = NULL;
 	g_autoptr(GSList) proxied_updates = NULL;
-	const char *proxied_apps[] = {"com.endlessm.Platform.runtime",
-				      "com.endlessm.apps.Platform.runtime",
+	const char *proxied_apps[] = {"com.endlessm.Platform",
+				      "com.endlessm.apps.Platform",
 				      "com.endlessm.EknServices.desktop",
 				      NULL};
 
