@@ -4686,6 +4686,7 @@ gs_plugin_loader_update_thread_cb (GTask *task,
 	gboolean ret = TRUE;
 	GsPluginLoaderJob *job = (GsPluginLoaderJob *) task_data;
 	GError *error = NULL;
+	gboolean update_complete = TRUE;
 	guint i;
 
 	/* run each plugin */
@@ -4747,6 +4748,7 @@ gs_plugin_loader_update_thread_cb (GTask *task,
 									     apps->len,
 									     k);
 					g_assert (helper != NULL);
+					job->failure_flags = GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS;
 				}
 
 				ptask = as_profile_start (priv->profile,
@@ -4769,10 +4771,16 @@ gs_plugin_loader_update_thread_cb (GTask *task,
 						g_task_return_error (task, error);
 						return;
 					}
+					if (gs_app_get_state (app) != AS_APP_STATE_INSTALLED)
+						update_complete = FALSE;
 				}
 			}
-			if (is_proxy_update)
-				gs_app_set_state (app_tmp, AS_APP_STATE_INSTALLED);
+			if (is_proxy_update) {
+				if (update_complete)
+					gs_app_set_state (app_tmp, AS_APP_STATE_INSTALLED);
+				else
+					gs_app_set_state_recover (app_tmp);
+			}
 		}
 		gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_FINISHED);
 	}
