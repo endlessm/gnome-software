@@ -41,6 +41,15 @@ struct GsPluginData
 {
 	GDBusConnection *session_bus;
 	GHashTable *desktop_apps;
+
+	/* This hash table is for "replacement apps" for placeholders
+	 * on the desktop. We are shipping systems with icons like
+	 * "Get VLC" or "Get Spotify", which, when launched, open
+	 * the app center. In any case where the user could install
+	 * those apps, we want to ensure that we replace the icon
+	 * on the desktop with the application's icon, in the same
+	 * place. */
+	GHashTable *replacement_app_lookup;
 	int applications_changed_id;
 	SoupSession *soup_session;
 };
@@ -128,6 +137,51 @@ on_desktop_apps_changed (GDBusConnection *connection,
 	}
 }
 
+static void
+read_icon_replacement_overrides (GHashTable *replacement_app_lookup)
+{
+	const gchar * const *datadirs = g_get_system_data_dirs ();
+	g_autoptr(GError) error = NULL;
+
+	for (; *datadirs; ++datadirs) {
+		g_autofree gchar *candidate_path = g_build_filename (*datadirs,
+                                                                     "eos-application-tools",
+                                                                     "icon-overrides",
+                                                                     "eos-icon-overrides.ini",
+                                                                     NULL);
+		g_autoptr(GKeyFile) config = g_key_file_new ();
+		g_auto(GStrv) keys = NULL;
+		gsize n_keys = 0;
+		gsize key_iterator = 0;
+
+		if (!g_key_file_load_from_file (config, candidate_path, G_KEY_FILE_NONE, &error)) {
+			if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+				g_warning ("Could not load icon overrides file %s: %s", candidate_path, error->message);
+			g_clear_error (&error);
+			continue;
+		}
+
+		if (!(keys = g_key_file_get_keys (config, "Overrides", &n_keys, &error))) {
+			g_warning ("Could not read keys from icon overrides file %s: %s", candidate_path, error->message);
+			g_clear_error (&error);
+			continue;
+		}
+
+		/* Now add all the key-value pairs to the replacement app lookup table */
+		for (; key_iterator != n_keys; ++key_iterator) {
+			g_hash_table_replace (replacement_app_lookup,
+					      g_strdup (keys[key_iterator]),
+					      g_key_file_get_string (config,
+								     "Overrides",
+								     keys[key_iterator],
+								     NULL));
+		}
+
+		/* First one takes priority, ignore the others */
+		break;
+	}
+}
+
 gboolean
 gs_plugin_setup (GsPlugin *plugin,
 		 GCancellable *cancellable,
@@ -157,6 +211,13 @@ gs_plugin_setup (GsPlugin *plugin,
 						    plugin, NULL);
 	priv->soup_session = gs_plugin_get_soup_session (plugin);
 
+	priv->replacement_app_lookup = g_hash_table_new_full (g_str_hash, g_str_equal,
+							      g_free, g_free);
+
+	/* Synchronous, but this guarantees that the lookup table will be
+	 * there when we call ReplaceApplication later on */
+	read_icon_replacement_overrides (priv->replacement_app_lookup);
+
 	return TRUE;
 }
 
@@ -182,6 +243,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	}
 
 	g_hash_table_destroy (priv->desktop_apps);
+	g_hash_table_destroy (priv->replacement_app_lookup);
 }
 
 static const char*
@@ -456,6 +518,47 @@ remove_app_from_shell (GsPlugin		*plugin,
 	return TRUE;
 }
 
+static GVariant *
+shell_add_app_if_not_visible (GDBusConnection *session_bus,
+			      const gchar *shortcut_id,
+			      GCancellable *cancellable,
+			      GError **error)
+{
+	return g_dbus_connection_call_sync (session_bus,
+					    "org.gnome.Shell",
+					    "/org/gnome/Shell",
+					    "org.gnome.Shell.AppStore",
+					    "AddAppIfNotVisible",
+					    g_variant_new ("(s)", shortcut_id),
+					    NULL,
+					    G_DBUS_CALL_FLAGS_NONE,
+					    -1,
+					    cancellable,
+					    error);
+}
+
+static GVariant *
+shell_replace_app (GDBusConnection *session_bus,
+		   const char *original_shortcut_id,
+		   const char *replacement_shortcut_id,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	return g_dbus_connection_call_sync (session_bus,
+					    "org.gnome.Shell",
+					    "/org/gnome/Shell",
+					    "org.gnome.Shell.AppStore",
+					    "ReplaceApplication",
+					    g_variant_new ("(ss)",
+					                   original_shortcut_id,
+					                   replacement_shortcut_id),
+					    NULL,
+					    G_DBUS_CALL_FLAGS_NONE,
+					    -1,
+					    cancellable,
+					    error);
+}
+
 static gboolean
 add_app_to_shell (GsPlugin	*plugin,
 		  GsApp		*app,
@@ -469,17 +572,24 @@ add_app_to_shell (GsPlugin	*plugin,
 		gs_utils_get_desktop_app_info (desktop_file_id);
 	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
 
-	g_dbus_connection_call_sync (priv->session_bus,
-				     "org.gnome.Shell",
-				     "/org/gnome/Shell",
-				     "org.gnome.Shell.AppStore",
-				     "AddAppIfNotVisible",
-				     g_variant_new ("(s)", shortcut_id),
-				     NULL,
-				     G_DBUS_CALL_FLAGS_NONE,
-				     -1,
-				     cancellable,
-				     &error);
+	/* Look up the app in our replacement list to see if we
+	 * can replace and existing shortcut, and if so, do that
+	 * instead */
+	const char *shortcut_id_to_replace = g_hash_table_lookup (priv->replacement_app_lookup,
+								  desktop_file_id);
+
+
+	if (shortcut_id_to_replace)
+		shell_replace_app (priv->session_bus,
+				   shortcut_id_to_replace,
+				   shortcut_id,
+				   cancellable,
+				   &error);
+	else
+		shell_add_app_if_not_visible (priv->session_bus,
+					      shortcut_id,
+					      cancellable,
+					      &error);
 
 	if (error != NULL) {
 		g_debug ("Error adding app to shell: %s", error->message);
