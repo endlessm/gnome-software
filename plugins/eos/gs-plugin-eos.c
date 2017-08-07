@@ -39,6 +39,7 @@
 #define EOS_IMAGE_VERSION_ALT_PATH "/"
 
 #define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
+#define METADATA_REPLACED_BY_DESKTOP_FILE "EndlessOS::replaced-by-desktop-file"
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
 
 /*
@@ -50,6 +51,15 @@ struct GsPluginData
 {
 	GDBusConnection *session_bus;
 	GHashTable *desktop_apps;
+
+	/* This hash table is for "replacement apps" for placeholders
+	 * on the desktop. We are shipping systems with icons like
+	 * "Get VLC" or "Get Spotify", which, when launched, open
+	 * the app center. In any case where the user could install
+	 * those apps, we want to ensure that we replace the icon
+	 * on the desktop with the application's icon, in the same
+	 * place. */
+	GHashTable *replacement_app_lookup;
 	int applications_changed_id;
 	SoupSession *soup_session;
 	char *personality;
@@ -187,6 +197,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 	priv->desktop_apps = g_hash_table_new_full (g_str_hash, g_str_equal,
 						    g_free, NULL);
+	priv->replacement_app_lookup = g_hash_table_new_full (g_str_hash, g_str_equal,
+							      g_free, g_free);
 	priv->applications_changed_id =
 		g_dbus_connection_signal_subscribe (priv->session_bus,
 						    "org.gnome.Shell",
@@ -228,6 +240,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_clear_object (&priv->session_bus);
 	g_clear_object (&priv->soup_session);
 	g_hash_table_destroy (priv->desktop_apps);
+	g_hash_table_destroy (priv->replacement_app_lookup);
 	g_free (priv->personality);
 	g_free (priv->os_version_id);
 }
@@ -770,6 +783,18 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	                            request_data);
 }
 
+static void
+update_replacement_app_lookup_table (GsApp      *app,
+				     GHashTable *replacement_app_lookup)
+{
+	const gchar *replaced_by = gs_app_get_metadata_item (app, METADATA_REPLACED_BY_DESKTOP_FILE);
+
+	if (replaced_by)
+		g_hash_table_replace (replacement_app_lookup,
+		                      g_strdup (replaced_by),
+				      g_strdup (get_desktop_file_id (app)));
+}
+
 /**
  * gs_plugin_refine:
  */
@@ -804,6 +829,7 @@ gs_plugin_refine (GsPlugin		*plugin,
 			continue;
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
+		update_replacement_app_lookup_table (app, priv->replacement_app_lookup);
 
 		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
 			continue;
@@ -862,6 +888,47 @@ remove_app_from_shell (GsPlugin		*plugin,
 	return TRUE;
 }
 
+static GVariant *
+shell_add_app_if_not_visible (GDBusConnection *session_bus,
+			      const gchar     *shortcut_id,
+			      GCancellable    *cancellable,
+			      GError	      **error)
+{
+	return g_dbus_connection_call_sync (session_bus,
+					    "org.gnome.Shell",
+					    "/org/gnome/Shell",
+					    "org.gnome.Shell.AppStore",
+					    "AddAppIfNotVisible",
+					    g_variant_new ("(s)", shortcut_id),
+					    NULL,
+					    G_DBUS_CALL_FLAGS_NONE,
+					    -1,
+					    cancellable,
+					    error);
+}
+
+static GVariant *
+shell_replace_app_if_possible (GDBusConnection *session_bus,
+			       const char      *original_shortcut_id,
+			       const char      *replacement_shortcut_id,
+			       GCancellable    *cancellable,
+			       GError	       **error)
+{
+	return g_dbus_connection_call_sync (session_bus,
+					    "org.gnome.Shell",
+					    "/org/gnome/Shell",
+					    "org.gnome.Shell.AppStore",
+					    "ReplaceApplication",
+					    g_variant_new ("(ss)",
+					                   original_shortcut_id,
+					                   replacement_shortcut_id),
+					    NULL,
+					    G_DBUS_CALL_FLAGS_NONE,
+					    -1,
+					    cancellable,
+					    error);
+}
+
 static gboolean
 add_app_to_shell (GsPlugin	*plugin,
 		  GsApp		*app,
@@ -875,17 +942,24 @@ add_app_to_shell (GsPlugin	*plugin,
 		gs_utils_get_desktop_app_info (desktop_file_id);
 	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
 
-	g_dbus_connection_call_sync (priv->session_bus,
-				     "org.gnome.Shell",
-				     "/org/gnome/Shell",
-				     "org.gnome.Shell.AppStore",
-				     "AddAppIfNotVisible",
-				     g_variant_new ("(s)", shortcut_id),
-				     NULL,
-				     G_DBUS_CALL_FLAGS_NONE,
-				     -1,
-				     cancellable,
-				     &error);
+	/* Look up the app in our replacement list to see if we
+	 * can replace and existing shortcut, and if so, do that
+	 * instead */
+	const char *shortcut_id_to_replace = g_hash_table_lookup (priv->replacement_app_lookup,
+								  desktop_file_id);
+
+
+	if (shortcut_id_to_replace)
+		shell_replace_app_if_possible (priv->session_bus,
+					       shortcut_id_to_replace,
+					       shortcut_id,
+					       cancellable,
+					       &error);
+	else
+		shell_add_app_if_not_visible (priv->session_bus,
+					      shortcut_id,
+					      cancellable,
+					      &error);
 
 	if (error != NULL) {
 		g_debug ("Error adding app to shell: %s", error->message);
