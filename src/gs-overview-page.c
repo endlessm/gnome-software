@@ -582,7 +582,8 @@ gs_overview_page_load (GsOverviewPage *self)
 	if (FALSE && !priv->loading_featured) {
 		priv->loading_featured = TRUE;
 		gs_plugin_loader_get_featured_async (priv->plugin_loader,
-						     GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						     GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+						     GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						     GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 						     priv->cancellable,
 						     gs_overview_page_get_featured_cb,
@@ -594,7 +595,8 @@ gs_overview_page_load (GsOverviewPage *self)
 		priv->loading_popular = TRUE;
 		gs_plugin_loader_get_popular_async (priv->plugin_loader,
 						    GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS |
-						    GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						    GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+						    GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						    GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 						    priv->cancellable,
 						    gs_overview_page_get_popular_cb,
@@ -632,7 +634,8 @@ gs_overview_page_load (GsOverviewPage *self)
 			gs_plugin_loader_get_category_apps_async (priv->plugin_loader,
 								  featured_category,
 								  GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS |
-								  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+								  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+								  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 								  GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 								  priv->cancellable,
 								  gs_overview_page_get_category_apps_cb,

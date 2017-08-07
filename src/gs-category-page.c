@@ -147,7 +147,8 @@ gs_category_page_reload (GsPage *page)
 						  self->subcategory,
 						  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 						  GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
-						  GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
+						  GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+						  GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 						  GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 						  self->cancellable,
 						  gs_category_page_get_apps_cb,
