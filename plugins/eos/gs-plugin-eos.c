@@ -449,7 +449,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
+gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	static const char *duplicated_apps[] = {
 		"org.gnome.Builder.desktop",
@@ -489,7 +489,8 @@ gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
 
 	/* We need to check for the app's origin, otherwise we'd be
 	 * blacklisting matching apps coming from any repo */
-	if (g_strcmp0 (hostname, "sdk.gnome.org") != 0)
+	if (g_strcmp0 (hostname, "sdk.gnome.org") != 0 &&
+	    g_strcmp0 (hostname, "flathub.org") != 0)
 		return FALSE;
 
 	if (g_strv_contains (duplicated_apps, gs_app_get_id (app)) ||
@@ -839,7 +840,7 @@ gs_plugin_refine (GsPlugin		*plugin,
 		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
 			continue;
 
-		if (gs_plugin_eos_blacklist_gnome_app_if_needed (plugin, app))
+		if (gs_plugin_eos_blacklist_upstream_app_if_needed (plugin, app))
 			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
