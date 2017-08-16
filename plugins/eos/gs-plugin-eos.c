@@ -453,6 +453,11 @@ gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	static const char *duplicated_apps[] = {
 		"org.gnome.Builder.desktop",
+		"org.gnome.iagno.desktop",
+		NULL
+	};
+
+	static const char *core_apps[] = {
 		"org.gnome.Calculator.desktop",
 		"org.gnome.Evince.desktop",
 		"org.gnome.Nautilus.desktop",
@@ -461,7 +466,6 @@ gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.gnome.clocks.desktop",
 		"org.gnome.eog.desktop",
 		"org.gnome.gedit.desktop",
-		"org.gnome.iagno.desktop",
 		NULL
 	};
 
@@ -489,6 +493,7 @@ gs_plugin_eos_blacklist_gnome_app_if_needed (GsPlugin *plugin, GsApp *app)
 		return FALSE;
 
 	if (g_strv_contains (duplicated_apps, gs_app_get_id (app)) ||
+	    g_strv_contains (core_apps, gs_app_get_id (app)) ||
 	    g_strv_contains (buggy_apps, gs_app_get_id (app))) {
 		gs_app_add_category (app, "Blacklisted");
 		return TRUE;
