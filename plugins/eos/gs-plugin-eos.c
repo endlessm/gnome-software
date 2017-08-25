@@ -47,6 +47,8 @@
  * Plugin to improve GNOME Software integration in the EOS desktop.
  */
 
+static gboolean EOS_ARCH_IS_ARM = FALSE;
+
 struct GsPluginData
 {
 	GDBusConnection *session_bus;
@@ -193,6 +195,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	/* let the flatpak plugin run first so we deal with the apps
 	 * in a more complete/refined state */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "flatpak");
+
+	EOS_ARCH_IS_ARM = g_strcmp0 (flatpak_get_default_arch (), "arm") == 0;
 
 	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 	priv->desktop_apps = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -597,6 +601,37 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		NULL
 	};
 
+	/* List of apps that are proven to work on ARM */
+	static const char *arm_whitelist[] = {
+		"com.github.dahenson.agenda",
+		"com.github.philip_scott.notes-up",
+		"com.transmissionbt.Transmission",
+		"com.uploadedlobster.peek",
+		"io.elementary.code",
+		"io.github.Hexchat",
+		"org.baedert.corebird",
+		"org.blender.Blender",
+		"org.gnome.Books",
+		"org.gnome.Builder",
+		"org.gnome.Calendar",
+		"org.gnome.Characters",
+		"org.gnome.Devhelp",
+		"org.gnome.Dictionary",
+		"org.gnome.Geary",
+		"org.gnome.Glade",
+		"org.gnome.Polari",
+		"org.gnome.Recipes",
+		"org.gnome.Todo",
+		"org.gnome.Weather",
+		"org.gnome.bijiben",
+		"org.gnome.frogr",
+		"org.gnome.gitg",
+		"org.gnucash.GnuCash",
+		"org.musicbrainz.Picard",
+		"org.mypaint.MyPaint",
+		NULL
+	};
+
 	const char *hostname = NULL;
 
 	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM)
@@ -611,6 +646,16 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 	if (g_strcmp0 (hostname, "sdk.gnome.org") != 0 &&
 	    g_strcmp0 (hostname, "flathub.org") != 0)
 		return FALSE;
+
+	/* If the arch is ARM then we simply use a whitelist and
+	 * don't go through all the remaining lists */
+	if (EOS_ARCH_IS_ARM) {
+		if (g_strv_contains (arm_whitelist, gs_app_get_id (app)))
+			return FALSE;
+
+		gs_app_add_category (app, "Blacklisted");
+		return TRUE;
+	}
 
 	if (g_strv_contains (duplicated_apps, gs_app_get_id (app)) ||
 	    g_strv_contains (core_apps, gs_app_get_id (app)) ||
