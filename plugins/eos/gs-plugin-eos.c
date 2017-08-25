@@ -68,6 +68,7 @@ struct GsPluginData
 	SoupSession *soup_session;
 	char *personality;
 	char *os_version_id;
+	gboolean eos_arch_is_arm;
 };
 
 static gboolean
@@ -306,6 +307,8 @@ gs_plugin_setup (GsPlugin *plugin,
 	priv->replacement_app_lookup = g_hash_table_new_full (g_str_hash, g_str_equal,
 							      g_free, g_free);
 
+	priv->eos_arch_is_arm = g_strcmp0 (flatpak_get_default_arch (), "arm") == 0;
+
 	priv->personality = get_personality ();
 
 	if (!priv->personality)
@@ -519,6 +522,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 static gboolean
 gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 {
+	GsPluginData *priv = gs_plugin_get_data (plugin);
 	gboolean do_blacklist = FALSE;
 
 	static const char *duplicated_apps[] = {
@@ -655,6 +659,103 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		NULL
 	};
 
+	/* List of apps that are proven to work on ARM */
+	static const char *arm_whitelist[] = {
+		"ch.x29a.playitslowly.desktop",
+		"com.bixense.PasswordCalculator.desktop",
+		"com.dosbox.DOSBox.desktop",
+		"com.frac_tion.teleport.desktop",
+		"com.github.babluboy.bookworm.desktop",
+		"com.github.birros.WebArchives.desktop",
+		"com.github.bitseater.weather.desktop",
+		"com.github.cassidyjames.dippi.desktop",
+		"com.github.dahenson.agenda.desktop",
+		"com.github.donadigo.appeditor.desktop",
+		"com.github.fabiocolacio.marker.desktop",
+		"com.github.geigi.cozy.desktop",
+		"com.github.gkarsay.parlatype.desktop",
+		"com.github.lainsce.notejot.desktop",
+		"com.github.needleandthread.vocal.desktop",
+		"com.github.ojubaorg.Othman.desktop",
+		"com.github.paolostivanin.OTPClient.desktop",
+		"com.github.philip_scott.notes-up.desktop",
+		"com.github.philip_scott.spice-up.desktop",
+		"com.github.quaternion.desktop",
+		"com.github.rssguard.desktop",
+		"com.transmissionbt.Transmission.desktop",
+		"com.uploadedlobster.peek.desktop",
+		"cx.ring.Ring.desktop",
+		"de.haeckerfelix.gradio.desktop",
+		"de.manuel_kehl.go-for-it.desktop",
+		"fr.free.Homebank.desktop",
+		"io.elementary.code.desktop",
+		"io.github.Cockatrice.cockatrice.desktop",
+		"io.github.Hexchat.desktop",
+		"io.github.Pithos.desktop",
+		"io.github.cloose.CuteMarkEd.desktop",
+		"io.github.jliljebl.Flowblade.desktop",
+		"net.bartkessels.getit.desktop",
+		"net.mediaarea.AVIMetaEdit.desktop",
+		"net.mediaarea.BWFMetaEdit.desktop",
+		"net.mediaarea.DVAnalyzer.desktop",
+		"net.mediaarea.MOVMetaEdit.desktop",
+		"net.mediaarea.MediaConch.desktop",
+		"net.mediaarea.MediaInfo.desktop",
+		"net.mediaarea.QCTools.desktop",
+		"net.olofson.KoboDeluxe.desktop",
+		"net.sf.VICE.desktop",
+		"net.sourceforge.Klavaro.desktop",
+		"nl.openoffice.bluefish.desktop",
+		"org.baedert.corebird.desktop",
+		"org.blender.Blender.desktop",
+		"org.freeciv.Freeciv.desktop",
+		"org.freefilesync.FreeFileSync.desktop",
+		"org.gabmus.hydrapaper.desktop",
+		"org.geany.Geany.desktop",
+		"org.gnome.Books.desktop",
+		"org.gnome.Builder.desktop",
+		"org.gnome.Calendar.desktop",
+		"org.gnome.Characters.desktop",
+		"org.gnome.Devhelp.desktop",
+		"org.gnome.Dictionary.desktop",
+		"org.gnome.Fractal.desktop",
+		"org.gnome.Geary.desktop",
+		"org.gnome.Genius.desktop",
+		"org.gnome.Glade.desktop",
+		"org.gnome.Gnote.desktop",
+		"org.gnome.Hitori.desktop",
+		"org.gnome.Lollypop.desktop",
+		"org.gnome.Maps.desktop",
+		"org.gnome.Polari.desktop",
+		"org.gnome.Recipes.desktop",
+		"org.gnome.Todo.desktop",
+		"org.gnome.Weather.desktop",
+		"org.gnome.bijiben.desktop",
+		"org.gnome.frogr.desktop",
+		"org.gnome.gbrainy.desktop",
+		"org.gnome.ghex.desktop",
+		"org.gnome.gitg.desktop",
+		"org.gnome.meld.desktop",
+		"org.gnucash.GnuCash.desktop",
+		"org.gottcode.FocusWriter.desktop",
+		"org.inkscape.Inkscape.desktop",
+		"org.keepassxc.KeePassXC.desktop",
+		"org.kicad_pcb.KiCad.desktop",
+		"org.mapeditor.Tiled.desktop",
+		"org.musicbrainz.Picard.desktop",
+		"org.mypaint.MyPaint.desktop",
+		"org.nextcloud.Nextcloud.desktop",
+		"org.pitivi.Pitivi.desktop",
+		"org.quassel_irc.QuasselClient.desktop",
+		"org.telegram.desktop.desktop",
+		"org.tordini.flavio.Minitube.desktop",
+		"org.vim.Vim.desktop",
+		"org.wesnoth.Wesnoth.desktop",
+		"org.xiphos.Xiphos.desktop",
+		"work.openpaper.Paperwork.desktop",
+		NULL
+	};
+
 	const char *hostname = NULL;
 
 	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM ||
@@ -672,7 +773,15 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 	    !g_str_has_suffix (hostname, ".flathub.org"))
 		return FALSE;
 
-	if (g_strv_contains (duplicated_apps, gs_app_get_id (app))) {
+	/* If the arch is ARM then we simply use a whitelist and
+	 * don't go through all the remaining lists */
+	if (priv->eos_arch_is_arm) {
+		if (g_strv_contains (arm_whitelist, gs_app_get_id (app)))
+			return FALSE;
+		g_debug ("Blacklisting '%s': it's not whitelisted for ARM",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
+	} else if (g_strv_contains (duplicated_apps, gs_app_get_id (app))) {
 		g_debug ("Blacklisting '%s': app is in the duplicated list",
 			 gs_app_get_unique_id (app));
 		do_blacklist = TRUE;
