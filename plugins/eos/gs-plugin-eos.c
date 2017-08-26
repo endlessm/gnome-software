@@ -1002,18 +1002,6 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	                            request_data);
 }
 
-static void
-update_replacement_app_lookup_table (GsApp      *app,
-				     GHashTable *replacement_app_lookup)
-{
-	const gchar *replaced_by = gs_app_get_metadata_item (app, METADATA_REPLACED_BY_DESKTOP_FILE);
-
-	if (replaced_by)
-		g_hash_table_replace (replacement_app_lookup,
-		                      g_strdup (replaced_by),
-				      g_strdup (get_desktop_file_id (app)));
-}
-
 /**
  * gs_plugin_refine:
  */
@@ -1048,7 +1036,6 @@ gs_plugin_refine (GsPlugin		*plugin,
 			continue;
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
-		update_replacement_app_lookup_table (app, priv->replacement_app_lookup);
 
 		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
 			continue;
