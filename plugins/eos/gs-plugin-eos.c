@@ -182,6 +182,51 @@ get_os_version_id (GError **error)
 	return g_strdup (gs_os_release_get_version_id (os_release));
 }
 
+static void
+read_icon_replacement_overrides (GHashTable *replacement_app_lookup)
+{
+	const gchar * const *datadirs = g_get_system_data_dirs ();
+	g_autoptr(GError) error = NULL;
+
+	for (; *datadirs; ++datadirs) {
+		g_autofree gchar *candidate_path = g_build_filename (*datadirs,
+                                                                     "eos-application-tools",
+                                                                     "icon-overrides",
+                                                                     "eos-icon-overrides.ini",
+                                                                     NULL);
+		g_autoptr(GKeyFile) config = g_key_file_new ();
+		g_auto(GStrv) keys = NULL;
+		gsize n_keys = 0;
+		gsize key_iterator = 0;
+
+		if (!g_key_file_load_from_file (config, candidate_path, G_KEY_FILE_NONE, &error)) {
+			if (!g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+				g_warning ("Could not load icon overrides file %s: %s", candidate_path, error->message);
+			g_clear_error (&error);
+			continue;
+		}
+
+		if (!(keys = g_key_file_get_keys (config, "Overrides", &n_keys, &error))) {
+			g_warning ("Could not read keys from icon overrides file %s: %s", candidate_path, error->message);
+			g_clear_error (&error);
+			continue;
+		}
+
+		/* Now add all the key-value pairs to the replacement app lookup table */
+		for (; key_iterator != n_keys; ++key_iterator) {
+			g_hash_table_replace (replacement_app_lookup,
+					      g_strdup (keys[key_iterator]),
+					      g_key_file_get_string (config,
+								     "Overrides",
+								     keys[key_iterator],
+								     NULL));
+		}
+
+		/* First one takes priority, ignore the others */
+		break;
+	}
+}
+
 /**
  * gs_plugin_initialize:
  */
@@ -217,6 +262,10 @@ gs_plugin_initialize (GsPlugin *plugin)
 	                                                    gs_user_agent (),
 	                                                    NULL);
 	priv->personality = get_personality ();
+
+	/* Synchronous, but this guarantees that the lookup table will be
+	 * there when we call ReplaceApplication later on */
+	read_icon_replacement_overrides (priv->replacement_app_lookup);
 
 	if (!priv->personality)
 		g_warning ("No system personality could be retrieved!");
