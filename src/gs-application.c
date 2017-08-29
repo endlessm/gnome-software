@@ -467,6 +467,44 @@ shutdown_activated (GSimpleAction *action,
 }
 
 static void
+refine_activated (GSimpleAction *action,
+		  GVariant      *parameter,
+		  gpointer       data)
+{
+	GsApplication *app = GS_APPLICATION (data);
+	g_autoptr(GError) error = NULL;
+	const gchar *id;
+	const gchar *refine_flags_str;
+	g_autoptr (GsApp) a = NULL;
+	guint64 refine_flags = 0;
+
+	gs_application_initialize_plugins (app);
+
+	g_variant_get (parameter, "(&s&s)", &id, &refine_flags_str);
+
+	if (as_utils_unique_id_valid (id))
+		a = gs_plugin_loader_app_create (app->plugin_loader, id);
+	else
+		a = gs_app_new (id);
+
+	refine_flags = gs_parse_refine_flags (refine_flags_str, &error);
+	if (refine_flags == G_MAXUINT64) {
+		g_warning ("Unknown flag in %s: %s", refine_flags_str, error->message);
+		return;
+	}
+
+	if (!gs_plugin_loader_app_refine (app->plugin_loader,
+					  a,
+					  refine_flags,
+					  GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
+					  NULL,
+					  &error)) {
+		g_warning ("Failed to refine %s: %s", id, error->message);
+		return;
+	}
+}
+
+static void
 reboot_and_install (GSimpleAction *action,
 		    GVariant      *parameter,
 		    gpointer       data)
@@ -737,6 +775,7 @@ static GActionEntry actions[] = {
 	{ "sources", sources_activated, NULL, NULL, NULL },
 	{ "quit", quit_activated, NULL, NULL, NULL },
 	{ "profile", profile_activated, NULL, NULL, NULL },
+	{ "refine", refine_activated, "(ss)", NULL, NULL },
 	{ "reboot-and-install", reboot_and_install, NULL, NULL, NULL },
 	{ "reboot", reboot_activated, NULL, NULL, NULL },
 	{ "shutdown", shutdown_activated, NULL, NULL, NULL },

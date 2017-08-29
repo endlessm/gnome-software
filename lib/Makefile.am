@@ -23,6 +23,7 @@ gnomesoftware_include_HEADERS =				\
 	gs-plugin.h					\
 	gs-plugin-types.h				\
 	gs-plugin-vfuncs.h				\
+	gs-refine.h					\
 	gs-utils.h
 
 noinst_LIBRARIES = libgnomesoftware.a
@@ -55,6 +56,8 @@ libgnomesoftware_a_SOURCES =				\
 	gs-plugin-private.h				\
 	gs-plugin-types.h				\
 	gs-plugin-vfuncs.h				\
+	gs-refine.c					\
+	gs-refine.h					\
 	gs-test.c					\
 	gs-test.h					\
 	gs-utils.c					\
