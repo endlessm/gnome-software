@@ -2874,6 +2874,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 	g_autoptr(GPtrArray) xrefs_installed = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsFlatpakProgressHelper) phelper = NULL;
+	gboolean all_updates_done = TRUE;
 
 	/* install */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
@@ -2961,10 +2962,26 @@ gs_flatpak_update_app (GsFlatpak *self,
 								      FLATPAK_ERROR,
 								      FLATPAK_ERROR_ALREADY_INSTALLED);
 			if (!already_installed) {
-				g_propagate_error (error, local_error);
-				gs_flatpak_error_convert (error);
-				gs_app_set_state_recover (app);
-				return FALSE;
+				gs_app_set_state_recover (app_tmp);
+
+				/* if the failed update is the main app being updated (i.e. not one of
+				 * the related apps), throw the error now, otherwise let it continue */
+				if (app == app_tmp) {
+					g_propagate_error (error, local_error);
+					gs_flatpak_error_convert (error);
+					gs_app_set_state_recover (app);
+					return FALSE;
+				}
+
+				g_warning ("Failed to update %s related to %s: %s; continuing "
+					   "the remaining updates...",
+					   gs_app_get_unique_id (app_tmp),
+					   gs_app_get_unique_id (app),
+					   local_error->message);
+
+				g_clear_error (&local_error);
+				all_updates_done = FALSE;
+				continue;
 			}
 
 			g_clear_error (&local_error);
@@ -2973,6 +2990,18 @@ gs_flatpak_update_app (GsFlatpak *self,
 				 gs_app_get_unique_id (app_tmp));
 		}
 		gs_app_set_state (app_tmp, AS_APP_STATE_INSTALLED);
+	}
+
+	/* verify all related apps were also updated, otherwise return the error
+	 * so users can try to update it again later */
+	if (!all_updates_done) {
+		g_debug ("Failed to completely update app %s because one or "
+			 "more related apps failed to be updated!",
+			 gs_app_get_unique_id (app));
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED,
+			     "Failed to update one or more related apps");
+		gs_app_set_state_recover (app);
+		return FALSE;
 	}
 
 	/* update UI */
