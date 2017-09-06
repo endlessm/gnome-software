@@ -643,6 +643,8 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 
 	/* Flatpak apps known not to be working properly */
 	static const char *buggy_apps[] = {
+		/* Missing lots of keys and defaults specified in eos-theme */
+		"ca.desrt.dconf-editor",
 		/* Can't open LibreOffice documents */
 		"org.gnome.Documents.desktop",
 		/* Doesn't work due to network related problems */
