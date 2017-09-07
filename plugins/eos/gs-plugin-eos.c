@@ -840,6 +840,15 @@ app_is_compatible_with_os (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
+app_is_evergreen (GsApp *app)
+{
+	const char *id = gs_app_get_id (app);
+
+	return g_str_has_prefix (id, "com.endlessm.quote_of_the_day") ||
+		g_str_has_prefix (id, "com.endlessm.word_of_the_day");
+}
+
+static gboolean
 gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	gboolean blacklist_app = FALSE;
@@ -866,6 +875,10 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 		blacklist_app = TRUE;
 	} else if (app_is_banned_for_personality (plugin, app)) {
 		g_debug ("Blacklisting '%s': app is banned for personality",
+			 gs_app_get_unique_id (app));
+		blacklist_app = TRUE;
+	} else if (app_is_evergreen (app)) {
+		g_debug ("Blacklisting '%s': it's an evergreen app",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (!gs_app_is_installed (app) &&
