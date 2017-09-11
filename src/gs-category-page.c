@@ -146,7 +146,7 @@ gs_category_page_reload (GsPage *page)
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORY_APPS,
 					 "category", self->subcategory,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
