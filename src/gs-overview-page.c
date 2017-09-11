@@ -784,7 +784,7 @@ gs_overview_page_load (GsOverviewPage *self)
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		priv->loading_categories = TRUE;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORIES,
-						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 						 NULL);
 		gs_plugin_loader_job_get_categories_async (priv->plugin_loader, plugin_job,
 							  priv->cancellable,
