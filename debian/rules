@@ -3,35 +3,41 @@
 export DEB_LDFLAGS_MAINT_STRIP=-Wl,-Bsymbolic-functions
 include /usr/share/dpkg/buildflags.mk
 
-GS_CONFIGURE_FLAGS = --libdir=/usr/lib \
-		--disable-silent-rules \
-		--disable-ubuntu-reviews      \
-		--disable-shell-extensions 	\
-		--disable-odrs			\
-		--disable-ostree		\
-		--disable-steam			\
-		--disable-webapps		\
-		--enable-external-appstream	\
-		--enable-flatpak		\
-		--disable-tests
+GS_CONFIGURE_FLAGS =					\
+		--libdir=/usr/lib 			\
+		--localstatedir=/var			\
+		-Denable-external-appstream=true	\
+		-Denable-flatpak=true			\
+		-Denable-fwupd=false			\
+		-Denable-gnome-desktop=true		\
+		-Denable-limba=false			\
+		-Denable-odrs=false			\
+		-Denable-ostree=false			\
+		-Denable-packagekit=false		\
+		-Denable-shell-extensions=false		\
+		-Denable-steam=false			\
+		-Denable-tests=false			\
+		-Denable-ubuntu-reviews=false		\
+		-Denable-webapps=false
 
 # Install target dir
 INSTALLDIR = $(CURDIR)/debian/tmp
 
 %:
-	dh $@ --with systemd
+	dh $@ --with systemd --buildsystem=meson
 
 override_dh_auto_configure:
 	dh_auto_configure -- $(GS_CONFIGURE_FLAGS)
 
 override_dh_auto_install:
 	dh_auto_install --destdir=$(INSTALLDIR)
-	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_dpkg*
-	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_dummy*
-	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_epiphany*
-	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_fedora*
-	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_snap*
-	rm -f $(INSTALLDIR)/usr/lib/gs-plugins-*/libgs_plugin_ubuntuone*
+	rm -f $(INSTALLDIR)/usr/lib/*/gs-plugins-*/libgs_plugin_dpkg*
+	rm -f $(INSTALLDIR)/usr/lib/*/gs-plugins-*/libgs_plugin_dummy*
+	rm -f $(INSTALLDIR)/usr/lib/*/gs-plugins-*/libgs_plugin_epiphany*
+	rm -f $(INSTALLDIR)/usr/lib/*/gs-plugins-*/libgs_plugin_fedora*
+	rm -f $(INSTALLDIR)/usr/lib/*/gs-plugins-*/libgs_plugin_snap*
+	rm -f $(INSTALLDIR)/usr/lib/*/gs-plugins-*/libgs_plugin_ubuntuone*
+	rm -f $(INSTALLDIR)/usr/share/metainfo/*.metainfo.xml
 
 override_dh_install:
 	dh_install -X.a -X.la --list-missing
@@ -40,3 +46,8 @@ override_dh_makeshlibs:
 	dh_makeshlibs -Xlibgs_plugin
 
 override_dh_auto_test:
+	# DISABLED
+
+override_dh_clean:
+	rm -f debian/gnome-software.gsettings-override
+	dh_clean
