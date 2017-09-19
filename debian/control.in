@@ -36,12 +36,12 @@ Package: gnome-software
 Architecture: any
 Depends: appstream,
          gnome-software-common (= ${source:Version}),
+         gnome-software-plugin-flatpak [linux-any],
          gsettings-desktop-schemas (>= 3.18),
          ${misc:Depends},
          ${shlibs:Depends}
 Replaces: gnome-packagekit-session (<< 3.16.0-2~)
 Breaks: gnome-packagekit-session (<< 3.16.0-2~)
-Suggests: gnome-software-plugin-flatpak [linux-any]
 Description: Software Center for GNOME
  Software lets you install and update applications and system extensions.
  .
@@ -69,7 +69,6 @@ Description: Software Center for GNOME (common files)
 Package: gnome-software-plugin-flatpak
 Architecture: linux-any
 Depends: flatpak,
-         gnome-software (= ${binary:Version}),
          ${misc:Depends},
          ${shlibs:Depends}
 Description: Flatpak support for GNOME Software
