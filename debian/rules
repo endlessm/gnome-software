@@ -36,17 +36,6 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	endif
 endif
 
-DISTRO_ID = debian
-FREE_URL = https:\/\/www.debian.org\/social_contract\#guidelines
-ifeq (yes,$(shell dpkg-vendor --derives-from Ubuntu && echo yes))
-	DISTRO_ID = ubuntu
-	FREE_URL = https:\/\/www.ubuntu.com\/about\/about-ubuntu\/licensing
-else ifeq (yes,$(shell dpkg-vendor --derives-from Tanglu && echo yes))
-	DISTRO_ID = tanglu
-else ifeq (yes,$(shell dpkg-vendor --derives-from PureOS && echo yes))
-	DISTRO_ID = pureos
-endif
-
 # Fix the Flatpak plugin: https://launchpad.net/bugs/1650783
 export DEB_LDFLAGS_MAINT_STRIP := -Wl,-Bsymbolic-functions
 
@@ -62,11 +51,6 @@ override_dh_auto_install:
 ifneq (yes,$(shell dpkg-vendor --derives-from Ubuntu && echo yes))
 	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_ubuntu*
 endif
-
-override_dh_installgsettings:
-	sed 's/@DISTRO@/$(DISTRO_ID)/g' debian/gnome-software.gsettings-override.in > debian/gnome-software.gsettings-override
-	sed -i 's/@URL@/$(FREE_URL)/g' debian/gnome-software.gsettings-override
-	dh_installgsettings
 
 override_dh_install-arch:
 	# Remove unused files
@@ -90,7 +74,6 @@ override_dh_auto_test:
 	# DISABLED
 
 override_dh_clean:
-	rm -f debian/gnome-software.gsettings-override
 	dh_clean
 
 # Needed by Ubuntu
