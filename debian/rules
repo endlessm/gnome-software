@@ -3,6 +3,7 @@
 -include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
 
 GS_CONFIGURE_FLAGS = \
+	-Denable-external-appstream=true \
 	-Denable-fwupd=false \
 	-Denable-gnome-desktop=true \
 	-Denable-gtkspell=false \
