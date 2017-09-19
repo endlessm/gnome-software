@@ -1,38 +1,201 @@
-gnome-software (3.24.1-0) master; urgency=medium
+gnome-software (3.26.0-2) unstable; urgency=medium
 
-  * New upstream version
+  * Only build with valgrind on architectures where valgrind is available
+  * Bump Standards-Version to 4.1.0
 
- -- Joaquim Rocha <jrocha@endlessm.com>  Tue, 9 May 2016 12:10:22 +0100
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 15 Sep 2017 08:20:01 -0400
 
-gnome-software (3.23.3-0) master; urgency=medium
+gnome-software (3.26.0-1) unstable; urgency=medium
 
-  * New upstream version
+  [ Jeremy Bicha ]
+  * Release to unstable
+  * New upstream release
+  * Add apport hook to report which gnome-software plugins are installed
+  * debian/rules
+    - Add workaround for Ubuntu translations issue
 
- -- Joaquim Rocha <jrocha@endlessm.com>  Fri, 16 Dec 2016 01:37:02 +0100
+  [ Iain Lane ]
+  * debian/rules: Make sure to not build with -Wl,-Bsymbolic-functions
 
-gnome-software (3.21.91-0) master; urgency=medium
+ -- Jeremy Bicha <jbicha@debian.org>  Thu, 14 Sep 2017 20:30:08 -0400
 
-  * New upstream version
+gnome-software (3.25.91-1) experimental; urgency=medium
 
- -- Joaquim Rocha <jrocha@endlessm.com>  Thu, 1 Sep 2016 01:47:24 +0200
+  * debian/compat: Bump to 10, mainly to get --parallel by default.
+  * New upstream release 3.25.91 (LP: #1706715)
+    + Doesn't let you cancel PackageKit (.deb) installations when PK says it's
+      not allowed. (LP: #1707053)
 
-gnome-software (3.21.2-0) master; urgency=medium
+ -- Iain Lane <laney@debian.org>  Thu, 24 Aug 2017 16:33:38 +0100
 
-  * New upstream version
+gnome-software (3.25.4-1) experimental; urgency=medium
 
- -- Joaquim Rocha <jrocha@endlessm.com>  Mon, 23 May 2016 23:59:57 +0200
+  * New upstream release 3.25.4
+  * debian/rules: Switch to debhelper's meson buildsystem instead of calling
+    meson directly ourselves.
+  * debian/rules: Use dh_missing --fail-missing instead of dh_install.
+  * debian/control{,.in}: Bump debhelper BD to 10.4 for the above.
 
-gnome-software (3.21.1-0) master; urgency=medium
+ -- Iain Lane <laney@debian.org>  Tue, 25 Jul 2017 13:02:15 +0100
 
-  * New upstream version
+gnome-software (3.25.3-1) experimental; urgency=medium
 
- -- Joaquim Rocha <jrocha@endlessm.com>  Fri, 29 Apr 2016 13:52:09 +0200
+  * New upstream release 3.25.3
+  * debian/control{,.in}: Bump libappstrem-glib-dev and libfwupd-dev versions
+    in line with meson.build.
+  * debian/rules: -Denable-firmware is now called -Denable-fwupd.
+  * debian/patches: Drop - these are all upstream.
 
-gnome-software (3.19.90-0) master; urgency=medium
+ -- Iain Lane <laney@debian.org>  Fri, 23 Jun 2017 17:44:59 +0100
 
-  * New upstream version as of Feb 25
+gnome-software (3.25.1-1) experimental; urgency=medium
 
- -- Joaquim Rocha <jrocha@endlessm.com>  Tue, 1 Mar 2016 11:44:42 +0100
+  [ Jeremy Bicha ]
+  * debian/control.in:
+    - Bump minimum appstream-glib to 0.6.7
+
+  [ Iain Lane ]
+  * New upstream development release 3.25.1
+  * debian/watch: Find unstable versions
+  * Build with meson. The debhelper support isn't yet in Debian, so we're
+    calling meson directly. Once it is, we can switch.
+  * debian/patches/0001-build-Use-the-configured-directory-locations-to-inst.patch,
+    debian/patches/0002-build-Fix-the-pcfile.patch,
+    debian/patches/0003-build-limba-Set-limba-as-a-dependency.patch: Some
+    cherry-picks I pushed upstream which fix the build to build and install
+    all the right things.
+  * debian/control{,.in}, debian/gnome-software-{dev,doc}.install: Install the
+    headers and gtk-doc documentation so that external plugins can be built.
+  * debian/rules: Build with --fail-missing.
+  * debian/copyright: Consolidate and update.
+
+ -- Iain Lane <laney@debian.org>  Fri, 05 May 2017 17:31:43 +0100
+
+gnome-software (3.22.5-1) unstable; urgency=medium
+
+  * New upstream bugfix release: 3.22.5
+  * Add support for the PureOS Debian derivative
+  * Explicitly enable AppStream icon download in APT
+    - With a recent change in Debian's AppStream support,
+      GUI frontends which need icons have to enable their
+      download explicitly.
+
+ -- Matthias Klumpp <mak@debian.org>  Sun, 22 Jan 2017 19:06:34 +0100
+
+gnome-software (3.22.4-1) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * debian/gnome-software.gsettings-override.in, debian/rules:
+    - Use Ubuntu's licensing URL when built on Ubuntu
+  * debian/rules:
+    - Enable Ubuntu Reviews on Ubuntu
+
+  [ Laurent Bigonville ]
+  * New upstream release
+    - Bump libappstream-glib-dev and libflatpak-dev build-dependencies
+    - Drop debian/patches/01_pkgname-sanity.patch and
+      debian/patches/02_packagekit-linking.patch, applied upstream
+    - Disable gnome-software-plugin-snap package, it now requires snapd-glib
+      which is not in debian yet
+
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 12 Dec 2016 11:46:39 +0100
+
+gnome-software (3.22.1-1) unstable; urgency=medium
+
+  [ Helmut Grohne ]
+  * Fix FTCBFS: Deconfuse build vs. host. (Closes: #839878)
+
+  [ Matthias Klumpp ]
+  * New upstream bugfix release: 3.22.1
+  * Make Snappy/Snap plugin available as separate package
+  * packagekit-linking.patch: Fix PackageKit underlinking
+  * pkgname-sanity.patch: Never pass broken pkgnames to PackageKit for resolving
+    - Closes: #840654
+    - Closes: #839736
+    - Closes: #827723 - if we are lucky.
+  * Depend on software-properties-gtk (Closes: #840368)
+    - We can do that now, since s-p-g switched to using PackageKit too.
+
+ -- Matthias Klumpp <mak@debian.org>  Sat, 22 Oct 2016 16:32:42 +0200
+
+gnome-software (3.22.0-1) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * New upstream release
+  * Add debian/docs to install NEWS
+  * Use separate packages for flatpak and limba plugins
+  * debian/control.in:
+    - Update Vcs links
+    - Build-depend on autoconf-archive
+    - Have gnome-software suggest flatpak and limba plugins
+    - Bump build-dependencies based on configure.ac
+  * debian/rules:
+    - Build with autoreconf
+
+  [ Michael Biebl ]
+  * Drop --disable-silent-rules from debian/rules. This is now handled by dh
+    directly depending on whether the DH_QUIET environment variable is set.
+
+  [ Simon McVittie ]
+  * New upstream release: 3.22.0
+    - This release closes upstream bugs
+      + Closes: #838200
+      + Closes: #829975
+      + Closes: #836919
+    - build-depend on libappstream-glib-dev (>= 0.6.2) to get all mandatory
+      and optional functionality
+    - build-depend on libflatpak-dev and enable Flatpak
+    - build-depend on libsecret-1-dev
+    - build-depend on gudev on linux-any
+    - bump Gtk build-dependency
+    - explicitly disable OSTree support for now, OSTree in Debian is not
+      ready to be used for OS deployment
+    - d/p/01_debian-dfsg.patch: remove, the same result can be achieved
+      with GSettings now
+    - d/gnome-software.gsettings-override.in: consider the 'main'
+      component to be Free Software (Ubuntu will likely want to patch this
+      to do the same for universe)
+
+  [ Matthias Klumpp ]
+  * Explicitly enable PackageKit, gnome-desktop support
+  * Small tweaks for debian/rules
+  * Make package binNMUable again
+  * Bump PackageKit dependency to >= 1.1.4 (Closes: #823989)
+  * Update d/copyright
+
+ -- Matthias Klumpp <mak@debian.org>  Thu, 22 Sep 2016 20:48:42 +0200
+
+gnome-software (3.20.2-2) unstable; urgency=medium
+
+  * debian/rules: Do not use -X parameter for dh_install, some files were not
+    installed as expected.
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 26 Apr 2016 14:26:44 +0200
+
+gnome-software (3.20.2-1) unstable; urgency=medium
+
+  [ Matthias Klumpp ]
+  * New upstream release: 3.20.2
+  * Enable the (alpha) Open Desktop Review Service (ODRS) feature
+  * Update dependencies:
+    - Bump libpackagekit-glib2-dev (>= 1.1)
+    - Bump libappstream-glib-dev (>= 0.5.14)
+    - Bump liblimba-dev (>= 0.5.6)
+    - Add libjson-glib-dev
+    - Add libgtkspell3-3-dev (>= 3.0)
+  * Drop patches: Applied upstream
+  * Add Debian DFSG plugin to set license information
+    - See debian-dfsg.patch
+    - In case we don't know if a software is free or not based on the license
+      data it supplies, we set it as free based on it originating from "main".
+  * Set provenance for Debian
+
+  [ Michael Biebl ]
+  * Drop uploaders.mk from debian/rules as this breaks the clean target with
+    dh. Instead use the gnome dh addon which updates debian/control via
+    dh_gnome_clean.
+
+ -- Matthias Klumpp <mak@debian.org>  Mon, 25 Apr 2016 18:12:18 +0200
 
 gnome-software (3.18.3-3) unstable; urgency=medium
 
