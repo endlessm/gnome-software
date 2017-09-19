@@ -59,6 +59,10 @@ override_dh_install-arch:
 	rm -f debian/tmp/usr/lib/*/gs-plugins-*/*.a
 	rm -f debian/tmp/usr/lib/*/gs-plugins-*/*.la
 	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_fedora*
+	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_dpkg*
+	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_dummy*
+	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_epiphany*
+	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_repos*
 	dh_install
 
 override_dh_missing:
