@@ -1713,29 +1713,6 @@ gs_plugin_refine_item_origin (GsFlatpak *self,
 	return TRUE;
 }
 
-static gboolean
-gs_flatpak_app_matches_xref (GsFlatpak *self, GsApp *app, FlatpakRef *xref)
-{
-	g_autoptr(GsApp) app_tmp = gs_flatpak_create_app (self, xref);
-
-	/* check ID */
-	if (g_strcmp0 (gs_app_get_unique_id (app),
-	    gs_app_get_unique_id (app_tmp)) == 0)
-		return TRUE;
-
-	/* do all the metadata items match? */
-	if (g_strcmp0 (gs_flatpak_app_get_ref_name (app),
-		       flatpak_ref_get_name (xref)) == 0 &&
-	    g_strcmp0 (gs_flatpak_app_get_ref_arch (app),
-		       flatpak_ref_get_arch (xref)) == 0 &&
-	    g_strcmp0 (gs_flatpak_app_get_ref_branch (app),
-		       flatpak_ref_get_branch (xref)) == 0)
-		return TRUE;
-
-	/* sad panda */
-	return FALSE;
-}
-
 static FlatpakRef *
 gs_flatpak_create_fake_ref (GsApp *app, GError **error)
 {
@@ -1760,9 +1737,10 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 			     GCancellable *cancellable,
 			     GError **error)
 {
-	guint i;
 	g_autoptr(GPtrArray) xrefs = NULL;
 	g_autoptr(AsProfileTask) ptask = NULL;
+	g_autoptr(FlatpakInstalledRef) ref = NULL;
+	g_autoptr(GError) local_error = NULL;
 
 	/* already found */
 	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN)
@@ -1777,30 +1755,28 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 				  "%s::refine-action",
 				  gs_flatpak_get_id (self));
 	g_assert (ptask != NULL);
-	xrefs = flatpak_installation_list_installed_refs (self->installation,
-							  cancellable, error);
-	if (xrefs == NULL) {
-		gs_flatpak_error_convert (error);
-		return FALSE;
-	}
-	for (i = 0; i < xrefs->len; i++) {
-		FlatpakInstalledRef *xref = g_ptr_array_index (xrefs, i);
 
-		/* check xref is app */
-		if (!gs_flatpak_app_matches_xref (self, app, FLATPAK_REF(xref)))
-			continue;
-
-		/* mark as installed */
+	ref = get_installed_ref_for_app (self->installation, app, cancellable,
+					 &local_error);
+	if (ref != NULL) {
 		g_debug ("marking %s as installed with flatpak",
 			 gs_app_get_id (app));
-		gs_flatpak_set_metadata_installed (self, app, xref);
+		gs_flatpak_set_metadata_installed (self, app, ref);
 		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
 			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	} else if (!g_error_matches (local_error, FLATPAK_ERROR, FLATPAK_ERROR_NOT_INSTALLED)) {
+		/* if there was an error that wasn't simply that the app isn't installed, then
+		 * we need to return it*/
+		g_propagate_error (error, g_steal_pointer (&local_error));
+		gs_flatpak_error_convert (error);
+		return FALSE;
 	}
 
 	/* ensure origin set */
 	if (!gs_plugin_refine_item_origin (self, app, cancellable, error))
 		return FALSE;
+
+	g_clear_error (&local_error);
 
 	/* special case: if this is per-user instance and the runtime is
 	 * available system-wide then mark it installed, and vice-versa */
@@ -1825,19 +1801,22 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 				return FALSE;
 			}
 		} else {
-			g_autoptr(GPtrArray) xrefs2 = NULL;
-			xrefs2 = flatpak_installation_list_installed_refs (installation,
-									   cancellable,
-									   error);
-			if (xrefs2 == NULL) {
+			g_autoptr(FlatpakInstalledRef) runtime_ref = NULL;
+			runtime_ref = get_installed_ref_for_app (self->installation, app,
+								 cancellable, &local_error);
+
+			if (runtime_ref != NULL) {
+				g_debug ("marking runtime %s as installed in the "
+					 "counterpart installation", gs_app_get_id (app));
+				gs_flatpak_set_metadata_installed (self, app, runtime_ref);
+				if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+					gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+			} else if (!g_error_matches (local_error, FLATPAK_ERROR, FLATPAK_ERROR_NOT_INSTALLED)) {
+				/* if there was an error that wasn't simply that the app isn't installed, then
+				 * we need to return it*/
+				g_propagate_error (error, g_steal_pointer (&local_error));
 				gs_flatpak_error_convert (error);
 				return FALSE;
-			}
-			for (i = 0; i < xrefs2->len; i++) {
-				FlatpakInstalledRef *xref = g_ptr_array_index (xrefs2, i);
-				if (!gs_flatpak_app_matches_xref (self, app, FLATPAK_REF(xref)))
-					continue;
-				gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 			}
 		}
 	}
