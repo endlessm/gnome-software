@@ -4,7 +4,11 @@ cargs += ['-DLOCALPLUGINDIR=""']
 resources_src = gnome.compile_resources(
   'gs-resources',
   'gnome-software.gresource.xml',
-  source_dir : ['.', '../data/icons/updates', '../data/icons/categories'],
+  source_dir : ['.',
+                '../data/icons/categories',
+                '../data/icons/updates',
+                '../data/icons/hicolor/scalable',
+               ],
   c_name : 'gs'
 )
 
@@ -29,6 +33,7 @@ gnome_software_sources = [
   'gs-app-row.c',
   'gs-app-tile.c',
   'gs-auth-dialog.c',
+  'gs-background-tile.c',
   'gs-category-page.c',
   'gs-category-tile.c',
   'gs-common.c',
