@@ -590,6 +590,90 @@ flowboxchild {
 	color: #4d4d4d;
 }
 
+.background-tile {
+	background: transparent;
+}
+
+.background-tile .main-stack {
+	background-color: #fafafa;
+	border-radius: 8px;
+	border: 0;
+	padding: 0;
+	box-shadow: 0px 2px 2px #bfbfbf;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+}
+
+.background-tile:hover .main-stack {
+	background-color: #ffffff;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+}
+
+.background-tile.loading .main-stack {
+	background-color: #fafafa;
+}
+
+.background-tile.loading .main-stack image {
+	color: #bfbfbf;
+}
+
+.background-tile, .background-tile .main-image {
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+	border: 0;
+	padding: 0;
+}
+
+.background-tile .curtain {
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+	border: 0;
+	padding: 0;
+	transition-duration: 200ms;
+	background: rgba(255, 255, 255, .65);
+}
+
+.background-tile:hover .curtain {
+	transition-duration: 200ms;
+	background: linear-gradient(to bottom, rgba(255, 255, 255, .6), rgba(255, 255, 255, .3));
+}
+
+.background-tile:hover .main-image {
+	transition-duration: 300ms;
+	background: #ffffff;
+}
+
+.background-tile .icon-image image {
+	-gtk-icon-shadow: 0px 0px 3px rgba(0, 0, 0, .2);
+}
+
+.background-tile .app-info .app-name {
+	transition-duration: 200ms;
+	font-size: 18px;
+	color: #4d4d4d;
+}
+
+.background-tile:hover .app-info .app-name {
+	transition-duration: 200ms;
+	color: #2e2e2e;
+}
+
+.background-tile .app-info .app-summary {
+	font-size: 14px;
+	color: #4d4d4d;
+}
+
+.background-tile .app-price {
+	font-size: 16px;
+	font-weight: bold;
+	color: #4d4d4d;
+	text-shadow: none;
+}
+
+.installed-icon {
+	color: #4d4d4d;
+	-gtk-icon-shadow: none;
+}
+
 /* Override the theme's .view class */
 .view {
 	background-color: #f6f6f6;
