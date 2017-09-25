@@ -43,7 +43,6 @@ gnome_software_sources = [
   'gs-folders.c',
   'gs-hiding-box.c',
   'gs-history-dialog.c',
-  'gs-image-tile.c',
   'gs-info-bar.c',
   'gs-installed-page.c',
   'gs-language.c',
