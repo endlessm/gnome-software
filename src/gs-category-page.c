@@ -16,6 +16,7 @@
 #include "gs-common.h"
 #include "gs-summary-tile.h"
 #include "gs-popular-tile.h"
+#include "gs-background-tile.h"
 #include "gs-category-page.h"
 
 typedef enum {
@@ -116,15 +117,6 @@ sort_button_clicked (GtkButton *button, gpointer data)
 		gs_category_page_sort_by_type (self, SUBCATEGORY_SORT_TYPE_NAME);
 }
 
-static GtkWidget *
-make_addon_tile_for_category (GsApp *app, GsCategory *category)
-{
-	if (g_strcmp0 (gs_category_get_id (category), "fonts") == 0)
-		return gs_popular_tile_new (app);
-
-	return gs_summary_tile_new (app);
-}
-
 static void
 gs_category_page_get_apps_cb (GObject *source_object,
                               GAsyncResult *res,
@@ -152,12 +144,7 @@ gs_category_page_get_apps_cb (GObject *source_object,
 
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
-		if (g_strcmp0 (gs_category_get_id (self->category), "addons") == 0) {
-			tile = make_addon_tile_for_category (app, self->subcategory);
-		} else {
-			tile = gs_popular_tile_new (app);
-		}
-
+		tile = gs_background_tile_new (app);
 		g_signal_connect (tile, "clicked",
 				  G_CALLBACK (app_tile_clicked), self);
 		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
@@ -466,10 +453,7 @@ gs_category_page_reload (GsPage *page)
 
 	count = MIN(30, gs_category_get_size (self->subcategory));
 	for (i = 0; i < count; i++) {
-		if (g_strcmp0 (gs_category_get_id (self->category), "addons") == 0)
-			tile = make_addon_tile_for_category (NULL, self->subcategory);
-		else
-			tile = gs_popular_tile_new (NULL);
+		tile = gs_background_tile_new (NULL);
 		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
 		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
 	}
@@ -484,7 +468,8 @@ gs_category_page_reload (GsPage *page)
 					 "filter-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_KEY_COLORS,
 					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					 NULL);
