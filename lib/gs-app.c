@@ -141,6 +141,7 @@ enum {
 	PROP_CAN_CANCEL_INSTALLATION,
 	PROP_INSTALL_DATE,
 	PROP_QUIRK,
+	PROP_KEY_COLORS,
 	PROP_LAST
 };
 
@@ -3574,7 +3575,8 @@ gs_app_set_key_colors (GsApp *app, GPtrArray *key_colors)
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_colors != NULL);
 	locker = g_mutex_locker_new (&priv->mutex);
-	_g_set_ptr_array (&priv->key_colors, key_colors);
+	if (_g_set_ptr_array (&priv->key_colors, key_colors))
+		gs_app_queue_notify (app, "key-colors");
 }
 
 /**
@@ -3593,6 +3595,7 @@ gs_app_add_key_color (GsApp *app, GdkRGBA *key_color)
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_color != NULL);
 	g_ptr_array_add (priv->key_colors, gdk_rgba_copy (key_color));
+	gs_app_queue_notify (app, "key-colors");
 }
 
 /**
@@ -3998,6 +4001,9 @@ gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *
 	case PROP_QUIRK:
 		g_value_set_uint64 (value, priv->quirk);
 		break;
+	case PROP_KEY_COLORS:
+		g_value_set_pointer (value, priv->key_colors);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -4052,6 +4058,9 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 		break;
 	case PROP_QUIRK:
 		priv->quirk = g_value_get_uint64 (value);
+		break;
+	case PROP_KEY_COLORS:
+		gs_app_set_key_colors (app, g_value_get_pointer (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4236,6 +4245,13 @@ gs_app_class_init (GsAppClass *klass)
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	g_object_class_install_property (object_class, PROP_QUIRK, pspec);
+
+	/**
+	 * GsApp:key-colors:
+	 */
+	pspec = g_param_spec_pointer ("key-colors", NULL, NULL,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_KEY_COLORS, pspec);
 
         /**
          * GsApp:metadata-changed:
