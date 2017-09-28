@@ -148,9 +148,34 @@ enum {
 	SIGNAL_LAST
 };
 
+typedef struct {
+	GsApp *app;
+	gchar *key;
+} GsMetadataChangedHelper;
+
 static guint signals [SIGNAL_LAST] = { 0 };
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsApp, gs_app, G_TYPE_OBJECT)
+
+static GsMetadataChangedHelper *
+gs_metadata_changed_helper_new (GsApp *app, const gchar *key)
+{
+	GsMetadataChangedHelper *helper;
+
+	helper = g_slice_new0 (GsMetadataChangedHelper);
+	helper->app = g_object_ref (app);
+	helper->key = g_strdup (key);
+
+	return helper;
+}
+
+static void
+gs_metadata_changed_helper_free (GsMetadataChangedHelper *helper)
+{
+	g_object_unref (helper->app);
+	g_free (helper->key);
+	g_slice_free (GsMetadataChangedHelper, helper);
+}
 
 static gboolean
 _g_set_str (gchar **str_ptr, const gchar *new_str)
@@ -2962,6 +2987,20 @@ gs_app_get_metadata_item (GsApp *app, const gchar *key)
 	return g_hash_table_lookup (priv->metadata, key);
 }
 
+static gboolean
+emit_metadata_signal_idle (gpointer data)
+{
+	GsMetadataChangedHelper *helper = (GsMetadataChangedHelper *) data;
+
+	g_signal_emit (helper->app,
+	               signals[SIGNAL_METADATA_CHANGED],
+	               g_quark_from_string (helper->key),
+	               helper->key);
+
+	gs_metadata_changed_helper_free (helper);
+	return G_SOURCE_REMOVE;
+}
+
 /**
  * gs_app_set_metadata:
  * @app: a #GsApp
@@ -2979,18 +3018,15 @@ gs_app_set_metadata (GsApp *app, const gchar *key, const gchar *value)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	GsMetadataChangedHelper *helper = NULL;
 	const gchar *found;
 
 	g_return_if_fail (GS_IS_APP (app));
 
 	/* if no value, then remove the key */
 	if (value == NULL) {
-		g_signal_emit (app,
-	        	       signals[SIGNAL_METADATA_CHANGED],
-			       g_quark_from_string (key),
-			       key);
 		g_hash_table_remove (priv->metadata, key);
-		return;
+		goto emit_and_quit;
 	}
 
 	/* check we're not overwriting */
@@ -3004,10 +3040,10 @@ gs_app_set_metadata (GsApp *app, const gchar *key, const gchar *value)
 	}
 	g_hash_table_insert (priv->metadata, g_strdup (key), g_strdup (value));
 
-	g_signal_emit (app,
-	               signals[SIGNAL_METADATA_CHANGED],
-	               g_quark_from_string (key),
-	               key);
+ emit_and_quit:
+	/* emit the signal from the mainloop */
+	helper = gs_metadata_changed_helper_new (app, key);
+	g_idle_add (emit_metadata_signal_idle, helper);
 }
 
 /**
