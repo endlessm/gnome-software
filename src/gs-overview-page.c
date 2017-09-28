@@ -27,11 +27,10 @@
 #include "gs-shell.h"
 #include "gs-overview-page.h"
 #include "gs-app-list-private.h"
-#include "gs-category.h"
-#include "gs-feature-tile.h"
-#include "gs-image-tile.h"
-#include "gs-category-tile.h"
 #include "gs-popular-tile.h"
+#include "gs-feature-tile.h"
+#include "gs-background-tile.h"
+#include "gs-category-tile.h"
 #include "gs-hiding-box.h"
 #include "gs-common.h"
 
@@ -225,7 +224,7 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 
 	for (i = 0; i < gs_app_list_length (list) && i < N_TILES; i++) {
 		app = gs_app_list_index (list, i);
-		tile = gs_image_tile_new (app);
+		tile = gs_background_tile_new (app);
 		g_signal_connect (tile, "clicked",
 			  G_CALLBACK (app_tile_clicked), self);
 		gtk_container_add (GTK_CONTAINER (priv->box_popular), tile);
@@ -381,7 +380,7 @@ gs_overview_page_get_category_apps_cb (GObject *source_object,
 	/* add all the apps */
 	for (i = 0; i < gs_app_list_length (list) && i < N_TILES; i++) {
 		app = gs_app_list_index (list, i);
-		tile = gs_image_tile_new (app);
+		tile = gs_background_tile_new (app);
 		g_signal_connect (tile, "clicked",
 			  G_CALLBACK (app_tile_clicked), self);
 		gtk_container_add (GTK_CONTAINER (box), tile);
@@ -642,7 +641,8 @@ gs_overview_page_load (GsOverviewPage *self)
 						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
-								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_KEY_COLORS,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,
@@ -1041,7 +1041,7 @@ gs_overview_page_setup (GsPage *page,
 	gtk_container_add (GTK_CONTAINER (priv->bin_featured), tile);
 
 	for (i = 0; i < N_TILES; i++) {
-		tile = gs_image_tile_new (NULL);
+		tile = gs_background_tile_new (NULL);
 		gtk_container_add (GTK_CONTAINER (priv->box_popular), tile);
 	}
 
