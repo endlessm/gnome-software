@@ -2995,6 +2995,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsFlatpakProgressHelper) phelper = NULL;
 	gboolean all_updates_done = TRUE;
+	gboolean is_proxy_app = FALSE;
 
 	/* install */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
@@ -3015,11 +3016,27 @@ gs_flatpak_update_app (GsFlatpak *self,
 	}
 
 	/* get the list of apps to process */
-	list = gs_flatpak_get_list_for_install (self, app, cancellable, error);
-	if (list == NULL) {
-		g_prefix_error (error, "failed to get related refs: ");
-		gs_app_set_state_recover (app);
-		return FALSE;
+	is_proxy_app = gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY);
+	if (is_proxy_app) {
+		GPtrArray *proxied_apps = gs_app_get_related (app);
+
+		if (proxied_apps->len == 0) {
+			g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED,
+				     "Proxy app %s has no related apps",
+				     gs_app_get_unique_id (app));
+			return FALSE;
+		}
+
+		list = gs_app_list_new ();
+		for (guint i = 0; i < proxied_apps->len; ++i)
+			gs_app_list_add (list, g_ptr_array_index (proxied_apps, i));
+	} else {
+		list = gs_flatpak_get_list_for_install (self, app, cancellable, error);
+		if (list == NULL) {
+			g_prefix_error (error, "failed to get related refs: ");
+			gs_app_set_state_recover (app);
+			return FALSE;
+		}
 	}
 
 	/* update all the required packages */
@@ -3037,7 +3054,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 
 		/* either install or update the ref */
 		ref_display = gs_flatpak_app_get_ref_display (app_tmp);
-		if (!g_hash_table_contains (hash_installed, ref_display)) {
+		if (!is_proxy_app && !g_hash_table_contains (hash_installed, ref_display)) {
 			g_debug ("installing %s", ref_display);
 			xref = flatpak_installation_install (self->installation,
 							     gs_app_get_origin (app_tmp),
