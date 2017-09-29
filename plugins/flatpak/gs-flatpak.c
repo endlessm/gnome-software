@@ -3174,14 +3174,11 @@ gs_flatpak_update_app (GsFlatpak *self,
 								      FLATPAK_ERROR,
 								      FLATPAK_ERROR_ALREADY_INSTALLED);
 			if (!already_installed) {
-				gboolean is_main_app;
 				gs_app_set_state_recover (app_tmp);
 
 				/* if the failed update is the main app being updated (i.e. not one of
 				 * the related apps), throw the error now, otherwise let it continue */
-				is_main_app = (app == app_tmp) &&
-					      !gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY);
-				if (is_main_app) {
+				if (app == app_tmp) {
 					g_propagate_error (error, local_error);
 					gs_flatpak_error_convert (error);
 					gs_app_set_state_recover (app);
