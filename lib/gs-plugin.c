@@ -491,7 +491,10 @@ GsApp *
 gs_plugin_app_new (GsPlugin *plugin, const gchar *id)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	return GS_APP (g_object_new (priv->app_gtype, "id", id, NULL));
+	GsApp *app = GS_APP (g_object_new (priv->app_gtype, "id", id, NULL));
+
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+	return app;
 }
 
 /**
