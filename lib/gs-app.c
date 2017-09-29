@@ -4081,7 +4081,7 @@ gs_app_class_init (GsAppClass *klass)
 	 * GsApp:key-colors:
 	 */
 	pspec = g_param_spec_pointer ("key-colors", NULL, NULL,
-				      G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_KEY_COLORS, pspec);
 
         /**
