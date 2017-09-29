@@ -1311,7 +1311,7 @@ add_updates (GsPlugin *plugin,
 	     GCancellable *cancellable,
 	     GError **error)
 {
-	g_autoptr(GsApp) updates_proxy_app = NULL;
+	g_autoptr(GsApp) updates_proxy_app = gs_plugin_eos_create_updates_proxy_app (plugin);
 	g_autoptr(GSList) proxied_updates = NULL;
 	const char *proxied_apps[] = {"com.endlessm.Platform",
 				      "com.endlessm.apps.Platform",
@@ -1324,7 +1324,8 @@ add_updates (GsPlugin *plugin,
 		GsApp *app = gs_app_list_index (list, i);
 		const char *id = gs_app_get_id (app);
 
-		if (!g_strv_contains (proxied_apps, id))
+		if (!g_strv_contains (proxied_apps, id) ||
+		    gs_app_get_scope (updates_proxy_app) != gs_app_get_scope (app))
 			continue;
 
 		proxied_updates = g_slist_prepend (proxied_updates, app);
@@ -1332,8 +1333,6 @@ add_updates (GsPlugin *plugin,
 
 	if (!proxied_updates)
 		return TRUE;
-
-	updates_proxy_app = gs_plugin_eos_create_updates_proxy_app (plugin);
 
 	for (GSList *iter = proxied_updates; iter; iter = g_slist_next (iter)) {
 		GsApp *app = GS_APP (iter->data);
