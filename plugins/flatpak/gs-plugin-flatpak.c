@@ -281,6 +281,9 @@ gs_plugin_flatpak_get_handler (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const gchar *object_id;
 
+	if (gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+		goto select_by_scope;
+
 	/* only process this app if it is a Flatpak app */
 	if (!GS_IS_FLATPAK_APP (app))
 		return NULL;
@@ -298,6 +301,7 @@ gs_plugin_flatpak_get_handler (GsPlugin *plugin, GsApp *app)
 		}
 	}
 
+ select_by_scope:
 	/* find a scope that matches */
 	for (guint i = 0; i < priv->flatpaks->len; i++) {
 		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
