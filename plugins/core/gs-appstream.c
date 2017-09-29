@@ -46,6 +46,10 @@ gs_appstream_create_app (GsPlugin *plugin, AsApp *item, GError **error)
 		g_clear_object (&app);
 	}
 
+	if (app != NULL && g_strcmp0 (gs_app_get_management_plugin (app),
+				      gs_plugin_get_name (plugin)) != 0)
+		g_clear_object (&app);
+
 	if (app == NULL) {
 		app = gs_plugin_app_new (plugin, NULL);
 		gs_app_set_from_unique_id (app, unique_id);
