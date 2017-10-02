@@ -870,21 +870,21 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
 }
 
-typedef struct _PopularBackgroundImageTileRequestData
+typedef struct
 {
 	GsApp *app;
 	GsPlugin *plugin;
 	char *cache_filename;
-} PopularBackgroundImageTileRequestData;
+} PopularBackgroundRequestData;
 
 static void
-popular_background_image_tile_request_data_destroy (PopularBackgroundImageTileRequestData *data)
+popular_background_image_tile_request_data_destroy (PopularBackgroundRequestData *data)
 {
 	g_free (data->cache_filename);
 	g_free (data);
 }
 
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(PopularBackgroundImageTileRequestData,
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(PopularBackgroundRequestData,
                               popular_background_image_tile_request_data_destroy)
 
 static void
@@ -893,7 +893,7 @@ gs_plugin_eos_update_tile_image_from_filename (GsApp      *app,
 {
 	g_autofree char *css = g_strdup_printf ("background-image: url('%s')",
 	                                       filename);
-	gs_app_set_metadata (app, "GnomeSoftware::ImageTile-css", css);
+	gs_app_set_metadata (app, "GnomeSoftware::BackgroundTile-css", css);
 }
 
 static void
@@ -901,7 +901,7 @@ gs_plugin_eos_tile_image_downloaded_cb (SoupSession *session,
                                         SoupMessage *msg,
                                         gpointer user_data)
 {
-	g_autoptr(PopularBackgroundImageTileRequestData) data = user_data;
+	g_autoptr(PopularBackgroundRequestData) data = user_data;
 	g_autoptr(GError) error = NULL;
 
 	if (msg->status_code == SOUP_STATUS_CANCELLED)
@@ -939,11 +939,11 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	g_autofree char *url_basename = NULL;
 	g_autofree char *cache_identifier = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	PopularBackgroundImageTileRequestData *request_data = NULL;
+	PopularBackgroundRequestData *request_data = NULL;
 	g_autoptr(SoupURI) soup_uri = NULL;
 	g_autoptr(SoupMessage) message = NULL;
 
-	if (gs_app_get_metadata_item (app, "GnomeSoftware::ImageTile-css"))
+	if (gs_app_get_metadata_item (app, "GnomeSoftware::BackgroundTile-css"))
 		return;
 
 	popular_bg =
@@ -994,7 +994,7 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 		return;
 	}
 
-	request_data = g_new0 (PopularBackgroundImageTileRequestData, 1);
+	request_data = g_new0 (PopularBackgroundRequestData, 1);
 	request_data->app = app;
 	request_data->plugin = plugin;
 	request_data->cache_filename = g_steal_pointer (&writable_cache_filename);

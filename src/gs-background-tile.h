@@ -1,7 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
- * Copyright (C) 2016-2017 Endless Mobile, Inc.
+ * Copyright (C) 2017 Joaquim Rocha <jrocha@endlessm.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -20,24 +20,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef GS_IMAGE_TILE_H
-#define GS_IMAGE_TILE_H
+#ifndef GS_BACKGROUND_TILE_H
+#define GS_BACKGROUND_TILE_H
 
-#include <gtk/gtk.h>
-
-#include "gs-app.h"
 #include "gs-app-tile.h"
 
 G_BEGIN_DECLS
 
-#define GS_TYPE_IMAGE_TILE (gs_image_tile_get_type ())
+#define GS_TYPE_BACKGROUND_TILE (gs_background_tile_get_type ())
 
-G_DECLARE_FINAL_TYPE (GsImageTile, gs_image_tile, GS, IMAGE_TILE, GsAppTile)
+G_DECLARE_FINAL_TYPE (GsBackgroundTile, gs_background_tile, GS, BACKGROUND_TILE, GsAppTile)
 
-GtkWidget	*gs_image_tile_new		(GsApp		*app);
+GtkWidget	*gs_background_tile_new			(GsApp		*app);
 
 G_END_DECLS
 
-#endif /* GS_IMAGE_TILE_H */
+#endif /* GS_BACKGROUND_TILE_H */
 
 /* vim: set noexpandtab: */
