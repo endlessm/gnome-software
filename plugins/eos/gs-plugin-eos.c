@@ -314,9 +314,18 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 static void
 gs_plugin_eos_refine_core_app (GsApp *app)
 {
+	if (app_is_flatpak (app) ||
+	    (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN))
+		return;
+
 	/* we only allow to remove flatpak apps */
-	if (!app_is_flatpak (app))
-		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+
+	if (!gs_app_is_installed (app)) {
+		/* forcibly set the installed state */
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	}
 }
 
 typedef struct
