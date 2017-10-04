@@ -76,7 +76,7 @@ gs_plugins_core_app_creation_func (GsPluginLoader *plugin_loader)
 	plugin = gs_plugin_loader_find_plugin (plugin_loader, "appstream");
 	g_assert (plugin != NULL);
 
-	app2 = gs_appstream_create_app (plugin, as_app, NULL);
+	app2 = gs_appstream_get_or_create_app (plugin, as_app, NULL);
 	g_assert (app2 != NULL);
 	g_assert (cached_app != app2);
 	g_assert (!gs_app_has_quirk (app2, AS_APP_QUIRK_MATCH_ANY_PREFIX));

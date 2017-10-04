@@ -31,6 +31,23 @@ GsApp *
 gs_appstream_create_app (GsPlugin *plugin, AsApp *item, GError **error)
 {
 	const gchar *unique_id = as_app_get_unique_id (item);
+	GsApp *app = gs_plugin_app_new (plugin, NULL);
+
+	gs_app_set_from_unique_id (app, unique_id);
+	gs_app_set_metadata (app, "GnomeSoftware::Creator",
+			     gs_plugin_get_name (plugin));
+	if (!gs_appstream_refine_app (plugin, app, item, error)) {
+		g_object_unref (app);
+		return NULL;
+	}
+	gs_plugin_cache_add (plugin, unique_id, app);
+	return app;
+}
+
+GsApp *
+gs_appstream_get_or_create_app (GsPlugin *plugin, AsApp *item, GError **error)
+{
+	const gchar *unique_id = as_app_get_unique_id (item);
 	GsApp *app = gs_plugin_cache_lookup (plugin, unique_id);
 
 	/* if the app we found has the "match-any-prefix" quirk and our item does
@@ -46,17 +63,9 @@ gs_appstream_create_app (GsPlugin *plugin, AsApp *item, GError **error)
 		g_clear_object (&app);
 	}
 
-	if (app == NULL) {
-		app = gs_plugin_app_new (plugin, NULL);
-		gs_app_set_from_unique_id (app, unique_id);
-		gs_app_set_metadata (app, "GnomeSoftware::Creator",
-				     gs_plugin_get_name (plugin));
-		if (!gs_appstream_refine_app (plugin, app, item, error)) {
-			g_object_unref (app);
-			return NULL;
-		}
-		gs_plugin_cache_add (plugin, unique_id, app);
-	}
+	if (app == NULL)
+		app = gs_appstream_create_app (plugin, item, error);
+
 	return app;
 }
 
@@ -165,7 +174,7 @@ gs_appstream_refine_add_addons (GsPlugin *plugin,
 		AsApp *as_addon = g_ptr_array_index (addons, i);
 		g_autoptr(GsApp) addon = NULL;
 
-		addon = gs_appstream_create_app (plugin, as_addon, error);
+		addon = gs_appstream_get_or_create_app (plugin, as_addon, error);
 		if (addon == NULL)
 			return FALSE;
 
@@ -843,7 +852,7 @@ gs_appstream_store_search_item (GsPlugin *plugin,
 		return TRUE;
 
 	/* create app */
-	app = gs_appstream_create_app (plugin, item, error);
+	app = gs_appstream_get_or_create_app (plugin, item, error);
 	if (app == NULL)
 		return FALSE;
 	gs_app_set_match_value (app, match_value);
@@ -977,7 +986,7 @@ gs_appstream_store_add_category_apps (GsPlugin *plugin,
 				continue;
 
 			/* add all the data we can */
-			app = gs_appstream_create_app (plugin, item, error);
+			app = gs_appstream_get_or_create_app (plugin, item, error);
 			if (app == NULL)
 				return FALSE;
 			gs_app_list_add (list, app);
@@ -1089,7 +1098,7 @@ gs_appstream_add_recent (GsPlugin *plugin,
 			continue;
 		if (!_as_app_is_recent (item, age))
 			continue;
-		app = gs_appstream_create_app (plugin, item, error);
+		app = gs_appstream_get_or_create_app (plugin, item, error);
 		if (app == NULL)
 			return FALSE;
 		gs_app_list_add (list, app);
