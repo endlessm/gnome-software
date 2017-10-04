@@ -2387,7 +2387,7 @@ gs_flatpak_refine_wildcard (GsFlatpak *self, GsApp *app,
 		/* new app */
 		g_debug ("found %s for wildcard %s",
 			 as_app_get_unique_id (item), id);
-		new = gs_appstream_create_app (self->plugin, item, NULL);
+		new = gs_appstream_get_or_create_app (self->plugin, item, NULL);
 		if (new == NULL)
 			return FALSE;
 		gs_app_set_scope (new, self->scope);
