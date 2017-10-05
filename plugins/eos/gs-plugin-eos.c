@@ -1456,3 +1456,56 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	 * this will still work correctly */
 	return add_updates (plugin, list, cancellable, error);
 }
+
+gboolean
+gs_plugin_add_popular (GsPlugin *plugin,
+		       GsAppList *list,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	g_autoptr(AsProfileTask) ptask = NULL;
+	GsAppList *new_list = NULL;
+	const gchar *popular_apps[] = {"com.google.Chrome.desktop",
+				       "com.spotify.Client.desktop",
+				       "com.transmissionbt.Transmission.desktop",
+				       "com.valvesoftware.Steam.desktop",
+				       "libreoffice-calc.desktop",
+				       "libreoffice-impress.desktop",
+				       "libreoffice-writer.desktop",
+				       "net.gcompris.Gcompris.desktop",
+				       "net.minetest.Minetest.desktop",
+				       "net.sourceforge.Audacity.desktop",
+				       "org.debian.alioth.tux4kids.Tuxmath.desktop",
+				       "org.gimp.Gimp.desktop",
+				       "org.inkscape.Inkscape.desktop",
+				       "org.mozilla.Firefox.desktop",
+				       "org.tuxpaint.Tuxpaint.desktop",
+				       "org.videolan.VLC.desktop",
+				       "simple-scan.desktop",
+				       NULL};
+
+	ptask = as_profile_start_literal (gs_plugin_get_profile (plugin),
+					  "eos::add-popular");
+
+	new_list = gs_app_list_new ();
+
+	/* add the hardcoded list of popular apps */
+	for (guint i = 0; popular_apps[i] != NULL; ++i) {
+		g_autoptr(GsApp) app = gs_app_new (popular_apps[i]);
+		gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+		gs_app_list_add (new_list, app);
+	}
+
+	/* get all the popular apps that are Endless' ones */
+	for (guint i = 0; i < gs_app_list_length (list); ++i) {
+	        GsApp *app = gs_app_list_index (list, i);
+		if (g_str_has_prefix (gs_app_get_id (app), "com.endlessm."))
+			gs_app_list_add (new_list, app);
+	}
+
+	/* replace the list of popular apps so far by ours */
+	gs_app_list_remove_all (list);
+	gs_app_list_add_list (list, new_list);
+
+	return TRUE;
+}
