@@ -61,7 +61,6 @@ guint		 gs_app_list_get_size_peak	(GsAppList	*list);
 void		 gs_app_list_filter_duplicates	(GsAppList	*list,
 						 GsAppListFilterFlags flags);
 void		 gs_app_list_randomize		(GsAppList	*list);
-void		 gs_app_list_remove_all		(GsAppList	*list);
 void		 gs_app_list_truncate		(GsAppList	*list,
 						 guint		 length);
 gboolean	 gs_app_list_has_flag		(GsAppList	*list,
