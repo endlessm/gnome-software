@@ -439,10 +439,15 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	g_auto(GStrv) tokens = NULL;
 	const char *last_token = NULL;
 	guint num_tokens = 0;
-	/* getting the app name, besides skipping the '.desktop' part of the id
-	 * also makes sure we're dealing with a Flatpak app */
-	const char *app_name = gs_flatpak_app_get_ref_name (app);
+	const char *app_name = NULL;
 	GsApp *cached_app = NULL;
+
+	/* this only concerns Flatpak apps */
+	if (!GS_IS_FLATPAK_APP (app))
+		return FALSE;
+
+	/* getting the ref name as it skips the '.desktop' part of the id */
+	app_name = gs_flatpak_app_get_ref_name (app);
 
 	if (!app_name || !g_str_has_prefix (app_name, ENDLESS_ID_PREFIX))
 		return FALSE;
