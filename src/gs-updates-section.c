@@ -41,6 +41,13 @@ struct _GsUpdatesSection
 
 G_DEFINE_TYPE (GsUpdatesSection, gs_updates_section, GTK_TYPE_LIST_BOX)
 
+enum {
+	SIGNAL_APP_STATE_CHANGED,
+	SIGNAL_LAST
+};
+
+static guint signals [SIGNAL_LAST] = { 0 };
+
 GsAppList *
 gs_updates_section_get_list (GsUpdatesSection *self)
 {
@@ -78,10 +85,14 @@ _unreveal_row (GsAppRow *app_row)
 static void
 _app_state_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data)
 {
+	GsAppRow *app_row = GS_APP_ROW (user_data);
+	GsUpdatesSection *updates_section = GS_UPDATES_SECTION (gtk_widget_get_parent (GTK_WIDGET (app_row)));
+
 	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED) {
-		GsAppRow *app_row = GS_APP_ROW (user_data);
 		_unreveal_row (app_row);
 	}
+
+	g_signal_emit (updates_section, signals[SIGNAL_APP_STATE_CHANGED], 0, app);
 }
 
 void
@@ -553,6 +564,12 @@ gs_updates_section_class_init (GsUpdatesSectionClass *klass)
 
 	object_class->dispose = gs_updates_section_dispose;
 	widget_class->show = gs_updates_section_show;
+
+	signals [SIGNAL_APP_STATE_CHANGED] =
+		g_signal_new ("app-state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, NULL,
+			      G_TYPE_NONE, 1, GS_TYPE_APP);
 }
 
 void
