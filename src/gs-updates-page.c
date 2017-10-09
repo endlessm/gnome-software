@@ -347,6 +347,25 @@ gs_updates_page_get_state_string (GsPluginStatus status)
 	return _("Looking for new updates…");
 }
 
+static gboolean
+gs_shell_update_are_updates_in_progress (GsUpdatesPage *self)
+{
+	g_autoptr(GsAppList) list = _get_all_apps (self);
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		switch (gs_app_get_state (app)) {
+		case AS_APP_STATE_INSTALLING:
+		case AS_APP_STATE_REMOVING:
+		case AS_APP_STATE_PURCHASING:
+			return TRUE;
+			break;
+		default:
+			break;
+		}
+	}
+	return FALSE;
+}
+
 static void
 gs_updates_page_update_ui_state (GsUpdatesPage *self)
 {
@@ -426,7 +445,8 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		break;
 	}
 	gtk_widget_set_sensitive (self->button_refresh,
-				  gs_plugin_loader_get_network_available (self->plugin_loader));
+				  gs_plugin_loader_get_network_available (self->plugin_loader) &&
+				  !gs_shell_update_are_updates_in_progress (self));
 
 	/* headerbar update button */
 	gtk_widget_set_visible (self->button_update_all,
@@ -567,10 +587,14 @@ gs_updates_page_network_available_notify_cb (GsPluginLoader *plugin_loader,
 static void
 _app_state_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data)
 {
+	GsAppRow *app_row = GS_APP_ROW (user_data);
+	GsUpdatesPage *page = GS_UPDATES_PAGE (g_object_get_data (G_OBJECT (app_row),
+								  "page"));
+
 	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED) {
-		GsAppRow *app_row = GS_APP_ROW (user_data);
 		gs_app_row_unreveal (app_row);
 	}
+	gs_updates_page_update_ui_state (page);
 }
 
 static gchar *
@@ -962,6 +986,7 @@ _add_app_row (GsUpdatesPage *self, GsApp *app)
 		_create_listbox_section (self, section);
 
 	app_row = gs_app_row_new (app);
+	g_object_set_data (G_OBJECT (app_row), "page", self);
 	gs_app_row_set_show_update (GS_APP_ROW (app_row), TRUE);
 	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
 	g_signal_connect (app_row, "button-clicked",
@@ -1681,25 +1706,6 @@ gs_updates_page_invalidate_downloaded_upgrade (GsUpdatesPage *self)
 	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 	g_debug ("resetting %s to AVAILABLE as the updates have changed",
 		 gs_app_get_id (app));
-}
-
-static gboolean
-gs_shell_update_are_updates_in_progress (GsUpdatesPage *self)
-{
-	g_autoptr(GsAppList) list = _get_all_apps (self);
-	for (guint i = 0; i < gs_app_list_length (list); i++) {
-		GsApp *app = gs_app_list_index (list, i);
-		switch (gs_app_get_state (app)) {
-		case AS_APP_STATE_INSTALLING:
-		case AS_APP_STATE_REMOVING:
-		case AS_APP_STATE_PURCHASING:
-			return TRUE;
-			break;
-		default:
-			break;
-		}
-	}
-	return FALSE;
 }
 
 static void
