@@ -285,6 +285,24 @@ gs_updates_page_get_state_string (GsPluginStatus status)
 	return _("Looking for new updates…");
 }
 
+static gboolean
+gs_shell_update_are_updates_in_progress (GsUpdatesPage *self)
+{
+	g_autoptr(GsAppList) list = _get_all_apps (self);
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		switch (gs_app_get_state (app)) {
+		case AS_APP_STATE_INSTALLING:
+		case AS_APP_STATE_REMOVING:
+			return TRUE;
+			break;
+		default:
+			break;
+		}
+	}
+	return FALSE;
+}
+
 static void
 gs_updates_page_refresh_auto_updates_ui (GsUpdatesPage *self)
 {
@@ -429,7 +447,8 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		break;
 	}
 	gtk_widget_set_sensitive (self->button_refresh,
-				  gs_plugin_loader_get_network_available (self->plugin_loader));
+				  gs_plugin_loader_get_network_available (self->plugin_loader) &&
+				  !gs_shell_update_are_updates_in_progress (self));
 
 	/* stack */
 	switch (self->state) {
@@ -975,6 +994,14 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 }
 
 static void
+app_state_changed_cb (GsUpdatesSection *updates_section,
+                      GsApp            *app,
+                      GsUpdatesPage    *self)
+{
+	gs_updates_page_update_ui_state (self);
+}
+
+static void
 gs_updates_page_pending_apps_changed_cb (GsPluginLoader *plugin_loader,
                                          GsUpdatesPage *self)
 {
@@ -1238,24 +1265,6 @@ gs_updates_page_invalidate_downloaded_upgrade (GsUpdatesPage *self)
 		 gs_app_get_id (app));
 }
 
-static gboolean
-gs_shell_update_are_updates_in_progress (GsUpdatesPage *self)
-{
-	g_autoptr(GsAppList) list = _get_all_apps (self);
-	for (guint i = 0; i < gs_app_list_length (list); i++) {
-		GsApp *app = gs_app_list_index (list, i);
-		switch (gs_app_get_state (app)) {
-		case AS_APP_STATE_INSTALLING:
-		case AS_APP_STATE_REMOVING:
-			return TRUE;
-			break;
-		default:
-			break;
-		}
-	}
-	return FALSE;
-}
-
 static void
 gs_updates_page_changed_cb (GsPluginLoader *plugin_loader,
                             GsUpdatesPage *self)
@@ -1427,6 +1436,8 @@ gs_updates_page_setup (GsPage *page,
 
 	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++) {
 		self->sections[i] = gs_updates_section_new (i, plugin_loader, page);
+		g_signal_connect (self->sections[i], "app-state-changed",
+				  G_CALLBACK (app_state_changed_cb), self);
 		gs_updates_section_set_size_groups (GS_UPDATES_SECTION (self->sections[i]),
 						    self->sizegroup_image,
 						    self->sizegroup_name,
