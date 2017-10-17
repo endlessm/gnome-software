@@ -67,8 +67,8 @@ struct _GsApplication {
 	GsShellSearchProvider *search_provider;
 	GsDiscoveryFeedContentProvider *discovery_feed_content_provider;
 	GSettings       *settings;
-	gboolean	 loading_done;
 	GSimpleActionGroup	*action_map;
+	guint		 shell_loaded_handler_id;
 };
 
 G_DEFINE_TYPE (GsApplication, gs_application, GTK_TYPE_APPLICATION);
@@ -262,9 +262,10 @@ theme_changed (GtkSettings *settings, GParamSpec *pspec, GsApplication *app)
 }
 
 static void
-initial_shell_loaded_cb (GsApplication *app)
+gs_application_shell_loaded_cb (GsShell *shell, GsApplication *app)
 {
-	app->loading_done = TRUE;
+	gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
+	app->shell_loaded_handler_id = 0;
 }
 
 static void
@@ -297,9 +298,9 @@ gs_application_initialize_ui (GsApplication *app)
 	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
 	gtk_application_add_window (GTK_APPLICATION (app), gs_shell_get_window (app->shell));
 
-	g_signal_connect_swapped (app->shell, "loaded",
-				  G_CALLBACK (initial_shell_loaded_cb),
-				  app);
+	app->shell_loaded_handler_id = g_signal_connect (app->shell, "loaded",
+							 G_CALLBACK (gs_application_shell_loaded_cb),
+							 app);
 
 	/* it's very important to set the loading as the first mode because it will
 	 * make the plugins load all their needed initial catalogs/information */
@@ -882,10 +883,14 @@ wrapper_action_activated_cb (GSimpleAction *action,
 	GAction *real_action = g_action_map_lookup_action (G_ACTION_MAP (app->action_map),
 							   action_name);
 
-	if (!app->loading_done) {
+	if (app->shell_loaded_handler_id != 0) {
 		GsActivationHelper *helper = gs_activation_helper_new (app,
 								       G_SIMPLE_ACTION (real_action),
 								       g_variant_ref (parameter));
+
+		g_signal_handler_disconnect (app->shell, app->shell_loaded_handler_id);
+		app->shell_loaded_handler_id = 0;
+
 		g_signal_connect_swapped (app->shell, "loaded",
 					  G_CALLBACK (activate_on_shell_loaded_cb), helper);
 		return;
@@ -960,22 +965,11 @@ gs_application_startup (GApplication *application)
 }
 
 static void
-gs_application_shell_loaded_cb (GsShell *shell, GsApplication *app)
-{
-	gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
-}
-
-static void
 gs_application_activate (GApplication *application)
 {
 	GsApplication *app = GS_APPLICATION (application);
-	/* start metadata loading screen */
-	if (app->loading_done)
+	if (app->shell_loaded_handler_id == 0)
 		gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
-	else
-		g_signal_connect (app->shell, "loaded",
-				  G_CALLBACK (gs_application_shell_loaded_cb),
-				  app);
 
 	gs_shell_activate (GS_APPLICATION (application)->shell);
 
