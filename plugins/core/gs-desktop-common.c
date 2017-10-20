@@ -239,6 +239,10 @@ static const GsDesktopMap map_utilities[] = {
 	{ "web-browsers",	NC_("Menu of Communication & News", "Web Browsers"),
 					{ "Network::WebBrowser",
 					  NULL} },
+	{ "news",		NC_("Menu of Communication & News", "News"),
+					{ "Network::Feed",
+					  "Network::News",
+					  NULL} },
 	{ NULL }
 };
 
@@ -271,9 +275,9 @@ static const GsDesktopMap map_reference[] = {
 	{ "lifestyle",		NC_("Menu of Reference", "Lifestyle"),
 					{ "Reference::Lifestyle",
 					  NULL} },
-	{ "news",		NC_("Menu of Communication & News", "News"),
-					{ "Network::Feed",
-					  "Network::News",
+	{ "news",		NC_("Menu of Reference", "News"),
+					{ "Reference::Feed",
+					  "Reference::News",
 					  NULL} },
 	{ "politics",		NC_("Menu of Reference", "Politics"),
 					{ "Reference::Politics",
