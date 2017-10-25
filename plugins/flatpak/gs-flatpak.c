@@ -1741,9 +1741,11 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(FlatpakInstalledRef) ref = NULL;
 	g_autoptr(GError) error_local = NULL;
+	GsApp *runtime = gs_app_get_runtime (app);
 
 	/* already found */
-	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN)
+	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN &&
+	    (runtime == NULL || gs_app_is_installed (runtime)))
 		return TRUE;
 
 	/* need broken out metadata */
@@ -1845,6 +1847,17 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 		}
 	}
 
+	/* if the app is installed but doesn't have its runtime installed, then it's
+	 * unusable and we should show it as available in order for the runtime to be
+	 * installed */
+	if (gs_app_is_installed (app) && runtime != NULL && !gs_app_is_installed (runtime)) {
+		g_debug ("App '%s' is installed but its runtime '%s' is not; setting the app"
+			 "as available for a chance to fix this", gs_app_get_unique_id (app),
+			 gs_app_get_unique_id (runtime));
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	}
+
 	/* success */
 	return TRUE;
 }
@@ -1873,7 +1886,7 @@ gs_flatpak_create_runtime (GsPlugin *plugin, GsApp *parent, const gchar *runtime
 
 	/* search in the cache */
 	app_cache = gs_plugin_cache_lookup (plugin, gs_app_get_unique_id (app));
-	if (app_cache != NULL && gs_app_get_scope (app) != AS_APP_SCOPE_UNKNOWN) {
+	if (app_cache != NULL && gs_app_get_scope (app_cache) != AS_APP_SCOPE_UNKNOWN) {
 		/* since the cached runtime can have been created somewhere else
 		 * (we're using a global cache), we need to make sure that a
 		 * source is set */
