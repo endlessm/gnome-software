@@ -1873,7 +1873,7 @@ gs_flatpak_create_runtime (GsPlugin *plugin, GsApp *parent, const gchar *runtime
 
 	/* search in the cache */
 	app_cache = gs_plugin_cache_lookup (plugin, gs_app_get_unique_id (app));
-	if (app_cache != NULL && gs_app_get_scope (app) != AS_APP_SCOPE_UNKNOWN) {
+	if (app_cache != NULL && gs_app_get_scope (app_cache) != AS_APP_SCOPE_UNKNOWN) {
 		/* since the cached runtime can have been created somewhere else
 		 * (we're using a global cache), we need to make sure that a
 		 * source is set */
