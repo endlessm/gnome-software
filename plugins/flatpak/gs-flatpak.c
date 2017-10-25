@@ -1642,13 +1642,15 @@ gs_flatpak_refine_app_state (GsFlatpak *self,
 	g_autoptr(FlatpakInstalledRef) ref = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GPtrArray) refs = NULL;
+	GsApp *runtime = gs_app_get_runtime (app);
 
 	/* ensure valid */
 	if (!gs_flatpak_rescan_appstream_store (self, cancellable, error))
 		return FALSE;
 
 	/* already found */
-	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN)
+	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN &&
+	    (runtime == NULL || gs_app_is_installed (runtime)))
 		return TRUE;
 
 	/* need broken out metadata */
@@ -1715,6 +1717,17 @@ gs_flatpak_refine_app_state (GsFlatpak *self,
 				 gs_app_get_origin (app),
 				 gs_app_get_unique_id (app));
 		}
+	}
+
+	/* if the app is installed but doesn't have its runtime installed, then it's
+	 * unusable and we should show it as available in order for the runtime to be
+	 * installed */
+	if (gs_app_is_installed (app) && runtime != NULL && !gs_app_is_installed (runtime)) {
+		g_debug ("App '%s' is installed but its runtime '%s' is not; setting the app"
+			 "as available for a chance to fix this", gs_app_get_unique_id (app),
+			 gs_app_get_unique_id (runtime));
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 	}
 
 	/* success */
