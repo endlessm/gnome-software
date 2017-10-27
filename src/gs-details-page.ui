@@ -201,25 +201,6 @@
                             <property name="margin_bottom">14</property>
                             <property name="spacing">9</property>
                             <child>
-                              <object class="GtkButton" id="button_install">
-                                <property name="use_underline">True</property>
-                                <property name="label" translatable="yes">_Install</property>
-                                <property name="width_request">105</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="halign">start</property>
-                                <property name="valign">start</property>
-                                <style>
-                                  <class name="suggested-action"/>
-                                </style>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">False</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
                               <object class="GtkButton" id="button_details_add_shortcut">
                                 <property name="visible">False</property>
                                 <property name="can_focus">True</property>
@@ -233,7 +214,7 @@
                               <packing>
                                 <property name="expand">False</property>
                                 <property name="fill">False</property>
-                                <property name="position">1</property>
+                                <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
@@ -243,6 +224,25 @@
                                 <property name="receives_default">False</property>
                                 <property name="use_underline">True</property>
                                 <property name="label" translatable="yes" comments="Translators: A label for a button to remove a shortcut to the selected application.">_Remove from Desktop</property>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="button_install">
+                                <property name="use_underline">True</property>
+                                <property name="label" translatable="yes">_Install</property>
+                                <property name="width_request">105</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="halign">start</property>
+                                <property name="valign">start</property>
+                                <style>
+                                  <class name="suggested-action"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="expand">False</property>
