@@ -196,14 +196,12 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 	gboolean add_shortcut_func;
 	gboolean remove_shortcut_func;
 	gboolean has_shortcut;
-	GtkStyleContext *style_context = gtk_widget_get_style_context (self->button_install);
 
 	gtk_widget_set_visible (self->button_details_add_shortcut,
 				FALSE);
 	gtk_widget_set_visible (self->button_details_remove_shortcut,
 				FALSE);
 
-	gtk_style_context_add_class (style_context, "suggested-action");
 	if (gs_app_get_kind (self->app) != AS_APP_KIND_DESKTOP)
 		return;
 
@@ -250,11 +248,6 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 		gtk_widget_set_sensitive (self->button_details_remove_shortcut,
 					  has_shortcut);
 	}
-
-	if (gtk_widget_get_visible (self->button_details_add_shortcut))
-		gtk_style_context_remove_class (style_context, "suggested-action");
-	else
-		gtk_style_context_add_class (style_context, "suggested-action");
 }
 
 static GFile *
@@ -940,6 +933,8 @@ gs_details_page_refresh_buttons (GsDetailsPage *self)
 	case AS_APP_STATE_REMOVING:
 	case AS_APP_STATE_UPDATABLE:
 	case AS_APP_STATE_QUEUED_FOR_INSTALL:
+		sc = gtk_widget_get_style_context (self->button_install);
+		gtk_style_context_remove_class (sc, "suggested-action");
 		gtk_widget_set_visible (self->button_install, FALSE);
 		break;
 	case AS_APP_STATE_UPDATABLE_LIVE:
