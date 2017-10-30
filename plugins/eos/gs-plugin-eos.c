@@ -110,7 +110,7 @@ on_desktop_apps_changed (GDBusConnection *connection,
 			 GVariant	 *parameters,
 			 GsPlugin	 *plugin)
 {
-	GHashTable *apps;
+	g_autoptr(GHashTable) apps = NULL;
 	GHashTableIter iter;
 	gpointer key, value;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
@@ -123,28 +123,33 @@ on_desktop_apps_changed (GDBusConnection *connection,
 		return;
 	}
 
+	/* remove any apps that no longer have shortcuts */
 	g_hash_table_iter_init (&iter, priv->desktop_apps);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		GsApp *app = NULL;
+
+		/* remove the key (if it exists) so we don't have to deal with
+		 * it again in the next loop */
+		if (g_hash_table_remove (apps, key))
+			continue;
+
+		app = gs_plugin_cache_lookup (plugin, key);
+		if (app)
+			gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+
+		g_hash_table_iter_remove (&iter);
+	}
+
+	/* add any apps that have shortcuts now */
+	g_hash_table_iter_init (&iter, apps);
 	while (g_hash_table_iter_next (&iter, &key, &value)) {
 		GsApp *app = gs_plugin_cache_lookup (plugin, key);
 
-		if (!g_hash_table_lookup (apps, key)) {
-			if (app)
-				gs_app_remove_quirk (app,
-						     AS_APP_QUIRK_HAS_SHORTCUT);
+		if (app)
+			gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
 
-			g_hash_table_remove (priv->desktop_apps, key);
-		} else {
-			if (app)
-				gs_app_add_quirk (app,
-						  AS_APP_QUIRK_HAS_SHORTCUT);
-
-			g_hash_table_add (priv->desktop_apps,
-					  g_strdup (key));
-		}
+		g_hash_table_add (priv->desktop_apps, g_strdup (key));
 	}
-
-	if (apps)
-		g_hash_table_destroy (apps);
 }
 
 static char *
@@ -261,6 +266,16 @@ read_icon_replacement_overrides (GHashTable *replacement_app_lookup)
 	}
 }
 
+gboolean
+gs_plugin_setup (GsPlugin *plugin,
+		 GCancellable *cancellable,
+		 GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	priv->desktop_apps = get_applications_with_shortcuts (plugin, cancellable, error);
+	return TRUE;
+}
+
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
@@ -277,8 +292,6 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	priv->session_bus = g_application_get_dbus_connection (app);
 
-	priv->desktop_apps = g_hash_table_new_full (g_str_hash, g_str_equal,
-						    g_free, NULL);
 	priv->replacement_app_lookup = g_hash_table_new_full (g_str_hash, g_str_equal,
 							      g_free, g_free);
 	priv->applications_changed_id =
@@ -812,13 +825,11 @@ get_desktop_file_id (GsApp *app)
 
 static void
 gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
-					 GsApp *app,
-					 GHashTable *apps_with_shortcuts)
+					 GsApp *app)
 {
 	GsPluginData *priv = NULL;
 	const char *desktop_file_id = NULL;
 	g_autofree char *kde_desktop_file_id = NULL;
-	gboolean found = FALSE;
 
 	if (!gs_app_is_installed (app)) {
 		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
@@ -836,21 +847,11 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	gs_plugin_cache_add (plugin, desktop_file_id, app);
 	gs_plugin_cache_add (plugin, kde_desktop_file_id, app);
 
-	if (g_hash_table_lookup (apps_with_shortcuts, desktop_file_id)) {
-		g_hash_table_add (priv->desktop_apps, g_strdup (desktop_file_id));
-		found = TRUE;
-	} else if (g_hash_table_lookup (apps_with_shortcuts, kde_desktop_file_id)) {
-		g_hash_table_add (priv->desktop_apps, g_strdup (kde_desktop_file_id));
-		found = TRUE;
-	}
-
-	if (found) {
+	if (g_hash_table_lookup (priv->desktop_apps, desktop_file_id) ||
+	    g_hash_table_lookup (priv->desktop_apps, kde_desktop_file_id))
 		gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
-	} else {
-		g_hash_table_remove (priv->desktop_apps, desktop_file_id);
-		g_hash_table_remove (priv->desktop_apps, kde_desktop_file_id);
+	else
 		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
-	}
 }
 
 static gboolean
@@ -1026,19 +1027,6 @@ gs_plugin_refine (GsPlugin		*plugin,
 		  GCancellable		*cancellable,
 		  GError		**error)
 {
-	GHashTable *apps;
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GError) local_error = NULL;
-
-	g_hash_table_remove_all (priv->desktop_apps);
-	apps = get_applications_with_shortcuts (plugin, cancellable, &local_error);
-
-	if (apps == NULL) {
-		g_warning ("Failed to get apps with shortcuts when refining: %s; "
-			   "continuing nonetheless...", local_error->message);
-		return TRUE;
-	}
-
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
 
@@ -1055,7 +1043,7 @@ gs_plugin_refine (GsPlugin		*plugin,
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
 			continue;
 
-		gs_plugin_eos_update_app_shortcuts_info (plugin, app, apps);
+		gs_plugin_eos_update_app_shortcuts_info (plugin, app);
 
 		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
 			continue;
