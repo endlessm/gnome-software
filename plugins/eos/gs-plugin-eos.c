@@ -508,6 +508,7 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"com.google.AndroidStudio.desktop",
 		"com.google.Chrome.desktop",
 		"com.microsoft.Skype.desktop",
+		"com.skype.Client.desktop",
 		"com.mojang.Minecraft.desktop",
 		"com.slack.Slack.desktop",
 		"com.sparklinlabs.Superpowers.desktop",
