@@ -36,6 +36,7 @@ gs_appstream_create_app (GsPlugin *plugin, AsApp *item, GError **error)
 	gs_app_set_from_unique_id (app, unique_id);
 	gs_app_set_metadata (app, "GnomeSoftware::Creator",
 			     gs_plugin_get_name (plugin));
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	if (!gs_appstream_refine_app (plugin, app, item, error)) {
 		g_object_unref (app);
 		return NULL;
