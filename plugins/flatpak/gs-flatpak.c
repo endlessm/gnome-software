@@ -2402,14 +2402,6 @@ gs_flatpak_refine_wildcard (GsFlatpak *self, GsApp *app,
 		new = gs_appstream_get_or_create_app (self->plugin, item, NULL);
 		if (new == NULL)
 			return FALSE;
-
-		/* if the app is not a FlatpakApp type one (meaning it was created by
-		 * another plugin) we need to create a new one */
-		if (!GS_IS_FLATPAK_APP (new)) {
-			g_object_unref (new);
-			new = gs_appstream_create_app (self->plugin, item, NULL);
-		}
-
 		gs_app_set_scope (new, self->scope);
 		if (!gs_flatpak_refine_app (self, new, flags, cancellable, error))
 			return FALSE;
