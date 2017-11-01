@@ -2238,6 +2238,13 @@ gs_flatpak_refine_wildcard (GsFlatpak *self, GsApp *app,
 		new = gs_appstream_create_app (self->plugin, self->silo, component, error);
 		if (new == NULL)
 			return FALSE;
+		if (g_strcmp0 (gs_app_get_management_plugin (app),
+			       gs_plugin_get_name (self->plugin)) != 0) {
+			g_object_unref (new);
+			new = gs_appstream_create_app (self->plugin, item, error);
+			if (new == NULL)
+				return FALSE;
+		}
 		gs_flatpak_claim_app (self, new);
 		if (!gs_flatpak_refine_app (self, new, refine_flags, cancellable, error))
 			return FALSE;
