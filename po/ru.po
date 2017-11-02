@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-12 22:31-0700\n"
-"PO-Revision-Date: 2017-10-13 05:52+0000\n"
+"POT-Creation-Date: 2017-11-02 16:28+0100\n"
+"PO-Revision-Date: 2017-11-02 19:32+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Russian (http://www.transifex.com/endless-mobile-inc/gnome-software/language/ru/)\n"
 "MIME-Version: 1.0\n"
@@ -354,7 +354,7 @@ msgstr "Установлено"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
-#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:443
+#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:439
 msgid "Installing"
 msgstr "Устанавливается"
 
@@ -369,7 +369,7 @@ msgid "Folder Name"
 msgstr "Имя папки"
 
 #: src/gs-app-folder-dialog.c:321 src/gs-app-folder-dialog.ui:16
-#: src/gs-details-page.c:383 src/gs-details-page.ui:342 src/gs-editor.c:623
+#: src/gs-details-page.c:379 src/gs-details-page.ui:342 src/gs-editor.c:623
 #: src/gs-editor.c:655 src/gs-installed-page.c:609 src/gs-removal-dialog.ui:33
 #: src/gs-review-dialog.ui:23 src/gs-upgrade-banner.ui:131
 msgid "_Cancel"
@@ -384,90 +384,90 @@ msgid "Add to Application Folder"
 msgstr "Добавить в папку приложения"
 
 #. TRANSLATORS: this is a command line option
-#: src/gs-application.c:101
+#: src/gs-application.c:129
 msgid "Start up mode: either ‘updates’, ‘updated’, ‘installed’ or ‘overview’"
 msgstr "Режим при запуске: «updates» (обновления), «updated» (обновлённые), «installed» (установленные) или «overview» (обзор)"
 
-#: src/gs-application.c:101
+#: src/gs-application.c:129
 msgid "MODE"
 msgstr "РЕЖИМ"
 
-#: src/gs-application.c:103
+#: src/gs-application.c:131
 msgid "Search for applications"
 msgstr "Поиск приложений"
 
-#: src/gs-application.c:103
+#: src/gs-application.c:131
 msgid "SEARCH"
 msgstr "ПОИСК"
 
-#: src/gs-application.c:105
+#: src/gs-application.c:133
 msgid "Show application details (using application ID)"
 msgstr "Показать информацию о приложении (используя ID приложения)"
 
-#: src/gs-application.c:105 src/gs-application.c:109
+#: src/gs-application.c:133 src/gs-application.c:137
 msgid "ID"
 msgstr "ID"
 
-#: src/gs-application.c:107
+#: src/gs-application.c:135
 msgid "Show application details (using package name)"
 msgstr "Показать информацию о приложении (используя имя пакета)"
 
-#: src/gs-application.c:107
+#: src/gs-application.c:135
 msgid "PKGNAME"
 msgstr "PKGNAME"
 
-#: src/gs-application.c:109
+#: src/gs-application.c:137
 msgid "Install the application (using application ID)"
 msgstr "Установить приложение (используя ID приложения)"
 
-#: src/gs-application.c:111
+#: src/gs-application.c:139
 msgid "Open a local package file"
 msgstr "Открыть локальный файл пакета"
 
-#: src/gs-application.c:111
+#: src/gs-application.c:139
 msgid "FILENAME"
 msgstr "ИМЯ_ФАЙЛА"
 
-#: src/gs-application.c:113
+#: src/gs-application.c:141
 msgid ""
 "The kind of interaction expected for this action: either ‘none’, ‘notify’, "
 "or ‘full’"
 msgstr "Какое взаимодействие ожидается для этого действия: «none» (отсутствует), «notify» (уведомление), «full» (полное)"
 
-#: src/gs-application.c:116
+#: src/gs-application.c:144
 msgid "Show verbose debugging information"
 msgstr "Показывать подробную отладочную информацию"
 
-#: src/gs-application.c:118
+#: src/gs-application.c:146
 msgid "Show profiling information for the service"
 msgstr "Показывать профилировочную информацию для службы"
 
-#: src/gs-application.c:120
+#: src/gs-application.c:148
 msgid "Quit the running instance"
 msgstr "Закрыть запущенную копию"
 
-#: src/gs-application.c:122
+#: src/gs-application.c:150
 msgid "Prefer local file sources to AppStream"
 msgstr "Предпочитать локальные источники вместо AppStream"
 
-#: src/gs-application.c:124
+#: src/gs-application.c:152
 msgid "Show version number"
 msgstr "Показать номер версии"
 
-#: src/gs-application.c:325
+#: src/gs-application.c:358
 msgid "translator-credits"
 msgstr "Станислав Соловей <whats_up@tut.by>, 2013-2016.\nЮрий Мясоедов <ymyasoedov@yandex.ru>, 2014.\nПавел Елизарьев <gonleef@tuta.io>, 2016.\nМаксим Таранов <png2378@gmail.com>, 2017."
 
 #. TRANSLATORS: this is the title of the about window, e.g.
 #. * 'About Software' or 'About Application Installer' where the %s is
 #. * the application name chosen by the distro
-#: src/gs-application.c:332
+#: src/gs-application.c:365
 #, c-format
 msgid "About %s"
 msgstr "О приложении %s"
 
 #. TRANSLATORS: well, we seem to think so, anyway
-#: src/gs-application.c:336
+#: src/gs-application.c:369
 msgid "A nice way to manage the software on your system."
 msgstr "Удобная программа управления программным обеспечением в системе."
 
@@ -582,7 +582,7 @@ msgid "All"
 msgstr "Все"
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: lib/gs-category.c:202 src/gs-shell.c:2180
+#: lib/gs-category.c:202 src/gs-shell.c:2181
 msgid "Featured"
 msgstr "Рекомендуемые"
 
@@ -1113,14 +1113,14 @@ msgstr "Найти в приложениях"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:281 src/gs-details-page.c:312
-#: src/gs-details-page.ui:206 src/gs-upgrade-banner.ui:146
+#: src/gs-details-page.c:280 src/gs-details-page.c:310
+#: src/gs-details-page.ui:237 src/gs-upgrade-banner.ui:146
 msgid "_Install"
 msgstr "_Установить"
 
 #. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: src/gs-details-page.c:316
+#: src/gs-details-page.c:314
 msgid "_Update"
 msgstr "_Обновить"
 
@@ -1128,61 +1128,61 @@ msgstr "_Обновить"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: src/gs-details-page.c:330
+#: src/gs-details-page.c:326
 msgid "_Install…"
 msgstr "Ус_тановить…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:377 src/gs-details-page.ui:547
+#: src/gs-details-page.c:373 src/gs-details-page.ui:547
 msgid "_Uninstall"
 msgstr ""
 
-#: src/gs-details-page.c:438 src/gs-sources-dialog.c:513
+#: src/gs-details-page.c:434 src/gs-sources-dialog.c:513
 msgid "Removing…"
 msgstr "Удаление…"
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:748
+#: src/gs-details-page.c:744
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "Этим приложением можно пользоваться только при наличии активного Интернет-подключения."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:892
+#: src/gs-details-page.c:888
 msgctxt "version"
 msgid "Unknown"
 msgstr "Неизвестная"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:971
+#: src/gs-details-page.c:967
 msgctxt "origin"
 msgid "Unknown"
 msgstr "Неизвестно"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1378
+#: src/gs-details-page.c:1374
 msgid "You need internet access to write a review"
 msgstr "Для написания отзыва необходимо подключение к Интернету"
 
-#: src/gs-details-page.c:1507
+#: src/gs-details-page.c:1503
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "Не удалось найти «%s»"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2087
+#: src/gs-details-page.c:2083
 msgid "Public domain"
 msgstr "Общественное достояние"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2103 src/gs-details-page.ui:1397
+#: src/gs-details-page.c:2099 src/gs-details-page.ui:1397
 msgid "Free Software"
 msgstr "Свободное ПО"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2160
+#: src/gs-details-page.c:2156
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] ""
@@ -1190,7 +1190,7 @@ msgstr[1] ""
 msgstr[2] ""
 msgstr[3] ""
 
-#: src/gs-details-page.c:2176 src/gs-details-page.ui:1506
+#: src/gs-details-page.c:2172 src/gs-details-page.ui:1506
 msgid "More information"
 msgstr "Больше информации"
 
@@ -1200,13 +1200,13 @@ msgstr "Страница подробностей"
 
 #. Translators: A label for a button to add a shortcut to the selected
 #. application.
-#: src/gs-details-page.ui:228
+#: src/gs-details-page.ui:209
 msgid "_Add to Desktop"
 msgstr ""
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
-#: src/gs-details-page.ui:245
+#: src/gs-details-page.ui:226
 msgid "_Remove from Desktop"
 msgstr ""
 
@@ -1632,7 +1632,7 @@ msgstr "Сведения о %s, а также параметры для полу
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
-#: src/gs-extras-page.c:388 lib/gs-plugin-loader.c:1426
+#: src/gs-extras-page.c:388 lib/gs-plugin-loader.c:1430
 #, c-format
 msgid "No addon codecs are available for the %s format."
 msgstr "Нет доступных кодеков для формата %s."
@@ -1978,7 +1978,7 @@ msgstr "Уверены, что хотите удалить %s?"
 msgid "%s will be removed, and you will have to install it to use it again."
 msgstr "Приложение %s будет удалено, для повторного использования приложения потребуется его установка."
 
-#: lib/gs-plugin-loader.c:1429
+#: lib/gs-plugin-loader.c:1433
 #, c-format
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
@@ -2265,32 +2265,32 @@ msgstr "Приложение не найдено"
 #. TRANSLATORS: this is part of the in-app notification,
 #. * where the %s is a multi-word localised app name
 #. * e.g. 'Getting things GNOME!"
-#: src/gs-shell.c:846 src/gs-shell.c:851 src/gs-shell.c:866 src/gs-shell.c:870
+#: src/gs-shell.c:847 src/gs-shell.c:852 src/gs-shell.c:867 src/gs-shell.c:871
 #, c-format
 msgid "“%s”"
 msgstr "«%s»"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:898
+#: src/gs-shell.c:899
 #, c-format
 msgid "Unable to download firmware updates from %s"
 msgstr "Не удалось загрузить обновления прошивки из %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:904
+#: src/gs-shell.c:905
 #, c-format
 msgid "Unable to download updates from %s"
 msgstr "Не удалось загрузить обновления из %s"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:911
+#: src/gs-shell.c:912
 msgid "Unable to download updates"
 msgstr "Не удалось загрузить обновления"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:916
+#: src/gs-shell.c:917
 msgid ""
 "Unable to download updates: internet access was required but wasn’t "
 "available"
@@ -2298,48 +2298,48 @@ msgstr "Не удалось загрузить обновления: требу�
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:925
+#: src/gs-shell.c:926
 #, c-format
 msgid "Unable to download updates from %s: not enough disk space"
 msgstr "Не удалось загрузить обновления из %s: недостаточно места на диске"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:930
+#: src/gs-shell.c:931
 msgid "Unable to download updates: not enough disk space"
 msgstr "Не удалось загрузить обновления: недостаточно места на диске"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:938
+#: src/gs-shell.c:939
 msgid "Unable to download updates: authentication was required"
 msgstr "Не удалось загрузить обновления: требуется аутентификация"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:943
+#: src/gs-shell.c:944
 msgid "Unable to download updates: authentication was invalid"
 msgstr "Не удалось загрузить обновления: ошибка аутентификации"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:948
+#: src/gs-shell.c:949
 msgid ""
 "Unable to download updates: you do not have permission to install software"
 msgstr "Не удалось загрузить обновления: недостаточно прав для установки"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:955
+#: src/gs-shell.c:956
 msgid "Unable to get list of updates"
 msgstr "Не удалось получить список обновлений"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the application name (e.g. "GIMP") and
 #. * the second %s is the origin, e.g. "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1001
+#: src/gs-shell.c:1002
 #, c-format
 msgid "Unable to install %s as download failed from %s"
 msgstr "Не удалось установить %s из-за сбоя загрузки из %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1007
+#: src/gs-shell.c:1008
 #, c-format
 msgid "Unable to install %s as download failed"
 msgstr "Не удалось установить %s из-за сбоя загрузки"
@@ -2348,51 +2348,51 @@ msgstr "Не удалось установить %s из-за сбоя загр�
 #. * where the first %s is the application name (e.g. "GIMP")
 #. * and the second %s is the name of the runtime, e.g.
 #. * "GNOME SDK [flatpak.gnome.org]"
-#: src/gs-shell.c:1019
+#: src/gs-shell.c:1020
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
 msgstr "Не удалось установить %s, %s не доступен"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1025
+#: src/gs-shell.c:1026
 #, c-format
 msgid "Unable to install %s as not supported"
 msgstr "Не удалось установить %s (не поддерживается)"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1032
+#: src/gs-shell.c:1033
 msgid "Unable to install: internet access was required but wasn’t available"
 msgstr "Не удалось установить: необходимо подключение к Интернету, но оно недоступно"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1038
+#: src/gs-shell.c:1039
 msgid "Unable to install: the application has an invalid format"
 msgstr "Не удалось установить: приложение имеет недопустимый формат"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1043
+#: src/gs-shell.c:1044
 #, c-format
 msgid "Unable to install %s: not enough disk space"
 msgstr "Не удалось установить %s: недостаточно места на диске"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1051
+#: src/gs-shell.c:1052
 #, c-format
 msgid "Unable to install %s: authentication was required"
 msgstr "Не удалось установить %s: аутентификация обязательна"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1058
+#: src/gs-shell.c:1059
 #, c-format
 msgid "Unable to install %s: authentication was invalid"
 msgstr "Не удалось установить %s: ошибка аутентификации"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1065
+#: src/gs-shell.c:1066
 #, c-format
 msgid "Unable to install %s: you do not have permission to install software"
 msgstr "Не удалось установить %s: недостаточно прав для установки"
@@ -2400,34 +2400,34 @@ msgstr "Не удалось установить %s: недостаточно п
 #. TRANSLATORS: failure text for the in-app notification,
 #. * the %s is the name of the authentication service,
 #. * e.g. "Ubuntu One"
-#: src/gs-shell.c:1078
+#: src/gs-shell.c:1079
 #, c-format
 msgid "Your %s account has been suspended."
 msgstr "Работа вашей учетной записи %s была приостановлена."
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1082
+#: src/gs-shell.c:1083
 msgid "It is not possible to install software until this has been resolved."
 msgstr "Установка программ недоступна, пока это не будет решено."
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the clickable link (e.g.
 #. * "http://example.com/what-did-i-do-wrong/")
-#: src/gs-shell.c:1093
+#: src/gs-shell.c:1094
 #, c-format
 msgid "For more information, visit %s."
 msgstr "Для получения дополнительной информации посетите %s."
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1102
+#: src/gs-shell.c:1103
 #, c-format
 msgid "Unable to install %s: AC power is required"
 msgstr "Не удалось установить %s: требуется подключение к электросети"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1111
+#: src/gs-shell.c:1112
 #, c-format
 msgid "Unable to install %s"
 msgstr "Не удалось установить %s"
@@ -2436,61 +2436,61 @@ msgstr "Не удалось установить %s"
 #. * where the first %s is the app name (e.g. "GIMP") and
 #. * the second %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1157
+#: src/gs-shell.c:1158
 #, c-format
 msgid "Unable to update %s from %s"
 msgstr "Не удалось обновить %s из %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1163
+#: src/gs-shell.c:1164
 #, c-format
 msgid "Unable to update %s as download failed"
 msgstr "Не удалось обновить %s из-за сбоя загрузки"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1169
+#: src/gs-shell.c:1170
 msgid "Unable to update: internet access was required but wasn’t available"
 msgstr "Не удалось обновить: необходимо подключение к Интернету, но оно недоступно"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1177
+#: src/gs-shell.c:1178
 #, c-format
 msgid "Unable to update %s: not enough disk space"
 msgstr "Не удалось обновить %s: недостаточно места на диске"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1186
+#: src/gs-shell.c:1187
 #, c-format
 msgid "Unable to update %s: authentication was required"
 msgstr "Не удалось обновить %s: требуется аутентификация"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1193
+#: src/gs-shell.c:1194
 #, c-format
 msgid "Unable to update %s: authentication was invalid"
 msgstr "Не удалось обновить %s: ошибка аутентификации"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1200
+#: src/gs-shell.c:1201
 #, c-format
 msgid "Unable to update %s: you do not have permission to update software"
 msgstr "Не удалось обновить %s: недостаточно прав для обновления"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1208
+#: src/gs-shell.c:1209
 #, c-format
 msgid "Unable to update %s: AC power is required"
 msgstr "Не удалось обновить %s: требуется подключение к электросети"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1217
+#: src/gs-shell.c:1218
 #, c-format
 msgid "Unable to update %s"
 msgstr "Не удалось обновить %s"
@@ -2498,96 +2498,96 @@ msgstr "Не удалось обновить %s"
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the distro name (e.g. "Fedora 25") and
 #. * the second %s is the origin, e.g. "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1262
+#: src/gs-shell.c:1263
 #, c-format
 msgid "Unable to upgrade to %s from %s"
 msgstr "Не удалось обновить до %s из %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the app name (e.g. "GIMP")
-#: src/gs-shell.c:1267
+#: src/gs-shell.c:1268
 #, c-format
 msgid "Unable to upgrade to %s as download failed"
 msgstr "Не удалось обновить до %s из-за сбоя загрузки"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1274
+#: src/gs-shell.c:1275
 msgid "Unable to upgrade: internet access was required but wasn’t available"
 msgstr "Не удалось обновить: необходимо подключение к Интернету, но оно недоступно"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1282
+#: src/gs-shell.c:1283
 #, c-format
 msgid "Unable to upgrade to %s: not enough disk space"
 msgstr "Не удалось обновить до %s: недостаточно места на диске"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1291
+#: src/gs-shell.c:1292
 #, c-format
 msgid "Unable to upgrade to %s: authentication was required"
 msgstr "Не удалось обновить до %s: требуется аутентификация"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1298
+#: src/gs-shell.c:1299
 #, c-format
 msgid "Unable to upgrade to %s: authentication was invalid"
 msgstr "Не удалось обновить до %s: ошибка аутентификации"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1305
+#: src/gs-shell.c:1306
 #, c-format
 msgid "Unable to upgrade to %s: you do not have permission to upgrade"
 msgstr "Не удалось обновить до %s: недостаточно прав для обновления"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1312
+#: src/gs-shell.c:1313
 #, c-format
 msgid "Unable to upgrade to %s: AC power is required"
 msgstr "Не удалось обновить до %s: требуется подключение к электросети"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1321
+#: src/gs-shell.c:1322
 #, c-format
 msgid "Unable to upgrade to %s"
 msgstr "Не удалось обновить до %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1363
+#: src/gs-shell.c:1364
 #, c-format
 msgid "Unable to remove %s: authentication was required"
 msgstr "Не удалось удалить %s: требуется аутентификация"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1369
+#: src/gs-shell.c:1370
 #, c-format
 msgid "Unable to remove %s: authentication was invalid"
 msgstr "Не удалось удалить %s: ошибка аутентификации"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1375
+#: src/gs-shell.c:1376
 #, c-format
 msgid "Unable to remove %s: you do not have permission to remove software"
 msgstr "Не удалось удалить %s: недостаточно прав для удаления"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1382
+#: src/gs-shell.c:1383
 #, c-format
 msgid "Unable to remove %s: AC power is required"
 msgstr "Не удалось удалить %s: требуется подключение к электросети"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1391
+#: src/gs-shell.c:1392
 #, c-format
 msgid "Unable to remove %s"
 msgstr "Не удалось удалить %s"
@@ -2596,48 +2596,48 @@ msgstr "Не удалось удалить %s"
 #. * where the first %s is the application name (e.g. "GIMP")
 #. * and the second %s is the name of the runtime, e.g.
 #. * "GNOME SDK [flatpak.gnome.org]"
-#: src/gs-shell.c:1437
+#: src/gs-shell.c:1438
 #, c-format
 msgid "Unable to launch %s: %s is not installed"
 msgstr "Не удалось запустить %s: приложение %s не установлено"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1444 src/gs-shell.c:1492 src/gs-shell.c:1540
+#: src/gs-shell.c:1445 src/gs-shell.c:1493 src/gs-shell.c:1541
 msgid "Not enough disk space — free up some space and try again"
 msgstr "Недостаточно места на диске — освободите место и повторите попытку"
 
 #. TRANSLATORS: we failed to get a proper error code
-#: src/gs-shell.c:1452 src/gs-shell.c:1500 src/gs-shell.c:1567
+#: src/gs-shell.c:1453 src/gs-shell.c:1501 src/gs-shell.c:1568
 msgid "Sorry, something went wrong"
 msgstr "Извините, что-то пошло не так"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1487
+#: src/gs-shell.c:1488
 msgid "Failed to install file: authentication failed"
 msgstr "Сбой при установке файла: ошибка аутентификации"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * the %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1534
+#: src/gs-shell.c:1535
 #, c-format
 msgid "Unable to contact %s"
 msgstr "Не удалось связаться с %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1549
+#: src/gs-shell.c:1550
 #, c-format
 msgid "%s needs to be restarted to use new plugins."
 msgstr "Необходимо перезапустить %s, чтобы использовать новые плагины."
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1554
+#: src/gs-shell.c:1555
 msgid "This application needs to be restarted to use new plugins."
 msgstr "Необходимо перезапустить приложение, чтобы использовать новые плагины."
 
 #. TRANSLATORS: need to be connected to the AC power
-#: src/gs-shell.c:1561
+#: src/gs-shell.c:1562
 msgid "AC power is required"
 msgstr "Требуется подключение к электросети"
 
@@ -3251,19 +3251,23 @@ msgid "App Center"
 msgstr ""
 
 #: src/org.gnome.Software.desktop.in:4
+msgid "More Apps"
+msgstr ""
+
+#: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
 msgstr "Установка, удаление и обновление программного обеспечения на компьютере"
 
 #. Translators: Do NOT translate or transliterate this text (this is an icon
 #. file name)!
-#: src/org.gnome.Software.desktop.in:6
+#: src/org.gnome.Software.desktop.in:7
 #: src/org.gnome.Software.Editor.desktop.in:6
 msgid "org.gnome.Software"
 msgstr "org.gnome.Software"
 
 #. Translators: Search terms to find this application. Do NOT translate or
 #. localize the semicolons! The list MUST also end with a semicolon!
-#: src/org.gnome.Software.desktop.in:12
+#: src/org.gnome.Software.desktop.in:13
 msgid ""
 "Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;"
 msgstr "Обновления;Источники;Репозитории;Параметры;Установить;Удалить;Программа;Приложение;Магазин;"
@@ -3547,100 +3551,110 @@ msgctxt "Menu of Communication & News"
 msgid "Web Browsers"
 msgstr "Веб-браузеры"
 
-#: plugins/core/gs-desktop-common.c:247
-msgctxt "Menu of Reference"
-msgid "All"
-msgstr "Все"
-
-#: plugins/core/gs-desktop-common.c:250
-msgctxt "Menu of Reference"
-msgid "Featured"
-msgstr "Рекомендуемые"
-
-#: plugins/core/gs-desktop-common.c:253
-msgctxt "Menu of Reference"
-msgid "Art"
-msgstr ""
-
-#: plugins/core/gs-desktop-common.c:256
-msgctxt "Menu of Reference"
-msgid "Biography"
-msgstr "Биография"
-
-#: plugins/core/gs-desktop-common.c:259
-msgctxt "Menu of Reference"
-msgid "Comics"
-msgstr "Комиксы"
-
-#: plugins/core/gs-desktop-common.c:262
-msgctxt "Menu of Reference"
-msgid "Fiction"
-msgstr "Фантастика"
-
-#: plugins/core/gs-desktop-common.c:265
-msgctxt "Menu of Reference"
-msgid "Health"
-msgstr "Здоровье"
-
-#: plugins/core/gs-desktop-common.c:268
-msgctxt "Menu of Reference"
-msgid "History"
-msgstr "История"
-
-#: plugins/core/gs-desktop-common.c:271
-msgctxt "Menu of Reference"
-msgid "Lifestyle"
-msgstr "Стиль жизни"
-
-#: plugins/core/gs-desktop-common.c:274
+#: plugins/core/gs-desktop-common.c:242
 msgctxt "Menu of Communication & News"
 msgid "News"
 msgstr "Новости"
 
+#: plugins/core/gs-desktop-common.c:251
+msgctxt "Menu of Reference"
+msgid "All"
+msgstr "Все"
+
+#: plugins/core/gs-desktop-common.c:254
+msgctxt "Menu of Reference"
+msgid "Featured"
+msgstr "Рекомендуемые"
+
+#: plugins/core/gs-desktop-common.c:257
+msgctxt "Menu of Reference"
+msgid "Art"
+msgstr ""
+
+#: plugins/core/gs-desktop-common.c:260
+msgctxt "Menu of Reference"
+msgid "Biography"
+msgstr "Биография"
+
+#: plugins/core/gs-desktop-common.c:263
+msgctxt "Menu of Reference"
+msgid "Comics"
+msgstr "Комиксы"
+
+#: plugins/core/gs-desktop-common.c:266
+msgctxt "Menu of Reference"
+msgid "Feed"
+msgstr ""
+
+#: plugins/core/gs-desktop-common.c:269
+msgctxt "Menu of Reference"
+msgid "Fiction"
+msgstr "Фантастика"
+
+#: plugins/core/gs-desktop-common.c:272
+msgctxt "Menu of Reference"
+msgid "Health"
+msgstr "Здоровье"
+
+#: plugins/core/gs-desktop-common.c:275
+msgctxt "Menu of Reference"
+msgid "History"
+msgstr "История"
+
 #: plugins/core/gs-desktop-common.c:278
+msgctxt "Menu of Reference"
+msgid "Lifestyle"
+msgstr "Стиль жизни"
+
+#: plugins/core/gs-desktop-common.c:281
+msgctxt "Menu of Reference"
+msgid "News"
+msgstr ""
+
+#: plugins/core/gs-desktop-common.c:284
 msgctxt "Menu of Reference"
 msgid "Politics"
 msgstr "Политика"
 
-#: plugins/core/gs-desktop-common.c:281
+#: plugins/core/gs-desktop-common.c:287
 msgctxt "Menu of Reference"
 msgid "Sports"
 msgstr "Спорт"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
-#: plugins/core/gs-desktop-common.c:291
+#: plugins/core/gs-desktop-common.c:297
 msgid "Learning"
 msgstr ""
 
 #. TRANSLATORS: this is the menu spec main category for Game
-#: plugins/core/gs-desktop-common.c:294
+#: plugins/core/gs-desktop-common.c:300
 msgid "Games"
 msgstr "Игры"
 
 #. TRANSLATORS: this is the menu spec main category for Multimedia
-#: plugins/core/gs-desktop-common.c:297
+#: plugins/core/gs-desktop-common.c:303
 msgid "Multimedia"
 msgstr ""
 
 #. TRANSLATORS: this is the menu spec main category for Work
-#: plugins/core/gs-desktop-common.c:300
+#: plugins/core/gs-desktop-common.c:306
 msgid "Work"
 msgstr ""
 
 #. TRANSLATORS: this is the menu spec main category for Reference
-#: plugins/core/gs-desktop-common.c:303
+#: plugins/core/gs-desktop-common.c:309
 msgid "Reference & News"
 msgstr ""
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
-#: plugins/core/gs-desktop-common.c:306
+#: plugins/core/gs-desktop-common.c:312
 msgid "Utilities"
 msgstr "Утилиты"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
-#: plugins/core/gs-desktop-common.c:311
+#: plugins/core/gs-desktop-common.c:317
 msgid "Dev Tools"
 msgstr "Инструменты разработки"
 
@@ -3666,16 +3680,16 @@ msgstr "Включает в себя улучшения производител
 msgid "Downloading featured images…"
 msgstr "Загрузка изображений рекомендуемых приложений…"
 
-#: plugins/eos/gs-plugin-eos.c:1249
+#: plugins/eos/gs-plugin-eos.c:1233
 #, c-format
 msgid "Could not launch this application."
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:1305
+#: plugins/eos/gs-plugin-eos.c:1289
 msgid "Endless Platform"
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:1308
+#: plugins/eos/gs-plugin-eos.c:1292
 msgid "Framework for applications"
 msgstr ""
 
@@ -3735,13 +3749,13 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak — это платформа для настольных приложений, запускаемых в Linux"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:821
+#: plugins/flatpak/gs-flatpak.c:815
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "Получение метаданных flatpak для %s…"
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:2796
+#: plugins/flatpak/gs-flatpak.c:2803
 msgid "Getting runtime source…"
 msgstr ""
 
