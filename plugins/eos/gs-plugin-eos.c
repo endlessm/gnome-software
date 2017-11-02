@@ -64,6 +64,7 @@ struct GsPluginData
 	int applications_changed_id;
 	SoupSession *soup_session;
 	char *personality;
+	gboolean is_coding_enabled;
 	char *os_version_id;
 	gboolean eos_arch_is_arm;
 };
@@ -306,6 +307,9 @@ gs_plugin_initialize (GsPlugin *plugin)
 						    plugin, NULL);
 	priv->soup_session = gs_plugin_get_soup_session (plugin);
 	priv->personality = get_personality ();
+
+	g_autoptr(GSettings) settings = g_settings_new ("org.gnome.shell");
+	priv->is_coding_enabled = g_settings_get_boolean (settings, "enable-coding-game");
 
 	/* Synchronous, but this guarantees that the lookup table will be
 	 * there when we call ReplaceApplication later on */
@@ -744,6 +748,19 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
+app_is_banned_coding_app (GsPlugin *plugin, GsApp *app)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const char *id = gs_app_get_id (app);
+
+	/* the coding chatbox is in the core ostree, so unlike the
+	   personality-based blocking, we block even if it is installed */
+
+	return (!priv->is_coding_enabled &&
+	        (g_strcmp0 (id, "com.endlessm.Coding.Chatbox.desktop") == 0));
+}
+
+static gboolean
 app_is_compatible_with_os (GsPlugin *plugin, GsApp *app)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
@@ -789,6 +806,8 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	} else if (app_is_renamed (app)) {
 		blacklist_app = TRUE;
 	} else if (app_is_banned_for_personality (plugin, app)) {
+		blacklist_app = TRUE;
+	} else if (app_is_banned_coding_app (plugin, app)) {
 		blacklist_app = TRUE;
 	} else if (app_is_evergreen (app)) {
 		blacklist_app = TRUE;
