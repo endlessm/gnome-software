@@ -1735,7 +1735,7 @@ gs_flatpak_refine_app_state (GsFlatpak *self,
 }
 
 static GsApp *
-gs_flatpak_create_runtime (GsFlatpak *self, GsApp *parent, const gchar *runtime)
+gs_flatpak_create_runtime (GsPlugin *plugin, const gchar *runtime)
 {
 	g_autofree gchar *source = NULL;
 	g_auto(GStrv) split = NULL;
@@ -1845,7 +1845,7 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 		gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED_SECURE);
 
 	/* create runtime */
-	app_runtime = gs_flatpak_create_runtime (self, app, runtime);
+	app_runtime = gs_flatpak_create_runtime (self, runtime);
 	if (app_runtime != NULL) {
 		gs_plugin_refine_item_scope (self, app_runtime);
 		gs_app_set_runtime (app, app_runtime);
