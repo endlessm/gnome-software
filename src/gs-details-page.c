@@ -303,6 +303,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 		gtk_widget_set_visible (self->button_install, FALSE);
 		break;
 	case AS_APP_STATE_UPDATABLE_LIVE:
+		gtk_style_context_remove_class (gtk_widget_get_style_context (self->button_install), "suggested-action");
 		gtk_widget_set_visible (self->button_install, TRUE);
 		if (gs_app_get_kind (self->app) == AS_APP_KIND_FIRMWARE) {
 			/* TRANSLATORS: button text in the header when firmware
