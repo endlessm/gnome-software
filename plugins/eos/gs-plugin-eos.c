@@ -657,8 +657,6 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"ca.desrt.dconf-editor.desktop",
 		/* Can't open LibreOffice documents */
 		"org.gnome.Documents.desktop",
-		/* Doesn't work due to network related problems */
-		"org.gnome.Maps.desktop",
 		NULL
 	};
 
