@@ -577,6 +577,7 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.frozenbubble.FrozenBubble.desktop",
 		"org.frozen_bubble.frozen-bubble.desktop",
 		"org.gimp.Gimp.desktop",
+		"org.gimp.GIMP.desktop",
 		"org.gnome.Builder.desktop",
 		"org.gnome.Freecell.desktop",
 		"org.gnome.Genius.desktop",
