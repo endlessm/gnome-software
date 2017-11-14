@@ -2546,6 +2546,7 @@ static GsAppList *
 gs_flatpak_get_list_for_remove (GsFlatpak *self, GsApp *app,
 				GCancellable *cancellable, GError **error)
 {
+	const gchar *ref_name = gs_flatpak_app_get_ref_name (app);
 	g_autofree gchar *ref = NULL;
 	g_autoptr(GPtrArray) related = NULL;
 	g_autoptr(GsAppList) list = gs_app_list_new ();
@@ -2553,7 +2554,7 @@ gs_flatpak_get_list_for_remove (GsFlatpak *self, GsApp *app,
 	/* lookup any related refs for this ref */
 	ref = g_strdup_printf ("%s/%s/%s/%s",
 			       gs_flatpak_app_get_ref_kind_as_str (app),
-			       gs_flatpak_app_get_ref_name (app),
+			       ref_name,
 			       gs_flatpak_app_get_ref_arch (app),
 			       gs_flatpak_app_get_ref_branch (app));
 	related = flatpak_installation_list_installed_related_refs_sync (self->installation,
@@ -2563,6 +2564,16 @@ gs_flatpak_get_list_for_remove (GsFlatpak *self, GsApp *app,
 		g_prefix_error (error, "using origin %s: ", gs_app_get_origin (app));
 		gs_flatpak_error_convert (error);
 		return FALSE;
+	}
+
+	/* If this is the SDK runtime, remove the associated EknServices.
+	 * Ignores EknServices associated with com.endlessm.Platform//eos3.1. */
+	if (g_strcmp0 (ref_name, "com.endlessm.apps.Platform") == 0) {
+		g_autoptr(GsApp) services = gs_flatpak_get_services_app_for_runtime (self, app, cancellable);
+		if (g_cancellable_set_error_if_cancelled (cancellable, error))
+			return FALSE;
+		if (services != NULL)
+			gs_app_list_add (list, services);
 	}
 
 	/* any extra bits */
