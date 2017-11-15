@@ -111,6 +111,7 @@ static void
 gs_category_page_reload (GsPage *page)
 {
 	GsCategoryPage *self = GS_CATEGORY_PAGE (page);
+	GtkAdjustment *adj = NULL;
 	GtkWidget *tile;
 	guint i, count;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
@@ -143,6 +144,11 @@ gs_category_page_reload (GsPage *page)
 		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
 		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
 	}
+
+	/* scroll the list of apps to the beginning, otherwise it will show
+	 * with the previous scroll value */
+	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_category));
+	gtk_adjustment_set_value (adj, gtk_adjustment_get_lower (adj));
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORY_APPS,
 					 "category", self->subcategory,
