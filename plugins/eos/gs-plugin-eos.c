@@ -689,6 +689,7 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.gnucash.GnuCash.desktop",
 		"org.musicbrainz.Picard.desktop",
 		"org.mypaint.MyPaint.desktop",
+		"org.telegram.desktop.desktop",
 		NULL
 	};
 
