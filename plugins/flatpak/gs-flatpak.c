@@ -1972,7 +1972,7 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 }
 
 static GsApp *
-gs_flatpak_create_runtime (GsPlugin *plugin, GsApp *parent, const gchar *runtime)
+gs_flatpak_create_runtime (GsPlugin *plugin, const gchar *runtime)
 {
 	g_autofree gchar *source = NULL;
 	g_auto(GStrv) split = NULL;
@@ -2021,7 +2021,6 @@ gs_flatpak_create_runtime (GsPlugin *plugin, GsApp *parent, const gchar *runtime
 
 static GsApp *
 gs_flatpak_create_runtime_from_metadata (GsFlatpak *self,
-					 const GsApp *app,
 					 const gchar *data,
 					 const gsize length,
 					 GError **error)
@@ -2039,7 +2038,7 @@ gs_flatpak_create_runtime_from_metadata (GsFlatpak *self,
 		gs_utils_error_convert_gio (error);
 		return NULL;
 	}
-	return gs_flatpak_create_runtime (self->plugin, app, runtime);
+	return gs_flatpak_create_runtime (self->plugin, runtime);
 }
 
 static gboolean
@@ -2104,7 +2103,7 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 
 	/* create runtime */
 	if (gs_app_get_runtime (app) == NULL) {
-		app_runtime = gs_flatpak_create_runtime (self->plugin, app, runtime);
+		app_runtime = gs_flatpak_create_runtime (self->plugin, runtime);
 		if (app_runtime != NULL) {
 			gs_plugin_refine_item_scope (self, app_runtime);
 			gs_app_set_runtime (app, app_runtime);
@@ -2582,6 +2581,71 @@ gs_flatpak_app_remove_source (GsFlatpak *self,
 	return TRUE;
 }
 
+/*
+ * gs_flatpak_get_services_app_for_runtime:
+ * Specific to Endless runtimes, gets a GsApp reference for the related
+ * "EknServices" app that provides system services for apps that use the
+ * given runtime.
+ *
+ * Returns NULL if no services app was required or there was an error.
+ * Does not take a GError since any error should be recoverable. However, in
+ * order to make sure the operation was not cancelled, you should check the
+ * status of the GCancellable after calling this.
+ */
+static GsApp *
+gs_flatpak_get_services_app_for_runtime (GsFlatpak *self, GsApp *runtime,
+                                         GCancellable *cancellable)
+{
+	const gchar *runtime_id;
+	const gchar *runtime_branch;
+	const gchar *services_branch;
+	const gchar *arch;
+	g_autofree gchar *services_id = NULL;
+	g_autofree gchar *description = NULL;
+	g_autoptr(FlatpakRef) services_ref = NULL;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GsApp) services_app = NULL;
+
+	runtime_id = gs_app_get_id (runtime);
+	runtime_branch = gs_app_get_branch (runtime);
+
+	if ((g_strcmp0 (runtime_id, "com.endlessm.Platform") == 0 &&
+	     g_strcmp0 (runtime_branch, "eos3.1") == 0) ||
+	    (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0 &&
+	     g_strcmp0 (runtime_branch, "1") == 0)) {
+		services_id = g_strdup ("com.endlessm.EknServices");
+		services_branch = "eos3";
+	} else if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0) {
+		if (g_strcmp0 (runtime_branch, "master") == 0)
+			services_id = g_strdup ("com.endlessm.EknServices2");
+		else
+			services_id = g_strdup_printf ("com.endlessm.EknServices%s",
+			                               runtime_branch);
+		services_branch = "stable";
+	} else {
+		/* Runtime doesn't require an EknServices app */
+		return NULL;
+	}
+
+	/* Construct a GsApp for the EknServices we determined we needed */
+	arch = gs_flatpak_app_get_ref_arch (runtime);
+	description = g_strdup_printf ("app/%s/%s/%s", services_id, arch, services_branch);
+	services_ref = flatpak_ref_parse (description, &error);
+	if (services_ref == NULL) {
+		g_critical ("Invalid flatpak ref description %s: %s", description,
+		            error->message);
+		return NULL;
+	}
+
+	services_app = gs_flatpak_create_app (self, services_ref);
+	if (!gs_plugin_refine_item_origin (self, services_app, cancellable, &error)) {
+		g_warning ("Couldn't discover origin for %s: %s", description,
+		           error->message);
+		return NULL;
+	}
+	return g_steal_pointer (&services_app);
+}
+
 static GsAppList *
 gs_flatpak_get_list_for_remove (GsFlatpak *self, GsApp *app,
 				GCancellable *cancellable, GError **error)
@@ -2699,7 +2763,7 @@ gs_flatpak_refine_runtime_for_install (GsFlatpak *self,
 	}
 
 	str = g_bytes_get_data (data, &len);
-	runtime = gs_flatpak_create_runtime_from_metadata (self, app,
+	runtime = gs_flatpak_create_runtime_from_metadata (self,
 							   str, len,
 							   error);
 
@@ -2735,6 +2799,23 @@ gs_flatpak_refine_runtime_for_install (GsFlatpak *self,
 	return TRUE;
 }
 
+static void
+gs_flatpak_add_app_to_list_if_not_installed (GsApp *app, GsAppList *list,
+					     const GHashTable *hash_installed)
+{
+	g_autofree gchar *ref_display = gs_flatpak_app_get_ref_display (app);
+	if (g_hash_table_contains (hash_installed, ref_display)) {
+		g_debug ("%s is already installed, so skipping",
+			 gs_app_get_id (app));
+		return;
+	}
+
+	g_debug ("%s/%s is not already installed, so installing",
+		 gs_flatpak_app_get_ref_name (app),
+		 gs_flatpak_app_get_ref_branch (app));
+	gs_app_list_add (list, app);
+}
+
 static GsAppList *
 gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 					   GsApp *app,
@@ -2748,6 +2829,8 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 	g_autoptr(GPtrArray) xrefs_installed = NULL;
 	g_autoptr(GHashTable) hash_installed = NULL;
 	g_autoptr(GsAppList) list = gs_app_list_new ();
+	g_autoptr(GsApp) services_app = NULL;
+	g_autoptr(GsApp) services_runtime = NULL;
 
 	/* get the list of installed apps */
 	xrefs_installed = flatpak_installation_list_installed_refs (self->installation,
@@ -2768,18 +2851,22 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 	if (!gs_flatpak_refine_runtime_for_install (self, app, cancellable, error))
 		return FALSE;
 	runtime = gs_app_get_update_runtime (app);
-	if (runtime != NULL) {
-		g_autofree gchar *ref_display = NULL;
-		ref_display = gs_flatpak_app_get_ref_display (runtime);
-		if (g_hash_table_contains (hash_installed, ref_display)) {
-			g_debug ("%s is already installed, so skipping",
-				 gs_app_get_id (runtime));
-		} else {
-			g_debug ("%s/%s is not already installed, so installing",
-				 gs_flatpak_app_get_ref_name (runtime),
-				 gs_flatpak_app_get_ref_branch (runtime));
-			gs_app_list_add (list, runtime);
-		}
+	if (runtime != NULL)
+		gs_flatpak_add_app_to_list_if_not_installed (runtime, list, hash_installed);
+
+	/* add services flatpak */
+	services_app = gs_flatpak_get_services_app_for_runtime (self, runtime, cancellable);
+	if (g_cancellable_set_error_if_cancelled (cancellable, error))
+		return FALSE;
+	if (services_app != NULL) {
+		gs_flatpak_add_app_to_list_if_not_installed (services_app, list, hash_installed);
+
+		/* add services flatpak's runtime, if different from app's runtime */
+		if (!gs_flatpak_refine_runtime_for_install (self, services_app, cancellable, error))
+			return FALSE;
+		services_runtime = gs_app_get_update_runtime (services_app);
+		if (services_runtime != NULL)
+			gs_flatpak_add_app_to_list_if_not_installed (services_runtime, list, hash_installed);
 	}
 
 	/* lookup any related refs for this ref */

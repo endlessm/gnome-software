@@ -1333,6 +1333,7 @@ add_updates (GsPlugin *plugin,
 	const char *proxied_apps[] = {"com.endlessm.Platform",
 				      "com.endlessm.apps.Platform",
 				      "com.endlessm.EknServices.desktop",
+				      "com.endlessm.EknServices2.desktop",
 				      "com.endlessm.quote_of_the_day.en.desktop",
 				      "com.endlessm.word_of_the_day.en.desktop",
 				      NULL};
