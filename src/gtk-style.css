@@ -461,7 +461,7 @@ flowboxchild {
 .sidefilter row:selected,
 .sidefilter:backdrop row:selected {
 	border: solid #cfcfcf;
-	border-width: 1px 0 1px 0;
+	border-width: 0 0 1px 0;
 }
 
 /* ... except the first row */
@@ -581,10 +581,12 @@ flowboxchild {
 	font-size: 16px;
 	font-weight: bold;
 	color: #4d4d4d;
+	text-shadow: none;
 }
 
 .installed-icon {
 	color: #4d4d4d;
+	-gtk-icon-shadow: none;
 }
 
 /* Override the theme's .view class */
