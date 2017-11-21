@@ -1284,8 +1284,10 @@ gs_plugin_launch (GsPlugin *plugin,
 		  GCancellable *cancellable,
 		  GError **error)
 {
-	if (g_strcmp0 (gs_app_get_management_plugin (app),
-		       gs_plugin_get_name (plugin)) == 0) {
+	/* if the app is one of the system ones, we simply launch it through the
+	 * plugin's app launcher */
+	if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+	    !app_is_flatpak (app)) {
 		return gs_plugin_app_launch (plugin, app, error);
 	}
 
