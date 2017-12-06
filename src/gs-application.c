@@ -819,7 +819,6 @@ static GActionEntry actions_after_loading[] = {
 static void
 gs_application_update_software_sources_presence (GApplication *self)
 {
-	GsApplication *app = GS_APPLICATION (self);
 	GSimpleAction *action;
 	gboolean enable_sources;
 
