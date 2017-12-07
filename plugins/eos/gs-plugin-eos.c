@@ -529,7 +529,6 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"com.sublimetext.three.desktop",
 		"com.teeworlds.Teeworlds.desktop",
 		"com.transmissionbt.Transmission.desktop",
-		"com.valvesoftware.Steam.desktop",
 		"com.visualstudio.code.oss.desktop",
 		"de.billardgl.Billardgl.desktop",
 		"io.atom.Atom.desktop",
