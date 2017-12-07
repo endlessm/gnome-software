@@ -706,7 +706,8 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 	/* We need to check for the app's origin, otherwise we'd be
 	 * blacklisting matching apps coming from any repo */
 	if (g_strcmp0 (hostname, "sdk.gnome.org") != 0 &&
-	    g_strcmp0 (hostname, "flathub.org") != 0)
+	    g_strcmp0 (hostname, "flathub.org") != 0 &&
+	    !g_str_has_suffix (hostname, ".flathub.org"))
 		return FALSE;
 
 	/* If the arch is ARM then we simply use a whitelist and
