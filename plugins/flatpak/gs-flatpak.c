@@ -2915,7 +2915,8 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 				   error_local->message);
 			continue;
 		}
-		if (is_update && !gs_app_is_updatable (app_tmp)) {
+		if (gs_app_is_installed (app_tmp) && is_update &&
+		    !gs_app_is_updatable (app_tmp)) {
 			g_debug ("not adding related %s as it's not updatable", ref_display);
 			continue;
 		}
