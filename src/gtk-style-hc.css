@@ -1,0 +1,236 @@
+.installed-overlay-box {
+	font-size: smaller;
+	background-color: @theme_selected_bg_color;
+	border-radius: 4px;
+	color: @theme_selected_fg_color;
+}
+
+.popular-installed-overlay-box {
+	font-size: smaller;
+	background-color: @theme_selected_bg_color;
+	border-radius: 0;
+	color: @theme_selected_fg_color;
+	text-shadow: none;
+}
+
+.installed-icon, .app-row-installed-label {
+	color: #999999;
+}
+
+.index-title-alignment-software {
+	font-weight: bold;
+	font-size: 125%;
+}
+
+.needs-attention {
+	background-image: none;
+	background-color: shade(@theme_selected_bg_color, 1.1);
+	border-radius: 1px;
+}
+
+.screenshot-image, .screenshot-image-thumb {
+	background-image: none;
+	background-color: shade(@theme_bg_color, 0.9);
+}
+.screenshot-image { border-radius: 5px; }
+.screenshot-image-thumb { border-radius: 3px; }
+
+.app-tile-label {
+	font-size: 105%;
+}
+
+.app-row-tag {
+	text-shadow: none;
+	color: white;
+	background-color: #999999;
+	font-size: smaller;
+	border-radius: 4px;
+	padding: 2px 10px;
+}
+
+.view.tile {
+	padding: 0;
+	background-image: none;
+	background-color: mix(@theme_base_color,@theme_bg_color,0.3);
+}
+
+.view.tile:hover {
+	background-color: @theme_base_color;
+}
+
+.view.tile:active {
+	border-color: @theme_selected_bg_color;
+	box-shadow: none;
+	color: @theme_selected_bg_color;
+}
+
+.view.tile:backdrop {
+	box-shadow: none;
+	border-color: @unfocused_borders;
+}
+
+/* The rest of the featured-tile CSS is loaded at runtime in gs-feature-tile.c */
+.featured-tile {
+	all: unset;
+	padding: 0;
+	border-radius: 0;
+	border-width: 1px;
+	border-image: none;
+}
+
+.application-details-infobar.info {
+	background-color: #d3d7cf;
+	color: @theme_fg_color;
+	border-color: darker(#d3d7cf);
+	border-style: solid;
+	border-width: 1px;
+	text-shadow: none;
+}
+
+.application-details-infobar.warning {
+	background-color: #fcaf3e;
+	color: @theme_fg_color;
+	border-color: darker(#fcaf3e);
+	border-style: solid;
+	border-width: 1px;
+	text-shadow: none;
+}
+
+.application-details-title {
+	font-weight: bold;
+	font-size: 125%;
+}
+
+.application-details-summary {
+}
+
+.review-summary {
+	font-weight: bold;
+}
+
+.application-details-description {
+}
+
+.install-progress {
+	background-image: linear-gradient(to top, @theme_selected_bg_color 2px, alpha(@theme_selected_bg_color, 0) 2px);
+	background-repeat: no-repeat;
+	background-position: 0 bottom;
+	transition: none;
+}
+
+.install-progress:dir(rtl) { background-position: 100% bottom; }
+
+.error-label {
+	text-shadow: none;
+}
+
+.folder-label {
+	font-size: smaller;
+	background-color: #999999;
+	border-radius: 4px;
+	padding: 4px 8px;
+	color: white;
+}
+
+.app-row-origin-text {
+	font-size: smaller;
+}
+
+.app-listbox-header {
+	padding: 6px;
+	background-image: none;
+	background-color: #babdb6;
+	border-color: #000000;
+}
+
+.app-updates-section {
+	border-radius: 4px;
+	border: 1px solid #000000;
+}
+
+.app-listbox-header-title {
+	font-size: larger;
+}
+
+.image-list {
+	background-color: transparent;
+}
+
+box.star, GtkBox.star {
+	background-color: transparent;
+	background-image: none;
+}
+
+button.star, .button.star {
+	outline-offset: 0;
+	background-color: transparent;
+	background-image: none;
+	border-image: none;
+	border-radius: 0;
+	border-width: 0px;
+	padding: 0;
+	box-shadow: none;
+	outline-offset: -1px;
+}
+
+/* for the review dialog */
+.star-enabled {
+	color: #000000;
+}
+.star-disabled {
+	color: #777777;
+}
+
+/* for the app details shell */
+.star-enabled:disabled {
+	color: #000000;
+}
+.star-disabled:disabled {
+	color: #777777;
+}
+
+.counter-label {
+	text-shadow: none;
+	color: @theme_selected_fg_color;
+	background-color: mix(@theme_selected_bg_color, @theme_selected_fg_color, 0.3);
+	font-size: smaller;
+	border-radius: 4px;
+	padding: 0px 4px;
+}
+
+/* the following two selectors are to color the small gap before the list inside the scrolled window
+   setting a background on the scrolled window affects the undershoot and the overshoot so explicitelly
+   excluding with :not() */
+.category-sidebar:not(.undershoot):not(.overshoot) { background-color: @theme_base_color; }
+
+.category-sidebar:backdrop:not(.undershoot):not(.overshoot) { background-color: @theme_unfocused_base_color; }
+
+/* Superfluous borders removal */
+.category-sidebar {
+	border-style: none;
+}
+
+.category-sidebar:dir(rtl) {
+	border-left-style: solid;
+}
+
+.category-sidebar:dir(ltr) {
+	border-right-style: solid;
+}
+
+.dimmer-label {
+	opacity: 0.25;
+	text-shadow: none;
+}
+
+.update-failed-details {
+	font-family: Monospace;
+	font-size: 90%;
+	padding: 16px;
+}
+
+.eol-box {
+	background-color: @theme_selected_bg_color;
+	border: 1px solid shade(@theme_selected_bg_color, 0.8);
+	color: @theme_selected_fg_color;
+}

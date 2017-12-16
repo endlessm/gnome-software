@@ -1,0 +1,457 @@
+.installed-overlay-box {
+	font-size: smaller;
+	background-color: @theme_selected_bg_color;
+	border-radius: 0;
+	color: @theme_selected_fg_color;
+	text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}
+  .installed-overlay-box:backdrop label {
+        color: @theme_selected_fg_color;
+  }
+
+.installed-icon {
+	color: @theme_selected_bg_color;
+}
+
+.popular-installed-overlay-box {
+	font-size: smaller;
+	background-color: @theme_selected_bg_color;
+	border-radius: 0;
+	color: @theme_selected_fg_color;
+	text-shadow: none;
+}
+  .popular-installed-overlay-box:backdrop label {
+	color: @theme_selected_fg_color;
+  }
+
+.index-title-alignment-software {
+	font-weight: bold;
+	font-size: 125%;
+}
+
+.app-row-installed-label {
+	color: @theme_selected_bg_color;
+	font-size: smaller;
+}
+
+.app-row-app-size {
+	font-size: x-small;
+}
+
+.needs-attention {
+	background-image: none;
+	background-color: shade(@theme_selected_bg_color, 1.1);
+	border-radius: 1px;
+}
+
+.toolbar-primary-buttons-software {
+	padding-left: 26px;
+	padding-right: 26px;
+}
+
+.round-button {
+	border-radius: 16px;
+}
+
+.details-license-free,
+.details-license-nonfree,
+.details-license-unknown,
+.details-license-free:backdrop,
+.details-license-nonfree:backdrop,
+.details-license-unknown:backdrop {
+	outline-offset: 0;
+	background-image: none;
+	border-image: none;
+	border-radius: 4px;
+	border-width: 0 0 2px 0;
+	padding: 1px 9px;
+	box-shadow: none;
+	text-shadow: none;
+	color: #ffffff;
+}
+
+.details-license-free label,
+.details-license-free:backdrop label,
+.details-license-free:hover label,
+.details-license-nonfree label,
+.details-license-nonfree:backdrop label,
+.details-license-nonfree:hover label,
+.details-license-unknown label,
+.details-license-unknown:backdrop label,
+.details-license-unknown:hover label {
+	color: #fff;
+}
+
+.content-rating {
+	outline-offset: 0;
+	background-image: none;
+	background-color: #dbdbdb;
+	border-image: none;
+	border-radius: 4px;
+	border-width: 0px;
+	padding: 1px 9px;
+	box-shadow: none;
+	text-shadow: none;
+}
+
+.details-license-free {
+	background-color: #4e9a06;
+	border-color: #3e7905;
+}
+.details-license-free:hover {
+	background-color: #5db807;
+	border-color: #4d9606;
+}
+.details-license-free:backdrop {
+	border-color: #4e9a06;
+}
+
+.details-license-nonfree {
+	background-color: #ee2222;
+	border-color: #c20f0f;
+}
+.details-license-nonfree:hover {
+	background-color: #f25959;
+	border-color: #ed1b1b;
+}
+.details-license-nonfree:backdrop {
+	border-color: #ee2222;
+}
+
+.details-license-unknown {
+	background-color: #dbdbdb;
+	border-color: #bbbbbb;
+}
+.details-license-nonfree:hover {
+	background-color: #eeeeee;
+	border-color: #d5d5d5;
+}
+.details-license-nonfree:backdrop {
+	border-color: #dbdbdb;
+}
+
+
+.kudo-pill {
+	color: @theme_selected_fg_color;
+	background-color: shade(@theme_selected_bg_color, 1.1);
+	background-image: none;
+	border-radius: 16px;
+	padding: 8px;
+}
+
+/* should be :disabled but we need to support older versions of GTK */
+.kudo-pill:disabled {
+	color: @theme_bg_color;
+	background-color: mix(@insensitive_fg_color, @theme_bg_color, 0.6);
+}
+
+.kudo-pill:disabled:backdrop {
+	color: @theme_unfocused_bg_color;
+	background-color: mix(@insensitive_fg_color, @theme_unfocused_bg_color, 0.8);
+}
+
+.onlyjustvisible:disabled {
+	opacity: 0.25;
+}
+
+.screenshot-image, .screenshot-image-thumb {
+	background-image: none;
+	background-color: shade(@theme_bg_color, 0.9);
+}
+.screenshot-image { border-radius: 5px; }
+.screenshot-image-thumb { border-radius: 3px; }
+
+.app-tile-label {
+	font-size: 105%;
+}
+
+.app-row-tag {
+	text-shadow: none;
+	color: @theme_selected_fg_color;
+	background-color: #999999;
+	font-size: smaller;
+	border-radius: 4px;
+	padding: 2px 10px;
+}
+
+.review-textbox {
+	padding: 6px;
+}
+
+.view.tile {
+	padding: 0;
+	box-shadow: inset 0 1px @theme_base_color, 0 1px 1px alpha(black,0.4);
+	border: 1px solid mix(@theme_base_color,@theme_fg_color,0.3);
+	background-image: none;
+	background-color: mix(@theme_base_color,@theme_bg_color,0.3);
+}
+
+.app-list {
+	background-color: @theme_base_color;
+}
+
+.view.tile:hover {
+	background-color: @theme_base_color;
+}
+
+.view.tile:active {
+	border-color: @theme_selected_bg_color;
+	box-shadow: none;
+	color: @theme_selected_bg_color;
+}
+
+.view.tile:backdrop {
+	box-shadow: none;
+	border-color: @unfocused_borders;
+}
+
+/* The rest of the featured-tile CSS is loaded at runtime in gs-feature-tile.c */
+.featured-tile {
+	all: unset;
+	padding: 0;
+	border-radius: 0;
+	border-width: 1px;
+	border-image: none;
+	/* box-shadow: inset 0 0 0 1px alpha(@theme_fg_color,0.3), 0 0 1px alpha(black,0.4); */
+}
+  .featured-tile:backdrop label {
+    color: inherit;
+    text-shadow: none;
+  }
+
+.application-details-infobar.info {
+	background-color: #d3d7cf;
+	color: @theme_fg_color;
+	border-color: darker(#d3d7cf);
+	border-style: solid;
+	border-width: 1px;
+	text-shadow: none;
+}
+
+.application-details-infobar {
+	background-color: #d3d7cf;
+	color: @theme_fg_color;
+	border-color: darker(#d3d7cf);
+	border-style: solid;
+	border-width: 1px;
+	padding: 12px;
+	text-shadow: none;
+}
+
+.application-details-infobar.warning {
+	background-color: #fcaf3e;
+	color: @theme_fg_color;
+	border-color: darker(#fcaf3e);
+	border-style: solid;
+	border-width: 1px;
+	text-shadow: none;
+}
+
+.application-details-title {
+	font-weight: bold;
+	font-size: 125%;
+}
+
+.application-details-webapp-warning {
+	font-weight: bold;
+}
+
+.application-details-summary {
+}
+
+.application-details-description {
+}
+
+.install-progress {
+	background-image: linear-gradient(to top, @theme_selected_bg_color 2px, alpha(@theme_selected_bg_color, 0) 2px);
+	background-repeat: no-repeat;
+	background-position: 0 bottom;
+	transition: none;
+}
+
+.install-progress:dir(rtl) { background-position: 100% bottom; }
+
+.review-summary {
+	font-weight: bold;
+}
+
+.review-listbox {
+	all: unset;
+}
+
+.review-row button, .review-row .button { font-size: smaller; }
+
+/* gtk+ 3.20+ only */
+.review-row .vote-buttons button {
+	margin-right: -1px;
+
+	/* restricting transition properties since the hack for the separator*/
+	transition-property: background, box-shadow, border-style, text-shadow;
+}
+
+/* this is the separator between yes and no vote buttons, gtk+ 3.20 only */
+.review-row .vote-buttons button:not(:first-child):not(:hover):not(:active):not(:backdrop) {
+	border-image: linear-gradient(to top, @borders, @borders) 0 0 0 1 / 5px 0 5px 1px;
+}
+.review-row .vote-buttons button:not(:first-child):backdrop {
+	border-image: linear-gradient(to top, @unfocused_borders, @unfocused_borders) 0 0 0 1 / 5px 0 5px 1px;
+}
+
+.reviewbar {
+	background-image: none;
+	background-color: #babdb6;
+	color: #555753;
+}
+
+.error-label {
+	text-shadow: none;
+}
+
+.folder-label {
+	font-size: smaller;
+        font-weight: bold;
+	background-color: #999999;
+	border-radius: 2px;
+	padding: 2px 8px;
+	color: white;
+}
+
+.overview-more-button {
+	font-size: smaller;
+	padding: 0px 15px;
+}
+
+.app-row-origin-text {
+	font-size: smaller;
+}
+
+.app-listbox-header {
+	padding: 6px;
+	background-image: none;
+	border-bottom: 1px solid @theme_bg_color;
+}
+
+.app-listbox-header:dir(ltr) { padding-left: 10px; }
+
+.app-listbox-header:dir(rtl) { padding-right: 10px; }
+
+.app-updates-section {
+	border-radius: 4px;
+	border: 1px solid darker(@theme_bg_color);
+}
+
+.app-listbox-header-title {
+	font-size: 100%;
+	font-weight: bold;
+}
+
+.image-list {
+	background-color: transparent;
+}
+
+box.star, GtkBox.star {
+	background-color: transparent;
+	background-image: none;
+}
+
+button.star, .button.star {
+	outline-offset: 0;
+	background-color: transparent;
+	background-image: none;
+	border-image: none;
+	border-radius: 0;
+	border-width: 0px;
+	padding: 0;
+	box-shadow: none;
+	outline-offset: -1px;
+}
+
+/* i have no idea why GTK adds padding here */
+flowboxchild {
+	padding: 0px;
+}
+
+/* for the review dialog */
+.star-enabled {
+	color: @theme_selected_bg_color;
+}
+.star-disabled {
+	color: shade(@theme_bg_color, 0.8);
+}
+
+/* for the app details shell */
+.star-enabled:disabled {
+	color: #555753;
+}
+.star-disabled:disabled {
+	color: shade(@theme_bg_color, 0.8);
+}
+
+.counter-label {
+	text-shadow: none;
+	color: @theme_selected_fg_color;
+	background-color: mix(@theme_selected_bg_color, @theme_selected_fg_color, 0.3);
+	font-size: smaller;
+	border-radius: 4px;
+	padding: 0px 4px;
+}
+
+/* the following two selectors are to color the small gap before the list inside the scrolled window
+   setting a background on the scrolled window affects the undershoot and the overshoot so explicitelly
+   excluding with :not() */
+.category-sidebar:not(.undershoot):not(.overshoot) { background-color: @theme_base_color; }
+
+.category-sidebar:backdrop:not(.undershoot):not(.overshoot) { background-color: @theme_unfocused_base_color; }
+
+/* padding removal */
+.list-box-app-row {
+	padding: 0px;
+}
+
+/* Superfluous borders removal */
+.category-sidebar {
+	border-style: none;
+}
+
+.category-sidebar:dir(rtl) {
+	border-left-style: solid;
+}
+
+.category-sidebar:dir(ltr) {
+	border-right-style: solid;
+}
+
+.dimmer-label {
+	opacity: 0.25;
+	text-shadow: none;
+}
+
+.update-failed-details {
+	font-family: Monospace;
+	font-size: smaller;
+	padding: 16px;
+}
+
+.upgrade-banner {
+	background-color: #1c5288;
+	padding: 0px;
+	border-radius: 4px;
+	border: 1px solid darker(@theme_bg_color);
+	color: @theme_selected_fg_color;
+}
+
+.upgrade-buttons {
+	padding: 18px;
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+}
+
+.upgrade-progressbar {
+	box-shadow: none
+}
+
+.eol-box {
+	background-color: @theme_selected_bg_color;
+	border: 1px solid shade(@theme_selected_bg_color, 0.8);
+	color: @theme_selected_fg_color;
+}

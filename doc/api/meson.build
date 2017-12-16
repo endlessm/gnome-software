@@ -1,0 +1,11 @@
+gnome.gtkdoc(
+  'gnome-software',
+  src_dir : join_paths(meson.source_root(), 'lib'),
+  main_xml : 'gnome-software-docs.xml',
+  html_assets : [
+    'gs-example-details.png',
+    'gs-example-installed.png',
+    'gs-example-search.png'
+  ],
+  install : true
+)
