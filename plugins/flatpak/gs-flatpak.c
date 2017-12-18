@@ -41,12 +41,15 @@ struct _GsFlatpak {
 	GsFlatpakFlags		 flags;
 	FlatpakInstallation	*installation;
 	GHashTable		*broken_remotes;
+	GHashTable		*usb_remotes;
 	GFileMonitor		*monitor;
 	AsAppScope		 scope;
 	GsPlugin		*plugin;
 	AsStore			*store;
 	gchar			*id;
 	guint			 changed_id;
+	GVolumeMonitor		*volume_monitor;
+	guint			 mount_removed_handler_id;
 };
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
@@ -388,6 +391,8 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 
 	for (guint i = 0; i < refs->len; ++i) {
 		FlatpakRef *ref = FLATPAK_REF (g_ptr_array_index (refs, i));
+		GPtrArray *usb_apps_for_remote = g_hash_table_lookup (self->usb_remotes,
+								      remote_url);
 		g_autoptr(GsApp) app = gs_flatpak_create_app (self, ref);
 		const gchar *ref_collection_id = flatpak_ref_get_collection_id (ref);
 		const gchar *app_collection_id = NULL;
@@ -419,9 +424,16 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 		 * category view when there are others with the same ID */
 		as_app_set_priority (as_app, 100);
 
-		if (found_usb_apps)
-			*found_usb_apps = TRUE;
+		/* create list of apps corresponding to this USB remote */
+		if (usb_apps_for_remote == NULL) {
+			usb_apps_for_remote = g_ptr_array_new_with_free_func (g_object_unref);
+			g_hash_table_insert (self->usb_remotes, g_strdup (remote_url),
+					     usb_apps_for_remote);
+		}
+		g_ptr_array_add (usb_apps_for_remote, g_object_ref (as_app));
 	}
+	if (found_usb_apps)
+		*found_usb_apps = g_hash_table_size (self->usb_remotes) > 0;
 	return TRUE;
 }
 
@@ -3177,6 +3189,59 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 }
 
 static gboolean
+mount_contains_uri (GMount *mount, const gchar *uri)
+{
+	g_autoptr(GFile) mount_root = NULL;
+	g_autoptr(GFile) remote_file = NULL;
+
+	if (!mount)
+		return FALSE;
+
+	mount_root = g_mount_get_root (mount);
+	remote_file = g_file_new_for_uri (uri);
+
+	return g_file_has_prefix (remote_file, mount_root);
+}
+
+static void
+gs_flatpak_mount_removed (GVolumeMonitor *volume_monitor,
+			  GMount *mount,
+			  gpointer user_data)
+{
+	GsFlatpak *self = GS_FLATPAK (user_data);
+	GHashTableIter iter;
+	gpointer key;
+	gboolean should_reload = FALSE;
+
+	g_hash_table_iter_init (&iter, self->usb_remotes);
+	while (g_hash_table_iter_next (&iter, &key, NULL)) {
+		GPtrArray *apps = NULL;
+		const gchar *remote_url = (const gchar *) key;
+		if (!mount_contains_uri (mount, remote_url))
+			continue;
+
+		should_reload = TRUE;
+		apps = g_hash_table_lookup (self->usb_remotes, remote_url);
+		for (guint i = 0; i < apps->len; ++i) {
+			AsApp *as_app = g_ptr_array_index (apps, i);
+			GsApp *app = gs_plugin_cache_lookup (self->plugin,
+							     as_app_get_unique_id (as_app));
+			if (app != NULL)
+				gs_app_remove_category (app, "USB");
+			as_app_remove_category (as_app, "USB");
+			/* FIXME: we should also remove the 'usb' keyword but
+			 * we will do it when there's proper API for it in AsApp */
+		}
+		g_hash_table_iter_remove (&iter);
+	}
+
+	/* reload so we show an updated USB category or no USB category at
+	 * all (if no USB remotes are found anymore) */
+	if (should_reload)
+		gs_plugin_reload (self->plugin);
+}
+
+static gboolean
 app_has_local_source (GsApp *app)
 {
 	const gchar *url = gs_app_get_origin_hostname (app);
@@ -4051,11 +4116,19 @@ gs_flatpak_finalize (GObject *object)
 		self->changed_id = 0;
 	}
 
+	if (self->mount_removed_handler_id > 0) {
+		g_signal_handler_disconnect (self->volume_monitor,
+					     self->mount_removed_handler_id);
+		self->mount_removed_handler_id = 0;
+	}
+
 	g_free (self->id);
 	g_object_unref (self->installation);
 	g_object_unref (self->plugin);
 	g_object_unref (self->store);
+	g_object_unref (self->volume_monitor);
 	g_hash_table_unref (self->broken_remotes);
+	g_hash_table_unref (self->usb_remotes);
 
 	G_OBJECT_CLASS (gs_flatpak_parent_class)->finalize (object);
 }
@@ -4072,10 +4145,18 @@ gs_flatpak_init (GsFlatpak *self)
 {
 	self->broken_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 						      g_free, NULL);
+	self->usb_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
+						   g_free,
+						   (GDestroyNotify) g_ptr_array_unref);
 	self->store = as_store_new ();
+	self->volume_monitor = g_volume_monitor_get ();
 	g_signal_connect (self->store, "app-added",
 			  G_CALLBACK (gs_flatpak_store_app_added_cb),
 			  self);
+	self->mount_removed_handler_id = g_signal_connect (self->volume_monitor,
+							   "mount-removed",
+							   G_CALLBACK (gs_flatpak_mount_removed),
+							   self);
 	g_signal_connect (self->store, "app-removed",
 			  G_CALLBACK (gs_flatpak_store_app_removed_cb),
 			  self);
