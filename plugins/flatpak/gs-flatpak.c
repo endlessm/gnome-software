@@ -48,6 +48,7 @@ struct _GsFlatpak {
 	AsStore			*store;
 	gchar			*id;
 	guint			 changed_id;
+	GVolumeMonitor		*volume_monitor;
 };
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
@@ -395,6 +396,23 @@ remote_is_eos_apps (FlatpakRemote *remote)
 }
 
 static gboolean
+mount_contains_uri (GMount *mount, const gchar *uri)
+{
+	g_autoptr(GFile) mount_root = NULL;
+	g_autofree gchar *mount_uri = NULL;
+
+	if (!mount)
+		return FALSE;
+
+	mount_root = g_mount_get_root (mount);
+	mount_uri = g_file_get_uri (mount_root);
+
+	if (g_str_has_prefix (uri, mount_uri))
+		return TRUE;
+	return FALSE;
+}
+
+static gboolean
 gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 				      FlatpakRemote *remote,
 				      gboolean *found_usb_apps,
@@ -453,6 +471,7 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 				  g_steal_pointer (&remote_url));
 	return TRUE;
 }
+
 
 static gboolean
 gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
@@ -3243,6 +3262,30 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 	return app;
 }
 
+static void
+gs_flatpak_mount_removed (GVolumeMonitor *volume_monitor,
+			  GMount *mount,
+			  gpointer user_data)
+{
+	GsFlatpak *self = GS_FLATPAK (user_data);
+	GHashTableIter iter;
+	gpointer key;
+
+	g_hash_table_iter_init (&iter, self->loaded_usb_remotes);
+	while (g_hash_table_iter_next (&iter, &key, NULL)) {
+		const gchar *remote_url = (const gchar *) key;
+		if (!mount_contains_uri (mount, remote_url))
+			continue;
+
+		/* ensure all remotes will be reconsidered */
+		g_hash_table_remove_all (self->loaded_usb_remotes);
+		as_store_remove_all (self->store);
+
+		gs_plugin_reload (self->plugin);
+		return;
+	}
+}
+
 gboolean
 gs_flatpak_app_install (GsFlatpak *self,
 			GsApp *app,
@@ -4127,8 +4170,12 @@ gs_flatpak_init (GsFlatpak *self)
 	self->loaded_usb_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 							  g_free, NULL);
 	self->store = as_store_new ();
+	self->volume_monitor = g_volume_monitor_get ();
 	g_signal_connect (self->store, "app-added",
 			  G_CALLBACK (gs_flatpak_store_app_added_cb),
+			  self);
+	g_signal_connect (self->volume_monitor, "mount-removed",
+			  G_CALLBACK (gs_flatpak_mount_removed),
 			  self);
 	g_signal_connect (self->store, "app-removed",
 			  G_CALLBACK (gs_flatpak_store_app_removed_cb),
