@@ -764,7 +764,8 @@ static gboolean
 app_has_local_source (GsApp *app)
 {
 	const gchar *url = gs_app_get_origin_hostname (app);
-	return url != NULL && g_str_has_prefix (url, "file://");
+	return gs_app_has_category (app, "usb") ||
+		(url != NULL && g_str_has_prefix (url, "file://"));
 }
 
 gboolean
