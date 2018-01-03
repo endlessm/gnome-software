@@ -281,6 +281,7 @@ void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	g_autoptr(GError) error = NULL;
+	g_autoptr(GSettings) settings = NULL;
 	GApplication *app = g_application_get_default ();
 	GsPluginData *priv = gs_plugin_alloc_data (plugin,
 						   sizeof(GsPluginData));
@@ -308,7 +309,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->soup_session = gs_plugin_get_soup_session (plugin);
 	priv->personality = get_personality ();
 
-	g_autoptr(GSettings) settings = g_settings_new ("org.gnome.shell");
+	settings = g_settings_new ("org.gnome.shell");
 	priv->is_coding_enabled = g_settings_get_boolean (settings, "enable-coding-game");
 
 	/* Synchronous, but this guarantees that the lookup table will be
