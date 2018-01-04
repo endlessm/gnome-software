@@ -180,7 +180,8 @@ execute_search (GsShellSearchProvider  *self,
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
 					 "search", value,
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					 "max-results", GS_SHELL_SEARCH_PROVIDER_MAX_RESULTS,
 					 NULL);
 	gs_plugin_job_set_sort_func (plugin_job, gs_shell_search_provider_sort_cb);
