@@ -11,4 +11,8 @@ if [ -z $DESTDIR ]; then
     gtk-update-icon-cache -qtf "$MESON_INSTALL_PREFIX/share/icons/hicolor"
     echo 'Updating desktop database'
     update-desktop-database -q "$MESON_INSTALL_PREFIX/share/applications"
+    echo 'Update mime database'
+    update-mime-database "$MESON_INSTALL_PREFIX/share/mime"
+    echo 'Update default ostree'
+    xdg-mime default gnome-software-local-file.desktop x-content/ostree-software
 fi
