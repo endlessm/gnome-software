@@ -41,12 +41,15 @@ struct _GsFlatpak {
 	GsFlatpakFlags		 flags;
 	FlatpakInstallation	*installation;
 	GHashTable		*broken_remotes;
+	GHashTable		*usb_remotes;
 	GFileMonitor		*monitor;
 	AsAppScope		 scope;
 	GsPlugin		*plugin;
 	AsStore			*store;
 	gchar			*id;
 	guint			 changed_id;
+	GVolumeMonitor		*volume_monitor;
+	guint			 mount_removed_handler_id;
 };
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
@@ -394,6 +397,69 @@ remote_is_eos_apps (FlatpakRemote *remote)
 }
 
 static gboolean
+gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
+				      FlatpakRemote *remote,
+				      gboolean *found_usb_apps,
+				      GCancellable *cancellable,
+				      GError **error)
+{
+	g_autoptr(GPtrArray) refs = NULL;
+	g_autofree gchar *remote_url = flatpak_remote_get_url (remote);
+
+	refs = flatpak_installation_list_remote_refs_sync (self->installation,
+							   remote_url,
+							   cancellable,
+							   error);
+
+	if (refs == NULL)
+		return FALSE;
+
+	for (guint i = 0; i < refs->len; ++i) {
+		FlatpakRef *ref = FLATPAK_REF (g_ptr_array_index (refs, i));
+		GPtrArray *usb_apps_for_remote = g_hash_table_lookup (self->usb_remotes,
+								      remote_url);
+		g_autoptr(GsApp) app = gs_flatpak_create_app (self, ref);
+		const gchar *ref_collection_id = flatpak_ref_get_collection_id (ref);
+		const gchar *app_collection_id = NULL;
+		AsApp *as_app = as_store_get_app_by_unique_id (self->store,
+							       gs_app_get_unique_id (app),
+							       AS_STORE_SEARCH_FLAG_USE_WILDCARDS);
+
+		if (as_app == NULL)
+			continue;
+
+		app_collection_id = as_app_get_metadata_item (as_app, "flatpak::CollectionId");
+		if (g_strcmp0 (ref_collection_id, app_collection_id) != 0) {
+			g_debug ("Not marking app %s as coming from USB at %s, "
+				 "since the app and ref collection IDs don't "
+				 "match (%s != %s)",
+				 as_app_get_unique_id (as_app), remote_url,
+				 app_collection_id, ref_collection_id);
+			continue;
+		}
+		as_app_add_category (as_app, "USB");
+
+		/* add a keyword so users can search for "usb" */
+		as_app_add_keyword (as_app, NULL, "usb");
+
+		/* adding the priority so these apps are not filtered out in the
+		 * category view when there are others with the same ID */
+		as_app_set_priority (as_app, 100);
+
+		/* create list of apps corresponding to this USB remote */
+		if (usb_apps_for_remote == NULL) {
+			usb_apps_for_remote = g_ptr_array_new_with_free_func (g_object_unref);
+			g_hash_table_insert (self->usb_remotes, g_strdup (remote_url),
+					     usb_apps_for_remote);
+		}
+		g_ptr_array_add (usb_apps_for_remote, g_object_ref (as_app));
+	}
+	if (found_usb_apps)
+		*found_usb_apps = g_hash_table_size (self->usb_remotes) > 0;
+	return TRUE;
+}
+
+static gboolean
 gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 				  FlatpakRemote *xremote,
 				  GCancellable *cancellable,
@@ -411,6 +477,8 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	g_autoptr(GFile) file = NULL;
 	g_autoptr(GSettings) settings = NULL;
 	g_autoptr(GPtrArray) app_filtered = NULL;
+	g_autofree gchar *remote_url = NULL;
+	g_autofree gchar *collection_id = NULL;
 
 	/* profile */
 	ptask = as_profile_start (gs_plugin_get_profile (self->plugin),
@@ -418,6 +486,17 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 				  gs_flatpak_get_id (self),
 				  flatpak_remote_get_name (xremote));
 	g_assert (ptask != NULL);
+
+	remote_url = flatpak_remote_get_url (xremote);
+	if (g_str_has_prefix (remote_url, "file:")) {
+		g_autoptr(GFile) remote_local_repo = g_file_new_for_uri (remote_url);
+		if (!g_file_query_exists (remote_local_repo, cancellable)) {
+			g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND,
+				     "Local repo for remote %s not found: %s",
+				     flatpak_remote_get_name (xremote), remote_url);
+			return FALSE;
+		}
+	}
 
 	/* get the AppStream data location */
 	appstream_dir = flatpak_remote_get_appstream_dir (xremote, NULL);
@@ -487,6 +566,8 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 		default_branch = g_strdup ("eos3");
 	}
 
+	collection_id = flatpak_remote_get_collection_id (xremote);
+
 	/* get all the apps and fix them up */
 	app_filtered = g_ptr_array_new ();
 	for (i = 0; i < apps->len; i++) {
@@ -514,6 +595,11 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 		as_app_set_scope (app, self->scope);
 		as_app_set_origin (app, flatpak_remote_get_name (xremote));
 		as_app_add_keyword (app, NULL, "flatpak");
+
+		if (collection_id != NULL)
+			as_app_add_metadata (app, "flatpak::CollectionId",
+					     collection_id);
+
 		g_debug ("adding %s", as_app_get_unique_id (app));
 		g_ptr_array_add (app_filtered, app);
 	}
@@ -636,6 +722,8 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 	guint i;
 	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(GPtrArray) xremotes = NULL;
+	g_autoptr(GPtrArray) usb_remotes = NULL;
+	const FlatpakRemoteType types[] = { FLATPAK_REMOTE_TYPE_STATIC, FLATPAK_REMOTE_TYPE_USB };
 
 	/* profile */
 	ptask = as_profile_start (gs_plugin_get_profile (self->plugin),
@@ -647,21 +735,46 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 	as_store_remove_all (self->store);
 
 	/* go through each remote adding metadata */
-	xremotes = flatpak_installation_list_remotes (self->installation,
-						      cancellable,
-						      error);
+	xremotes = flatpak_installation_list_remotes_by_type (self->installation,
+							      types,
+							      G_N_ELEMENTS (types),
+							      cancellable, error);
 	if (xremotes == NULL) {
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
+
+	usb_remotes = g_ptr_array_new ();
+
 	for (i = 0; i < xremotes->len; i++) {
+		g_autoptr(GError) local_error = NULL;
 		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
+		/* gather the USB type remotes for marking the apps as coming
+		 * from it later */
+		if (flatpak_remote_get_remote_type (xremote) == FLATPAK_REMOTE_TYPE_USB) {
+			g_ptr_array_add (usb_remotes, xremote);
+			continue;
+		}
 		if (flatpak_remote_get_disabled (xremote))
 			continue;
 		g_debug ("found remote %s",
 			 flatpak_remote_get_name (xremote));
-		if (!gs_flatpak_add_apps_from_xremote (self, xremote, cancellable, error))
-			return FALSE;
+		if (!gs_flatpak_add_apps_from_xremote (self, xremote, cancellable,
+						       &local_error)) {
+			g_debug ("Failed to add apps from remote: %s; skipping",
+				 local_error->message);
+		}
+	}
+
+	for (i = 0; i < usb_remotes->len; ++i) {
+		FlatpakRemote *remote = g_ptr_array_index (usb_remotes, i);
+		g_autoptr(GError) local_error = NULL;
+		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote, NULL,
+							   cancellable, &local_error)) {
+			g_debug ("Failed to mark apps coming from USB remote at %s: %s",
+				 flatpak_remote_get_url (remote),
+				 local_error->message);
+		}
 	}
 
 	/* add any installed files without AppStream info */
@@ -3075,6 +3188,114 @@ gs_flatpak_create_runtime_repo (GsFlatpak *self,
 	return g_steal_pointer (&app);
 }
 
+GsApp *
+gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
+				     GFile *file,
+				     GCancellable *cancellable,
+				     GError **error)
+{
+	g_autoptr(GPtrArray) remotes = NULL;
+	gboolean dir_has_repo = FALSE;
+	gboolean reload_overview = FALSE;
+	GsApp *app = NULL;
+	const FlatpakRemoteType usb_type[] = { FLATPAK_REMOTE_TYPE_USB };
+
+	remotes = flatpak_installation_list_remotes_by_type (self->installation,
+							     usb_type,
+							     G_N_ELEMENTS (usb_type),
+							     cancellable, error);
+	if (remotes == NULL)
+		return NULL;
+
+	for (guint i = 0; i < remotes->len; ++i) {
+		FlatpakRemote *remote = g_ptr_array_index (remotes, i);
+		g_autofree gchar *remote_uri = flatpak_remote_get_url (remote);
+		g_autoptr(GFile) remote_file = g_file_new_for_uri (remote_uri);
+		g_autoptr(GError) local_error = NULL;
+
+		/* skip if the remote does not have the dir's path as a parent */
+		if (!g_file_has_prefix (remote_file, file))
+			continue;
+
+		dir_has_repo = TRUE;
+
+		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote, &reload_overview,
+							   cancellable, &local_error)) {
+			g_debug ("Failed to mark USB apps from remote at %s: %s",
+				 remote_uri, local_error->message);
+			continue;
+		}
+	}
+
+	if (!dir_has_repo) {
+		g_autofree gchar *file_uri = g_file_get_uri (file);
+		g_set_error (error, G_IO_ERROR_FAILED, G_IO_ERROR_NOT_FOUND,
+			     "No remotes from the given directory: %s", file_uri);
+		return NULL;
+	}
+
+	app = gs_flatpak_app_new ("com.endlessm.RemovableMediaRepo");
+	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Removable Media Repo");
+	gs_app_set_management_plugin (app, gs_plugin_get_name (self->plugin));
+	gs_app_set_metadata (app, "EndlessOS::RemovableMediaCategory", "usb");
+	if (reload_overview)
+		gs_app_set_metadata (app, "EndlessOS::ReloadOverview", "true");
+
+	return app;
+}
+
+static gboolean
+mount_contains_uri (GMount *mount, const gchar *uri)
+{
+	g_autoptr(GFile) mount_root = NULL;
+	g_autoptr(GFile) remote_file = NULL;
+
+	if (!mount)
+		return FALSE;
+
+	mount_root = g_mount_get_root (mount);
+	remote_file = g_file_new_for_uri (uri);
+
+	return g_file_has_prefix (remote_file, mount_root);
+}
+
+static void
+gs_flatpak_mount_removed (GVolumeMonitor *volume_monitor,
+			  GMount *mount,
+			  gpointer user_data)
+{
+	GsFlatpak *self = GS_FLATPAK (user_data);
+	GHashTableIter iter;
+	gpointer key;
+	gboolean should_reload = FALSE;
+
+	g_hash_table_iter_init (&iter, self->usb_remotes);
+	while (g_hash_table_iter_next (&iter, &key, NULL)) {
+		GPtrArray *apps = NULL;
+		const gchar *remote_url = (const gchar *) key;
+		if (!mount_contains_uri (mount, remote_url))
+			continue;
+
+		should_reload = TRUE;
+		apps = g_hash_table_lookup (self->usb_remotes, remote_url);
+		for (guint i = 0; i < apps->len; ++i) {
+			AsApp *app = g_ptr_array_index (apps, i);
+			as_app_remove_category (app, "USB");
+			/* FIXME: we should also remove the 'usb' keyword but
+			 * we will do it when there's proper API for it in AsApp */
+		}
+		g_hash_table_iter_remove (&iter);
+	}
+
+	/* reload so we show an updated USB category or no USB category at
+	 * all (if no USB remotes are found anymore) */
+	if (should_reload)
+		gs_plugin_reload (self->plugin);
+}
+
 static gboolean
 app_has_local_source (GsApp *app)
 {
@@ -3950,11 +4171,19 @@ gs_flatpak_finalize (GObject *object)
 		self->changed_id = 0;
 	}
 
+	if (self->mount_removed_handler_id > 0) {
+		g_signal_handler_disconnect (self->volume_monitor,
+					     self->mount_removed_handler_id);
+		self->mount_removed_handler_id = 0;
+	}
+
 	g_free (self->id);
 	g_object_unref (self->installation);
 	g_object_unref (self->plugin);
 	g_object_unref (self->store);
+	g_object_unref (self->volume_monitor);
 	g_hash_table_unref (self->broken_remotes);
+	g_hash_table_unref (self->usb_remotes);
 
 	G_OBJECT_CLASS (gs_flatpak_parent_class)->finalize (object);
 }
@@ -3971,10 +4200,18 @@ gs_flatpak_init (GsFlatpak *self)
 {
 	self->broken_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 						      g_free, NULL);
+	self->usb_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
+						   g_free,
+						   (GDestroyNotify) g_ptr_array_unref);
 	self->store = as_store_new ();
+	self->volume_monitor = g_volume_monitor_get ();
 	g_signal_connect (self->store, "app-added",
 			  G_CALLBACK (gs_flatpak_store_app_added_cb),
 			  self);
+	self->mount_removed_handler_id = g_signal_connect (self->volume_monitor,
+							   "mount-removed",
+							   G_CALLBACK (gs_flatpak_mount_removed),
+							   self);
 	g_signal_connect (self->store, "app-removed",
 			  G_CALLBACK (gs_flatpak_store_app_removed_cb),
 			  self);
