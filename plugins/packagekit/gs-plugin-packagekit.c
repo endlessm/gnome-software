@@ -278,6 +278,12 @@ gs_plugin_app_install (GsPlugin *plugin,
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
+	/* queue for install if installation needs the network */
+	if (!gs_plugin_get_network_available (plugin)) {
+		gs_app_set_state (app, AS_APP_STATE_QUEUED_FOR_INSTALL);
+		return TRUE;
+	}
+
 	/* we enable the repo */
 	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
 
