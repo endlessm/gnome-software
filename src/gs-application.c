@@ -805,6 +805,7 @@ static GActionEntry actions[] = {
 static GActionEntry actions_after_loading[] = {
 	{ "sources", sources_activated, NULL, NULL, NULL },
 	{ "prefs", prefs_activated, NULL, NULL, NULL },
+	{ "download-updates", NULL, NULL, NULL, NULL },
 	{ "set-mode", set_mode_activated, "s", NULL, NULL },
 	{ "search", search_activated, "s", NULL, NULL },
 	{ "details", details_activated, "(ss)", NULL, NULL },
