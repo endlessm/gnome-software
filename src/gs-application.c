@@ -937,6 +937,7 @@ gs_application_startup (GApplication *application)
 {
 	GSettings *settings;
 	GsApplication *app = GS_APPLICATION (application);
+	g_autoptr(GAction) action = NULL;
 	G_APPLICATION_CLASS (gs_application_parent_class)->startup (application);
 
 	gs_application_add_wrapper_actions (application);
@@ -955,6 +956,9 @@ gs_application_startup (GApplication *application)
 	g_signal_connect_swapped (settings, "changed",
 				  G_CALLBACK (gs_application_settings_changed_cb),
 				  application);
+
+	action = g_settings_create_action (app->settings, "download-updates");
+	g_action_map_add_action (G_ACTION_MAP (app), action);
 
 	gs_application_initialize_ui (app);
 
