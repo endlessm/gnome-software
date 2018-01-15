@@ -3076,7 +3076,6 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	GsAppList *list = gs_plugin_job_get_list (helper->plugin_job);
 	GsPluginAction action = gs_plugin_job_get_action (helper->plugin_job);
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (object);
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	gboolean add_to_pending_array = FALSE;
 
 	/* these change the pending count on the installed panel */
@@ -3115,15 +3114,9 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 			g_task_return_error (task, error);
 			return;
 		}
-	}
 
-	/* remove from pending list */
-	if (add_to_pending_array)
-		gs_plugin_loader_pending_apps_remove (plugin_loader, helper);
-
-	/* append extra things when we want the list of pending updates */
-	if (action == GS_PLUGIN_ACTION_GET_UPDATES &&
-	    !g_settings_get_boolean (priv->settings, "download-updates")) {
+		/* append pending updates this way, until we find a consensus to deal
+		 * with updates (e.g. only one updates plugin function...) */
 		helper->function_name = "gs_plugin_add_updates_pending";
 		if (!gs_plugin_loader_run_results (helper, cancellable, &error)) {
 			gs_utils_error_convert_gio (&error);
@@ -3131,6 +3124,10 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 			return;
 		}
 	}
+
+	/* remove from pending list */
+	if (add_to_pending_array)
+		gs_plugin_loader_pending_apps_remove (plugin_loader, helper);
 
 	/* some functions are really required for proper operation */
 	switch (action) {
