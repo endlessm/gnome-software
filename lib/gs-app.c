@@ -125,6 +125,7 @@ typedef struct
 	GdkPixbuf		*pixbuf;
 	GsPrice			*price;
 	GCancellable		*cancellable;
+	GsPluginAction		 pending_action;
 } GsAppPrivate;
 
 enum {
@@ -142,6 +143,7 @@ enum {
 	PROP_INSTALL_DATE,
 	PROP_QUIRK,
 	PROP_KEY_COLORS,
+	PROP_PENDING_ACTION,
 	PROP_LAST
 };
 
@@ -1088,6 +1090,18 @@ gs_app_set_allow_cancel (GsApp *app, gboolean allow_cancel)
 	gs_app_queue_notify (app, "allow-cancel");
 }
 
+static void
+gs_app_set_pending_action_internal (GsApp *app,
+				    GsPluginAction action)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	if (priv->pending_action == action)
+		return;
+
+	priv->pending_action = action;
+	gs_app_queue_notify (app, "pending-action");
+}
+
 /**
  * gs_app_set_state:
  * @app: a #GsApp
@@ -1119,8 +1133,12 @@ gs_app_set_state (GsApp *app, AsAppState state)
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 	g_return_if_fail (GS_IS_APP (app));
 
-	if (gs_app_set_state_internal (app, state))
+	if (gs_app_set_state_internal (app, state)) {
+		/* since the state changed, and the pending-action refers to
+		 * actions that usually change the state, we reset it here */
+		gs_app_set_pending_action_internal (app, GS_PLUGIN_ACTION_UNKNOWN);
 		gs_app_queue_notify (app, "state");
+	}
 }
 
 /**
@@ -3891,6 +3909,39 @@ gs_app_get_cancellable (GsApp *app)
 	return priv->cancellable;
 }
 
+
+/**
+ * gs_app_get_pending_action:
+ * @app: a #GsApp
+ *
+ * Get the pending action for this #GsApp, or %NULL if no action is pending.
+ *
+ * Returns: the #GsAppAction of the @app.
+ **/
+GsPluginAction
+gs_app_get_pending_action (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	return priv->pending_action;
+}
+
+/**
+ * gs_app_set_pending_action:
+ * @app: a #GsApp
+ * @action: a #GsPluginAction
+ *
+ * Set an action that is pending on this #GsApp.
+ **/
+void
+gs_app_set_pending_action (GsApp *app,
+			   GsPluginAction action)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	gs_app_set_pending_action_internal (app, action);
+}
+
 static void
 gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
 {
@@ -4184,6 +4235,14 @@ gs_app_class_init (GsAppClass *klass)
 	pspec = g_param_spec_pointer ("key-colors", NULL, NULL,
 				      G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_KEY_COLORS, pspec);
+
+	/**
+	 * GsApp:pending-action:
+	 */
+	pspec = g_param_spec_uint64 ("pending-action", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READABLE | G_PARAM_PRIVATE);
+	g_object_class_install_property (object_class, PROP_PENDING_ACTION, pspec);
 
         /**
          * GsApp:metadata-changed:
