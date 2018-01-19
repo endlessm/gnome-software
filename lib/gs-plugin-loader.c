@@ -3337,11 +3337,7 @@ gs_plugin_loader_settings_changed_cb (GSettings *settings,
 static gint
 get_max_parallel_ops (void)
 {
-	guint mem_total = gs_utils_get_memory_total ();
-	if (mem_total == 0)
-		return 8;
-	/* allow 1 op per GB of memory */
-	return (gint) MAX (round((gdouble) mem_total / 1024), 1.0);
+	return 1;
 }
 
 static void
