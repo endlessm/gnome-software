@@ -90,6 +90,7 @@ void		 gs_utils_append_key_value	(GString	*str,
 						 gsize		 align_len,
 						 const gchar	*key,
 						 const gchar	*value);
+guint		 gs_utils_get_memory_total_mb	(void);
 
 G_END_DECLS
 
