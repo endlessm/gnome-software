@@ -24,6 +24,7 @@
 #include <locale.h>
 #include <glib/gi18n.h>
 #include <appstream-glib.h>
+#include <math.h>
 
 #include "gs-app-private.h"
 #include "gs-app-list-private.h"
@@ -54,6 +55,8 @@ typedef struct
 	GMutex			 pending_apps_mutex;
 	GPtrArray		*pending_apps;
 
+	GThreadPool		*queued_ops_pool;
+
 	GSettings		*settings;
 
 	GMutex			 events_by_id_mutex;
@@ -72,6 +75,7 @@ typedef struct
 
 static void gs_plugin_loader_monitor_network (GsPluginLoader *plugin_loader);
 static void add_app_to_install_queue (GsPluginLoader *plugin_loader, GsApp *app);
+static void gs_plugin_loader_process_in_thread_pool_cb (gpointer data, gpointer user_data);
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsPluginLoader, gs_plugin_loader, G_TYPE_OBJECT)
 
@@ -2696,6 +2700,12 @@ gs_plugin_loader_dispose (GObject *object)
 					     priv->network_changed_handler);
 		priv->network_changed_handler = 0;
 	}
+	if (priv->queued_ops_pool != NULL) {
+		/* stop accepting more requests and wait until any currently
+		 * running ones are finished */
+		g_thread_pool_free (priv->queued_ops_pool, TRUE, TRUE);
+		priv->queued_ops_pool = NULL;
+	}
 	g_clear_object (&priv->network_monitor);
 	g_clear_object (&priv->soup_session);
 	g_clear_object (&priv->profile);
@@ -2801,6 +2811,13 @@ gs_plugin_loader_settings_changed_cb (GSettings *settings,
 		gs_plugin_loader_allow_updates_recheck (plugin_loader);
 }
 
+static gint
+get_max_parallel_ops (void)
+{
+	/* We're allowing 1 op per GB of memory */
+	return (gint) MAX (round((gdouble) gs_utils_get_memory_total () / 1024), 1.0);
+}
+
 static void
 gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 {
@@ -2814,6 +2831,11 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	priv->global_cache = gs_app_list_new ();
 	priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->pending_apps = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
+	priv->queued_ops_pool = g_thread_pool_new (gs_plugin_loader_process_in_thread_pool_cb,
+						   NULL,
+						   get_max_parallel_ops (),
+						   FALSE,
+						   NULL);
 	priv->auth_array = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->file_monitors = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->locations = g_ptr_array_new_with_free_func (g_free);
@@ -3367,6 +3389,15 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	g_task_return_pointer (task, g_object_ref (list), (GDestroyNotify) g_object_unref);
 }
 
+
+static void
+gs_plugin_loader_process_in_thread_pool_cb (gpointer data,
+					    gpointer user_data)
+{
+	GTask *task = data;
+	g_task_run_in_thread_sync (task, gs_plugin_loader_process_thread_cb);
+}
+
 static gboolean
 gs_plugin_loader_job_timeout_cb (gpointer user_data)
 {
@@ -3388,6 +3419,22 @@ gs_plugin_loader_cancelled_cb (GCancellable *cancellable, GsPluginLoaderHelper *
 {
 	/* just proxy this forward */
 	g_cancellable_cancel (helper->cancellable);
+}
+
+static void
+gs_plugin_loader_schedule_task (GsPluginLoader *plugin_loader,
+				GTask *task)
+{
+	GsPluginLoaderHelper *helper = g_task_get_task_data (task);
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	GsApp *app = gs_plugin_job_get_app (helper->plugin_job);
+
+	if (app != NULL) {
+		/* set the pending-action to the app */
+		GsPluginAction action = gs_plugin_job_get_action (helper->plugin_job);
+		gs_app_set_pending_action (app, action);
+	}
+	g_thread_pool_push (priv->queued_ops_pool, g_object_ref (task), NULL);
 }
 
 /**
@@ -3586,6 +3633,18 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 					       gs_plugin_loader_job_timeout_cb,
 					       helper);
 		break;
+	default:
+		break;
+	}
+
+	switch (action) {
+	case GS_PLUGIN_ACTION_INSTALL:
+	case GS_PLUGIN_ACTION_UPDATE:
+	case GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD:
+		/* these actions must be performed by the thread pool because we
+		 * want to limit the number of them running in parallel */
+		gs_plugin_loader_schedule_task (plugin_loader, task);
+		return;
 	default:
 		break;
 	}
