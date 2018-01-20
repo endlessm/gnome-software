@@ -555,7 +555,10 @@ gs_app_to_string_append (GsApp *app, GString *str)
 				  gs_price_get_amount (priv->price));
 	for (i = 0; i < priv->related->len; i++) {
 		GsApp *app_tmp = g_ptr_array_index (priv->related, i);
-		gs_app_kv_lpad (str, "related", gs_app_get_unique_id (app_tmp));
+		const gchar *id = gs_app_get_unique_id (app_tmp);
+		if (id == NULL)
+			id = gs_app_get_source_default (app_tmp);
+		gs_app_kv_lpad (str, "related", id);
 	}
 	if (priv->history->len > 0)
 		gs_app_kv_printf (str, "history", "%u", priv->history->len);
@@ -2215,6 +2218,7 @@ gs_app_set_license (GsApp *app, GsAppQuality quality, const gchar *license)
 	tokens = as_utils_spdx_license_tokenize (license);
 	for (i = 0; tokens[i] != NULL; i++) {
 		if (g_strcmp0 (tokens[i], "&") == 0 ||
+		    g_strcmp0 (tokens[i], "+") == 0 ||
 		    g_strcmp0 (tokens[i], "|") == 0)
 			continue;
 		if (gs_app_get_license_token_is_nonfree (tokens[i])) {
@@ -3952,6 +3956,7 @@ gs_app_dispose (GObject *object)
 	g_clear_pointer (&priv->history, g_ptr_array_unref);
 	g_clear_pointer (&priv->related, g_ptr_array_unref);
 	g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
+	g_clear_pointer (&priv->review_ratings, g_array_unref);
 	g_clear_pointer (&priv->reviews, g_ptr_array_unref);
 	g_clear_pointer (&priv->provides, g_ptr_array_unref);
 	g_clear_pointer (&priv->icons, g_ptr_array_unref);

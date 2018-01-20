@@ -152,6 +152,14 @@ gs_plugin_add_sources_related (GsPlugin *plugin,
 		g_auto(GStrv) split = NULL;
 		app = gs_app_list_index (installed, i);
 		split = pk_package_id_split (gs_app_get_source_id_default (app));
+		if (split == NULL) {
+			g_set_error (error,
+				     GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_INVALID_FORMAT,
+				     "invalid package-id: %s",
+				     gs_app_get_source_id_default (app));
+			return FALSE;
+		}
 		if (g_str_has_prefix (split[PK_PACKAGE_ID_DATA], "installed:")) {
 			id = split[PK_PACKAGE_ID_DATA] + 10;
 			app_tmp = g_hash_table_lookup (hash, id);
@@ -253,6 +261,35 @@ gs_plugin_app_source_enable (GsPlugin *plugin,
 	return TRUE;
 }
 
+static gboolean
+gs_plugin_repo_enable (GsPlugin *plugin,
+                       GsApp *repo,
+                       GCancellable *cancellable,
+                       GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	ProgressData data;
+	g_autoptr(PkResults) results = NULL;
+
+	data.app = repo;
+	data.plugin = plugin;
+	data.ptask = NULL;
+
+	/* do sync call */
+	gs_plugin_status_update (plugin, repo, GS_PLUGIN_STATUS_WAITING);
+	results = pk_client_repo_enable (PK_CLIENT (priv->task),
+					 gs_app_get_id (repo),
+					 TRUE,
+					 cancellable,
+					 gs_plugin_packagekit_progress_cb, &data,
+					 error);
+	if (!gs_plugin_packagekit_results_valid (results, error)) {
+		gs_utils_error_add_unique_id (error, repo);
+		return FALSE;
+	}
+	return TRUE;
+}
+
 gboolean
 gs_plugin_app_install (GsPlugin *plugin,
 		       GsApp *app,
@@ -279,7 +316,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
-	/* we enable the repo */
+	/* enable repo */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
+		return gs_plugin_repo_enable (plugin, app,
+		                              cancellable, error);
+	}
+
+	/* enable the repo where the unavailable app is coming from */
 	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
 
 		/* get everything up front we need */

@@ -284,7 +284,10 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	/* not running under Shell */
 	name_owner = g_dbus_proxy_get_name_owner (priv->proxy);
 	if (name_owner == NULL) {
-		g_clear_object (&priv->proxy);
+		g_set_error_literal (error,
+				     GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_NOT_SUPPORTED,
+				     "gnome-shell is not running");
 		return FALSE;
 	}
 
@@ -595,7 +598,7 @@ gs_plugin_shell_extensions_parse_apps (GsPlugin *plugin,
 	}
 
 	/* load extensions */
-	apps = g_ptr_array_new ();
+	apps = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	json_extensions = json_object_get_member (json_item, "extensions");
 	if (json_extensions == NULL) {
 		g_set_error_literal (error,

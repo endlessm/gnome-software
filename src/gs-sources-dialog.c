@@ -316,9 +316,6 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 
-	/* show results */
-	gs_stop_spinner (GTK_SPINNER (dialog->spinner));
-
 	/* get the results */
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
@@ -326,6 +323,7 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 				     GS_PLUGIN_ERROR,
 				     GS_PLUGIN_ERROR_CANCELLED)) {
 			g_debug ("get sources cancelled");
+			return;
 		} else {
 			g_warning ("failed to get sources: %s", error->message);
 		}
@@ -335,9 +333,14 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 		return;
 	}
 
+	/* stop the spinner */
+	gs_stop_spinner (GTK_SPINNER (dialog->spinner));
+
 	/* no results */
 	if (gs_app_list_length (list) == 0) {
 		g_debug ("no sources to show");
+		gtk_stack_set_visible_child_name (GTK_STACK (dialog->stack), "empty");
+		gtk_style_context_add_class (gtk_widget_get_style_context (dialog->label_header), "dim-label");
 		return;
 	}
 

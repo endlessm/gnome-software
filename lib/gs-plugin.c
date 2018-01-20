@@ -759,7 +759,7 @@ gs_plugin_set_profile (GsPlugin *plugin, AsProfile *profile)
  * gs_plugin_get_soup_session:
  * @plugin: a #GsPlugin
  *
- * Gets the soup session that plugins can use when downloading.
+ * Gets the soup session that this plugin can use when downloading.
  *
  * Returns: the #SoupSession
  *
@@ -777,7 +777,7 @@ gs_plugin_get_soup_session (GsPlugin *plugin)
  * @plugin: a #GsPlugin
  * @soup_session: a #SoupSession
  *
- * Sets the soup session that plugins will use when downloading.
+ * Sets the soup session that this plugin will use when downloading.
  *
  * Since: 3.22
  **/
@@ -1496,6 +1496,7 @@ void
 gs_plugin_cache_remove (GsPlugin *plugin, const gchar *key)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->cache_mutex);
 
 	g_return_if_fail (GS_IS_PLUGIN (plugin));
 	g_return_if_fail (key != NULL);
@@ -1538,6 +1539,8 @@ gs_plugin_cache_add (GsPlugin *plugin, const gchar *key, GsApp *app)
 	/* default */
 	if (key == NULL)
 		key = gs_app_get_unique_id (app);
+
+	g_return_if_fail (key != NULL);
 
 	/* global, so using internal unique_id */
 	if (gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_GLOBAL_CACHE)) {

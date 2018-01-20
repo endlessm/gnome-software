@@ -46,6 +46,42 @@
    Validate with `appstream-util validate *.appdata.xml`
   -->
   <releases>
+    <release date="2018-01-08" version="3.26.5">
+      <description>
+        <p>
+          This is a stable release with the following changes:
+        </p>
+        <ul>
+          <li>Add missing locking to gs_plugin_cache_remove(), fixing a possible crash</li>
+          <li>Fix various memory leaks spotted by valgrind</li>
+          <li>Fix a possible crash triggered by the fwupd plugin</li>
+          <li>Do not emit critical warnings when reviewing OS Updates</li>
+          <li>fwupd: Use the custom user-agent when downloading firmware</li>
+          <li>overview page: Fix a crash when we have no featured apps</li>
+          <li>packagekit: Implement repository enabling</li>
+          <li>Fix hover CSS for "unknown" and "nonfree" license buttons</li>
+        </ul>
+        <p>This release also updates translations.</p>
+      </description>
+    </release>
+    <release date="2017-12-17" version="3.26.4">
+      <description>
+        <p>
+          This is a stable release with the following changes:
+        </p>
+        <ul>
+          <li>Fix crashes in the repos plugin due to missing locking</li>
+          <li>Work around Firefox deleting rpm/deb files downloaded to /tmp when closing</li>
+          <li>Do not require the user to keep clicking 'More reviews' after each click</li>
+          <li>Fix a critical when updating (flatpak) packages live</li>
+          <li>fwupd: Prepend the vendor name to the device name if not included</li>
+          <li>Improve SPDX ID parsing when working out if it is 'free'</li>
+          <li>packagekit: Do not crash when getting an invalid ID from PackageKit</li>
+          <li>Do not crash when closing the source dialog while it is loading</li>
+        </ul>
+        <p>This release also updates translations.</p>
+      </description>
+    </release>
     <release date="2017-11-21" version="3.26.3">
       <description>
         <p>
