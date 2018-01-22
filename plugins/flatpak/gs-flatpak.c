@@ -559,18 +559,6 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	if (g_settings_get_boolean (settings, "filter-default-branch"))
 		default_branch = flatpak_remote_get_default_branch (xremote);
 
-	/* on Endless we rely heavily on always having the default branch
-	 * defined for the 'eos-apps' repository, so we need a fallback value
-	 * to cover the case where GS is run without being connected to the
-	 * Internet before (otherwise it would have pulled it from the server).
-	 */
-	if (default_branch == NULL && self->scope == AS_APP_SCOPE_SYSTEM &&
-	    remote_is_eos_apps (xremote)) {
-		g_warning ("No default branch configured for Endless eos-apps remote! "
-			   "Using fallback value");
-		default_branch = g_strdup ("eos3");
-	}
-
 	collection_id = flatpak_remote_get_collection_id (xremote);
 
 	/* get all the apps and fix them up */
