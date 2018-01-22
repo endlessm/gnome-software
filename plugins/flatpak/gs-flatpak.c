@@ -2761,12 +2761,11 @@ gs_flatpak_get_services_app_for_runtime (GsFlatpak *self, GsApp *runtime,
 		services_id = g_strdup ("com.endlessm.EknServices");
 		services_branch = "eos3";
 	} else if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0) {
+		services_id = g_strdup ("com.endlessm.EknServices2");
 		if (g_strcmp0 (runtime_branch, "master") == 0)
-			services_id = g_strdup ("com.endlessm.EknServices2");
+			services_branch = "master";
 		else
-			services_id = g_strdup_printf ("com.endlessm.EknServices%s",
-			                               runtime_branch);
-		services_branch = "stable";
+			services_branch = "stable";
 	} else {
 		/* Runtime doesn't require an EknServices app */
 		return NULL;
