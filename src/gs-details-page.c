@@ -110,7 +110,6 @@ struct _GsDetailsPage
 	GtkWidget		*label_details_updated_value;
 	GtkWidget		*label_details_version_value;
 	GtkWidget		*label_failed;
-	GtkWidget		*label_pending;
 	GtkWidget		*label_license_nonfree_details;
 	GtkWidget		*label_licenses_intro;
 	GtkWidget		*label_details_license_title;
@@ -233,6 +232,21 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 	}
 }
 
+static gboolean
+app_has_pending_action (GsApp *app)
+{
+	/* sanitize the pending state change by verifying we're in one of the
+	 * expected states */
+	if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE &&
+	    gs_app_get_state (app) != AS_APP_STATE_UPDATABLE_LIVE &&
+	    gs_app_get_state (app) != AS_APP_STATE_UPDATABLE &&
+	    gs_app_get_state (app) != AS_APP_STATE_QUEUED_FOR_INSTALL)
+		return FALSE;
+
+	return (gs_app_get_pending_action (app) != GS_PLUGIN_ACTION_UNKNOWN) ||
+	       (gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL);
+}
+
 static void
 gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 {
@@ -259,16 +273,6 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 
 	state = gs_app_get_state (self->app);
 
-	/* label */
-	switch (state) {
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
-		gtk_widget_set_visible (self->label_pending, TRUE);
-		break;
-	default:
-		gtk_widget_set_visible (self->label_pending, FALSE);
-		break;
-	}
-
 	/* install button */
 	switch (state) {
 	case AS_APP_STATE_AVAILABLE:
@@ -278,9 +282,6 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 		/* TRANSLATORS: button text in the header when an application
 		 * can be installed */
 		gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install"));
-		break;
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
-		gtk_widget_set_visible (self->button_install, FALSE);
 		break;
 	case AS_APP_STATE_INSTALLING:
 		gtk_widget_set_visible (self->button_install, FALSE);
@@ -299,6 +300,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 	case AS_APP_STATE_INSTALLED:
 	case AS_APP_STATE_REMOVING:
 	case AS_APP_STATE_UPDATABLE:
+	case AS_APP_STATE_QUEUED_FOR_INSTALL:
 		gtk_style_context_remove_class (gtk_widget_get_style_context (self->button_install), "suggested-action");
 		gtk_widget_set_visible (self->button_install, FALSE);
 		break;
@@ -373,12 +375,6 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 			/* TRANSLATORS: button text in the header when an application can be erased */
 			gtk_button_set_label (GTK_BUTTON (self->button_remove), _("_Uninstall"));
 			break;
-		case AS_APP_STATE_QUEUED_FOR_INSTALL:
-			gtk_widget_set_visible (self->button_remove, TRUE);
-			gtk_widget_set_sensitive (self->button_remove, TRUE);
-			gtk_style_context_remove_class (gtk_widget_get_style_context (self->button_remove), "destructive-action");
-			gtk_button_set_label (GTK_BUTTON (self->button_remove), _("_Cancel"));
-			break;
 		case AS_APP_STATE_AVAILABLE_LOCAL:
 		case AS_APP_STATE_AVAILABLE:
 		case AS_APP_STATE_INSTALLING:
@@ -387,6 +383,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 		case AS_APP_STATE_UNKNOWN:
 		case AS_APP_STATE_PURCHASABLE:
 		case AS_APP_STATE_PURCHASING:
+		case AS_APP_STATE_QUEUED_FOR_INSTALL:
 			gtk_widget_set_visible (self->button_remove, FALSE);
 			break;
 		default:
@@ -394,6 +391,12 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 				   as_app_state_to_string (state));
 			g_assert_not_reached ();
 		}
+	}
+
+	if (app_has_pending_action (self->app)) {
+		gtk_widget_set_visible (self->button_install, FALSE);
+		gtk_widget_set_visible (self->button_details_launch, FALSE);
+		gtk_widget_set_visible (self->button_remove, FALSE);
 	}
 
 	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_details));
@@ -426,6 +429,12 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_cancel, FALSE);
 		break;
 	}
+	if (app_has_pending_action (self->app)) {
+		gtk_widget_set_visible (self->button_cancel, TRUE);
+		gtk_widget_set_sensitive (self->button_cancel,
+					  !g_cancellable_is_cancelled (self->app_cancellable) &&
+					  gs_app_get_allow_cancel (self->app));
+	}
 
 	/* progress status label */
 	switch (state) {
@@ -442,6 +451,28 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	default:
 		gtk_widget_set_visible (self->label_progress_status, FALSE);
 		break;
+	}
+	if (app_has_pending_action (self->app)) {
+		GsPluginAction action = gs_app_get_pending_action (self->app);
+		gtk_widget_set_visible (self->label_progress_status, TRUE);
+		switch (action) {
+		case GS_PLUGIN_ACTION_INSTALL:
+			/* TRANSLATORS: This is a label on top of the app's progress
+			 * bar to inform the user that the app should be installed soon */
+			gtk_label_set_label (GTK_LABEL (self->label_progress_status),
+					     _("Pending installation…"));
+			break;
+		case GS_PLUGIN_ACTION_UPDATE:
+		case GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD:
+			/* TRANSLATORS: This is a label on top of the app's progress
+			 * bar to inform the user that the app should be updated soon */
+			gtk_label_set_label (GTK_LABEL (self->label_progress_status),
+					     _("Pending update…"));
+			break;
+		default:
+			gtk_widget_set_visible (self->label_progress_status, FALSE);
+			break;
+		}
 	}
 
 	/* percentage bar */
@@ -462,6 +493,10 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->label_progress_percentage, FALSE);
 		gtk_widget_set_visible (self->progressbar_top, FALSE);
 		break;
+	}
+	if (app_has_pending_action (self->app)) {
+		gtk_widget_set_visible (self->progressbar_top, TRUE);
+		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (self->progressbar_top), 0);
 	}
 
 	/* spinner */
@@ -486,6 +521,8 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->box_progress, FALSE);
 		break;
 	}
+	if (app_has_pending_action (self->app))
+		gtk_widget_set_visible (self->box_progress, TRUE);
 }
 
 static gboolean
@@ -1558,6 +1595,9 @@ set_app (GsDetailsPage *self, GsApp *app)
 	g_signal_connect_object (self->app, "notify::allow-cancel",
 				 G_CALLBACK (gs_details_page_allow_cancel_changed_cb),
 				 self, 0);
+	g_signal_connect_object (self->app, "notify::pending-action",
+				 G_CALLBACK (gs_details_page_notify_state_changed_cb),
+				 self, 0);
 
 	/* print what we've got */
 	tmp = gs_app_to_string (self->app);
@@ -1769,6 +1809,9 @@ gs_details_page_set_app (GsDetailsPage *self, GsApp *app)
 	g_signal_connect_object (self->app, "notify::allow-cancel",
 				 G_CALLBACK (gs_details_page_allow_cancel_changed_cb),
 				 self, 0);
+	g_signal_connect_object (self->app, "notify::pending-action",
+				 G_CALLBACK (gs_details_page_notify_state_changed_cb),
+				 self, 0);
 
 	g_set_object (&self->app_cancellable, gs_app_get_cancellable (self->app));
 
@@ -1789,10 +1832,16 @@ gs_details_page_get_app (GsDetailsPage *self)
 }
 
 static void
-gs_details_page_app_remove_button_cb (GtkWidget *widget, GsDetailsPage *self)
+gs_details_page_remove_app (GsDetailsPage *self)
 {
 	g_set_object (&self->app_cancellable, gs_app_get_cancellable (self->app));
 	gs_page_remove_app (GS_PAGE (self), self->app, self->app_cancellable);
+}
+
+static void
+gs_details_page_app_remove_button_cb (GtkWidget *widget, GsDetailsPage *self)
+{
+	gs_details_page_remove_app (self);
 }
 
 static void
@@ -1800,6 +1849,14 @@ gs_details_page_app_cancel_button_cb (GtkWidget *widget, GsDetailsPage *self)
 {
 	g_cancellable_cancel (self->app_cancellable);
 	gtk_widget_set_sensitive (widget, FALSE);
+
+	/* reset the pending-action from the app if needed */
+	gs_app_set_pending_action (self->app, GS_PLUGIN_ACTION_UNKNOWN);
+
+	/* FIXME: We should be able to revert the QUEUED_FOR_INSTALL without
+	 * having to pretend to remove the app */
+	if (gs_app_get_state (self->app) == AS_APP_STATE_QUEUED_FOR_INSTALL)
+		gs_details_page_remove_app (self);
 }
 
 static void
@@ -2354,7 +2411,6 @@ gs_details_page_class_init (GsDetailsPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_updated_value);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_version_value);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_failed);
-	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_pending);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, list_box_addons);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_reviews);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot_fallback);
