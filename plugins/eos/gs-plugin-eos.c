@@ -513,6 +513,7 @@ static gboolean
 gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	gboolean do_blacklist = FALSE;
 
 	static const char *duplicated_apps[] = {
 		"com.arduino.App.desktop",
@@ -698,19 +699,27 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 	if (priv->eos_arch_is_arm) {
 		if (g_strv_contains (arm_whitelist, gs_app_get_id (app)))
 			return FALSE;
-
-		gs_app_add_category (app, "Blacklisted");
-		return TRUE;
+		g_debug ("Blacklisting '%s': it's not whitelisted for ARM",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
+	} else if (g_strv_contains (duplicated_apps, gs_app_get_id (app))) {
+		g_debug ("Blacklisting '%s': app is in the duplicated list",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
+	} else if (g_strv_contains (core_apps, gs_app_get_id (app))) {
+		g_debug ("Blacklisting '%s': app is in the core apps list",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
+	} else if (g_strv_contains (buggy_apps, gs_app_get_id (app))) {
+		g_debug ("Blacklisting '%s': app is in the buggy list",
+			 gs_app_get_unique_id (app));
+		do_blacklist = TRUE;
 	}
 
-	if (g_strv_contains (duplicated_apps, gs_app_get_id (app)) ||
-	    g_strv_contains (core_apps, gs_app_get_id (app)) ||
-	    g_strv_contains (buggy_apps, gs_app_get_id (app))) {
+	if (do_blacklist)
 		gs_app_add_category (app, "Blacklisted");
-		return TRUE;
-	}
 
-	return FALSE;
+	return do_blacklist;
 }
 
 static gboolean
@@ -784,24 +793,38 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
 	    gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
 	    !gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY)) {
+		g_debug ("Blacklisting '%s': it's a compusory, non-desktop app",
+			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (g_str_has_prefix (gs_app_get_id (app), "eos-link-")) {
+		g_debug ("Blacklisting '%s': app is an eos-link",
+			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
 		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
+		g_debug ("Blacklisting '%s': app is GNOME Software itself",
+			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (app_is_renamed (app)) {
+		g_debug ("Blacklisting '%s': app is renamed",
+			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (app_is_banned_for_personality (plugin, app)) {
+		g_debug ("Blacklisting '%s': app is banned for personality",
+			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (app_is_banned_coding_app (plugin, app)) {
+		g_debug ("Blacklisting '%s': it's a banned coding app",
+			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (app_is_evergreen (app)) {
+		g_debug ("Blacklisting '%s': it's an evergreen app",
+			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (!gs_app_is_installed (app) &&
 		   !app_is_compatible_with_os (plugin, app)) {
-		g_debug ("Banning '%s' because it's incompatible with "
-			 "the OS version!", gs_app_get_unique_id (app));
+		g_debug ("Blacklisting '%s': it's incompatible with the OS "
+			 "version", gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	}
 
