@@ -793,7 +793,7 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
 	    gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
 	    !gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY)) {
-		g_debug ("Blacklisting '%s': it's a compusory, non-desktop app",
+		g_debug ("Blacklisting '%s': it's a compulsory, non-desktop app",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (g_str_has_prefix (gs_app_get_id (app), "eos-link-")) {
