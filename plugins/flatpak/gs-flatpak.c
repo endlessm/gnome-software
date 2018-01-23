@@ -1597,6 +1597,31 @@ gs_flatpak_add_updates_pending (GsFlatpak *self, GsAppList *list,
 	return get_server_updates (self, list, cancellable, error);
 }
 
+static gboolean
+gs_flatpak_update_remotes_sync (GsFlatpak *self,
+				GCancellable *cancellable,
+				GError **error)
+{
+	g_autoptr(GPtrArray) remotes = flatpak_installation_list_remotes (self->installation,
+									  cancellable,
+									  error);
+	if (remotes == NULL)
+		return FALSE;
+
+	for (guint i = 0; i < remotes->len; ++i) {
+		g_autoptr(GError) local_error = NULL;
+		FlatpakRemote *remote = g_ptr_array_index (remotes, i);
+		const gchar *remote_name = flatpak_remote_get_name (remote);
+		if (!flatpak_installation_update_remote_sync (self->installation,
+							      remote_name,
+							      cancellable,
+							      &local_error))
+			g_debug ("Failed to update metadata for remote %s: %s; continuing...",
+				 remote_name, local_error->message);
+	}
+	return TRUE;
+}
+
 gboolean
 gs_flatpak_refresh (GsFlatpak *self,
 		    guint cache_age,
@@ -1621,6 +1646,8 @@ gs_flatpak_refresh (GsFlatpak *self,
 
 	/* update AppStream metadata */
 	if (flags & GS_PLUGIN_REFRESH_FLAGS_METADATA) {
+		if (!gs_flatpak_update_remotes_sync (self, cancellable, error))
+			return FALSE;
 		if (!gs_flatpak_refresh_appstream (self, cache_age, flags,
 						   cancellable, error))
 			return FALSE;
