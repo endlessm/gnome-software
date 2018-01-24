@@ -896,7 +896,8 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 static void
 gs_plugin_eos_refine_core_app (GsApp *app)
 {
-	if (app_is_flatpak (app))
+	if (app_is_flatpak (app) ||
+	    (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN))
 		return;
 
 	/* we only allow to remove flatpak apps */
