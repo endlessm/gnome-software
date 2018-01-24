@@ -3388,13 +3388,17 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	g_task_return_pointer (task, g_object_ref (list), (GDestroyNotify) g_object_unref);
 }
 
-
 static void
 gs_plugin_loader_process_in_thread_pool_cb (gpointer data,
 					    gpointer user_data)
 {
 	GTask *task = data;
-	g_task_run_in_thread_sync (task, gs_plugin_loader_process_thread_cb);
+	gpointer source_object = g_task_get_source_object (task);
+	gpointer task_data = g_task_get_task_data (task);
+	GCancellable *cancellable = g_task_get_cancellable (task);
+
+	gs_plugin_loader_process_thread_cb (task, source_object, task_data, cancellable);
+	g_object_unref (task);
 }
 
 static gboolean
