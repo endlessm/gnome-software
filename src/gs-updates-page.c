@@ -1316,8 +1316,6 @@ gs_updates_page_get_new_updates (GsUpdatesPage *self)
 
 	refresh_flags |= GS_PLUGIN_REFRESH_FLAGS_INTERACTIVE;
 	refresh_flags |= GS_PLUGIN_REFRESH_FLAGS_METADATA;
-	if (g_settings_get_boolean (self->settings, "download-updates"))
-		refresh_flags |= GS_PLUGIN_REFRESH_FLAGS_PAYLOAD;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 "refresh-flags", refresh_flags,
