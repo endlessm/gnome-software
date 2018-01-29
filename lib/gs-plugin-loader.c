@@ -3135,9 +3135,11 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 			g_task_return_error (task, error);
 			return;
 		}
+	}
 
-		/* append pending updates this way, until we find a consensus to deal
-		 * with updates (e.g. only one updates plugin function...) */
+	/* append pending updates this way, until we find a consensus to deal
+	 * with updates (e.g. only one updates plugin function...) */
+	if (action == GS_PLUGIN_ACTION_GET_UPDATES) {
 		helper->function_name = "gs_plugin_add_updates_pending";
 		if (!gs_plugin_loader_run_results (helper, cancellable, &error)) {
 			gs_utils_error_convert_gio (&error);
