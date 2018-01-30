@@ -377,31 +377,6 @@ gs_flatpak_remove_prefixed_names (AsApp *app)
 }
 
 static gboolean
-remote_is_eos_apps (FlatpakRemote *remote)
-{
-	g_autoptr(SoupURI) soup_uri = NULL;
-	const char *remote_host = NULL;
-	const char *remote_path = NULL;
-	g_autofree char *remote_url = NULL;
-
-	if (g_strcmp0 (flatpak_remote_get_name (remote), "eos-apps") != 0)
-		return FALSE;
-
-	remote_url = flatpak_remote_get_url (remote);
-	if (remote_url == NULL)
-		return FALSE;
-
-	soup_uri = soup_uri_new (remote_url);
-	remote_host = soup_uri_get_host (soup_uri);
-	remote_path = soup_uri_get_path (soup_uri);
-
-	/* support *ostree.endlessm.com domains with '/eos-apps' end points */
-	return remote_path != NULL &&
-		(g_strstr_len (remote_path, -1, "eos-apps") != NULL) &&
-		g_str_has_suffix (remote_host, "ostree.endlessm.com");
-}
-
-static gboolean
 gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 				      FlatpakRemote *remote,
 				      gboolean *found_usb_apps,
@@ -558,18 +533,6 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	settings = g_settings_new ("org.gnome.software");
 	if (g_settings_get_boolean (settings, "filter-default-branch"))
 		default_branch = flatpak_remote_get_default_branch (xremote);
-
-	/* on Endless we rely heavily on always having the default branch
-	 * defined for the 'eos-apps' repository, so we need a fallback value
-	 * to cover the case where GS is run without being connected to the
-	 * Internet before (otherwise it would have pulled it from the server).
-	 */
-	if (default_branch == NULL && self->scope == AS_APP_SCOPE_SYSTEM &&
-	    remote_is_eos_apps (xremote)) {
-		g_warning ("No default branch configured for Endless eos-apps remote! "
-			   "Using fallback value");
-		default_branch = g_strdup ("eos3");
-	}
 
 	collection_id = flatpak_remote_get_collection_id (xremote);
 
@@ -788,48 +751,9 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 	return TRUE;
 }
 
-static void
-ensure_default_branches (GsFlatpak *self)
-{
-	g_autoptr(GPtrArray) xremotes = NULL;
-	guint i;
-
-	xremotes = flatpak_installation_list_remotes (self->installation, NULL, NULL);
-	if (xremotes == NULL)
-		return;
-
-	for (i = 0; i < xremotes->len; i++) {
-		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
-		const gchar *remote_name;
-		g_autofree char *default_branch = NULL;
-		g_autoptr(GError) error_local = NULL;
-
-		/* we only try to ensure the default branch is set for the repos
-		 * we officially support as other repos, especially the ones with
-		 * only runtimes may not have the default branch set, and trying
-		 * to fetch it takes a considerable amount of time */
-		if (!remote_is_eos_apps (xremote))
-			continue;
-
-		default_branch = flatpak_remote_get_default_branch (xremote);
-		if (default_branch != NULL)
-			continue;
-
-		remote_name = flatpak_remote_get_name (xremote);
-		if (!flatpak_installation_update_remote_sync (self->installation,
-							      remote_name, NULL,
-							      &error_local)) {
-			g_warning ("failed to update metadata from remote %s: %s",
-				   remote_name, error_local->message);
-		}
-	}
-}
-
 gboolean
 gs_flatpak_setup (GsFlatpak *self, GCancellable *cancellable, GError **error)
 {
-	ensure_default_branches (self);
-
 	/* watch for changes */
 	self->monitor = flatpak_installation_create_monitor (self->installation,
 							     cancellable,
@@ -922,6 +846,7 @@ gs_flatpak_refresh_appstream_remote (GsFlatpak *self,
 	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(GsApp) app_dl = gs_app_new (gs_plugin_get_name (self->plugin));
 	g_autoptr(GsFlatpakProgressHelper) phelper = NULL;
+	g_autoptr(GError) local_error = NULL;
 
 	ptask = as_profile_start (gs_plugin_get_profile (self->plugin),
 				  "%s::refresh-appstream{%s}",
@@ -933,6 +858,18 @@ gs_flatpak_refresh_appstream_remote (GsFlatpak *self,
 	str = g_strdup_printf (_("Getting flatpak metadata for %s…"), remote_name);
 	gs_app_set_summary_missing (app_dl, str);
 	gs_plugin_status_update (self->plugin, app_dl, GS_PLUGIN_STATUS_DOWNLOADING);
+
+	if (!flatpak_installation_update_remote_sync (self->installation,
+						      remote_name,
+						      cancellable,
+						      &local_error)) {
+		g_debug ("Failed to update metadata for remote %s: %s\n",
+			 remote_name, local_error->message);
+		gs_flatpak_error_convert (&local_error);
+		g_propagate_error (error, g_steal_pointer (&local_error));
+		return FALSE;
+	}
+
 #if FLATPAK_CHECK_VERSION(0,9,4)
 	phelper = gs_flatpak_progress_helper_new (self->plugin, app_dl);
 	if (!flatpak_installation_update_appstream_full_sync (self->installation,
