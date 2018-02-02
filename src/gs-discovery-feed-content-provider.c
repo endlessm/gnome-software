@@ -64,12 +64,6 @@ typedef struct {
 	guint weight;
 } DiscoveryFeedKudoWeight ;
 
-static gint
-get_day_of_week (void)
-{
-  g_autoptr(GDateTime) datetime = g_date_time_new_now_local ();
-  return g_date_time_get_day_of_week (datetime);
-}
 
 static const DiscoveryFeedKudoWeight discovery_feed_app_kudos[] =
 {
@@ -136,6 +130,38 @@ get_app_thumbnail_cached_filename (GsApp *app)
 	return NULL;
 }
 
+static gboolean
+filter_for_discovery_feed_apps (GsApp *app, gpointer user_data)
+{
+	g_autofree gchar *app_thumbnail_filename = NULL;
+	GdkPixbuf *pixbuf;
+	g_autoptr(GVariant) icon_serialized = NULL;
+
+	if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE)
+		return FALSE;
+
+	/* This app must have an icon which is serializable */
+	pixbuf = gs_app_get_pixbuf (app);
+	if (pixbuf != NULL)
+		icon_serialized = g_icon_serialize (G_ICON (pixbuf));
+
+	if (!icon_serialized)
+		return FALSE;
+
+	/* Check to make sure that the app has an available thumbnail
+	 * otherwise, we need to skip it completely */
+	app_thumbnail_filename = get_app_thumbnail_cached_filename (app);
+
+	if (!app_thumbnail_filename)
+		return FALSE;
+
+	/* App must also be tagged as having discovery feed content */
+	if (!gs_app_get_metadata_item (app, "Endless::HasDiscoveryFeedContent"))
+		return FALSE;
+
+	return TRUE;
+}
+
 static void
 search_done_cb (GObject *source,
 		GAsyncResult *res,
@@ -146,7 +172,6 @@ search_done_cb (GObject *source,
 	guint i;
 	GVariantBuilder builder;
 	guint app_list_length;
-	guint count = 0;
 	g_autoptr(GsAppList) list = NULL;
 
 	list = gs_plugin_loader_job_process_finish (self->plugin_loader, res, NULL);
@@ -159,40 +184,25 @@ search_done_cb (GObject *source,
 		return;
 	}
 
-	app_list_length = gs_app_list_length (list);
-
-	/* sort by kudos, as there is no ratings data by default */
+	/* First, filter out any irrelevant apps. Then randomize the list -
+	 * this gives us a different order for each day as the random seed
+	 * for gs_app_list_randomize changes on a daily basis. Then, sort
+	 * the list, but only use the kudos as the sorting factor. This will
+	 * put "more relevant" apps closer to the top, but still with an
+	 * internally randomized order. */
+	gs_app_list_filter (list, filter_for_discovery_feed_apps, NULL);
+	gs_app_list_randomize (list);
 	gs_app_list_sort (list, search_sort_by_kudo_cb, NULL);
 
+	app_list_length = gs_app_list_length (list);
+
+	/* Now that we have our indices, start building up a variant based
+	 * on those indices */
 	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
-	for (i = 0; i < app_list_length; i++) {
-		g_autofree gchar *app_thumbnail_filename = NULL;
-		GdkPixbuf *pixbuf;
-		g_autoptr(GVariant) icon_serialized = NULL;
-		gint index = (get_day_of_week () + i) % app_list_length;
-		GsApp *app = gs_app_list_index (list, index);
-
-		if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE)
-			continue;
-
-		/* This app must have an icon which is serializable */
-		pixbuf = gs_app_get_pixbuf (app);
-		if (pixbuf != NULL)
-			icon_serialized = g_icon_serialize (G_ICON (pixbuf));
-
-		if (!icon_serialized)
-			continue;
-
-		/* Check to make sure that the app has an available thumbnail
-		 * otherwise, we need to skip it completely */
-		app_thumbnail_filename = get_app_thumbnail_cached_filename (app);
-
-		if (!app_thumbnail_filename)
-			continue;
-
-		/* App must also be tagged as having discovery feed content */
-		if (!gs_app_get_metadata_item (app, "Endless::HasDiscoveryFeedContent"))
-			continue;
+	for (i = 0; i < MIN (app_list_length, MAX_INSTALLABLE_APPS); ++i) {
+		GsApp *app = GS_APP (gs_app_list_index (list, i));
+		g_autofree gchar *app_thumbnail_filename = get_app_thumbnail_cached_filename (app);
+		g_autoptr(GVariant) icon_serialized = g_icon_serialize (G_ICON (gs_app_get_pixbuf (app)));
 
 		g_variant_builder_open (&builder, G_VARIANT_TYPE_VARDICT);
 		g_variant_builder_add (&builder, "{sv}", "app_id", g_variant_new_string (gs_app_get_id (app)));
@@ -203,10 +213,6 @@ search_done_cb (GObject *source,
 		g_variant_builder_add (&builder, "{sv}", "icon", icon_serialized);
 
 		g_variant_builder_close (&builder);
-
-		count += 1;
-		if (count == MAX_INSTALLABLE_APPS)
-			break;
 	}
 
 	gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
