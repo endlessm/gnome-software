@@ -134,18 +134,8 @@ static gboolean
 filter_for_discovery_feed_apps (GsApp *app, gpointer user_data)
 {
 	g_autofree gchar *app_thumbnail_filename = NULL;
-	GdkPixbuf *pixbuf;
-	g_autoptr(GVariant) icon_serialized = NULL;
 
 	if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE)
-		return FALSE;
-
-	/* This app must have an icon which is serializable */
-	pixbuf = gs_app_get_pixbuf (app);
-	if (pixbuf != NULL)
-		icon_serialized = g_icon_serialize (G_ICON (pixbuf));
-
-	if (!icon_serialized)
 		return FALSE;
 
 	/* Check to make sure that the app has an available thumbnail
@@ -201,11 +191,25 @@ search_done_cb (GObject *source,
 	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
 	for (i = 0; i < MIN (app_list_length, MAX_INSTALLABLE_APPS); ++i) {
 		GsApp *app = GS_APP (gs_app_list_index (list, i));
+		const gchar *app_id = gs_app_get_id (app);
 		g_autofree gchar *app_thumbnail_filename = get_app_thumbnail_cached_filename (app);
-		g_autoptr(GVariant) icon_serialized = g_icon_serialize (G_ICON (gs_app_get_pixbuf (app)));
+		GdkPixbuf *pixbuf = gs_app_get_pixbuf (app);
+		g_autoptr(GVariant) icon_serialized = NULL;
+
+		if (!pixbuf) {
+			g_warning ("App %s should have an icon pixbuf, but does not", app_id);
+			continue;
+		}
+
+		icon_serialized = g_icon_serialize (G_ICON (pixbuf));
+
+		if (!icon_serialized) {
+			g_warning ("App %s should have a serializable icon, but does not", app_id);
+			continue;
+		}
 
 		g_variant_builder_open (&builder, G_VARIANT_TYPE_VARDICT);
-		g_variant_builder_add (&builder, "{sv}", "app_id", g_variant_new_string (gs_app_get_id (app)));
+		g_variant_builder_add (&builder, "{sv}", "app_id", g_variant_new_string (app_id));
 		g_variant_builder_add (&builder, "{sv}", "id", g_variant_new_string (gs_app_get_unique_id (app)));
 		g_variant_builder_add (&builder, "{sv}", "name", g_variant_new_string (gs_app_get_name (app)));
 		g_variant_builder_add (&builder, "{sv}", "synopsis", g_variant_new_string (gs_app_get_summary (app)));
