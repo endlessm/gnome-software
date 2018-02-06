@@ -2680,9 +2680,9 @@ gs_flatpak_get_services_app_for_runtime (GsFlatpak *self, GsApp *runtime,
 {
 	const gchar *runtime_id;
 	const gchar *runtime_branch;
+	const gchar *services_id;
 	const gchar *services_branch;
 	const gchar *arch;
-	g_autofree gchar *services_id = NULL;
 	g_autofree gchar *description = NULL;
 	g_autoptr(FlatpakRef) services_ref = NULL;
 	g_autoptr(GError) error = NULL;
@@ -2695,10 +2695,10 @@ gs_flatpak_get_services_app_for_runtime (GsFlatpak *self, GsApp *runtime,
 	     g_strcmp0 (runtime_branch, "eos3.1") == 0) ||
 	    (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0 &&
 	     g_strcmp0 (runtime_branch, "1") == 0)) {
-		services_id = g_strdup ("com.endlessm.EknServices");
+		services_id = "com.endlessm.EknServices";
 		services_branch = "eos3";
 	} else if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0) {
-		services_id = g_strdup ("com.endlessm.EknServices2");
+		services_id = "com.endlessm.EknServices2";
 		if (g_strcmp0 (runtime_branch, "master") == 0)
 			services_branch = "master";
 		else
