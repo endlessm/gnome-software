@@ -202,6 +202,11 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 	if (gs_app_get_kind (self->app) != AS_APP_KIND_DESKTOP)
 		return;
 
+	/* leave the button hidden if there's a pending action because the
+	 * progress bar will be visible */
+	if (gs_app_get_pending_action (self->app) != GS_PLUGIN_ACTION_UNKNOWN)
+		return;
+
 	/* only consider the shortcut button if the app is installed */
 	switch (gs_app_get_state (self->app)) {
 	case AS_APP_STATE_INSTALLED:
