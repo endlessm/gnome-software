@@ -1071,15 +1071,15 @@ gs_flatpak_create_installed (GsFlatpak *self,
 	 *  1) the default to launch unless you specify a version
 	 *  2) The one that gets its exported files exported
 	 */
-	if (!flatpak_installed_ref_get_is_current (xref) &&
-	    flatpak_ref_get_kind (FLATPAK_REF(xref)) == FLATPAK_REF_KIND_APP) {
-		g_set_error (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_NOT_SUPPORTED,
-			     "%s not current, ignoring",
-			     flatpak_ref_get_name (FLATPAK_REF (xref)));
-		return NULL;
-	}
+	/* if (!flatpak_installed_ref_get_is_current (xref) && */
+	/*     flatpak_ref_get_kind (FLATPAK_REF(xref)) == FLATPAK_REF_KIND_APP) { */
+	/* 	g_set_error (error, */
+	/* 		     GS_PLUGIN_ERROR, */
+	/* 		     GS_PLUGIN_ERROR_NOT_SUPPORTED, */
+	/* 		     "%s not current, ignoring", */
+	/* 		     flatpak_ref_get_name (FLATPAK_REF (xref))); */
+	/* 	return NULL; */
+	/* } */
 
 	/* create new object */
 	app = gs_flatpak_create_app (self, FLATPAK_REF (xref));
@@ -1110,6 +1110,7 @@ gs_flatpak_add_installed (GsFlatpak *self, GsAppList *list,
 			g_warning ("failed to add flatpak: %s", error_local->message);
 			continue;
 		}
+		g_debug ("Adding installed flatpak app: %s", gs_app_get_unique_id (app));
 		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
 			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 		gs_app_list_add (list, app);
