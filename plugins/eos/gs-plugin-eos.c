@@ -659,6 +659,7 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"io.github.Hexchat.desktop",
 		"org.baedert.corebird.desktop",
 		"org.blender.Blender.desktop",
+		"org.freeciv.Freeciv.desktop",
 		"org.gnome.Books.desktop",
 		"org.gnome.Builder.desktop",
 		"org.gnome.Calendar.desktop",
@@ -666,7 +667,9 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.gnome.Devhelp.desktop",
 		"org.gnome.Dictionary.desktop",
 		"org.gnome.Geary.desktop",
+		"org.gnome.Genius.desktop",
 		"org.gnome.Glade.desktop",
+		"org.gnome.Gnote.desktop",
 		"org.gnome.Polari.desktop",
 		"org.gnome.Recipes.desktop",
 		"org.gnome.Todo.desktop",
@@ -678,6 +681,7 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.musicbrainz.Picard.desktop",
 		"org.mypaint.MyPaint.desktop",
 		"org.telegram.desktop.desktop",
+		"org.wesnoth.Wesnoth.desktop",
 		NULL
 	};
 
