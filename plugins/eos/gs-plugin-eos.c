@@ -290,6 +290,10 @@ gs_plugin_initialize (GsPlugin *plugin)
 	 * in a more complete/refined state */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "flatpak");
 
+	/* we already deal with apps that need to be proxied, so let's impede
+	 * the other plugin from running */
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "generic-updates");
+
 	priv->eos_arch_is_arm = g_strcmp0 (flatpak_get_default_arch (), "arm") == 0;
 
 	priv->session_bus = g_application_get_dbus_connection (app);
