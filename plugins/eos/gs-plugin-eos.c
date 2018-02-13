@@ -658,6 +658,7 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"ch.x29a.playitslowly.desktop",
 		"com.bixense.PasswordCalculator.desktop",
 		"com.dosbox.DOSBox.desktop",
+		"com.frac_tion.teleport.desktop",
 		"com.github.babluboy.bookworm.desktop",
 		"com.github.birros.WebArchives.desktop",
 		"com.github.cassidyjames.dippi.desktop",
