@@ -182,6 +182,16 @@ app_state_changed (GsApp *app,
 }
 
 static void
+gs_background_tile_disconnect_app_signals (GsBackgroundTile *tile)
+{
+	if (tile->app == NULL)
+		return;
+
+	g_signal_handlers_disconnect_by_func (tile->app, app_state_changed, tile);
+	g_signal_handlers_disconnect_by_func (tile->app, update_tile_background, tile);
+}
+
+static void
 gs_background_tile_set_app (GsAppTile *app_tile,
 			    GsApp *app)
 {
@@ -190,8 +200,7 @@ gs_background_tile_set_app (GsAppTile *app_tile,
 
 	g_return_if_fail (GS_IS_APP (app) || app == NULL);
 
-	if (tile->app)
-		g_signal_handlers_disconnect_by_func (tile->app, app_state_changed, tile);
+	gs_background_tile_disconnect_app_signals (tile);
 
 	g_set_object (&tile->app, app);
 
@@ -228,8 +237,7 @@ gs_background_tile_destroy (GtkWidget *widget)
 {
 	GsBackgroundTile *tile = GS_BACKGROUND_TILE (widget);
 
-	if (tile->app != NULL)
-		g_signal_handlers_disconnect_by_func (tile->app, app_state_changed, tile);
+	gs_background_tile_disconnect_app_signals (tile);
 
 	g_clear_object (&tile->app);
 
