@@ -419,22 +419,10 @@ gs_installed_page_remove_all_cb (GtkWidget *container,
 	gtk_list_box_remove (GTK_LIST_BOX (container), child);
 }
 
-static void
-gs_installed_page_load (GsInstalledPage *self)
+static GsPluginRefineFlags
+gs_installed_page_get_refine_flags (GsInstalledPage *self)
 {
 	GsPluginRefineFlags flags;
-	g_autoptr(GsPluginJob) plugin_job = NULL;
-
-	if (self->waiting)
-		return;
-	self->waiting = TRUE;
-
-	/* remove old entries */
-	gs_widget_remove_all (self->list_box_install_in_progress, gs_installed_page_remove_all_cb);
-	gs_widget_remove_all (self->list_box_install_apps, gs_installed_page_remove_all_cb);
-	gs_widget_remove_all (self->list_box_install_system_apps, gs_installed_page_remove_all_cb);
-	gs_widget_remove_all (self->list_box_install_addons, gs_installed_page_remove_all_cb);
-	update_groups (self);
 
 	flags = GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 		GS_PLUGIN_REFINE_FLAGS_REQUIRE_HISTORY |
@@ -451,8 +439,28 @@ gs_installed_page_load (GsInstalledPage *self)
 	if (should_show_installed_size (self))
 		flags |= GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE;
 
+	return flags;
+}
+
+static void
+gs_installed_page_load (GsInstalledPage *self)
+{
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	if (self->waiting)
+		return;
+	self->waiting = TRUE;
+
+	/* remove old entries */
+	gs_widget_remove_all (self->list_box_install_in_progress, gs_installed_page_remove_all_cb);
+	gs_widget_remove_all (self->list_box_install_apps, gs_installed_page_remove_all_cb);
+	gs_widget_remove_all (self->list_box_install_system_apps, gs_installed_page_remove_all_cb);
+	gs_widget_remove_all (self->list_box_install_addons, gs_installed_page_remove_all_cb);
+	update_groups (self);
+
 	/* get installed apps */
-	plugin_job = gs_plugin_job_list_installed_apps_new (flags, 0, GS_APP_LIST_FILTER_FLAG_NONE,
+	plugin_job = gs_plugin_job_list_installed_apps_new (gs_installed_page_get_refine_flags (self),
+							    0, GS_APP_LIST_FILTER_FLAG_NONE,
 							    GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_INTERACTIVE);
 	gs_plugin_loader_job_process_async (self->plugin_loader,
 					    plugin_job,
@@ -621,37 +629,60 @@ gs_installed_page_has_app (GsInstalledPage *self,
 }
 
 static void
-gs_installed_page_pending_apps_changed_cb (GsPluginLoader *plugin_loader,
-                                           GsInstalledPage *self)
+gs_installed_page_pending_apps_refined_cb (GObject *source,
+					   GAsyncResult *res,
+					   gpointer user_data)
 {
-	GsApp *app;
-	guint i;
-	guint cnt = 0;
-	g_autoptr(GsAppList) pending = NULL;
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
+	GsInstalledPage *self = GS_INSTALLED_PAGE (user_data);
+	guint pending_apps_count = 0;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GsAppList) list = gs_plugin_loader_job_process_finish (plugin_loader,
+									 res,
+									 &error);
+	if (list == NULL) {
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+			g_warning ("failed to refine pending apps: %s", error->message);
+		return;
+	}
 
-	/* add new apps to the list */
-	pending = gs_plugin_loader_get_pending (plugin_loader);
-	for (i = 0; i < gs_app_list_length (pending); i++) {
-		app = gs_app_list_index (pending, i);
+	for (guint i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (gs_app_is_installed (app))
+			continue;
 
 		/* never show OS upgrades, we handle the scheduling and
 		 * cancellation in GsUpgradeBanner */
 		if (gs_app_get_kind (app) == AS_COMPONENT_KIND_OPERATING_SYSTEM)
 			continue;
 
-		/* do not to add pending apps more than once. */
-		if (gs_installed_page_has_app (self, app) == FALSE)
-			gs_installed_page_add_app (self, pending, app);
+		if (gs_app_get_state (app) == GS_APP_STATE_AVAILABLE)
+			gs_app_set_state (app, GS_APP_STATE_QUEUED_FOR_INSTALL);
 
-		/* incremement the label */
-		cnt++;
+		++pending_apps_count;
+		if (!gs_installed_page_has_app (self, app))
+			gs_installed_page_add_app (self, list, app);
 	}
 
 	/* update the number of on-going operations */
-	if (cnt != self->pending_apps_counter) {
-		self->pending_apps_counter = cnt;
+	if (pending_apps_count != self->pending_apps_counter) {
+		self->pending_apps_counter = pending_apps_count;
 		g_object_notify (G_OBJECT (self), "counter");
 	}
+}
+
+static void
+gs_installed_page_pending_apps_changed_cb (GsPluginLoader *plugin_loader,
+                                           GsInstalledPage *self)
+{
+	g_autoptr(GsAppList) pending = gs_plugin_loader_get_pending (plugin_loader);
+	g_autoptr(GsPluginJob) plugin_job = gs_plugin_job_refine_new (pending,
+								      gs_installed_page_get_refine_flags (self));
+	gs_plugin_job_set_interactive (plugin_job, FALSE);
+	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
+					    self->cancellable,
+					    gs_installed_page_pending_apps_refined_cb,
+					    self);
 }
 
 static gboolean
