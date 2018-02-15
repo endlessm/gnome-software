@@ -744,7 +744,8 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 
 	const char *hostname = NULL;
 
-	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM)
+	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM ||
+	    gs_app_is_installed (app))
 		return FALSE;
 
 	hostname = gs_app_get_origin_hostname (app);
