@@ -1741,6 +1741,7 @@ load_install_queue (GsPluginLoader *plugin_loader, GError **error)
 	g_autofree gchar *file = NULL;
 	g_auto(GStrv) names = NULL;
 	g_autoptr(GsAppList) list = NULL;
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	/* load from file */
 	file = g_build_filename (g_get_user_data_dir (),
@@ -1758,17 +1759,16 @@ load_install_queue (GsPluginLoader *plugin_loader, GError **error)
 	names = g_strsplit (contents, "\n", 0);
 	for (i = 0; names[i]; i++) {
 		g_autoptr(GsApp) app = NULL;
-		if (strlen (names[i]) == 0)
+		const gchar *id = names[i];
+
+		if (strlen (id) == 0)
 			continue;
-		app = gs_app_new (names[i]);
-		gs_app_set_state (app, AS_APP_STATE_QUEUED_FOR_INSTALL);
+		if (!as_utils_unique_id_valid (id))
+			continue;
 
-		g_mutex_lock (&priv->pending_apps_mutex);
-		g_ptr_array_add (priv->pending_apps,
-				 g_object_ref (app));
-		g_mutex_unlock (&priv->pending_apps_mutex);
+		app = gs_app_new (NULL);
+		gs_app_set_from_unique_id (app, id);
 
-		g_debug ("adding pending app %s", gs_app_get_unique_id (app));
 		gs_app_list_add (list, app);
 	}
 
@@ -1783,6 +1783,15 @@ load_install_queue (GsPluginLoader *plugin_loader, GError **error)
 		if (!gs_plugin_loader_run_refine (helper, list, NULL, error))
 			return FALSE;
 	}
+
+	/* add the pending apps now */
+	locker = g_mutex_locker_new (&priv->pending_apps_mutex);
+	for (i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+		g_ptr_array_add (priv->pending_apps, g_object_ref (app));
+		g_debug ("adding pending app %s", gs_app_get_unique_id (app));
+	}
+
 	return TRUE;
 }
 
@@ -1804,7 +1813,7 @@ save_install_queue (GsPluginLoader *plugin_loader)
 		GsApp *app;
 		app = g_ptr_array_index (pending_apps, i);
 		if (gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL) {
-			g_string_append (s, gs_app_get_id (app));
+			g_string_append (s, gs_app_get_unique_id (app));
 			g_string_append_c (s, '\n');
 		}
 	}
