@@ -1032,6 +1032,7 @@ gs_appstream_add_popular (GsPlugin *plugin,
 	GPtrArray *array;
 	guint i;
 	g_autoptr(AsProfileTask) ptask = NULL;
+	g_autoptr(GError) local_error = NULL;
 
 	/* find out how many packages are in each category */
 	ptask = as_profile_start_literal (gs_plugin_get_profile (plugin),
@@ -1045,8 +1046,14 @@ gs_appstream_add_popular (GsPlugin *plugin,
 			continue;
 		if (!as_app_has_kudo (item, "GnomeSoftware::popular"))
 			continue;
-		app = gs_app_new (as_app_get_id (item));
-		gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+		app = gs_appstream_create_app (plugin, item, &local_error);
+		if (app == NULL) {
+			g_debug ("Failed to get/create popular app %s: %s; creating as new app",
+				 as_app_get_unique_id (item),
+				 local_error->message);
+			app = gs_app_new (as_app_get_id (item));
+			gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+		}
 		gs_app_list_add (list, app);
 	}
 	return TRUE;
