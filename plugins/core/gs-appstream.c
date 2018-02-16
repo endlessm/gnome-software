@@ -1211,12 +1211,19 @@ gs_appstream_add_popular (GsPlugin *plugin,
 	}
 	for (guint i = 0; i < array->len; i++) {
 		g_autoptr(GsApp) app = NULL;
+		g_autoptr(GError) local_error = NULL;
 		XbNode *component = g_ptr_array_index (array, i);
 		const gchar *component_id = xb_node_query_text (component, "id", NULL);
 		if (component_id == NULL)
 			continue;
-		app = gs_app_new (component_id);
-		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+		app = gs_appstream_create_app (plugin, silo, component, &local_error);
+		if (app == NULL) {
+			g_debug ("Failed to get/create popular app %s: %s; creating as new app",
+				 component_id,
+				 local_error->message);
+			app = gs_app_new (component_id);
+			gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+		}
 		gs_app_list_add (list, app);
 	}
 	return TRUE;
