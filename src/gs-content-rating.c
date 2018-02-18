@@ -216,7 +216,7 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("Explicit references to specific brands or trademarked products") },
 	{ "money-advertising", AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
-	_("Players are encouraged to purchase specific real-world items") },
+	_("Users are encouraged to purchase specific real-world items") },
 	{ "money-gambling",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
 	_("No gambling of any kind") },
@@ -232,27 +232,30 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	{ "money-purchasing",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
 	_("No ability to spend money") },
+	{ "money-purchasing",	AS_CONTENT_RATING_VALUE_MILD,		/* v1.1 */
+	/* TRANSLATORS: content rating description */
+	_("Users are encouraged to donate real money") },
 	{ "money-purchasing",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
 	_("Ability to spend real money in-game") },
 	{ "social-chat",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
-	_("No way to chat with other players") },
+	_("No way to chat with other users") },
 	{ "social-chat",	AS_CONTENT_RATING_VALUE_MILD,
 	/* TRANSLATORS: content rating description */
-	_("Player-to-player game interactions without chat functionality") },
+	_("User-to-user game interactions without chat functionality") },
 	{ "social-chat",	AS_CONTENT_RATING_VALUE_MODERATE,
 	/* TRANSLATORS: content rating description */
-	_("Player-to-player preset interactions without chat functionality") },
+	_("Moderated chat functionality between users") },
 	{ "social-chat",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
-	_("Uncontrolled chat functionality between players") },
+	_("Uncontrolled chat functionality between users") },
 	{ "social-audio",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
-	_("No way to talk with other players") },
+	_("No way to talk with other users") },
 	{ "social-audio",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
-	_("Uncontrolled audio or video chat functionality between players") },
+	_("Uncontrolled audio or video chat functionality between users") },
 	{ "social-contacts",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
 	_("No sharing of social network usernames or email addresses") },
@@ -262,15 +265,104 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	{ "social-info",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
 	_("No sharing of user information with 3rd parties") },
+	{ "social-info",	AS_CONTENT_RATING_VALUE_MILD,		/* v1.1 */
+	/* TRANSLATORS: content rating description */
+	_("Checking for the latest application version") },
+	{ "social-info",	AS_CONTENT_RATING_VALUE_MODERATE,	/* v1.1 */
+	/* TRANSLATORS: content rating description */
+	_("Sharing diagnostic data not identifiable to the user") },
 	{ "social-info",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
-	_("Sharing user information with 3rd parties") },
+	_("Sharing information identifiable to the user") },
 	{ "social-location",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
 	_("No sharing of physical location to other users") },
 	{ "social-location",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
 	_("Sharing physical location to other users") },
+
+	/* v1.1 */
+	{ "sex-homosexuality",	AS_CONTENT_RATING_VALUE_NONE,
+	/* TRANSLATORS: content rating description */
+	_("No references to homosexuality") },
+	{ "sex-homosexuality",	AS_CONTENT_RATING_VALUE_MILD,
+	/* TRANSLATORS: content rating description */
+	_("Indirect references to homosexuality") },
+	{ "sex-homosexuality",	AS_CONTENT_RATING_VALUE_MODERATE,
+	/* TRANSLATORS: content rating description */
+	_("Kissing between people of the same gender") },
+	{ "sex-homosexuality",	AS_CONTENT_RATING_VALUE_INTENSE,
+	/* TRANSLATORS: content rating description */
+	_("Graphic sexual behavior between people of the same gender") },
+	{ "sex-prostitution",	AS_CONTENT_RATING_VALUE_NONE,
+	/* TRANSLATORS: content rating description */
+	_("No references to prostitution") },
+	{ "sex-prostitution",	AS_CONTENT_RATING_VALUE_MILD,
+	/* TRANSLATORS: content rating description */
+	_("Indirect references to prostitution") },
+	{ "sex-prostitution",	AS_CONTENT_RATING_VALUE_MODERATE,
+	/* TRANSLATORS: content rating description */
+	_("Direct references of prostitution") },
+	{ "sex-prostitution",	AS_CONTENT_RATING_VALUE_INTENSE,
+	/* TRANSLATORS: content rating description */
+	_("Graphic depictions of the act of prostitution") },
+	{ "sex-adultery",	AS_CONTENT_RATING_VALUE_NONE,
+	/* TRANSLATORS: content rating description */
+	_("No references to adultery") },
+	{ "sex-adultery",	AS_CONTENT_RATING_VALUE_MILD,
+	/* TRANSLATORS: content rating description */
+	_("Indirect references to adultery") },
+	{ "sex-adultery",	AS_CONTENT_RATING_VALUE_MODERATE,
+	/* TRANSLATORS: content rating description */
+	_("Direct references of adultery") },
+	{ "sex-adultery",	AS_CONTENT_RATING_VALUE_INTENSE,
+	/* TRANSLATORS: content rating description */
+	_("Graphic depictions of the act of adultery") },
+	{ "sex-appearance",	AS_CONTENT_RATING_VALUE_NONE,
+	/* TRANSLATORS: content rating description */
+	_("No sexualized characters") },
+	{ "sex-appearance",	AS_CONTENT_RATING_VALUE_MODERATE,
+	/* TRANSLATORS: content rating description */
+	_("Scantily clad human characters") },
+	{ "sex-appearance",	AS_CONTENT_RATING_VALUE_INTENSE,
+	/* TRANSLATORS: content rating description */
+	_("Overtly sexualized human characters") },
+	{ "violence-worship",	AS_CONTENT_RATING_VALUE_NONE,
+	/* TRANSLATORS: content rating description */
+	_("No references to desecration") },
+	{ "violence-worship",	AS_CONTENT_RATING_VALUE_MILD,
+	/* TRANSLATORS: content rating description */
+	_("Depictions or references to historical desecration") },
+	{ "violence-worship",	AS_CONTENT_RATING_VALUE_MODERATE,
+	/* TRANSLATORS: content rating description */
+	_("Depictions of modern-day human desecration") },
+	{ "violence-worship",	AS_CONTENT_RATING_VALUE_INTENSE,
+	/* TRANSLATORS: content rating description */
+	_("Graphic depictions of modern-day desecration") },
+	{ "violence-desecration", AS_CONTENT_RATING_VALUE_NONE,
+	/* TRANSLATORS: content rating description */
+	_("No visible dead human remains") },
+	{ "violence-desecration", AS_CONTENT_RATING_VALUE_MILD,
+	/* TRANSLATORS: content rating description */
+	_("Visible dead human remains") },
+	{ "violence-desecration", AS_CONTENT_RATING_VALUE_MODERATE,
+	/* TRANSLATORS: content rating description */
+	_("Dead human remains that are exposed to the elements") },
+	{ "violence-desecration", AS_CONTENT_RATING_VALUE_INTENSE,
+	/* TRANSLATORS: content rating description */
+	_("Graphic depictions of desecration of human bodies") },
+	{ "violence-slavery",	AS_CONTENT_RATING_VALUE_NONE,
+	/* TRANSLATORS: content rating description */
+	_("No references to slavery") },
+	{ "violence-slavery",	AS_CONTENT_RATING_VALUE_MILD,
+	/* TRANSLATORS: content rating description */
+	_("Depictions or references to historical slavery") },
+	{ "violence-slavery",	AS_CONTENT_RATING_VALUE_MODERATE,
+	/* TRANSLATORS: content rating description */
+	_("Depictions of modern-day slavery") },
+	{ "violence-slavery",	AS_CONTENT_RATING_VALUE_INTENSE,
+	/* TRANSLATORS: content rating description */
+	_("Graphic depictions of modern-day slavery") },
 	{ NULL, 0, NULL } };
 	for (i = 0; tab[i].id != NULL; i++) {
 		if (g_strcmp0 (tab[i].id, id) == 0 && tab[i].value == value)

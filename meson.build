@@ -1,5 +1,5 @@
 project('gnome-software', 'c',
-  version : '3.26.5',
+  version : '3.27.90',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
   meson_version : '>=0.37.0'
@@ -16,7 +16,7 @@ gs_plugin_api_version = '11'
 conf.set_quoted('GS_PLUGIN_API_VERSION', gs_plugin_api_version)
 
 # install docs
-install_data('README', install_dir : 'share/doc/gnome-software')
+install_data('README.md', install_dir : 'share/doc/gnome-software')
 
 # get suported warning flags
 test_args = [
@@ -92,11 +92,11 @@ add_global_link_arguments(
 # Needed for PATH_MAX and symlink()
 add_project_arguments('-D_XOPEN_SOURCE=500', language : 'c')
 
-appstream_glib = dependency('appstream-glib', version : '>= 0.7.0')
+appstream_glib = dependency('appstream-glib', version : '>= 0.7.3')
 gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.31.5')
 gio_unix = dependency('gio-unix-2.0')
 gmodule = dependency('gmodule-2.0')
-gtk = dependency('gtk+-3.0', version : '>= 3.20.0')
+gtk = dependency('gtk+-3.0', version : '>= 3.22.4')
 json_glib = dependency('json-glib-1.0', version : '>= 1.1.1')
 libm = cc.find_library('m', required: false)
 libsecret = dependency('libsecret-1')
@@ -123,17 +123,14 @@ if get_option('enable-gnome-desktop')
   conf.set('HAVE_GNOME_DESKTOP', 1)
 endif
 
-if get_option('enable-gtkspell')
-  gtkspell = dependency('gtkspell3-3.0')
+if get_option('enable-gspell')
+  gspell = dependency('gspell-1')
+  conf.set('HAVE_GSPELL', 1)
 endif
 
 if get_option('enable-polkit')
   polkit = dependency('polkit-gobject-1')
   conf.set('HAVE_POLKIT', 1)
-endif
-
-if get_option('enable-ostree')
-  ostree = dependency('ostree-1')
 endif
 
 if get_option('enable-packagekit')
@@ -144,7 +141,7 @@ if get_option('enable-packagekit')
 endif
 
 if get_option('enable-fwupd')
-  fwupd = dependency('fwupd', version : '>= 0.9.7')
+  fwupd = dependency('fwupd', version : '>= 0.9.8')
 endif
 
 if get_option('enable-flatpak')
@@ -155,8 +152,9 @@ if get_option('enable-limba')
   limba = dependency('limba', version : '>= 0.5.6')
 endif
 
-if get_option('enable-rpm')
-  rpm = dependency('rpm')
+if get_option('enable-rpm-ostree')
+  ostree = dependency('ostree-1')
+  rpm_ostree = dependency('rpm-ostree-1')
 endif
 
 if get_option('enable-ubuntu-reviews')
@@ -168,7 +166,7 @@ if get_option('enable-gudev')
 endif
 
 if get_option('enable-snap')
-  snap = dependency('snapd-glib', version : '>= 1.16')
+  snap = dependency('snapd-glib', version : '>= 1.19')
 endif
 
 gnome = import('gnome')
@@ -204,11 +202,19 @@ configure_file(
 add_project_arguments('-DI_KNOW_THE_GNOME_SOFTWARE_API_IS_SUBJECT_TO_CHANGE',
                       language : 'c')
 
+test_env = [
+  'G_TEST_SRCDIR=@0@'.format(meson.current_source_dir()),
+  'G_TEST_BUILDDIR=@0@'.format(meson.current_build_dir()),
+  'GSETTINGS_SCHEMA_DIR=@0@/data/'.format(meson.build_root()),
+  'GSETTINGS_BACKEND=memory',
+  'MALLOC_CHECK_=2',
+]
+
+subdir('data')
 subdir('lib')
 subdir('plugins')
 subdir('src')
 subdir('po')
-subdir('data')
 subdir('doc')
 
 if meson.version().version_compare('<0.41.0')

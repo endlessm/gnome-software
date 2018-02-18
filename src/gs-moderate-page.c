@@ -38,6 +38,7 @@ struct _GsModeratePage
 	GCancellable		*cancellable;
 	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
+	GtkSizeGroup		*sizegroup_desc;
 	GtkSizeGroup		*sizegroup_button;
 	GsShell			*shell;
 
@@ -115,7 +116,7 @@ gs_moderate_page_review_clicked_cb (GsReviewRow *row,
 					    self);
 	gtk_widget_set_visible (GTK_WIDGET (row), FALSE);
 
-	/* if there are no more visble rows, hide the app */
+	/* if there are no more visible rows, hide the app */
 	gs_moderate_page_perhaps_hide_app_row (self, app);
 }
 
@@ -147,6 +148,7 @@ gs_moderate_page_add_app (GsModeratePage *self, GsApp *app)
 	gs_app_row_set_size_groups (GS_APP_ROW (app_row),
 				    self->sizegroup_image,
 				    self->sizegroup_name,
+				    self->sizegroup_desc,
 				    self->sizegroup_button);
 
 	/* add reviews */
@@ -221,7 +223,7 @@ gs_moderate_page_load (GsModeratePage *self)
 
 	/* get unvoted reviews as apps */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_UNVOTED_REVIEWS,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
@@ -304,6 +306,7 @@ gs_moderate_page_dispose (GObject *object)
 
 	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
+	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button);
 
 	g_clear_object (&self->plugin_loader);
@@ -342,6 +345,7 @@ gs_moderate_page_init (GsModeratePage *self)
 
 	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 }
 

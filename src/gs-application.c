@@ -34,9 +34,7 @@
 #include <gdk/gdkx.h>
 #endif
 #ifdef GDK_WINDOWING_WAYLAND
-#if GTK_CHECK_VERSION(3,22,4)
 #include <gdk/gdkwayland.h>
-#endif
 #endif
 
 #ifdef HAVE_PACKAGEKIT
@@ -49,13 +47,12 @@
 #include "gs-shell-search-provider.h"
 #include "gs-folders.h"
 
-#define ENABLE_SOFTWARE_SOURCES_CONF_KEY "enable-software-sources"
+#define ENABLE_REPOS_DIALOG_CONF_KEY "enable-repos-dialog"
 
 struct _GsApplication {
 	GtkApplication	 parent;
 	gboolean	 enable_profile_mode;
 	GCancellable	*cancellable;
-	GtkApplication	*application;
 	GtkCssProvider	*provider;
 	GsPluginLoader	*plugin_loader;
 	gint		 pending_apps;
@@ -66,9 +63,37 @@ struct _GsApplication {
 #endif
 	GsShellSearchProvider *search_provider;
 	GSettings       *settings;
+	GSimpleActionGroup	*action_map;
+	guint		 shell_loaded_handler_id;
 };
 
 G_DEFINE_TYPE (GsApplication, gs_application, GTK_TYPE_APPLICATION);
+
+typedef struct {
+	GsApplication *app;
+	GSimpleAction *action;
+	GVariant *action_param;
+} GsActivationHelper;
+
+static GsActivationHelper *
+gs_activation_helper_new (GsApplication *app,
+			  GSimpleAction *action,
+			  GVariant *parameter)
+{
+	GsActivationHelper *helper = g_slice_new0 (GsActivationHelper);
+	helper->app = app;
+	helper->action = G_SIMPLE_ACTION (action);
+	helper->action_param = parameter;
+
+	return helper;
+}
+
+static void
+gs_activation_helper_free (GsActivationHelper *helper)
+{
+	g_variant_unref (helper->action_param);
+	g_slice_free (GsActivationHelper, helper);
+}
 
 GsPluginLoader *
 gs_application_get_plugin_loader (GsApplication *application)
@@ -154,7 +179,7 @@ gs_application_initialize_plugins (GsApplication *app)
 	if (!gs_plugin_loader_setup (app->plugin_loader,
 				     plugin_whitelist,
 				     plugin_blacklist,
-				     GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+				     GS_PLUGIN_FAILURE_FLAGS_NONE,
 				     NULL,
 				     &error)) {
 		g_warning ("Failed to setup plugins: %s", error->message);
@@ -220,6 +245,14 @@ theme_changed (GtkSettings *settings, GParamSpec *pspec, GsApplication *app)
 }
 
 static void
+gs_application_shell_loaded_cb (GsShell *shell, GsApplication *app)
+{
+	gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
+	app->shell_loaded_handler_id = 0;
+	gs_application_show_first_run_dialog (app);
+}
+
+static void
 gs_application_initialize_ui (GsApplication *app)
 {
 	static gboolean initialized = FALSE;
@@ -251,15 +284,22 @@ gs_application_initialize_ui (GsApplication *app)
 
 	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
 	gtk_application_add_window (GTK_APPLICATION (app), gs_shell_get_window (app->shell));
+
+        app->shell_loaded_handler_id = g_signal_connect (app->shell, "loaded",
+                                                         G_CALLBACK (gs_application_shell_loaded_cb),
+                                                         app);
+
+	/* it's very important to set the loading as the first mode because it will
+	 * make the plugins load all their needed initial catalogs/information */
+	gs_shell_set_mode (app->shell, GS_SHELL_MODE_LOADING);
 }
 
 static void
-initialize_ui_and_present_window (GsApplication *app, const gchar *startup_id)
+gs_application_present_window (GsApplication *app, const gchar *startup_id)
 {
 	GList *windows;
 	GtkWindow *window;
 
-	gs_application_initialize_ui (app);
 	windows = gtk_application_get_windows (GTK_APPLICATION (app));
 	if (windows) {
 		window = windows->data;
@@ -295,8 +335,6 @@ about_activated (GSimpleAction *action,
 	const gchar *copyright = "Copyright \xc2\xa9 2016 Richard Hughes, Matthias Clasen";
 	GtkAboutDialog *dialog;
 	g_autofree gchar *title = NULL;
-
-	gs_application_initialize_ui (app);
 
 	dialog = GTK_ABOUT_DIALOG (gtk_about_dialog_new ());
 	gtk_about_dialog_set_authors (dialog, authors);
@@ -486,6 +524,17 @@ quit_activated (GSimpleAction *action,
 }
 
 static void
+activate_on_shell_loaded_cb (GsActivationHelper *helper)
+{
+	GsApplication *app = helper->app;
+
+	g_action_activate (G_ACTION (helper->action), helper->action_param);
+
+	g_signal_handlers_disconnect_by_data (app->shell, helper);
+	gs_activation_helper_free (helper);
+}
+
+static void
 set_mode_activated (GSimpleAction *action,
 		    GVariant      *parameter,
 		    gpointer       data)
@@ -493,7 +542,7 @@ set_mode_activated (GSimpleAction *action,
 	GsApplication *app = GS_APPLICATION (data);
 	const gchar *mode;
 
-	initialize_ui_and_present_window (app, NULL);
+	gs_application_present_window (app, NULL);
 
 	mode = g_variant_get_string (parameter, NULL);
 	if (g_strcmp0 (mode, "updates") == 0) {
@@ -520,7 +569,7 @@ search_activated (GSimpleAction *action,
 	GsApplication *app = GS_APPLICATION (data);
 	const gchar *search;
 
-	initialize_ui_and_present_window (app, NULL);
+	gs_application_present_window (app, NULL);
 
 	search = g_variant_get_string (parameter, NULL);
 	gs_shell_show_search (app->shell, search);
@@ -535,7 +584,7 @@ details_activated (GSimpleAction *action,
 	const gchar *id;
 	const gchar *search;
 
-	initialize_ui_and_present_window (app, NULL);
+	gs_application_present_window (app, NULL);
 
 	g_variant_get (parameter, "(&s&s)", &id, &search);
 	if (search != NULL && search[0] != '\0')
@@ -565,7 +614,7 @@ details_pkg_activated (GSimpleAction *action,
 	const gchar *plugin;
 	g_autoptr (GsApp) a = NULL;
 
-	initialize_ui_and_present_window (app, NULL);
+	gs_application_present_window (app, NULL);
 
 	g_variant_get (parameter, "(&s&s)", &name, &plugin);
 	a = gs_app_new (NULL);
@@ -584,7 +633,7 @@ details_url_activated (GSimpleAction *action,
 	const gchar *url;
 	g_autoptr (GsApp) a = NULL;
 
-	initialize_ui_and_present_window (app, NULL);
+	gs_application_present_window (app, NULL);
 
 	g_variant_get (parameter, "(&s)", &url);
 
@@ -612,9 +661,7 @@ install_activated (GSimpleAction *action,
 	}
 
 	if (interaction == GS_SHELL_INTERACTION_FULL)
-		initialize_ui_and_present_window (app, NULL);
-	else
-		gs_application_initialize_ui (app);
+		gs_application_present_window (app, NULL);
 
 	a = gs_plugin_loader_app_create (app->plugin_loader, id);
 	if (a == NULL) {
@@ -662,8 +709,6 @@ filename_activated (GSimpleAction *action,
 	GsApplication *app = GS_APPLICATION (data);
 	const gchar *filename;
 	g_autoptr(GFile) file = NULL;
-
-	gs_application_initialize_ui (app);
 
 	g_variant_get (parameter, "(&s)", &filename);
 
@@ -716,7 +761,7 @@ show_offline_updates_error (GSimpleAction *action,
 {
 	GsApplication *app = GS_APPLICATION (data);
 
-	initialize_ui_and_present_window (app, NULL);
+	gs_application_present_window (app, NULL);
 
 	gs_shell_set_mode (app->shell, GS_SHELL_MODE_UPDATES);
 	gs_update_monitor_show_error (app->update_monitor, app->shell);
@@ -744,28 +789,32 @@ install_resources_activated (GSimpleAction *action,
 	}
 #endif
 #ifdef GDK_WINDOWING_WAYLAND
-#if GTK_CHECK_VERSION(3,22,4)
 	if (GDK_IS_WAYLAND_DISPLAY (display)) {
 		if (startup_id != NULL && startup_id[0] != '\0')
 			gdk_wayland_display_set_startup_notification_id (display,
 			                                                 startup_id);
 	}
 #endif
-#endif
 
-	initialize_ui_and_present_window (app, startup_id);
+	gs_application_present_window (app, startup_id);
 
 	gs_shell_show_extras_search (app->shell, mode, resources);
 }
 
 static GActionEntry actions[] = {
 	{ "about", about_activated, NULL, NULL, NULL },
-	{ "sources", sources_activated, NULL, NULL, NULL },
 	{ "quit", quit_activated, NULL, NULL, NULL },
 	{ "profile", profile_activated, NULL, NULL, NULL },
 	{ "reboot-and-install", reboot_and_install, NULL, NULL, NULL },
 	{ "reboot", reboot_activated, NULL, NULL, NULL },
 	{ "shutdown", shutdown_activated, NULL, NULL, NULL },
+	{ "launch", launch_activated, "s", NULL, NULL },
+	{ "show-offline-update-error", show_offline_updates_error, NULL, NULL, NULL },
+	{ "nop", NULL, NULL, NULL }
+};
+
+static GActionEntry actions_after_loading[] = {
+	{ "sources", sources_activated, NULL, NULL, NULL },
 	{ "set-mode", set_mode_activated, "s", NULL, NULL },
 	{ "search", search_activated, "s", NULL, NULL },
 	{ "details", details_activated, "(ss)", NULL, NULL },
@@ -773,8 +822,6 @@ static GActionEntry actions[] = {
 	{ "details-url", details_url_activated, "(s)", NULL, NULL },
 	{ "install", install_activated, "(su)", NULL, NULL },
 	{ "filename", filename_activated, "(s)", NULL, NULL },
-	{ "launch", launch_activated, "s", NULL, NULL },
-	{ "show-offline-update-error", show_offline_updates_error, NULL, NULL, NULL },
 	{ "install-resources", install_resources_activated, "(sass)", NULL, NULL },
 	{ "nop", NULL, NULL, NULL }
 };
@@ -782,13 +829,14 @@ static GActionEntry actions[] = {
 static void
 gs_application_update_software_sources_presence (GApplication *self)
 {
+	GsApplication *app = GS_APPLICATION (self);
 	GSimpleAction *action;
 	gboolean enable_sources;
 
 	action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (self),
 							      "sources"));
-	enable_sources = g_settings_get_boolean (GS_APPLICATION (self)->settings,
-						 ENABLE_SOFTWARE_SOURCES_CONF_KEY);
+	enable_sources = g_settings_get_boolean (app->settings,
+						 ENABLE_REPOS_DIALOG_CONF_KEY);
 	g_simple_action_set_enabled (action, enable_sources);
 }
 
@@ -797,7 +845,7 @@ gs_application_settings_changed_cb (GApplication *self,
 				    const gchar *key,
 				    gpointer data)
 {
-	if (g_strcmp0 (key, ENABLE_SOFTWARE_SOURCES_CONF_KEY) == 0) {
+	if (g_strcmp0 (key, ENABLE_REPOS_DIALOG_CONF_KEY) == 0) {
 		gs_application_update_software_sources_presence (self);
 	}
 }
@@ -810,10 +858,73 @@ gs_application_setup_search_provider (GsApplication *app)
 }
 
 static void
+wrapper_action_activated_cb (GSimpleAction *action,
+			     GVariant	   *parameter,
+			     gpointer	    data)
+{
+	GsApplication *app = GS_APPLICATION (data);
+	const gchar *action_name = g_action_get_name (G_ACTION (action));
+	GAction *real_action = g_action_map_lookup_action (G_ACTION_MAP (app->action_map),
+							   action_name);
+
+	if (app->shell_loaded_handler_id != 0) {
+		GsActivationHelper *helper = gs_activation_helper_new (app,
+								       G_SIMPLE_ACTION (real_action),
+								       g_variant_ref (parameter));
+
+		g_signal_handler_disconnect (app->shell, app->shell_loaded_handler_id);
+		app->shell_loaded_handler_id = 0;
+
+		g_signal_connect_swapped (app->shell, "loaded",
+					  G_CALLBACK (activate_on_shell_loaded_cb), helper);
+		return;
+	}
+
+	g_action_activate (real_action, parameter);
+}
+
+static void
+gs_application_add_wrapper_actions (GApplication *application)
+{
+	GsApplication *app = GS_APPLICATION (application);
+	GActionMap *map = NULL;
+
+	app->action_map = g_simple_action_group_new ();
+	map = G_ACTION_MAP (app->action_map);
+
+	/* add the real actions to a different map and add wrapper actions to the
+	 * application instead; the wrapper actions will call the real ones but
+	 * after the "loading state" has finished */
+
+	g_action_map_add_action_entries (G_ACTION_MAP (map), actions_after_loading,
+					 G_N_ELEMENTS (actions_after_loading),
+					 application);
+
+	for (guint i = 0; i < G_N_ELEMENTS (actions_after_loading); ++i) {
+		const GActionEntry *entry = &actions_after_loading[i];
+		GAction *action = g_action_map_lookup_action (map, entry->name);
+		g_autoptr (GSimpleAction) simple_action = NULL;
+
+		simple_action = g_simple_action_new (g_action_get_name (action),
+						     g_action_get_parameter_type (action));
+		g_signal_connect (simple_action, "activate",
+				  G_CALLBACK (wrapper_action_activated_cb),
+				  application);
+		g_object_bind_property (simple_action, "enabled", action,
+					"enabled", G_BINDING_DEFAULT);
+		g_action_map_add_action (G_ACTION_MAP (application),
+					 G_ACTION (simple_action));
+	}
+}
+
+static void
 gs_application_startup (GApplication *application)
 {
 	GSettings *settings;
+	GsApplication *app = GS_APPLICATION (application);
 	G_APPLICATION_CLASS (gs_application_parent_class)->startup (application);
+
+	gs_application_add_wrapper_actions (application);
 
 	g_action_map_add_action_entries (G_ACTION_MAP (application),
 					 actions, G_N_ELEMENTS (actions),
@@ -830,6 +941,8 @@ gs_application_startup (GApplication *application)
 				  G_CALLBACK (gs_application_settings_changed_cb),
 				  application);
 
+	gs_application_initialize_ui (app);
+
 	GS_APPLICATION (application)->update_monitor =
 		gs_update_monitor_new (GS_APPLICATION (application));
 	gs_folders_convert ();
@@ -838,31 +951,14 @@ gs_application_startup (GApplication *application)
 }
 
 static void
-gs_application_shell_loaded_cb (GsShell *shell, GsApplication *app)
-{
-	gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
-}
-
-static void
 gs_application_activate (GApplication *application)
 {
 	GsApplication *app = GS_APPLICATION (application);
 
-	gs_application_initialize_ui (GS_APPLICATION (application));
-
-	/* start metadata loading screen */
-	if (gs_shell_get_mode (app->shell) == GS_SHELL_MODE_UNKNOWN) {
-		g_signal_connect (app->shell, "loaded",
-				  G_CALLBACK (gs_application_shell_loaded_cb),
-				  app);
-		gs_shell_set_mode (app->shell, GS_SHELL_MODE_LOADING);
-	} else {
+	if (app->shell_loaded_handler_id == 0)
 		gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
-	}
 
 	gs_shell_activate (GS_APPLICATION (application)->shell);
-
-	gs_application_show_first_run_dialog (GS_APPLICATION (application));
 }
 
 static void
@@ -883,6 +979,7 @@ gs_application_dispose (GObject *object)
 	g_clear_object (&app->dbus_helper);
 #endif
 	g_clear_object (&app->settings);
+	g_clear_object (&app->action_map);
 
 	G_OBJECT_CLASS (gs_application_parent_class)->dispose (object);
 }

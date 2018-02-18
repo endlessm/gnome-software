@@ -61,7 +61,9 @@ gchar		*gs_utils_get_cache_filename	(const gchar	*kind,
 						 GsUtilsCacheFlags flags,
 						 GError		**error);
 gchar		*gs_utils_get_user_hash		(GError		**error);
-GPermission	*gs_utils_get_permission	(const gchar	*id);
+GPermission	*gs_utils_get_permission	(const gchar	*id,
+						 GCancellable	*cancellable,
+						 GError		**error);
 gboolean	 gs_utils_strv_fnmatch		(gchar		**strv,
 						 const gchar	*str);
 GDesktopAppInfo *gs_utils_get_desktop_app_info	(const gchar	*id);
@@ -81,6 +83,7 @@ gboolean	 gs_utils_error_convert_gdbus	(GError		**perror);
 gboolean	 gs_utils_error_convert_gdk_pixbuf(GError	**perror);
 gboolean	 gs_utils_error_convert_json_glib (GError	**perror);
 gboolean	 gs_utils_error_convert_appstream (GError	**perror);
+gboolean	 gs_utils_is_low_resolution	  (GtkWidget     *toplevel);
 
 gchar		*gs_utils_get_url_scheme	(const gchar	*url);
 gchar		*gs_utils_get_url_path		(const gchar	*url);
@@ -89,6 +92,7 @@ void		 gs_utils_append_key_value	(GString	*str,
 						 gsize		 align_len,
 						 const gchar	*key,
 						 const gchar	*value);
+guint		 gs_utils_get_memory_total	(void);
 
 G_END_DECLS
 

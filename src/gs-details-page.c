@@ -107,10 +107,10 @@ struct _GsDetailsPage
 	GtkWidget		*label_details_size_installed_value;
 	GtkWidget		*label_details_size_download_title;
 	GtkWidget		*label_details_size_download_value;
+	GtkWidget		*label_details_updated_title;
 	GtkWidget		*label_details_updated_value;
 	GtkWidget		*label_details_version_value;
 	GtkWidget		*label_failed;
-	GtkWidget		*label_pending;
 	GtkWidget		*label_license_nonfree_details;
 	GtkWidget		*label_licenses_intro;
 	GtkWidget		*list_box_addons;
@@ -232,6 +232,21 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 	}
 }
 
+static gboolean
+app_has_pending_action (GsApp *app)
+{
+	/* sanitize the pending state change by verifying we're in one of the
+	 * expected states */
+	if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE &&
+	    gs_app_get_state (app) != AS_APP_STATE_UPDATABLE_LIVE &&
+	    gs_app_get_state (app) != AS_APP_STATE_UPDATABLE &&
+	    gs_app_get_state (app) != AS_APP_STATE_QUEUED_FOR_INSTALL)
+		return FALSE;
+
+	return (gs_app_get_pending_action (app) != GS_PLUGIN_ACTION_UNKNOWN) ||
+	       (gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL);
+}
+
 static void
 gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 {
@@ -259,16 +274,6 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 
 	state = gs_app_get_state (self->app);
 
-	/* label */
-	switch (state) {
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
-		gtk_widget_set_visible (self->label_pending, TRUE);
-		break;
-	default:
-		gtk_widget_set_visible (self->label_pending, FALSE);
-		break;
-	}
-
 	/* install button */
 	switch (state) {
 	case AS_APP_STATE_AVAILABLE:
@@ -278,9 +283,6 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 		/* TRANSLATORS: button text in the header when an application
 		 * can be installed */
 		gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install"));
-		break;
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
-		gtk_widget_set_visible (self->button_install, FALSE);
 		break;
 	case AS_APP_STATE_INSTALLING:
 		gtk_widget_set_visible (self->button_install, FALSE);
@@ -299,6 +301,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 	case AS_APP_STATE_INSTALLED:
 	case AS_APP_STATE_REMOVING:
 	case AS_APP_STATE_UPDATABLE:
+	case AS_APP_STATE_QUEUED_FOR_INSTALL:
 		gtk_widget_set_visible (self->button_install, FALSE);
 		break;
 	case AS_APP_STATE_UPDATABLE_LIVE:
@@ -324,7 +327,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 			/* TRANSLATORS: this is a button that allows the apps to
 			 * be installed.
 			 * The ellipsis indicates that further steps are required,
-			 * e.g. enabling software sources or the like */
+			 * e.g. enabling software repositories or the like */
 			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install…"));
 		}
 		break;
@@ -374,12 +377,6 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 			/* TRANSLATORS: button text in the header when an application can be erased */
 			gtk_button_set_label (GTK_BUTTON (self->button_remove), _("_Remove"));
 			break;
-		case AS_APP_STATE_QUEUED_FOR_INSTALL:
-			gtk_widget_set_visible (self->button_remove, TRUE);
-			gtk_widget_set_sensitive (self->button_remove, TRUE);
-			gtk_style_context_remove_class (gtk_widget_get_style_context (self->button_remove), "destructive-action");
-			gtk_button_set_label (GTK_BUTTON (self->button_remove), _("_Cancel"));
-			break;
 		case AS_APP_STATE_AVAILABLE_LOCAL:
 		case AS_APP_STATE_AVAILABLE:
 		case AS_APP_STATE_INSTALLING:
@@ -388,6 +385,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 		case AS_APP_STATE_UNKNOWN:
 		case AS_APP_STATE_PURCHASABLE:
 		case AS_APP_STATE_PURCHASING:
+		case AS_APP_STATE_QUEUED_FOR_INSTALL:
 			gtk_widget_set_visible (self->button_remove, FALSE);
 			break;
 		default:
@@ -395,6 +393,12 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 				   as_app_state_to_string (state));
 			g_assert_not_reached ();
 		}
+	}
+
+	if (app_has_pending_action (self->app)) {
+		gtk_widget_set_visible (self->button_install, FALSE);
+		gtk_widget_set_visible (self->button_details_launch, FALSE);
+		gtk_widget_set_visible (self->button_remove, FALSE);
 	}
 
 	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_details));
@@ -427,6 +431,12 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_cancel, FALSE);
 		break;
 	}
+	if (app_has_pending_action (self->app)) {
+		gtk_widget_set_visible (self->button_cancel, TRUE);
+		gtk_widget_set_sensitive (self->button_cancel,
+					  !g_cancellable_is_cancelled (self->app_cancellable) &&
+					  gs_app_get_allow_cancel (self->app));
+	}
 
 	/* progress status label */
 	switch (state) {
@@ -443,6 +453,28 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	default:
 		gtk_widget_set_visible (self->label_progress_status, FALSE);
 		break;
+	}
+	if (app_has_pending_action (self->app)) {
+		GsPluginAction action = gs_app_get_pending_action (self->app);
+		gtk_widget_set_visible (self->label_progress_status, TRUE);
+		switch (action) {
+		case GS_PLUGIN_ACTION_INSTALL:
+			gtk_label_set_label (GTK_LABEL (self->label_progress_status),
+					     /* TRANSLATORS: This is a label on top of the app's progress
+					      * bar to inform the user that the app should be installed soon */
+					     _("Pending installation…"));
+			break;
+		case GS_PLUGIN_ACTION_UPDATE:
+		case GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD:
+			gtk_label_set_label (GTK_LABEL (self->label_progress_status),
+					     /* TRANSLATORS: This is a label on top of the app's progress
+					      * bar to inform the user that the app should be updated soon */
+					     _("Pending update…"));
+			break;
+		default:
+			gtk_widget_set_visible (self->label_progress_status, FALSE);
+			break;
+		}
 	}
 
 	/* percentage bar */
@@ -463,6 +495,10 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->label_progress_percentage, FALSE);
 		gtk_widget_set_visible (self->progressbar_top, FALSE);
 		break;
+	}
+	if (app_has_pending_action (self->app)) {
+		gtk_widget_set_visible (self->progressbar_top, TRUE);
+		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (self->progressbar_top), 0);
 	}
 
 	/* spinner */
@@ -487,6 +523,8 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->box_progress, FALSE);
 		break;
 	}
+	if (app_has_pending_action (self->app))
+		gtk_widget_set_visible (self->box_progress, TRUE);
 }
 
 static gboolean
@@ -609,6 +647,8 @@ gs_details_page_refresh_screenshots (GsDetailsPage *self)
 			gtk_box_pack_start (GTK_BOX (self->box_details_screenshot_main), ssimg, FALSE, FALSE, 0);
 			gtk_widget_set_visible (ssimg, TRUE);
 		}
+		gtk_widget_set_visible (self->box_details_screenshot_fallback,
+		                        screenshots->len == 0);
 		return;
 	}
 
@@ -784,6 +824,36 @@ gs_details_page_history_cb (GtkLabel *label,
 }
 
 static void
+gs_details_page_refresh_size (GsDetailsPage *self)
+{
+	/* set the installed size */
+	if (gs_app_get_size_installed (self->app) != GS_APP_SIZE_UNKNOWABLE &&
+	    gs_app_get_size_installed (self->app) != 0) {
+		g_autofree gchar *size = NULL;
+		size = g_format_size (gs_app_get_size_installed (self->app));
+		gtk_label_set_label (GTK_LABEL (self->label_details_size_installed_value), size);
+		gtk_widget_show (self->label_details_size_installed_title);
+		gtk_widget_show (self->label_details_size_installed_value);
+	} else {
+		gtk_widget_hide (self->label_details_size_installed_title);
+		gtk_widget_hide (self->label_details_size_installed_value);
+	}
+
+	/* set the download size */
+	if (!gs_app_is_installed (self->app) &&
+	    gs_app_get_size_download (self->app) != GS_APP_SIZE_UNKNOWABLE) {
+		g_autofree gchar *size = NULL;
+		size = g_format_size (gs_app_get_size_download (self->app));
+		gtk_label_set_label (GTK_LABEL (self->label_details_size_download_value), size);
+		gtk_widget_show (self->label_details_size_download_title);
+		gtk_widget_show (self->label_details_size_download_value);
+	} else {
+		gtk_widget_hide (self->label_details_size_download_title);
+		gtk_widget_hide (self->label_details_size_download_value);
+	}
+}
+
+static void
 gs_details_page_refresh_all (GsDetailsPage *self)
 {
 	GPtrArray *history;
@@ -881,38 +951,19 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 		gtk_label_set_label (GTK_LABEL (self->label_details_version_value), C_("version", "Unknown"));
 	}
 
-	/* set the installed size */
-	if (gs_app_get_size_installed (self->app) != GS_APP_SIZE_UNKNOWABLE &&
-	    gs_app_get_size_installed (self->app) != 0) {
-		g_autofree gchar *size = NULL;
-		size = g_format_size (gs_app_get_size_installed (self->app));
-		gtk_label_set_label (GTK_LABEL (self->label_details_size_installed_value), size);
-		gtk_widget_show (self->label_details_size_installed_title);
-		gtk_widget_show (self->label_details_size_installed_value);
-	} else {
-		gtk_widget_hide (self->label_details_size_installed_title);
-		gtk_widget_hide (self->label_details_size_installed_value);
-	}
-
-	/* set the download size */
-	if (!gs_app_is_installed (self->app) &&
-	    gs_app_get_size_download (self->app) != GS_APP_SIZE_UNKNOWABLE) {
-		g_autofree gchar *size = NULL;
-		size = g_format_size (gs_app_get_size_download (self->app));
-		gtk_label_set_label (GTK_LABEL (self->label_details_size_download_value), size);
-		gtk_widget_show (self->label_details_size_download_title);
-		gtk_widget_show (self->label_details_size_download_value);
-	} else {
-		gtk_widget_hide (self->label_details_size_download_title);
-		gtk_widget_hide (self->label_details_size_download_value);
-	}
+	/* refresh size information */
+	gs_details_page_refresh_size (self);
 
 	/* set the updated date */
 	updated = gs_app_get_install_date (self->app);
-	if (updated == GS_APP_INSTALL_DATE_UNKNOWN ||
-	    updated == GS_APP_INSTALL_DATE_UNSET) {
+	if (updated == GS_APP_INSTALL_DATE_UNSET) {
+		gtk_widget_set_visible (self->label_details_updated_title, FALSE);
+		gtk_widget_set_visible (self->label_details_updated_value, FALSE);
+	} else if (updated == GS_APP_INSTALL_DATE_UNKNOWN) {
 		/* TRANSLATORS: this is where the updated date is not known */
 		gtk_label_set_label (GTK_LABEL (self->label_details_updated_value), C_("updated", "Never"));
+		gtk_widget_set_visible (self->label_details_updated_title, TRUE);
+		gtk_widget_set_visible (self->label_details_updated_value, TRUE);
 	} else {
 		g_autoptr(GDateTime) dt = NULL;
 		g_autofree gchar *updated_str = NULL;
@@ -931,6 +982,8 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 			gtk_label_set_markup (GTK_LABEL (self->label_details_updated_value), url->str);
 			g_string_free (url, TRUE);
 		}
+		gtk_widget_set_visible (self->label_details_updated_title, TRUE);
+		gtk_widget_set_visible (self->label_details_updated_value, TRUE);
 	}
 
 	/* set the category */
@@ -1147,19 +1200,16 @@ gs_details_page_app_set_review_cb (GObject *source,
                                    gpointer user_data);
 
 static void
-gs_details_page_authenticate_cb (GtkDialog *dialog,
-                                 GtkResponseType response_type,
-                                 GsDetailsPageReviewHelper *helper)
+gs_details_page_authenticate_cb (GsPage *page,
+				 gboolean authenticated,
+				 gpointer user_data)
 {
+	g_autoptr(GsDetailsPageReviewHelper) helper = (GsDetailsPageReviewHelper *) user_data;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
-	/* unmap the dialog */
-	gtk_widget_destroy (GTK_WIDGET (dialog));
-
-	if (response_type != GTK_RESPONSE_OK) {
-		gs_details_page_review_helper_free (helper);
+	if (!authenticated)
 		return;
-	}
+
 	plugin_job = gs_plugin_job_newv (helper->action,
 					 "app", helper->app,
 					 "review", helper->review,
@@ -1170,6 +1220,7 @@ gs_details_page_authenticate_cb (GtkDialog *dialog,
 					    helper->self->cancellable,
 					    gs_details_page_app_set_review_cb,
 					    helper);
+	g_steal_pointer (&helper);
 }
 
 static void
@@ -1186,20 +1237,13 @@ gs_details_page_app_set_review_cb (GObject *source,
 		if (g_error_matches (error,
 				     GS_PLUGIN_ERROR,
 				     GS_PLUGIN_ERROR_AUTH_REQUIRED)) {
-			g_autoptr(GError) error_local = NULL;
-			GtkWidget *dialog;
-			dialog = gs_auth_dialog_new (helper->self->plugin_loader,
-						     helper->app,
-						     gs_utils_get_error_value (error),
-						     &error_local);
-			if (dialog == NULL) {
-				g_warning ("%s", error_local->message);
-				return;
-			}
-			gs_shell_modal_dialog_present (helper->self->shell, GTK_DIALOG (dialog));
-			g_signal_connect (dialog, "response",
-					  G_CALLBACK (gs_details_page_authenticate_cb),
-					  g_steal_pointer (&helper));
+			gs_page_authenticate (GS_PAGE (helper->self),
+					      helper->app,
+					      gs_utils_get_error_value (error),
+					      helper->self->cancellable,
+					      gs_details_page_authenticate_cb,
+					      helper);
+			g_steal_pointer (&helper);
 			return;
 		}
 		g_warning ("failed to set review on %s: %s",
@@ -1380,6 +1424,7 @@ gs_details_page_app_refine2_cb (GObject *source,
 			   error->message);
 		return;
 	}
+	gs_details_page_refresh_size (self);
 	gs_details_page_refresh_reviews (self);
 
 	/* seems a good place */
@@ -1390,12 +1435,16 @@ static void
 gs_details_page_app_refine2 (GsDetailsPage *self)
 {
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	/* if these tasks fail (e.g. because we have no networking) then it's
+	 * of no huge importance if we don't get the required data */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
 					 "app", self->app,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS,
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
@@ -1551,6 +1600,9 @@ set_app (GsDetailsPage *self, GsApp *app)
 	g_signal_connect_object (self->app, "notify::allow-cancel",
 				 G_CALLBACK (gs_details_page_allow_cancel_changed_cb),
 				 self, 0);
+	g_signal_connect_object (self->app, "notify::pending-action",
+				 G_CALLBACK (gs_details_page_notify_state_changed_cb),
+				 self, 0);
 
 	/* print what we've got */
 	tmp = gs_app_to_string (self->app);
@@ -1667,7 +1719,8 @@ gs_details_page_set_url (GsDetailsPage *self, const gchar *url)
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RELATED |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS,
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS |
+							 GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
@@ -1685,7 +1738,6 @@ gs_details_page_load (GsDetailsPage *self)
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_HISTORY |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
@@ -1762,6 +1814,9 @@ gs_details_page_set_app (GsDetailsPage *self, GsApp *app)
 	g_signal_connect_object (self->app, "notify::allow-cancel",
 				 G_CALLBACK (gs_details_page_allow_cancel_changed_cb),
 				 self, 0);
+	g_signal_connect_object (self->app, "notify::pending-action",
+				 G_CALLBACK (gs_details_page_notify_state_changed_cb),
+				 self, 0);
 
 	g_set_object (&self->app_cancellable, gs_app_get_cancellable (self->app));
 
@@ -1782,10 +1837,16 @@ gs_details_page_get_app (GsDetailsPage *self)
 }
 
 static void
-gs_details_page_app_remove_button_cb (GtkWidget *widget, GsDetailsPage *self)
+gs_details_page_remove_app (GsDetailsPage *self)
 {
 	g_set_object (&self->app_cancellable, gs_app_get_cancellable (self->app));
 	gs_page_remove_app (GS_PAGE (self), self->app, self->app_cancellable);
+}
+
+static void
+gs_details_page_app_remove_button_cb (GtkWidget *widget, GsDetailsPage *self)
+{
+	gs_details_page_remove_app (self);
 }
 
 static void
@@ -1793,6 +1854,14 @@ gs_details_page_app_cancel_button_cb (GtkWidget *widget, GsDetailsPage *self)
 {
 	g_cancellable_cancel (self->app_cancellable);
 	gtk_widget_set_sensitive (widget, FALSE);
+
+	/* reset the pending-action from the app if needed */
+	gs_app_set_pending_action (self->app, GS_PLUGIN_ACTION_UNKNOWN);
+
+	/* FIXME: We should be able to revert the QUEUED_FOR_INSTALL without
+	 * having to pretend to remove the app */
+	if (gs_app_get_state (self->app) == AS_APP_STATE_QUEUED_FOR_INSTALL)
+		gs_details_page_remove_app (self);
 }
 
 static void
@@ -2076,12 +2145,16 @@ gs_details_page_license_widget_for_token (GsDetailsPage *self, const gchar *toke
 	if (g_strcmp0 (token, "@LicenseRef-public-domain") == 0) {
 		/* TRANSLATORS: see the wikipedia page */
 		return gs_details_page_label_widget (self, _("Public domain"),
-			"https://en.wikipedia.org/wiki/Public_domain");
+			/* TRANSLATORS: Replace the link with a version in your language,
+			 * e.g. https://de.wikipedia.org/wiki/Gemeinfreiheit */
+			_("https://en.wikipedia.org/wiki/Public_domain"));
 	}
 
 	/* free software, license unspecified */
 	if (g_str_has_prefix (token, "@LicenseRef-free")) {
-		const gchar *url = "https://www.gnu.org/philosophy/free-sw";
+		/* TRANSLATORS: Replace the link with a version in your language,
+		 * e.g. https://www.gnu.org/philosophy/free-sw.de */
+		const gchar *url = _("https://www.gnu.org/philosophy/free-sw");
 		gchar *tmp;
 
 		/* we support putting a custom URL in the
@@ -2161,7 +2234,18 @@ gs_details_page_license_nonfree_cb (GtkWidget *widget, GsDetailsPage *self)
 {
 	g_autofree gchar *str = NULL;
 	g_autofree gchar *uri = NULL;
-	uri = g_settings_get_string (self->settings, "nonfree-software-uri");
+	g_auto(GStrv) tokens = NULL;
+
+	/* license specified as a link */
+	tokens = as_utils_spdx_license_tokenize (gs_app_get_license (self->app));
+	for (guint i = 0; tokens[i] != NULL; i++) {
+		if (g_str_has_prefix (tokens[i], "@LicenseRef-proprietary=")) {
+			uri = g_strdup (tokens[i] + 24);
+			break;
+		}
+	}
+	if (uri == NULL)
+		uri = g_settings_get_string (self->settings, "nonfree-software-uri");
 	str = g_strdup_printf ("<a href=\"%s\">%s</a>",
 			       uri,
 			       _("More information"));
@@ -2344,10 +2428,10 @@ gs_details_page_class_init (GsDetailsPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_size_download_value);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_size_installed_title);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_size_installed_value);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_updated_title);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_updated_value);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_version_value);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_failed);
-	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_pending);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, list_box_addons);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_reviews);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot_fallback);

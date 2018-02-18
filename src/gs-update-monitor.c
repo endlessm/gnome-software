@@ -39,6 +39,10 @@ struct _GsUpdateMonitor {
 	GDBusProxy	*proxy_upower;
 	GError		*last_offline_error;
 
+	GNetworkMonitor *network_monitor;
+	guint		 network_changed_handler;
+	GCancellable    *network_cancellable;
+
 	guint		 cleanup_notifications_id;	/* at startup */
 	guint		 check_startup_id;		/* 60s after startup */
 	guint		 check_hourly_id;		/* and then every hour */
@@ -239,7 +243,7 @@ get_system_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		return;
 	}
 
-	/* might be alrady showing, so just withdraw it and re-issue it */
+	/* might be already showing, so just withdraw it and re-issue it */
 	g_application_withdraw_notification (monitor->application, "eol");
 
 	/* do not show when the main window is active */
@@ -316,6 +320,13 @@ static void
 get_updates (GsUpdateMonitor *monitor)
 {
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	/* disabled in gsettings or from a plugin */
+	if (!gs_plugin_loader_get_allow_updates (monitor->plugin_loader)) {
+		g_debug ("not getting updates as not enabled");
+		return;
+	}
+
 	/* NOTE: this doesn't actually do any network access, instead it just
 	 * returns already downloaded-and-depsolved packages */
 	g_debug ("Getting updates");
@@ -335,6 +346,12 @@ static void
 get_upgrades (GsUpdateMonitor *monitor)
 {
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	/* disabled in gsettings or from a plugin */
+	if (!gs_plugin_loader_get_allow_updates (monitor->plugin_loader)) {
+		g_debug ("not getting upgrades as not enabled");
+		return;
+	}
 
 	/* NOTE: this doesn't actually do any network access, it relies on the
 	 * AppStream data being up to date, either by the appstream-data
@@ -381,8 +398,7 @@ refresh_cache_finished_cb (GObject *object,
 			g_warning ("failed to refresh the cache: %s", error->message);
 		return;
 	}
-	if (gs_plugin_loader_get_allow_updates (monitor->plugin_loader))
-		get_updates (monitor);
+	get_updates (monitor);
 }
 
 typedef enum {
@@ -476,7 +492,7 @@ check_updates (GsUpdateMonitor *monitor)
 					 "age", (guint64) (60 * 60 * 24),
 					 NULL);
 	gs_plugin_loader_job_process_async (monitor->plugin_loader, plugin_job,
-					    monitor->cancellable,
+					    monitor->network_cancellable,
 					    refresh_cache_finished_cb,
 					    monitor);
 }
@@ -631,24 +647,37 @@ get_updates_historical_cb (GObject *object, GAsyncResult *res, gpointer data)
 	if (time_last_notified >= gs_app_get_install_date (app))
 		return;
 
-	/* TRANSLATORS: title when we've done offline updates */
-	title = ngettext ("Software Update Installed",
-			  "Software Updates Installed",
-			  gs_app_list_length (apps));
-	/* TRANSLATORS: message when we've done offline updates */
-	message = ngettext ("An important OS update has been installed.",
-			    "Important OS updates have been installed.",
-			    gs_app_list_length (apps));
+	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE) {
+		/* TRANSLATORS: Notification title when we've done a distro upgrade */
+		notification = g_notification_new (_("System Upgrade Complete"));
 
-	notification = g_notification_new (title);
-	g_notification_set_body (notification, message);
-	/* TRANSLATORS: Button to look at the updates that were installed.
-	 * Note that it has nothing to do with the application reviews, the
-	 * users can't express their opinions here. In some languages
-	 * "Review (evaluate) something" is a different translation than
-	 * "Review (browse) something." */
-	g_notification_add_button_with_target (notification, C_("updates", "Review"), "app.set-mode", "s", "updated");
-	g_notification_set_default_action_and_target (notification, "app.set-mode", "s", "updated");
+		/* TRANSLATORS: This is the notification body when we've done a
+		 * distro upgrade. First %s is the distro name and the 2nd %s
+		 * is the version, e.g. "Welcome to Fedora 28!" */
+		message = g_strdup_printf (_("Welcome to %s %s!"),
+		                           gs_app_get_name (app),
+		                           gs_app_get_version (app));
+		g_notification_set_body (notification, message);
+	} else {
+		/* TRANSLATORS: title when we've done offline updates */
+		title = ngettext ("Software Update Installed",
+				  "Software Updates Installed",
+				  gs_app_list_length (apps));
+		/* TRANSLATORS: message when we've done offline updates */
+		message = ngettext ("An important OS update has been installed.",
+				    "Important OS updates have been installed.",
+				    gs_app_list_length (apps));
+
+		notification = g_notification_new (title);
+		g_notification_set_body (notification, message);
+		/* TRANSLATORS: Button to look at the updates that were installed.
+		 * Note that it has nothing to do with the application reviews, the
+		 * users can't express their opinions here. In some languages
+		 * "Review (evaluate) something" is a different translation than
+		 * "Review (browse) something." */
+		g_notification_add_button_with_target (notification, C_("updates", "Review"), "app.set-mode", "s", "updated");
+		g_notification_set_default_action_and_target (notification, "app.set-mode", "s", "updated");
+	}
 	g_application_send_notification (monitor->application, "offline-updates", notification);
 
 	/* update the timestamp so we don't show again */
@@ -667,6 +696,7 @@ cleanup_notifications_cb (gpointer user_data)
 	g_debug ("getting historical updates for fresh session");
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL,
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPGRADE_REMOVED,
 					 NULL);
 	gs_plugin_loader_job_process_async (monitor->plugin_loader,
 					    plugin_job,
@@ -748,7 +778,7 @@ allow_updates_notify_cb (GsPluginLoader *plugin_loader,
 {
 	if (gs_plugin_loader_get_allow_updates (plugin_loader)) {
 		/* We restart the updates check here to avoid the user
-		 * pontentially waiting for the hourly check */
+		 * potentially waiting for the hourly check */
 		restart_updates_check (monitor);
 		restart_upgrades_check (monitor);
 	} else {
@@ -757,8 +787,23 @@ allow_updates_notify_cb (GsPluginLoader *plugin_loader,
 }
 
 static void
+gs_update_monitor_network_changed_cb (GNetworkMonitor *network_monitor,
+				      gboolean available,
+				      GsUpdateMonitor *monitor)
+{
+	/* cancel an on-going refresh if we're now in a metered connection */
+	if (!g_settings_get_boolean (monitor->settings, "refresh-when-metered") &&
+	    g_network_monitor_get_network_metered (network_monitor)) {
+		g_cancellable_cancel (monitor->network_cancellable);
+		g_object_unref (monitor->network_cancellable);
+		monitor->network_cancellable = g_cancellable_new ();
+	}
+}
+
+static void
 gs_update_monitor_init (GsUpdateMonitor *monitor)
 {
+	GNetworkMonitor *network_monitor;
 	g_autoptr(GError) error = NULL;
 	monitor->settings = g_settings_new ("org.gnome.software");
 
@@ -770,7 +815,11 @@ gs_update_monitor_init (GsUpdateMonitor *monitor)
 	monitor->check_startup_id =
 		g_timeout_add_seconds (60, check_updates_on_startup_cb, monitor);
 
+	/* we use two cancellables because one can be cancelled by any network
+	 * changes to a metered connection, and this shouldn't intervene with other
+	 * operations */
 	monitor->cancellable = g_cancellable_new ();
+	monitor->network_cancellable = g_cancellable_new ();
 
 	/* connect to UPower to get the system power state */
 	monitor->proxy_upower = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
@@ -788,6 +837,15 @@ gs_update_monitor_init (GsUpdateMonitor *monitor)
 	} else {
 		g_warning ("failed to connect to upower: %s", error->message);
 	}
+
+	network_monitor = g_network_monitor_get_default ();
+	if (network_monitor == NULL)
+		return;
+	monitor->network_monitor = g_object_ref (network_monitor);
+	monitor->network_changed_handler = g_signal_connect (monitor->network_monitor,
+							     "network-changed",
+							     G_CALLBACK (gs_update_monitor_network_changed_cb),
+							     monitor);
 }
 
 static void
@@ -795,9 +853,19 @@ gs_update_monitor_dispose (GObject *object)
 {
 	GsUpdateMonitor *monitor = GS_UPDATE_MONITOR (object);
 
-	if (monitor->cancellable) {
+	if (monitor->network_changed_handler != 0) {
+		g_signal_handler_disconnect (monitor->network_monitor,
+					     monitor->network_changed_handler);
+		monitor->network_changed_handler = 0;
+	}
+
+	if (monitor->cancellable != NULL) {
 		g_cancellable_cancel (monitor->cancellable);
 		g_clear_object (&monitor->cancellable);
+	}
+	if (monitor->network_cancellable != NULL) {
+		g_cancellable_cancel (monitor->network_cancellable);
+		g_clear_object (&monitor->network_cancellable);
 	}
 
 	stop_updates_check (monitor);

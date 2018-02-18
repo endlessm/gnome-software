@@ -109,7 +109,7 @@ static void
 gs_plugin_steam_find_next_sync_point (guint8 *data, gsize data_len, guint *idx)
 {
 	guint i;
-	for (i = *idx; i < data_len - 9; i++) {
+	for (i = *idx; i + 9 < data_len; i++) {
 		if (memcmp (&data[i], "\0\x02\0common\0", 8) == 0) {
 			*idx = i - 1;
 			return;
@@ -490,7 +490,7 @@ gs_plugin_steam_update_store_app (GsPlugin *plugin,
 	as_app_add_metadata (item, "X-Steam-GameID", gameid_str);
 	as_app_add_metadata (item, "GnomeSoftware::Plugin", "steam");
 
-	/* ban certains apps based on the name */
+	/* ban certain apps based on the name */
 	if (g_strstr_len (name, -1, "Dedicated Server") != NULL)
 		as_app_add_veto (item, "Dedicated Server");
 

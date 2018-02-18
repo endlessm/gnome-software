@@ -56,53 +56,6 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_object_unref (priv->task);
 }
 
-typedef struct {
-	GsApp		*app;
-	GsPlugin	*plugin;
-	AsProfileTask	*ptask;
-} ProgressData;
-
-static void
-gs_plugin_packagekit_progress_cb (PkProgress *progress,
-				  PkProgressType type,
-				  gpointer user_data)
-{
-	ProgressData *data = (ProgressData *) user_data;
-	GsPlugin *plugin = data->plugin;
-
-	if (type == PK_PROGRESS_TYPE_STATUS) {
-		GsPluginStatus plugin_status;
-		PkStatusEnum status;
-		g_object_get (progress,
-			      "status", &status,
-			      NULL);
-
-		/* profile */
-		if (status == PK_STATUS_ENUM_SETUP) {
-			data->ptask = as_profile_start_literal (gs_plugin_get_profile (plugin),
-						"packagekit-refine::transaction");
-		} else if (status == PK_STATUS_ENUM_FINISHED) {
-			g_clear_pointer (&data->ptask, as_profile_task_free);
-		}
-
-		plugin_status = packagekit_status_enum_to_plugin_status (status);
-		if (plugin_status != GS_PLUGIN_STATUS_UNKNOWN)
-			gs_plugin_status_update (plugin, data->app, plugin_status);
-
-	} else if (type == PK_PROGRESS_TYPE_PERCENTAGE) {
-		gint percentage = pk_progress_get_percentage (progress);
-		if (data->app != NULL && percentage >= 0 && percentage <= 100)
-			gs_app_set_progress (data->app, (guint) percentage);
-	}
-
-	/* Only go from TRUE to FALSE - it doesn't make sense for a package
-	 * install to become uncancellable later on */
-	if (data->app != NULL && gs_app_get_allow_cancel (data->app)) {
-		gs_app_set_allow_cancel (data->app,
-					 pk_progress_get_allow_cancel (progress));
-	}
-}
-
 static gboolean
 gs_plugin_add_sources_related (GsPlugin *plugin,
 			       GHashTable *hash,
@@ -114,16 +67,14 @@ gs_plugin_add_sources_related (GsPlugin *plugin,
 	GsApp *app;
 	GsApp *app_tmp;
 	PkBitfield filter;
-	ProgressData data;
+	ProgressData data = { 0 };
 	const gchar *id;
 	gboolean ret = TRUE;
 	g_autoptr(GsAppList) installed = gs_app_list_new ();
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(AsProfileTask) ptask = NULL;
 
-	data.app = NULL;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	ptask = as_profile_start_literal (gs_plugin_get_profile (plugin),
 					  "packagekit::add-sources-related");
@@ -182,16 +133,14 @@ gs_plugin_add_sources (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	PkBitfield filter;
 	PkRepoDetail *rd;
-	ProgressData data;
+	ProgressData data = { 0 };
 	const gchar *id;
 	guint i;
 	g_autoptr(GHashTable) hash = NULL;
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) array = NULL;
 
-	data.app = NULL;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* ask PK for the repo details */
 	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_SOURCE,
@@ -213,6 +162,7 @@ gs_plugin_add_sources (GsPlugin *plugin,
 		app = gs_app_new (id);
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 		gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
 		gs_app_set_state (app, pk_repo_detail_get_enabled (rd) ?
 				  AS_APP_STATE_INSTALLED : AS_APP_STATE_AVAILABLE);
 		gs_app_set_name (app,
@@ -233,60 +183,68 @@ gs_plugin_add_sources (GsPlugin *plugin,
 }
 
 static gboolean
-gs_plugin_app_source_enable (GsPlugin *plugin,
-			     GsApp *app,
-			     GCancellable *cancellable,
-			     GError **error)
+gs_plugin_app_origin_repo_enable (GsPlugin *plugin,
+                                  GsApp *app,
+                                  GCancellable *cancellable,
+                                  GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	ProgressData data;
+	ProgressData data = { 0 };
 	g_autoptr(PkResults) results = NULL;
 
-	data.app = app;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
-					 gs_app_get_origin (app),
-					 TRUE,
-					 cancellable,
-					 gs_plugin_packagekit_progress_cb, &data,
-					 error);
+	                                 gs_app_get_origin (app),
+	                                 TRUE,
+	                                 cancellable,
+	                                 gs_plugin_packagekit_progress_cb, &data,
+	                                 error);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_utils_error_add_unique_id (error, app);
 		return FALSE;
 	}
+
+	/* now that the repo is enabled, the app (not the repo!) moves from
+	 * UNAVAILABLE state to AVAILABLE */
+	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+
 	return TRUE;
 }
 
 static gboolean
 gs_plugin_repo_enable (GsPlugin *plugin,
-                       GsApp *repo,
+                       GsApp *app,
                        GCancellable *cancellable,
                        GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	ProgressData data;
+	ProgressData data = { 0 };
 	g_autoptr(PkResults) results = NULL;
 
-	data.app = repo;
+	data.app = app;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* do sync call */
-	gs_plugin_status_update (plugin, repo, GS_PLUGIN_STATUS_WAITING);
+	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
-					 gs_app_get_id (repo),
+					 gs_app_get_id (app),
 					 TRUE,
 					 cancellable,
 					 gs_plugin_packagekit_progress_cb, &data,
 					 error);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
-		gs_utils_error_add_unique_id (error, repo);
+		gs_app_set_state_recover (app);
+		gs_utils_error_add_unique_id (error, app);
 		return FALSE;
 	}
+
+	/* state is known */
+	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+
 	return TRUE;
 }
 
@@ -299,7 +257,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	GPtrArray *addons;
 	GPtrArray *source_ids;
-	ProgressData data;
+	ProgressData data = { 0 };
 	const gchar *package_id;
 	guint i, j;
 	g_autofree gchar *local_filename = NULL;
@@ -309,7 +267,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 	data.app = app;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
@@ -317,14 +274,21 @@ gs_plugin_app_install (GsPlugin *plugin,
 		return TRUE;
 
 	/* enable repo */
-	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
-		return gs_plugin_repo_enable (plugin, app,
-		                              cancellable, error);
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE &&
+	    gs_app_get_source_ids (app)->len == 0) {
+		/* KIND_SOURCE can be both a repository, or a package that
+		 * includes .repo files. If it has no source ids, then it's the
+		 * former and we can directly enable it here. */
+		return gs_plugin_repo_enable (plugin, app, cancellable, error);
 	}
 
-	/* enable the repo where the unavailable app is coming from */
-	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
+	/* queue for install if installation needs the network */
+	if (!gs_plugin_get_network_available (plugin)) {
+		gs_app_set_state (app, AS_APP_STATE_QUEUED_FOR_INSTALL);
+		return TRUE;
+	}
 
+	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
 		/* get everything up front we need */
 		source_ids = gs_app_get_source_ids (app);
 		if (source_ids->len == 0) {
@@ -337,8 +301,8 @@ gs_plugin_app_install (GsPlugin *plugin,
 		package_ids = g_new0 (gchar *, 2);
 		package_ids[0] = g_strdup (g_ptr_array_index (source_ids, 0));
 
-		/* enable the source */
-		if (!gs_plugin_app_source_enable (plugin, app, cancellable, error))
+		/* enable the repo where the unavailable app is coming from */
+		if (!gs_plugin_app_origin_repo_enable (plugin, app, cancellable, error))
 			return FALSE;
 
 		/* FIXME: this is a hack, to allow PK time to re-initialize
@@ -347,7 +311,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 		g_usleep (G_USEC_PER_SEC * 3);
 
 		/* actually install the package */
-		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		results = pk_task_install_packages_sync (priv->task,
 							 package_ids,
@@ -481,21 +444,21 @@ gs_plugin_app_install (GsPlugin *plugin,
 }
 
 static gboolean
-gs_plugin_app_source_disable (GsPlugin *plugin,
-			      GsApp *app,
-			      GCancellable *cancellable,
-			      GError **error)
+gs_plugin_repo_disable (GsPlugin *plugin,
+                        GsApp *app,
+                        GCancellable *cancellable,
+                        GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	ProgressData data;
+	ProgressData data = { 0 };
 	g_autoptr(PkResults) results = NULL;
 
 	data.app = app;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
+	gs_app_set_state (app, AS_APP_STATE_REMOVING);
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
 					 gs_app_get_id (app),
 					 FALSE,
@@ -503,43 +466,14 @@ gs_plugin_app_source_disable (GsPlugin *plugin,
 					 gs_plugin_packagekit_progress_cb, &data,
 					 error);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
+		gs_app_set_state_recover (app);
 		gs_utils_error_add_unique_id (error, app);
 		return FALSE;
 	}
-	return TRUE;
-}
 
-static gboolean
-gs_plugin_app_source_remove (GsPlugin *plugin,
-			     GsApp *app,
-			     GCancellable *cancellable,
-			     GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	ProgressData data;
-	g_autoptr(GError) error_local = NULL;
-	g_autoptr(PkResults) results = NULL;
+	/* state is known */
+	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 
-	data.app = NULL;
-	data.plugin = plugin;
-	data.ptask = NULL;
-
-	/* do sync call */
-	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
-	results = pk_client_repo_remove (PK_CLIENT (priv->task),
-					 pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_NONE, -1),
-					 gs_app_get_id (app),
-					 TRUE,
-					 cancellable,
-					 gs_plugin_packagekit_progress_cb, &data,
-					 &error_local);
-	if (results == NULL) {
-		/* fall back to disabling it */
-		g_warning ("ignoring source remove error, trying disable: %s",
-			   error_local->message);
-		return gs_plugin_app_source_disable (plugin, app,
-						     cancellable, error);
-	}
 	return TRUE;
 }
 
@@ -552,7 +486,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const gchar *package_id;
 	GPtrArray *source_ids;
-	ProgressData data;
+	ProgressData data = { 0 };
 	guint i;
 	guint cnt = 0;
 	g_autoptr(PkResults) results = NULL;
@@ -560,18 +494,15 @@ gs_plugin_app_remove (GsPlugin *plugin,
 
 	data.app = app;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
-	/* remove repo and all apps in it */
-	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
-		return gs_plugin_app_source_remove (plugin, app,
-						    cancellable, error);
-	}
+	/* disable repo */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
+		return gs_plugin_repo_disable (plugin, app, cancellable, error);
 
 	/* get the list of available package ids to install */
 	source_ids = gs_app_get_source_ids (app);
@@ -628,12 +559,10 @@ gs_plugin_add_search_files (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	PkBitfield filter;
-	ProgressData data;
+	ProgressData data = { 0 };
 	g_autoptr(PkResults) results = NULL;
 
-	data.app = NULL;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
@@ -662,18 +591,15 @@ gs_plugin_add_search_what_provides (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	PkBitfield filter;
-	ProgressData data;
+	ProgressData data = { 0 };
 	g_autoptr(PkResults) results = NULL;
 
-	data.app = NULL;
 	data.plugin = plugin;
-	data.ptask = NULL;
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
 	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST,
 					 PK_FILTER_ENUM_ARCH,
-					 PK_FILTER_ENUM_NOT_INSTALLED,
 					 -1);
 	results = pk_client_what_provides (PK_CLIENT (priv->task),
 	                                   filter,

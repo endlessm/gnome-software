@@ -38,6 +38,7 @@
 #include <string.h>
 #include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
+#include <sys/sysinfo.h>
 
 #ifdef HAVE_POLKIT
 #include <polkit/polkit.h>
@@ -46,6 +47,11 @@
 #include "gs-app.h"
 #include "gs-utils.h"
 #include "gs-plugin.h"
+
+#define LOW_RESOLUTION_WIDTH  800
+#define LOW_RESOLUTION_HEIGHT 600
+
+#define MB_IN_BYTES (1024 * 1024)
 
 /**
  * gs_mkdir_parent:
@@ -124,7 +130,7 @@ gs_utils_filename_array_return_newest (GPtrArray *array)
 
 /**
  * gs_utils_get_cache_filename:
- * @kind: A cache kind, e.g. "firmware" or "screenshots/123x456"
+ * @kind: A cache kind, e.g. "fwupd" or "screenshots/123x456"
  * @resource: A resource, e.g. "system.bin" or "http://foo.bar/baz.bin"
  * @flags: Some #GsUtilsCacheFlags, e.g. %GS_UTILS_CACHE_FLAG_WRITEABLE
  * @error: A #GError, or %NULL
@@ -139,6 +145,11 @@ gs_utils_filename_array_return_newest (GPtrArray *array)
  * If there is more than one match, the file that has been modified last is
  * returned.
  *
+ * If a plugin requests a file to be saved in the cache it is the plugins
+ * responsibility to remove the file when it is no longer valid or is too old
+ * -- gnome-software will not ever clean the cache for the plugin.
+ * For this reason it is a good idea to use the plugin name as @kind.
+ *
  * Returns: The full path and filename, which may or may not exist, or %NULL
  **/
 gchar *
@@ -149,8 +160,6 @@ gs_utils_get_cache_filename (const gchar *kind,
 {
 	g_autofree gchar *basename = NULL;
 	g_autofree gchar *cachedir = NULL;
-	g_autofree gchar *vername = NULL;
-	g_auto(GStrv) version = g_strsplit (VERSION, ".", 3);
 	g_autoptr(GFile) cachedir_file = NULL;
 	g_autoptr(GPtrArray) candidates = g_ptr_array_new_with_free_func (g_free);
 
@@ -196,10 +205,8 @@ gs_utils_get_cache_filename (const gchar *kind,
 
 	/* create the cachedir in a per-release location, creating
 	 * if it does not already exist */
-	vername = g_strdup_printf ("%s.%s", version[0], version[1]);
 	cachedir = g_build_filename (g_get_user_cache_dir (),
 				     "gnome-software",
-				     vername,
 				     kind,
 				     NULL);
 	cachedir_file = g_file_new_for_path (cachedir);
@@ -226,7 +233,7 @@ gs_utils_get_cache_filename (const gchar *kind,
  * @error: A #GError, or %NULL
  *
  * This SHA1 hash is composed of the contents of machine-id and your
- * usename and is also salted with a hardcoded value.
+ * username and is also salted with a hardcoded value.
  *
  * This provides an identifier that can be used to identify a specific
  * user on a machine, allowing them to cast only one vote or perform
@@ -254,26 +261,30 @@ gs_utils_get_user_hash (GError **error)
 /**
  * gs_utils_get_permission:
  * @id: A PolicyKit ID, e.g. "org.gnome.Desktop"
+ * @cancellable: A #GCancellable, or %NULL
+ * @error: A #GError, or %NULL
  *
  * Gets a permission object for an ID.
  *
  * Returns: a #GPermission, or %NULL if this if not possible.
  **/
 GPermission *
-gs_utils_get_permission (const gchar *id)
+gs_utils_get_permission (const gchar *id, GCancellable *cancellable, GError **error)
 {
 #ifdef HAVE_POLKIT
 	g_autoptr(GPermission) permission = NULL;
-	g_autoptr(GError) error = NULL;
-
-	permission = polkit_permission_new_sync (id, NULL, NULL, &error);
+	permission = polkit_permission_new_sync (id, NULL, cancellable, error);
 	if (permission == NULL) {
-		g_warning ("Failed to create permission %s: %s", id, error->message);
+		g_prefix_error (error, "failed to create permission %s: ", id);
+		gs_utils_error_convert_gio (error);
 		return NULL;
 	}
 	return g_steal_pointer (&permission);
 #else
-	g_debug ("no PolicyKit, so can't return GPermission for %s", id);
+	g_set_error (error,
+		     GS_PLUGIN_ERROR,
+		     GS_PLUGIN_ERROR_NOT_SUPPORTED,
+		     "no PolicyKit, so can't return GPermission for %s", id);
 	return NULL;
 #endif
 }
@@ -997,6 +1008,36 @@ gs_utils_append_key_value (GString *str, gsize align_len,
 		g_string_append (str, " ");
 	g_string_append (str, value);
 	g_string_append (str, "\n");
+}
+
+/**
+ * gs_utils_is_low_resolution:
+ *
+ * Retrieves whether the primary monitor has a low resolution.
+ *
+ * Returns: %TRUE if the monitor has low resolution
+ **/
+gboolean
+gs_utils_is_low_resolution (GtkWidget *toplevel)
+{
+	GdkRectangle geometry;
+	GdkDisplay *display;
+	GdkMonitor *monitor;
+
+	display = gtk_widget_get_display (toplevel);
+	monitor = gdk_display_get_monitor_at_window (display, gtk_widget_get_window (toplevel));
+
+	gdk_monitor_get_geometry (monitor, &geometry);
+
+	return geometry.width < LOW_RESOLUTION_WIDTH || geometry.height < LOW_RESOLUTION_HEIGHT;
+}
+
+guint
+gs_utils_get_memory_total (void)
+{
+	struct sysinfo si = { 0 };
+	sysinfo (&si);
+	return si.totalram / MB_IN_BYTES / si.mem_unit;
 }
 
 /* vim: set noexpandtab: */

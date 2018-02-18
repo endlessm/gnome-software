@@ -122,13 +122,13 @@ gs_plugin_packagekit_refine (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	gboolean ret;
-	GError *error_local = NULL;
 	guint j;
 	GsApp *app;
 	guint i = 0;
 	GVariantIter iter;
 	GVariant *value;
 	g_autofree const gchar **package_names = NULL;
+	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GVariant) result = NULL;
 	g_autoptr(GVariant) tuple = NULL;
 
@@ -248,6 +248,8 @@ gs_plugin_refine (GsPlugin *plugin,
 	packages = gs_app_list_new ();
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
+		if (g_strcmp0 (gs_app_get_management_plugin (app), "packagekit") != 0)
+			continue;
 		sources = gs_app_get_sources (app);
 		if (sources->len == 0)
 			continue;

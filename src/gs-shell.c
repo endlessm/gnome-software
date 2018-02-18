@@ -36,9 +36,10 @@
 #include "gs-updates-page.h"
 #include "gs-category-page.h"
 #include "gs-extras-page.h"
-#include "gs-sources-dialog.h"
+#include "gs-repos-dialog.h"
 #include "gs-update-dialog.h"
 #include "gs-update-monitor.h"
+#include "gs-utils.h"
 
 static const gchar *page_name[] = {
 	"unknown",
@@ -501,7 +502,8 @@ gs_shell_go_back (GsShell *shell)
 
 	switch (entry->mode) {
 	case GS_SHELL_MODE_UNKNOWN:
-		/* only happens when the user does --search foobar */
+	case GS_SHELL_MODE_LOADING:
+		/* happens when using --search, --details, --install, etc. options */
 		g_debug ("popping back entry for %s", page_name[entry->mode]);
 		gs_shell_change_mode (shell, GS_SHELL_MODE_OVERVIEW, NULL, FALSE);
 		break;
@@ -659,7 +661,7 @@ window_key_press_event (GtkWidget *win, GdkEventKey *event, GsShell *shell)
 	    	return GDK_EVENT_PROPAGATE;
 
 	state = event->state;
-	keymap = gdk_keymap_get_default ();
+	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (win));
 	gdk_keymap_add_virtual_modifiers (keymap, &state);
 	state = state & gtk_accelerator_get_default_mod_mask ();
 	is_rtl = gtk_widget_get_direction (button) == GTK_TEXT_DIR_RTL;
@@ -729,6 +731,31 @@ gs_shell_main_window_mapped_cb (GtkWidget *widget, GsShell *shell)
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	gs_plugin_loader_set_scale (priv->plugin_loader,
 				    (guint) gtk_widget_get_scale_factor (widget));
+}
+
+static void
+gs_shell_main_window_realized_cb (GtkWidget *widget, GsShell *shell)
+{
+
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+
+	/* adapt the window for low resolution screens */
+	if (gs_utils_is_low_resolution (GTK_WIDGET (priv->main_window))) {
+		    GtkWidget *buttonbox = GTK_WIDGET (gtk_builder_get_object (priv->builder, "buttonbox_main"));
+
+		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
+					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_all")),
+					     "non-homogeneous", TRUE,
+					     NULL);
+		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
+					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_installed")),
+					     "non-homogeneous", TRUE,
+					     NULL);
+		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
+					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_updates")),
+					     "non-homogeneous", TRUE,
+					     NULL);
+	}
 }
 
 static void
@@ -1639,9 +1666,9 @@ gs_shell_events_notify_cb (GsPluginLoader *plugin_loader,
 static void
 gs_shell_plugin_event_dismissed_cb (GtkButton *button, GsShell *shell)
 {
-	GPtrArray *events;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	guint i;
+	g_autoptr(GPtrArray) events = NULL;
 
 	/* mark any events currently showing as invalid */
 	events = gs_plugin_loader_get_events (priv->plugin_loader);
@@ -1701,6 +1728,8 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	priv->main_window = GTK_WINDOW (gtk_builder_get_object (priv->builder, "window_software"));
 	g_signal_connect (priv->main_window, "map",
 			  G_CALLBACK (gs_shell_main_window_mapped_cb), shell);
+	g_signal_connect (priv->main_window, "realize",
+			  G_CALLBACK (gs_shell_main_window_realized_cb), shell);
 
 	g_signal_connect (priv->main_window, "delete-event",
 			  G_CALLBACK (main_window_closed_cb), shell);
@@ -1887,7 +1916,7 @@ gs_shell_show_sources (GsShell *shell)
 	if (g_spawn_command_line_async ("software-properties-gtk", NULL))
 		return;
 
-	dialog = gs_sources_dialog_new (priv->main_window, priv->plugin_loader);
+	dialog = gs_repos_dialog_new (priv->main_window, priv->plugin_loader);
 	gs_shell_modal_dialog_present (shell, GTK_DIALOG (dialog));
 
 	/* just destroy */
@@ -1961,7 +1990,6 @@ gs_shell_show_uri (GsShell *shell, const gchar *url)
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	g_autoptr(GError) error = NULL;
 
-#if GTK_CHECK_VERSION (3, 22, 0)
 	if (!gtk_show_uri_on_window (priv->main_window,
 	                             url,
 	                             GDK_CURRENT_TIME,
@@ -1969,15 +1997,6 @@ gs_shell_show_uri (GsShell *shell, const gchar *url)
 		g_warning ("failed to show URI %s: %s",
 		           url, error->message);
 	}
-#else
-	if (!gtk_show_uri (NULL,
-	                   url,
-	                   GDK_CURRENT_TIME,
-	                   &error)) {
-		g_warning ("failed to show URI %s: %s",
-		           url, error->message);
-	}
-#endif
 }
 
 static void

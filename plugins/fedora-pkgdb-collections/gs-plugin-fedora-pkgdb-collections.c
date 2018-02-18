@@ -136,7 +136,7 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* get the file to cache */
-	priv->cachefn = gs_utils_get_cache_filename ("upgrades",
+	priv->cachefn = gs_utils_get_cache_filename ("fedora-pkgdb-collections",
 						     "fedora.json",
 						     GS_UTILS_CACHE_FLAG_WRITEABLE,
 						     error);

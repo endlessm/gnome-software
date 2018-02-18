@@ -82,6 +82,7 @@ typedef struct
 	GPtrArray		*key_colors;
 	GPtrArray		*keywords;
 	GHashTable		*urls;
+	GHashTable		*launchables;
 	gchar			*license;
 	GsAppQuality		 license_quality;
 	gchar			**menu_path;
@@ -125,6 +126,7 @@ typedef struct
 	GdkPixbuf		*pixbuf;
 	GsPrice			*price;
 	GCancellable		*cancellable;
+	GsPluginAction		 pending_action;
 } GsAppPrivate;
 
 enum {
@@ -141,6 +143,7 @@ enum {
 	PROP_CAN_CANCEL_INSTALLATION,
 	PROP_INSTALL_DATE,
 	PROP_QUIRK,
+	PROP_PENDING_ACTION,
 	PROP_LAST
 };
 
@@ -387,7 +390,6 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	GsAppClass *klass = GS_APP_GET_CLASS (app);
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	AsImage *im;
-	AsScreenshot *ss;
 	GList *keys;
 	GList *l;
 	const gchar *tmp;
@@ -467,8 +469,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	if (priv->description != NULL)
 		gs_app_kv_lpad (str, "description", priv->description);
 	for (i = 0; i < priv->screenshots->len; i++) {
+		AsScreenshot *ss = g_ptr_array_index (priv->screenshots, i);
 		g_autofree gchar *key = NULL;
-		ss = g_ptr_array_index (priv->screenshots, i);
 		tmp = as_screenshot_get_caption (ss, NULL);
 		im = as_screenshot_get_image (ss, 0, 0);
 		if (im == NULL)
@@ -506,6 +508,14 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	tmp = g_hash_table_lookup (priv->urls, as_url_kind_to_string (AS_URL_KIND_HOMEPAGE));
 	if (tmp != NULL)
 		gs_app_kv_lpad (str, "url{homepage}", tmp);
+	keys = g_hash_table_get_keys (priv->launchables);
+	for (l = keys; l != NULL; l = l->next) {
+		g_autofree gchar *key = NULL;
+		key = g_strdup_printf ("launchable{%s}", (const gchar *) l->data);
+		tmp = g_hash_table_lookup (priv->launchables, l->data);
+		gs_app_kv_lpad (str, key, tmp);
+	}
+	g_list_free (keys);
 	if (priv->license != NULL) {
 		gs_app_kv_lpad (str, "license", priv->license);
 		gs_app_kv_lpad (str, "license-is-free",
@@ -560,8 +570,10 @@ gs_app_to_string_append (GsApp *app, GString *str)
 			id = gs_app_get_source_default (app_tmp);
 		gs_app_kv_lpad (str, "related", id);
 	}
-	if (priv->history->len > 0)
-		gs_app_kv_printf (str, "history", "%u", priv->history->len);
+	for (i = 0; i < priv->history->len; i++) {
+		GsApp *app_tmp = g_ptr_array_index (priv->history, i);
+		gs_app_kv_lpad (str, "history", gs_app_get_unique_id (app_tmp));
+	}
 	for (i = 0; i < priv->categories->len; i++) {
 		tmp = g_ptr_array_index (priv->categories, i);
 		gs_app_kv_lpad (str, "category", tmp);
@@ -683,8 +695,9 @@ void
 gs_app_set_id (GsApp *app, const gchar *id)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (_g_set_str (&priv->id, id))
 		priv->unique_id_valid = FALSE;
 }
@@ -991,6 +1004,7 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 	switch (state) {
 	case AS_APP_STATE_INSTALLING:
 	case AS_APP_STATE_REMOVING:
+	case AS_APP_STATE_QUEUED_FOR_INSTALL:
 		/* transient, so ignore */
 		break;
 	default:
@@ -1021,8 +1035,9 @@ void
 gs_app_set_progress (GsApp *app, guint percentage)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (priv->progress == percentage)
 		return;
 	if (percentage > 100) {
@@ -1049,12 +1064,25 @@ void
 gs_app_set_allow_cancel (GsApp *app, gboolean allow_cancel)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (priv->allow_cancel == allow_cancel)
 		return;
 	priv->allow_cancel = allow_cancel;
 	gs_app_queue_notify (app, "allow-cancel");
+}
+
+static void
+gs_app_set_pending_action_internal (GsApp *app,
+				    GsPluginAction action)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	if (priv->pending_action == action)
+		return;
+
+	priv->pending_action = action;
+	gs_app_queue_notify (app, "pending-action");
 }
 
 /**
@@ -1067,7 +1095,7 @@ gs_app_set_allow_cancel (GsApp *app, gboolean allow_cancel)
  * All applications start in state %AS_APP_STATE_UNKNOWN,
  * but the frontend is not supposed to see GsApps with this state.
  *
- * Plugins are reponsible for changing the state to one of the other
+ * Plugins are responsible for changing the state to one of the other
  * states before the GsApp is passed to the frontend.
  *
  * |[
@@ -1085,11 +1113,22 @@ void
 gs_app_set_state (GsApp *app, AsAppState state)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 
-	if (gs_app_set_state_internal (app, state))
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (gs_app_set_state_internal (app, state)) {
+		/* since the state changed, and the pending-action refers to
+		 * actions that usually change the state, we assign it to the
+		 * appropriate action here */
+		GsPluginAction action = GS_PLUGIN_ACTION_UNKNOWN;
+		if (priv->state == AS_APP_STATE_QUEUED_FOR_INSTALL)
+			action = GS_PLUGIN_ACTION_INSTALL;
+		gs_app_set_pending_action_internal (app, action);
+
 		gs_app_queue_notify (app, "state");
+	}
 }
 
 /**
@@ -1132,9 +1171,11 @@ gs_app_set_kind (GsApp *app, AsAppKind kind)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	gboolean state_change_ok = FALSE;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* same */
 	if (priv->kind == kind)
@@ -1199,8 +1240,9 @@ const gchar *
 gs_app_get_unique_id (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
 	return gs_app_get_unique_id_unlocked (app);
 }
 
@@ -1217,8 +1259,10 @@ void
 gs_app_set_unique_id (GsApp *app, const gchar *unique_id)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* check for sanity */
 	if (!as_utils_unique_id_valid (unique_id))
@@ -1261,8 +1305,10 @@ void
 gs_app_set_name (GsApp *app, GsAppQuality quality, const gchar *name)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* only save this if the data is sufficiently high quality */
 	if (quality <= priv->name_quality)
@@ -1303,8 +1349,9 @@ void
 gs_app_set_branch (GsApp *app, const gchar *branch)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (_g_set_str (&priv->branch, branch))
 		priv->unique_id_valid = FALSE;
 }
@@ -1344,10 +1391,12 @@ gs_app_add_source (GsApp *app, const gchar *source)
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	const gchar *tmp;
 	guint i;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (source != NULL);
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* check source doesn't already exist */
 	for (i = 0; i < priv->sources->len; i++) {
@@ -1391,8 +1440,9 @@ void
 gs_app_set_sources (GsApp *app, GPtrArray *sources)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_ptr_array (&priv->sources, sources);
 }
 
@@ -1446,8 +1496,9 @@ void
 gs_app_clear_source_ids (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_ptr_array_set_size (priv->source_ids, 0);
 }
 
@@ -1465,8 +1516,9 @@ void
 gs_app_set_source_ids (GsApp *app, GPtrArray *source_ids)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_ptr_array (&priv->source_ids, source_ids);
 }
 
@@ -1548,8 +1600,9 @@ void
 gs_app_set_project_group (GsApp *app, const gchar *project_group)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_str (&priv->project_group, project_group);
 }
 
@@ -1566,8 +1619,9 @@ void
 gs_app_set_developer_name (GsApp *app, const gchar *developer_name)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_str (&priv->developer_name, developer_name);
 }
 
@@ -1621,8 +1675,9 @@ void
 gs_app_add_icon (GsApp *app, AsIcon *icon)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (icon == NULL) {
 		g_ptr_array_set_size (priv->icons, 0);
 		return;
@@ -1663,8 +1718,9 @@ void
 gs_app_set_local_file (GsApp *app, GFile *local_file)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->local_file, local_file);
 }
 
@@ -1699,8 +1755,9 @@ void
 gs_app_set_content_rating (GsApp *app, AsContentRating *content_rating)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->content_rating, content_rating);
 }
 
@@ -1737,9 +1794,10 @@ void
 gs_app_set_runtime (GsApp *app, GsApp *runtime)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (app != runtime);
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->runtime, runtime);
 }
 
@@ -1776,9 +1834,10 @@ void
 gs_app_set_update_runtime (GsApp *app, GsApp *runtime)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (app != runtime);
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->update_runtime, runtime);
 }
 
@@ -1795,8 +1854,9 @@ void
 gs_app_set_pixbuf (GsApp *app, GdkPixbuf *pixbuf)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->pixbuf, pixbuf);
 }
 
@@ -1832,8 +1892,9 @@ void
 gs_app_set_price (GsApp *app, gdouble amount, const gchar *currency)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (priv->price != NULL)
 		g_object_unref (priv->price);
 	priv->price = gs_price_new (amount, currency);
@@ -1999,8 +2060,10 @@ void
 gs_app_set_version (GsApp *app, const gchar *version)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	if (_g_set_str (&priv->version, version)) {
 		gs_app_ui_versions_invalidate (app);
@@ -2040,8 +2103,10 @@ void
 gs_app_set_summary (GsApp *app, GsAppQuality quality, const gchar *summary)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* only save this if the data is sufficiently high quality */
 	if (quality <= priv->summary_quality)
@@ -2083,8 +2148,10 @@ void
 gs_app_set_description (GsApp *app, GsAppQuality quality, const gchar *description)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* only save this if the data is sufficiently high quality */
 	if (quality <= priv->description_quality)
@@ -2126,11 +2193,54 @@ void
 gs_app_set_url (GsApp *app, AsUrlKind kind, const gchar *url)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_hash_table_insert (priv->urls,
 			     g_strdup (as_url_kind_to_string (kind)),
 			     g_strdup (url));
+}
+
+/**
+ * gs_app_get_launchable:
+ * @app: a #GsApp
+ * @kind: a #AsLaunchableKind, e.g. %AS_LAUNCHABLE_KIND_DESKTOP_ID
+ *
+ * Gets a launchable of a specific type.
+ *
+ * Returns: a string, or %NULL for unset
+ *
+ * Since: 3.28
+ **/
+const gchar *
+gs_app_get_launchable (GsApp *app, AsLaunchableKind kind)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	return g_hash_table_lookup (priv->launchables,
+				    as_launchable_kind_to_string (kind));
+}
+
+/**
+ * gs_app_set_launchable:
+ * @app: a #GsApp
+ * @kind: a #AsLaunchableKind, e.g. %AS_LAUNCHABLE_KIND_DESKTOP_ID
+ * @launchable: a way to launch, e.g. "org.gnome.Sysprof2.desktop"
+ *
+ * Sets a launchable of a specific type.
+ *
+ * Since: 3.28
+ **/
+void
+gs_app_set_launchable (GsApp *app, AsLaunchableKind kind, const gchar *launchable)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
+	g_hash_table_insert (priv->launchables,
+			     g_strdup (as_launchable_kind_to_string (kind)),
+			     g_strdup (launchable));
 }
 
 /**
@@ -2200,11 +2310,13 @@ void
 gs_app_set_license (GsApp *app, GsAppQuality quality, const gchar *license)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	guint i;
 	g_auto(GStrv) tokens = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* only save this if the data is sufficiently high quality */
 	if (quality <= priv->license_quality)
@@ -2262,8 +2374,9 @@ void
 gs_app_set_summary_missing (GsApp *app, const gchar *summary_missing)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_str (&priv->summary_missing, summary_missing);
 }
 
@@ -2301,8 +2414,9 @@ void
 gs_app_set_menu_path (GsApp *app, gchar **menu_path)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_strv (&priv->menu_path, menu_path);
 }
 
@@ -2337,8 +2451,10 @@ void
 gs_app_set_origin (GsApp *app, const gchar *origin)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* same */
 	if (g_strcmp0 (origin, priv->origin) == 0)
@@ -2397,12 +2513,14 @@ void
 gs_app_set_origin_hostname (GsApp *app, const gchar *origin_hostname)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_autoptr(SoupURI) uri = NULL;
 	guint i;
 	const gchar *prefixes[] = { "download.", "mirrors.", NULL };
 
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* same */
 	if (g_strcmp0 (origin_hostname, priv->origin_hostname) == 0)
@@ -2433,7 +2551,7 @@ gs_app_set_origin_hostname (GsApp *app, const gchar *origin_hostname)
  * @app: a #GsApp
  * @screenshot: a #AsScreenshot
  *
- * Adds a screenshot to the applicaton.
+ * Adds a screenshot to the application.
  *
  * Since: 3.22
  **/
@@ -2528,8 +2646,9 @@ void
 gs_app_set_update_version (GsApp *app, const gchar *update_version)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	gs_app_set_update_version_internal (app, update_version);
 	gs_app_queue_notify (app, "version");
 }
@@ -2565,8 +2684,9 @@ void
 gs_app_set_update_details (GsApp *app, const gchar *update_details)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_str (&priv->update_details, update_details);
 }
 
@@ -2648,8 +2768,10 @@ void
 gs_app_set_management_plugin (GsApp *app, const gchar *management_plugin)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* plugins cannot adopt wildcard packages */
 	if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
@@ -2709,8 +2831,9 @@ void
 gs_app_set_rating (GsApp *app, gint rating)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (rating == priv->rating)
 		return;
 	priv->rating = rating;
@@ -2748,8 +2871,9 @@ void
 gs_app_set_review_ratings (GsApp *app, GArray *review_ratings)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_array (&priv->review_ratings, review_ratings);
 }
 
@@ -2993,10 +3117,12 @@ gs_app_get_metadata_item (GsApp *app, const gchar *key)
 void
 gs_app_set_metadata (GsApp *app, const gchar *key, const gchar *value)
 {
+	g_autoptr(GVariant) tmp = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key != NULL);
-	gs_app_set_metadata_variant (app, key,
-				     value != NULL ? g_variant_new_string (value) : NULL);
+	if (value != NULL)
+		tmp = g_variant_new_string (value);
+	gs_app_set_metadata_variant (app, key, tmp);
 }
 
 /**
@@ -3036,10 +3162,12 @@ void
 gs_app_set_metadata_variant (GsApp *app, const gchar *key, GVariant *value)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	GVariant *found;
 
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* if no value, then remove the key */
 	if (value == NULL) {
@@ -3102,10 +3230,12 @@ gs_app_add_addon (GsApp *app, GsApp *addon)
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	gpointer found;
 	const gchar *id;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (GS_IS_APP (addon));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	id = gs_app_get_id (addon);
 	found = g_hash_table_lookup (priv->addons_hash, id);
@@ -3129,9 +3259,10 @@ void
 gs_app_remove_addon (GsApp *app, GsApp *addon)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (GS_IS_APP (addon));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_hash_table_remove (priv->addons_hash, gs_app_get_id (addon));
 	g_ptr_array_remove (priv->addons, addon);
 }
@@ -3170,9 +3301,11 @@ gs_app_add_related (GsApp *app, GsApp *app2)
 	GsAppPrivate *priv2 = gs_app_get_instance_private (app2);
 	gchar *key;
 	gpointer found;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* if the app is updatable-live and any related app is not then
 	 * degrade to the offline state */
@@ -3225,8 +3358,9 @@ void
 gs_app_add_history (GsApp *app, GsApp *app2)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_ptr_array_add (priv->history, g_object_ref (app2));
 }
 
@@ -3369,9 +3503,10 @@ void
 gs_app_set_categories (GsApp *app, GPtrArray *categories)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (categories != NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_ptr_array (&priv->categories, categories);
 }
 
@@ -3388,9 +3523,10 @@ void
 gs_app_add_category (GsApp *app, const gchar *category)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (category != NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
 	if (gs_app_has_category (app, category))
 		return;
 	g_ptr_array_add (priv->categories, g_strdup (category));
@@ -3413,9 +3549,11 @@ gs_app_remove_category (GsApp *app, const gchar *category)
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	const gchar *tmp;
 	guint i;
+	g_autoptr(GMutexLocker) locker = NULL;
 
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 	g_return_val_if_fail (GS_IS_APP (app), FALSE);
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	for (i = 0; i < priv->categories->len; i++) {
 		tmp = g_ptr_array_index (priv->categories, i);
@@ -3458,9 +3596,10 @@ void
 gs_app_set_key_colors (GsApp *app, GPtrArray *key_colors)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_colors != NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_ptr_array (&priv->key_colors, key_colors);
 }
 
@@ -3513,9 +3652,10 @@ void
 gs_app_set_keywords (GsApp *app, GPtrArray *keywords)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (keywords != NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
 	_g_set_ptr_array (&priv->keywords, keywords);
 }
 
@@ -3707,9 +3847,10 @@ void
 gs_app_add_quirk (GsApp *app, AsAppQuirk quirk)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 
+	locker = g_mutex_locker_new (&priv->mutex);
 	priv->quirk |= quirk;
 	gs_app_queue_notify (app, "quirk");
 }
@@ -3727,9 +3868,10 @@ void
 gs_app_remove_quirk (GsApp *app, AsAppQuirk quirk)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 
+	locker = g_mutex_locker_new (&priv->mutex);
 	priv->quirk &= ~quirk;
 	gs_app_queue_notify (app, "quirk");
 }
@@ -3837,6 +3979,38 @@ gs_app_get_cancellable (GsApp *app)
 		g_set_object (&priv->cancellable, cancellable);
 	}
 	return priv->cancellable;
+}
+
+/**
+ * gs_app_get_pending_action:
+ * @app: a #GsApp
+ *
+ * Get the pending action for this #GsApp, or %NULL if no action is pending.
+ *
+ * Returns: the #GsAppAction of the @app.
+ **/
+GsPluginAction
+gs_app_get_pending_action (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	return priv->pending_action;
+}
+
+/**
+ * gs_app_set_pending_action:
+ * @app: a #GsApp
+ * @action: a #GsPluginAction
+ *
+ * Set an action that is pending on this #GsApp.
+ **/
+void
+gs_app_set_pending_action (GsApp *app,
+			   GsPluginAction action)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	gs_app_set_pending_action_internal (app, action);
 }
 
 static void
@@ -3976,6 +4150,7 @@ gs_app_finalize (GObject *object)
 	g_free (priv->branch);
 	g_free (priv->name);
 	g_hash_table_unref (priv->urls);
+	g_hash_table_unref (priv->launchables);
 	g_free (priv->license);
 	g_strfreev (priv->menu_path);
 	g_free (priv->origin);
@@ -4120,6 +4295,14 @@ gs_app_class_init (GsAppClass *klass)
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	g_object_class_install_property (object_class, PROP_QUIRK, pspec);
+
+	/**
+	 * GsApp:pending-action:
+	 */
+	pspec = g_param_spec_uint64 ("pending-action", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READABLE | G_PARAM_PRIVATE);
+	g_object_class_install_property (object_class, PROP_PENDING_ACTION, pspec);
 }
 
 static void
@@ -4154,6 +4337,10 @@ gs_app_init (GsApp *app)
 	                                    g_str_equal,
 	                                    g_free,
 	                                    g_free);
+	priv->launchables = g_hash_table_new_full (g_str_hash,
+	                                           g_str_equal,
+	                                           g_free,
+	                                           g_free);
 	priv->allow_cancel = TRUE;
 	g_mutex_init (&priv->mutex);
 }

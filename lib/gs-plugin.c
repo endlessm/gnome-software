@@ -83,6 +83,7 @@ typedef struct
 	guint			 priority;
 	guint			 timer_id;
 	GMutex			 timer_mutex;
+	GNetworkMonitor		*network_monitor;
 } GsPluginPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsPlugin, gs_plugin, G_TYPE_OBJECT)
@@ -230,6 +231,8 @@ gs_plugin_finalize (GObject *object)
 		g_object_unref (priv->soup_session);
 	if (priv->global_cache != NULL)
 		g_object_unref (priv->global_cache);
+	if (priv->network_monitor != NULL)
+		g_object_unref (priv->network_monitor);
 	g_hash_table_unref (priv->cache);
 	g_hash_table_unref (priv->vfuncs);
 	g_mutex_clear (&priv->cache_mutex);
@@ -270,7 +273,7 @@ gs_plugin_get_data (GsPlugin *plugin)
  * This is normally called in gs_plugin_initialize() and the data should
  * not be manually freed.
  *
- * Returns: the #GsPluginData, cleared to NUL butes
+ * Returns: the #GsPluginData, cleared to NUL bytes
  *
  * Since: 3.22
  **/
@@ -805,6 +808,43 @@ gs_plugin_set_global_cache (GsPlugin *plugin, GsAppList *global_cache)
 }
 
 /**
+ * gs_plugin_set_network_monitor:
+ * @plugin: a #GsPlugin
+ * @network_monitor: a #GNetworkMonitor
+ *
+ * Sets the network monitor so that plugins can check the state of the network.
+ *
+ * Since: 3.28
+ **/
+void
+gs_plugin_set_network_monitor (GsPlugin *plugin, GNetworkMonitor *monitor)
+{
+	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
+	g_set_object (&priv->network_monitor, monitor);
+}
+
+/**
+ * gs_plugin_get_network_available:
+ * @plugin: a #GsPlugin
+ *
+ * Gets whether a network connectivity is available.
+ *
+ * Returns: %TRUE if a network is available.
+ *
+ * Since: 3.28
+ **/
+gboolean
+gs_plugin_get_network_available (GsPlugin *plugin)
+{
+	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
+	if (priv->network_monitor == NULL) {
+		g_debug ("no network monitor, so returning network-available=TRUE");
+		return TRUE;
+	}
+	return g_network_monitor_get_network_available (priv->network_monitor);
+}
+
+/**
  * gs_plugin_has_flags:
  * @plugin: a #GsPlugin
  * @flags: a #GsPluginFlags, e.g. %GS_PLUGIN_FLAGS_RUNNING_SELF
@@ -1013,7 +1053,7 @@ gs_plugin_app_launch_cb (gpointer user_data)
  * @app: a #GsApp
  * @error: a #GError, or %NULL
  *
- * Launches the application using GAppInfo.
+ * Launches the application using #GAppInfo.
  *
  * Returns: %TRUE for success
  *
@@ -1140,7 +1180,7 @@ gs_plugin_download_chunk_cb (SoupMessage *msg, SoupBuffer *chunk,
 	if (header_size < body_length)
 		return;
 
-	/* calulate percentage */
+	/* calculate percentage */
 	percentage = (guint) ((100 * body_length) / header_size);
 	g_debug ("%s progress: %u%%", gs_app_get_id (helper->app), percentage);
 	gs_app_set_progress (helper->app, percentage);
@@ -1463,10 +1503,12 @@ gs_plugin_cache_lookup (GsPlugin *plugin, const gchar *key)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
 	GsApp *app;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->cache_mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_val_if_fail (GS_IS_PLUGIN (plugin), NULL);
 	g_return_val_if_fail (key != NULL, NULL);
+
+	locker = g_mutex_locker_new (&priv->cache_mutex);
 
 	/* global, so using a unique_id */
 	if (gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_GLOBAL_CACHE)) {
@@ -1496,10 +1538,12 @@ void
 gs_plugin_cache_remove (GsPlugin *plugin, const gchar *key)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->cache_mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_if_fail (GS_IS_PLUGIN (plugin));
 	g_return_if_fail (key != NULL);
+
+	locker = g_mutex_locker_new (&priv->cache_mutex);
 
 	/* global, so using internal unique_id */
 	if (gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_GLOBAL_CACHE)) {
@@ -1531,10 +1575,12 @@ void
 gs_plugin_cache_add (GsPlugin *plugin, const gchar *key, GsApp *app)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->cache_mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_if_fail (GS_IS_PLUGIN (plugin));
 	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->cache_mutex);
 
 	/* default */
 	if (key == NULL)
@@ -1566,7 +1612,7 @@ gs_plugin_cache_add (GsPlugin *plugin, const gchar *key, GsApp *app)
  * likes. Using this function may mean the front-end and the plugin
  * may be operating on a different GsApp with the same cache ID.
  *
- * Most plugins do not need to call this funtion; if a suitable cache
+ * Most plugins do not need to call this function; if a suitable cache
  * key is being used the old cache item can remain.
  *
  * Since: 3.22
@@ -1575,10 +1621,11 @@ void
 gs_plugin_cache_invalidate (GsPlugin *plugin)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->cache_mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_return_if_fail (GS_IS_PLUGIN (plugin));
 
+	locker = g_mutex_locker_new (&priv->cache_mutex);
 	g_hash_table_remove_all (priv->cache);
 }
 

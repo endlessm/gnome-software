@@ -136,9 +136,27 @@ sources : 'gs-plugin-packagekit-proxy.c',
   c_args : cargs,
   dependencies : [ plugin_libs, packagekit ])
 
+shared_module(
+  'gs_plugin_packagekit-url-to-app',
+  sources : [
+    'gs-plugin-packagekit-url-to-app.c',
+    'packagekit-common.c',
+  ],
+  include_directories : [
+    include_directories('../..'),
+    include_directories('../../lib'),
+  ],
+  install : true,
+  install_dir: plugin_dir,
+  c_args : cargs,
+  dependencies : [ plugin_libs, packagekit ]
+)
+
 if get_option('enable-tests')
   cargs += ['-DTESTDATADIR="' + join_paths(meson.current_source_dir(), 'tests') + '"']
-  e = executable('gs-self-test-packagekit',
+  e = executable(
+    'gs-self-test-packagekit',
+    compiled_schemas,
     sources : [
       'gs-markdown.c',
       'gs-self-test.c'
@@ -155,5 +173,5 @@ if get_option('enable-tests')
     ],
     c_args : cargs,
   )
-  test('gs-self-test-packagekit', e)
+  test('gs-self-test-packagekit', e, env: test_env)
 endif

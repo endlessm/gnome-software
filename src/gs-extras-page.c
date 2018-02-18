@@ -58,6 +58,7 @@ struct _GsExtrasPage
 	GsExtrasPageState	  state;
 	GtkSizeGroup		 *sizegroup_image;
 	GtkSizeGroup		 *sizegroup_name;
+	GtkSizeGroup		 *sizegroup_desc;
 	GtkSizeGroup		 *sizegroup_button;
 	GPtrArray		 *array_search_data;
 	GsExtrasPageMode	  mode;
@@ -303,6 +304,7 @@ gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, SearchData *search_data)
 	gs_app_row_set_size_groups (GS_APP_ROW (app_row),
 				    self->sizegroup_image,
 				    self->sizegroup_name,
+				    self->sizegroup_desc,
 				    self->sizegroup_button);
 	gtk_widget_show (app_row);
 }
@@ -691,7 +693,7 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 			g_autoptr(GsPluginJob) plugin_job = NULL;
 			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH_FILES,
 							 "search", search_data->search_filename,
-							 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+							 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 									 GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES,
@@ -708,7 +710,7 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 			file = g_file_new_for_path (search_data->package_filename);
 			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_FILE_TO_APP,
 							 "file", file,
-							 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+							 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 									 GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES,
@@ -723,7 +725,7 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 			g_debug ("searching what provides: '%s'", search_data->search);
 			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH_PROVIDES,
 							 "search", search_data->search,
-							 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
+							 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
@@ -1168,6 +1170,7 @@ gs_extras_page_dispose (GObject *object)
 
 	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
+	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button);
 	g_clear_object (&self->language);
 	g_clear_object (&self->vendor);
@@ -1189,6 +1192,7 @@ gs_extras_page_init (GsExtrasPage *self)
 	self->state = GS_EXTRAS_PAGE_STATE_LOADING;
 	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->vendor = gs_vendor_new ();
 

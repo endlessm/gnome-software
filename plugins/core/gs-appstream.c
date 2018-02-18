@@ -498,6 +498,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	AsRequire *req;
 	g_autoptr(GError) error_local = NULL;
 	GHashTable *urls;
+	GPtrArray *launchables;
 	GPtrArray *array;
 	GPtrArray *pkgnames;
 	GPtrArray *kudos;
@@ -554,6 +555,15 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		break;
 	}
 
+	/* check if the special metadata affects the not-launchable quirk */
+	tmp = gs_app_get_metadata_item (app, "GnomeSoftware::quirks::not-launchable");
+	if (tmp != NULL) {
+		if (g_strcmp0 (tmp, "true") == 0)
+			gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		else if (g_strcmp0 (tmp, "false") == 0)
+			gs_app_remove_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	}
+
 	/* set management plugin automatically */
 	gs_refine_item_management_plugin (plugin, app, item);
 
@@ -584,7 +594,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	array = as_app_get_content_ratings (item);
 	for (i = 0; i < array->len; i++) {
 		AsContentRating *cr = g_ptr_array_index (array, i);
-		if (g_strcmp0 (as_content_rating_get_kind (cr), "oars-1.0") == 0) {
+		if (g_str_has_prefix (as_content_rating_get_kind (cr), "oars-1.")) {
 			gs_app_set_content_rating (app, cr);
 			break;
 		}
@@ -616,6 +626,36 @@ gs_appstream_refine_app (GsPlugin *plugin,
 			gs_app_set_url (app,
 					as_url_kind_from_string (l->data),
 					g_hash_table_lookup (urls, l->data));
+		}
+	}
+
+	/* add launchables */
+	launchables = as_app_get_launchables (item);
+	for (i = 0; i < launchables->len; i++) {
+		AsLaunchable *launchable = g_ptr_array_index (launchables, i);
+		switch (as_launchable_get_kind (launchable)) {
+		case AS_LAUNCHABLE_KIND_DESKTOP_ID:
+			gs_app_set_launchable (app,
+					       AS_LAUNCHABLE_KIND_DESKTOP_ID,
+					       as_launchable_get_value (launchable));
+			break;
+		case AS_LAUNCHABLE_KIND_SERVICE:
+			gs_app_set_launchable (app,
+					       AS_LAUNCHABLE_KIND_SERVICE,
+					       as_launchable_get_value (launchable));
+			break;
+		case AS_LAUNCHABLE_KIND_COCKPIT_MANIFEST:
+			gs_app_set_launchable (app,
+					       AS_LAUNCHABLE_KIND_COCKPIT_MANIFEST,
+					       as_launchable_get_value (launchable));
+			break;
+		case AS_LAUNCHABLE_KIND_URL:
+			gs_app_set_launchable (app,
+					       AS_LAUNCHABLE_KIND_URL,
+					       as_launchable_get_value (launchable));
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -685,7 +725,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	 * removed.
 	 *
 	 * If XDG_CURRENT_DESKTOP contains ":", indicating that it is made up
-	 * of multiple comopnents per the Desktop Entry Specification, an app
+	 * of multiple components per the Desktop Entry Specification, an app
 	 * is compulsory if any of the components in XDG_CURRENT_DESKTOP match
 	 * any value in <compulsory_for_desktops />. In that way,
 	 * "GNOME-Classic:GNOME" shares compulsory apps with GNOME.

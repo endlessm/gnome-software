@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2017 Kalev Lember <klember@redhat.com>
+ * Copyright (C) 2017-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -25,12 +25,16 @@
 #include <glib/gstdio.h>
 
 #include <gnome-software.h>
+#include <ostree.h>
+#include <rpmostree.h>
 
 #include "gs-rpmostree-generated.h"
 
 struct GsPluginData {
 	GsRPMOSTreeOS		*os_proxy;
 	GsRPMOSTreeSysroot	*sysroot_proxy;
+	OstreeRepo		*ot_repo;
+	OstreeSysroot		*ot_sysroot;
 };
 
 void
@@ -57,6 +61,9 @@ gs_plugin_initialize (GsPlugin *plugin)
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-refresh");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-upgrade");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "systemd-updates");
+
+	/* need pkgname */
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
 }
 
 void
@@ -67,6 +74,10 @@ gs_plugin_destroy (GsPlugin *plugin)
 		g_object_unref (priv->os_proxy);
 	if (priv->sysroot_proxy != NULL)
 		g_object_unref (priv->sysroot_proxy);
+	if (priv->ot_sysroot != NULL)
+		g_object_unref (priv->ot_sysroot);
+	if (priv->ot_repo != NULL)
+		g_object_unref (priv->ot_repo);
 }
 
 gboolean
@@ -115,7 +126,45 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 		}
 	}
 
+	/* Register as a client so that the rpm-ostree daemon doesn't exit */
+	if (!gs_rpmostree_sysroot_call_register_client_sync (priv->sysroot_proxy,
+	                                                     g_variant_new ("a{sv}", NULL),
+	                                                     cancellable,
+	                                                     error)) {
+		gs_utils_error_convert_gio (error);
+		return FALSE;
+	}
+
+	/* Load ostree sysroot and repo */
+	if (priv->ot_sysroot == NULL) {
+		g_autofree gchar *sysroot_path = NULL;
+		g_autoptr(GFile) sysroot_file = NULL;
+
+		sysroot_path = gs_rpmostree_sysroot_dup_path (priv->sysroot_proxy);
+		sysroot_file = g_file_new_for_path (sysroot_path);
+
+		priv->ot_sysroot = ostree_sysroot_new (sysroot_file);
+		if (!ostree_sysroot_load (priv->ot_sysroot, cancellable, error)) {
+			gs_utils_error_convert_gio (error);
+			return FALSE;
+		}
+
+		if (!ostree_sysroot_get_repo (priv->ot_sysroot, &priv->ot_repo, cancellable, error)) {
+			gs_utils_error_convert_gio (error);
+			return FALSE;
+		}
+	}
+
 	return TRUE;
+}
+
+void
+gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
+{
+	if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_PACKAGE &&
+	    gs_app_get_scope (app) == AS_APP_SCOPE_SYSTEM) {
+		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+	}
 }
 
 typedef struct {
@@ -253,74 +302,6 @@ out:
 	return success;
 }
 
-static gint
-pkg_diff_variant_compare (gconstpointer a,
-                          gconstpointer b,
-                          gpointer unused)
-{
-	const char *pkg_name_a = NULL;
-	const char *pkg_name_b = NULL;
-
-	g_variant_get_child ((GVariant *) a, 0, "&s", &pkg_name_a);
-	g_variant_get_child ((GVariant *) b, 0, "&s", &pkg_name_b);
-
-	return g_strcmp0 (pkg_name_a, pkg_name_b);
-}
-
-static void
-pkg_diff_variant_print (GVariant *variant)
-{
-	g_autoptr(GVariant) details = NULL;
-	const char *old_name, *old_evr, *old_arch;
-	const char *new_name, *new_evr, *new_arch;
-	gboolean have_old = FALSE;
-	gboolean have_new = FALSE;
-
-	details = g_variant_get_child_value (variant, 2);
-	g_return_if_fail (details != NULL);
-
-	have_old = g_variant_lookup (details,
-	                             "PreviousPackage", "(&s&s&s)",
-	                             &old_name, &old_evr, &old_arch);
-
-	have_new = g_variant_lookup (details,
-	                             "NewPackage", "(&s&s&s)",
-	                             &new_name, &new_evr, &new_arch);
-
-	if (have_old && have_new) {
-		g_print ("!%s-%s-%s\n", old_name, old_evr, old_arch);
-		g_print ("=%s-%s-%s\n", new_name, new_evr, new_arch);
-	} else if (have_old) {
-		g_print ("-%s-%s-%s\n", old_name, old_evr, old_arch);
-	} else if (have_new) {
-		g_print ("+%s-%s-%s\n", new_name, new_evr, new_arch);
-	}
-}
-
-static void
-rpmostree_print_package_diffs (GVariant *variant)
-{
-	GQueue queue = G_QUEUE_INIT;
-	GVariantIter iter;
-	GVariant *child;
-
-	/* GVariant format should be a(sua{sv}) */
-
-	g_return_if_fail (variant != NULL);
-
-	g_variant_iter_init (&iter, variant);
-
-	/* Queue takes ownership of the child variant. */
-	while ((child = g_variant_iter_next_value (&iter)) != NULL)
-		g_queue_insert_sorted (&queue, child, pkg_diff_variant_compare, NULL);
-
-	while (!g_queue_is_empty (&queue)) {
-		child = g_queue_pop_head (&queue);
-		pkg_diff_variant_print (child);
-		g_variant_unref (child);
-	}
-}
-
 static GsApp *
 make_app (GVariant *variant)
 {
@@ -438,8 +419,6 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	if (g_variant_n_children (result) == 0)
 		return TRUE;
 
-	rpmostree_print_package_diffs (result);
-
 	/* GVariant format should be a(sua{sv}) */
 	g_variant_iter_init (&iter, result);
 
@@ -452,4 +431,85 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	}
 
 	return TRUE;
+}
+
+static void
+resolve_packages_app (GsPlugin *plugin,
+                      GPtrArray *pkglist,
+                      gchar **layered_packages,
+                      GsApp *app)
+{
+	for (guint i = 0; i < pkglist->len; i++) {
+		RpmOstreePackage *pkg = g_ptr_array_index (pkglist, i);
+		if (g_strcmp0 (rpm_ostree_package_get_name (pkg), gs_app_get_source_default (app)) == 0) {
+			gs_app_set_version (app, rpm_ostree_package_get_evr (pkg));
+			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+			if (!g_strv_contains ((const gchar * const *) layered_packages,
+			                      rpm_ostree_package_get_name (pkg))) {
+				/* on rpm-ostree this package cannot be removed 'live' */
+				gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+			}
+		}
+	}
+}
+
+gboolean
+gs_plugin_refine (GsPlugin *plugin,
+                  GsAppList *list,
+                  GsPluginRefineFlags flags,
+                  GCancellable *cancellable,
+                  GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GPtrArray) pkglist = NULL;
+	g_autoptr(GVariant) booted_deployment = NULL;
+	g_auto(GStrv) layered_packages = NULL;
+	g_autofree gchar *checksum = NULL;
+
+	booted_deployment = gs_rpmostree_os_dup_booted_deployment (priv->os_proxy);
+	g_assert (g_variant_lookup (booted_deployment,
+	                            "packages", "^as",
+	                            &layered_packages));
+	g_assert (g_variant_lookup (booted_deployment,
+	                            "checksum", "s",
+	                            &checksum));
+
+	pkglist = rpm_ostree_db_query_all (priv->ot_repo, checksum, cancellable, error);
+	if (pkglist == NULL) {
+		gs_utils_error_convert_gio (error);
+		return FALSE;
+	}
+
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		GPtrArray *sources;
+		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+			continue;
+		if (gs_app_get_kind (app) == AS_APP_KIND_WEB_APP)
+			continue;
+		if (g_strcmp0 (gs_app_get_management_plugin (app), "rpm-ostree") != 0)
+			continue;
+		sources = gs_app_get_sources (app);
+		if (sources->len == 0)
+			continue;
+
+		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+			resolve_packages_app (plugin, pkglist, layered_packages, app);
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_launch (GsPlugin *plugin,
+                  GsApp *app,
+                  GCancellable *cancellable,
+                  GError **error)
+{
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+	               gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	return gs_plugin_app_launch (plugin, app, error);
 }

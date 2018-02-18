@@ -279,7 +279,7 @@ gs_plugin_fwupd_setup_remote (GsPlugin *plugin, FwupdRemote *remote, GError **er
 		return TRUE;
 
 	/* find the name of the signature file in the cache */
-	filename_asc = gs_utils_get_cache_filename ("firmware",
+	filename_asc = gs_utils_get_cache_filename ("fwupd",
 						    fwupd_remote_get_filename_asc (remote),
 						    GS_UTILS_CACHE_FLAG_WRITEABLE,
 						    error);
@@ -560,7 +560,7 @@ gs_plugin_add_update_app (GsPlugin *plugin,
 
 	/* does the firmware already exist in the cache? */
 	basename = g_path_get_basename (update_uri);
-	filename_cache = gs_utils_get_cache_filename ("firmware",
+	filename_cache = gs_utils_get_cache_filename ("fwupd",
 						      basename,
 						      GS_UTILS_CACHE_FLAG_NONE,
 						      error);
@@ -942,7 +942,7 @@ gs_plugin_fwupd_refresh_remote (GsPlugin *plugin,
 	}
 
 	/* check cache age */
-	filename_asc = gs_utils_get_cache_filename ("firmware",
+	filename_asc = gs_utils_get_cache_filename ("fwupd",
 						    fwupd_remote_get_filename_asc (remote),
 						    GS_UTILS_CACHE_FLAG_WRITEABLE,
 						    error);
@@ -991,13 +991,13 @@ gs_plugin_fwupd_refresh_remote (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	/* save the new checksum so we don't downoad the payload unless it's changed */
+	/* save the new checksum so we don't download the payload unless it's changed */
 	g_hash_table_insert (priv->remote_asc_hash,
 			     g_strdup (filename_asc),
 			     g_steal_pointer (&checksum));
 
 	/* download the payload and save to file */
-	filename = gs_utils_get_cache_filename ("firmware",
+	filename = gs_utils_get_cache_filename ("fwupd",
 						fwupd_remote_get_filename (remote),
 						GS_UTILS_CACHE_FLAG_WRITEABLE,
 						error);
@@ -1087,7 +1087,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 
 		tmp = g_ptr_array_index (priv->to_download, i);
 		basename = g_path_get_basename (tmp);
-		filename_cache = gs_utils_get_cache_filename ("firmware",
+		filename_cache = gs_utils_get_cache_filename ("fwupd",
 							      basename,
 							      GS_UTILS_CACHE_FLAG_WRITEABLE,
 							      error);
@@ -1171,6 +1171,36 @@ gs_plugin_fwupd_install (GsPlugin *plugin,
 	return TRUE;
 }
 
+static gboolean
+gs_plugin_fwupd_modify_source (GsPlugin *plugin, GsApp *app, gboolean enabled,
+			       GCancellable *cancellable, GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const gchar *remote_id = gs_app_get_metadata_item (app, "fwupd::remote-id");
+	if (remote_id == NULL) {
+		g_set_error (error,
+			     GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_FAILED,
+			     "not enough data for fwupd %s",
+			     gs_app_get_unique_id (app));
+		return FALSE;
+	}
+	gs_app_set_state (app, enabled ?
+	                  AS_APP_STATE_INSTALLING : AS_APP_STATE_REMOVING);
+	if (!fwupd_client_modify_remote (priv->client,
+	                                 remote_id,
+	                                 "Enabled",
+	                                 enabled ? "true" : "false",
+	                                 cancellable,
+	                                 error)) {
+		gs_app_set_state_recover (app);
+		return FALSE;
+	}
+	gs_app_set_state (app, enabled ?
+	                  AS_APP_STATE_INSTALLED : AS_APP_STATE_AVAILABLE);
+	return TRUE;
+}
+
 gboolean
 gs_plugin_app_install (GsPlugin *plugin,
 		       GsApp *app,
@@ -1182,7 +1212,27 @@ gs_plugin_app_install (GsPlugin *plugin,
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
+	/* source -> remote */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
+		return gs_plugin_fwupd_modify_source (plugin, app, TRUE,
+						      cancellable, error);
+	}
+
+	/* firmware */
 	return gs_plugin_fwupd_install (plugin, app, cancellable, error);
+}
+
+gboolean
+gs_plugin_app_remove (GsPlugin *plugin, GsApp *app,
+		      GCancellable *cancellable, GError **error)
+{
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	/* source -> remote */
+	return gs_plugin_fwupd_modify_source (plugin, app, FALSE, cancellable, error);
 }
 
 gboolean
@@ -1298,5 +1348,121 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 	}
 #endif
 
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_sources (GsPlugin *plugin,
+		       GsAppList *list,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GPtrArray) remotes = NULL;
+
+	/* find all remotes */
+	remotes = fwupd_client_get_remotes (priv->client, cancellable, error);
+	if (remotes == NULL)
+		return FALSE;
+	for (guint i = 0; i < remotes->len; i++) {
+		FwupdRemote *remote = g_ptr_array_index (remotes, i);
+		g_autofree gchar *id = NULL;
+		g_autoptr(GsApp) app = NULL;
+
+		/* ignore these, they're built in */
+		if (fwupd_remote_get_kind (remote) == FWUPD_REMOTE_KIND_LOCAL)
+			continue;
+
+		/* create something that we can use to enable/disable */
+		id = g_strdup_printf ("org.fwupd.%s.remote", fwupd_remote_get_id (remote));
+		app = gs_app_new (id);
+		gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+		gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+		gs_app_set_state (app, fwupd_remote_get_enabled (remote) ?
+				  AS_APP_STATE_INSTALLED : AS_APP_STATE_AVAILABLE);
+		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_set_name (app, GS_APP_QUALITY_LOWEST,
+				 fwupd_remote_get_title (remote));
+		gs_app_set_url (app, AS_URL_KIND_HOMEPAGE,
+				fwupd_remote_get_metadata_uri (remote));
+		gs_app_set_metadata (app, "fwupd::remote-id",
+				     fwupd_remote_get_id (remote));
+		gs_app_set_management_plugin (app, "fwupd");
+		gs_app_list_add (list, app);
+	}
+	return TRUE;
+}
+
+#if FWUPD_CHECK_VERSION(1,0,0)
+static gboolean
+gs_plugin_fwupd_add_releases (GsPlugin *plugin, GsApp *app,
+			      GCancellable *cancellable, GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GPtrArray) releases = NULL;
+
+	releases = fwupd_client_get_releases (priv->client,
+					      gs_fwupd_app_get_device_id (app),
+					      cancellable,
+					      &error_local);
+	if (releases == NULL) {
+		/* just ignore empty array */
+		if (g_error_matches (error_local,
+				     FWUPD_ERROR,
+				     FWUPD_ERROR_NOTHING_TO_DO)) {
+			return TRUE;
+		}
+		g_propagate_error (error, g_steal_pointer (&error_local));
+		return FALSE;
+	}
+	for (guint j = 0; j < releases->len; j++) {
+		FwupdRelease *rel = g_ptr_array_index (releases, j);
+		g_autoptr(GsApp) app2 = gs_app_new (NULL);
+		gs_fwupd_app_set_from_release (app2, rel);
+		gs_app_add_history (app, app2);
+	}
+	return TRUE;
+}
+
+static gboolean
+gs_plugin_fwupd_add_devices (GsPlugin *plugin, GsAppList *list,
+			     GCancellable *cancellable, GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GPtrArray) devices = NULL;
+
+	/* get devices */
+	devices = fwupd_client_get_devices (priv->client, cancellable, error);
+	if (devices == NULL)
+		return FALSE;
+	for (guint i = 0; i < devices->len; i++) {
+		FwupdDevice *device = g_ptr_array_index (devices, i);
+		g_autoptr(GsApp) app = NULL;
+
+		/* ignore these, we can't do anything */
+		if (!fwupd_device_has_flag (device, FWUPD_DEVICE_FLAG_UPDATABLE))
+			continue;
+
+		/* add releases */
+		app = gs_plugin_fwupd_new_app_from_device_raw (plugin, device);
+		if (!gs_plugin_fwupd_add_releases (plugin, app, cancellable, error))
+			return FALSE;
+
+		/* add all */
+		gs_app_list_add (list, g_steal_pointer (&app));
+	}
+	return TRUE;
+}
+#endif
+
+gboolean
+gs_plugin_add_search (GsPlugin *plugin, gchar **values, GsAppList *list,
+		      GCancellable *cancellable, GError **error)
+{
+#if FWUPD_CHECK_VERSION(1,0,0)
+	if (g_strv_contains ((const gchar * const *) values, "fwupd"))
+		return gs_plugin_fwupd_add_devices (plugin, list, cancellable, error);
+#endif
 	return TRUE;
 }

@@ -1,8 +1,33 @@
-Version 3.26.5
+Version 3.27.90
+~~~~~~~~~~~~~~~
+Released: 2018-02-14
+
+This is an unstable release in the 3.27 development series, with the following
+improvements:
+ * The Software Sources dialog was renamed to Software Repositories and
+   rewritten
+ * Fedora Workstation third party repository handling was rewritten and should
+   be more robust
+ * Improved handling of metered network connections, making sure we cancel any
+   downloads when changing to a metered connection
+ * Limit the number of parallel operations depending on the installed CPU
+ * Improved handling of pending installs when there's no network connection
+ * Unused ostree and rpm plugins were dropped
+ * Switch from GtkSpell to gspell
+ * Improve alignment on the updates page
+ * Do not show missing screenshot error for fonts that have screenshots
+ * Fix various issues on Ubuntu when purchasing apps
+ * Fix an issue that led to duplicate categories appearing on the overview page
+ * Various memory leak and correctness fixes
+
+This release also updates translations.
+
+Version 3.27.4
 ~~~~~~~~~~~~~~
 Released: 2018-01-08
 
-This is a stable release with the following changes:
+This is an unstable release in the 3.27 development series, with the following
+improvements:
  * Add missing locking to gs_plugin_cache_remove(), fixing a possible crash
  * Fix various memory leaks spotted by valgrind
  * Fix a possible crash triggered by the fwupd plugin
@@ -14,29 +39,44 @@ This is a stable release with the following changes:
 
 This release also updates translations.
 
-Version 3.26.4
+Version 3.27.3
 ~~~~~~~~~~~~~~
-Released: 2017-12-17
+Released: 2017-11-13
 
-This is a stable release with the following changes:
+This is an unstable release in the 3.27 development series, with the following
+improvements:
  * Fix crashes in the repos plugin due to missing locking
+ * Add translated strings for the new OARS v1.1 additions
  * Work around Firefox deleting rpm/deb files downloaded to /tmp when closing
+ * Log errors to console when starting from command line
+ * Do not enable distro-upgrades when updates are disabled
  * Do not require the user to keep clicking 'More reviews' after each click
  * Fix a critical when updating (flatpak) packages live
+ * fwupd: Do not crash when trying to list a locked device
  * fwupd: Prepend the vendor name to the device name if not included
  * Improve SPDX ID parsing when working out if it is 'free'
  * packagekit: Do not crash when getting an invalid ID from PackageKit
+ * packagekit: Support apt:// URLs
+ * Various fixes to the snap plugin
  * Do not crash when closing the source dialog while it is loading
 
 This release also updates translations.
 
-Version 3.26.3
+Version 3.27.2
 ~~~~~~~~~~~~~~
-Released: 2017-11-21
+Released: 2017-11-13
 
-This is a stable release with the following changes:
- * Fix a common crash in the fwupd plugin
- * Make category translations on the details page show up
+This is an unstable release in the 3.27 development series, with the following
+improvements:
+ * Redesigned category view
+ * Better notifications for completed distro upgrades
+ * Number of test suite fixes to pave way for continous integration tests
+ * Improved support for running on low res displays
+ * Various fixes to internal state handling
+ * Allow linking to specified proprietary licenses
+ * Don't use versioned subdirectories under ~/.cache/gnome-software
+ * Only show in-app notifications for interactive user actions
+ * Various fixes for flatpak, fwupd, and snap support
 
 This release also updates translations.
 

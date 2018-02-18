@@ -46,6 +46,8 @@ gnome_software_sources = [
   'gs-popular-tile.c',
   'gs-progress-button.c',
   'gs-removal-dialog.c',
+  'gs-repos-dialog.c',
+  'gs-repos-dialog-row.c',
   'gs-review-bar.c',
   'gs-review-dialog.c',
   'gs-review-histogram.c',
@@ -54,8 +56,6 @@ gnome_software_sources = [
   'gs-search-page.c',
   'gs-shell.c',
   'gs-shell-search-provider.c',
-  'gs-sources-dialog.c',
-  'gs-sources-dialog-row.c',
   'gs-star-widget.c',
   'gs-summary-tile.c',
   'gs-update-dialog.c',
@@ -98,6 +98,10 @@ endif
 
 if get_option('enable-gnome-desktop')
   gnome_software_dependencies += [gnome_desktop]
+endif
+
+if get_option('enable-gspell')
+  gnome_software_dependencies += [gspell]
 endif
 
 executable(
@@ -274,6 +278,7 @@ if get_option('enable-tests')
   cargs += ['-DTESTDATADIR="' + join_paths(meson.current_source_dir(), '..', 'data') + '"']
   e = executable(
     'gs-self-test-src',
+    compiled_schemas,
     sources : [
       'gs-css.c',
       'gs-common.c',
@@ -298,5 +303,5 @@ if get_option('enable-tests')
     ],
     c_args : cargs
   )
-  test('gs-self-test-src', e)
+  test('gs-self-test-src', e, env: test_env)
 endif

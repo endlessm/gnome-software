@@ -3,8 +3,9 @@
 import subprocess
 import os
 import shutil
+import configparser
 
-def build_flatpak(appid, srcdir, repodir, cleanrepodir=True):
+def build_flatpak(appid, srcdir, repodir, branch='master', cleanrepodir=True):
     print('Building %s from %s into %s' % (appid, srcdir, repodir))
 
     # delete repodir
@@ -25,12 +26,15 @@ def build_flatpak(appid, srcdir, repodir, cleanrepodir=True):
     else:
         flatpak_cmd = 'flatpak'
 
+    metadata_path = os.path.join(srcdir, appid, 'metadata')
+    metadata = configparser.ConfigParser()
+    metadata.read(metadata_path)
+    is_runtime = True if 'Runtime' in metadata.sections() else False
+
     # runtimes have different defaults
-    if appid.find('Runtime') != -1:
-        is_runtime = True
+    if is_runtime:
         prefix = 'usr'
     else:
-        is_runtime = False
         prefix = 'files'
 
     # finish the build
@@ -51,6 +55,7 @@ def build_flatpak(appid, srcdir, repodir, cleanrepodir=True):
     argv = [flatpak_cmd, 'build-export']
     argv.append(repodir)
     argv.append(os.path.join(srcdir, appid))
+    argv.append(branch)
     argv.append('--update-appstream')
     argv.append('--timestamp=2016-09-15T01:02:03')
     if is_runtime:
@@ -80,7 +85,11 @@ build_flatpak('org.test.Chiron',
               'app-missing-runtime/repo')
 
 # app with an update
-copy_repo('app-with-runtime', 'app-update')
+build_flatpak('org.test.Runtime',
+              'app-with-runtime',
+              'app-update/repo',
+              branch='new_master',
+              cleanrepodir=True)
 build_flatpak('org.test.Chiron',
               'app-update',
               'app-update/repo',
@@ -90,3 +99,19 @@ build_flatpak('org.test.Chiron',
 build_flatpak('org.test.Runtime',
               'only-runtime',
               'only-runtime/repo')
+
+# app with an extension
+copy_repo('only-runtime', 'app-extension')
+build_flatpak('org.test.Chiron',
+              'app-extension',
+              'app-extension/repo',
+              cleanrepodir=False)
+build_flatpak('org.test.Chiron.Extension',
+              'app-extension',
+              'app-extension/repo',
+              cleanrepodir=False)
+copy_repo('app-extension', 'app-extension-update')
+build_flatpak('org.test.Chiron.Extension',
+              'app-extension-update',
+              'app-extension-update/repo',
+              cleanrepodir=False)

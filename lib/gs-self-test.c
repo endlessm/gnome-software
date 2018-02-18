@@ -262,7 +262,7 @@ gs_plugin_func (void)
 	g_assert_cmpstr (gs_app_get_id (gs_app_list_index (list_dup, 0)), ==, "a");
 	g_object_unref (list_dup);
 
-	/* test removing obects */
+	/* test removing objects */
 	app = gs_app_new ("a");
 	list_remove = gs_app_list_new ();
 	gs_app_list_add (list_remove, app);
@@ -587,15 +587,33 @@ gs_app_func (void)
 	g_assert_cmpuint (gs_app_get_progress (app), ==, 42);
 	gs_app_set_progress (app, 142);
 	g_assert_cmpuint (gs_app_get_progress (app), ==, 100);
+
+	/* check pending action */
+	g_assert_cmpuint (gs_app_get_pending_action (app), ==, GS_PLUGIN_ACTION_UNKNOWN);
+	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_pending_action (app, GS_PLUGIN_ACTION_UPDATE);
+	g_assert_cmpuint (gs_app_get_pending_action (app), ==, GS_PLUGIN_ACTION_UPDATE);
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	g_assert_cmpuint (gs_app_get_pending_action (app), ==, GS_PLUGIN_ACTION_UNKNOWN);
+	gs_app_set_state_recover (app);
 }
 
 static void
 gs_auth_secret_func (void)
 {
 	gboolean ret;
+	g_autoptr(GDBusConnection) conn = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAuth) auth1 = NULL;
 	g_autoptr(GsAuth) auth2 = NULL;
+
+	/* we not have an active session bus */
+	conn = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
+	if (conn == NULL) {
+		g_prefix_error (&error, "no session bus available: ");
+		g_test_skip (error->message);
+		return;
+	}
 
 	/* save secrets to disk */
 	auth1 = gs_auth_new ("self-test");
