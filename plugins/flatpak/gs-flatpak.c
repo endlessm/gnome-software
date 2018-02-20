@@ -1693,7 +1693,7 @@ gs_plugin_refine_item_origin_hostname (GsFlatpak *self, GsApp *app,
 	ptask = as_profile_start (gs_plugin_get_profile (self->plugin),
 				  "%s::refine-origin-hostname{%s}",
 				  gs_flatpak_get_id (self),
-				  gs_app_get_id (app));
+				  gs_app_get_unique_id (app));
 	g_assert (ptask != NULL);
 
 	/* already set */
@@ -1956,7 +1956,7 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 					 &ref_error);
 	if (ref != NULL) {
 		g_debug ("marking %s as installed with flatpak",
-			 gs_app_get_id (app));
+			 gs_app_get_unique_id (app));
 		gs_flatpak_set_metadata_installed (self, app, ref);
 		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
 			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
@@ -2001,7 +2001,7 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 
 			if (runtime_ref != NULL) {
 				g_debug ("marking runtime %s as installed in the "
-					 "counterpart installation", gs_app_get_id (app));
+					 "counterpart installation", gs_app_get_unique_id (app));
 				gs_flatpak_set_metadata_installed (self, app, runtime_ref);
 				if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
 					gs_app_set_state (app, AS_APP_STATE_INSTALLED);
@@ -2025,12 +2025,12 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 			if (flatpak_remote_get_disabled (xremote)) {
 				g_debug ("%s is available with flatpak "
 					 "but %s is disabled",
-					 gs_app_get_id (app),
+					 gs_app_get_unique_id (app),
 					 flatpak_remote_get_name (xremote));
 				gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
 			} else {
 				g_debug ("marking %s as available with flatpak",
-					 gs_app_get_id (app));
+					 gs_app_get_unique_id (app));
 				gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 			}
 		} else {
@@ -2253,7 +2253,7 @@ gs_plugin_refine_item_metadata (GsFlatpak *self,
 	ptask = as_profile_start (gs_plugin_get_profile (self->plugin),
 				  "%s::refine-metadata{%s}",
 				  gs_flatpak_get_id (self),
-				  gs_app_get_id (app));
+				  gs_app_get_unique_id (app));
 	g_assert (ptask != NULL);
 
 	/* not applicable */
@@ -2350,7 +2350,7 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 			return FALSE;
 		if (gs_app_get_state (app_runtime) == AS_APP_STATE_INSTALLED) {
 			g_debug ("runtime %s is already installed, so not adding size",
-				 gs_app_get_id (app_runtime));
+				 gs_app_get_unique_id (app_runtime));
 		} else {
 			if (!gs_plugin_refine_item_size (self,
 							 app_runtime,
@@ -2431,7 +2431,7 @@ gs_flatpak_refine_appstream_release (AsApp *item, GsApp *app)
 		break;
 	default:
 		g_debug ("%s is not installed, so ignoring version of %s",
-			 as_app_get_id (item), as_release_get_version (rel));
+			 as_app_get_unique_id (item), as_release_get_version (rel));
 		break;
 	}
 }
@@ -2447,7 +2447,7 @@ gs_flatpak_refine_appstream (GsFlatpak *self, GsApp *app, GError **error)
 	ptask = as_profile_start (gs_plugin_get_profile (self->plugin),
 				  "%s::refine-appstream{%s}",
 				  gs_flatpak_get_id (self),
-				  gs_app_get_id (app));
+				  gs_app_get_unique_id (app));
 	g_assert (ptask != NULL);
 
 	if (unique_id == NULL)
@@ -2491,7 +2491,7 @@ gs_flatpak_refine_app (GsFlatpak *self,
 	ptask = as_profile_start (gs_plugin_get_profile (self->plugin),
 				  "%s::refine{%s}",
 				  gs_flatpak_get_id (self),
-				  gs_app_get_id (app));
+				  gs_app_get_unique_id (app));
 	g_assert (ptask != NULL);
 
 	/* always do AppStream properties */
@@ -2587,7 +2587,7 @@ gs_flatpak_refine_wildcard (GsFlatpak *self, GsApp *app,
 		item = g_ptr_array_index (items, i);
 		if (as_app_get_bundle_default (item) == NULL) {
 			g_debug ("not using %s for wildcard as no bundle",
-				 as_app_get_id (item));
+				 as_app_get_unique_id (item));
 			continue;
 		}
 
@@ -2891,7 +2891,7 @@ gs_flatpak_add_app_to_list_if_not_installed (GsApp *app, GsAppList *list,
 	g_autofree gchar *ref_display = gs_flatpak_app_get_ref_display (app);
 	if (g_hash_table_contains (hash_installed, ref_display)) {
 		g_debug ("%s is already installed, so skipping",
-			 gs_app_get_id (app));
+			 gs_app_get_unique_id (app));
 		return;
 	}
 
