@@ -2912,6 +2912,8 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 	g_autoptr(GsAppList) list = gs_app_list_new ();
 	g_autoptr(GsApp) services_app = NULL;
 	g_autoptr(GsApp) services_runtime = NULL;
+	g_autofree gchar *app_ref_display = gs_flatpak_app_get_ref_display (app);
+	gboolean is_repair = FALSE;
 
 	/* get the list of installed apps */
 	xrefs_installed = flatpak_installation_list_installed_refs (self->installation,
@@ -2928,10 +2930,17 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 				  flatpak_ref_format_ref (FLATPAK_REF (xref)));
 	}
 
-	/* add runtime */
-	if (!gs_flatpak_refine_runtime_for_install (self, app, cancellable, error))
-		return FALSE;
-	runtime = gs_app_get_update_runtime (app);
+	/* if the app is installed but missing its runtime, then it's been set to show
+	 * as available in order for it to be repaired (for the missing runtime to be
+	 * installed) */
+	is_repair = !is_update && g_hash_table_contains (hash_installed, app_ref_display);
+	if (is_repair) {
+		runtime = gs_app_get_runtime (app);
+	} else {
+		if (!gs_flatpak_refine_runtime_for_install (self, app, cancellable, error))
+			return FALSE;
+		runtime = gs_app_get_update_runtime (app);
+	}
 	if (runtime != NULL)
 		gs_flatpak_add_app_to_list_if_not_installed (runtime, list, hash_installed);
 
@@ -2943,9 +2952,14 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 		gs_flatpak_add_app_to_list_if_not_installed (services_app, list, hash_installed);
 
 		/* add services flatpak's runtime, if different from app's runtime */
-		if (!gs_flatpak_refine_runtime_for_install (self, services_app, cancellable, error))
-			return FALSE;
-		services_runtime = gs_app_get_update_runtime (services_app);
+		if (is_repair) {
+			services_runtime = gs_app_get_runtime (services_app);
+		} else {
+			if (!gs_flatpak_refine_runtime_for_install (self, services_app,
+								 cancellable, error))
+				return FALSE;
+			services_runtime = gs_app_get_update_runtime (services_app);
+		}
 		if (services_runtime != NULL)
 			gs_flatpak_add_app_to_list_if_not_installed (services_runtime, list, hash_installed);
 	}
