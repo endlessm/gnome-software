@@ -162,13 +162,13 @@ search_done_cb (GObject *source,
 	guint i;
 	GVariantBuilder builder;
 	guint app_list_length;
+	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 
-	list = gs_plugin_loader_job_process_finish (self->plugin_loader, res, NULL);
+	list = gs_plugin_loader_job_process_finish (self->plugin_loader, res, &error);
 	if (list == NULL) {
-		gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
-										  search->invocation,
-										  NULL);
+		g_warning ("Error searching for Discovery Feed Apps: %s", error->message);
+		g_dbus_method_invocation_take_error (search->invocation, g_steal_pointer (&error));
 		pending_search_free (search);
 		g_application_release (g_application_get_default ());
 		return;
