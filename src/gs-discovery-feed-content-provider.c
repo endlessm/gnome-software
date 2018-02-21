@@ -104,10 +104,6 @@ filter_for_discovery_feed_apps (GsApp *app, gpointer user_data)
 	if (!app_thumbnail_filename)
 		return FALSE;
 
-	/* App must also be tagged as having discovery feed content */
-	if (!gs_app_get_metadata_item (app, "Endless::HasDiscoveryFeedContent"))
-		return FALSE;
-
 	return TRUE;
 }
 
