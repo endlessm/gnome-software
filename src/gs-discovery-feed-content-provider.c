@@ -201,7 +201,7 @@ handle_get_discovery_feed_apps (GsDiscoveryFeedInstallableApps *skeleton,
 	self->cancellable = g_cancellable_new ();
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
-					 "search", "com.endlessm",
+					 "search", "Endless::HasDiscoveryFeedContent",
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
