@@ -820,6 +820,32 @@ gs_appstream_refine_app (GsPlugin *plugin,
 }
 
 static gboolean
+matches_all_on_metadata (AsApp  *item,
+			 gchar **values)
+{
+	GHashTable *metadata = as_app_get_metadata (item);
+	for (gchar **value_iter = values; *value_iter != NULL; ++value_iter) {
+		GHashTableIter iter;
+		gboolean matched_value = FALSE;
+		gpointer key, value;
+
+		g_hash_table_iter_init (&iter, metadata);
+
+		while (g_hash_table_iter_next (&iter, &key, &value)) {
+			if (g_ascii_strcasecmp ((gchar *) key, *value_iter) == 0) {
+				matched_value = TRUE;
+				break;
+			}
+		}
+
+		if (!matched_value)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean
 gs_appstream_store_search_item (GsPlugin *plugin,
 				AsApp *item,
 				gchar **values,
@@ -835,10 +861,12 @@ gs_appstream_store_search_item (GsPlugin *plugin,
 
 	/* match against the app or any of the addons */
 	match_value = as_app_search_matches_all (item, values);
+	match_value |= matches_all_on_metadata (item, values);
 	addons = as_app_get_addons (item);
 	for (i = 0; i < addons->len; i++) {
 		item_tmp = g_ptr_array_index (addons, i);
 		match_value |= as_app_search_matches_all (item_tmp, values);
+		match_value |= matches_all_on_metadata (item_tmp, values);
 	}
 
 	/* no match */
