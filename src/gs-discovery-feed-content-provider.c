@@ -59,47 +59,6 @@ pending_search_free (PendingSearch *search)
 	g_slice_free (PendingSearch, search);
 }
 
-typedef struct {
-	GsAppKudo kudo;
-	guint weight;
-} DiscoveryFeedKudoWeight ;
-
-
-static const DiscoveryFeedKudoWeight discovery_feed_app_kudos[] =
-{
-	{ GS_APP_KUDO_MY_LANGUAGE, 10 },
-	{ GS_APP_KUDO_FEATURED_RECOMMENDED, 5 },
-	{ GS_APP_KUDO_POPULAR, 3 }
-};
-static const guint discovery_feed_app_kudos_len = G_N_ELEMENTS (discovery_feed_app_kudos);
-
-static guint
-get_discovery_feed_app_kudo_score (GsApp *app)
-{
-	guint i = 0;
-	guint score = 0;
-	guint64 kudos = gs_app_get_kudos (app);
-
-	for (; i < discovery_feed_app_kudos_len; ++i)
-		if ((kudos & discovery_feed_app_kudos[i].kudo) != 0)
-			score += discovery_feed_app_kudos[i].weight;
-
-	return score;
-}
-
-static gint
-search_sort_by_kudo_cb (GsApp *app1, GsApp *app2, gpointer user_data)
-{
-	guint pa, pb;
-	pa = get_discovery_feed_app_kudo_score (app1);
-	pb = get_discovery_feed_app_kudo_score (app2);
-	if (pa < pb)
-		return 1;
-	else if (pa > pb)
-		return -1;
-	return 0;
-}
-
 static gchar *
 get_app_thumbnail_cached_filename (GsApp *app)
 {
@@ -145,10 +104,6 @@ filter_for_discovery_feed_apps (GsApp *app, gpointer user_data)
 	if (!app_thumbnail_filename)
 		return FALSE;
 
-	/* App must also be tagged as having discovery feed content */
-	if (!gs_app_get_metadata_item (app, "Endless::HasDiscoveryFeedContent"))
-		return FALSE;
-
 	return TRUE;
 }
 
@@ -162,13 +117,13 @@ search_done_cb (GObject *source,
 	guint i;
 	GVariantBuilder builder;
 	guint app_list_length;
+	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 
-	list = gs_plugin_loader_job_process_finish (self->plugin_loader, res, NULL);
+	list = gs_plugin_loader_job_process_finish (self->plugin_loader, res, &error);
 	if (list == NULL) {
-		gs_discovery_feed_installable_apps_complete_get_installable_apps (self->skeleton,
-										  search->invocation,
-										  NULL);
+		g_warning ("Error searching for Discovery Feed Apps: %s", error->message);
+		g_dbus_method_invocation_take_error (search->invocation, g_steal_pointer (&error));
 		pending_search_free (search);
 		g_application_release (g_application_get_default ());
 		return;
@@ -182,7 +137,6 @@ search_done_cb (GObject *source,
 	 * internally randomized order. */
 	gs_app_list_filter (list, filter_for_discovery_feed_apps, NULL);
 	gs_app_list_randomize (list);
-	gs_app_list_sort (list, search_sort_by_kudo_cb, NULL);
 
 	app_list_length = gs_app_list_length (list);
 
@@ -247,7 +201,7 @@ handle_get_discovery_feed_apps (GsDiscoveryFeedInstallableApps *skeleton,
 	self->cancellable = g_cancellable_new ();
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
-					 "search", "com.endlessm",
+					 "search", "Endless::HasDiscoveryFeedContent",
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
