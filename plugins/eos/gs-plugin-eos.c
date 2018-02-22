@@ -732,6 +732,7 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		"org.musicbrainz.Picard.desktop",
 		"org.mypaint.MyPaint.desktop",
 		"org.nextcloud.Nextcloud.desktop",
+		"org.pitivi.Pitivi.desktop",
 		"org.quassel_irc.QuasselClient.desktop",
 		"org.telegram.desktop.desktop",
 		"org.tordini.flavio.Minitube.desktop",
