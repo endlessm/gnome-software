@@ -418,6 +418,9 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 			continue;
 		}
 		as_app_add_category (as_app, "USB");
+		/* if the category has been cached before, it may not get the USB category,
+		 * so we add it to the GsApp here too */
+		gs_app_add_category (app, "USB");
 
 		/* add a keyword so users can search for "usb" */
 		as_app_add_keyword (as_app, NULL, "usb");
@@ -3264,8 +3267,12 @@ gs_flatpak_mount_removed (GVolumeMonitor *volume_monitor,
 		should_reload = TRUE;
 		apps = g_hash_table_lookup (self->usb_remotes, remote_url);
 		for (guint i = 0; i < apps->len; ++i) {
-			AsApp *app = g_ptr_array_index (apps, i);
-			as_app_remove_category (app, "USB");
+			AsApp *as_app = g_ptr_array_index (apps, i);
+			GsApp *app = gs_plugin_cache_lookup (self->plugin,
+							     as_app_get_unique_id (as_app));
+			if (app != NULL)
+				gs_app_remove_category (app, "USB");
+			as_app_remove_category (as_app, "USB");
 			/* FIXME: we should also remove the 'usb' keyword but
 			 * we will do it when there's proper API for it in AsApp */
 		}
