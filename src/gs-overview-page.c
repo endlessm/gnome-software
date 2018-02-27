@@ -1058,10 +1058,9 @@ gs_overview_page_setup (GsPage *page,
 		gtk_container_add (GTK_CONTAINER (priv->box_popular), tile);
 	}
 
-	for (i = 0; i < N_TILES; i++) {
-		tile = gs_popular_tile_new (NULL);
-		gtk_container_add (GTK_CONTAINER (priv->box_recent), tile);
-	}
+	/* hide unless there are enough apps */
+	gtk_widget_set_visible (priv->box_recent, FALSE);
+	gtk_widget_set_visible (priv->recent_heading, FALSE);
 
 	/* handle category expander */
 	g_signal_connect (priv->categories_expander_button_down, "clicked",
