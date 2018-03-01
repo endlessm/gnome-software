@@ -824,9 +824,7 @@ matches_all_on_metadata (AsApp  *item,
 			 gchar **values)
 {
 	GHashTable *metadata = as_app_get_metadata (item);
-	gchar **value_iter = values;
-
-	for (; *value_iter != NULL; ++value_iter) {
+	for (gchar **value_iter = values; *value_iter != NULL; ++value_iter) {
 		GHashTableIter iter;
 		gboolean matched_value = FALSE;
 		gpointer key, value;
