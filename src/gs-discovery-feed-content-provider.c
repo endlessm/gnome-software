@@ -150,14 +150,14 @@ search_done_cb (GObject *source,
 		GdkPixbuf *pixbuf = gs_app_get_pixbuf (app);
 		g_autoptr(GVariant) icon_serialized = NULL;
 
-		if (!pixbuf) {
+		if (pixbuf == NULL) {
 			g_warning ("App %s should have an icon pixbuf, but does not", app_id);
 			continue;
 		}
 
 		icon_serialized = g_icon_serialize (G_ICON (pixbuf));
 
-		if (!icon_serialized) {
+		if (icon_serialized == NULL) {
 			g_warning ("App %s should have a serializable icon, but does not", app_id);
 			continue;
 		}
