@@ -72,15 +72,18 @@ struct GsPluginData
 	gboolean eos_arch_is_arm;
 };
 
-static GHashTable *
+static gboolean
 get_applications_with_shortcuts (GsPlugin	*plugin,
+				 GHashTable    **apps_table,
 				 GCancellable	*cancellable,
 				 GError		**error) {
 	g_autoptr (GVariantIter) iter = NULL;
 	g_autoptr (GVariant) apps = NULL;
 	gchar *application;
-	GHashTable *apps_table;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	*apps_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
+					     NULL);
 
 	apps = g_dbus_connection_call_sync (priv->session_bus,
 					    "org.gnome.Shell",
@@ -93,16 +96,13 @@ get_applications_with_shortcuts (GsPlugin	*plugin,
 					    cancellable,
 					    error);
 	if (apps == NULL)
-		return NULL;
-
-	apps_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
-					    NULL);
+		return FALSE;
 
 	g_variant_get (apps, "(as)", &iter);
 	while (g_variant_iter_loop (iter, "s", &application))
 		g_hash_table_add (apps_table, g_strdup (application));
 
-	return apps_table;
+	return TRUE;
 }
 
 static void
@@ -120,8 +120,7 @@ on_desktop_apps_changed (GDBusConnection *connection,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GError) error = NULL;
 
-	apps = get_applications_with_shortcuts (plugin, NULL, &error);
-	if (apps == NULL) {
+	if (!get_applications_with_shortcuts (plugin, &apps, NULL, &error)) {
 		g_warning ("Error getting apps with shortcuts: %s",
 			   error->message);
 		return;
@@ -281,9 +280,8 @@ gs_plugin_setup (GsPlugin *plugin,
 
 	{
 		g_autoptr(GError) local_error = NULL;
-		priv->desktop_apps = get_applications_with_shortcuts (plugin, cancellable,
-								      &local_error);
-		if (priv->desktop_apps == NULL)
+		if (!get_applications_with_shortcuts (plugin, &priv->desktop_apps,
+						      cancellable, &local_error))
 			g_warning ("Couldn't get the apps with shortcuts: %s",
 				   local_error->message);
 	}
