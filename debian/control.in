@@ -5,7 +5,7 @@ Maintainer: Debian GNOME Maintainers <pkg-gnome-maintainers@lists.alioth.debian.
 Uploaders: @GNOME_TEAM@
 Build-Depends: appstream,
                appstream-util,
-               debhelper (>= 10.4),
+               debhelper (>= 11),
                docbook-xsl,
                gnome-pkg-tools (>= 0.10),
                gsettings-desktop-schemas-dev (>= 3.18),
@@ -27,10 +27,10 @@ Build-Depends: appstream,
                pkg-config,
                valgrind [amd64 arm64 armhf i386 mips mips64 mips64el mipsel powerpc ppc64 ppc64el s390x],
                xsltproc
-Standards-Version: 4.1.0
+Standards-Version: 4.1.2
+Vcs-Browser: https://salsa.debian.org/gnome-team/gnome-software
+Vcs-Git: https://salsa.debian.org/gnome-team/gnome-software.git
 Homepage: https://wiki.gnome.org/Apps/Software
-Vcs-Svn: svn://anonscm.debian.org/pkg-gnome/desktop/experimental/gnome-software/
-Vcs-Browser: https://anonscm.debian.org/viewvc/pkg-gnome/desktop/experimental/gnome-software/
 
 Package: gnome-software
 Architecture: any
@@ -82,28 +82,9 @@ Description: Flatpak support for GNOME Software
  .
  This package contains the Flatpak plugin.
 
-#Package: gnome-software-plugin-snap
-#Architecture: linux-any
-#Depends: gnome-software (= ${binary:Version}),
-#         ${misc:Depends},
-#         ${shlibs:Depends}
-#Breaks: gnome-software (<< 3.22.3)
-#Replaces: gnome-software (<< 3.22.3)
-#Description: Snap support for GNOME Software
-# Software lets you install and update applications and system extensions.
-# .
-# Software uses a plugin architecture to separate the frontend from the
-# technologies that are used underneath. Currently, a PackageKit plugin provides
-# data from a number of traditional packaging systems, such as rpm or apt. An
-# appdata plugin provides additional metadata from locally installed data in the
-# appdata format.
-# .
-# This package contains the Snap plugin.
-
 Package: gnome-packagekit-session
 Architecture: all
 Section: oldlibs
-Priority: extra
 Depends: gnome-software (>= ${source:Version}),
          ${misc:Depends}
 Description: Transitional package (gnome-packagekit-session -> gnome-software)
@@ -116,6 +97,7 @@ Description: Transitional package (gnome-packagekit-session -> gnome-software)
 Package: gnome-software-dev
 Section: libdevel
 Architecture: any
+Multi-Arch: same
 Depends: libglib2.0-dev,
          libgtk-3-dev,
          libappstream-glib-dev,
@@ -131,6 +113,7 @@ Description: Software Center for GNOME - development files
 Package: gnome-software-doc
 Section: doc
 Architecture: all
+Multi-Arch: foreign
 Depends: ${misc:Depends}
 Description: Software Center for GNOME - documentation
  Software lets you install and update applications and system extensions.
