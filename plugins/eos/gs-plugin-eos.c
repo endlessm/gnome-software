@@ -831,13 +831,11 @@ static gboolean
 app_is_banned_coding_app (GsPlugin *plugin, GsApp *app)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *id = gs_app_get_id (app);
 
 	/* the coding chatbox is in the core ostree, so unlike the
 	   personality-based blocking, we block even if it is installed */
-
 	return (!priv->is_coding_enabled &&
-	        (g_strcmp0 (id, "com.endlessm.Coding.Chatbox.desktop") == 0));
+	        (g_strcmp0 (gs_app_get_id (app), "com.endlessm.Coding.Chatbox.desktop") == 0));
 }
 
 static gboolean
