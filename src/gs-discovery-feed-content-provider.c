@@ -114,7 +114,6 @@ search_done_cb (GObject *source,
 {
 	PendingSearch *search = user_data;
 	GsDiscoveryFeedContentProvider *self = search->provider;
-	guint i;
 	GVariantBuilder builder;
 	guint app_list_length;
 	g_autoptr(GError) error = NULL;
@@ -138,12 +137,12 @@ search_done_cb (GObject *source,
 	gs_app_list_filter (list, filter_for_discovery_feed_apps, NULL);
 	gs_app_list_randomize (list);
 
-	app_list_length = gs_app_list_length (list);
+	app_list_length = MIN (gs_app_list_length (list), MAX_INSTALLABLE_APPS);
 
 	/* Now that we have our indices, start building up a variant based
 	 * on those indices */
 	g_variant_builder_init (&builder, G_VARIANT_TYPE ("aa{sv}"));
-	for (i = 0; i < MIN (app_list_length, MAX_INSTALLABLE_APPS); ++i) {
+	for (guint i = 0; i < app_list_length; ++i) {
 		GsApp *app = GS_APP (gs_app_list_index (list, i));
 		const gchar *app_id = gs_app_get_id (app);
 		g_autofree gchar *app_thumbnail_filename = get_app_thumbnail_cached_filename (app);
