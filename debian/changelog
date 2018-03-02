@@ -1,3 +1,65 @@
+gnome-software (3.26.5-1) unstable; urgency=medium
+
+  * New upstream release
+  * Update Vcs fields for migration to https://salsa.debian.org/
+  * Bump debhelper compat to 11
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sat, 20 Jan 2018 07:48:06 -0500
+
+gnome-software (3.26.3-4) unstable; urgency=medium
+
+  * Update Vcs fields for conversion to git
+  * Add debian/gbp.conf
+  * Bump Standards-Version to 4.1.2
+  * Stop using appdata-to-NEWS to install NEWS. It's no longer needed.
+  * Add some Multi-Arch metadata
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sat, 16 Dec 2017 13:24:18 -0500
+
+gnome-software (3.26.3-3) unstable; urgency=medium
+
+  * Fix arch:all build
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 24 Nov 2017 19:57:28 -0500
+
+gnome-software (3.26.3-2) unstable; urgency=medium
+
+  * Only build snap plugin on architectures where snapd is built.
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 24 Nov 2017 16:31:19 -0500
+
+gnome-software (3.26.3-1) unstable; urgency=medium
+
+  * New upstream release
+  * Use appstream-util appdata-to-news to install NEWS
+  * Build gnome-software-plugin-snap again (Closes: #877684)
+
+ -- Jeremy Bicha <jbicha@debian.org>  Tue, 21 Nov 2017 19:19:28 -0500
+
+gnome-software (3.26.2-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/control.in:
+    - Bump required fwupd to >= 0.9.7
+  * Drop all patches, applied in new release.
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 10 Nov 2017 09:30:30 -0500
+
+gnome-software (3.26.1-2) unstable; urgency=medium
+
+  * Cherry-pick upstream fixes to make gnome-software build against fwupd 1.0.
+    (Closes: #879006)
+  * Enable GUDev support only on Linux. (Closes: #875916)
+
+ -- Michael Biebl <biebl@debian.org>  Sat, 21 Oct 2017 05:36:14 +0200
+
+gnome-software (3.26.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * Bump Standards-Version to 4.1.1
+
+ -- Jeremy Bicha <jbicha@debian.org>  Thu, 05 Oct 2017 22:02:21 -0400
+
 gnome-software (3.26.0-2) unstable; urgency=medium
 
   * Only build with valgrind on architectures where valgrind is available
