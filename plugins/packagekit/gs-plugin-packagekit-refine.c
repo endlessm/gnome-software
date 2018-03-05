@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -39,8 +40,6 @@
 struct GsPluginData {
 	PkControl		*control;
 	PkClient		*client;
-	GHashTable		*sources;
-	AsProfileTask		*ptask;
 };
 
 static void
@@ -86,10 +85,11 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-gs_plugin_packagekit_resolve_packages (GsPlugin *plugin,
-				       GsAppList *list,
-				       GCancellable *cancellable,
-				       GError **error)
+gs_plugin_packagekit_resolve_packages_with_filter (GsPlugin *plugin,
+                                                   GsAppList *list,
+                                                   PkBitfield filter,
+                                                   GCancellable *cancellable,
+                                                   GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	GPtrArray *sources;
@@ -125,7 +125,7 @@ gs_plugin_packagekit_resolve_packages (GsPlugin *plugin,
 
 	/* resolve them all at once */
 	results = pk_client_resolve (priv->client,
-				     pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, PK_FILTER_ENUM_ARCH, -1),
+				     filter,
 				     (gchar **) package_ids->pdata,
 				     cancellable,
 				     gs_plugin_packagekit_progress_cb, &data,
@@ -151,6 +151,50 @@ gs_plugin_packagekit_resolve_packages (GsPlugin *plugin,
 			continue;
 		gs_plugin_packagekit_resolve_packages_app (plugin, packages, app);
 	}
+	return TRUE;
+}
+
+static gboolean
+gs_plugin_packagekit_resolve_packages (GsPlugin *plugin,
+                                       GsAppList *list,
+                                       GCancellable *cancellable,
+                                       GError **error)
+{
+	PkBitfield filter;
+	GsAppList *resolve2_list;
+
+	/* first, try to resolve packages with ARCH filter */
+	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST,
+	                                 PK_FILTER_ENUM_ARCH,
+	                                 -1);
+	if (!gs_plugin_packagekit_resolve_packages_with_filter (plugin,
+	                                                        list,
+	                                                        filter,
+	                                                        cancellable,
+	                                                        error)) {
+		return FALSE;
+	}
+
+	/* if any packages remaing in UNKNOWN state, try to resolve them again,
+	 * but this time without ARCH filter */
+	resolve2_list = gs_app_list_new ();
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+			gs_app_list_add (resolve2_list, app);
+	}
+	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST,
+	                                 PK_FILTER_ENUM_NOT_ARCH,
+	                                 PK_FILTER_ENUM_NOT_SOURCE,
+	                                 -1);
+	if (!gs_plugin_packagekit_resolve_packages_with_filter (plugin,
+	                                                        resolve2_list,
+	                                                        filter,
+	                                                        cancellable,
+	                                                        error)) {
+		return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -531,6 +575,8 @@ gs_plugin_refine_requires_package_id (GsApp *app, GsPluginRefineFlags flags)
 	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS) > 0)
 		return TRUE;
 	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE) > 0)
+		return TRUE;
+	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION) > 0)
 		return TRUE;
 	return FALSE;
 }

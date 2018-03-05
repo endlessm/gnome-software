@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -175,7 +176,6 @@ _get_app_section (GsApp *app)
 static GsAppList *
 _get_apps_for_section (GsUpdatesPage *self, GsUpdatePageSection section)
 {
-	GList *l;
 	GsAppList *apps;
 	GtkContainer *container;
 	g_autoptr(GList) children = NULL;
@@ -185,7 +185,7 @@ _get_apps_for_section (GsUpdatesPage *self, GsUpdatePageSection section)
 		return apps;
 	container = GTK_CONTAINER (self->listboxes[section]);
 	children = gtk_container_get_children (container);
-	for (l = children; l != NULL; l = l->next) {
+	for (GList *l = children; l != NULL; l = l->next) {
 		GsAppRow *app_row = GS_APP_ROW (l->data);
 		GsApp *app = gs_app_row_get_app (app_row);
 		if (_get_app_section (app) != section)
@@ -348,13 +348,39 @@ gs_updates_page_get_state_string (GsPluginStatus status)
 }
 
 static void
+refresh_headerbar_updates_counter (GsUpdatesPage *self)
+{
+	GtkWidget *widget;
+	guint num_updates;
+
+	num_updates = _get_num_updates (self);
+
+	/* update the counter */
+	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "button_updates_counter"));
+	if (num_updates > 0 &&
+	    gs_plugin_loader_get_allow_updates (self->plugin_loader)) {
+		g_autofree gchar *text = NULL;
+		text = g_strdup_printf ("%u", num_updates);
+		gtk_label_set_label (GTK_LABEL (widget), text);
+		gtk_widget_show (widget);
+	} else {
+		gtk_widget_hide (widget);
+	}
+
+	/* update the tab style */
+	if (num_updates > 0 &&
+	    gs_shell_get_mode (self->shell) != GS_SHELL_MODE_UPDATES)
+		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "needs-attention");
+	else
+		gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "needs-attention");
+}
+
+static void
 gs_updates_page_update_ui_state (GsUpdatesPage *self)
 {
-	GtkWidget *widget = NULL;
 	gboolean allow_mobile_refresh = TRUE;
 	g_autofree gchar *checked_str = NULL;
 	g_autofree gchar *spinner_str = NULL;
-	guint num_updates = 0;
 
 	if (gs_shell_get_mode (self->shell) != GS_SHELL_MODE_UPDATES)
 		return;
@@ -505,25 +531,8 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		gtk_widget_set_visible (self->label_updates_last_checked, checked_str != NULL);
 	}
 
-	/* set the right updates count */
-	num_updates = _get_num_updates (self);
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "button_updates_counter"));
-	if (num_updates > 0 &&
-	    gs_plugin_loader_get_allow_updates (self->plugin_loader)) {
-		g_autofree gchar *text = NULL;
-		text = g_strdup_printf ("%u", num_updates);
-		gtk_label_set_label (GTK_LABEL (widget), text);
-		gtk_widget_show (widget);
-	} else {
-		gtk_widget_hide (widget);
-	}
-
-	/* update the tab style */
-	if (num_updates > 0 &&
-	    gs_shell_get_mode (self->shell) != GS_SHELL_MODE_UPDATES)
-		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "needs-attention");
-	else
-		gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "needs-attention");
+	/* update the counter in headerbar */
+	refresh_headerbar_updates_counter (self);
 }
 
 static void
@@ -1036,6 +1045,9 @@ gs_updates_page_get_updates_cb (GsPluginLoader *plugin_loader,
 				      _("U_pdate All"));
 	}
 
+	/* update the counter in headerbar */
+	refresh_headerbar_updates_counter (self);
+
 	/* no results */
 	if (gs_app_list_length (list) == 0) {
 		g_debug ("updates-shell: no updates to show");
@@ -1103,6 +1115,11 @@ gs_updates_page_get_system_finished_cb (GObject *source_object,
 
 	/* show or hide the end of life notification */
 	app = gs_plugin_loader_get_system_app (plugin_loader);
+	if (app == NULL) {
+		g_warning ("failed to get system app");
+		gtk_widget_set_visible (self->box_end_of_life, FALSE);
+		return;
+	}
 	if (gs_app_get_state (app) != AS_APP_STATE_UNAVAILABLE) {
 		gtk_widget_set_visible (self->box_end_of_life, FALSE);
 		return;

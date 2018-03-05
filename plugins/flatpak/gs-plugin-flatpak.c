@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2016 Joaquim Rocha <jrocha@endlessm.com>
  * Copyright (C) 2016-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2017 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -56,9 +57,6 @@ gs_plugin_initialize (GsPlugin *plugin)
 	/* old names */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "flatpak-system");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "flatpak-user");
-
-	/* set plugin flags */
-	gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_GLOBAL_CACHE);
 
 	/* getting app properties from appstream is quicker */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");

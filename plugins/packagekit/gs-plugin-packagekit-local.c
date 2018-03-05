@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -130,6 +131,21 @@ gs_plugin_packagekit_refresh_guess_app_id (GsPlugin *plugin,
 	return TRUE;
 }
 
+static void
+add_quirks_from_package_name (GsApp *app, const gchar *package_name)
+{
+	/* these packages don't have a .repo file in their file lists, but
+	 * instead install one through rpm scripts / cron job */
+	const gchar *packages_with_repos[] = {
+		"google-chrome-stable",
+		"google-earth-pro-stable",
+		"google-talkplugin",
+		NULL };
+
+	if (g_strv_contains (packages_with_repos, package_name))
+		gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SOURCE);
+}
+
 gboolean
 gs_plugin_file_to_app (GsPlugin *plugin,
 		       GsAppList *list,
@@ -229,6 +245,7 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 	gs_app_set_size_download (app, 0);
 	license_spdx = as_utils_license_to_spdx (pk_details_get_license (item));
 	gs_app_set_license (app, GS_APP_QUALITY_LOWEST, license_spdx);
+	add_quirks_from_package_name (app, split[PK_PACKAGE_ID_NAME]);
 
 	/* look for a desktop file so we can use a valid application id */
 	if (!gs_plugin_packagekit_refresh_guess_app_id (plugin,

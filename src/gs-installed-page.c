@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -94,6 +95,8 @@ row_unrevealed (GObject *row, GParamSpec *pspec, gpointer data)
 	GtkWidget *list;
 
 	list = gtk_widget_get_parent (GTK_WIDGET (row));
+	if (list == NULL)
+		return;
 	gtk_container_remove (GTK_CONTAINER (list), GTK_WIDGET (row));
 }
 
@@ -109,11 +112,10 @@ static void
 gs_installed_page_app_removed (GsPage *page, GsApp *app)
 {
 	GsInstalledPage *self = GS_INSTALLED_PAGE (page);
-	GList *l;
 	g_autoptr(GList) children = NULL;
 
 	children = gtk_container_get_children (GTK_CONTAINER (self->list_box_install));
-	for (l = children; l; l = l->next) {
+	for (GList *l = children; l; l = l->next) {
 		GsAppRow *app_row = GS_APP_ROW (l->data);
 		if (gs_app_row_get_app (app_row) == app) {
 			gs_installed_page_unreveal_row (app_row);
@@ -184,7 +186,6 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 	GtkWidget *app_row;
 
 	app_row = gs_app_row_new (app);
-	gs_app_row_set_colorful (GS_APP_ROW (app_row), FALSE);
 	gs_app_row_set_show_folders (GS_APP_ROW (app_row), TRUE);
 	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
 	if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
@@ -532,12 +533,11 @@ static gboolean
 gs_installed_page_has_app (GsInstalledPage *self,
                            GsApp *app)
 {
-	GList *l;
 	gboolean ret = FALSE;
 	g_autoptr(GList) children = NULL;
 
 	children = gtk_container_get_children (GTK_CONTAINER (self->list_box_install));
-	for (l = children; l; l = l->next) {
+	for (GList *l = children; l; l = l->next) {
 		GsAppRow *app_row = GS_APP_ROW (l->data);
 		if (gs_app_row_get_app (app_row) == app) {
 			ret = TRUE;
@@ -591,7 +591,6 @@ gs_installed_page_pending_apps_changed_cb (GsPluginLoader *plugin_loader,
 static void
 set_selection_mode (GsInstalledPage *self, gboolean selection_mode)
 {
-	GList *l;
 	GtkWidget *header;
 	GtkWidget *widget;
 	GtkStyleContext *context;
@@ -630,7 +629,7 @@ set_selection_mode (GsInstalledPage *self, gboolean selection_mode)
 	}
 
 	children = gtk_container_get_children (GTK_CONTAINER (self->list_box_install));
-	for (l = children; l; l = l->next) {
+	for (GList *l = children; l; l = l->next) {
 		GsAppRow *app_row = GS_APP_ROW (l->data);
 		GsApp *app = gs_app_row_get_app (app_row);
 		gs_app_row_set_selectable (app_row,
@@ -652,12 +651,12 @@ selection_mode_cb (GtkButton *button, GsInstalledPage *self)
 static GList *
 get_selected_apps (GsInstalledPage *self)
 {
-	GList *l, *list;
+	GList *list;
 	g_autoptr(GList) children = NULL;
 
 	list = NULL;
 	children = gtk_container_get_children (GTK_CONTAINER (self->list_box_install));
-	for (l = children; l; l = l->next) {
+	for (GList *l = children; l; l = l->next) {
 		GsAppRow *app_row = GS_APP_ROW (l->data);
 		if (gs_app_row_get_selected (app_row)) {
 			list = g_list_prepend (list, gs_app_row_get_app (app_row));
@@ -669,7 +668,6 @@ get_selected_apps (GsInstalledPage *self)
 static void
 selection_changed (GsInstalledPage *self)
 {
-	GList *l;
 	GsApp *app;
 	gboolean has_folders, has_nonfolders;
 	g_autoptr(GList) apps = NULL;
@@ -678,7 +676,7 @@ selection_changed (GsInstalledPage *self)
 	folders = gs_folders_get ();
 	has_folders = has_nonfolders = FALSE;
 	apps = get_selected_apps (self);
-	for (l = apps; l; l = l->next) {
+	for (GList *l = apps; l; l = l->next) {
 		app = l->data;
 		if (gs_folders_get_app_folder (folders,
 					       gs_app_get_id (app),
@@ -721,14 +719,13 @@ show_folder_dialog (GtkButton *button, GsInstalledPage *self)
 static void
 remove_folders (GtkButton *button, GsInstalledPage *self)
 {
-	GList *l;
 	GsApp *app;
 	g_autoptr(GList) apps = NULL;
 	g_autoptr(GsFolders) folders = NULL;
 
 	folders = gs_folders_get ();
 	apps = get_selected_apps (self);
-	for (l = apps; l; l = l->next) {
+	for (GList *l = apps; l; l = l->next) {
 		app = l->data;
 		gs_folders_set_app_folder (folders,
 					   gs_app_get_id (app),
@@ -744,11 +741,10 @@ remove_folders (GtkButton *button, GsInstalledPage *self)
 static void
 select_all_cb (GtkMenuItem *item, GsInstalledPage *self)
 {
-	GList *l;
 	g_autoptr(GList) children = NULL;
 
 	children = gtk_container_get_children (GTK_CONTAINER (self->list_box_install));
-	for (l = children; l; l = l->next) {
+	for (GList *l = children; l; l = l->next) {
 		GsAppRow *app_row = GS_APP_ROW (l->data);
 		gs_app_row_set_selected (app_row, TRUE);
 	}
@@ -757,11 +753,10 @@ select_all_cb (GtkMenuItem *item, GsInstalledPage *self)
 static void
 select_none_cb (GtkMenuItem *item, GsInstalledPage *self)
 {
-	GList *l;
 	g_autoptr(GList) children = NULL;
 
 	children = gtk_container_get_children (GTK_CONTAINER (self->list_box_install));
-	for (l = children; l; l = l->next) {
+	for (GList *l = children; l; l = l->next) {
 		GsAppRow *app_row = GS_APP_ROW (l->data);
 		gs_app_row_set_selected (app_row, FALSE);
 	}

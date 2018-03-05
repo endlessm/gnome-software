@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2015 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015 Matthias Klumpp <matthias@tenstral.net>
+ * Copyright (C) 2015 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -358,7 +359,6 @@ gs_plugin_add_updates (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GList) updates = NULL;
-	GList *l;
 	g_autoptr(GError) error_local = NULL;
 
 	updates = li_manager_get_update_list (priv->mgr, &error_local);
@@ -371,7 +371,7 @@ gs_plugin_add_updates (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	for (l = updates; l != NULL; l = l->next) {
+	for (GList *l = updates; l != NULL; l = l->next) {
 		LiPkgInfo *old_pki;
 		LiPkgInfo *new_pki;
 		g_autoptr(GsApp) app = NULL;

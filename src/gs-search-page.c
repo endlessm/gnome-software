@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -234,9 +235,6 @@ gs_search_page_get_app_sort_key (GsApp *app)
 
 	/* sort by kudos */
 	g_string_append_printf (key, "%03u:", gs_app_get_kudos_percentage (app));
-
-	/* tie-break with id */
-	g_string_append (key, gs_app_get_unique_id (app));
 
 	return g_string_free (key, FALSE);
 }

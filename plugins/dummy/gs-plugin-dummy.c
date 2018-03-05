@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2011-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015-2016 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -60,9 +61,6 @@ gs_plugin_initialize (GsPlugin *plugin)
 		gs_plugin_set_enabled (plugin, FALSE);
 		return;
 	}
-
-	/* set plugin flags */
-	gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_GLOBAL_CACHE);
 
 	/* toggle this */
 	if (g_getenv ("GS_SELF_TEST_TOGGLE_ALLOW_UPDATES") != NULL) {
@@ -792,12 +790,6 @@ gs_plugin_add_distro_upgrades (GsPlugin *plugin,
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Fedora");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL,
 			    "A major upgrade, with new features and added polish.");
-	gs_app_set_description (app, GS_APP_QUALITY_LOWEST,
-				"Dummy Core is a unfinished, overdesigned, "
-				"hard to use operating system unikernel for "
-				"Apollo industrial flight computers, with an "
-				"incomplete set of tools for almost everyone "
-				"including idiots of all kinds.");
 	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE,
 			"https://fedoraproject.org/wiki/Releases/24/Schedule");
 	gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);

@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -23,6 +24,7 @@
 
 #include <errno.h>
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
 
 #include <gnome-software.h>
@@ -44,6 +46,7 @@ struct GsPluginData {
 	GDBusProxy	*proxy;
 	gchar		*shell_version;
 	GsApp		*cached_origin;
+	GSettings	*settings;
 };
 
 typedef enum {
@@ -73,6 +76,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	gs_app_set_kind (priv->cached_origin, AS_APP_KIND_SOURCE);
 	gs_app_set_origin_hostname (priv->cached_origin, SHELL_EXTENSIONS_API_URI);
 
+	priv->settings = g_settings_new ("org.gnome.software");
+
 	/* add the source to the plugin cache which allows us to match the
 	 * unique ID to a GsApp when creating an event */
 	gs_plugin_cache_add (plugin,
@@ -88,13 +93,22 @@ gs_plugin_destroy (GsPlugin *plugin)
 	if (priv->proxy != NULL)
 		g_object_unref (priv->proxy);
 	g_object_unref (priv->cached_origin);
+	g_object_unref (priv->settings);
 }
 
 void
 gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 {
-	if (gs_app_get_kind (app) == AS_APP_KIND_SHELL_EXTENSION)
+	if (gs_app_get_kind (app) == AS_APP_KIND_SHELL_EXTENSION &&
+	    gs_app_get_scope (app) == AS_APP_SCOPE_USER) {
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+	}
+}
+
+static gchar *
+gs_plugin_shell_extensions_id_from_uuid (const gchar *uuid)
+{
+	return g_strdup_printf ("%s.shell-extension", uuid);
 }
 
 static AsAppState
@@ -116,22 +130,21 @@ gs_plugin_shell_extensions_convert_state (guint value)
 	return AS_APP_STATE_UNKNOWN;
 }
 
-static gboolean
-gs_plugin_shell_extensions_add_app (GsPlugin *plugin,
-				    GsApp *app,
-				    const gchar *uuid,
-				    GVariantIter *iter,
-				    GError **error)
+static GsApp *
+gs_plugin_shell_extensions_parse_installed (GsPlugin *plugin,
+                                            const gchar *uuid,
+                                            GVariantIter *iter,
+                                            GError **error)
 {
 	const gchar *tmp;
 	gchar *str;
 	GVariant *val;
 	g_autofree gchar *id = NULL;
 	g_autoptr(AsIcon) ic = NULL;
+	g_autoptr(GsApp) app = NULL;
 
-	id = as_utils_appstream_id_build (uuid);
-	gs_app_set_id (app, id);
-	gs_app_set_scope (app, AS_APP_SCOPE_USER);
+	id = gs_plugin_shell_extensions_id_from_uuid (uuid);
+	app = gs_app_new (id);
 	gs_app_set_metadata (app, "GnomeSoftware::Creator",
 			     gs_plugin_get_name (plugin));
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
@@ -149,7 +162,7 @@ gs_plugin_shell_extensions_add_app (GsPlugin *plugin,
 			tmp2 = as_markup_convert_simple (tmp1, error);
 			if (tmp2 == NULL) {
 				gs_utils_error_convert_appstream (error);
-				return FALSE;
+				return NULL;
 			}
 			gs_app_set_description (app, GS_APP_QUALITY_NORMAL, tmp2);
 			continue;
@@ -168,8 +181,10 @@ gs_plugin_shell_extensions_add_app (GsPlugin *plugin,
 			guint val_int = (guint) g_variant_get_double (val);
 			switch (val_int) {
 			case GS_PLUGIN_SHELL_EXTENSION_KIND_SYSTEM:
+				gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+				break;
 			case GS_PLUGIN_SHELL_EXTENSION_KIND_PER_USER:
-				gs_app_set_kind (app, AS_APP_KIND_SHELL_EXTENSION);
+				gs_app_set_scope (app, AS_APP_SCOPE_USER);
 				break;
 			default:
 				g_warning ("%s unknown type %u", uuid, val_int);
@@ -218,7 +233,7 @@ gs_plugin_shell_extensions_add_app (GsPlugin *plugin,
 	gs_app_add_category (app, "Addon");
 	gs_app_add_category (app, "ShellExtension");
 
-	return TRUE;
+	return g_steal_pointer (&app);
 }
 
 static void
@@ -310,7 +325,6 @@ gs_plugin_add_installed (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	GVariantIter *ext_iter;
-	gboolean ret;
 	gchar *ext_uuid;
 	g_autoptr(GVariantIter) iter = NULL;
 	g_autoptr(GVariant) retval = NULL;
@@ -336,19 +350,22 @@ gs_plugin_add_installed (GsPlugin *plugin,
 
 		/* search in the cache */
 		app = gs_plugin_cache_lookup (plugin, ext_uuid);
-		if (app == NULL) {
-			app = gs_app_new (NULL);
+		if (app != NULL) {
 			gs_app_list_add (list, app);
+			continue;
 		}
 
 		/* parse the data into an GsApp */
-		ret = gs_plugin_shell_extensions_add_app (plugin,
-							  app,
-							  ext_uuid,
-							  ext_iter,
-							  error);
-		if (!ret)
+		app = gs_plugin_shell_extensions_parse_installed (plugin,
+		                                                  ext_uuid,
+		                                                  ext_iter,
+		                                                  error);
+		if (app == NULL)
 			return FALSE;
+
+		/* ignore system installed */
+		if (gs_app_get_scope (app) == AS_APP_SCOPE_SYSTEM)
+			continue;
 
 		/* save in the cache */
 		gs_plugin_cache_add (plugin, ext_uuid, app);
@@ -356,6 +373,33 @@ gs_plugin_add_installed (GsPlugin *plugin,
 		/* add to results */
 		gs_app_list_add (list, app);
 	}
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_sources (GsPlugin *plugin,
+                       GsAppList *list,
+                       GCancellable *cancellable,
+                       GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GsApp) app = NULL;
+
+	/* create something that we can use to enable/disable */
+	app = gs_app_new ("org.gnome.extensions");
+	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+	gs_app_set_scope (app, AS_APP_SCOPE_USER);
+	if (g_settings_get_boolean (priv->settings, "enable-shell-extensions-repo"))
+		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	else
+		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_set_name (app, GS_APP_QUALITY_LOWEST,
+	                 _("GNOME Shell Extensions Repository"));
+	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE,
+	                SHELL_EXTENSIONS_API_URI);
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+	gs_app_list_add (list, app);
 	return TRUE;
 }
 
@@ -368,13 +412,10 @@ gs_plugin_refine_app (GsPlugin *plugin,
 {
 	const gchar *uuid;
 
-	/* only process this these kinds */
-	if (gs_app_get_kind (app) != AS_APP_KIND_SHELL_EXTENSION)
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
-
-	/* adopt any here */
-	if (gs_app_get_management_plugin (app) == NULL)
-		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 
 	/* can we get the AppStream-created app state using the cache */
 	uuid = gs_app_get_metadata_item (app, "shell-extensions::uuid");
@@ -499,7 +540,7 @@ gs_plugin_shell_extensions_parse_app (GsPlugin *plugin,
 	tmp = json_object_get_string_member (json_app, "uuid");
 	if (tmp != NULL) {
 		g_autofree gchar *id = NULL;
-		id = as_utils_appstream_id_build (tmp);
+		id = gs_plugin_shell_extensions_id_from_uuid (tmp);
 		as_app_set_id (app, id);
 		as_app_add_metadata (app, "shell-extensions::uuid", tmp);
 	}
@@ -710,7 +751,9 @@ gs_plugin_shell_extensions_refresh (GsPlugin *plugin,
 				    GCancellable *cancellable,
 				    GError **error)
 {
+	GsPluginData *priv = gs_plugin_get_data (plugin);
 	AsApp *app;
+	gboolean repo_enabled;
 	const gchar *fn_test;
 	guint i;
 	g_autofree gchar *fn = NULL;
@@ -733,6 +776,14 @@ gs_plugin_shell_extensions_refresh (GsPlugin *plugin,
 				       "extensions-web.xml",
 				       NULL);
 	}
+
+	/* remove old appstream data if the repo is disabled */
+	repo_enabled = g_settings_get_boolean (priv->settings, "enable-shell-extensions-repo");
+	if (!repo_enabled) {
+		g_unlink (fn);
+		return TRUE;
+	}
+
 	file = g_file_new_for_path (fn);
 	if (g_file_query_exists (file, NULL)) {
 		guint age = gs_utils_get_file_age (file);
@@ -801,6 +852,20 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
+	/* disable repository */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
+		gs_app_set_state (app, AS_APP_STATE_REMOVING);
+		g_settings_set_boolean (priv->settings, "enable-shell-extensions-repo", FALSE);
+		/* remove appstream data */
+		ret = gs_plugin_shell_extensions_refresh (plugin,
+		                                          G_MAXUINT,
+		                                          GS_PLUGIN_REFRESH_FLAGS_METADATA,
+		                                          cancellable,
+		                                          error);
+		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		return ret;
+	}
+
 	/* remove */
 	gs_app_set_state (app, AS_APP_STATE_REMOVING);
 	uuid = gs_app_get_metadata_item (app, "shell-extensions::uuid");
@@ -851,6 +916,22 @@ gs_plugin_app_install (GsPlugin *plugin,
 		       gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
+	/* enable repository */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
+		gboolean ret;
+
+		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		g_settings_set_boolean (priv->settings, "enable-shell-extensions-repo", TRUE);
+		/* refresh metadata */
+		ret = gs_plugin_shell_extensions_refresh (plugin,
+		                                          G_MAXUINT,
+		                                          GS_PLUGIN_REFRESH_FLAGS_METADATA,
+		                                          cancellable,
+		                                          error);
+		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		return ret;
+	}
+
 	/* install */
 	uuid = gs_app_get_metadata_item (app, "shell-extensions::uuid");
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
@@ -891,15 +972,21 @@ gs_plugin_launch (GsPlugin *plugin,
 		  GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const gchar *uuid;
+	g_autofree gchar *uuid = NULL;
 	g_autoptr(GVariant) retval = NULL;
 
 	/* launch both PackageKit-installed and user-installed */
 	if (gs_app_get_kind (app) != AS_APP_KIND_SHELL_EXTENSION)
 		return TRUE;
 
-	/* install */
-	uuid = gs_app_get_metadata_item (app, "shell-extensions::uuid");
+	uuid = g_strdup (gs_app_get_metadata_item (app, "shell-extensions::uuid"));
+	if (uuid == NULL) {
+		const gchar *suffix = ".shell-extension";
+		const gchar *id = gs_app_get_id (app);
+		/* PackageKit-installed extension ID generated by appstream-builder */
+		if (g_str_has_suffix (id, suffix))
+			uuid = g_strndup (id, strlen (id) - strlen (suffix));
+	}
 	if (uuid == NULL) {
 		g_set_error (error,
 			     GS_PLUGIN_ERROR,
@@ -908,6 +995,7 @@ gs_plugin_launch (GsPlugin *plugin,
 			     gs_app_get_id (app));
 		return FALSE;
 	}
+	/* launch */
 	retval = g_dbus_proxy_call_sync (priv->proxy,
 					 "LaunchExtensionPrefs",
 					 g_variant_new ("(s)", uuid),

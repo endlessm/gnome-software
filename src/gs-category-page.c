@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -54,14 +55,17 @@ struct _GsCategoryPage
 	GtkWidget	*button_category_shell_extensions;
 	GtkWidget	*category_detail_box;
 	GtkWidget	*scrolledwindow_category;
+	GtkWidget	*subcats_filter_label;
 	GtkWidget	*subcats_filter_button_label;
 	GtkWidget	*subcats_filter_button;
 	GtkWidget	*popover_filter_box;
+	GtkWidget	*subcats_sort_label;
 	GtkWidget	*subcats_sort_button;
 	GtkWidget	*subcats_sort_button_label;
 	GtkWidget	*sort_rating_button;
 	GtkWidget	*sort_name_button;
 	GtkWidget	*featured_grid;
+	GtkWidget	*featured_heading;
 	GtkWidget	*header_filter_box;
 };
 
@@ -92,14 +96,12 @@ static void
 gs_category_page_sort_by_type (GsCategoryPage *self,
 			       SubcategorySortType sort_type)
 {
-	const gchar *button_label;
+	g_autofree gchar *button_label;
 
 	if (sort_type == SUBCATEGORY_SORT_TYPE_NAME)
-		/* TRANSLATORS: button text when apps have been sorted alphabetically */
-		button_label = _("Sorted by Name");
+		g_object_get (self->sort_name_button, "text", &button_label, NULL);
 	else
-		/* TRANSLATORS: button text when apps have been sorted by their rating */
-		button_label = _("Sorted by Rating");
+		g_object_get (self->sort_rating_button, "text", &button_label, NULL);
 
 	gtk_label_set_text (GTK_LABEL (self->subcats_sort_button_label), button_label);
 
@@ -120,6 +122,15 @@ sort_button_clicked (GtkButton *button, gpointer data)
 		gs_category_page_sort_by_type (self, SUBCATEGORY_SORT_TYPE_RATING);
 	else
 		gs_category_page_sort_by_type (self, SUBCATEGORY_SORT_TYPE_NAME);
+}
+
+static GtkWidget *
+make_addon_tile_for_category (GsApp *app, GsCategory *category)
+{
+	if (g_strcmp0 (gs_category_get_id (category), "fonts") == 0)
+		return gs_popular_tile_new (app);
+
+	return gs_summary_tile_new (app);
 }
 
 static void
@@ -149,10 +160,14 @@ gs_category_page_get_apps_cb (GObject *source_object,
 
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
-		tile = gs_popular_tile_new (app);
-		if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
-		    gs_utils_list_has_app_fuzzy (list, app))
-			gs_popular_tile_show_source (GS_POPULAR_TILE (tile), TRUE);
+		if (g_strcmp0 (gs_category_get_id (self->category), "addons") == 0) {
+			tile = make_addon_tile_for_category (app, self->subcategory);
+		} else {
+			tile = gs_popular_tile_new (app);
+			if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
+			    gs_utils_list_has_app_fuzzy (list, app))
+				gs_popular_tile_show_source (GS_POPULAR_TILE (tile), TRUE);
+		}
 
 		g_signal_connect (tile, "clicked",
 				  G_CALLBACK (app_tile_clicked), self);
@@ -239,6 +254,7 @@ gs_category_page_get_featured_apps_cb (GObject *source_object,
 
 	gs_container_remove_all (GTK_CONTAINER (self->featured_grid));
 	gtk_widget_hide (self->featured_grid);
+	gtk_widget_hide (self->featured_heading);
 
 	list = gs_plugin_loader_job_process_finish (plugin_loader,
 						    res,
@@ -267,6 +283,7 @@ gs_category_page_get_featured_apps_cb (GObject *source_object,
 	}
 
 	gtk_widget_show (self->featured_grid);
+	gtk_widget_show (self->featured_heading);
 }
 
 static void
@@ -321,20 +338,21 @@ gs_category_page_reload (GsPage *page)
 	         gs_category_get_id (self->category),
 	         gs_category_get_id (self->subcategory));
 
+	/* don't show the sort button on addons that cannot be rated */
 	if (g_strcmp0 (gs_category_get_id (self->category), "addons") == 0) {
-		if (g_strcmp0 (gs_category_get_id (self->subcategory), "shell-extensions") != 0) {
-			/* we don't want to show the sort button on the addons that
-			 * cannot be rated */
-			gtk_widget_set_visible (self->subcats_sort_button, FALSE);
-		} else {
-			/* show the shell extensions header and the sort button */
-			gtk_widget_set_visible (self->infobar_category_shell_extensions, TRUE);
-			gtk_widget_set_visible (self->subcats_sort_button, TRUE);
-		}
+		gtk_widget_set_visible (self->subcats_sort_label, FALSE);
+		gtk_widget_set_visible (self->subcats_sort_button, FALSE);
+
 	} else {
-		gtk_widget_set_visible (self->infobar_category_shell_extensions, FALSE);
+		gtk_widget_set_visible (self->subcats_sort_label, TRUE);
 		gtk_widget_set_visible (self->subcats_sort_button, TRUE);
 	}
+
+	/* show the shell extensions header */
+	if (g_strcmp0 (gs_category_get_id (self->subcategory), "shell-extensions") == 0)
+		gtk_widget_set_visible (self->infobar_category_shell_extensions, TRUE);
+	else
+		gtk_widget_set_visible (self->infobar_category_shell_extensions, FALSE);
 
 	if (self->sort_rating_handler_id > 0) {
 		g_signal_handler_disconnect (self->sort_rating_button,
@@ -355,7 +373,10 @@ gs_category_page_reload (GsPage *page)
 
 	count = MIN(30, gs_category_get_size (self->subcategory));
 	for (i = 0; i < count; i++) {
-		tile = gs_popular_tile_new (NULL);
+		if (g_strcmp0 (gs_category_get_id (self->category), "addons") == 0)
+			tile = make_addon_tile_for_category (NULL, self->subcategory);
+		else
+			tile = gs_popular_tile_new (NULL);
 		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
 		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
 	}
@@ -364,7 +385,6 @@ gs_category_page_reload (GsPage *page)
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORY_APPS,
 					 "category", self->subcategory,
-					 "max-results", 50,
 					 "filter-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
@@ -420,6 +440,7 @@ gs_category_page_create_filter (GsCategoryPage *self,
 	gboolean use_header_filter = gs_category_page_should_use_header_filter (category);
 
 	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
+	gs_container_remove_all (GTK_CONTAINER (self->header_filter_box));
 	gs_container_remove_all (GTK_CONTAINER (self->popover_filter_box));
 
 	children = gs_category_get_children (category);
@@ -464,16 +485,26 @@ gs_category_page_create_filter (GsCategoryPage *self,
 		filter_button_activated (first_subcat, self);
 
 	/* show only the adequate filter */
+	gtk_widget_set_visible (self->subcats_filter_label, !use_header_filter);
 	gtk_widget_set_visible (self->subcats_filter_button, !use_header_filter);
 	gtk_widget_set_visible (self->header_filter_box, use_header_filter);
 
-	/* set up the placeholders as having the featured category is a good
-	 * indicator that there will be featured apps */
 	if (featured_category_found) {
+		g_autofree gchar *featured_heading = NULL;
+
+		/* set up the placeholders as having the featured category is a good
+		 * indicator that there will be featured apps */
 		gs_category_page_set_featured_placeholders (self);
+
+		/* TRANSLATORS: This is a heading on the categories page. %s gets
+		   replaced by the category name, e.g. 'Graphics & Photography' */
+		featured_heading = g_strdup_printf (_("Featured %s"), gs_category_get_name (self->category));
+		gtk_label_set_label (GTK_LABEL (self->featured_heading), featured_heading);
+		gtk_widget_show (self->featured_heading);
 	} else {
 		gs_container_remove_all (GTK_CONTAINER (self->featured_grid));
 		gtk_widget_hide (self->featured_grid);
+		gtk_widget_hide (self->featured_heading);
 	}
 }
 
@@ -586,14 +617,17 @@ gs_category_page_class_init (GsCategoryPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, infobar_category_shell_extensions);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, button_category_shell_extensions);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, scrolledwindow_category);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_filter_label);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_filter_button_label);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_filter_button);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, popover_filter_box);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_sort_label);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_sort_button);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_sort_button_label);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, sort_rating_button);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, sort_name_button);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, featured_grid);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, featured_heading);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, header_filter_box);
 }
 

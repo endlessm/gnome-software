@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015-2016 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -101,8 +102,9 @@ gs_page_authenticate (GsPage *page,
 	g_autoptr(GError) error = NULL;
 
 	helper = g_slice_new0 (GsPageHelper);
+	helper->page = g_object_ref (page);
 	helper->callback = callback;
-	helper->callback = user_data = user_data;
+	helper->callback_data = user_data;
 
 	dialog = gs_auth_dialog_new (priv->plugin_loader,
 				     app,

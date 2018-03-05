@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2016 Joaquim Rocha <jrocha@endlessm.com>
  * Copyright (C) 2016-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -219,12 +220,11 @@ static void
 gs_flatpak_remove_prefixed_names (AsApp *app)
 {
 	GHashTable *names;
-	GList *l;
 	g_autoptr(GList) keys = NULL;
 
 	names = as_app_get_names (app);
 	keys = g_hash_table_get_keys (names);
-	for (l = keys; l != NULL; l = l->next) {
+	for (GList *l = keys; l != NULL; l = l->next) {
 		const gchar *locale = l->data;
 		const gchar *value = g_hash_table_lookup (names, locale);
 		if (value == NULL)
@@ -944,7 +944,8 @@ gs_flatpak_add_sources (GsFlatpak *self, GsAppList *list,
 					   error_local->message);
 				continue;
 			}
-			gs_app_set_state (related, AS_APP_STATE_INSTALLED);
+			if (gs_app_get_state (related) == AS_APP_STATE_UNKNOWN)
+				gs_app_set_state (related, AS_APP_STATE_INSTALLED);
 			gs_app_add_related (app, related);
 		}
 	}
@@ -1291,7 +1292,7 @@ gs_flatpak_add_updates_pending (GsFlatpak *self, GsAppList *list,
 {
 	g_autoptr(GPtrArray) xrefs = NULL;
 
-	/* get all the updatable apps and runtimes (no network I/O) */
+	/* get all the updatable apps and runtimes */
 	xrefs = flatpak_installation_list_installed_refs_for_update (self->installation,
 								     cancellable,
 								     error);
@@ -2326,11 +2327,17 @@ gs_flatpak_refine_wildcard (GsFlatpak *self, GsApp *app,
 	/* find all apps when matching any prefixes */
 	items = as_store_get_apps_by_id (self->store, id);
 	for (i = 0; i < items->len; i++) {
-		AsApp *item = NULL;
+		AsApp *item = g_ptr_array_index (items, i);
 		g_autoptr(GsApp) new = NULL;
 
+		/* is compatible */
+		if (!as_utils_unique_id_equal (gs_app_get_unique_id (app),
+					       as_app_get_unique_id (item))) {
+			g_debug ("does not match unique ID constraints");
+			continue;
+		}
+
 		/* does the app have an installation method */
-		item = g_ptr_array_index (items, i);
 		if (as_app_get_bundle_default (item) == NULL) {
 			g_debug ("not using %s for wildcard as no bundle",
 				 as_app_get_id (item));

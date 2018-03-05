@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -60,6 +61,7 @@ packagekit_status_enum_to_plugin_status (PkStatusEnum status)
 		plugin_status = GS_PLUGIN_STATUS_DOWNLOADING;
 		break;
 	case PK_STATUS_ENUM_INSTALL:
+	case PK_STATUS_ENUM_UPDATE:
 		plugin_status = GS_PLUGIN_STATUS_INSTALLING;
 		break;
 	case PK_STATUS_ENUM_CLEANUP:
@@ -351,7 +353,7 @@ gs_plugin_packagekit_resolve_packages_app (GsPlugin *plugin,
 		/* we have less packages returned than source packages */
 		tmp = gs_app_to_string (app);
 		g_debug ("Failed to find all packages for:\n%s", tmp);
-		gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 	}
 }
 

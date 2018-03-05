@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -70,7 +71,6 @@ gs_plugin_detect_reload_apps (GsPlugin *plugin)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	AsApp *item;
 	GsApp *app;
-	GList *l;
 	guint cnt = 0;
 	g_autoptr(GHashTable) app_hash = NULL;
 	g_autoptr(GList) keys = NULL;
@@ -79,7 +79,7 @@ gs_plugin_detect_reload_apps (GsPlugin *plugin)
 	/* find packages that have been added */
 	app_hash = gs_plugin_appstream_create_app_hash (priv->store);
 	keys = g_hash_table_get_keys (app_hash);
-	for (l = keys; l != NULL; l = l->next) {
+	for (GList *l = keys; l != NULL; l = l->next) {
 		const gchar *key = l->data;
 		item = g_hash_table_lookup (priv->app_hash_old, key);
 		if (item == NULL) {
@@ -94,7 +94,7 @@ gs_plugin_detect_reload_apps (GsPlugin *plugin)
 
 	/* find packages that have been removed */
 	keys_old = g_hash_table_get_keys (priv->app_hash_old);
-	for (l = keys_old; l != NULL; l = l->next) {
+	for (GList *l = keys_old; l != NULL; l = l->next) {
 		const gchar *key = l->data;
 		item = g_hash_table_lookup (app_hash, key);
 		if (item == NULL) {
@@ -178,9 +178,6 @@ gs_plugin_initialize (GsPlugin *plugin)
 				   AS_APP_SEARCH_MATCH_KEYWORD |
 				   AS_APP_SEARCH_MATCH_ID);
 
-	/* set plugin flags */
-	gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_GLOBAL_CACHE);
-
 	/* need package name */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "dpkg");
 
@@ -209,7 +206,6 @@ gs_plugin_appstream_get_origins_hash (GPtrArray *array)
 {
 	AsApp *app;
 	GHashTable *origins = NULL;
-	GList *l;
 	const gchar *tmp;
 	gdouble perc;
 	guint *cnt;
@@ -234,7 +230,7 @@ gs_plugin_appstream_get_origins_hash (GPtrArray *array)
 
 	/* convert the cnt to a percentage */
 	keys = g_hash_table_get_keys (origins);
-	for (l = keys; l != NULL; l = l->next) {
+	for (GList *l = keys; l != NULL; l = l->next) {
 		tmp = l->data;
 		if (tmp == NULL || tmp[0] == '\0')
 			continue;
@@ -527,11 +523,17 @@ gs_plugin_refine_wildcard (GsPlugin *plugin,
 	/* find all apps when matching any prefixes */
 	items = as_store_get_apps_by_id (priv->store, id);
 	for (i = 0; i < items->len; i++) {
-		AsApp *item = NULL;
+		AsApp *item = g_ptr_array_index (items, i);
 		g_autoptr(GsApp) new = NULL;
 
+		/* is compatible */
+		if (!as_utils_unique_id_equal (gs_app_get_unique_id (app),
+					       as_app_get_unique_id (item))) {
+			g_debug ("does not match unique ID constraints");
+			continue;
+		}
+
 		/* does the app have an installation method */
-		item = g_ptr_array_index (items, i);
 		if (as_app_get_pkgname_default (item) == NULL &&
 		    as_app_get_bundle_default (item) == NULL) {
 			g_debug ("not using %s for wildcard as "
@@ -660,41 +662,6 @@ gs_plugin_add_recent (GsPlugin *plugin,
 					cancellable, error);
 }
 
-static gboolean
-gs_plugin_appstream_refresh_url (GsPlugin *plugin,
-				 const gchar *url,
-				 guint cache_age,
-				 GCancellable *cancellable,
-				 GError **error)
-{
-	guint file_age;
-	g_autofree gchar *basename = NULL;
-	g_autofree gchar *fullpath = NULL;
-	g_autoptr(GFile) file = NULL;
-	g_autoptr(GsApp) app_dl = gs_app_new (gs_plugin_get_name (plugin));
-
-	/* check age */
-	basename = g_path_get_basename (url);
-	fullpath = g_build_filename (g_get_user_data_dir (),
-				     "app-info",
-				     "xmls",
-				     basename,
-				     NULL);
-	file = g_file_new_for_path (fullpath);
-	file_age = gs_utils_get_file_age (file);
-	if (file_age < cache_age) {
-		g_debug ("skipping %s: cache age is older than file", fullpath);
-		return TRUE;
-	}
-
-	/* download file */
-	gs_app_set_summary_missing (app_dl,
-				    /* TRANSLATORS: status text when downloading */
-				    _("Downloading extra metadata files…"));
-	return gs_plugin_download_file (plugin, app_dl, url, fullpath,
-					cancellable, error);
-}
-
 gboolean
 gs_plugin_refresh (GsPlugin *plugin,
 		   guint cache_age,
@@ -703,39 +670,10 @@ gs_plugin_refresh (GsPlugin *plugin,
 		   GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_auto(GStrv) appstream_urls = NULL;
 
 	/* ensure the token cache */
 	if (cache_age == G_MAXUINT)
 		as_store_load_search_cache (priv->store);
-
-	if ((flags & GS_PLUGIN_REFRESH_FLAGS_METADATA) == 0)
-		return TRUE;
-
-	/* check we want per-user */
-	if (g_settings_get_boolean (priv->settings,
-				    "external-appstream-system-wide")) {
-		g_debug ("not per-user for external appstream");
-		return TRUE;
-	}
-	appstream_urls = g_settings_get_strv (priv->settings,
-					      "external-appstream-urls");
-	for (guint i = 0; appstream_urls[i] != NULL; ++i) {
-		g_autoptr(GError) local_error = NULL;
-		if (!g_str_has_prefix (appstream_urls[i], "https")) {
-			g_warning ("cannot use AppStream source %s: use https://",
-				   appstream_urls[i]);
-			continue;
-		}
-		if (!gs_plugin_appstream_refresh_url (plugin,
-						      appstream_urls[i],
-						      cache_age,
-						      cancellable,
-						      &local_error)) {
-			g_warning ("failed to update external AppStream file: %s",
-				   local_error->message);
-		}
-	}
 
 	return TRUE;
 }

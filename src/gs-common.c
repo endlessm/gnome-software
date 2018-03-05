@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -181,7 +182,6 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 		{ "Proprietary",	GS_APP_LICENSE_NONFREE },
 		{ NULL, 0 }
 	};
-	g_autofree gchar *origin_url = NULL;
 	g_autoptr(GSettings) settings = NULL;
 	g_autoptr(GString) body = NULL;
 	g_autoptr(GString) title = NULL;
@@ -220,8 +220,6 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 					 NULL);
 	gtk_message_dialog_set_markup (GTK_MESSAGE_DIALOG (dialog), title->str);
 
-	/* FIXME: get the URL somehow... */
-	origin_url = g_strdup_printf ("<a href=\"\">%s</a>", gs_app_get_origin (app));
 	body = g_string_new ("");
 	if (hint & GS_APP_LICENSE_NONFREE) {
 		g_string_append_printf (body,
@@ -233,7 +231,7 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 					  "free and open source software</a>, "
 					  "and is provided by “%s”."),
 					gs_app_get_name (app),
-					origin_url);
+					gs_app_get_origin (app));
 	} else {
 		g_string_append_printf (body,
 					/* TRANSLATORS: the replacements are as follows:
@@ -241,7 +239,7 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 					 * 2. Software repository name, e.g. fedora-optional */
 					_("%s is provided by “%s”."),
 					gs_app_get_name (app),
-					origin_url);
+					gs_app_get_origin (app));
 	}
 
 	/* tell the use what needs to be done */

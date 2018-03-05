@@ -49,6 +49,9 @@ gs_appstream_create_app (GsPlugin *plugin, AsApp *item, GError **error)
 	if (app == NULL) {
 		app = gs_app_new (NULL);
 		gs_app_set_from_unique_id (app, unique_id);
+		/* clear origin set from unique_id: appstream origin goes to
+		 * GsApp's origin-appstream field instead */
+		gs_app_set_origin (app, NULL);
 		gs_app_set_metadata (app, "GnomeSoftware::Creator",
 				     gs_plugin_get_name (plugin));
 		if (!gs_appstream_refine_app (plugin, app, item, error)) {
@@ -304,12 +307,11 @@ static void
 gs_appstream_copy_metadata (GsApp *app, AsApp *item)
 {
 	GHashTable *hash;
-	GList *l;
 	g_autoptr(GList) keys = NULL;
 
 	hash = as_app_get_metadata (item);
 	keys = g_hash_table_get_keys (hash);
-	for (l = keys; l != NULL; l = l->next) {
+	for (GList *l = keys; l != NULL; l = l->next) {
 		const gchar *key = l->data;
 		const gchar *value = g_hash_table_lookup (hash, key);
 		if (gs_app_get_metadata_item (app, key) != NULL)
@@ -619,10 +621,9 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	urls = as_app_get_urls (item);
 	if (g_hash_table_size (urls) > 0 &&
 	    gs_app_get_url (app, AS_URL_KIND_HOMEPAGE) == NULL) {
-		GList *l;
 		g_autoptr(GList) keys = NULL;
 		keys = g_hash_table_get_keys (urls);
-		for (l = keys; l != NULL; l = l->next) {
+		for (GList *l = keys; l != NULL; l = l->next) {
 			gs_app_set_url (app,
 					as_url_kind_from_string (l->data),
 					g_hash_table_lookup (urls, l->data));
@@ -840,7 +841,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	/* we have an origin in the XML */
 	if (gs_app_get_origin (app) == NULL &&
 	    gs_appstream_origin_valid (as_app_get_origin (item)))
-		gs_app_set_origin (app, as_app_get_origin (item));
+		gs_app_set_origin_appstream (app, as_app_get_origin (item));
 
 	/* is there any update information */
 	if (!gs_appstream_refine_app_updates (plugin, app, item, error))

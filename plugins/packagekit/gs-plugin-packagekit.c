@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -144,6 +145,7 @@ gs_plugin_add_sources (GsPlugin *plugin,
 
 	/* ask PK for the repo details */
 	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NOT_SOURCE,
+					 PK_FILTER_ENUM_NOT_DEVELOPMENT,
 					 PK_FILTER_ENUM_NOT_SUPPORTED,
 					 -1);
 	results = pk_client_get_repo_list (PK_CLIENT(priv->task),
@@ -274,13 +276,8 @@ gs_plugin_app_install (GsPlugin *plugin,
 		return TRUE;
 
 	/* enable repo */
-	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE &&
-	    gs_app_get_source_ids (app)->len == 0) {
-		/* KIND_SOURCE can be both a repository, or a package that
-		 * includes .repo files. If it has no source ids, then it's the
-		 * former and we can directly enable it here. */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
 		return gs_plugin_repo_enable (plugin, app, cancellable, error);
-	}
 
 	/* queue for install if installation needs the network */
 	if (!gs_plugin_get_network_available (plugin)) {
@@ -305,13 +302,14 @@ gs_plugin_app_install (GsPlugin *plugin,
 		if (!gs_plugin_app_origin_repo_enable (plugin, app, cancellable, error))
 			return FALSE;
 
+		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+
 		/* FIXME: this is a hack, to allow PK time to re-initialize
 		 * everything in order to match an actual result. The root cause
 		 * is probably some kind of hard-to-debug race in the daemon. */
 		g_usleep (G_USEC_PER_SEC * 3);
 
 		/* actually install the package */
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		results = pk_task_install_packages_sync (priv->task,
 							 package_ids,
 							 cancellable,
@@ -623,6 +621,9 @@ gs_plugin_launch (GsPlugin *plugin,
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+	/* these are handled by the shell extensions plugin */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SHELL_EXTENSION)
 		return TRUE;
 	return gs_plugin_app_launch (plugin, app, error);
 }

@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -163,6 +164,78 @@ gs_utils_error_func (void)
 }
 
 static void
+gs_utils_parse_evr_func (void)
+{
+	gboolean ret;
+
+	{
+		g_autofree gchar *epoch = NULL;
+		g_autofree gchar *version = NULL;
+		g_autofree gchar *release = NULL;
+
+		ret = gs_utils_parse_evr ("3.26.0-1.fc27", &epoch, &version, &release);
+		g_assert (ret);
+		g_assert_cmpstr (epoch, ==, "0");
+		g_assert_cmpstr (version, ==, "3.26.0");
+		g_assert_cmpstr (release, ==, "1.fc27");
+	}
+
+	{
+		g_autofree gchar *epoch = NULL;
+		g_autofree gchar *version = NULL;
+		g_autofree gchar *release = NULL;
+
+		ret = gs_utils_parse_evr ("1:3.26.0-1.fc27", &epoch, &version, &release);
+		g_assert (ret);
+		g_assert_cmpstr (epoch, ==, "1");
+		g_assert_cmpstr (version, ==, "3.26.0");
+		g_assert_cmpstr (release, ==, "1.fc27");
+	}
+
+	{
+		g_autofree gchar *epoch = NULL;
+		g_autofree gchar *version = NULL;
+		g_autofree gchar *release = NULL;
+
+		ret = gs_utils_parse_evr ("234", &epoch, &version, &release);
+		g_assert (ret);
+		g_assert_cmpstr (epoch, ==, "0");
+		g_assert_cmpstr (version, ==, "234");
+		g_assert_cmpstr (release, ==, "0");
+	}
+
+	{
+		g_autofree gchar *epoch = NULL;
+		g_autofree gchar *version = NULL;
+		g_autofree gchar *release = NULL;
+
+		ret = gs_utils_parse_evr ("3:1.6~git20131207+dfsg-2ubuntu1~14.04.3", &epoch, &version, &release);
+		g_assert (ret);
+		g_assert_cmpstr (epoch, ==, "3");
+		g_assert_cmpstr (version, ==, "1.6~git20131207+dfsg");
+		g_assert_cmpstr (release, ==, "2ubuntu1~14.04.3");
+	}
+
+	{
+		g_autofree gchar *epoch = NULL;
+		g_autofree gchar *version = NULL;
+		g_autofree gchar *release = NULL;
+
+		ret = gs_utils_parse_evr ("1-2-3-4-5-6", &epoch, &version, &release);
+		g_assert (!ret);
+	}
+
+	{
+		g_autofree gchar *epoch = NULL;
+		g_autofree gchar *version = NULL;
+		g_autofree gchar *release = NULL;
+
+		ret = gs_utils_parse_evr ("", &epoch, &version, &release);
+		g_assert (!ret);
+	}
+}
+
+static void
 gs_plugin_download_rewrite_func (void)
 {
 	g_autofree gchar *css = NULL;
@@ -189,42 +262,6 @@ gs_plugin_download_rewrite_func (void)
 						   &error);
 	g_assert_no_error (error);
 	g_assert (css != NULL);
-}
-
-static void
-gs_plugin_global_cache_func (void)
-{
-	const gchar *unique_id;
-	g_autoptr(GsPlugin) plugin1 = NULL;
-	g_autoptr(GsPlugin) plugin2 = NULL;
-	g_autoptr(GsAppList) list = gs_app_list_new ();
-	g_autoptr(GsApp) app = gs_app_new ("gimp.desktop");
-	g_autoptr(GsApp) app1 = NULL;
-	g_autoptr(GsApp) app2 = NULL;
-
-	plugin1 = gs_plugin_new ();
-	gs_plugin_set_global_cache (plugin1, list);
-
-	plugin2 = gs_plugin_new ();
-	gs_plugin_set_global_cache (plugin2, list);
-
-	/* both plugins not opted into the global cache */
-	unique_id = gs_app_get_unique_id (app);
-	gs_plugin_cache_add (plugin1, unique_id, app);
-	g_assert (gs_plugin_cache_lookup (plugin2, unique_id) == NULL);
-	app1 = gs_plugin_cache_lookup (plugin1, unique_id);
-	g_assert (app1 != NULL);
-
-	/* one plugin opted in */
-	gs_plugin_add_flags (plugin1, GS_PLUGIN_FLAGS_GLOBAL_CACHE);
-	gs_plugin_cache_add (plugin1, unique_id, app);
-	g_assert (gs_plugin_cache_lookup (plugin2, unique_id) == NULL);
-
-	/* both plugins opted in */
-	gs_plugin_add_flags (plugin2, GS_PLUGIN_FLAGS_GLOBAL_CACHE);
-	gs_plugin_cache_add (plugin1, unique_id, app);
-	app2 = gs_plugin_cache_lookup (plugin2, unique_id);
-	g_assert (app2 != NULL);
 }
 
 static void
@@ -661,6 +698,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/gnome-software/lib/utils{error}", gs_utils_error_func);
 	g_test_add_func ("/gnome-software/lib/utils{cache}", gs_utils_cache_func);
 	g_test_add_func ("/gnome-software/lib/utils{append-kv}", gs_utils_append_kv_func);
+	g_test_add_func ("/gnome-software/lib/utils{parse-evr}", gs_utils_parse_evr_func);
 	g_test_add_func ("/gnome-software/lib/os-release", gs_os_release_func);
 	g_test_add_func ("/gnome-software/lib/app", gs_app_func);
 	g_test_add_func ("/gnome-software/lib/app{addons}", gs_app_addons_func);
@@ -668,7 +706,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/gnome-software/lib/app{thread}", gs_app_thread_func);
 	g_test_add_func ("/gnome-software/lib/plugin", gs_plugin_func);
 	g_test_add_func ("/gnome-software/lib/plugin{download-rewrite}", gs_plugin_download_rewrite_func);
-	g_test_add_func ("/gnome-software/lib/plugin{global-cache}", gs_plugin_global_cache_func);
 	g_test_add_func ("/gnome-software/lib/auth{secret}", gs_auth_secret_func);
 
 	return g_test_run ();

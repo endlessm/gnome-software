@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -111,7 +112,6 @@ GsPlugin	*gs_plugin_loader_find_plugin		(GsPluginLoader	*plugin_loader,
 							 const gchar	*plugin_name);
 void            gs_plugin_loader_set_max_parallel_ops  (GsPluginLoader *plugin_loader,
                                                         guint           num_ops);
-GsAppList	*gs_plugin_loader_get_global_cache	(GsPluginLoader	*plugin_loader);
 
 
 G_END_DECLS

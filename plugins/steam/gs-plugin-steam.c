@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2015-2016 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2017-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -225,10 +226,9 @@ gs_plugin_steam_dump_apps (GPtrArray *apps)
 
 	for (i = 0; i < apps->len; i++) {
 		g_autoptr(GList) keys = NULL;
-		GList *l;
 		app = g_ptr_array_index (apps, i);
 		keys = g_hash_table_get_keys (app);
-		for (l = keys; l != NULL; l = l->next) {
+		for (GList *l = keys; l != NULL; l = l->next) {
 			const gchar *tmp;
 			GVariant *value;
 			tmp = l->data;

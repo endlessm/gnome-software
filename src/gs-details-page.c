@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -72,9 +73,9 @@ struct _GsDetailsPage
 	GtkWidget		*box_details;
 	GtkWidget		*box_details_description;
 	GtkWidget		*box_progress;
+	GtkWidget		*box_progress2;
 	GtkWidget		*star;
 	GtkWidget		*label_review_count;
-	GtkWidget		*box_details_screenshot;
 	GtkWidget		*box_details_screenshot_main;
 	GtkWidget		*box_details_screenshot_thumbnails;
 	GtkWidget		*box_details_license_list;
@@ -353,6 +354,18 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 		break;
 	}
 
+	if (gs_app_get_kind (self->app) == AS_APP_KIND_SHELL_EXTENSION) {
+		gtk_button_set_label (GTK_BUTTON (self->button_details_launch),
+		                      /* TRANSLATORS: A label for a button to show the settings for
+		                         the selected shell extension. */
+		                      _("Extension Settings"));
+	} else {
+		gtk_button_set_label (GTK_BUTTON (self->button_details_launch),
+		                      /* TRANSLATORS: A label for a button to execute the selected
+		                         application. */
+		                      _("_Launch"));
+	}
+
 	/* don't show the launch and shortcut buttons if the app doesn't have a desktop ID */
 	if (gs_app_get_id (self->app) == NULL) {
 		gtk_widget_set_visible (self->button_details_launch, FALSE);
@@ -506,10 +519,13 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	case AS_APP_STATE_REMOVING:
 		gtk_spinner_start (GTK_SPINNER (self->spinner_remove));
 		gtk_widget_set_visible (self->spinner_remove, TRUE);
+		/* align text together with the spinner if we're showing it */
+		gtk_widget_set_halign (self->box_progress2, GTK_ALIGN_START);
 		break;
 	default:
 		gtk_widget_set_visible (self->spinner_remove, FALSE);
 		gtk_spinner_stop (GTK_SPINNER (self->spinner_remove));
+		gtk_widget_set_halign (self->box_progress2, GTK_ALIGN_CENTER);
 		break;
 	}
 
@@ -1059,26 +1075,26 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 				gs_app_has_quirk (self->app, AS_APP_QUIRK_COMPULSORY) &&
 				gs_app_get_state (self->app) == AS_APP_STATE_AVAILABLE_LOCAL);
 
-	/* is this a repo-release */
-	switch (gs_app_get_kind (self->app)) {
-	case AS_APP_KIND_SOURCE:
-		gtk_widget_set_visible (self->infobar_details_repo, gs_app_get_state (self->app) == AS_APP_STATE_AVAILABLE_LOCAL);
-		break;
-	default:
-		gtk_widget_set_visible (self->infobar_details_repo, FALSE);
-		break;
-	}
-
-	/* installing a app with a repo file */
 	switch (gs_app_get_kind (self->app)) {
 	case AS_APP_KIND_DESKTOP:
+		/* installing an app with a repo file */
 		gtk_widget_set_visible (self->infobar_details_app_repo,
+					gs_app_has_quirk (self->app,
+							  AS_APP_QUIRK_HAS_SOURCE) &&
+					gs_app_get_state (self->app) == AS_APP_STATE_AVAILABLE_LOCAL);
+		gtk_widget_set_visible (self->infobar_details_repo, FALSE);
+		break;
+	case AS_APP_KIND_GENERIC:
+		/* installing a repo-release package */
+		gtk_widget_set_visible (self->infobar_details_app_repo, FALSE);
+		gtk_widget_set_visible (self->infobar_details_repo,
 					gs_app_has_quirk (self->app,
 							  AS_APP_QUIRK_HAS_SOURCE) &&
 					gs_app_get_state (self->app) == AS_APP_STATE_AVAILABLE_LOCAL);
 		break;
 	default:
 		gtk_widget_set_visible (self->infobar_details_app_repo, FALSE);
+		gtk_widget_set_visible (self->infobar_details_repo, FALSE);
 		break;
 	}
 
@@ -1867,12 +1883,11 @@ gs_details_page_app_cancel_button_cb (GtkWidget *widget, GsDetailsPage *self)
 static void
 gs_details_page_app_install_button_cb (GtkWidget *widget, GsDetailsPage *self)
 {
-	GList *l;
 	g_autoptr(GList) addons = NULL;
 
 	/* Mark ticked addons to be installed together with the app */
 	addons = gtk_container_get_children (GTK_CONTAINER (self->list_box_addons));
-	for (l = addons; l; l = l->next) {
+	for (GList *l = addons; l; l = l->next) {
 		if (gs_app_addon_row_get_selected (l->data)) {
 			GsApp *addon = gs_app_addon_row_get_addon (l->data);
 
@@ -2393,9 +2408,9 @@ gs_details_page_class_init (GsDetailsPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_description);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_progress);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_progress2);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, star);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_review_count);
-	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot_main);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot_thumbnails);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_license_list);

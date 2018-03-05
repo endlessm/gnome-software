@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2012 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -52,8 +53,6 @@ void		 gs_app_row_set_show_sandbox		(GsAppRow	*app_row,
 							 gboolean	 show_sandbox);
 void		 gs_app_row_set_show_source		(GsAppRow	*app_row,
 							 gboolean	 show_source);
-void		 gs_app_row_set_show_codec		(GsAppRow	*app_row,
-							 gboolean	 show_codec);
 void		 gs_app_row_set_show_update		(GsAppRow	*app_row,
 							 gboolean	 show_update);
 void		 gs_app_row_set_selectable 		(GsAppRow	*app_row,

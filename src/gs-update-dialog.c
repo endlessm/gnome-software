@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -57,6 +58,7 @@ struct _GsUpdateDialog
 	GtkWidget	*label_summary;
 	GtkWidget	*list_boxes[GS_UPDATE_DIALOG_SECTION_LAST];
 	GtkWidget	*list_box_installed_updates;
+	GtkWidget	*os_update_description;
 	GtkWidget	*os_update_box;
 	GtkWidget	*scrolledwindow;
 	GtkWidget	*scrolledwindow_details;
@@ -349,13 +351,37 @@ create_app_row (GsApp *app)
 }
 
 static gboolean
-is_downgrade (const gchar *version_current,
-              const gchar *version_update)
+is_downgrade (const gchar *evr1,
+              const gchar *evr2)
 {
-	gint rc = as_utils_vercmp (version_current, version_update);
-	if (rc == G_MAXINT)
+	gint rc;
+	g_autofree gchar *epoch1 = NULL;
+	g_autofree gchar *epoch2 = NULL;
+	g_autofree gchar *version1 = NULL;
+	g_autofree gchar *version2 = NULL;
+	g_autofree gchar *release1 = NULL;
+	g_autofree gchar *release2 = NULL;
+
+	/* split into epoch-version-release */
+	if (!gs_utils_parse_evr (evr1, &epoch1, &version1, &release1))
 		return FALSE;
-	return rc > 0;
+	if (!gs_utils_parse_evr (evr2, &epoch2, &version2, &release2))
+		return FALSE;
+
+	/* ignore epoch here as it's a way to make downgrades happen and not
+	 * part of the semantic version */
+
+	/* check version */
+	rc = as_utils_vercmp (version1, version2);
+	if (rc != 0)
+		return rc > 0;
+
+	/* check release */
+	rc = as_utils_vercmp (release1, release2);
+	if (rc != 0)
+		return rc > 0;
+
+	return FALSE;
 }
 
 static GsUpdateDialogSection
@@ -523,6 +549,9 @@ gs_update_dialog_show_update_details (GsUpdateDialog *dialog, GsApp *app)
 		GsApp *app_related;
 		GsUpdateDialogSection section;
 		GtkWidget *row;
+
+		gtk_label_set_text (GTK_LABEL (dialog->os_update_description),
+		                    gs_app_get_description (app));
 
 		/* clear existing data */
 		for (guint i = 0; i < GS_UPDATE_DIALOG_SECTION_LAST; i++) {
@@ -705,6 +734,7 @@ gs_update_dialog_class_init (GsUpdateDialogClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, label_name);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, label_summary);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, list_box_installed_updates);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, os_update_description);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, os_update_box);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, scrolledwindow);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, scrolledwindow_details);

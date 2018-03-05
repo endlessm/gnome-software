@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -274,15 +275,14 @@ app_row_button_clicked_cb (GsAppRow *app_row,
 }
 
 static void
-gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, SearchData *search_data)
+gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, GsAppList *list, SearchData *search_data)
 {
 	GtkWidget *app_row;
-	GList *l;
-	g_autoptr(GList) list = NULL;
+	g_autoptr(GList) existing_apps = NULL;
 
 	/* Don't add same app twice */
-	list = gtk_container_get_children (GTK_CONTAINER (self->list_box_results));
-	for (l = list; l != NULL; l = l->next) {
+	existing_apps = gtk_container_get_children (GTK_CONTAINER (self->list_box_results));
+	for (GList *l = existing_apps; l != NULL; l = l->next) {
 		GsApp *existing_app;
 
 		existing_app = gs_app_row_get_app (GS_APP_ROW (l->data));
@@ -292,7 +292,11 @@ gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, SearchData *search_data)
 	}
 
 	app_row = gs_app_row_new (app);
-	gs_app_row_set_show_codec (GS_APP_ROW (app_row), TRUE);
+	gs_app_row_set_colorful (GS_APP_ROW (app_row), TRUE);
+	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
+	if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
+	    gs_utils_list_has_app_fuzzy (list, app))
+		gs_app_row_set_show_source (GS_APP_ROW (app_row), TRUE);
 
 	g_object_set_data_full (G_OBJECT (app_row), "missing-title", g_strdup (search_data->title), g_free);
 
@@ -434,7 +438,6 @@ create_missing_app (SearchData *search_data)
 static gchar *
 build_no_results_label (GsExtrasPage *self)
 {
-	GList *l;
 	GsApp *app = NULL;
 	guint num;
 	g_autofree gchar *codec_titles = NULL;
@@ -448,7 +451,7 @@ build_no_results_label (GsExtrasPage *self)
 	g_assert (num > 0);
 
 	array = g_ptr_array_new ();
-	for (l = list; l != NULL; l = l->next) {
+	for (GList *l = list; l != NULL; l = l->next) {
 		app = gs_app_row_get_app (GS_APP_ROW (l->data));
 		g_ptr_array_add (array,
 		                 g_object_get_data (G_OBJECT (l->data), "missing-title"));
@@ -473,7 +476,6 @@ static void
 show_search_results (GsExtrasPage *self)
 {
 	GsApp *app;
-	GList *l;
 	guint n_children;
 	guint n_missing;
 	g_autoptr(GList) list = NULL;
@@ -483,7 +485,7 @@ show_search_results (GsExtrasPage *self)
 
 	/* count the number of rows with missing codecs */
 	n_missing = 0;
-	for (l = list; l != NULL; l = l->next) {
+	for (GList *l = list; l != NULL; l = l->next) {
 		app = gs_app_row_get_app (GS_APP_ROW (l->data));
 		if (g_strcmp0 (gs_app_get_id (app), "missing-codec") == 0) {
 			n_missing++;
@@ -553,7 +555,7 @@ search_files_cb (GObject *source_object,
 		GsApp *app = gs_app_list_index (list, i);
 
 		g_debug ("%s\n\n", gs_app_to_string (app));
-		gs_extras_page_add_app (self, app, search_data);
+		gs_extras_page_add_app (self, app, list, search_data);
 	}
 
 	self->pending_search_cnt--;
@@ -600,7 +602,7 @@ file_to_app_cb (GObject *source_object,
 	}
 
 	g_debug ("%s\n\n", gs_app_to_string (app));
-	gs_extras_page_add_app (self, app, search_data);
+	gs_extras_page_add_app (self, app, list, search_data);
 
 	self->pending_search_cnt--;
 
@@ -648,7 +650,7 @@ get_search_what_provides_cb (GObject *source_object,
 		GsApp *app = gs_app_list_index (list, i);
 
 		g_debug ("%s\n\n", gs_app_to_string (app));
-		gs_extras_page_add_app (self, app, search_data);
+		gs_extras_page_add_app (self, app, list, search_data);
 	}
 
 	self->pending_search_cnt--;

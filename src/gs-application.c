@@ -2,6 +2,7 @@
  *
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -105,10 +106,9 @@ gboolean
 gs_application_has_active_window (GsApplication *application)
 {
 	GList *windows;
-	GList *l;
 
 	windows = gtk_application_get_windows (GTK_APPLICATION (application));
-	for (l = windows; l != NULL; l = l->next) {
+	for (GList *l = windows; l != NULL; l = l->next) {
 		if (gtk_window_is_active (GTK_WINDOW (l->data)))
 			return TRUE;
 	}
@@ -249,7 +249,6 @@ gs_application_shell_loaded_cb (GsShell *shell, GsApplication *app)
 {
 	gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
 	app->shell_loaded_handler_id = 0;
-	gs_application_show_first_run_dialog (app);
 }
 
 static void
@@ -327,12 +326,13 @@ about_activated (GSimpleAction *action,
 	const gchar *authors[] = {
 		"Richard Hughes",
 		"Matthias Clasen",
+		"Kalev Lember",
 		"Allan Day",
 		"Ryan Lerch",
 		"William Jon McCann",
 		NULL
 	};
-	const gchar *copyright = "Copyright \xc2\xa9 2016 Richard Hughes, Matthias Clasen";
+	const gchar *copyright = "Copyright \xc2\xa9 2016 Richard Hughes, Matthias Clasen, Kalev Lember";
 	GtkAboutDialog *dialog;
 	g_autofree gchar *title = NULL;
 
@@ -959,6 +959,8 @@ gs_application_activate (GApplication *application)
 		gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
 
 	gs_shell_activate (GS_APPLICATION (application)->shell);
+
+	gs_application_show_first_run_dialog (GS_APPLICATION (application));
 }
 
 static void

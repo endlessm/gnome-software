@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2007-2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -45,7 +46,6 @@ typedef struct
 	GPtrArray		*locations;
 	gchar			*locale;
 	gchar			*language;
-	GsAppList		*global_cache;
 	AsProfile		*profile;
 	SoupSession		*soup_session;
 	GPtrArray		*auth_array;
@@ -256,8 +256,14 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GsPluginLoaderHelper, gs_plugin_loader_helper_free
 static gint
 gs_plugin_loader_app_sort_name_cb (GsApp *app1, GsApp *app2, gpointer user_data)
 {
-	return g_strcmp0 (gs_app_get_name (app1),
-			  gs_app_get_name (app2));
+	g_autofree gchar *casefolded_name1 = NULL;
+	g_autofree gchar *casefolded_name2 = NULL;
+
+	if (gs_app_get_name (app1) != NULL)
+		casefolded_name1 = g_utf8_casefold (gs_app_get_name (app1), -1);
+	if (gs_app_get_name (app2) != NULL)
+		casefolded_name2 = g_utf8_casefold (gs_app_get_name (app2), -1);
+	return g_strcmp0 (casefolded_name1, casefolded_name2);
 }
 
 GsPlugin *
@@ -840,6 +846,12 @@ gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 }
 
 static gboolean
+gs_plugin_loader_app_is_non_wildcard (GsApp *app, gpointer user_data)
+{
+	return !gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+}
+
+static gboolean
 gs_plugin_loader_run_refine_internal (GsPluginLoaderHelper *helper,
 				      GsAppList *list,
 				      GCancellable *cancellable,
@@ -950,6 +962,15 @@ gs_plugin_loader_run_refine_internal (GsPluginLoaderHelper *helper,
 }
 
 static gboolean
+app_thaw_notify_idle (gpointer data)
+{
+	GsApp *app = GS_APP (data);
+	g_object_thaw_notify (G_OBJECT (app));
+	g_object_unref (app);
+	return G_SOURCE_REMOVE;
+}
+
+static gboolean
 gs_plugin_loader_run_refine (GsPluginLoaderHelper *helper,
 			     GsAppList *list,
 			     GCancellable *cancellable,
@@ -998,6 +1019,8 @@ gs_plugin_loader_run_refine (GsPluginLoaderHelper *helper,
 							   cancellable,
 							   error))
 			goto out;
+		/* filter any MATCH_ANY_PREFIX apps left in the list */
+		gs_app_list_filter (list, gs_plugin_loader_app_is_non_wildcard, NULL);
 	}
 
 	/* remove any addons that have the same source as the parent app */
@@ -1033,7 +1056,7 @@ out:
 	/* now emit all the changed signals */
 	for (guint i = 0; i < gs_app_list_length (freeze_list); i++) {
 		GsApp *app = gs_app_list_index (freeze_list, i);
-		g_object_thaw_notify (G_OBJECT (app));
+		g_idle_add (app_thaw_notify_idle, g_object_ref (app));
 	}
 	return ret;
 }
@@ -1884,7 +1907,6 @@ gs_plugin_loader_get_allow_updates (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	g_autoptr(GList) list = NULL;
-	GList *l;
 
 	/* nothing */
 	if (g_hash_table_size (priv->disallow_updates) == 0)
@@ -1892,7 +1914,7 @@ gs_plugin_loader_get_allow_updates (GsPluginLoader *plugin_loader)
 
 	/* list */
 	list = g_hash_table_get_values (priv->disallow_updates);
-	for (l = list; l != NULL; l = l->next) {
+	for (GList *l = list; l != NULL; l = l->next) {
 		const gchar *reason = l->data;
 		g_debug ("managed updates inhibited by %s", reason);
 	}
@@ -1941,13 +1963,12 @@ gs_plugin_loader_get_events (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	GPtrArray *events = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	GList *l;
 	g_autoptr(GList) keys = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->events_by_id_mutex);
 
 	/* just add everything */
 	keys = g_hash_table_get_keys (priv->events_by_id);
-	for (l = keys; l != NULL; l = l->next) {
+	for (GList *l = keys; l != NULL; l = l->next) {
 		const gchar *key = l->data;
 		GsPluginEvent *event = g_hash_table_lookup (priv->events_by_id, key);
 		if (event == NULL) {
@@ -1972,13 +1993,12 @@ GsPluginEvent *
 gs_plugin_loader_get_event_default (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	GList *l;
 	g_autoptr(GList) keys = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->events_by_id_mutex);
 
 	/* just add everything */
 	keys = g_hash_table_get_keys (priv->events_by_id);
-	for (l = keys; l != NULL; l = l->next) {
+	for (GList *l = keys; l != NULL; l = l->next) {
 		const gchar *key = l->data;
 		GsPluginEvent *event = g_hash_table_lookup (priv->events_by_id, key);
 		if (event == NULL) {
@@ -2167,7 +2187,6 @@ gs_plugin_loader_open_plugin (GsPluginLoader *plugin_loader,
 	gs_plugin_set_locale (plugin, priv->locale);
 	gs_plugin_set_language (plugin, priv->language);
 	gs_plugin_set_scale (plugin, gs_plugin_loader_get_scale (plugin_loader));
-	gs_plugin_set_global_cache (plugin, priv->global_cache);
 	gs_plugin_set_network_monitor (plugin, priv->network_monitor);
 	g_debug ("opened plugin %s: %s", filename, gs_plugin_get_name (plugin));
 
@@ -2243,14 +2262,13 @@ gs_plugin_loader_plugin_dir_changed_cb (GFileMonitor *monitor,
 					GFileMonitorEvent event_type,
 					GsPluginLoader *plugin_loader)
 {
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	GsApp *app;
+	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsPluginEvent) event = gs_plugin_event_new ();
 	g_autoptr(GError) error = NULL;
 
 	/* add app */
 	gs_plugin_event_set_action (event, GS_PLUGIN_ACTION_SETUP);
-	app = gs_app_list_lookup (priv->global_cache,
+	app = gs_plugin_loader_app_create (plugin_loader,
 		"system/*/*/*/org.gnome.Software.desktop/*");
 	if (app != NULL)
 		gs_plugin_event_set_app (event, app);
@@ -2272,7 +2290,6 @@ gs_plugin_loader_clear_caches (GsPluginLoader *plugin_loader)
 		GsPlugin *plugin = g_ptr_array_index (priv->plugins, i);
 		gs_plugin_cache_invalidate (plugin);
 	}
-	gs_app_list_remove_all (priv->global_cache);
 }
 
 /**
@@ -2722,7 +2739,6 @@ gs_plugin_loader_finalize (GObject *object)
 	g_ptr_array_unref (priv->locations);
 	g_free (priv->locale);
 	g_free (priv->language);
-	g_object_unref (priv->global_cache);
 	g_ptr_array_unref (priv->file_monitors);
 	g_hash_table_unref (priv->events_by_id);
 	g_hash_table_unref (priv->disallow_updates);
@@ -2824,7 +2840,6 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	guint i;
 
 	priv->scale = 1;
-	priv->global_cache = gs_app_list_new ();
 	priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->pending_apps = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->queued_ops_pool = g_thread_pool_new (gs_plugin_loader_process_in_thread_pool_cb,
@@ -3260,9 +3275,15 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	}
 
 	/* pick up new source id */
-	if (add_to_pending_array) {
+	switch (action) {
+	case GS_PLUGIN_ACTION_INSTALL:
+	case GS_PLUGIN_ACTION_REMOVE:
 		gs_plugin_job_add_refine_flags (helper->plugin_job,
-						GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN);
+		                                GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN |
+		                                GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION);
+		break;
+	default:
+		break;
 	}
 
 	/* run refine() on each one if required */
@@ -3298,7 +3319,7 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 			    _gs_app_get_icon_by_kind (app, AS_ICON_KIND_CACHED) == NULL) {
 				g_autoptr(AsIcon) ic = as_icon_new ();
 				as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-				if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
+				if (gs_app_has_quirk (app, AS_APP_QUIRK_HAS_SOURCE))
 					as_icon_set_name (ic, "x-package-repository");
 				else
 					as_icon_set_name (ic, "application-x-executable");
@@ -3714,19 +3735,34 @@ gs_plugin_loader_get_plugin_supported (GsPluginLoader *plugin_loader,
 GsApp *
 gs_plugin_loader_app_create (GsPluginLoader *plugin_loader, const gchar *unique_id)
 {
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	GsApp *app;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GsApp) app = NULL;
+	g_autoptr(GsAppList) list = gs_app_list_new ();
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+	g_autoptr(GsPluginLoaderHelper) helper = NULL;
 
-	/* already exists */
-	app = gs_app_list_lookup (priv->global_cache, unique_id);
-	if (app != NULL)
-		return g_object_ref (app);
-
-	/* create and add */
+	/* use the plugin loader to convert a wildcard app*/
 	app = gs_app_new (NULL);
+	gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
 	gs_app_set_from_unique_id (app, unique_id);
-	gs_app_list_add (priv->global_cache, app);
-	return app;
+	gs_app_list_add (list, app);
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE, NULL);
+	helper = gs_plugin_loader_helper_new (plugin_loader, plugin_job);
+	if (!gs_plugin_loader_run_refine (helper, list, NULL, &error)) {
+		g_error ("%s", error->message);
+		return NULL;
+	}
+
+	/* return the first returned app that's not a wildcard */
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app_tmp = gs_app_list_index (list, i);
+		if (!gs_app_has_quirk (app_tmp, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+			return g_object_ref (app_tmp);
+	}
+
+	/* does not exist */
+	g_warning ("failed to create an app for %s", unique_id);
+	return NULL;
 }
 
 /**
@@ -3769,21 +3805,6 @@ gs_plugin_loader_set_max_parallel_ops (GsPluginLoader *plugin_loader,
 	if (!g_thread_pool_set_max_threads (priv->queued_ops_pool, max_ops, &error))
 		g_warning ("Failed to set the maximum number of ops in parallel: %s",
 			   error->message);
-}
-
-/*
- * gs_plugin_loader_get_global_cache:
- * @plugin_loader: a #GsPluginLoader
- *
- * Returns the global cache.
- *
- * Returns: (transfer none): a #GsAppList
- **/
-GsAppList *
-gs_plugin_loader_get_global_cache (GsPluginLoader *plugin_loader)
-{
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	return priv->global_cache;
 }
 
 /* vim: set noexpandtab: */
