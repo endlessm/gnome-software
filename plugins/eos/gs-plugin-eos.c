@@ -525,7 +525,8 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
+gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
+						  GsApp *app)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	gboolean do_blacklist = FALSE;
@@ -761,6 +762,13 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 		NULL
 	};
 
+	/* Legacy apps that have been replaced by other versions in Flathub */
+	static const char *legacy_apps[] = {
+		"com.spotify.Client.desktop",
+		"org.videolan.VLC.desktop",
+		NULL
+	};
+
 	const char *hostname = NULL;
 
 	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM ||
@@ -773,31 +781,37 @@ gs_plugin_eos_blacklist_upstream_app_if_needed (GsPlugin *plugin, GsApp *app)
 
 	/* We need to check for the app's origin, otherwise we'd be
 	 * blacklisting matching apps coming from any repo */
-	if (g_strcmp0 (hostname, "sdk.gnome.org") != 0 &&
-	    g_strcmp0 (hostname, "flathub.org") != 0 &&
-	    !g_str_has_suffix (hostname, ".flathub.org"))
-		return FALSE;
+	if (g_str_has_suffix (hostname, ".endlessm.com")) {
+		if (g_strv_contains (legacy_apps, gs_app_get_id (app))) {
+			g_debug ("Blacklisting '%s': it's a legacy app",
+				 gs_app_get_unique_id (app));
+			do_blacklist = TRUE;
+		}
+	} else if (g_strcmp0 (hostname, "sdk.gnome.org") == 0 ||
+		   g_strcmp0 (hostname, "flathub.org") == 0 ||
+		   g_str_has_suffix (hostname, ".flathub.org")) {
 
-	/* If the arch is ARM then we simply use a whitelist and
-	 * don't go through all the remaining lists */
-	if (priv->eos_arch_is_arm) {
-		if (g_strv_contains (arm_whitelist, gs_app_get_id (app)))
-			return FALSE;
-		g_debug ("Blacklisting '%s': it's not whitelisted for ARM",
-			 gs_app_get_unique_id (app));
-		do_blacklist = TRUE;
-	} else if (g_strv_contains (duplicated_apps, gs_app_get_id (app))) {
-		g_debug ("Blacklisting '%s': app is in the duplicated list",
-			 gs_app_get_unique_id (app));
-		do_blacklist = TRUE;
-	} else if (g_strv_contains (core_apps, gs_app_get_id (app))) {
-		g_debug ("Blacklisting '%s': app is in the core apps list",
-			 gs_app_get_unique_id (app));
-		do_blacklist = TRUE;
-	} else if (g_strv_contains (buggy_apps, gs_app_get_id (app))) {
-		g_debug ("Blacklisting '%s': app is in the buggy list",
-			 gs_app_get_unique_id (app));
-		do_blacklist = TRUE;
+		/* If the arch is ARM then we simply use a whitelist and
+		 * don't go through all the remaining lists */
+		if (priv->eos_arch_is_arm) {
+			if (g_strv_contains (arm_whitelist, gs_app_get_id (app)))
+				return FALSE;
+			g_debug ("Blacklisting '%s': it's not whitelisted for ARM",
+				 gs_app_get_unique_id (app));
+			do_blacklist = TRUE;
+		} else if (g_strv_contains (duplicated_apps, gs_app_get_id (app))) {
+			g_debug ("Blacklisting '%s': app is in the duplicated list",
+				 gs_app_get_unique_id (app));
+			do_blacklist = TRUE;
+		} else if (g_strv_contains (core_apps, gs_app_get_id (app))) {
+			g_debug ("Blacklisting '%s': app is in the core apps list",
+				 gs_app_get_unique_id (app));
+			do_blacklist = TRUE;
+		} else if (g_strv_contains (buggy_apps, gs_app_get_id (app))) {
+			g_debug ("Blacklisting '%s': app is in the buggy list",
+				 gs_app_get_unique_id (app));
+			do_blacklist = TRUE;
+		}
 	}
 
 	if (do_blacklist)
@@ -1155,7 +1169,7 @@ gs_plugin_refine (GsPlugin		*plugin,
 		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
 			continue;
 
-		if (gs_plugin_eos_blacklist_upstream_app_if_needed (plugin, app))
+		if (gs_plugin_eos_blacklist_app_for_remote_if_needed (plugin, app))
 			continue;
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
