@@ -1511,7 +1511,8 @@ gs_updates_page_upgrade_download_cb (GsUpgradeBanner *upgrade_banner,
 
 	if (self->cancellable_upgrade_download != NULL)
 		g_object_unref (self->cancellable_upgrade_download);
-	self->cancellable_upgrade_download = g_cancellable_new ();
+	self->cancellable_upgrade_download = g_object_ref (gs_app_get_cancellable (app));
+
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD,
 					 "app", app,
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
