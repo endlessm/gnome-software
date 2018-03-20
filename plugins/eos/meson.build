@@ -1,7 +1,15 @@
 cargs = ['-DG_LOG_DOMAIN="GsPluginEos"']
 
+gdbus_eos_updater_src = gnome.gdbus_codegen(
+  'eos-updater-generated',
+  'eos-updater.xml',
+  interface_prefix : 'com.endlessm.',
+  namespace : 'Eos'
+)
+
 shared_module(
   'gs_plugin_eos',
+  gdbus_eos_updater_src,
   sources : [
     'gs-appstream.c',
     'gs-flatpak-app.c',

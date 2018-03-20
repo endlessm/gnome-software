@@ -33,6 +33,7 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 
+#include "eos-updater-generated.h"
 #include "gs-flatpak.h"
 #include "gs-flatpak-app.h"
 
@@ -50,6 +51,34 @@
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
  */
+
+typedef enum {
+	EOS_UPDATER_STATE_NONE = 0,
+	EOS_UPDATER_STATE_READY,
+	EOS_UPDATER_STATE_ERROR,
+	EOS_UPDATER_STATE_POLLING,
+	EOS_UPDATER_STATE_UPDATE_AVAILABLE,
+	EOS_UPDATER_STATE_FETCHING,
+	EOS_UPDATER_STATE_UPDATE_READY,
+	EOS_UPDATER_STATE_APPLYING_UPDATE,
+	EOS_UPDATER_STATE_UPDATE_APPLIED,
+	EOS_UPDATER_N_STATES,
+} EosUpdaterState;
+
+static const gchar *eos_updater_state_str[] = {"None",
+					       "Ready",
+					       "Error",
+					       "Polling",
+					       "UpdateAvailable",
+					       "Fetching",
+					       "UpdateReady",
+					       "ApplyingUpdate",
+					       "UpdateApplied"};
+
+#define EOS_UPGRADE_ID "com.endlessm.EOS.upgrade"
+
+static void setup_os_upgrade (GsPlugin *plugin);
+static EosUpdaterState sync_state_from_updater (GsPlugin *plugin);
 
 struct GsPluginData
 {
@@ -70,6 +99,9 @@ struct GsPluginData
 	gboolean is_coding_enabled;
 	char *os_version_id;
 	gboolean eos_arch_is_arm;
+	EosUpdater *updater_proxy;
+	GsApp *os_upgrade;
+	GCancellable *os_upgrade_cancellable;
 };
 
 static gboolean
@@ -267,6 +299,245 @@ read_icon_replacement_overrides (GHashTable *replacement_app_lookup)
 	}
 }
 
+static void
+os_upgrade_cancelled_cb (GCancellable *cancellable,
+			 GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	eos_updater_call_cancel (priv->updater_proxy, NULL, NULL, NULL);
+}
+
+static void
+setup_os_upgrade_cancellable (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GCancellable *cancellable = gs_app_get_cancellable (priv->os_upgrade);
+
+	if (g_set_object (&priv->os_upgrade_cancellable, cancellable))
+		g_cancellable_connect (priv->os_upgrade_cancellable,
+				       G_CALLBACK (os_upgrade_cancelled_cb),
+				       plugin, NULL);
+}
+
+static void
+os_upgrade_set_download_by_user (GsApp *app, gboolean value)
+{
+	g_autoptr(GVariant) var = g_variant_new_boolean (value);
+	/* we need to assign it to NULL in order to be able to override it
+	 * (safeguard mechanism in GsApp...) */
+	gs_app_set_metadata_variant (app, "eos::DownloadByUser", NULL);
+	gs_app_set_metadata_variant (app, "eos::DownloadByUser", var);
+}
+
+static gboolean
+os_upgrade_get_download_by_user (GsApp *app)
+{
+	GVariant *value = gs_app_get_metadata_variant (app, "eos::DownloadByUser");
+	if (value == NULL)
+		return FALSE;
+	return g_variant_get_boolean (value);
+}
+
+static void
+os_upgrade_force_fetch (EosUpdater *updater)
+{
+	g_auto(GVariantDict) options_dict = G_VARIANT_DICT_INIT (NULL);
+	g_variant_dict_insert (&options_dict, "force", "b", TRUE);
+
+	eos_updater_call_fetch_full (updater,
+				     g_variant_dict_end (&options_dict),
+				     NULL, NULL, NULL);
+}
+
+static void
+app_ensure_installing_state (GsApp *app)
+{
+	/* ensure the state transition to 'installing' is allowed */
+	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLING)
+		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+}
+
+static gboolean
+eos_updater_error_is_cancelled (const gchar *error_name)
+{
+	return (g_strcmp0 (error_name, "com.endlessm.Updater.Error.Cancelled") == 0);
+}
+
+/* This method deals with the synchronization between the EOS updater's states
+ * (DBus service) and the OS upgrade's states (GsApp), in order to show the user
+ * what is happening and what they can do. */
+static EosUpdaterState
+sync_state_from_updater (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GsApp *app = priv->os_upgrade;
+	EosUpdaterState state;
+	AsAppState previous_app_state = gs_app_get_state (app);
+	AsAppState current_app_state;
+
+	state = eos_updater_get_state (priv->updater_proxy);
+	g_debug ("EOS Updater state changed: %s", eos_updater_state_str [state]);
+
+	switch (state) {
+	case EOS_UPDATER_STATE_NONE:
+	case EOS_UPDATER_STATE_READY: {
+		if (os_upgrade_get_download_by_user (app)) {
+			app_ensure_installing_state (app);
+			eos_updater_call_poll (priv->updater_proxy, NULL, NULL,
+					       NULL);
+		} else {
+			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		}
+		break;
+	} case EOS_UPDATER_STATE_POLLING: {
+		if (os_upgrade_get_download_by_user (app))
+			app_ensure_installing_state (app);
+		break;
+	} case EOS_UPDATER_STATE_UPDATE_AVAILABLE: {
+		if (os_upgrade_get_download_by_user (app)) {
+			app_ensure_installing_state (app);
+			/* when the OS upgrade was started by the user and the
+			 * updater reports an available update, (meaning we were
+			 * polling before), we should readily call fetch */
+			os_upgrade_force_fetch (priv->updater_proxy);
+		} else {
+			guint64 total_size =
+				eos_updater_get_download_size (priv->updater_proxy);
+			gs_app_set_size_download (app, total_size);
+
+			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		}
+
+		break;
+	}
+	case EOS_UPDATER_STATE_ERROR: {
+		const gchar *error_name;
+		const gchar *error_message;
+		g_autoptr(GError) local_error = NULL;
+
+		error_name = eos_updater_get_error_name (priv->updater_proxy);
+		error_message = eos_updater_get_error_message (priv->updater_proxy);
+		local_error = g_dbus_error_new_for_dbus_error (error_name, error_message);
+
+		/* unless the error is because the user cancelled the upgrade,
+		 * we should make sure it get in the journal */
+		if (!(os_upgrade_get_download_by_user (app) &&
+		      eos_updater_error_is_cancelled (error_name)))
+		    g_warning ("Got OS upgrade error state with name '%s': %s",
+			       error_name, error_message);
+
+		gs_app_set_state_recover (app);
+
+		/* only set up an error to be shown to the user if the user had
+		 * manually started the upgrade, and if the error in question is not
+		 * originated by the user canceling the upgrade */
+		if (os_upgrade_get_download_by_user (app) &&
+		    !eos_updater_error_is_cancelled (error_name)) {
+			g_autoptr(GsPluginEvent) event = gs_plugin_event_new ();
+			gs_utils_error_convert_gdbus (&local_error);
+			gs_plugin_event_set_app (event, app);
+			gs_plugin_event_set_error (event, local_error);
+			gs_plugin_event_add_flag (event, GS_PLUGIN_EVENT_FLAG_WARNING);
+			gs_plugin_report_event (plugin, event);
+		}
+
+		break;
+	}
+	case EOS_UPDATER_STATE_FETCHING: {
+		guint64 total_size = 0;
+		guint64 downloaded = 0;
+		gfloat progress = 0;
+
+		app_ensure_installing_state (app);
+
+		downloaded = eos_updater_get_downloaded_bytes (priv->updater_proxy);
+		total_size = eos_updater_get_download_size (priv->updater_proxy);
+
+		if (total_size == 0) {
+			g_debug ("OS upgrade %s total size is 0!",
+				 gs_app_get_unique_id (app));
+		} else {
+			/* set progress only up to 90%, leaving the remaining
+			 * for applying the update */
+			progress = (gfloat) downloaded / (gfloat) total_size * 90.0;
+		}
+		gs_app_set_progress (app, (guint) progress);
+
+		break;
+	}
+	case EOS_UPDATER_STATE_UPDATE_READY: {
+		/* if there's an update ready to deployed, and it was started by
+		 * the user, we should proceed to applying the upgrade */
+		if (os_upgrade_get_download_by_user (app)) {
+			app_ensure_installing_state (app);
+			eos_updater_call_apply (priv->updater_proxy, NULL, NULL,
+						NULL);
+		} else {
+			/* otherwise just show it as available so the user has a
+			 * chance to click 'download' which deploys the update */
+			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		}
+
+		break;
+	}
+	case EOS_UPDATER_STATE_APPLYING_UPDATE: {
+		/* set as 'installing' because if it is applying the update, we
+		 * want to show the progress bar */
+		app_ensure_installing_state (app);
+		gs_app_set_progress (app, 95);
+
+		break;
+	}
+	case EOS_UPDATER_STATE_UPDATE_APPLIED: {
+		/* ensure we can transition to state updatable */
+		if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE)
+			gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+
+		break;
+	}
+	default:
+		break;
+	}
+
+	current_app_state = gs_app_get_state (app);
+
+	/* reset the 'download-by-user' state if the the app is no longer
+	 * shown as downloading */
+	if (current_app_state != AS_APP_STATE_INSTALLING) {
+		os_upgrade_set_download_by_user (app, FALSE);
+	} else {
+		/* otherwise, ensure we have the right cancellable */
+		setup_os_upgrade_cancellable (plugin);
+	}
+
+	/* if the state changed from or to 'unknown', we need to notify that a
+	 * new update should be shown */
+	if ((previous_app_state == AS_APP_STATE_UNKNOWN ||
+	     current_app_state == AS_APP_STATE_UNKNOWN) &&
+	    previous_app_state != current_app_state)
+		gs_plugin_updates_changed (plugin);
+
+	return state;
+}
+
+static void
+updater_state_changed (GsPlugin *plugin)
+{
+	sync_state_from_updater (plugin);
+}
+
+static void
+updater_version_changed (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const gchar *version = eos_updater_get_version (priv->updater_proxy);
+
+	gs_app_set_version (priv->os_upgrade, version);
+}
+
 gboolean
 gs_plugin_setup (GsPlugin *plugin,
 		 GCancellable *cancellable,
@@ -319,9 +590,27 @@ gs_plugin_setup (GsPlugin *plugin,
 	settings = g_settings_new ("org.gnome.shell");
 	priv->is_coding_enabled = g_settings_get_boolean (settings, "enable-coding-game");
 
+	g_assert (G_N_ELEMENTS (eos_updater_state_str) == EOS_UPDATER_N_STATES);
+
 	/* Synchronous, but this guarantees that the lookup table will be
 	 * there when we call ReplaceApplication later on */
 	read_icon_replacement_overrides (priv->replacement_app_lookup);
+
+	{
+		g_autoptr(GError) local_error = NULL;
+		priv->updater_proxy = eos_updater_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
+									  G_DBUS_PROXY_FLAGS_NONE,
+									  "com.endlessm.Updater",
+									  "/com/endlessm/Updater",
+									  NULL,
+									  &local_error);
+		if (priv->updater_proxy == NULL)
+			g_warning ("Couldn't create EOS Updater proxy: %s",
+				   local_error->message);
+	}
+
+	/* prepare EOS upgrade app + sync initial state */
+	setup_os_upgrade (plugin);
 
 	return TRUE;
 }
@@ -351,10 +640,15 @@ gs_plugin_destroy (GsPlugin *plugin)
 		priv->applications_changed_id = 0;
 	}
 
+	g_cancellable_cancel (priv->os_upgrade_cancellable);
+	g_clear_object (&priv->os_upgrade_cancellable);
+
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->replacement_app_lookup);
 	g_free (priv->personality);
 	g_free (priv->os_version_id);
+	g_clear_object (&priv->updater_proxy);
+	g_clear_object (&priv->os_upgrade);
 }
 
 static gboolean
@@ -1004,6 +1298,9 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 	    (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN))
 		return;
 
+	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE)
+		return;
+
 	/* we only allow to remove flatpak apps */
 	gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
 
@@ -1550,6 +1847,164 @@ gs_plugin_add_popular (GsPlugin *plugin,
 	/* replace the list of popular apps so far by ours */
 	gs_app_list_remove_all (list);
 	gs_app_list_add_list (list, new_list);
+
+	return TRUE;
+}
+
+static void
+setup_os_upgrade (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GsApp *app = NULL;
+	g_autoptr(AsIcon) ic = NULL;
+
+	if (priv->os_upgrade != NULL)
+		return;
+
+	/* use stock icon */
+	ic = as_icon_new ();
+	as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
+	as_icon_set_name (ic, "application-x-addon");
+
+	/* create the OS upgrade */
+	app = gs_app_new (EOS_UPGRADE_ID);
+	gs_app_add_icon (app, ic);
+	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+	gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Endless OS");
+	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL,
+			    _("A major upgrade, with new features and added "
+			      "polish."));
+	/* ensure that the version doesn't appear as (NULL) in the banner, it
+	 * should be changed to the right value when it changes in the eos-updater */
+	gs_app_set_version (app, "");
+	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Endless OS");
+	gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
+	gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
+	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_REVIEWABLE);
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+	gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css",
+			     "background: url('" DATADIR "/gnome-software/upgrade-bg.png');"
+			     "background-size: 100% 100%;");
+
+	priv->os_upgrade = app;
+
+	/* for debug purposes we create the OS upgrade even if the EOS updater is NULL */
+	if (priv->updater_proxy != NULL) {
+		/* sync initial state */
+		sync_state_from_updater (plugin);
+
+		g_signal_connect_object (priv->updater_proxy, "notify::state",
+					 G_CALLBACK (updater_state_changed),
+					 plugin, G_CONNECT_SWAPPED);
+		g_signal_connect_object (priv->updater_proxy,
+					 "notify::downloaded-bytes",
+					 G_CALLBACK (updater_state_changed),
+					 plugin, G_CONNECT_SWAPPED);
+		g_signal_connect_object (priv->updater_proxy, "notify::version",
+					 G_CALLBACK (updater_version_changed),
+					 plugin, G_CONNECT_SWAPPED);
+	}
+}
+
+static gboolean
+should_add_os_upgrade (GsApp *os_upgrade)
+{
+	switch (gs_app_get_state (os_upgrade)) {
+	case AS_APP_STATE_AVAILABLE:
+	case AS_APP_STATE_INSTALLING:
+	case AS_APP_STATE_UPDATABLE:
+		return TRUE;
+	default:
+		break;
+	}
+
+	return FALSE;
+}
+
+gboolean
+gs_plugin_refresh (GsPlugin *plugin,
+		   guint cache_age,
+		   GsPluginRefreshFlags flags,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	EosUpdaterState updater_state;
+
+	/* poll in the error/none/ready states to check if there's an
+	 * update available */
+	updater_state = eos_updater_get_state (priv->updater_proxy);
+	switch (updater_state) {
+	case EOS_UPDATER_STATE_ERROR:
+	case EOS_UPDATER_STATE_NONE:
+	case EOS_UPDATER_STATE_READY:
+		eos_updater_call_poll (priv->updater_proxy, NULL, NULL, NULL);
+	default:
+		break;
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_distro_upgrades (GsPlugin *plugin,
+			       GsAppList *list,
+			       GCancellable *cancellable,
+			       GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	/* if we are testing the plugin, then always add the OS upgrade */
+	if (g_getenv ("GS_PLUGIN_EOS_TEST") != NULL) {
+		if  (gs_app_get_state (priv->os_upgrade) == AS_APP_STATE_UNKNOWN)
+			gs_app_set_state (priv->os_upgrade, AS_APP_STATE_AVAILABLE);
+		gs_app_list_add (list, priv->os_upgrade);
+		return TRUE;
+	}
+
+	/* check if the OS upgrade has been disabled */
+	if (priv->updater_proxy == NULL)
+		return TRUE;
+
+	if (should_add_os_upgrade (priv->os_upgrade)) {
+		g_debug ("Adding EOS upgrade: %s",
+			 gs_app_get_unique_id (priv->os_upgrade));
+		gs_app_list_add (list, priv->os_upgrade);
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_app_upgrade_download (GsPlugin *plugin,
+				GsApp *app,
+			        GCancellable *cancellable,
+				GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	if (app != priv->os_upgrade) {
+		g_warning ("The OS upgrade to download (%s) differs from the "
+			   "one in the EOS plugin, yet it's managed by it!",
+			   gs_app_get_unique_id (app));
+		return TRUE;
+	}
+
+	os_upgrade_set_download_by_user (app, TRUE);
+
+	/* we need to poll again if there has been an error; the state of the
+	 * OS upgrade will then be dealt with from outside this function,
+	 * according to the state changes of the update itself */
+	if (eos_updater_get_state (priv->updater_proxy) == EOS_UPDATER_STATE_ERROR)
+		eos_updater_call_poll (priv->updater_proxy, NULL, NULL, NULL);
+	else
+		sync_state_from_updater (plugin);
 
 	return TRUE;
 }

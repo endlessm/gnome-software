@@ -1,0 +1,50 @@
+<!DOCTYPE node PUBLIC
+'-//freedesktop//DTD D-BUS Object Introspection 1.0//EN'
+'http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd'>
+<node>
+  <interface name="com.endlessm.Updater">
+    <method name="Poll"></method>
+    <method name="PollVolume">
+      <arg name="path" type="s" direction="in"/>
+    </method>
+    <method name="Fetch"></method>
+    <method name="FetchFull">
+      <arg name="options" type="a{sv}" direction="in"/>
+    </method>
+    <method name="Apply"></method>
+    <method name="Cancel"></method>
+
+    <property name="State"            type="u" access="read"/>
+    <property name="UpdateID"         type="s" access="read"/>
+    <property name="UpdateRefspec"    type="s" access="read"/>
+    <property name="OriginalRefspec"  type="s" access="read"/>
+    <property name="CurrentID"        type="s" access="read"/>
+    <property name="UpdateLabel"      type="s" access="read"/>
+    <property name="UpdateMessage"    type="s" access="read"/>
+    <property name="Version"          type="s" access="read"/>
+    <property name="DownloadSize"     type="x" access="read"/>
+    <property name="DownloadedBytes"  type="x" access="read"/>
+    <property name="UnpackedSize"     type="x" access="read"/>
+    <property name="FullDownloadSize" type="x" access="read"/>
+    <property name="FullUnpackedSize" type="x" access="read"/>
+    <!-- An error code, in an unspecified error domain! See ErrorName. -->
+    <property name="ErrorCode"        type="u" access="read"/>
+    <!-- a fully-qualified D-Bus error name, as might be returned from a D-Bus
+         method. "com.endlessm.Updater.Error.LiveBoot" when the system is a
+         read-only live USB, where updates are not supported.
+      -->
+    <property name="ErrorName"        type="s" access="read"/>
+    <!-- a human-readable, albeit unlocalized, error message -->
+    <property name="ErrorMessage"     type="s" access="read"/>
+
+    <signal name="StateChanged">
+      <arg type="u" name="state"/>
+    </signal>
+
+    <signal name="Progress">
+      <arg type="x" name="fetched"/>
+      <arg type="x" name="expected"/>
+    </signal>
+
+  </interface>
+</node>
