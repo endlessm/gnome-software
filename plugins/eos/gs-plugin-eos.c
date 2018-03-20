@@ -318,6 +318,9 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 	    (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN))
 		return;
 
+	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE)
+		return;
+
 	/* we only allow to remove flatpak apps */
 	gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
 
