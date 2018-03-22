@@ -846,7 +846,13 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	        ((g_strcmp0 (id, "com.google.Chrome.desktop") == 0) ||
 	         (g_strcmp0 (id, "com.endlessm.translation.desktop") == 0) ||
 	         (g_strcmp0 (id, "com.endlessm.videonet.desktop") == 0) ||
-	         g_str_has_prefix (id, "com.endlessm.encyclopedia")));
+	         g_str_has_prefix (id, "com.endlessm.encyclopedia"))) ||
+	       ((g_str_has_prefix (priv->personality, "education") == 0) &&
+	        ((g_strcmp0 (id, "io.github.Freedoom-Phase-1.desktop") == 0) ||
+		     (g_strcmp0 (id, "io.github.Freedoom-Phase-2.desktop") == 0) ||
+		     (g_strcmp0 (id, "org.openarena.Openarena.desktop") == 0) ||
+		     (g_strcmp0 (id, "org.marsshooter.Marsshooter.desktop") == 0) ||
+		     (g_strcmp0 (id, "net.wz2100.Warzone2100.desktop") == 0)));
 }
 
 static gboolean
