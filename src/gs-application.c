@@ -234,11 +234,10 @@ gs_application_dbus_unregister (GApplication    *application,
 static void
 gs_application_show_first_run_dialog (GsApplication *app)
 {
-	GtkWidget *dialog;
-
+	/* XXX: Never show the first run dialog, since it's not useful and it
+	 * delays the loading of the app tiles; we keep the setting toggling as
+	 * it can be interesting for other purposes in the future */
 	if (g_settings_get_boolean (app->settings, "first-run") == TRUE) {
-		dialog = gs_first_run_dialog_new ();
-		gs_shell_modal_dialog_present (app->shell, GTK_WINDOW (dialog));
 		g_settings_set_boolean (app->settings, "first-run", FALSE);
 	}
 }
