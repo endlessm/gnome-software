@@ -365,6 +365,42 @@ eos_updater_error_is_cancelled (const gchar *error_name)
 	return (g_strcmp0 (error_name, "com.endlessm.Updater.Error.Cancelled") == 0);
 }
 
+static void
+updater_state_changed (GsPlugin *plugin)
+{
+	sync_state_from_updater (plugin);
+}
+
+static void
+updater_version_changed (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const gchar *version = eos_updater_get_version (priv->updater_proxy);
+
+	gs_app_set_version (priv->os_upgrade, version);
+}
+
+static void
+disable_os_updater (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	if (priv->updater_proxy == NULL)
+		return;
+
+	g_signal_handlers_disconnect_by_func (priv->updater_proxy,
+					      G_CALLBACK (updater_state_changed),
+					      plugin);
+	g_signal_handlers_disconnect_by_func (priv->updater_proxy,
+					      G_CALLBACK (updater_version_changed),
+					      plugin);
+
+	g_cancellable_cancel (priv->os_upgrade_cancellable);
+	g_clear_object (&priv->os_upgrade_cancellable);
+
+	g_clear_object (&priv->updater_proxy);
+}
+
 /* This method deals with the synchronization between the EOS updater's states
  * (DBus service) and the OS upgrade's states (GsApp), in order to show the user
  * what is happening and what they can do. */
@@ -376,6 +412,10 @@ sync_state_from_updater (GsPlugin *plugin)
 	EosUpdaterState state;
 	AsAppState previous_app_state = gs_app_get_state (app);
 	AsAppState current_app_state;
+
+	/* in case the OS upgrade has been disabled */
+	if (priv->updater_proxy == NULL)
+		return EOS_UPDATER_STATE_NONE;
 
 	state = eos_updater_get_state (priv->updater_proxy);
 	g_debug ("EOS Updater state changed: %s", eos_updater_state_str [state]);
@@ -429,6 +469,13 @@ sync_state_from_updater (GsPlugin *plugin)
 			       error_name, error_message);
 
 		gs_app_set_state_recover (app);
+
+		if ((g_strcmp0 (error_name, "com.endlessm.Updater.Error.LiveBoot") == 0) ||
+		    (g_strcmp0 (error_name, "com.endlessm.Updater.Error.NotOstreeSystem") == 0)) {
+			g_debug ("Disabling OS upgrades: %s", error_message);
+			disable_os_updater (plugin);
+			return state;
+		}
 
 		/* only set up an error to be shown to the user if the user had
 		 * manually started the upgrade, and if the error in question is not
@@ -521,21 +568,6 @@ sync_state_from_updater (GsPlugin *plugin)
 		gs_plugin_updates_changed (plugin);
 
 	return state;
-}
-
-static void
-updater_state_changed (GsPlugin *plugin)
-{
-	sync_state_from_updater (plugin);
-}
-
-static void
-updater_version_changed (GsPlugin *plugin)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const gchar *version = eos_updater_get_version (priv->updater_proxy);
-
-	gs_app_set_version (priv->os_upgrade, version);
 }
 
 gboolean
@@ -640,14 +672,12 @@ gs_plugin_destroy (GsPlugin *plugin)
 		priv->applications_changed_id = 0;
 	}
 
-	g_cancellable_cancel (priv->os_upgrade_cancellable);
-	g_clear_object (&priv->os_upgrade_cancellable);
-
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->replacement_app_lookup);
 	g_free (priv->personality);
 	g_free (priv->os_version_id);
-	g_clear_object (&priv->updater_proxy);
+
+	disable_os_updater (plugin);
 	g_clear_object (&priv->os_upgrade);
 }
 
@@ -1932,6 +1962,10 @@ gs_plugin_refresh (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	EosUpdaterState updater_state;
 
+	/* check if the OS upgrade has been disabled */
+	if (priv->updater_proxy == NULL)
+		return TRUE;
+
 	/* poll in the error/none/ready states to check if there's an
 	 * update available */
 	updater_state = eos_updater_get_state (priv->updater_proxy);
@@ -1994,6 +2028,13 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 			   "one in the EOS plugin, yet it's managed by it!",
 			   gs_app_get_unique_id (app));
 		return TRUE;
+	}
+
+	/* if the OS upgrade has been disabled */
+	if (priv->updater_proxy == NULL) {
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+			     "the OS upgrade has been disabled in the EOS plugin");
+		return FALSE;
 	}
 
 	os_upgrade_set_download_by_user (app, TRUE);
