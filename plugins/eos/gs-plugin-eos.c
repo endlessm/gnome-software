@@ -30,6 +30,7 @@
 #include <gs-plugin.h>
 #include <gs-utils.h>
 #include <libsoup/soup.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/xattr.h>
 
@@ -77,6 +78,14 @@ static const gchar *eos_updater_state_str[] = {"None",
 
 #define EOS_UPGRADE_ID "com.endlessm.EOS.upgrade"
 
+/* the percentage of the progress bar to use for applying the OS upgrade;
+ * we need to fake the progress in this percentage because applying the OS upgrade
+ * can take a long time and we don't want the user to think that the upgrade has
+ * stalled */
+#define EOS_UPGRADE_APPLY_PROGRESS_RANGE 25 /* percentage */
+#define EOS_UPGRADE_APPLY_MAX_TIME 600.0 /* sec */
+#define EOS_UPGRADE_APPLY_STEP_TIME 0.250 /* sec */
+
 static void setup_os_upgrade (GsPlugin *plugin);
 static EosUpdaterState sync_state_from_updater (GsPlugin *plugin);
 
@@ -102,6 +111,8 @@ struct GsPluginData
 	EosUpdater *updater_proxy;
 	GsApp *os_upgrade;
 	GCancellable *os_upgrade_cancellable;
+	gfloat upgrade_fake_progress;
+	guint upgrade_fake_progress_handler;
 };
 
 static gboolean
@@ -385,6 +396,11 @@ disable_os_updater (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
+	if (priv->upgrade_fake_progress_handler != 0) {
+		g_source_remove (priv->upgrade_fake_progress_handler);
+		priv->upgrade_fake_progress_handler = 0;
+	}
+
 	if (priv->updater_proxy == NULL)
 		return;
 
@@ -401,6 +417,36 @@ disable_os_updater (GsPlugin *plugin)
 	g_clear_object (&priv->updater_proxy);
 }
 
+static gboolean
+fake_os_upgrade_progress (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	gfloat normal_step;
+	guint new_progress;
+	const gfloat fake_progress_max = 99.0;
+
+	if (eos_updater_get_state (priv->updater_proxy) != EOS_UPDATER_STATE_APPLYING_UPDATE ||
+	    priv->upgrade_fake_progress > fake_progress_max) {
+		priv->upgrade_fake_progress = 0;
+		priv->upgrade_fake_progress_handler = 0;
+		return G_SOURCE_REMOVE;
+	}
+
+	normal_step = (gfloat) EOS_UPGRADE_APPLY_PROGRESS_RANGE /
+		      (EOS_UPGRADE_APPLY_MAX_TIME / EOS_UPGRADE_APPLY_STEP_TIME);
+
+	priv->upgrade_fake_progress += normal_step;
+
+	new_progress = (100 - EOS_UPGRADE_APPLY_PROGRESS_RANGE) +
+		       (guint) round (priv->upgrade_fake_progress);
+	gs_app_set_progress (priv->os_upgrade,
+			     MIN (new_progress, (guint) fake_progress_max));
+
+	g_debug ("OS upgrade fake progress: %f", priv->upgrade_fake_progress);
+
+	return G_SOURCE_CONTINUE;
+}
+
 /* This method deals with the synchronization between the EOS updater's states
  * (DBus service) and the OS upgrade's states (GsApp), in order to show the user
  * what is happening and what they can do. */
@@ -412,6 +458,7 @@ sync_state_from_updater (GsPlugin *plugin)
 	EosUpdaterState state;
 	AsAppState previous_app_state = gs_app_get_state (app);
 	AsAppState current_app_state;
+	const guint max_progress_for_update = 75;
 
 	/* in case the OS upgrade has been disabled */
 	if (priv->updater_proxy == NULL)
@@ -506,9 +553,10 @@ sync_state_from_updater (GsPlugin *plugin)
 			g_debug ("OS upgrade %s total size is 0!",
 				 gs_app_get_unique_id (app));
 		} else {
-			/* set progress only up to 90%, leaving the remaining
-			 * for applying the update */
-			progress = (gfloat) downloaded / (gfloat) total_size * 90.0;
+			/* set progress only up to a max percentage, leaving the
+			 * remaining for applying the update */
+			progress = (gfloat) downloaded / (gfloat) total_size *
+				   (gfloat) max_progress_for_update;
 		}
 		gs_app_set_progress (app, (guint) progress);
 
@@ -519,6 +567,7 @@ sync_state_from_updater (GsPlugin *plugin)
 		 * the user, we should proceed to applying the upgrade */
 		if (os_upgrade_get_download_by_user (app)) {
 			app_ensure_installing_state (app);
+			gs_app_set_progress (app, max_progress_for_update);
 			eos_updater_call_apply (priv->updater_proxy, NULL, NULL,
 						NULL);
 		} else {
@@ -533,7 +582,17 @@ sync_state_from_updater (GsPlugin *plugin)
 		/* set as 'installing' because if it is applying the update, we
 		 * want to show the progress bar */
 		app_ensure_installing_state (app);
-		gs_app_set_progress (app, 95);
+
+		/* set up the fake progress to inform the user that something
+		 * is still being done (we don't get progress reports from
+		 * deploying updates) */
+		if (priv->upgrade_fake_progress_handler != 0)
+			g_source_remove (priv->upgrade_fake_progress_handler);
+		priv->upgrade_fake_progress = 0;
+		priv->upgrade_fake_progress_handler =
+			g_timeout_add ((guint) (1000.0 * EOS_UPGRADE_APPLY_STEP_TIME),
+				       (GSourceFunc) fake_os_upgrade_progress,
+				       plugin);
 
 		break;
 	}
