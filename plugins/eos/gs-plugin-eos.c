@@ -1220,18 +1220,28 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const char *app_name = gs_flatpak_app_get_ref_name (app);
 
+	static const char *violent_apps[] = {
+		"io.github.Freedoom-Phase-1",
+		"io.github.Freedoom-Phase-2",
+		"org.openarena.Openarena",
+		NULL
+	};
+
+	static const char *google_apps[] = {
+		"com.google.Chrome",
+		"com.endlessm.translation",
+		"com.endlessm.videonet",
+		NULL
+	};
+
 	/* only block apps based on personality if they are not installed */
 	if (gs_app_is_installed (app))
 		return FALSE;
 
 	return ((g_strcmp0 (priv->personality, "es_GT") == 0) &&
-	        ((g_strcmp0 (app_name, "io.github.Freedoom-Phase-1") == 0) ||
-		 (g_strcmp0 (app_name, "io.github.Freedoom-Phase-2") == 0) ||
-		 (g_strcmp0 (app_name, "org.openarena.Openarena") == 0))) ||
+	        g_strv_contains (violent_apps, app_name)) ||
 	       ((g_strcmp0 (priv->personality, "zh_CN") == 0) &&
-	        ((g_strcmp0 (app_name, "com.google.Chrome") == 0) ||
-	         (g_strcmp0 (app_name, "com.endlessm.translation") == 0) ||
-	         (g_strcmp0 (app_name, "com.endlessm.videonet") == 0) ||
+	        (g_strv_contains (google_apps, app_name) ||
 	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia")));
 }
 
