@@ -1231,7 +1231,6 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	static const char *google_apps[] = {
 		"com.google.Chrome",
 		"com.endlessm.translation",
-		"com.endlessm.videonet",
 		NULL
 	};
 
