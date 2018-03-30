@@ -1221,6 +1221,7 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	const char *app_name = gs_flatpak_app_get_ref_name (app);
 
 	static const char *violent_apps[] = {
+		"io.github.FreeDM",
 		"io.github.Freedoom-Phase-1",
 		"io.github.Freedoom-Phase-2",
 		"org.openarena.Openarena",
