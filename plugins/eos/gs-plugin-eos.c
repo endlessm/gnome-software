@@ -1283,7 +1283,7 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 		g_debug ("Blacklisting '%s': it's a compulsory, non-desktop app",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
-	} else if (g_str_has_prefix (gs_app_get_id (app), "eos-link-")) {
+	} else if (g_str_has_prefix (id, "eos-link-")) {
 		g_debug ("Blacklisting '%s': app is an eos-link",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
