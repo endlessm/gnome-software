@@ -1161,6 +1161,7 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 	};
 
 	const char *hostname = NULL;
+	const char *app_name = NULL;
 
 	if (gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM ||
 	    gs_app_is_installed (app))
@@ -1170,10 +1171,12 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 	if (hostname == NULL)
 		return FALSE;
 
+	app_name = gs_flatpak_app_get_ref_name (app);
+
 	/* We need to check for the app's origin, otherwise we'd be
 	 * blacklisting matching apps coming from any repo */
 	if (g_str_has_suffix (hostname, ".endlessm.com")) {
-		if (g_strv_contains (legacy_apps, gs_flatpak_app_get_ref_name (app))) {
+		if (g_strv_contains (legacy_apps, app_name)) {
 			g_debug ("Blacklisting '%s': it's a legacy app",
 				 gs_app_get_unique_id (app));
 			do_blacklist = TRUE;
@@ -1185,20 +1188,20 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		/* If the arch is ARM then we simply use a whitelist and
 		 * don't go through all the remaining lists */
 		if (priv->eos_arch_is_arm) {
-			if (g_strv_contains (arm_whitelist, gs_flatpak_app_get_ref_name (app)))
+			if (g_strv_contains (arm_whitelist, app_name))
 				return FALSE;
 			g_debug ("Blacklisting '%s': it's not whitelisted for ARM",
 				 gs_app_get_unique_id (app));
 			do_blacklist = TRUE;
-		} else if (g_strv_contains (duplicated_apps, gs_flatpak_app_get_ref_name (app))) {
+		} else if (g_strv_contains (duplicated_apps, app_name)) {
 			g_debug ("Blacklisting '%s': app is in the duplicated list",
 				 gs_app_get_unique_id (app));
 			do_blacklist = TRUE;
-		} else if (g_strv_contains (core_apps, gs_flatpak_app_get_ref_naame (app))) {
+		} else if (g_strv_contains (core_apps, app_name)) {
 			g_debug ("Blacklisting '%s': app is in the core apps list",
 				 gs_app_get_unique_id (app));
 			do_blacklist = TRUE;
-		} else if (g_strv_contains (buggy_apps, gs_flatpak_app_get_ref_name (app))) {
+		} else if (g_strv_contains (buggy_apps, app_name)) {
 			g_debug ("Blacklisting '%s': app is in the buggy list",
 				 gs_app_get_unique_id (app));
 			do_blacklist = TRUE;
