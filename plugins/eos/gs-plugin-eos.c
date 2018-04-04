@@ -1172,6 +1172,8 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		return FALSE;
 
 	app_name = gs_flatpak_app_get_ref_name (app);
+	if (app_name == NULL)
+		return FALSE;
 
 	/* We need to check for the app's origin, otherwise we'd be
 	 * blacklisting matching apps coming from any repo */
@@ -1236,8 +1238,9 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 		NULL
 	};
 
-	/* only block apps based on personality if they are not installed */
-	if (gs_app_is_installed (app))
+	/* do not ban apps based on personality if they are installed or
+	 * if they don't have a ref name (i.e. are not Flatpak apps) */
+	if (gs_app_is_installed (app) || app_name == NULL)
 		return FALSE;
 
 	return ((g_strcmp0 (priv->personality, "es_GT") == 0) &&
