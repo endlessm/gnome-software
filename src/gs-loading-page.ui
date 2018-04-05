@@ -24,9 +24,18 @@
             <property name="spacing">12</property>
             <child>
               <object class="GtkImage" id="image">
-                <property name="visible">True</property>
+                <property name="visible">False</property>
                 <property name="pixel_size">256</property>
                 <property name="icon_name">org.gnome.Software-symbolic</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="label">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Starting up…</property>
+                <attributes>
+                  <attribute name="scale" value="1.4"/>
+                </attributes>
               </object>
             </child>
             <child>
@@ -41,18 +50,10 @@
                 </style>
               </object>
             </child>
-            <child>
-              <object class="GtkLabel" id="label">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Starting up…</property>
-                <attributes>
-                  <attribute name="scale" value="1.4"/>
-                </attributes>
-              </object>
-            </child>
           </object>
         </child>
       </object>
     </child>
   </template>
 </interface>
+
