@@ -2266,6 +2266,19 @@ gs_details_page_network_available_notify_cb (GsPluginLoader *plugin_loader,
 }
 
 static gboolean
+gs_details_page_key_pressed_cb (GtkWidget *widget, GdkEventKey *key, GsDetailsPage *self)
+{
+	g_assert (key != NULL);
+
+	if (key->keyval == GDK_KEY_Escape) {
+		gs_shell_change_mode (self->shell, GS_SHELL_MODE_OVERVIEW, NULL, FALSE);
+		return GDK_EVENT_STOP;
+	}
+
+	return GDK_EVENT_PROPAGATE;
+}
+
+static gboolean
 gs_details_page_setup (GsPage *page,
                        GsShell *shell,
                        GsPluginLoader *plugin_loader,
@@ -2342,6 +2355,9 @@ gs_details_page_setup (GsPage *page,
 			  self);
 	g_signal_connect (self->label_license_nonfree_details, "activate-link",
 			  G_CALLBACK (gs_details_page_activate_link_cb),
+			  self);
+	g_signal_connect (self, "key-press-event",
+			  G_CALLBACK (gs_details_page_key_pressed_cb),
 			  self);
 
 	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_details));
