@@ -35,6 +35,7 @@ struct GsPluginData {
 	GsRPMOSTreeSysroot	*sysroot_proxy;
 	OstreeRepo		*ot_repo;
 	OstreeSysroot		*ot_sysroot;
+	gboolean		 update_triggered;
 };
 
 void
@@ -303,16 +304,14 @@ out:
 }
 
 static GsApp *
-make_app (GVariant *variant)
+app_from_modified_pkg_variant (GVariant *variant)
 {
 	g_autoptr(GsApp) app = NULL;
-	g_autoptr(GVariant) details = NULL;
-	const char *old_name, *old_evr, *old_arch;
-	const char *new_name, *new_evr, *new_arch;
-	gboolean have_old = FALSE;
-	gboolean have_new = FALSE;
+	const char *name;
+	const char *old_evr, *old_arch;
+	const char *new_evr, *new_arch;
 
-	app = gs_app_new (NULL);
+	g_variant_get (variant, "(us(ss)(ss))", NULL /* type*/, &name, &old_evr, &old_arch, &new_evr, &new_arch);
 
 	/* create new app */
 	app = gs_app_new (NULL);
@@ -320,46 +319,80 @@ make_app (GVariant *variant)
 	gs_app_set_management_plugin (app, "rpm-ostree");
 	gs_app_set_size_download (app, 0);
 	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
+	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
 
-	details = g_variant_get_child_value (variant, 2);
-	g_return_val_if_fail (details != NULL, NULL);
+	/* update or downgrade */
+	gs_app_add_source (app, name);
+	gs_app_set_version (app, old_evr);
+	gs_app_set_update_version (app, new_evr);
+	gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
 
-	have_old = g_variant_lookup (details,
-	                             "PreviousPackage", "(&s&s&s)",
-	                             &old_name, &old_evr, &old_arch);
+	g_debug ("!%s-%s-%s\n", name, old_evr, old_arch);
+	g_debug ("=%s-%s-%s\n", name, new_evr, new_arch);
 
-	have_new = g_variant_lookup (details,
-	                             "NewPackage", "(&s&s&s)",
-	                             &new_name, &new_evr, &new_arch);
+	return g_steal_pointer (&app);
+}
 
-	if (have_old && have_new) {
-		g_assert (g_strcmp0 (old_name, new_name) == 0);
+static GsApp *
+app_from_single_pkg_variant (GVariant *variant, gboolean addition)
+{
+	g_autoptr(GsApp) app = NULL;
+	const char *name;
+	const char *evr;
+	const char *arch;
 
-		/* update */
-		gs_app_add_source (app, old_name);
-		gs_app_set_version (app, old_evr);
-		gs_app_set_update_version (app, new_evr);
-		gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+	g_variant_get (variant, "(usss)", NULL /* type*/, &name, &evr, &arch);
 
-		g_print ("!%s-%s-%s\n", old_name, old_evr, old_arch);
-		g_print ("=%s-%s-%s\n", new_name, new_evr, new_arch);
-	} else if (have_old) {
-		/* removal */
-		gs_app_add_source (app, old_name);
-		gs_app_set_version (app, old_evr);
-		gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
+	/* create new app */
+	app = gs_app_new (NULL);
+	gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
+	gs_app_set_management_plugin (app, "rpm-ostree");
+	gs_app_set_size_download (app, 0);
+	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
+	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
 
-		g_print ("-%s-%s-%s\n", old_name, old_evr, old_arch);
-	} else if (have_new) {
-		/* install */
-		gs_app_add_source (app, new_name);
-		gs_app_set_version (app, new_evr);
+	if (addition) {
+		/* addition */
+		gs_app_add_source (app, name);
+		gs_app_set_version (app, evr);
 		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 
-		g_print ("+%s-%s-%s\n", new_name, new_evr, new_arch);
+		g_debug ("+%s-%s-%s\n", name, evr, arch);
+	} else {
+		/* removal */
+		gs_app_add_source (app, name);
+		gs_app_set_version (app, evr);
+		gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
+
+		g_debug ("-%s-%s-%s\n", name, evr, arch);
 	}
 
 	return g_steal_pointer (&app);
+}
+
+static GVariant *
+make_rpmostree_options_variant (gboolean reboot,
+                                gboolean allow_downgrade,
+                                gboolean cache_only,
+                                gboolean download_only,
+                                gboolean skip_purge,
+                                gboolean no_pull_base,
+                                gboolean dry_run,
+                                gboolean no_overrides)
+{
+	GVariantDict dict;
+	g_variant_dict_init (&dict, NULL);
+	g_variant_dict_insert (&dict, "reboot", "b", reboot);
+	g_variant_dict_insert (&dict, "allow-downgrade", "b", allow_downgrade);
+	g_variant_dict_insert (&dict, "cache-only", "b", cache_only);
+	g_variant_dict_insert (&dict, "download-only", "b", download_only);
+	g_variant_dict_insert (&dict, "skip-purge", "b", skip_purge);
+	g_variant_dict_insert (&dict, "no-pull-base", "b", no_pull_base);
+	g_variant_dict_insert (&dict, "dry-run", "b", dry_run);
+	g_variant_dict_insert (&dict, "no-overrides", "b", no_overrides);
+	return g_variant_ref_sink (g_variant_dict_end (&dict));
 }
 
 gboolean
@@ -371,10 +404,50 @@ gs_plugin_refresh (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
-	if (flags & GS_PLUGIN_REFRESH_FLAGS_METADATA) {
+	if (flags & GS_PLUGIN_REFRESH_FLAGS_PAYLOAD) {
 		g_autofree gchar *transaction_address = NULL;
+		g_autoptr(GVariant) options = NULL;
 
-		if (!gs_rpmostree_os_call_download_update_rpm_diff_sync (priv->os_proxy,
+		options = make_rpmostree_options_variant (FALSE,  /* reboot */
+		                                          FALSE,  /* allow-downgrade */
+		                                          FALSE,  /* cache-only */
+		                                          TRUE,   /* download-only */
+		                                          FALSE,  /* skip-purge */
+		                                          FALSE,  /* no-pull-base */
+		                                          FALSE,  /* dry-run */
+		                                          FALSE); /* no-overrides */
+		if (!gs_rpmostree_os_call_upgrade_sync (priv->os_proxy,
+		                                        options,
+		                                        NULL /* fd list */,
+		                                        &transaction_address,
+		                                        NULL /* fd list out */,
+		                                        cancellable,
+		                                        error)) {
+			gs_utils_error_convert_gio (error);
+			return FALSE;
+		}
+
+		if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
+		                                                 transaction_address,
+		                                                 cancellable,
+		                                                 error)) {
+			gs_utils_error_convert_gio (error);
+			return FALSE;
+		}
+	}
+
+	if (flags & GS_PLUGIN_REFRESH_FLAGS_PAYLOAD) {
+		g_autofree gchar *transaction_address = NULL;
+		g_autoptr(GVariant) options = NULL;
+		GVariantDict dict;
+
+		g_variant_dict_init (&dict, NULL);
+		g_variant_dict_insert (&dict, "mode", "s", "check");
+		options = g_variant_ref_sink (g_variant_dict_end (&dict));
+
+		if (!gs_rpmostree_os_call_automatic_update_trigger_sync (priv->os_proxy,
+		                                                         options,
+		                                                         NULL,
 		                                                         &transaction_address,
 		                                                         cancellable,
 		                                                         error)) {
@@ -401,35 +474,185 @@ gs_plugin_add_updates (GsPlugin *plugin,
 		       GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GVariant) result = NULL;
-	g_autoptr(GVariant) details = NULL;
-	GVariantIter iter;
-	GVariant *child;
+	g_autoptr(GVariant) cached_update = NULL;
+	g_autoptr(GVariant) rpm_diff = NULL;
+	const gchar *checksum = NULL;
+	const gchar *version = NULL;
+	g_auto(GVariantDict) cached_update_dict;
 
-	if (!gs_rpmostree_os_call_get_cached_update_rpm_diff_sync (priv->os_proxy,
-	                                                           "",
-	                                                           &result,
-	                                                           &details,
-	                                                           cancellable,
-	                                                           error)) {
+	/* ensure D-Bus properties are updated before reading them */
+	gs_rpmostree_sysroot_call_reload_sync (priv->sysroot_proxy, cancellable, error);
+
+	cached_update = gs_rpmostree_os_dup_cached_update (priv->os_proxy);
+	g_variant_dict_init (&cached_update_dict, cached_update);
+
+	if (!g_variant_dict_lookup (&cached_update_dict, "checksum", "&s", &checksum))
+		return TRUE;
+	if (!g_variant_dict_lookup (&cached_update_dict, "version", "&s", &version))
+		return TRUE;
+
+	g_debug ("got CachedUpdate version '%s', checksum '%s'", version, checksum);
+
+	rpm_diff = g_variant_dict_lookup_value (&cached_update_dict, "rpm-diff", G_VARIANT_TYPE ("a{sv}"));
+	if (rpm_diff != NULL) {
+		GVariantIter iter;
+		GVariant *child;
+		g_autoptr(GVariant) upgraded = NULL;
+		g_autoptr(GVariant) downgraded = NULL;
+		g_autoptr(GVariant) removed = NULL;
+		g_autoptr(GVariant) added = NULL;
+		g_auto(GVariantDict) rpm_diff_dict;
+		g_variant_dict_init (&rpm_diff_dict, rpm_diff);
+
+		upgraded = g_variant_dict_lookup_value (&rpm_diff_dict, "upgraded", G_VARIANT_TYPE ("a(us(ss)(ss))"));
+		if (upgraded == NULL) {
+			g_set_error_literal (error,
+			                     GS_PLUGIN_ERROR,
+			                     GS_PLUGIN_ERROR_INVALID_FORMAT,
+			                     "no 'upgraded' in rpm-diff dict");
+			return FALSE;
+		}
+		downgraded = g_variant_dict_lookup_value (&rpm_diff_dict, "downgraded", G_VARIANT_TYPE ("a(us(ss)(ss))"));
+		if (downgraded == NULL) {
+			g_set_error_literal (error,
+			                     GS_PLUGIN_ERROR,
+			                     GS_PLUGIN_ERROR_INVALID_FORMAT,
+			                     "no 'downgraded' in rpm-diff dict");
+			return FALSE;
+		}
+		removed = g_variant_dict_lookup_value (&rpm_diff_dict, "removed", G_VARIANT_TYPE ("a(usss)"));
+		if (removed == NULL) {
+			g_set_error_literal (error,
+			                     GS_PLUGIN_ERROR,
+			                     GS_PLUGIN_ERROR_INVALID_FORMAT,
+			                     "no 'removed' in rpm-diff dict");
+			return FALSE;
+		}
+		added = g_variant_dict_lookup_value (&rpm_diff_dict, "added", G_VARIANT_TYPE ("a(usss)"));
+		if (added == NULL) {
+			g_set_error_literal (error,
+			                     GS_PLUGIN_ERROR,
+			                     GS_PLUGIN_ERROR_INVALID_FORMAT,
+			                     "no 'added' in rpm-diff dict");
+			return FALSE;
+		}
+
+		/* iterate over all upgraded packages and add them */
+		g_variant_iter_init (&iter, upgraded);
+		while ((child = g_variant_iter_next_value (&iter)) != NULL) {
+			g_autoptr(GsApp) app = app_from_modified_pkg_variant (child);
+			if (app != NULL)
+				gs_app_list_add (list, app);
+			g_variant_unref (child);
+		}
+
+		/* iterate over all downgraded packages and add them */
+		g_variant_iter_init (&iter, downgraded);
+		while ((child = g_variant_iter_next_value (&iter)) != NULL) {
+			g_autoptr(GsApp) app = app_from_modified_pkg_variant (child);
+			if (app != NULL)
+				gs_app_list_add (list, app);
+			g_variant_unref (child);
+		}
+
+		/* iterate over all removed packages and add them */
+		g_variant_iter_init (&iter, removed);
+		while ((child = g_variant_iter_next_value (&iter)) != NULL) {
+			g_autoptr(GsApp) app = app_from_single_pkg_variant (child, FALSE);
+			if (app != NULL)
+				gs_app_list_add (list, app);
+			g_variant_unref (child);
+		}
+
+		/* iterate over all added packages and add them */
+		g_variant_iter_init (&iter, added);
+		while ((child = g_variant_iter_next_value (&iter)) != NULL) {
+			g_autoptr(GsApp) app = app_from_single_pkg_variant (child, TRUE);
+			if (app != NULL)
+				gs_app_list_add (list, app);
+			g_variant_unref (child);
+		}
+	}
+
+	return TRUE;
+}
+
+static gboolean
+trigger_rpmostree_update (GsPlugin *plugin,
+                          GsApp *app,
+                          GCancellable *cancellable,
+                          GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autofree gchar *transaction_address = NULL;
+	g_autoptr(GVariant) options = NULL;
+
+	/* if we can process this online do not require a trigger */
+	if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE)
+		return TRUE;
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	/* already in correct state */
+	if (priv->update_triggered)
+		return TRUE;
+
+	/* trigger the update */
+	options = make_rpmostree_options_variant (FALSE,  /* reboot */
+	                                          FALSE,  /* allow-downgrade */
+	                                          TRUE,   /* cache-only */
+	                                          FALSE,  /* download-only */
+	                                          FALSE,  /* skip-purge */
+	                                          FALSE,  /* no-pull-base */
+	                                          FALSE,  /* dry-run */
+	                                          FALSE); /* no-overrides */
+	if (!gs_rpmostree_os_call_upgrade_sync (priv->os_proxy,
+	                                        options,
+	                                        NULL /* fd list */,
+	                                        &transaction_address,
+	                                        NULL /* fd list out */,
+	                                        cancellable,
+	                                        error)) {
 		gs_utils_error_convert_gio (error);
 		return FALSE;
 	}
 
-	if (g_variant_n_children (result) == 0)
-		return TRUE;
-
-	/* GVariant format should be a(sua{sv}) */
-	g_variant_iter_init (&iter, result);
-
-	while ((child = g_variant_iter_next_value (&iter)) != NULL) {
-		g_autoptr(GsApp) app = make_app (child);
-		if (app != NULL) {
-			gs_app_list_add (list, app);
-		}
-		g_variant_unref (child);
+	if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
+	                                                 transaction_address,
+	                                                 cancellable,
+	                                                 error)) {
+		gs_utils_error_convert_gio (error);
+		return FALSE;
 	}
 
+	priv->update_triggered = TRUE;
+
+	/* success */
+	return TRUE;
+}
+
+gboolean
+gs_plugin_update_app (GsPlugin *plugin,
+                      GsApp *app,
+                      GCancellable *cancellable,
+                      GError **error)
+{
+	GPtrArray *related = gs_app_get_related (app);
+
+	/* we don't currently don't put all updates in the OsUpdate proxy app */
+	if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+		return trigger_rpmostree_update (plugin, app, cancellable, error);
+
+	/* try to trigger each related app */
+	for (guint i = 0; i < related->len; i++) {
+		GsApp *app_tmp = g_ptr_array_index (related, i);
+		if (!trigger_rpmostree_update (plugin, app_tmp, cancellable, error))
+			return FALSE;
+	}
+
+	/* success */
 	return TRUE;
 }
 
@@ -465,6 +688,9 @@ gs_plugin_refine (GsPlugin *plugin,
 	g_autoptr(GVariant) booted_deployment = NULL;
 	g_auto(GStrv) layered_packages = NULL;
 	g_autofree gchar *checksum = NULL;
+
+	/* ensure D-Bus properties are updated before reading them */
+	gs_rpmostree_sysroot_call_reload_sync (priv->sysroot_proxy, cancellable, error);
 
 	booted_deployment = gs_rpmostree_os_dup_booted_deployment (priv->os_proxy);
 	g_assert (g_variant_lookup (booted_deployment,

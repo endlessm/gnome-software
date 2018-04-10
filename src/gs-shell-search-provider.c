@@ -24,10 +24,12 @@
 #include <config.h>
 
 #include <gio/gio.h>
+#include <glib/gi18n.h>
 #include <string.h>
 
 #include "gs-shell-search-provider-generated.h"
 #include "gs-shell-search-provider.h"
+#include "gs-common.h"
 
 #define GS_SHELL_SEARCH_PROVIDER_MAX_RESULTS	20
 
@@ -44,7 +46,7 @@ struct _GsShellSearchProvider {
 	GCancellable *cancellable;
 
 	GHashTable *metas_cache;
-	GHashTable *apps_cache;		/* id -> GsApp */
+	GsAppList *search_results;
 };
 
 G_DEFINE_TYPE (GsShellSearchProvider, gs_shell_search_provider, G_TYPE_OBJECT)
@@ -81,7 +83,7 @@ search_done_cb (GObject *source,
 	g_autoptr(GsAppList) list = NULL;
 
 	/* cache no longer valid */
-	g_hash_table_remove_all (self->apps_cache);
+	gs_app_list_remove_all (self->search_results);
 
 	list = gs_plugin_loader_job_process_finish (self->plugin_loader, res, NULL);
 	if (list == NULL) {
@@ -102,9 +104,7 @@ search_done_cb (GObject *source,
 		g_variant_builder_add (&builder, "s", gs_app_get_unique_id (app));
 
 		/* cache this in case we need the app in GetResultMetas */
-		g_hash_table_insert (self->apps_cache,
-				     g_strdup (gs_app_get_unique_id (app)),
-				     g_object_ref (app));
+		gs_app_list_add (self->search_results, app);
 	}
 	g_dbus_method_invocation_return_value (search->invocation, g_variant_new ("(as)", &builder));
 
@@ -189,7 +189,8 @@ execute_search (GsShellSearchProvider  *self,
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
 					 "search", value,
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+					                 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					 "max-results", GS_SHELL_SEARCH_PROVIDER_MAX_RESULTS,
 					 NULL);
 	gs_plugin_job_set_sort_func (plugin_job, gs_shell_search_provider_sort_cb);
@@ -244,13 +245,14 @@ handle_get_result_metas (GsShellSearchProvider2	*skeleton,
 
 	for (i = 0; results[i]; i++) {
 		GsApp *app;
+		g_autofree gchar *description = NULL;
 
 		/* already built */
 		if (g_hash_table_lookup (self->metas_cache, results[i]) != NULL)
 			continue;
 
 		/* get previously found app */
-		app = g_hash_table_lookup (self->apps_cache, results[i]);
+		app = gs_app_list_lookup (self->search_results, results[i]);
 		if (app == NULL) {
 			g_warning ("failed to refine find app %s in cache", results[i]);
 			continue;
@@ -262,7 +264,20 @@ handle_get_result_metas (GsShellSearchProvider2	*skeleton,
 		pixbuf = gs_app_get_pixbuf (app);
 		if (pixbuf != NULL)
 			g_variant_builder_add (&meta, "{sv}", "icon", g_icon_serialize (G_ICON (pixbuf)));
-		g_variant_builder_add (&meta, "{sv}", "description", g_variant_new_string (gs_app_get_summary (app)));
+
+		if (gs_utils_list_has_app_fuzzy (self->search_results, app) &&
+		    gs_app_get_origin_hostname (app) != NULL) {
+			/* TRANSLATORS: this refers to where the app came from */
+			g_autofree gchar *source_text = g_strdup_printf (_("Source: %s"),
+			                                                 gs_app_get_origin_hostname (app));
+			description = g_strdup_printf ("%s     %s",
+			                               gs_app_get_summary (app),
+			                               source_text);
+		} else {
+			description = g_strdup (gs_app_get_summary (app));
+		}
+		g_variant_builder_add (&meta, "{sv}", "description", g_variant_new_string (description));
+
 		meta_variant = g_variant_builder_end (&meta);
 		g_hash_table_insert (self->metas_cache,
 				     g_strdup (gs_app_get_unique_id (app)),
@@ -350,11 +365,8 @@ search_provider_dispose (GObject *obj)
 		g_hash_table_destroy (self->metas_cache);
 		self->metas_cache = NULL;
 	}
-	if (self->apps_cache != NULL) {
-		g_hash_table_destroy (self->apps_cache);
-		self->apps_cache = NULL;
-	}
 
+	g_clear_object (&self->search_results);
 	g_clear_object (&self->plugin_loader);
 	g_clear_object (&self->skeleton);
 
@@ -368,9 +380,8 @@ gs_shell_search_provider_init (GsShellSearchProvider *self)
 						   (GEqualFunc) as_utils_unique_id_equal,
 						   g_free,
 						   (GDestroyNotify) g_variant_unref);
-	self->apps_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
-						  g_free, (GDestroyNotify) g_object_unref);
 
+	self->search_results = gs_app_list_new ();
 	self->skeleton = gs_shell_search_provider2_skeleton_new ();
 
 	g_signal_connect (self->skeleton, "handle-get-initial-result-set",

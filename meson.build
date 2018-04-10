@@ -1,5 +1,5 @@
 project('gnome-software', 'c',
-  version : '3.28.0',
+  version : '3.28.1',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
   meson_version : '>=0.37.0'
@@ -154,7 +154,7 @@ endif
 
 if get_option('enable-rpm-ostree')
   ostree = dependency('ostree-1')
-  rpm_ostree = dependency('rpm-ostree-1')
+  rpm_ostree = dependency('rpm-ostree-1', version : '>= 2018.4')
 endif
 
 if get_option('enable-ubuntu-reviews')

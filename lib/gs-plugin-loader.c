@@ -409,6 +409,12 @@ gs_plugin_loader_is_error_fatal (GsPluginFailureFlags failure_flags,
 		if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID))
 			return TRUE;
 	}
+	if (failure_flags & GS_PLUGIN_FAILURE_FLAGS_FATAL_PURCHASE) {
+		if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_PURCHASE_NOT_SETUP))
+			return TRUE;
+		if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_PURCHASE_DECLINED))
+			return TRUE;
+	}
 	if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_TIMED_OUT))
 		return TRUE;
 	return FALSE;
@@ -3749,7 +3755,7 @@ gs_plugin_loader_app_create (GsPluginLoader *plugin_loader, const gchar *unique_
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE, NULL);
 	helper = gs_plugin_loader_helper_new (plugin_loader, plugin_job);
 	if (!gs_plugin_loader_run_refine (helper, list, NULL, &error)) {
-		g_error ("%s", error->message);
+		g_warning ("%s", error->message);
 		return NULL;
 	}
 
