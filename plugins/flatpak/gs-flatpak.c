@@ -2710,10 +2710,10 @@ gs_flatpak_app_remove_source (GsFlatpak *self,
 }
 
 /*
- * gs_flatpak_get_services_app_for_runtime:
- * Specific to Endless runtimes, gets a GsApp reference for the related
- * "EknServices" app that provides system services for apps that use the
- * given runtime.
+ * gs_flatpak_get_services_app_if_needed:
+ * Specific to Endless runtimes, returns a GsApp reference for the
+ * "EknServicesMultiplexer" app that provides system services for apps that
+ * use the SDK, or use the old runtime and appear to be an Endless app.
  *
  * Returns NULL if no services app was required or there was an error.
  * Does not take a GError since any error should be recoverable. However, in
@@ -2721,40 +2721,36 @@ gs_flatpak_app_remove_source (GsFlatpak *self,
  * status of the GCancellable after calling this.
  */
 static GsApp *
-gs_flatpak_get_services_app_for_runtime (GsFlatpak *self, GsApp *runtime,
-                                         GCancellable *cancellable)
+gs_flatpak_get_services_app_if_needed (GsFlatpak *self,
+				       GsApp *app,
+				       GsApp *runtime,
+				       GCancellable *cancellable)
 {
+	const gchar *app_id;
 	const gchar *runtime_id;
-	const gchar *runtime_branch;
-	const gchar *services_branch;
+	gboolean needed = FALSE;
+	const gchar *services_id = "com.endlessm.EknServicesMultiplexer";
+	const gchar *services_branch = "stable";
 	const gchar *arch;
-	g_autofree gchar *services_id = NULL;
 	g_autofree gchar *description = NULL;
 	g_autoptr(FlatpakRef) services_ref = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsApp) services_app = NULL;
 
+	app_id = gs_app_get_id (app);
 	runtime_id = gs_app_get_id (runtime);
-	runtime_branch = gs_app_get_branch (runtime);
 
-	if ((g_strcmp0 (runtime_id, "com.endlessm.Platform") == 0 &&
-	     g_strcmp0 (runtime_branch, "eos3.1") == 0) ||
-	    (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0 &&
-	     g_strcmp0 (runtime_branch, "1") == 0)) {
-		services_id = g_strdup ("com.endlessm.EknServices");
-		services_branch = "eos3";
-	} else if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0) {
-		services_id = g_strdup ("com.endlessm.EknServices2");
-		if (g_strcmp0 (runtime_branch, "master") == 0)
-			services_branch = "master";
-		else
-			services_branch = "stable";
-	} else {
-		/* Runtime doesn't require an EknServices app */
-		return NULL;
+	if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0) {
+		needed = TRUE;
+	} else if (g_strcmp0 (runtime_id, "com.endlessm.Platform") == 0 &&
+		   g_str_has_prefix (app_id, "com.endlessm.")) {
+		needed = TRUE;
 	}
 
-	/* Construct a GsApp for the EknServices we determined we needed */
+	if (!needed)
+		return NULL;
+
+	/* Construct a GsApp for EknServicesMultiplexer */
 	arch = gs_flatpak_app_get_ref_arch (runtime);
 	description = g_strdup_printf ("app/%s/%s/%s", services_id, arch, services_branch);
 	services_ref = flatpak_ref_parse (description, &error);
@@ -2991,7 +2987,7 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 		gs_flatpak_add_app_to_list_if_not_installed (runtime, list, hash_installed);
 
 	/* add services flatpak */
-	services_app = gs_flatpak_get_services_app_for_runtime (self, runtime, cancellable);
+	services_app = gs_flatpak_get_services_app_if_needed (self, app, runtime, cancellable);
 	if (g_cancellable_set_error_if_cancelled (cancellable, error))
 		return FALSE;
 	if (services_app != NULL) {
