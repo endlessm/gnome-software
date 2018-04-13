@@ -1558,7 +1558,10 @@ gs_flatpak_add_updates_pending (GsFlatpak *self, GsAppList *list,
 		if (main_app == NULL)
 			return FALSE;
 
-		gs_app_set_state (main_app, AS_APP_STATE_UPDATABLE_LIVE);
+		/* if for the reason the app is already getting updated, then
+		 * don't change its state */
+		if (gs_app_get_state (main_app) != AS_APP_STATE_INSTALLING)
+			gs_app_set_state (main_app, AS_APP_STATE_UPDATABLE_LIVE);
 
 		/* get the current download size */
 		if (gs_app_get_size_download (main_app) == 0) {
