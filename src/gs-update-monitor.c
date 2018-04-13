@@ -33,6 +33,8 @@
 
 #define APP_METADATA_AUTO_UPDATING "GnomeSoftware::auto-updating"
 
+#define UPDATE_CHECK_INTERVAL_SECS (2 * 3600)
+
 struct _GsUpdateMonitor {
 	GObject		 parent;
 
@@ -807,7 +809,7 @@ check_updates (GsUpdateMonitor *monitor)
 	gboolean refresh_on_metered;
 	gboolean connection_is_metered;
 	g_autoptr(GDateTime) last_refreshed = NULL;
-	g_autoptr(GDateTime) now_refreshed = NULL;
+	g_autoptr(GDateTime) now = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	GsPluginRefreshFlags refresh_flags = GS_PLUGIN_REFRESH_FLAGS_METADATA;
 
@@ -838,35 +840,28 @@ check_updates (GsUpdateMonitor *monitor)
 		g_debug ("no UPower support, so not doing power level checks");
 	}
 
+	now = g_date_time_new_now_local ();
+
 	g_settings_get (monitor->settings, "check-timestamp", "x", &tmp);
 	last_refreshed = g_date_time_new_from_unix_local (tmp);
 	if (last_refreshed != NULL) {
-		gint now_year, now_month, now_day, now_hour;
-		gint year, month, day;
-		g_autoptr(GDateTime) now = NULL;
+		GTimeSpan time_passed;
+		gint64 time_passed_secs;
 
-		now = g_date_time_new_now_local ();
+		time_passed = g_date_time_difference (now, last_refreshed);
+		time_passed_secs = time_passed / G_USEC_PER_SEC;
 
-		g_date_time_get_ymd (now, &now_year, &now_month, &now_day);
-		now_hour = g_date_time_get_hour (now);
-
-		g_date_time_get_ymd (last_refreshed, &year, &month, &day);
-
-		/* check that it is the next day */
-		if (!((now_year > year) ||
-		      (now_year == year && now_month > month) ||
-		      (now_year == year && now_month == month && now_day > day)))
+		if (time_passed_secs < UPDATE_CHECK_INTERVAL_SECS) {
+			g_debug ("Not performing check for updates since only "
+				 "%ld secs have passed since last time",
+				 time_passed_secs);
 			return;
-
-		/* ...and past 6am */
-		if (!(now_hour >= 6))
-			return;
+		}
 	}
 
-	g_debug ("Daily update check due");
-	now_refreshed = g_date_time_new_now_local ();
+	g_debug ("Updates check due");
 	g_settings_set (monitor->settings, "check-timestamp", "x",
-			g_date_time_to_unix (now_refreshed));
+			g_date_time_to_unix (now));
 
 	if (gs_plugin_loader_get_allow_updates (monitor->plugin_loader) &&
 	    !connection_is_metered &&
