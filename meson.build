@@ -101,6 +101,7 @@ json_glib = dependency('json-glib-1.0', version : '>= 1.1.1')
 libm = cc.find_library('m', required: false)
 libsecret = dependency('libsecret-1')
 libsoup = dependency('libsoup-2.4', version : '>= 2.51.92')
+mogwai_schedule_client = dependency('mogwai-schedule-client-0')
 sqlite3 = dependency('sqlite3')
 
 if get_option('enable-valgrind')
