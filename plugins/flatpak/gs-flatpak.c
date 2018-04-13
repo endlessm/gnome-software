@@ -46,6 +46,17 @@ struct _GsFlatpak {
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
 
+#define APP_METADATA_MOGWAI_UPDATE_PRIORITY "Mogwai::update-priority"
+
+/* higher has the value that is used by eos-updater for OS updates */
+typedef enum {
+	UPDATE_PRIORITY_LOW = 0,
+	UPDATE_PRIORITY_NORMAL = 10,
+	UPDATE_PRIORITY_HIGH = 20,
+	UPDATE_PRIORITY_HIGHER = 30,
+	UPDATE_PRIORITY_HIGHEST = 100
+} UpdatePriority;
+
 static gboolean
 gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 			      GCancellable *cancellable, GError **error);
@@ -1509,6 +1520,44 @@ get_real_app_for_update (GsFlatpak *self,
 	return main_app;
 }
 
+static gboolean
+is_endless_app (GsApp *app)
+{
+	return g_str_has_prefix (gs_app_get_id (app), "com.endlessm.");
+}
+
+static gboolean
+is_endless_content_runtime (GsApp *app)
+{
+	const gchar *app_id = gs_app_get_id (app);
+	return gs_app_get_kind (app) == AS_APP_KIND_RUNTIME &&
+		is_endless_app (app) && g_str_has_suffix (app_id, "Content");
+}
+
+static UpdatePriority
+get_app_update_priority (GsApp *app)
+{
+	if (is_endless_content_runtime (app))
+		return UPDATE_PRIORITY_HIGHEST;
+	else if (gs_app_get_kind (app) == AS_APP_KIND_RUNTIME)
+		return UPDATE_PRIORITY_LOW;
+	else if (is_endless_app (app))
+		/* we prioritize Endless apps since some of them have
+		 * frequently updated content */
+		return UPDATE_PRIORITY_HIGH;
+	return UPDATE_PRIORITY_NORMAL;
+}
+
+static void
+set_app_update_priority (GsApp *app, UpdatePriority priority)
+{
+	g_autoptr(GVariant) tmp = g_variant_new_uint32 (priority);
+	/* we have to always reset the metadata to NULL, otherwise GsApp doesn't
+	 * let us override it */
+	gs_app_set_metadata_variant (app, APP_METADATA_MOGWAI_UPDATE_PRIORITY, NULL);
+	gs_app_set_metadata_variant (app, APP_METADATA_MOGWAI_UPDATE_PRIORITY, tmp);
+}
+
 gboolean
 gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 			GCancellable *cancellable,
@@ -1537,6 +1586,7 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 		g_autoptr(GsApp) app = NULL;
 		g_autoptr(GError) error_local = NULL;
 		g_autoptr(GsApp) main_app = NULL;
+		UpdatePriority update_priority;
 
 		/* check the application has already been downloaded */
 		commit = flatpak_ref_get_commit (FLATPAK_REF (xref));
@@ -1548,6 +1598,9 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 		}
 
 		app = gs_flatpak_create_installed (self, xref);
+
+		update_priority = get_app_update_priority (app);
+
 		main_app = get_real_app_for_update (self, app, cancellable, &error_local);
 		if (main_app == NULL) {
 			g_debug ("Couldn't get the main app for updatable app extension %s: "
@@ -1556,6 +1609,18 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 			g_clear_error (&error_local);
 			main_app = g_object_ref (app);
 		}
+
+		/* set the update highest update priority between the main app
+		 * and any important related apps (e.g. if we have a content
+		 * extension whose update should get prioritized, then we need to
+		 * set its main app priority to represent it) */
+		if (main_app != app) {
+			UpdatePriority main_app_update_priority =
+				get_app_update_priority (main_app);
+			if (update_priority < main_app_update_priority)
+				update_priority = main_app_update_priority;
+		}
+		set_app_update_priority (main_app, update_priority);
 
 		/* if for some reason the app is already getting updated, then
 		 * don't change its state */
