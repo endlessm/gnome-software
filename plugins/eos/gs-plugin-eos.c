@@ -1035,7 +1035,6 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		"org.gnome.clocks",
 		"org.gnome.eog",
 		"org.gnome.gedit",
-		"org.libreoffice.LibreOffice",
 		NULL
 	};
 
