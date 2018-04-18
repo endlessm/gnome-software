@@ -33,7 +33,7 @@
 
 #define APP_METADATA_AUTO_UPDATING "GnomeSoftware::auto-updating"
 
-#define UPDATE_CHECK_INTERVAL (2 * 3600) /* secs */
+#define UPDATE_CHECK_INTERVAL_SECS (2 * 3600)
 
 struct _GsUpdateMonitor {
 	GObject		 parent;
@@ -838,27 +838,26 @@ check_updates (GsUpdateMonitor *monitor)
 		g_debug ("no UPower support, so not doing power level checks");
 	}
 
+	now = g_date_time_new_now_local ();
+
 	g_settings_get (monitor->settings, "check-timestamp", "x", &tmp);
 	last_refreshed = g_date_time_new_from_unix_local (tmp);
 	if (last_refreshed != NULL) {
 		GTimeSpan time_passed;
-		guint time_passed_secs;
+		gint64 time_passed_secs;
 
-		now = g_date_time_new_now_local ();
 		time_passed = g_date_time_difference (now, last_refreshed);
-		time_passed_secs = (guint) (time_passed / 1000000); /* usec to sec */
+		time_passed_secs = time_passed / G_USEC_PER_SEC;
 
-		if (time_passed_secs < UPDATE_CHECK_INTERVAL) {
+		if (time_passed_secs < UPDATE_CHECK_INTERVAL_SECS) {
 			g_debug ("Not performing check for updates since only "
-				 "%u secs have passed since last time",
+				 "%ld secs have passed since last time",
 				 time_passed_secs);
 			return;
 		}
 	}
 
 	g_debug ("Updates check due");
-	if (now == NULL)
-		now = g_date_time_new_now_local ();
 	g_settings_set (monitor->settings, "check-timestamp", "x",
 			g_date_time_to_unix (now));
 
