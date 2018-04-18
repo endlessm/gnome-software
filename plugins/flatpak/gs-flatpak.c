@@ -1552,18 +1552,14 @@ is_endless_content_runtime (GsApp *app)
 static UpdatePriority
 get_app_update_priority (GsApp *app)
 {
-	if (gs_app_get_kind (app) == AS_APP_KIND_RUNTIME) {
-		if (is_endless_content_runtime (app))
-			return UPDATE_PRIORITY_HIGHEST;
+	if (is_endless_content_runtime (app))
+		return UPDATE_PRIORITY_HIGHEST;
+	else if (gs_app_get_kind (app) == AS_APP_KIND_RUNTIME)
 		return UPDATE_PRIORITY_LOW;
-	}
-
-	/* we prioritize Endless apps since some of them have
-	 * frequently updated content */
-	if (is_endless_app (app)) {
+	else if (is_endless_app (app))
+		/* we prioritize Endless apps since some of them have
+		 * frequently updated content */
 		return UPDATE_PRIORITY_HIGH;
-	}
-
 	return UPDATE_PRIORITY_NORMAL;
 }
 
