@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-03-02 14:08+0100\n"
-"PO-Revision-Date: 2018-04-19 20:53+0000\n"
+"PO-Revision-Date: 2018-04-19 20:59+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Slovenian (http://www.transifex.com/endless-os/gnome-software/language/sl/)\n"
 "MIME-Version: 1.0\n"
@@ -65,11 +65,11 @@ msgstr "Projekt GNOME"
 
 #: data/org.gnome.software.external-appstream.policy.in:11
 msgid "Install an appstream file into a system location"
-msgstr ""
+msgstr "Namesti pretočno datoteko na sistemsko mesto"
 
 #: data/org.gnome.software.external-appstream.policy.in:12
 msgid "Installing an appstream file into a system location"
-msgstr ""
+msgstr "Poteka nameščanje pretočne datoteke na sistemsko mesto"
 
 #: data/org.gnome.software.gschema.xml:5
 msgid "A list of compatible projects"
@@ -83,13 +83,13 @@ msgstr "To je seznam skladnih projektov, ki so na voljo, kot so GNOME, KDE in XF
 
 #: data/org.gnome.software.gschema.xml:10
 msgid "Whether to manage updates in GNOME Software"
-msgstr ""
+msgstr "Ali naj bodo posodobitve upravljane s privzetim programom GNOME"
 
 #: data/org.gnome.software.gschema.xml:11
 msgid ""
 "If disabled, GNOME Software will hide the updates panel and not perform any "
 "automatic updates actions."
-msgstr ""
+msgstr "Če možnost ni omogočena, program skrije okno posodobitev in ne izvaja samodejnih posodobitev."
 
 #: data/org.gnome.software.gschema.xml:15
 msgid "Whether to automatically perform updates"
@@ -104,18 +104,18 @@ msgstr ""
 
 #: data/org.gnome.software.gschema.xml:20
 msgid "Whether to automatically refresh when on a metered connection"
-msgstr ""
+msgstr "Ali naj bodo posodobitve samodejno osvežene tudi na plačljivih poezavah"
 
 #: data/org.gnome.software.gschema.xml:21
 msgid ""
 "If enabled, GNOME Software automatically refreshes in the background even "
 "when using a metered connection (eventually downloading some metadata, "
 "checking for updates, etc., which may incur in costs for the user)."
-msgstr ""
+msgstr "Če je možnost omogočena, program v ozadju samodejno osveži seznam programskih paketov, neglede na vrsto vzpostavljene povezave (prejemanje metapodatkov, posodobitev in drugih virov lahko vpliva na stroške uporabnika)."
 
 #: data/org.gnome.software.gschema.xml:25
 msgid "Whether it’s the very first run of GNOME Software"
-msgstr ""
+msgstr "Ali je to prvi zagon programa za upravljanje programske opreme GNOME"
 
 #: data/org.gnome.software.gschema.xml:29
 msgid "Show star ratings next to applications"
@@ -123,7 +123,7 @@ msgstr "Ob programu pokaži tudi oceno z zvedzicami"
 
 #: data/org.gnome.software.gschema.xml:33
 msgid "Filter applications based on the default branch set for the remote"
-msgstr ""
+msgstr "Filtrira programe na osnovi razvojne veje na oddaljenem gostitelju"
 
 #: data/org.gnome.software.gschema.xml:37
 msgid "Non-free applications show a warning dialog before install"
@@ -167,18 +167,18 @@ msgstr "Časovni žig prve varnostne posodobitve, ki je bila rešena po namestit
 
 #: data/org.gnome.software.gschema.xml:64
 msgid "The last update timestamp"
-msgstr "Časovni žig  zadnje posodobitve"
+msgstr "Časovni žig zadnje posodobitve"
 
 #: data/org.gnome.software.gschema.xml:68
 msgid "The age in seconds to verify the upstream screenshot is still valid"
-msgstr ""
+msgstr "Čas za overjanje v sekundah, po katerem program preveri veljavnost prikazane zaslonske slike"
 
 #: data/org.gnome.software.gschema.xml:69
 msgid ""
 "Choosing a larger value will mean less round-trips to the remote server but "
 "updates to the screenshots may take longer to show to the user. A value of 0"
 " means to never check the server if the image already exists in the cache."
-msgstr ""
+msgstr "Izbor večje vrednosti pomeni manjše število preverjanj podatkov na oddaljenih strežnikih, hkrati pa pomeni tudi odzivnost zaslonskih posnetkov, ki jih vidi uporabnik. Vrednost 0 pomeni, da program nikoli ne preveri, ali je slika že v predpomnilniku na strežniku."
 
 #: data/org.gnome.software.gschema.xml:78
 msgid "The server to use for application reviews"
@@ -237,7 +237,7 @@ msgstr "Pokaži tudi ne-prosto programsko opremo v zadetkih iskanja"
 
 #: data/org.gnome.software.gschema.xml:127
 msgid "Show the installed size for apps in the list of installed applications"
-msgstr ""
+msgstr "Pokaže nameščeno velikost programa na seznamu nameščenih programov"
 
 #: data/org.gnome.software.gschema.xml:131
 msgid "The URI that explains nonfree and proprietary software"
@@ -251,11 +251,11 @@ msgstr "Seznam dodatnih lastniških virov, ki jih je mogoče izbirno omogočiti"
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
-msgstr ""
+msgstr "Seznam naslovov URL, ki kažejo na datoteke programov, ki bodo prenjeti v mapo app-info"
 
 #: data/org.gnome.software.gschema.xml:143
 msgid "Install the AppStream files to a system-wide location for all users"
-msgstr ""
+msgstr "Namesti datoteke AppStream na sistemsko mesto za vse uporabnike"
 
 #: data/org.gnome.software.gschema.xml:147
 msgid "Sorts the apps shown in the overview in alphabetical order"
@@ -328,7 +328,7 @@ msgstr "Viri programske opreme"
 #. button in the info bar
 #: src/gnome-software.ui:361
 msgid "Examine Disk"
-msgstr ""
+msgstr "Preuči nosilec"
 
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
@@ -436,7 +436,7 @@ msgstr "IMEDATOTEKE"
 msgid ""
 "The kind of interaction expected for this action: either ‘none’, ‘notify’, "
 "or ‘full’"
-msgstr ""
+msgstr "Vrsta odziva, ki je pričakovan za to dejanje: možnost iso »brez«, »obvesti« in »polno«"
 
 #: src/gs-application.c:143
 msgid "Show verbose debugging information"
@@ -571,7 +571,7 @@ msgstr "Koda PIN"
 
 #: src/gs-auth-dialog.ui:325
 msgid "Authenticate"
-msgstr ""
+msgstr "Overi"
 
 #: src/gs-auth-dialog.ui:337
 msgid "Continue"
@@ -608,24 +608,24 @@ msgstr "Razširitve uporabljate na lastno odgovornost. Če imate kakšne sistems
 #: lib/gs-cmd.c:205
 #, c-format
 msgid "Please enter a number from 1 to %u: "
-msgstr ""
+msgstr "Vpišite število med 1 in %u: "
 
 #. TRANSLATORS: asking the user to choose an app from a list
 #: lib/gs-cmd.c:268
 msgid "Choose an application:"
-msgstr ""
+msgstr "Izbor programa:"
 
 #. TRANSLATORS: this is the summary of a notification that OS updates
 #. * have been successfully installed
 #: src/gs-common.c:135
 msgid "OS updates are now installed"
-msgstr ""
+msgstr "Posodobitve sistema so nameščene"
 
 #. TRANSLATORS: this is the body of a notification that OS updates
 #. * have been successfully installed
 #: src/gs-common.c:138
 msgid "Recently installed updates are available to review"
-msgstr ""
+msgstr "Nedavno nameščene posodobitve so pripravljene za pregled."
 
 #. TRANSLATORS: this is the summary of a notification that an application
 #. * has been successfully installed
@@ -638,7 +638,7 @@ msgstr "%s je zdaj nameščen"
 #. * has been successfully installed
 #: src/gs-common.c:145
 msgid "Application is ready to be used."
-msgstr ""
+msgstr "Program je pripravljen za uporabo."
 
 #. TRANSLATORS: this is button that opens the newly installed application
 #: src/gs-common.c:151
@@ -744,7 +744,7 @@ msgstr "Liki v nevarnih situacijah, ki jih je mogoče zlahka razlikovati od real
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:93
 msgid "Characters in aggressive conflict easily distinguishable from reality"
-msgstr "Liki v nasilnem konfliktu, ki ga je mogoče  zlahka razlikovati od realnosti"
+msgstr "Liki v nasilnem konfliktu, ki ga je mogoče zlahka razlikovati od realnosti"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:96
@@ -819,7 +819,7 @@ msgstr "Uporaba alkoholnih pijač"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:138
 msgid "No references to illicit drugs"
-msgstr ""
+msgstr "Ni omenjanja prepovedanih drog"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:141
@@ -859,7 +859,7 @@ msgstr "Daljši prikazi golote"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:162
 msgid "No references or depictions of sexual nature"
-msgstr ""
+msgstr "Ni omenjanja in prikazov spolne narave"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:165
@@ -879,7 +879,7 @@ msgstr "Nazorno seksualno vedenje"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:174
 msgid "No profanity of any kind"
-msgstr ""
+msgstr "Brez kakršnegakoli preklinjanja"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:177
@@ -989,7 +989,7 @@ msgstr "Možnost uporabe pravega denarja znotraj igre"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:240
 msgid "No way to chat with other players"
-msgstr ""
+msgstr "Ni možnosti klepeta z drugimi igralci."
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:243
@@ -1009,7 +1009,7 @@ msgstr "Nenadzorovana možnost klepeta med igralci"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:252
 msgid "No way to talk with other players"
-msgstr ""
+msgstr "Ni možnosti pogovora z drugimi igralci."
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:255
@@ -1019,7 +1019,7 @@ msgstr "Nenadzorovana možnost zvočnega ali video klepeta med igralci"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:258
 msgid "No sharing of social network usernames or email addresses"
-msgstr ""
+msgstr "Ni objavljanja uporabniških imen ali elektronskih naslovov"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:261
@@ -1029,7 +1029,7 @@ msgstr "Objavljanje uporabniškega imena ali elektronskega naslova socialnega om
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:264
 msgid "No sharing of user information with 3rd parties"
-msgstr ""
+msgstr "Ni objavljanja podrobnosti o uporabniku tretjim osebam"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:267
@@ -1039,7 +1039,7 @@ msgstr "Objavljanje podrobnosti o uporabniku tretjim osebam"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:270
 msgid "No sharing of physical location to other users"
-msgstr ""
+msgstr "Ni objavljanja trenutnega mesta drugim uporabnikom"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:273
@@ -1174,7 +1174,7 @@ msgstr "Neznano"
 #: src/gs-details-page.c:970
 msgctxt "updated"
 msgid "Never"
-msgstr ""
+msgstr "Nikoli"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
@@ -1186,7 +1186,7 @@ msgstr "Neznano"
 #. TRANSLATORS: we need a remote server to process
 #: src/gs-details-page.c:1427
 msgid "You need internet access to write a review"
-msgstr ""
+msgstr "Za objavo poročila je zahtevana internetna povezava."
 
 #: src/gs-details-page.c:1556
 #, c-format
@@ -1285,7 +1285,7 @@ msgstr "Uporabi le programske vire, ki so vredni zaupanja."
 
 #: src/gs-details-page.ui:551
 msgid "_Donate"
-msgstr ""
+msgstr "_Doniraj"
 
 #: src/gs-details-page.ui:592
 msgid "Developer _Website"
@@ -1317,7 +1317,7 @@ msgstr "Različica"
 
 #: src/gs-details-page.ui:814
 msgid "Age Rating"
-msgstr ""
+msgstr "Ocena starosti"
 
 #: src/gs-details-page.ui:852
 msgid "Updated"
@@ -1413,99 +1413,99 @@ msgstr "Pogoji dovoljenja te programske opreme niso znani."
 
 #: src/gs-details-page.ui:1568
 msgid "The application was rated this way because it features:"
-msgstr ""
+msgstr "Program je tako ocenjen zaradi:"
 
 #: src/gs-details-page.ui:1594
 msgid "No details were available for this rating."
-msgstr ""
+msgstr "Ni podrobnosti o tej oceni."
 
 #: src/gs-editor.c:361
 msgid "CSS validated OK!"
-msgstr ""
+msgstr "Slogovna predloga CSS je uspešno overjena!"
 
 #. TRANSLATORS: error dialog title
 #: src/gs-editor.c:564
 msgid "Failed to load file"
-msgstr ""
+msgstr "Nalaganje datoteke je spodletelo"
 
 #. TRANSLATORS: window title
 #: src/gs-editor.c:598 src/gs-editor.c:874
 msgid "Unsaved changes"
-msgstr ""
+msgstr "Neshranjene spremembe"
 
 #: src/gs-editor.c:600
 msgid "The application list is already loaded."
-msgstr ""
+msgstr "Seznam programov je že naložen"
 
 #. TRANSLATORS: button text
 #: src/gs-editor.c:604
 msgid "Merge documents"
-msgstr ""
+msgstr "Združi dokumente"
 
 #. TRANSLATORS: button text
 #: src/gs-editor.c:608 src/gs-editor.c:879
 msgid "Throw away changes"
-msgstr ""
+msgstr "Zavrzi spremembe"
 
 #. import the new file
 #: src/gs-editor.c:620 src/gs-editor.c:652
 msgid "Open AppStream File"
-msgstr ""
+msgstr "Odpri datoteko AppStream"
 
 #: src/gs-editor.c:624
 msgid "_Open"
-msgstr ""
+msgstr "_Odpri"
 
 #: src/gs-editor.c:656
 msgid "_Save"
-msgstr ""
+msgstr "_Shrani"
 
 #. TRANSLATORS: error dialog title
 #: src/gs-editor.c:676
 msgid "Failed to save file"
-msgstr ""
+msgstr "Shranjevanje datoteke je spodletelo"
 
 #. TRANSLATORS, the %s is the app name, e.g. 'Inkscape'
 #: src/gs-editor.c:751
 #, c-format
 msgid "%s banner design deleted."
-msgstr ""
+msgstr "Zasnova oblikovanja pasice %s je izbrisana."
 
 #. TRANSLATORS, this is a notification
 #: src/gs-editor.c:754
 msgid "Banner design deleted."
-msgstr ""
+msgstr "Zasnova oblikovanja pasice je izbrisana."
 
 #: src/gs-editor.c:876
 msgid "The application list has unsaved changes."
-msgstr ""
+msgstr "Seznam programov vključuje še ne shranjene spremembe."
 
 #. TRANSLATORS: show the program version
 #: src/gs-editor.c:1111
 msgid "Use verbose logging"
-msgstr ""
+msgstr "Shranjuj podroben izpis"
 
 #. TRANSLATORS: program name, an application to add and remove software
 #. repositories
 #: src/gs-editor.c:1119
 msgid "GNOME Software Banner Designer"
-msgstr ""
+msgstr "Oblikovalnik vmesnikov za okolje GNOME"
 
 #: src/gs-editor.ui:63 src/gs-editor.ui:77
 msgid "No Designs"
-msgstr ""
+msgstr "Ni zasnov"
 
 #: src/gs-editor.ui:163
 msgid "Error message here"
-msgstr ""
+msgstr "Sporočilo o napaki"
 
 #: src/gs-editor.ui:250
 msgid "App ID"
-msgstr ""
+msgstr "ID programa"
 
 #: src/gs-editor.ui:296
 msgid "Name"
-msgstr ""
+msgstr "Ime"
 
 #: src/gs-editor.ui:341 src/gs-review-dialog.ui:142
 msgid "Summary"
@@ -1513,46 +1513,46 @@ msgstr "Povzetek"
 
 #: src/gs-editor.ui:382
 msgid "Editor’s Pick"
-msgstr ""
+msgstr "Izbor urednikov"
 
 #. This check button controls whether the application’s banner appears in the
 #. “Featured” category
 #: src/gs-editor.ui:397
 msgid "Category Featured"
-msgstr ""
+msgstr "Kategorija novosti"
 
 #. button in the info bar
 #: src/gs-editor.ui:471
 msgid "Undo"
-msgstr ""
+msgstr "Razveljavi"
 
 #: src/gs-editor.ui:524 src/org.gnome.Software.Editor.desktop.in:3
 msgid "Banner Designer"
-msgstr ""
+msgstr "Snovalnik pasic"
 
 #: src/gs-editor.ui:547
 msgid "New Banner"
-msgstr ""
+msgstr "Nova pasica"
 
 #: src/gs-editor.ui:615
 msgid "Import from file"
-msgstr ""
+msgstr "Uvozi iz datoteke"
 
 #: src/gs-editor.ui:629
 msgid "Export to file"
-msgstr ""
+msgstr "Izvozi v datoteko"
 
 #: src/gs-editor.ui:643
 msgid "Delete Design"
-msgstr ""
+msgstr "Izbriši zasnovo"
 
 #: src/gs-editor.ui:670
 msgid "Featured App"
-msgstr ""
+msgstr "Novosti programske opreme"
 
 #: src/gs-editor.ui:684
 msgid "OS Upgrade"
-msgstr ""
+msgstr "Posodobitev sistema"
 
 #. TRANSLATORS: separator for a list of items
 #: src/gs-extras-page.c:146
@@ -1949,7 +1949,7 @@ msgstr "Izbor urednikov"
 #. released upstream.
 #: src/gs-overview-page.ui:359
 msgid "Recent Releases"
-msgstr ""
+msgstr "Nedavne objave"
 
 #: src/gs-overview-page.ui:446
 msgid "No Application Data Found"
@@ -1960,18 +1960,18 @@ msgstr "Podatkov o programu ni mogoče najti"
 #: src/gs-page.c:445
 #, c-format
 msgid "Are you sure you want to purchase %s?"
-msgstr ""
+msgstr "Ali ste prepričani, da želite opraviti nakup %s?"
 
 #. TRANSLATORS: longer dialog text
 #: src/gs-page.c:449
 #, c-format
 msgid "%s will be installed, and you will be charged %s."
-msgstr ""
+msgstr "Program %s bo nameščen, prejem pa bo obračunan z %s"
 
 #. TRANSLATORS: this is button text to purchase the application
 #: src/gs-page.c:462
 msgid "Purchase"
-msgstr ""
+msgstr "Izvedi nakup"
 
 #. TRANSLATORS: this is a prompt message, and
 #. * '%s' is an application summary, e.g. 'GNOME Clocks'
@@ -2018,54 +2018,54 @@ msgstr "Podrobnosti o %s in o možnostih za nameščenje kodekov za predvajanje 
 #: lib/gs-price.c:111
 #, c-format
 msgid "A$%.2f"
-msgstr ""
+msgstr "A$%.2f"
 
 #: lib/gs-price.c:113
 #, c-format
 msgid "C$%.2f"
-msgstr ""
+msgstr "C$%.2f"
 
 #: lib/gs-price.c:115
 #, c-format
 msgid "CN¥%.2f"
-msgstr ""
+msgstr "CN¥%.2f"
 
 #: lib/gs-price.c:117
 #, c-format
 msgid "€%.2f"
-msgstr ""
+msgstr "€%.2f"
 
 #: lib/gs-price.c:119
 #, c-format
 msgid "£%.2f"
-msgstr ""
+msgstr "£%.2f"
 
 #: lib/gs-price.c:121
 #, c-format
 msgid "¥%.2f"
-msgstr ""
+msgstr "¥%.2f"
 
 #: lib/gs-price.c:123
 #, c-format
 msgid "NZ$%.2f"
-msgstr ""
+msgstr "NZ$%.2f"
 
 #: lib/gs-price.c:125
 #, c-format
 msgid "₽%.2f"
-msgstr ""
+msgstr "₽%.2f"
 
 #: lib/gs-price.c:127
 #, c-format
 msgid "US$%.2f"
-msgstr ""
+msgstr "US$%.2f"
 
 #. Translators: %s is the currency, and %f is the amount.
 #. * You can switch the order by using “%2$f %1$s” instead.
 #: lib/gs-price.c:131
 #, c-format
 msgid "%s %f"
-msgstr ""
+msgstr "%s %f"
 
 #. TRANSLATORS: This is a text displayed during a distro upgrade. %s
 #. will be replaced by the name and version of distro, e.g. 'Fedora 23'.
@@ -2178,7 +2178,7 @@ msgstr "Kakšno je vaše mnenje o programu. Podajte razloge za opis programa."
 #. Translators: A label for the total number of reviews.
 #: src/gs-review-histogram.ui:413
 msgid "ratings in total"
-msgstr ""
+msgstr "skupno število ocen"
 
 #. TRANSLATORS: we explain what the action is going to do
 #: src/gs-review-row.c:234
@@ -2276,10 +2276,10 @@ msgstr "Zaslonska slika"
 #, c-format
 msgid "%u more match"
 msgid_plural "%u more matches"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "+ %u dodatnih"
+msgstr[1] "+ %u dodaten"
+msgstr[2] "+ %u dodatna"
+msgstr[3] "+ %u dodatni"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -2319,14 +2319,14 @@ msgstr "Ni mogoče prejeti posodobitev prek spletišča %s"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:955
 msgid "Unable to download updates"
-msgstr ""
+msgstr "Prejemanje datotek posodobitev je spodletelo"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:960
 msgid ""
 "Unable to download updates: internet access was required but wasn’t "
 "available"
-msgstr ""
+msgstr "Prejemanje datotek posodobitev je spodletelo: zahtevana je omrežna povezava, ki pa ni na voljo"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
@@ -2338,7 +2338,7 @@ msgstr "Ni mogoče prejeti posodobitev prek spletišča %s: ni dovolj prostora n
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:974
 msgid "Unable to download updates: not enough disk space"
-msgstr ""
+msgstr "Prejemanje datotek posodobitev je spodletelo: ni dovolj prostora na disku"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:982
@@ -2359,7 +2359,7 @@ msgstr "Ni mogoče prejeti posodobitev: ni ustreznih dovoljenj za nameščanje p
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:999
 msgid "Unable to get list of updates"
-msgstr ""
+msgstr "Pridobivanje seznama posodobitev je spodletelo"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the application name (e.g. "GIMP") and
@@ -2383,19 +2383,19 @@ msgstr "Ni mogoče namestiti paketa %s, ker je prejemanje spodletelo"
 #: src/gs-shell.c:1063
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
-msgstr ""
+msgstr "Nameščanje %s je spodletelo, ker zagonsko okolje %s ni na voljo"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1069
 #, c-format
 msgid "Unable to install %s as not supported"
-msgstr ""
+msgstr "Namestitev %s ni mogoča, ker paket ni podprt"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1076
 msgid "Unable to install: internet access was required but wasn’t available"
-msgstr ""
+msgstr "Namestitev ni mogoča: zahtevana je omrežna povezava, ki pa ni na voljo"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1082
@@ -2407,7 +2407,7 @@ msgstr "Paketa ni mogoče namestiti: program je shranjen v napačnem zapisu"
 #: src/gs-shell.c:1087
 #, c-format
 msgid "Unable to install %s: not enough disk space"
-msgstr ""
+msgstr "Namestitev %s ni mogoča: ni dovolj prostora na disku"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1095
@@ -2448,7 +2448,7 @@ msgstr "Programske opreme ni mogoče namestiti, dokler težava ni odpravljena."
 #: src/gs-shell.c:1137
 #, c-format
 msgid "For more information, visit %s."
-msgstr ""
+msgstr "Več podrobnosti je zabeleženih na %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
@@ -2462,7 +2462,7 @@ msgstr "Paketa %s ni mogoče namestiti: zahtevan je priklop napajanja iz omrežj
 #: src/gs-shell.c:1155
 #, c-format
 msgid "Unable to install %s"
-msgstr ""
+msgstr "Namestitev %s ni mogoča"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the app name (e.g. "GIMP") and
@@ -2483,14 +2483,14 @@ msgstr "Paketa %s ni mogoče posodobiti., ker je prejemanje spodletelo"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1213
 msgid "Unable to update: internet access was required but wasn’t available"
-msgstr ""
+msgstr "Posodobitev je spodletela: zahtevana je omrežna povezava, ki pa ni na voljo"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1221
 #, c-format
 msgid "Unable to update %s: not enough disk space"
-msgstr ""
+msgstr "Posodobitev %s je spodletela: ni dovolj prostora na disku"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -2525,7 +2525,7 @@ msgstr "Paketa %s ni mogoče posodobiti: zahtevan je priklop napajanja iz omrež
 #: src/gs-shell.c:1261
 #, c-format
 msgid "Unable to update %s"
-msgstr ""
+msgstr "Posodobitev %s je spodletela"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the distro name (e.g. "Fedora 25") and
@@ -2540,12 +2540,12 @@ msgstr "Okolja ni mogoče nadgraditi na različico %s prek spletišča %s."
 #: src/gs-shell.c:1311
 #, c-format
 msgid "Unable to upgrade to %s as download failed"
-msgstr ""
+msgstr "Nadgradnja na %s ni mogoče, ker je prejemanje datotek spodletelo."
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1318
 msgid "Unable to upgrade: internet access was required but wasn’t available"
-msgstr ""
+msgstr "Nadgradnja ni mogoče: zahtevana je omrežna povezava, ki pa ni na voljo"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -2641,7 +2641,7 @@ msgstr "Ni dovolj prostora na disku. Sprostite ga in poskusite znova."
 #. TRANSLATORS: we failed to get a proper error code
 #: src/gs-shell.c:1496 src/gs-shell.c:1544 src/gs-shell.c:1611
 msgid "Sorry, something went wrong"
-msgstr ""
+msgstr "Opravila ni bilo mogoče izvesti!"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1531
@@ -2661,12 +2661,12 @@ msgstr "Povezava s spletiščem %s ni mogoča."
 #: src/gs-shell.c:1593
 #, c-format
 msgid "%s needs to be restarted to use new plugins."
-msgstr ""
+msgstr "Program %s je treba pred uporabo novih vstavkov ponovno zagnati"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1598
 msgid "This application needs to be restarted to use new plugins."
-msgstr ""
+msgstr "Program je treba pred uporabo novih vstavkov ponovno zagnati."
 
 #. TRANSLATORS: need to be connected to the AC power
 #: src/gs-shell.c:1605
@@ -2836,25 +2836,25 @@ msgstr "Nameščene posodobitve"
 #. * a system update
 #: src/gs-update-dialog.c:420
 msgid "Additions"
-msgstr ""
+msgstr "Dodatni paketi"
 
 #. TRANSLATORS: This is the header for package removals during
 #. * a system update
 #: src/gs-update-dialog.c:424
 msgid "Removals"
-msgstr ""
+msgstr "Paketi, pripravljeni za odstranitev"
 
 #. TRANSLATORS: This is the header for package updates during
 #. * a system update
 #: src/gs-update-dialog.c:428
 msgid "Updates"
-msgstr ""
+msgstr "Posodobitve"
 
 #. TRANSLATORS: This is the header for package downgrades during
 #. * a system update
 #: src/gs-update-dialog.c:432
 msgid "Downgrades"
-msgstr ""
+msgstr "Povrnjeni paketi"
 
 #: src/gs-update-dialog.ui:111
 msgid "No updates have been installed on this system."
@@ -2892,12 +2892,12 @@ msgstr "Pogled"
 #. TRANSLATORS: this is when the current OS version goes end-of-life
 #: src/gs-update-monitor.c:259 src/gs-updates-page.ui:46
 msgid "Operating System Updates Unavailable"
-msgstr ""
+msgstr "Posodobitve operacijskega sistema niso na voljo."
 
 #. TRANSLATORS: this is the message dialog for the distro EOL notice
 #: src/gs-update-monitor.c:261
 msgid "Upgrade to continue receiving security updates."
-msgstr ""
+msgstr "Posodobite sistem za nadaljnje prejemanje varnostnih posodobitev."
 
 #. TRANSLATORS: this is a distro upgrade, the replacement would be the
 #. * distro name, e.g. 'Fedora'
@@ -3135,7 +3135,7 @@ msgstr "Strojna programska oprema naprave"
 #. TRANSLATORS: this is an offline update
 #: src/gs-updates-page.c:1052
 msgid "_Restart & Update"
-msgstr "_Ponovnizagon in posodobitev"
+msgstr "_Ponovni zagon in posodobitev"
 
 #. TRANSLATORS: all updates will be installed
 #: src/gs-updates-page.c:1056
@@ -3147,22 +3147,22 @@ msgstr "Posodobi _vse"
 #: src/gs-updates-page.c:1135
 #, c-format
 msgid "%s %s is no longer supported."
-msgstr ""
+msgstr "Distribucija %s %s ni več podprta."
 
 #. TRANSLATORS: OS refers to operating system, e.g. Fedora
 #: src/gs-updates-page.c:1140
 msgid "Your OS is no longer supported."
-msgstr ""
+msgstr "Nameščen operacijski sistem ni več podprt."
 
 #. TRANSLATORS: EOL distros do not get important updates
 #: src/gs-updates-page.c:1145
 msgid "This means that it does not receive security updates."
-msgstr ""
+msgstr "To pomeni, da ne bo več mogoče prejemati varnostnih posodobitev."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
 #: src/gs-updates-page.c:1149
 msgid "It is recommended that you upgrade to a more recent version."
-msgstr ""
+msgstr "Priporočljivo je nadgraditi sistem na novejšo različico."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: src/gs-updates-page.c:1404
@@ -3302,33 +3302,33 @@ msgstr "Posodobitve;Posodobitev;Viri;Skladišča;Programi;Namestitev;Lastnosti;O
 
 #: src/org.gnome.Software.Editor.desktop.in:4
 msgid "Design the featured banners for GNOME Software"
-msgstr ""
+msgstr "Oblikovanje pasic za programsko opremo GNOME"
 
 #. Translators: Search terms to find this application. Do NOT translate or
 #. localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.Editor.desktop.in:13
 msgid "AppStream;Software;App;"
-msgstr ""
+msgstr "AppStream;Programi;Programska oprema;Oprema;Aplikacije;App;"
 
 #: plugins/core/gs-desktop-common.c:31
 msgctxt "Menu of Audio & Video"
 msgid "All"
-msgstr ""
+msgstr "Vsi"
 
 #: plugins/core/gs-desktop-common.c:35
 msgctxt "Menu of Audio & Video"
 msgid "Featured"
-msgstr ""
+msgstr "Novosti"
 
 #: plugins/core/gs-desktop-common.c:39
 msgctxt "Menu of Audio & Video"
 msgid "Audio Creation & Editing"
-msgstr ""
+msgstr "Ustvarjanje in urejanje glasbe"
 
 #: plugins/core/gs-desktop-common.c:45
 msgctxt "Menu of Audio & Video"
 msgid "Music Players"
-msgstr ""
+msgstr "Predvajalniki glasbe"
 
 #: plugins/core/gs-desktop-common.c:49
 msgctxt "Menu of Graphics"
@@ -3358,62 +3358,62 @@ msgstr "Pregledovalniki"
 #: plugins/core/gs-desktop-common.c:69
 msgctxt "Menu of Developer Tools"
 msgid "All"
-msgstr ""
+msgstr "Vsi"
 
 #: plugins/core/gs-desktop-common.c:72
 msgctxt "Menu of Developer Tools"
 msgid "Featured"
-msgstr ""
+msgstr "Novosti"
 
 #: plugins/core/gs-desktop-common.c:75
 msgctxt "Menu of Developer Tools"
 msgid "Debuggers"
-msgstr ""
+msgstr "Razhroščevalniki"
 
 #: plugins/core/gs-desktop-common.c:78
 msgctxt "Menu of Developer Tools"
 msgid "IDEs"
-msgstr ""
+msgstr "Naprave IDE"
 
 #: plugins/core/gs-desktop-common.c:87
 msgctxt "Menu of Education & Science"
 msgid "All"
-msgstr ""
+msgstr "Vsi"
 
 #: plugins/core/gs-desktop-common.c:91
 msgctxt "Menu of Education & Science"
 msgid "Featured"
-msgstr ""
+msgstr "Novosti"
 
 #: plugins/core/gs-desktop-common.c:95
 msgctxt "Menu of Education & Science"
 msgid "Artificial Intelligence"
-msgstr ""
+msgstr "Umetna inteligenca"
 
 #: plugins/core/gs-desktop-common.c:98
 msgctxt "Menu of Education & Science"
 msgid "Astronomy"
-msgstr ""
+msgstr "Astronomija"
 
 #: plugins/core/gs-desktop-common.c:102
 msgctxt "Menu of Education & Science"
 msgid "Chemistry"
-msgstr ""
+msgstr "Kemija"
 
 #: plugins/core/gs-desktop-common.c:106
 msgctxt "Menu of Education & Science"
 msgid "Languages"
-msgstr ""
+msgstr "Jeziki"
 
 #: plugins/core/gs-desktop-common.c:110
 msgctxt "Menu of Education & Science"
 msgid "Math"
-msgstr ""
+msgstr "Matematika"
 
 #: plugins/core/gs-desktop-common.c:117
 msgctxt "Menu of Education & Science"
 msgid "Robotics"
-msgstr ""
+msgstr "Robotika"
 
 #: plugins/core/gs-desktop-common.c:126
 msgctxt "Menu of Games"
@@ -3488,32 +3488,32 @@ msgstr "Strateške igre"
 #: plugins/core/gs-desktop-common.c:174
 msgctxt "Menu of Productivity"
 msgid "All"
-msgstr ""
+msgstr "Vsi"
 
 #: plugins/core/gs-desktop-common.c:177
 msgctxt "Menu of Productivity"
 msgid "Featured"
-msgstr ""
+msgstr "Novosti"
 
 #: plugins/core/gs-desktop-common.c:180
 msgctxt "Menu of Productivity"
 msgid "Calendar"
-msgstr ""
+msgstr "Koledar"
 
 #: plugins/core/gs-desktop-common.c:184
 msgctxt "Menu of Productivity"
 msgid "Database"
-msgstr ""
+msgstr "Podatkovna zbirka"
 
 #: plugins/core/gs-desktop-common.c:187
 msgctxt "Menu of Productivity"
 msgid "Finance"
-msgstr ""
+msgstr "Finance"
 
 #: plugins/core/gs-desktop-common.c:191
 msgctxt "Menu of Productivity"
 msgid "Word Processor"
-msgstr ""
+msgstr "Urejanje besedila"
 
 #: plugins/core/gs-desktop-common.c:200
 msgctxt "Menu of Utility"
@@ -3528,7 +3528,7 @@ msgstr "Novosti v ospredju"
 #: plugins/core/gs-desktop-common.c:210
 msgctxt "Menu of Add-ons"
 msgid "Fonts"
-msgstr ""
+msgstr "Pisave"
 
 #: plugins/core/gs-desktop-common.c:213
 msgctxt "Menu of Communication"
@@ -3538,32 +3538,32 @@ msgstr "Klepet"
 #: plugins/core/gs-desktop-common.c:220
 msgctxt "Menu of Add-ons"
 msgid "Codecs"
-msgstr ""
+msgstr "Kodeki"
 
 #: plugins/core/gs-desktop-common.c:223
 msgctxt "Menu of Add-ons"
 msgid "Input Sources"
-msgstr ""
+msgstr "Vhodni viri"
 
 #: plugins/core/gs-desktop-common.c:226
 msgctxt "Menu of Add-ons"
 msgid "Language Packs"
-msgstr ""
+msgstr "Jezikovni paketi"
 
 #: plugins/core/gs-desktop-common.c:229
 msgctxt "Menu of Add-ons"
 msgid "Shell Extensions"
-msgstr ""
+msgstr "Razširitve lupine"
 
 #: plugins/core/gs-desktop-common.c:232
 msgctxt "Menu of Add-ons"
 msgid "Localization"
-msgstr ""
+msgstr "Jezikovno prilagajanje"
 
 #: plugins/core/gs-desktop-common.c:235
 msgctxt "Menu of Add-ons"
 msgid "Hardware Drivers"
-msgstr ""
+msgstr "Gonilniki strojne opreme"
 
 #: plugins/core/gs-desktop-common.c:238
 msgctxt "Menu of Utility"
@@ -3573,12 +3573,12 @@ msgstr "Urejevalniki besedila"
 #: plugins/core/gs-desktop-common.c:241
 msgctxt "Menu of Communication & News"
 msgid "Web Browsers"
-msgstr ""
+msgstr "Spletni brskalniki"
 
 #: plugins/core/gs-desktop-common.c:244
 msgctxt "Menu of Communication & News"
 msgid "News"
-msgstr ""
+msgstr "Novice"
 
 #: plugins/core/gs-desktop-common.c:248
 msgctxt "Menu of Settings"
@@ -3699,7 +3699,7 @@ msgstr ""
 #. TRANSLATORS: status text when downloading
 #: plugins/core/gs-plugin-appstream.c:693
 msgid "Downloading extra metadata files…"
-msgstr ""
+msgstr "Poteka prejemanje dodatnih datotek metapodatkov ..."
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
@@ -3716,7 +3716,7 @@ msgstr "Vključuje izboljšave delovanja, stabilnosti in varnosti za vse uporabn
 #. TRANSLATORS: status text when downloading
 #: plugins/core/gs-plugin-rewrite-resource.c:55
 msgid "Downloading featured images…"
-msgstr ""
+msgstr "Poteka prejemanje zaslonskih slik programov ..."
 
 #: plugins/eos/gs-plugin-eos.c:1345
 #, c-format
@@ -3737,12 +3737,12 @@ msgstr "Podpora Web Apps"
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:7
 msgid "Run popular web applications in a browser"
-msgstr ""
+msgstr "Zaganjanje spletnih programov v oknu brskalnika"
 
 #. TRANSLATORS: tool that is used when copying profiles system-wide
 #: plugins/external-appstream/gs-install-appstream.c:102
 msgid "GNOME Software AppStream system-wide installer"
-msgstr ""
+msgstr "Sistemski namestilnik programske opreme za GNOME prek AppStream"
 
 #: plugins/external-appstream/gs-install-appstream.c:104
 msgid "Failed to parse command line arguments"
@@ -3751,17 +3751,17 @@ msgstr "Razčlenjevanje argumentov ukazne vrstice je spodletelo"
 #. TRANSLATORS: user did not specify a valid filename
 #: plugins/external-appstream/gs-install-appstream.c:111
 msgid "You need to specify exactly one filename"
-msgstr ""
+msgstr "Določiti je treba natanko eno ime datoteke"
 
 #. TRANSLATORS: only able to install files as root
 #: plugins/external-appstream/gs-install-appstream.c:118
 msgid "This program can only be used by the root user"
-msgstr ""
+msgstr "Za zagon programa so zahtevana skrbniška dovoljenja"
 
 #. TRANSLATORS: error details
 #: plugins/external-appstream/gs-install-appstream.c:126
 msgid "Failed to validate content type"
-msgstr ""
+msgstr "Poizvedba o vrsti vsebine za je spodletela"
 
 #. TRANSLATORS: error details
 #: plugins/external-appstream/gs-install-appstream.c:133
@@ -3771,12 +3771,12 @@ msgstr "Kopiranje je spodletelo"
 #. TRANSLATORS: status text when downloading
 #: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:217
 msgid "Downloading upgrade information…"
-msgstr ""
+msgstr "Poteka prejemanje podrobnosti posodobitev ..."
 
 #. TRANSLATORS: this is a title for Fedora distro upgrades
 #: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:311
 msgid "Upgrade your Fedora system to the latest features and improvements."
-msgstr ""
+msgstr "Posodobite sistem Fedora na najnovejšo različico programske opreme"
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:6
 msgid "Flatpak Support"
@@ -3784,41 +3784,41 @@ msgstr "Podpora Flatpak"
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:7
 msgid "Flatpak is a framework for desktop applications on Linux"
-msgstr ""
+msgstr "Flatpak je okolje za podporo namiznim programom sistema Linux"
 
 #. TRANSLATORS: status text when downloading new metadata
 #: plugins/flatpak/gs-flatpak.c:861
 #, c-format
 msgid "Getting flatpak metadata for %s…"
-msgstr ""
+msgstr "Pridobi metapodatke flatpak za %s ..."
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
 #: plugins/flatpak/gs-flatpak.c:3150
 msgid "Getting runtime source…"
-msgstr ""
+msgstr "Pridobivanje virov zagonskih programov ..."
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:864 plugins/fwupd/gs-plugin-fwupd.c:963
 msgid "Downloading firmware update signature…"
-msgstr ""
+msgstr "Prejemanje podpisov posodobitev strojne programske opreme ..."
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:905 plugins/fwupd/gs-plugin-fwupd.c:1009
 msgid "Downloading firmware update metadata…"
-msgstr ""
+msgstr "Prejemanje metapodatkov posodobitev strojne programske opreme ..."
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:1100
 msgid "Downloading firmware update…"
-msgstr ""
+msgstr "Prejemanje posodobitev strojne programske opreme ..."
 
 #: plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:6
 msgid "Firmware Upgrade Support"
-msgstr ""
+msgstr "Podpora nadgradnji strojne programske opreme"
 
 #: plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:7
 msgid "Provides support for firmware upgrades"
-msgstr ""
+msgstr "Omogoča dostop do podpore posodobitvam strojne programske opreme."
 
 #: plugins/limba/org.gnome.Software.Plugin.Limba.metainfo.xml.in:6
 msgid "Limba Support"
@@ -3826,25 +3826,25 @@ msgstr "Podpora Limba"
 
 #: plugins/limba/org.gnome.Software.Plugin.Limba.metainfo.xml.in:7
 msgid "Limba provides developers a way to easily create software bundles"
-msgstr ""
+msgstr "Sistem Limba omogoča razvijalcem enostavno ustvarjanje paketov programske opreme"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/odrs/gs-plugin-odrs.c:205
 msgid "Downloading application ratings…"
-msgstr ""
+msgstr "Poteka prejemanje ocen programske preme ..."
 
 #: plugins/odrs/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:6
 msgid "Open Desktop Ratings Support"
-msgstr ""
+msgstr "Odpri okno za podporo ocenjevanja"
 
 #: plugins/odrs/org.gnome.Software.Plugin.Odrs.metainfo.xml.in:7
 msgid "ODRS is a service providing user reviews of applications"
-msgstr ""
+msgstr "Storitev ODRS omogoča objavljanje in prebiranje uporabniških mnenj o programski opremi."
 
 #. TRANSLATORS: status text when downloading
 #: plugins/shell-extensions/gs-plugin-shell-extensions.c:674
 msgid "Downloading shell extension metadata…"
-msgstr ""
+msgstr "Prejemanje metapodatkov razširitev ukazne lupine ..."
 
 #: plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in:6
 msgid "Snappy Support"
@@ -3857,12 +3857,12 @@ msgstr "»Snap« je univerzalni paket operacijskega sistema Linux"
 #. TRANSLATORS: status text when downloading
 #: plugins/steam/gs-plugin-steam.c:600
 msgid "Downloading application page…"
-msgstr ""
+msgstr "Poteka prejemanje strani programske opreme ..."
 
 #: plugins/steam/org.gnome.Software.Plugin.Steam.metainfo.xml.in:6
 msgid "Steam Support"
-msgstr ""
+msgstr "Podpora Steam"
 
 #: plugins/steam/org.gnome.Software.Plugin.Steam.metainfo.xml.in:7
 msgid "The ultimate entertainment platform from Valve"
-msgstr ""
+msgstr "Ultimativno zabavno okolje Valve"
