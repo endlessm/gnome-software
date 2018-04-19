@@ -63,6 +63,20 @@ G_DEFINE_TYPE (GsUpdateMonitor, gs_update_monitor, G_TYPE_OBJECT)
 
 typedef struct {
 	GsUpdateMonitor *monitor;
+	GsAppList *apps_to_update;
+} SchedulerHelper;
+
+static void
+scheduler_helper_free (SchedulerHelper *helper)
+{
+	g_object_unref (helper->apps_to_update);
+	g_free (helper);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(SchedulerHelper, scheduler_helper_free)
+
+typedef struct {
+	GsUpdateMonitor *monitor;
 	MwscScheduleEntry *entry;
 	GsApp *app;
 	gulong download_now_handler_id;
@@ -326,57 +340,6 @@ download_now_cb (GObject *obj,
 }
 
 static void
-monitor_clear_scheduler (GsUpdateMonitor *monitor)
-{
-	g_clear_object (&monitor->scheduler);
-}
-
-static void
-async_result_cb (GObject *source_object,
-                 GAsyncResult *result,
-                 GAsyncResult **out_result)
-{
-	*out_result = g_object_ref (result);
-}
-
-static gboolean
-setup_scheduler (GsUpdateMonitor *monitor,
-		 GCancellable *cancellable,
-		 GError **error)
-{
-	g_autoptr(GAsyncResult) new_result = NULL;
-	g_autoptr(GMainContext) context = NULL;
-	MwscScheduler *scheduler = NULL;
-
-	if (monitor->scheduler != NULL)
-		return TRUE;
-
-	context = g_main_context_new ();
-	g_main_context_push_thread_default (context);
-
-	mwsc_scheduler_new_async (cancellable,
-				  (GAsyncReadyCallback) async_result_cb,
-				  &new_result);
-
-	while (new_result == NULL)
-		g_main_context_iteration (context, TRUE);
-
-	g_main_context_pop_thread_default (context);
-
-	scheduler = mwsc_scheduler_new_finish (new_result, error);
-
-	if (scheduler == NULL)
-		return FALSE;
-
-	g_signal_connect_swapped (scheduler, "invalidated",
-				  (GCallback) monitor_clear_scheduler,
-				  monitor);
-	monitor->scheduler = scheduler;
-
-	return TRUE;
-}
-
-static void
 scheduled_entry_invalidated_cb (MwscScheduleEntry *entry,
 				const GError *error,
 				UpdateScheduleHelper *helper)
@@ -486,11 +449,7 @@ schedule_update (GsUpdateMonitor *monitor,
 	g_variant_dict_insert (&parameters_dict, "resumable", "b", FALSE);
 	parameters = g_variant_ref_sink (g_variant_dict_end (&parameters_dict));
 
-	if (!setup_scheduler (monitor, cancellable, &local_error)) {
-		g_warning ("Could not schedule update for app %s: %s",
-			   app_id, local_error->message);
-		return;
-	}
+	g_assert (monitor->scheduler != NULL);
 
 	helper = g_new0 (UpdateScheduleHelper, 1);
 	helper->monitor = monitor;
@@ -498,6 +457,72 @@ schedule_update (GsUpdateMonitor *monitor,
 
 	mwsc_scheduler_schedule_async (monitor->scheduler, parameters, cancellable,
 				       schedule_entry_scheduled_cb, helper);
+}
+
+static void
+schedule_updates_real (GsUpdateMonitor *monitor,
+		       GsAppList *apps_to_update)
+{
+	/* we have to use an updates counter to be able to know when all
+	 * updates have been scheduled */
+	monitor->num_scheduled_updates = gs_app_list_length (apps_to_update);
+	for (guint i = 0; i < monitor->num_scheduled_updates; i++) {
+		GsApp *app = gs_app_list_index (apps_to_update, i);
+		schedule_update (monitor, app,
+				 monitor->scheduled_updates_cancellable);
+	}
+}
+
+static void
+monitor_clear_scheduler (GsUpdateMonitor *monitor)
+{
+	g_clear_object (&monitor->scheduler);
+}
+
+static void
+scheduler_ready_cb (GObject *source_object,
+		    GAsyncResult *result,
+		    gpointer data)
+{
+	MwscScheduler *scheduler;
+	g_autoptr(GError) local_error = NULL;
+	g_autoptr(SchedulerHelper) helper = (SchedulerHelper *) data;
+	GsUpdateMonitor *monitor = helper->monitor;
+
+	scheduler = mwsc_scheduler_new_finish (result, &local_error);
+
+	if (scheduler == NULL) {
+		g_warning ("Error getting Mogwai Scheduler: %s", local_error->message);
+		return;
+	}
+
+	g_signal_connect_object (scheduler, "invalidated",
+				 (GCallback) monitor_clear_scheduler,
+				 monitor,
+				 G_CONNECT_SWAPPED);
+	monitor->scheduler = scheduler;
+
+	schedule_updates_real (monitor, helper->apps_to_update);
+}
+
+static void
+schedule_updates (GsUpdateMonitor *monitor,
+		  GsAppList *apps_to_update)
+{
+	/* if we don't have a valid scheduler yet, create it asynchronously and
+	 * delegate the updates scheduling to its callback */
+	if (monitor->scheduler == NULL) {
+		SchedulerHelper *helper = g_new0 (SchedulerHelper, 1);
+		helper->monitor = monitor;
+		helper->apps_to_update = apps_to_update;
+
+		mwsc_scheduler_new_async (monitor->scheduled_updates_cancellable,
+					  (GAsyncReadyCallback) scheduler_ready_cb,
+					  helper);
+		return;
+	}
+
+	schedule_updates_real (monitor, apps_to_update);
 }
 
 static void
@@ -563,12 +588,7 @@ get_updates_finished_cb (GObject *object,
 		notify_offline_update_available (monitor);
 	}
 
-	monitor->num_scheduled_updates = gs_app_list_length (apps_to_update);
-	for (i = 0; i < monitor->num_scheduled_updates; i++) {
-		app = gs_app_list_index (apps_to_update, i);
-		schedule_update (monitor, app,
-				 monitor->scheduled_updates_cancellable);
-	}
+	schedule_updates (monitor, g_steal_pointer (&apps_to_update));
 }
 
 static gboolean
@@ -1255,6 +1275,8 @@ gs_update_monitor_dispose (GObject *object)
 	g_clear_object (&monitor->scheduled_updates_cancellable);
 
 	g_clear_pointer (&monitor->scheduled_updates, g_hash_table_destroy);
+
+	g_clear_object (&monitor->scheduler);
 
 	g_clear_object (&monitor->settings);
 	g_clear_object (&monitor->proxy_upower);
