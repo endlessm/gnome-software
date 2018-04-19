@@ -632,6 +632,7 @@ gs_flatpak_rescan_installed (GsFlatpak *self,
 		g_autoptr(AsApp) app = NULL;
 		g_autoptr(AsFormat) format = as_format_new ();
 		g_autoptr(FlatpakInstalledRef) app_ref = NULL;
+		g_autoptr(GDesktopAppInfo) app_info = NULL;
 		g_autofree gchar *app_id = NULL;
 
 		/* ignore */
@@ -646,6 +647,8 @@ gs_flatpak_rescan_installed (GsFlatpak *self,
 				   fn_desktop, error_local->message);
 			continue;
 		}
+
+		app_info = g_desktop_app_info_new_from_filename (fn_desktop);
 
 		/* fix up icons */
 		icons = as_app_get_icons (app);
@@ -667,7 +670,14 @@ gs_flatpak_rescan_installed (GsFlatpak *self,
 		as_format_set_filename (format, fn_desktop);
 		as_app_add_format (app, format);
 
-		app_id = gs_flatpak_discard_desktop_suffix (fn);
+		/* find the right app ID, as some Flatpak apps ship several desktop
+		 * files (like LibreOffice) where the desktop file name will not match
+		 * any app but they have the special keyword 'X-Flatpak' for that */
+		if (app_info != NULL)
+			app_id = g_desktop_app_info_get_string (app_info, "X-Flatpak");
+		if (app_id == NULL)
+			app_id = gs_flatpak_discard_desktop_suffix (fn);
+
 		app_ref = flatpak_installation_get_current_installed_app (self->installation,
 									  app_id,
 									  cancellable,
