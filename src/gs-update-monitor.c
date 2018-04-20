@@ -25,9 +25,15 @@
 #include <string.h>
 #include <glib/gi18n.h>
 #include <gsettings-desktop-schemas/gdesktop-enums.h>
+#include <libmogwai-schedule-client/schedule-entry.h>
+#include <libmogwai-schedule-client/scheduler.h>
 
 #include "gs-update-monitor.h"
 #include "gs-common.h"
+
+#define APP_METADATA_AUTO_UPDATING "GnomeSoftware::auto-updating"
+
+#define UPDATE_CHECK_INTERVAL_SECS (2 * 3600)
 
 struct _GsUpdateMonitor {
 	GObject		 parent;
@@ -48,9 +54,79 @@ struct _GsUpdateMonitor {
 	guint		 check_hourly_id;		/* and then every hour */
 	guint		 check_daily_id;		/* every 3rd day */
 	guint		 notification_blocked_id;	/* rate limit notifications */
+
+	MwscScheduler	*scheduler;
+	GHashTable	*scheduled_updates; /* (element-type utf8 UpdateScheduleHelper) */
+	guint		 num_scheduled_updates;
+	GCancellable	*scheduled_updates_cancellable;
 };
 
 G_DEFINE_TYPE (GsUpdateMonitor, gs_update_monitor, G_TYPE_OBJECT)
+
+typedef struct {
+	GsUpdateMonitor *monitor;
+	GsAppList *apps_to_update;
+} SchedulerHelper;
+
+static void
+scheduler_helper_free (SchedulerHelper *helper)
+{
+	g_object_unref (helper->apps_to_update);
+	g_free (helper);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(SchedulerHelper, scheduler_helper_free)
+
+typedef struct {
+	GsUpdateMonitor *monitor;
+	MwscScheduleEntry *entry;
+	GsApp *app;
+	gulong download_now_handler_id;
+	gulong invalidate_handler_id;
+} UpdateScheduleHelper;
+
+static void
+scheduled_entry_removed_cb (GObject *source_object,
+			    GAsyncResult *result,
+			    GAsyncResult **out_result)
+{
+	MwscScheduleEntry *entry = (MwscScheduleEntry *) source_object;
+	g_autoptr(GError) local_error = NULL;
+
+	if (!mwsc_schedule_entry_remove_finish (entry, result, &local_error))
+		g_warning ("Failed to remove entry %s: %s",
+			   mwsc_schedule_entry_get_id (entry),
+			   local_error->message);
+}
+
+static void
+download_schedule_helper_free (UpdateScheduleHelper *helper)
+{
+	if (helper->entry != NULL) {
+		g_debug ("Unscheduling update for app %s, with entry id %s",
+			 gs_app_get_unique_id (helper->app),
+			 mwsc_schedule_entry_get_id (helper->entry));
+
+		if (helper->download_now_handler_id > 0)
+			g_signal_handler_disconnect (helper->entry,
+						     helper->download_now_handler_id);
+		if (helper->invalidate_handler_id > 0)
+			g_signal_handler_disconnect (helper->entry,
+						     helper->invalidate_handler_id);
+
+		mwsc_schedule_entry_remove_async (helper->entry,
+						  NULL,
+						  (GAsyncReadyCallback) scheduled_entry_removed_cb,
+						  NULL);
+
+		g_clear_object (&helper->entry);
+	}
+
+	g_object_unref (helper->app);
+	g_free (helper);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(UpdateScheduleHelper, download_schedule_helper_free)
 
 static gboolean
 reenable_offline_update_notification (gpointer data)
@@ -151,6 +227,309 @@ no_updates_for_a_week (GsUpdateMonitor *monitor)
 }
 
 static void
+app_set_auto_updating (GsApp *app,
+		       gboolean auto_updating)
+{
+	/* we always have to set it to NULL as otherwise GsApp doesn't allow
+	 * the metadata to be overridden */
+	gs_app_set_metadata_variant (app, APP_METADATA_AUTO_UPDATING, NULL);
+
+	/* only set a value if it's TRUE, otherwise it's not needed because not
+	 * having one is the same as having it as false */
+	if (auto_updating) {
+		g_autoptr(GVariant) tmp = g_variant_new_boolean (auto_updating);
+		gs_app_set_metadata_variant (app, APP_METADATA_AUTO_UPDATING, tmp);
+	}
+}
+
+static gboolean
+app_is_auto_updating (GsApp *app)
+{
+	GVariant *tmp = gs_app_get_metadata_variant (app, APP_METADATA_AUTO_UPDATING);
+	if (tmp == NULL)
+		return FALSE;
+	return g_variant_get_boolean (tmp);
+}
+
+static void
+app_update_finished_cb (GObject *source,
+			GAsyncResult *res,
+			UpdateScheduleHelper *helper)
+{
+	g_autoptr(GError) local_error = NULL;
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
+	const gchar *app_id = gs_app_get_unique_id (helper->app);
+	gboolean ret;
+
+	ret = gs_plugin_loader_job_action_finish (plugin_loader, res,
+						  &local_error);
+
+	app_set_auto_updating (helper->app, FALSE);
+
+	if (!ret) {
+		g_warning ("Failed scheduled update of %s: %s",  app_id,
+		           local_error->message);
+		return;
+	}
+
+	g_debug ("Scheduled update of app %s succeeded", app_id);
+
+	/* unschedule the update */
+	g_hash_table_remove (helper->monitor->scheduled_updates, app_id);
+}
+
+static void
+update_app (UpdateScheduleHelper *helper)
+{
+	GsApp *app = helper->app;
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	g_debug ("Performing scheduled update for app %s",
+		 gs_app_get_unique_id (app));
+
+	app_set_auto_updating (app, TRUE);
+
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE,
+					 "app", app,
+					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
+					 NULL);
+	gs_plugin_loader_job_process_async (helper->monitor->plugin_loader,
+					    plugin_job, NULL,
+					    (GAsyncReadyCallback) app_update_finished_cb,
+					    helper);
+}
+
+static void
+download_now_cb (GObject *obj,
+                 GParamSpec *pspec,
+                 UpdateScheduleHelper *helper)
+{
+	GsApp *app = helper->app;
+	gboolean download_now = mwsc_schedule_entry_get_download_now (helper->entry);
+	AsAppState state = gs_app_get_state (helper->app);
+	const gchar *app_id = gs_app_get_unique_id (app);
+
+	g_debug ("Got download-now=%s for scheduled update of app %s",
+		 (download_now ? "TRUE" : "FALSE"), app_id);
+
+	if (download_now) {
+		/* verify again if the app needs to be updated, if not,
+		 * unschedule the update */
+		if (state == AS_APP_STATE_UPDATABLE_LIVE) {
+			update_app (helper);
+		} else {
+			g_debug ("Should update app %s but its state is %s! "
+				 "Unscheduling the update...", app_id,
+				 as_app_state_to_string (state));
+
+			/* unschedule the update */
+			g_hash_table_remove (helper->monitor->scheduled_updates,
+					     app_id);
+		}
+		return;
+	}
+
+	if (state == AS_APP_STATE_INSTALLING) {
+		/* if we cannot update at the moment, cancel any automatically
+		 * started update */
+		if (!app_is_auto_updating (helper->app))
+			return;
+
+		g_debug ("Cancelling scheduled update of app %s, as "
+			 "download-now is FALSE", app_id);
+		g_cancellable_cancel (gs_app_get_cancellable (helper->app));
+	}
+}
+
+static void
+scheduled_entry_invalidated_cb (MwscScheduleEntry *entry,
+				const GError *error,
+				UpdateScheduleHelper *helper)
+
+{
+	const gchar *app_id = gs_app_get_unique_id (helper->app);
+
+	g_debug ("Removing scheduled update of app %s", app_id);
+	g_hash_table_remove (helper->monitor->scheduled_updates, app_id);
+}
+
+static void
+finish_scheduling_updates (GsUpdateMonitor *monitor)
+{
+	GHashTableIter iter;
+	gpointer value;
+	UpdateScheduleHelper *helper_to_update = NULL;
+
+	g_hash_table_iter_init (&iter, monitor->scheduled_updates);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		UpdateScheduleHelper *helper = value;
+
+		/* get the first app that needs to be updated, so we update it
+		 * now; the rest will be updated when their "download-now" signal
+		 * is emitted */
+		if (helper_to_update == NULL &&
+		    mwsc_schedule_entry_get_download_now (helper->entry)
+		    && gs_app_get_state (helper->app) == AS_APP_STATE_UPDATABLE_LIVE)
+			helper_to_update = helper;
+
+		helper->download_now_handler_id =
+			g_signal_connect (helper->entry, "notify::download-now",
+					  (GCallback) download_now_cb,
+					  helper);
+		helper->invalidate_handler_id =
+			g_signal_connect (helper->entry, "invalidated",
+					  (GCallback) scheduled_entry_invalidated_cb,
+					  helper);
+	}
+
+	if (helper_to_update != NULL)
+		update_app (helper_to_update);
+}
+
+static void
+schedule_entry_scheduled_cb (GObject *source_object,
+			     GAsyncResult *result,
+			     gpointer data)
+{
+	g_autoptr(GError) local_error = NULL;
+	g_autoptr(UpdateScheduleHelper) helper = (UpdateScheduleHelper *) data;
+	GsUpdateMonitor *monitor = helper->monitor;
+	const gchar *app_id = gs_app_get_unique_id (helper->app);
+
+	g_assert (monitor->num_scheduled_updates > 0);
+	g_assert (monitor->scheduler != NULL);
+
+	--monitor->num_scheduled_updates;
+
+	helper->entry = mwsc_scheduler_schedule_finish (monitor->scheduler, result,
+							&local_error);
+
+	if (helper->entry == NULL) {
+		g_warning ("Failed to get schedule entry for updating app %s: %s",
+			   app_id, local_error->message);
+		return;
+	}
+
+	g_debug ("Scheduling new update for app %s with entry id %s", app_id,
+		 mwsc_schedule_entry_get_id (helper->entry));
+	g_hash_table_insert (monitor->scheduled_updates, g_strdup (app_id),
+			     g_steal_pointer (&helper));
+
+	/* when all apps have been scheduled, try to update any that should be
+	 * updated already, and connect to MwscScheduleEntry signals; we do this
+	 * to ensure all the updates have been scheduled, otherwise we would
+	 * risk starting an update only for it to be canceled if a higher
+	 * priority app was added */
+	if (monitor->num_scheduled_updates == 0)
+		finish_scheduling_updates (monitor);
+}
+
+static void
+schedule_update (GsUpdateMonitor *monitor,
+		 GsApp *app,
+		 GCancellable *cancellable)
+{
+	g_auto(GVariantDict) parameters_dict = G_VARIANT_DICT_INIT (NULL);
+	g_autoptr(GVariant) parameters = NULL;
+	g_autoptr(GError) local_error = NULL;
+	UpdateScheduleHelper *helper = NULL;
+	const gchar *app_id = gs_app_get_unique_id (app);
+
+	helper = g_hash_table_lookup (monitor->scheduled_updates, app_id);
+	if (helper != NULL) {
+		/* replace the app that's scheduled, in case the object is
+		 * different */
+		if (helper->app != app) {
+			GCancellable *app_cancellable = gs_app_get_cancellable (helper->app);
+			g_cancellable_cancel (app_cancellable);
+			g_set_object (&helper->app, app);
+		}
+
+		return;
+	}
+
+	g_variant_dict_insert (&parameters_dict, "resumable", "b", FALSE);
+	parameters = g_variant_ref_sink (g_variant_dict_end (&parameters_dict));
+
+	g_assert (monitor->scheduler != NULL);
+
+	helper = g_new0 (UpdateScheduleHelper, 1);
+	helper->monitor = monitor;
+	helper->app = g_object_ref (app);
+
+	mwsc_scheduler_schedule_async (monitor->scheduler, parameters, cancellable,
+				       schedule_entry_scheduled_cb, helper);
+}
+
+static void
+schedule_updates_real (GsUpdateMonitor *monitor,
+		       GsAppList *apps_to_update)
+{
+	/* we have to use an updates counter to be able to know when all
+	 * updates have been scheduled */
+	monitor->num_scheduled_updates = gs_app_list_length (apps_to_update);
+	for (guint i = 0; i < monitor->num_scheduled_updates; i++) {
+		GsApp *app = gs_app_list_index (apps_to_update, i);
+		schedule_update (monitor, app,
+				 monitor->scheduled_updates_cancellable);
+	}
+}
+
+static void
+monitor_clear_scheduler (GsUpdateMonitor *monitor)
+{
+	g_clear_object (&monitor->scheduler);
+}
+
+static void
+scheduler_ready_cb (GObject *source_object,
+		    GAsyncResult *result,
+		    gpointer data)
+{
+	MwscScheduler *scheduler;
+	g_autoptr(GError) local_error = NULL;
+	g_autoptr(SchedulerHelper) helper = (SchedulerHelper *) data;
+	GsUpdateMonitor *monitor = helper->monitor;
+
+	scheduler = mwsc_scheduler_new_finish (result, &local_error);
+
+	if (scheduler == NULL) {
+		g_warning ("Error getting Mogwai Scheduler: %s", local_error->message);
+		return;
+	}
+
+	g_signal_connect_object (scheduler, "invalidated",
+				 (GCallback) monitor_clear_scheduler,
+				 monitor,
+				 G_CONNECT_SWAPPED);
+	monitor->scheduler = scheduler;
+
+	schedule_updates_real (monitor, helper->apps_to_update);
+}
+
+static void
+schedule_updates (GsUpdateMonitor *monitor,
+		  GsAppList *apps_to_update)
+{
+	g_autoptr(GsAppList) app_list = g_steal_pointer (&apps_to_update);
+
+	/* if we don't have a valid scheduler yet, create it asynchronously and
+	 * delegate the updates scheduling to its callback */
+	if (monitor->scheduler == NULL) {
+		g_autoptr(SchedulerHelper) helper = g_new0 (SchedulerHelper, 1);
+		helper->monitor = monitor;
+		helper->apps_to_update = g_steal_pointer (&app_list);
+
+		mwsc_scheduler_new_async (monitor->scheduled_updates_cancellable,
+					  (GAsyncReadyCallback) scheduler_ready_cb,
+					  g_steal_pointer (&helper));
+		return;
+	}
+
+	schedule_updates_real (monitor, app_list);
+}
+
+static void
 get_updates_finished_cb (GObject *object,
 			 GAsyncResult *res,
 			 gpointer data)
@@ -162,6 +541,7 @@ get_updates_finished_cb (GObject *object,
 	guint64 security_timestamp_old = 0;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) apps = NULL;
+	g_autoptr(GsAppList) apps_to_update = NULL;
 
 	/* get result */
 	apps = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
@@ -179,11 +559,22 @@ get_updates_finished_cb (GObject *object,
 		return;
 	}
 
+	if (monitor->scheduled_updates_cancellable == NULL ||
+	    g_cancellable_is_cancelled (monitor->scheduled_updates_cancellable))
+		g_set_object (&monitor->scheduled_updates_cancellable,
+			      g_cancellable_new ());
+
+	apps_to_update = gs_app_list_new ();
+
 	/* find security updates, or clear timestamp if there are now none */
 	g_settings_get (monitor->settings,
 			"security-timestamp", "x", &security_timestamp_old);
 	for (i = 0; i < gs_app_list_length (apps); i++) {
 		app = gs_app_list_index (apps, i);
+
+		if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE_LIVE)
+			gs_app_list_add (apps_to_update, app);
+
 		if (gs_app_get_metadata_item (app, "is-security") != NULL) {
 			security_timestamp = (guint64) g_get_monotonic_time ();
 			break;
@@ -200,6 +591,8 @@ get_updates_finished_cb (GObject *object,
 	    no_updates_for_a_week (monitor)) {
 		notify_offline_update_available (monitor);
 	}
+
+	schedule_updates (monitor, g_steal_pointer (&apps_to_update));
 }
 
 static gboolean
@@ -416,7 +809,7 @@ check_updates (GsUpdateMonitor *monitor)
 	gboolean refresh_on_metered;
 	gboolean connection_is_metered;
 	g_autoptr(GDateTime) last_refreshed = NULL;
-	g_autoptr(GDateTime) now_refreshed = NULL;
+	g_autoptr(GDateTime) now = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	GsPluginRefreshFlags refresh_flags = GS_PLUGIN_REFRESH_FLAGS_METADATA;
 
@@ -447,35 +840,28 @@ check_updates (GsUpdateMonitor *monitor)
 		g_debug ("no UPower support, so not doing power level checks");
 	}
 
+	now = g_date_time_new_now_local ();
+
 	g_settings_get (monitor->settings, "check-timestamp", "x", &tmp);
 	last_refreshed = g_date_time_new_from_unix_local (tmp);
 	if (last_refreshed != NULL) {
-		gint now_year, now_month, now_day, now_hour;
-		gint year, month, day;
-		g_autoptr(GDateTime) now = NULL;
+		GTimeSpan time_passed;
+		gint64 time_passed_secs;
 
-		now = g_date_time_new_now_local ();
+		time_passed = g_date_time_difference (now, last_refreshed);
+		time_passed_secs = time_passed / G_USEC_PER_SEC;
 
-		g_date_time_get_ymd (now, &now_year, &now_month, &now_day);
-		now_hour = g_date_time_get_hour (now);
-
-		g_date_time_get_ymd (last_refreshed, &year, &month, &day);
-
-		/* check that it is the next day */
-		if (!((now_year > year) ||
-		      (now_year == year && now_month > month) ||
-		      (now_year == year && now_month == month && now_day > day)))
+		if (time_passed_secs < UPDATE_CHECK_INTERVAL_SECS) {
+			g_debug ("Not performing check for updates since only "
+				 "%ld secs have passed since last time",
+				 time_passed_secs);
 			return;
-
-		/* ...and past 6am */
-		if (!(now_hour >= 6))
-			return;
+		}
 	}
 
-	g_debug ("Daily update check due");
-	now_refreshed = g_date_time_new_now_local ();
+	g_debug ("Updates check due");
 	g_settings_set (monitor->settings, "check-timestamp", "x",
-			g_date_time_to_unix (now_refreshed));
+			g_date_time_to_unix (now));
 
 	if (gs_plugin_loader_get_allow_updates (monitor->plugin_loader) &&
 	    !connection_is_metered &&
@@ -821,6 +1207,11 @@ gs_update_monitor_init (GsUpdateMonitor *monitor)
 		g_warning ("failed to connect to upower: %s", error->message);
 	}
 
+	monitor->scheduled_updates = g_hash_table_new_full (g_str_hash,
+							    g_str_equal,
+							    g_free,
+							    (GDestroyNotify) download_schedule_helper_free);
+
 	network_monitor = g_network_monitor_get_default ();
 	if (network_monitor == NULL)
 		return;
@@ -876,6 +1267,14 @@ gs_update_monitor_dispose (GObject *object)
 						      monitor);
 		monitor->plugin_loader = NULL;
 	}
+
+	g_cancellable_cancel (monitor->scheduled_updates_cancellable);
+	g_clear_object (&monitor->scheduled_updates_cancellable);
+
+	g_clear_pointer (&monitor->scheduled_updates, g_hash_table_destroy);
+
+	g_clear_object (&monitor->scheduler);
+
 	g_clear_object (&monitor->settings);
 	g_clear_object (&monitor->proxy_upower);
 

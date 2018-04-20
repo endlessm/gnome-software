@@ -84,7 +84,8 @@ gnome_software_dependencies = [
   json_glib,
   libm,
   libsecret,
-  libsoup
+  libsoup,
+  mogwai_schedule_client,
 ]
 
 if get_option('enable-packagekit')
@@ -310,6 +311,7 @@ if get_option('enable-tests')
       libm,
       libsecret,
       libsoup,
+      mogwai_schedule_client,
     ],
     link_with : [
       libgnomesoftware
