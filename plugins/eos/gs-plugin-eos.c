@@ -2020,8 +2020,7 @@ setup_os_upgrade (GsPlugin *plugin)
 	gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Endless OS");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL,
-			    _("A major upgrade, with new features and added "
-			      "polish."));
+			    _("An Endless update with new features and fixes."));
 	/* ensure that the version doesn't appear as (NULL) in the banner, it
 	 * should be changed to the right value when it changes in the eos-updater */
 	gs_app_set_version (app, "");
