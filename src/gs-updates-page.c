@@ -338,10 +338,14 @@ gs_updates_page_last_checked_time_string (GsUpdatesPage *self)
 static const gchar *
 gs_updates_page_get_state_string (GsPluginStatus status)
 {
-	if (status == GS_PLUGIN_STATUS_DOWNLOADING) {
-		/* TRANSLATORS: the updates are being downloaded */
-		return _("Downloading new updates…");
-	}
+	/* FIXME: We are commenting out the code that checked the status because
+	 * the message it returned is not what a plugin may be doing (it can be
+	 * simply refreshing the metadata), so we need to fix this (maybe adding
+	 * different types of 'downloading' status) in the future. */
+	/* if (status == GS_PLUGIN_STATUS_DOWNLOADING) { */
+	/* 	/\* TRANSLATORS: the updates are being downloaded *\/ */
+	/* 	return _("Downloading new updates…"); */
+	/* } */
 
 	/* TRANSLATORS: the update panel is doing *something* vague */
 	return _("Looking for new updates…");
