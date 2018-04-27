@@ -71,6 +71,10 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 	name_bold = g_strdup_printf ("<b>%s</b>", gs_app_get_name (priv->app));
 	version_bold = g_strdup_printf ("<b>%s</b>", gs_app_get_version (priv->app));
 
+	/* disable the upgrades warning message as it's not needed on an
+	 * ostree-based OS */
+	gtk_widget_set_visible (priv->label_upgrades_warning, FALSE);
+
 	/* Refresh the title. Normally a distro upgrade state goes from
 	 *
 	 * AVAILABLE (available to download) to
@@ -85,7 +89,6 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 		str = g_strdup_printf (_("%s %s Now Available"),
 				       name_bold, version_bold);
 		gtk_label_set_markup (GTK_LABEL (priv->label_upgrades_title), str);
-		gtk_widget_set_visible (priv->label_upgrades_warning, FALSE);
 		gtk_widget_set_visible (priv->button_upgrades_cancel, FALSE);
 		break;
 	case AS_APP_STATE_INSTALLING:
@@ -95,7 +98,6 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 		str = g_strdup_printf (_("Downloading %s %s"),
 				       name_bold, version_bold);
 		gtk_label_set_markup (GTK_LABEL (priv->label_upgrades_title), str);
-		gtk_widget_set_visible (priv->label_upgrades_warning, FALSE);
 		gtk_widget_set_visible (priv->button_upgrades_cancel, TRUE);
 		break;
 	case AS_APP_STATE_UPDATABLE:
@@ -106,7 +108,6 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 		str = g_strdup_printf (_("%s %s Ready to be Installed"),
 				       name_bold, version_bold);
 		gtk_label_set_markup (GTK_LABEL (priv->label_upgrades_title), str);
-		gtk_widget_set_visible (priv->label_upgrades_warning, TRUE);
 		gtk_widget_set_visible (priv->button_upgrades_cancel, FALSE);
 		break;
 	default:
