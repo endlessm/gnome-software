@@ -1300,10 +1300,30 @@ gs_update_monitor_class_init (GsUpdateMonitorClass *klass)
 	object_class->finalize = gs_update_monitor_finalize;
 }
 
+static void
+unused_strings (void)
+{
+	const gchar *string1 = _("Remind me Later");
+	const gchar *string2 = _("Manage Updates");
+	const gchar *string3 = _("You have an OS update pending");
+	const gchar *string4 = g_dngettext (GETTEXT_PACKAGE,
+					    "You an app update pending",
+					    "You have %d app updates pending",
+					    1);
+
+	(void) string1;
+	(void) string2;
+	(void) string3;
+	(void) string4;
+}
+
 GsUpdateMonitor *
 gs_update_monitor_new (GsApplication *application)
 {
 	GsUpdateMonitor *monitor;
+
+	/* FIXME: implement the notifications */
+	unused_strings ();
 
 	monitor = GS_UPDATE_MONITOR (g_object_new (GS_TYPE_UPDATE_MONITOR, NULL));
 	monitor->application = G_APPLICATION (application);
