@@ -1454,6 +1454,16 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE)
 		return;
 
+	/* blacklist the KDE desktop file of the GNOME System Monitor since
+	 * it's a core app but should not be shown */
+	if (g_strcmp0 (gs_app_get_id (app), "gnome-system-monitor-kde.desktop") == 0) {
+		g_debug ("Blacklisting %s because it will show as a duplicate "
+			 "of the real gnome-system-monitor one.",
+			 gs_app_get_unique_id (app));
+		gs_app_add_category (app, "Blacklisted");
+		return;
+	}
+
 	/* we only allow to remove flatpak apps */
 	gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
 
