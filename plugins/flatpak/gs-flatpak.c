@@ -2945,14 +2945,13 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 					   GCancellable *cancellable,
 					   GError **error)
 {
-	GsApp *runtime;
+	GsApp *runtime, *services_runtime;
 	g_autofree gchar *ref = NULL;
 	g_autoptr(GPtrArray) related = NULL;
 	g_autoptr(GPtrArray) xrefs_installed = NULL;
 	g_autoptr(GHashTable) hash_installed = NULL;
 	g_autoptr(GsAppList) list = gs_app_list_new ();
 	g_autoptr(GsApp) services_app = NULL;
-	g_autoptr(GsApp) services_runtime = NULL;
 	g_autofree gchar *app_ref_display = gs_flatpak_app_get_ref_display (app);
 	gboolean is_repair = FALSE;
 
