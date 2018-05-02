@@ -2931,22 +2931,16 @@ gs_flatpak_add_app_to_list_if_not_installed (GsApp *app, GsAppList *list,
 	if (is_installed &&
 	    (!include_updates || !gs_app_is_updatable (app))) {
 		if (include_updates)
-			g_debug ("%s is already installed and up to date, so skipping",
-				 gs_app_get_unique_id (app));
+			g_debug ("%s is already installed and up to date, so skipping", ref_display);
 		else
-			g_debug ("%s is already installed, so skipping",
-				 gs_app_get_unique_id (app));
+			g_debug ("%s is already installed, so skipping", ref_display);
 		return;
 	}
 
 	if (is_installed)
-		g_debug ("%s/%s needs update, so updating",
-			 gs_flatpak_app_get_ref_name (app),
-			 gs_flatpak_app_get_ref_branch (app));
+		g_debug ("%s needs update, so updating", ref_display);
 	else
-		g_debug ("%s/%s is not already installed, so installing",
-			 gs_flatpak_app_get_ref_name (app),
-			 gs_flatpak_app_get_ref_branch (app));
+		g_debug ("%s is not already installed, so installing", ref_display);
 
 	gs_app_list_add (list, app);
 }
