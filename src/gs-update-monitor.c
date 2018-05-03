@@ -854,13 +854,7 @@ check_updates (GsUpdateMonitor *monitor)
 	g_settings_set (monitor->settings, "check-timestamp", "x",
 			g_date_time_to_unix (now));
 
-	if (gs_plugin_loader_get_allow_updates (monitor->plugin_loader) &&
-	    g_settings_get_boolean (monitor->settings, "download-updates")) {
-		g_debug ("Refreshing for metadata and payload");
-		refresh_flags |= GS_PLUGIN_REFRESH_FLAGS_PAYLOAD;
-	} else {
-		g_debug ("Refreshing for metadata only");
-	}
+	g_debug ("Refreshing metadata");
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
