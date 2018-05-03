@@ -1658,7 +1658,6 @@ gs_flatpak_refresh (GsFlatpak *self,
 		    GCancellable *cancellable,
 		    GError **error)
 {
-	guint i;
 	g_autoptr(GPtrArray) xrefs = NULL;
 
 	/* give all the repos a second chance */
@@ -1677,45 +1676,6 @@ gs_flatpak_refresh (GsFlatpak *self,
 		if (!gs_flatpak_refresh_appstream (self, cache_age, flags,
 						   cancellable, error))
 			return FALSE;
-	}
-
-	/* no longer interesting */
-	if ((flags & GS_PLUGIN_REFRESH_FLAGS_PAYLOAD) == 0)
-		return TRUE;
-
-	/* get all the updates available from all remotes */
-	xrefs = flatpak_installation_list_installed_refs_for_update (self->installation,
-								     cancellable,
-								     error);
-	if (xrefs == NULL) {
-		gs_flatpak_error_convert (error);
-		return FALSE;
-	}
-	for (i = 0; i < xrefs->len; i++) {
-		FlatpakInstalledRef *xref = g_ptr_array_index (xrefs, i);
-		g_autoptr(FlatpakInstalledRef) xref2 = NULL;
-		g_autoptr(GsApp) app_dl = NULL;
-		g_autoptr(GsFlatpakProgressHelper) phelper = NULL;
-
-		/* try to create a GsApp so we can do progress reporting */
-		app_dl = gs_flatpak_create_installed (self, xref, NULL);
-
-		/* fetch but do not deploy */
-		g_debug ("pulling update for %s",
-			 flatpak_ref_get_name (FLATPAK_REF (xref)));
-		phelper = gs_flatpak_progress_helper_new (self->plugin, app_dl);
-		xref2 = flatpak_installation_update (self->installation,
-						     FLATPAK_UPDATE_FLAGS_NO_DEPLOY,
-						     flatpak_ref_get_kind (FLATPAK_REF (xref)),
-						     flatpak_ref_get_name (FLATPAK_REF (xref)),
-						     flatpak_ref_get_arch (FLATPAK_REF (xref)),
-						     flatpak_ref_get_branch (FLATPAK_REF (xref)),
-						     gs_flatpak_progress_cb, phelper,
-						     cancellable, error);
-		if (xref2 == NULL) {
-			gs_flatpak_error_convert (error);
-			return FALSE;
-		}
 	}
 
 	return TRUE;
