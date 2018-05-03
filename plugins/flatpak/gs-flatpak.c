@@ -2710,10 +2710,10 @@ gs_flatpak_app_remove_source (GsFlatpak *self,
 }
 
 /*
- * gs_flatpak_get_services_app_for_runtime:
- * Specific to Endless runtimes, gets a GsApp reference for the related
- * "EknServices" app that provides system services for apps that use the
- * given runtime.
+ * gs_flatpak_get_services_app_if_needed:
+ * Specific to Endless runtimes, returns a GsApp reference for the
+ * "EknServicesMultiplexer" app that provides system services for apps that
+ * use the SDK, or use the old runtime and appear to be an Endless app.
  *
  * Returns NULL if no services app was required or there was an error.
  * Does not take a GError since any error should be recoverable. However, in
@@ -2721,40 +2721,35 @@ gs_flatpak_app_remove_source (GsFlatpak *self,
  * status of the GCancellable after calling this.
  */
 static GsApp *
-gs_flatpak_get_services_app_for_runtime (GsFlatpak *self, GsApp *runtime,
-                                         GCancellable *cancellable)
+gs_flatpak_get_services_app_if_needed (GsFlatpak *self,
+				       GsApp *app,
+				       GsApp *runtime,
+				       GCancellable *cancellable)
 {
+	const gchar *app_id;
 	const gchar *runtime_id;
-	const gchar *runtime_branch;
-	const gchar *services_branch;
+	gboolean needed = FALSE;
+	const gchar *services_id = "com.endlessm.EknServicesMultiplexer";
+	const gchar *services_branch = "stable";
 	const gchar *arch;
-	g_autofree gchar *services_id = NULL;
 	g_autofree gchar *description = NULL;
 	g_autoptr(FlatpakRef) services_ref = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsApp) services_app = NULL;
 
+	app_id = gs_app_get_id (app);
 	runtime_id = gs_app_get_id (runtime);
-	runtime_branch = gs_app_get_branch (runtime);
 
-	if ((g_strcmp0 (runtime_id, "com.endlessm.Platform") == 0 &&
-	     g_strcmp0 (runtime_branch, "eos3.1") == 0) ||
-	    (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0 &&
-	     g_strcmp0 (runtime_branch, "1") == 0)) {
-		services_id = g_strdup ("com.endlessm.EknServices");
-		services_branch = "eos3";
-	} else if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0) {
-		services_id = g_strdup ("com.endlessm.EknServices2");
-		if (g_strcmp0 (runtime_branch, "master") == 0)
-			services_branch = "master";
-		else
-			services_branch = "stable";
-	} else {
-		/* Runtime doesn't require an EknServices app */
+	if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0)
+		needed = TRUE;
+	else if (g_strcmp0 (runtime_id, "com.endlessm.Platform") == 0 &&
+		 g_str_has_prefix (app_id, "com.endlessm."))
+		needed = TRUE;
+
+	if (!needed)
 		return NULL;
-	}
 
-	/* Construct a GsApp for the EknServices we determined we needed */
+	/* Construct a GsApp for EknServicesMultiplexer */
 	arch = gs_flatpak_app_get_ref_arch (runtime);
 	description = g_strdup_printf ("app/%s/%s/%s", services_id, arch, services_branch);
 	services_ref = flatpak_ref_parse (description, &error);
@@ -2928,18 +2923,25 @@ gs_flatpak_refine_runtime_for_install (GsFlatpak *self,
 
 static void
 gs_flatpak_add_app_to_list_if_not_installed (GsApp *app, GsAppList *list,
-					     const GHashTable *hash_installed)
+					     const GHashTable *hash_installed,
+					     gboolean include_updates)
 {
 	g_autofree gchar *ref_display = gs_flatpak_app_get_ref_display (app);
-	if (g_hash_table_contains (hash_installed, ref_display)) {
-		g_debug ("%s is already installed, so skipping",
-			 gs_app_get_unique_id (app));
+	gboolean is_installed = g_hash_table_contains (hash_installed, ref_display);
+	if (is_installed &&
+	    (!include_updates || !gs_app_is_updatable (app))) {
+		if (include_updates)
+			g_debug ("%s is already installed and up to date, so skipping", ref_display);
+		else
+			g_debug ("%s is already installed, so skipping", ref_display);
 		return;
 	}
 
-	g_debug ("%s/%s is not already installed, so installing",
-		 gs_flatpak_app_get_ref_name (app),
-		 gs_flatpak_app_get_ref_branch (app));
+	if (is_installed)
+		g_debug ("%s needs update, so updating", ref_display);
+	else
+		g_debug ("%s is not already installed, so installing", ref_display);
+
 	gs_app_list_add (list, app);
 }
 
@@ -2950,14 +2952,13 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 					   GCancellable *cancellable,
 					   GError **error)
 {
-	GsApp *runtime;
+	GsApp *runtime, *services_runtime;
 	g_autofree gchar *ref = NULL;
 	g_autoptr(GPtrArray) related = NULL;
 	g_autoptr(GPtrArray) xrefs_installed = NULL;
 	g_autoptr(GHashTable) hash_installed = NULL;
 	g_autoptr(GsAppList) list = gs_app_list_new ();
 	g_autoptr(GsApp) services_app = NULL;
-	g_autoptr(GsApp) services_runtime = NULL;
 	g_autofree gchar *app_ref_display = gs_flatpak_app_get_ref_display (app);
 	gboolean is_repair = FALSE;
 
@@ -2988,14 +2989,15 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 		runtime = gs_app_get_update_runtime (app);
 	}
 	if (runtime != NULL)
-		gs_flatpak_add_app_to_list_if_not_installed (runtime, list, hash_installed);
+		gs_flatpak_add_app_to_list_if_not_installed (runtime, list, hash_installed, FALSE);
 
 	/* add services flatpak */
-	services_app = gs_flatpak_get_services_app_for_runtime (self, runtime, cancellable);
+	services_app = gs_flatpak_get_services_app_if_needed (self, app, runtime, cancellable);
 	if (g_cancellable_set_error_if_cancelled (cancellable, error))
 		return FALSE;
 	if (services_app != NULL) {
-		gs_flatpak_add_app_to_list_if_not_installed (services_app, list, hash_installed);
+		/* ensure the app is installed and up to date */
+		gs_flatpak_add_app_to_list_if_not_installed (services_app, list, hash_installed, TRUE);
 
 		/* add services flatpak's runtime, if different from app's runtime */
 		if (is_repair) {
@@ -3007,7 +3009,7 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 			services_runtime = gs_app_get_update_runtime (services_app);
 		}
 		if (services_runtime != NULL)
-			gs_flatpak_add_app_to_list_if_not_installed (services_runtime, list, hash_installed);
+			gs_flatpak_add_app_to_list_if_not_installed (services_runtime, list, hash_installed, FALSE);
 	}
 
 	/* lookup any related refs for this ref */
