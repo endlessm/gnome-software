@@ -806,8 +806,6 @@ static void
 check_updates (GsUpdateMonitor *monitor)
 {
 	gint64 tmp;
-	gboolean refresh_on_metered;
-	gboolean connection_is_metered;
 	g_autoptr(GDateTime) last_refreshed = NULL;
 	g_autoptr(GDateTime) now = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
@@ -815,13 +813,6 @@ check_updates (GsUpdateMonitor *monitor)
 
 	/* never check for updates when offline */
 	if (!gs_plugin_loader_get_network_available (monitor->plugin_loader))
-		return;
-
-	refresh_on_metered = g_settings_get_boolean (monitor->settings,
-						     "refresh-when-metered");
-	connection_is_metered = gs_plugin_loader_get_network_metered (monitor->plugin_loader);
-
-	if (!refresh_on_metered && connection_is_metered)
 		return;
 
 	/* never refresh when the battery is low */
@@ -864,7 +855,6 @@ check_updates (GsUpdateMonitor *monitor)
 			g_date_time_to_unix (now));
 
 	if (gs_plugin_loader_get_allow_updates (monitor->plugin_loader) &&
-	    !connection_is_metered &&
 	    g_settings_get_boolean (monitor->settings, "download-updates")) {
 		g_debug ("Refreshing for metadata and payload");
 		refresh_flags |= GS_PLUGIN_REFRESH_FLAGS_PAYLOAD;
