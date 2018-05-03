@@ -12,6 +12,10 @@
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 
+#ifdef HAVE_MOGWAI
+#include <libmogwai-schedule-client/scheduler.h>
+#endif
+
 #include "gs-shell.h"
 #include "gs-updates-page.h"
 #include "gs-common.h"
@@ -76,6 +80,11 @@ struct _GsUpdatesPage
 	GtkWidget		*label_end_of_life;
 	GtkWidget		*up_to_date_image;
 
+	/* scheduled updates */
+	GtkWidget		*metered_updates_bar;
+	GtkWidget		*label_scheduled_updates_state;
+	GtkWidget		*icon_scheduled_updates_state;
+
 	GtkSizeGroup		*sizegroup_name;
 	GtkSizeGroup		*sizegroup_button_label;
 	GtkSizeGroup		*sizegroup_button_image;
@@ -83,6 +92,12 @@ struct _GsUpdatesPage
 	GsUpdatesSection	*sections[GS_UPDATES_SECTION_KIND_LAST];
 
 	guint			 refresh_last_checked_id;
+
+#ifdef HAVE_MOGWAI
+	MwscScheduler		*scheduler;
+	gboolean		 scheduler_held;
+	gulong			 scheduler_invalidated_handler;
+#endif  /* HAVE_MOGWAI */
 };
 
 enum {
@@ -229,6 +244,32 @@ gs_updates_page_remove_last_checked_timeout (GsUpdatesPage *self)
 }
 
 static void
+gs_updates_page_refresh_auto_updates_ui (GsUpdatesPage *self)
+{
+#ifdef HAVE_MOGWAI
+	g_autofree gchar *markup = NULL;
+	const gchar *label_msg;
+	const gchar *icon_name;
+
+	if (self->scheduler != NULL && mwsc_scheduler_get_allow_downloads (self->scheduler)) {
+		label_msg = _("automatic updates on");
+		icon_name = "gs-auto-updates-on-symbolic";
+	} else {
+		label_msg = _("automatic updates off");
+		icon_name = "gs-auto-updates-off-symbolic";
+	}
+	markup = g_markup_printf_escaped ("<a href=\"updates-settings\">%s</a>", label_msg);
+	gtk_label_set_markup (GTK_LABEL (self->label_scheduled_updates_state),
+			      markup);
+	gtk_image_set_from_icon_name (GTK_IMAGE (self->icon_scheduled_updates_state), icon_name);
+
+	gtk_widget_set_visible (self->metered_updates_bar, TRUE);
+#else  /* if !HAVE_MOGWAI */
+	gtk_widget_set_visible (self->metered_updates_bar, FALSE);
+#endif  /* HAVE_MOGWAI */
+}
+
+static void
 gs_updates_page_refresh_last_checked (GsUpdatesPage *self);
 
 static gboolean
@@ -268,6 +309,8 @@ gs_updates_page_refresh_last_checked (GsUpdatesPage *self)
 	} else {
 		gtk_widget_set_visible (GTK_WIDGET (self->uptodate_description), FALSE);
 	}
+
+	gs_updates_page_refresh_auto_updates_ui (self);
 }
 
 static void
@@ -667,6 +710,8 @@ gs_updates_page_load (GsUpdatesPage *self)
 						    self);
 		self->action_cnt++;
 	}
+
+	gs_updates_page_refresh_auto_updates_ui (self);
 }
 
 static void
@@ -1194,6 +1239,99 @@ gs_updates_page_upgrade_cancel_cb (GsUpgradeBanner *upgrade_banner,
 	g_cancellable_cancel (self->cancellable_upgrade);
 }
 
+#ifdef HAVE_MOGWAI
+static void
+scheduler_invalidated_cb (GsUpdatesPage *self)
+{
+	/* The scheduler shouldn’t normally be invalidated, since we Hold() it
+	 * until we’re done with it. However, if the scheduler is stopped by
+	 * systemd (`systemctl stop mogwai-scheduled`) this signal will be
+	 * emitted. */
+	self->scheduler_held = FALSE;
+	g_clear_object (&self->scheduler);
+}
+
+static void
+scheduler_allow_downloads_changed_cb (GsUpdatesPage *self)
+{
+	gs_updates_page_refresh_auto_updates_ui (self);
+}
+
+static void
+scheduler_hold_cb (GObject *source_object,
+		   GAsyncResult *result,
+		   gpointer data)
+{
+	g_autoptr(GError) error_local = NULL;
+	MwscScheduler *scheduler = (MwscScheduler *) source_object;
+	GsUpdatesPage *self = data;
+
+	if (mwsc_scheduler_hold_finish (scheduler, result, &error_local)) {
+		self->scheduler_held = TRUE;
+	} else if (!g_error_matches (error_local, G_DBUS_ERROR, G_DBUS_ERROR_FAILED)) {
+		g_warning ("Couldn't hold the Mogwai Scheduler daemon: %s",
+			   error_local->message);
+		self->scheduler_held = FALSE;
+	}
+
+	g_clear_error (&error_local);
+
+	self->scheduler_invalidated_handler =
+		g_signal_connect_swapped (scheduler, "invalidated",
+					  (GCallback) scheduler_invalidated_cb,
+					  self);
+
+	g_signal_connect_object (scheduler, "notify::allow-downloads",
+				 (GCallback) scheduler_allow_downloads_changed_cb,
+				 self,
+				 G_CONNECT_SWAPPED);
+
+	self->scheduler = scheduler;
+}
+
+static void
+scheduler_release_cb (GObject *source_object,
+		      GAsyncResult *result,
+		      gpointer data)
+{
+	MwscScheduler *scheduler = (MwscScheduler *) source_object;
+	GsUpdatesPage *self = data;
+	g_autoptr(GError) error_local = NULL;
+
+	if (!mwsc_scheduler_hold_finish (scheduler, result, &error_local))
+		g_warning ("Couldn't release the Mogwai Scheduler daemon: %s",
+			   error_local->message);
+
+	self->scheduler_held = FALSE;
+	g_clear_object (&self->scheduler);
+	g_object_unref (self);
+}
+
+static void
+scheduler_ready_cb (GObject *source_object,
+		    GAsyncResult *result,
+		    gpointer data)
+{
+	MwscScheduler *scheduler;
+	g_autoptr(GError) error_local = NULL;
+	GsUpdatesPage *self = data;
+
+	scheduler = mwsc_scheduler_new_finish (result, &error_local);
+
+	if (scheduler == NULL) {
+		g_warning ("%s: Error getting Mogwai Scheduler: %s", G_STRFUNC,
+			   error_local->message);
+		return;
+	}
+
+	mwsc_scheduler_hold_async (scheduler,
+				   "monitoring allow-downloads property",
+				   NULL,
+				   scheduler_hold_cb,
+				   self);
+}
+#endif  /* HAVE_MOGWAI */
+
 static gboolean
 gs_updates_page_setup (GsPage *page,
                        GsShell *shell,
@@ -1274,6 +1412,13 @@ gs_updates_page_setup (GsPage *page,
 	/* set initial state */
 	if (!gs_plugin_loader_get_allow_updates (self->plugin_loader))
 		self->state = GS_UPDATES_PAGE_STATE_MANAGED;
+
+#ifdef HAVE_MOGWAI
+	mwsc_scheduler_new_async (cancellable,
+				  (GAsyncReadyCallback) scheduler_ready_cb,
+				  self);
+#endif  /* HAVE_MOGWAI */
+
 	return TRUE;
 }
 
@@ -1357,6 +1502,22 @@ gs_updates_page_dispose (GObject *object)
 	g_clear_object (&self->sizegroup_button_image);
 	g_clear_object (&self->sizegroup_header);
 
+#ifdef HAVE_MOGWAI
+	if (self->scheduler != NULL) {
+		if (self->scheduler_invalidated_handler > 0)
+			g_signal_handler_disconnect (self->scheduler,
+						     self->scheduler_invalidated_handler);
+
+		if (self->scheduler_held)
+			mwsc_scheduler_release_async (self->scheduler,
+						      NULL,
+						      scheduler_release_cb,
+						      g_object_ref (self));
+		else
+			g_clear_object (&self->scheduler);
+	}
+#endif  /* HAVE_MOGWAI */
+
 	G_OBJECT_CLASS (gs_updates_page_parent_class)->dispose (object);
 }
 
@@ -1411,6 +1572,27 @@ gs_updates_page_class_init (GsUpdatesPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, upgrade_banner);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, banner_end_of_life);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, up_to_date_image);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, metered_updates_bar);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, label_scheduled_updates_state);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, icon_scheduled_updates_state);
+}
+
+static gboolean
+scheduled_updates_activate_link_cb (GtkLabel *label,
+				    gchar *uri,
+				    gpointer data)
+{
+	g_autoptr(GError) error_local = NULL;
+
+	g_assert (g_strcmp0 ("updates-settings", uri) == 0);
+
+	if (!g_spawn_command_line_async ("gnome-control-center updates",
+					 &error_local)) {
+		g_warning ("Error opening GNOME Control Center: %s",
+			   error_local->message);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 static void
@@ -1429,6 +1611,8 @@ gs_updates_page_init (GsUpdatesPage *self)
 	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_header = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
 
+	g_signal_connect (self->label_scheduled_updates_state, "activate-link",
+			  (GCallback) scheduled_updates_activate_link_cb, NULL);
 }
 
 /**
