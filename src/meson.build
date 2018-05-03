@@ -4,7 +4,7 @@ cargs += ['-DLOCALPLUGINDIR=""']
 resources_src = gnome.compile_resources(
   'gs-resources',
   'gnome-software.gresource.xml',
-  source_dir : ['.', '../data/icons/categories'],
+  source_dir : ['.', '../data/icons/categories', '../data/icons/updates'],
   c_name : 'gs'
 )
 
