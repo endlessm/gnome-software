@@ -389,6 +389,15 @@ updater_state_changed (GsPlugin *plugin)
 }
 
 static void
+updater_downloaded_bytes_changed (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	app_ensure_installing_state (priv->os_upgrade);
+	sync_state_from_updater (plugin);
+}
+
+static void
 updater_version_changed (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
@@ -451,6 +460,20 @@ fake_os_upgrade_progress (GsPlugin *plugin)
 	g_debug ("OS upgrade fake progress: %f", priv->upgrade_fake_progress);
 
 	return G_SOURCE_CONTINUE;
+}
+
+static gboolean
+updater_is_stalled (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GsApp *app = priv->os_upgrade;
+
+	/* in case the OS upgrade has been disabled */
+	if (priv->updater_proxy == NULL)
+		return FALSE;
+
+	return eos_updater_get_state (priv->updater_proxy) == EOS_UPDATER_STATE_FETCHING &&
+	       gs_app_get_state (app) != AS_APP_STATE_INSTALLING;
 }
 
 /* This method deals with the synchronization between the EOS updater's states
@@ -550,7 +573,10 @@ sync_state_from_updater (GsPlugin *plugin)
 		guint64 downloaded = 0;
 		gfloat progress = 0;
 
-		app_ensure_installing_state (app);
+		if (!updater_is_stalled (plugin))
+			app_ensure_installing_state (app);
+		else
+			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 
 		downloaded = eos_updater_get_downloaded_bytes (priv->updater_proxy);
 		total_size = eos_updater_get_download_size (priv->updater_proxy);
@@ -2067,7 +2093,7 @@ setup_os_upgrade (GsPlugin *plugin)
 					 plugin, G_CONNECT_SWAPPED);
 		g_signal_connect_object (priv->updater_proxy,
 					 "notify::downloaded-bytes",
-					 G_CALLBACK (updater_state_changed),
+					 G_CALLBACK (updater_downloaded_bytes_changed),
 					 plugin, G_CONNECT_SWAPPED);
 		g_signal_connect_object (priv->updater_proxy, "notify::version",
 					 G_CALLBACK (updater_version_changed),
