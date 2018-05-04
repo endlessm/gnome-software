@@ -356,6 +356,22 @@ os_upgrade_get_download_by_user (GsApp *app)
 }
 
 static void
+os_upgrade_set_restart_on_error (GsApp *app, gboolean value)
+{
+	g_autoptr(GVariant) var = g_variant_new_boolean (value);
+	app_ensure_set_metadata_variant (app, "eos::RestartOnError", var);
+}
+
+static gboolean
+os_upgrade_get_restart_on_error (GsApp *app)
+{
+	GVariant *value = gs_app_get_metadata_variant (app, "eos::RestartOnError");
+	if (value == NULL)
+		return FALSE;
+	return g_variant_get_boolean (value);
+}
+
+static void
 os_upgrade_force_fetch (EosUpdater *updater)
 {
 	g_auto(GVariantDict) options_dict = G_VARIANT_DICT_INIT (NULL);
@@ -551,6 +567,18 @@ sync_state_from_updater (GsPlugin *plugin)
 			g_debug ("Disabling OS upgrades: %s", error_message);
 			disable_os_updater (plugin);
 			return state;
+		}
+
+		/* if we need to restart when an error occurred, just call poll
+		 * since it will perform the full upgrade as the
+		 * eos::DownloadByUser is true */
+		if (os_upgrade_get_restart_on_error (app)) {
+			g_debug ("Restarting OS upgrade on error");
+			os_upgrade_set_restart_on_error (app, FALSE);
+			app_ensure_installing_state (app);
+			eos_updater_call_poll (priv->updater_proxy, NULL, NULL,
+					       NULL);
+			break;
 		}
 
 		/* only set up an error to be shown to the user if the user had
@@ -2202,6 +2230,12 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 	}
 
 	os_upgrade_set_download_by_user (app, TRUE);
+
+	if (updater_is_stalled (plugin)) {
+		os_upgrade_set_restart_on_error (app, TRUE);
+		eos_updater_call_cancel (priv->updater_proxy, NULL, NULL, NULL);
+		return TRUE;
+	}
 
 	/* we need to poll again if there has been an error; the state of the
 	 * OS upgrade will then be dealt with from outside this function,
