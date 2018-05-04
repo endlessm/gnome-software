@@ -331,13 +331,19 @@ setup_os_upgrade_cancellable (GsPlugin *plugin)
 }
 
 static void
+app_ensure_set_metadata_variant (GsApp *app, const gchar *key, GVariant *var)
+{
+	/* we need to assign it to NULL in order to be able to override it
+	 * (safeguard mechanism in GsApp...) */
+	gs_app_set_metadata_variant (app, key, NULL);
+	gs_app_set_metadata_variant (app, key, var);
+}
+
+static void
 os_upgrade_set_download_by_user (GsApp *app, gboolean value)
 {
 	g_autoptr(GVariant) var = g_variant_new_boolean (value);
-	/* we need to assign it to NULL in order to be able to override it
-	 * (safeguard mechanism in GsApp...) */
-	gs_app_set_metadata_variant (app, "eos::DownloadByUser", NULL);
-	gs_app_set_metadata_variant (app, "eos::DownloadByUser", var);
+	app_ensure_set_metadata_variant (app, "eos::DownloadByUser", var);
 }
 
 static gboolean
