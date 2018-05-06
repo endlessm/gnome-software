@@ -1958,8 +1958,8 @@ gs_plugin_add_updates (GsPlugin *plugin,
 		       GError **error)
 {
 	/* only the gs_plugin_add_updates_pending should be used in EOS
-	 * but in case the user has changed the "download-updates" setting then
-	 * this will still work correctly */
+	 * but in case the user has downloaded updates (e.g. by having used the
+	 * Flatpak CLI) this will still work correctly */
 	return add_updates (plugin, list, cancellable, error);
 }
 
