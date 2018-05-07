@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-27 14:28-0700\n"
-"PO-Revision-Date: 2018-04-27 21:30+0000\n"
+"POT-Creation-Date: 2018-05-07 13:37-0700\n"
+"PO-Revision-Date: 2018-05-07 20:38+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Afrikaans (http://www.transifex.com/endless-os/gnome-software/language/af/)\n"
 "MIME-Version: 1.0\n"
@@ -335,7 +335,7 @@ msgstr "Ondersoek skyf"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gnome-software.ui:372 src/gs-updates-page.c:1445
+#: src/gnome-software.ui:372 src/gs-updates-page.c:1478
 msgid "Network Settings"
 msgstr "Netwerkinstellings"
 
@@ -353,7 +353,7 @@ msgstr "Meer inligting"
 msgid "Pending"
 msgstr "Hangend"
 
-#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:209 src/gs-app-tile.ui:51
+#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:210 src/gs-app-tile.ui:51
 #: src/gs-background-tile.ui:61 src/gs-feature-tile.c:88
 #: src/gs-popular-tile.c:70
 msgid "Installed"
@@ -361,7 +361,7 @@ msgstr "Geïnstalleer"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
-#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:455
+#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:466
 msgid "Installing"
 msgstr "Installeer tans"
 
@@ -1136,14 +1136,20 @@ msgstr "Vind in Sagteware"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:290 src/gs-details-page.c:319
+#: src/gs-details-page.c:296 src/gs-details-page.c:330
 #: src/gs-details-page.ui:237
 msgid "_Install"
 msgstr "_Installeer"
 
 #. TRANSLATORS: button text in the header when an application
+#. * can be installed but needs to be downloaded first
+#: src/gs-details-page.c:300 src/gs-upgrade-banner.ui:116
+msgid "_Download"
+msgstr "_Laai af"
+
+#. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: src/gs-details-page.c:323
+#: src/gs-details-page.c:334
 msgid "_Update"
 msgstr "_Opdateer"
 
@@ -1151,81 +1157,81 @@ msgstr "_Opdateer"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: src/gs-details-page.c:335
+#: src/gs-details-page.c:346
 msgid "_Install…"
 msgstr "_Installeer…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:382 src/gs-details-page.ui:536
+#: src/gs-details-page.c:393 src/gs-details-page.ui:536
 msgid "_Uninstall"
 msgstr ""
 
-#: src/gs-details-page.c:450
+#: src/gs-details-page.c:461
 msgid "Removing…"
 msgstr "Verwyder tans…"
 
-#: src/gs-details-page.c:469
+#: src/gs-details-page.c:480
 msgid "Pending installation…"
 msgstr ""
 
-#: src/gs-details-page.c:476
+#: src/gs-details-page.c:487
 msgid "Pending update…"
 msgstr ""
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:790
+#: src/gs-details-page.c:801
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "Dié toepassing kan slegs gebruik word wanneer daar 'n werkende internetverbinding is."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:934
+#: src/gs-details-page.c:945
 msgctxt "version"
 msgid "Unknown"
 msgstr "Onbekend"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:970
+#: src/gs-details-page.c:981
 msgctxt "updated"
 msgid "Never"
 msgstr "Nooit"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1018
+#: src/gs-details-page.c:1029
 msgctxt "origin"
 msgid "Unknown"
 msgstr "Onbekend"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1427
+#: src/gs-details-page.c:1438
 msgid "You need internet access to write a review"
 msgstr "U het internettoegang nodig om 'n resensie te skryf"
 
-#: src/gs-details-page.c:1556
+#: src/gs-details-page.c:1567
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "Kan nie \"%s\" vind nie"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2160
+#: src/gs-details-page.c:2171
 msgid "Public domain"
 msgstr "Publieke domein"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2176 src/gs-details-page.ui:1386
+#: src/gs-details-page.c:2187 src/gs-details-page.ui:1386
 msgid "Free Software"
 msgstr "Vrye sagteware"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2233
+#: src/gs-details-page.c:2244
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Gebruikers word aan die volgende lisensie gebind:"
 msgstr[1] "Gebruikers word aan die volgende lisensies gebind:"
 
-#: src/gs-details-page.c:2249 src/gs-details-page.ui:1495
+#: src/gs-details-page.c:2260 src/gs-details-page.ui:1495
 msgid "More information"
 msgstr "Meer inligting"
 
@@ -1854,14 +1860,10 @@ msgid "_Software Sources"
 msgstr "_Sagtewarebronnne"
 
 #: src/gs-menus.ui:14
-msgid "Automatic _updates"
-msgstr ""
-
-#: src/gs-menus.ui:20
 msgid "_About"
 msgstr "_Aangaande"
 
-#: src/gs-menus.ui:24
+#: src/gs-menus.ui:18
 msgid "_Quit"
 msgstr "_Sluit af"
 
@@ -2866,7 +2868,7 @@ msgid "Important OS and application updates are ready to be installed"
 msgstr "Belangrike bywerkings tot toepassings en die bedryfstelsel is gereed om geïnstalleer te word"
 
 #. TRANSLATORS: button text
-#: src/gs-update-monitor.c:180 src/gs-updates-page.c:769
+#: src/gs-update-monitor.c:180 src/gs-updates-page.c:800
 msgid "Not Now"
 msgstr "Nie nou nie"
 
@@ -2875,7 +2877,7 @@ msgid "View"
 msgstr "Vertoon"
 
 #. TRANSLATORS: this is when the current OS version goes end-of-life
-#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:46
+#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:79
 msgid "Operating System Updates Unavailable"
 msgstr "Bedryfstelselbywerkings beskikbaar"
 
@@ -2897,28 +2899,28 @@ msgid "Software Upgrade Available"
 msgstr "Sagtewareopgradering beskikbaar"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:1012
+#: src/gs-update-monitor.c:996
 msgid "Software Updates Failed"
 msgstr "Sagtewarebywerkings het misluk"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:1014
+#: src/gs-update-monitor.c:998
 msgid "An important OS update failed to be installed."
 msgstr "'n Belangrike BS-bywerking kon nie geïnstalleer word nie."
 
-#: src/gs-update-monitor.c:1015
+#: src/gs-update-monitor.c:999
 msgid "Show Details"
 msgstr "Wys besonderhede"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1037
+#: src/gs-update-monitor.c:1021
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Sagtewarebywerking geïnstalleer"
 msgstr[1] "Sagtewarebywerkings geïnstalleer"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1041
+#: src/gs-update-monitor.c:1025
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "'n Belangrike BS-bywerking is geïnstalleer."
@@ -2929,108 +2931,108 @@ msgstr[1] "Belangrike BS-bywerkings is geïnstalleer."
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1052
+#: src/gs-update-monitor.c:1036
 msgctxt "updates"
 msgid "Review"
 msgstr "Hersien"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1099
+#: src/gs-update-monitor.c:1083
 msgid "Failed To Update"
 msgstr "Kon nie bywerk nie"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1105
+#: src/gs-update-monitor.c:1089
 msgid "The system was already up to date."
 msgstr "Die stelsel was klaar op datum."
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1110
+#: src/gs-update-monitor.c:1094
 msgid "The update was cancelled."
 msgstr "Die bywerking is gekanselleer."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1116
+#: src/gs-update-monitor.c:1100
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "Internet toegang was benodig maar nie beskikbaar nie. Maak asseblief seker dat u toegang tot die internet het en probeer weer."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1122
+#: src/gs-update-monitor.c:1106
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr ""
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1128
+#: src/gs-update-monitor.c:1112
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "Daar was nie genoeg oop spasie op die skyf nie. Maak asseblief ruimte en probeer weer."
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1133
+#: src/gs-update-monitor.c:1117
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
 msgstr ""
 
 #. TRANSLATORS: Time in 24h format
-#: src/gs-updates-page.c:298
+#: src/gs-updates-page.c:306
 msgid "%R"
 msgstr "%R"
 
 #. TRANSLATORS: Time in 12h format
-#: src/gs-updates-page.c:301
+#: src/gs-updates-page.c:309
 msgid "%l:%M %p"
 msgstr "%l:%M %p"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: src/gs-updates-page.c:307
+#: src/gs-updates-page.c:315
 msgid "Yesterday, %R"
 msgstr "Gister, %R"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 PM"
-#: src/gs-updates-page.c:311
+#: src/gs-updates-page.c:319
 msgid "Yesterday, %l:%M %p"
 msgstr "Gister, %l:%M %p"
 
-#: src/gs-updates-page.c:314
+#: src/gs-updates-page.c:322
 msgid "Two days ago"
 msgstr "Twee dae gelede"
 
-#: src/gs-updates-page.c:316
+#: src/gs-updates-page.c:324
 msgid "Three days ago"
 msgstr "Drie dae gelede"
 
-#: src/gs-updates-page.c:318
+#: src/gs-updates-page.c:326
 msgid "Four days ago"
 msgstr "Vier dae gelede"
 
-#: src/gs-updates-page.c:320
+#: src/gs-updates-page.c:328
 msgid "Five days ago"
 msgstr "Vyf dae gelede"
 
-#: src/gs-updates-page.c:322
+#: src/gs-updates-page.c:330
 msgid "Six days ago"
 msgstr "Ses dae gelede"
 
-#: src/gs-updates-page.c:324
+#: src/gs-updates-page.c:332
 msgid "One week ago"
 msgstr "'n Week gelede"
 
-#: src/gs-updates-page.c:326
+#: src/gs-updates-page.c:334
 msgid "Two weeks ago"
 msgstr "Twee weke gelede"
 
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
-#: src/gs-updates-page.c:330
+#: src/gs-updates-page.c:338
 msgid "%e %B %Y"
 msgstr "%e %B %Y"
 
@@ -3043,44 +3045,52 @@ msgstr "%e %B %Y"
 #. return _("Downloading new updates…");
 #. }
 #. TRANSLATORS: the update panel is doing *something* vague
-#: src/gs-updates-page.c:351
+#: src/gs-updates-page.c:359
 msgid "Looking for new updates…"
 msgstr "Kontroleer tans vir nuwe bywerkings…"
 
+#: src/gs-updates-page.c:389
+msgid "automatic updates on"
+msgstr ""
+
+#: src/gs-updates-page.c:392
+msgid "automatic updates off"
+msgstr ""
+
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:411
+#: src/gs-updates-page.c:440
 msgid "Setting up updates…"
 msgstr "Stel bywerkings op…"
 
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:412 src/gs-updates-page.c:419
+#: src/gs-updates-page.c:441 src/gs-updates-page.c:448
 msgid "(This could take a while)"
 msgstr "(Dit kan 'n oomblik duur)"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:525
+#: src/gs-updates-page.c:554
 #, c-format
 msgid "Last checked: %s"
 msgstr "Laas gekontroleer: %s"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-updates-page.c:765
+#: src/gs-updates-page.c:796
 msgid "Updates have been installed"
 msgstr "Bywerking is geïnstalleer"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-updates-page.c:767
+#: src/gs-updates-page.c:798
 msgid "A restart is required for them to take effect."
 msgstr "Die rekenaar moet herbegin word vir hulle om effek te neem."
 
 #. TRANSLATORS: button text
-#: src/gs-updates-page.c:771
+#: src/gs-updates-page.c:802
 msgid "Restart"
 msgstr "Herbegin"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-page.c:841
+#: src/gs-updates-page.c:872
 msgid "Integrated Firmware"
 msgstr "Geïntegreerde fermware"
 
@@ -3088,74 +3098,74 @@ msgstr "Geïntegreerde fermware"
 #. * system firmware
 #. TRANSLATORS: This is the button for upgrading all
 #. * offline updates
-#: src/gs-updates-page.c:844 src/gs-updates-page.c:854
+#: src/gs-updates-page.c:875 src/gs-updates-page.c:885
 msgid "Restart & Update"
 msgstr "Herbegin en dateer op"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-page.c:851
+#: src/gs-updates-page.c:882
 msgid "Requires Restart"
 msgstr "Benodig 'n herbegin"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-page.c:861
+#: src/gs-updates-page.c:892
 msgid "Application Updates"
 msgstr "Toepassingbywerkings"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-page.c:864
+#: src/gs-updates-page.c:895
 msgid "Update All"
 msgstr "Dateer almal op"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-page.c:871
+#: src/gs-updates-page.c:902
 msgid "Device Firmware"
 msgstr "Toestelfermware"
 
 #. TRANSLATORS: this is an offline update
-#: src/gs-updates-page.c:1056
+#: src/gs-updates-page.c:1087
 msgid "_Restart & Update"
 msgstr "He_rbegin en dateer op"
 
 #. TRANSLATORS: all updates will be installed
-#: src/gs-updates-page.c:1060
+#: src/gs-updates-page.c:1091
 msgid "U_pdate All"
 msgstr "Dateer almal o_p"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:1144
+#: src/gs-updates-page.c:1175
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "%s %s word nie meer ondersteun nie."
 
 #. TRANSLATORS: OS refers to operating system, e.g. Fedora
-#: src/gs-updates-page.c:1149
+#: src/gs-updates-page.c:1180
 msgid "Your OS is no longer supported."
 msgstr "Jou BS word nie meer ondersteun nie."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:1154
+#: src/gs-updates-page.c:1185
 msgid "This means that it does not receive security updates."
 msgstr "Dit beteken dat dit nie sekuriteitsbywerkings sal ontvang nie."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:1158
+#: src/gs-updates-page.c:1189
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "Dit word aanbeveel dat u na 'n meer onlangse weergawe opgradeer."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:1413
+#: src/gs-updates-page.c:1446
 msgid "Charges may apply"
 msgstr "Kan dalk geld kos"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1417
+#: src/gs-updates-page.c:1450
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -3163,26 +3173,26 @@ msgstr "Bywerkingkontrole terwyl mens selfoonbreëband gebruik, kan dalk geld ko
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:1421
+#: src/gs-updates-page.c:1454
 msgid "Check Anyway"
 msgstr "Kontroleer in elk geval"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:1437
+#: src/gs-updates-page.c:1470
 msgid "No Network"
 msgstr "Geen netwerk nie"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1441
+#: src/gs-updates-page.c:1474
 msgid "Internet access is required to check for updates."
 msgstr "Internettoegang word benodig om vir bywerkings te kontroleer."
 
-#: src/gs-updates-page.c:1837
+#: src/gs-updates-page.c:1939
 msgid "Restart & _Install"
 msgstr "Herbegin en _installeer"
 
-#: src/gs-updates-page.c:1855
+#: src/gs-updates-page.c:1957
 msgid "Check for updates"
 msgstr "Kontroleer vir bywerkings"
 
@@ -3190,29 +3200,29 @@ msgstr "Kontroleer vir bywerkings"
 msgid "Updates page"
 msgstr "Opdateringsbladsy"
 
-#: src/gs-updates-page.ui:194
+#: src/gs-updates-page.ui:227
 msgid "Software is up to date"
 msgstr "Sagteware is op datum"
 
-#: src/gs-updates-page.ui:245
+#: src/gs-updates-page.ui:278
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges"
 msgstr "Bywerkingkontrole terwyl mens selfoonbreëband gebruik, kan dalk geld kos"
 
-#: src/gs-updates-page.ui:257
+#: src/gs-updates-page.ui:290
 msgid "_Check Anyway"
 msgstr "_Kontroleer in elk geval"
 
-#: src/gs-updates-page.ui:300
+#: src/gs-updates-page.ui:333
 msgid "Go online to check for updates"
 msgstr "Gaan aanlyn om vir bywerkings te kontroleer"
 
-#: src/gs-updates-page.ui:311
+#: src/gs-updates-page.ui:344
 msgid "_Network Settings"
 msgstr "_Netwerkinstellings"
 
-#: src/gs-updates-page.ui:393
+#: src/gs-updates-page.ui:426
 msgid "Updates are automatically managed"
 msgstr "Bywerkings sal outomaties bestuur word"
 
@@ -3252,10 +3262,6 @@ msgstr "_Meer inligting"
 #: src/gs-upgrade-banner.ui:98
 msgid "Updates will be applied when the computer is restarted."
 msgstr ""
-
-#: src/gs-upgrade-banner.ui:116
-msgid "_Download"
-msgstr "_Laai af"
 
 #: src/gs-upgrade-banner.ui:146
 msgid "_Restart Now"
@@ -3705,20 +3711,20 @@ msgstr "Insluitend verbeteringe vir werkverrigting, stabiliteit en sekuriteit."
 msgid "Downloading featured images…"
 msgstr "Laai tans uitgesoekte beelde af"
 
-#: plugins/eos/gs-plugin-eos.c:1813
+#: plugins/eos/gs-plugin-eos.c:1890
 #, c-format
 msgid "Could not launch this application."
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:1870
+#: plugins/eos/gs-plugin-eos.c:1947
 msgid "Endless Platform"
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:1873
+#: plugins/eos/gs-plugin-eos.c:1950
 msgid "Framework for applications"
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:2023
+#: plugins/eos/gs-plugin-eos.c:2099
 msgid "An Endless update with new features and fixes."
 msgstr ""
 
@@ -3784,7 +3790,7 @@ msgid "Getting flatpak metadata for %s…"
 msgstr ""
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3193
+#: plugins/flatpak/gs-flatpak.c:3155
 msgid "Getting runtime source…"
 msgstr ""
 

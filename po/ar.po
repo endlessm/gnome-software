@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-27 14:28-0700\n"
-"PO-Revision-Date: 2018-04-27 21:30+0000\n"
+"POT-Creation-Date: 2018-05-07 13:37-0700\n"
+"PO-Revision-Date: 2018-05-07 20:38+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Arabic (http://www.transifex.com/endless-os/gnome-software/language/ar/)\n"
 "MIME-Version: 1.0\n"
@@ -339,7 +339,7 @@ msgstr "فحص القرص"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gnome-software.ui:372 src/gs-updates-page.c:1445
+#: src/gnome-software.ui:372 src/gs-updates-page.c:1478
 msgid "Network Settings"
 msgstr "إعدادات الشّبكة"
 
@@ -357,7 +357,7 @@ msgstr "المزيد من المعلومات"
 msgid "Pending"
 msgstr "ينتظر"
 
-#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:209 src/gs-app-tile.ui:51
+#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:210 src/gs-app-tile.ui:51
 #: src/gs-background-tile.ui:61 src/gs-feature-tile.c:88
 #: src/gs-popular-tile.c:70
 msgid "Installed"
@@ -365,7 +365,7 @@ msgstr "مُثبّت"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
-#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:455
+#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:466
 msgid "Installing"
 msgstr "يثبّت"
 
@@ -578,7 +578,7 @@ msgstr "الرمز"
 
 #: src/gs-auth-dialog.ui:325
 msgid "Authenticate"
-msgstr ""
+msgstr "المصادقة"
 
 #: src/gs-auth-dialog.ui:337
 msgid "Continue"
@@ -1140,14 +1140,20 @@ msgstr "ابحث في «برمجيّات»"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:290 src/gs-details-page.c:319
+#: src/gs-details-page.c:296 src/gs-details-page.c:330
 #: src/gs-details-page.ui:237
 msgid "_Install"
 msgstr "_ثبّت"
 
 #. TRANSLATORS: button text in the header when an application
+#. * can be installed but needs to be downloaded first
+#: src/gs-details-page.c:300 src/gs-upgrade-banner.ui:116
+msgid "_Download"
+msgstr "ن_زّل"
+
+#. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: src/gs-details-page.c:323
+#: src/gs-details-page.c:334
 msgid "_Update"
 msgstr "ح_دث"
 
@@ -1155,75 +1161,75 @@ msgstr "ح_دث"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: src/gs-details-page.c:335
+#: src/gs-details-page.c:346
 msgid "_Install…"
 msgstr "_ثبّت..."
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:382 src/gs-details-page.ui:536
+#: src/gs-details-page.c:393 src/gs-details-page.ui:536
 msgid "_Uninstall"
 msgstr "_إلغاء التثبيت"
 
-#: src/gs-details-page.c:450
+#: src/gs-details-page.c:461
 msgid "Removing…"
 msgstr "يزيل…"
 
-#: src/gs-details-page.c:469
+#: src/gs-details-page.c:480
 msgid "Pending installation…"
-msgstr ""
+msgstr "عملية التثبيت المعلقة..."
 
-#: src/gs-details-page.c:476
+#: src/gs-details-page.c:487
 msgid "Pending update…"
-msgstr ""
+msgstr "تحديث معلق..."
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:790
+#: src/gs-details-page.c:801
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "يمكن استخدام هذا التّطبيق فقط إن كان هناك اتّصال نشط بالإنترنت."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:934
+#: src/gs-details-page.c:945
 msgctxt "version"
 msgid "Unknown"
 msgstr "مجهول"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:970
+#: src/gs-details-page.c:981
 msgctxt "updated"
 msgid "Never"
 msgstr "أبدًا"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1018
+#: src/gs-details-page.c:1029
 msgctxt "origin"
 msgid "Unknown"
 msgstr "مجهول"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1427
+#: src/gs-details-page.c:1438
 msgid "You need internet access to write a review"
 msgstr "أنت بحاجة للاتصال بالإنترنت لتتمكن من كتابة إبداء رأي"
 
-#: src/gs-details-page.c:1556
+#: src/gs-details-page.c:1567
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "تعذّر العثور على “%s”"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2160
+#: src/gs-details-page.c:2171
 msgid "Public domain"
 msgstr "ملكية عامة"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2176 src/gs-details-page.ui:1386
+#: src/gs-details-page.c:2187 src/gs-details-page.ui:1386
 msgid "Free Software"
 msgstr "برمجيات حرة"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2233
+#: src/gs-details-page.c:2244
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "المستخدمون مُحدَّدون بالرخصة الآتية:"
@@ -1233,7 +1239,7 @@ msgstr[3] "المستخدمون مُحدَّدون بالرخص الآتية:"
 msgstr[4] "المستخدمون مُحدَّدون بالرخص الآتية:"
 msgstr[5] "المستخدمون مُحدَّدون بالرخص الآتية:"
 
-#: src/gs-details-page.c:2249 src/gs-details-page.ui:1495
+#: src/gs-details-page.c:2260 src/gs-details-page.ui:1495
 msgid "More information"
 msgstr "معلومات أخرى"
 
@@ -1874,14 +1880,10 @@ msgid "_Software Sources"
 msgstr "مصادر البرم_جيّات"
 
 #: src/gs-menus.ui:14
-msgid "Automatic _updates"
-msgstr "تحديثات تلقائية"
-
-#: src/gs-menus.ui:20
 msgid "_About"
 msgstr "_عنْ"
 
-#: src/gs-menus.ui:24
+#: src/gs-menus.ui:18
 msgid "_Quit"
 msgstr "أ_نهِ"
 
@@ -2910,7 +2912,7 @@ msgid "Important OS and application updates are ready to be installed"
 msgstr "تحديثات التّطبيقات ونظام التّشغيل المهمّة جاهزة لتُثبَّت"
 
 #. TRANSLATORS: button text
-#: src/gs-update-monitor.c:180 src/gs-updates-page.c:769
+#: src/gs-update-monitor.c:180 src/gs-updates-page.c:800
 msgid "Not Now"
 msgstr "ليس الآن"
 
@@ -2919,7 +2921,7 @@ msgid "View"
 msgstr "اعرض"
 
 #. TRANSLATORS: this is when the current OS version goes end-of-life
-#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:46
+#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:79
 msgid "Operating System Updates Unavailable"
 msgstr "هناك تحديثات متاحة لنظام التشغيل"
 
@@ -2941,21 +2943,21 @@ msgid "Software Upgrade Available"
 msgstr "ترقية البرمجيات متوفرة"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:1012
+#: src/gs-update-monitor.c:996
 msgid "Software Updates Failed"
 msgstr "فشلت تحديثات البرمجيّات"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:1014
+#: src/gs-update-monitor.c:998
 msgid "An important OS update failed to be installed."
 msgstr "فشل تثبيت تحديث مهمّ لنظام التّشغيل."
 
-#: src/gs-update-monitor.c:1015
+#: src/gs-update-monitor.c:999
 msgid "Show Details"
 msgstr "اعرض التّفاصيل"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1037
+#: src/gs-update-monitor.c:1021
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "لم تُثبّت أيّة تحديات للبرمجيّات"
@@ -2966,7 +2968,7 @@ msgstr[4] "ثُبِّتت تحديثات للبرمجيّات"
 msgstr[5] "ثُبِّتت تحديثات للبرمجيّات"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1041
+#: src/gs-update-monitor.c:1025
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "لم تثبّت أيّة تحديثات مهمّة لنظام التّشغيل."
@@ -2981,108 +2983,108 @@ msgstr[5] "ثُبِّتت تحديثات مهمّة لنظام التّشغيل.
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1052
+#: src/gs-update-monitor.c:1036
 msgctxt "updates"
 msgid "Review"
 msgstr "راجع"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1099
+#: src/gs-update-monitor.c:1083
 msgid "Failed To Update"
 msgstr "فشل في التّحديث"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1105
+#: src/gs-update-monitor.c:1089
 msgid "The system was already up to date."
 msgstr "النظام محدث بالفعل."
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1110
+#: src/gs-update-monitor.c:1094
 msgid "The update was cancelled."
 msgstr "أُلغِيَ التّحديث."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1116
+#: src/gs-update-monitor.c:1100
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "الوصول إلى الإنترنت كان مطلوبا ولكنه لم يكن متاحا. من فضلك تأكد من اتصال الحاسوب بالإنترنت وحاول مجددا."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1122
+#: src/gs-update-monitor.c:1106
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "هناك مشاكل أمنية في هذا التحديث. من فضلك راجع موفّر البرمجية للمزيد من التفاصيل."
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1128
+#: src/gs-update-monitor.c:1112
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "لم تبق مساحة حرة في القرص. من فضلك أفرغ بعض المساحة وحاول مجددا."
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1133
+#: src/gs-update-monitor.c:1117
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
 msgstr "آسفون، تعذّر تثبيت التحديث. من فضلك انتظر تحديثا آخر وحاول مجددا. إن استمرت المشكلة راسل موفّر البرمجية."
 
 #. TRANSLATORS: Time in 24h format
-#: src/gs-updates-page.c:298
+#: src/gs-updates-page.c:306
 msgid "%R"
 msgstr "%R"
 
 #. TRANSLATORS: Time in 12h format
-#: src/gs-updates-page.c:301
+#: src/gs-updates-page.c:309
 msgid "%l:%M %p"
 msgstr "%Ol:%OM %p"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: src/gs-updates-page.c:307
+#: src/gs-updates-page.c:315
 msgid "Yesterday, %R"
 msgstr "الأمس، %R"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 PM"
-#: src/gs-updates-page.c:311
+#: src/gs-updates-page.c:319
 msgid "Yesterday, %l:%M %p"
 msgstr "الأمس، %Ol:%OM %p"
 
-#: src/gs-updates-page.c:314
+#: src/gs-updates-page.c:322
 msgid "Two days ago"
 msgstr "منذ يومين"
 
-#: src/gs-updates-page.c:316
+#: src/gs-updates-page.c:324
 msgid "Three days ago"
 msgstr "منذ ثلاثة أيّام"
 
-#: src/gs-updates-page.c:318
+#: src/gs-updates-page.c:326
 msgid "Four days ago"
 msgstr "منذ أربعة أيّام"
 
-#: src/gs-updates-page.c:320
+#: src/gs-updates-page.c:328
 msgid "Five days ago"
 msgstr "منذ خمسة أيّام"
 
-#: src/gs-updates-page.c:322
+#: src/gs-updates-page.c:330
 msgid "Six days ago"
 msgstr "منذ ستة أيّام"
 
-#: src/gs-updates-page.c:324
+#: src/gs-updates-page.c:332
 msgid "One week ago"
 msgstr "منذ أسبوع"
 
-#: src/gs-updates-page.c:326
+#: src/gs-updates-page.c:334
 msgid "Two weeks ago"
 msgstr "منذ أسبوعان"
 
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
-#: src/gs-updates-page.c:330
+#: src/gs-updates-page.c:338
 msgid "%e %B %Y"
 msgstr "%e %B %Y"
 
@@ -3095,44 +3097,52 @@ msgstr "%e %B %Y"
 #. return _("Downloading new updates…");
 #. }
 #. TRANSLATORS: the update panel is doing *something* vague
-#: src/gs-updates-page.c:351
+#: src/gs-updates-page.c:359
 msgid "Looking for new updates…"
 msgstr "يلتمس التّحديثات..."
 
+#: src/gs-updates-page.c:389
+msgid "automatic updates on"
+msgstr "التحديثات التلقائية في"
+
+#: src/gs-updates-page.c:392
+msgid "automatic updates off"
+msgstr "التحديثات التلقائية متوقفة"
+
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:411
+#: src/gs-updates-page.c:440
 msgid "Setting up updates…"
 msgstr "يُعدّ التّحديثات..."
 
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:412 src/gs-updates-page.c:419
+#: src/gs-updates-page.c:441 src/gs-updates-page.c:448
 msgid "(This could take a while)"
 msgstr "(قد يستغرق هذا بعض الوقت)"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:525
+#: src/gs-updates-page.c:554
 #, c-format
 msgid "Last checked: %s"
 msgstr "آخر التماس: %s"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-updates-page.c:765
+#: src/gs-updates-page.c:796
 msgid "Updates have been installed"
 msgstr "ثُبّتت التحديثات"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-updates-page.c:767
+#: src/gs-updates-page.c:798
 msgid "A restart is required for them to take effect."
 msgstr "إعادة التشغيل مطلوبة ليأخذ التحديث مفعوله."
 
 #. TRANSLATORS: button text
-#: src/gs-updates-page.c:771
+#: src/gs-updates-page.c:802
 msgid "Restart"
 msgstr "أعد التشغيل"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-page.c:841
+#: src/gs-updates-page.c:872
 msgid "Integrated Firmware"
 msgstr "البرامج الثابتة المتكاملة"
 
@@ -3140,74 +3150,74 @@ msgstr "البرامج الثابتة المتكاملة"
 #. * system firmware
 #. TRANSLATORS: This is the button for upgrading all
 #. * offline updates
-#: src/gs-updates-page.c:844 src/gs-updates-page.c:854
+#: src/gs-updates-page.c:875 src/gs-updates-page.c:885
 msgid "Restart & Update"
 msgstr "إعادة التشغيل والتحديث"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-page.c:851
+#: src/gs-updates-page.c:882
 msgid "Requires Restart"
 msgstr "يتطلب إعادة التشغيل"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-page.c:861
+#: src/gs-updates-page.c:892
 msgid "Application Updates"
 msgstr "تحديثات التطبيق"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-page.c:864
+#: src/gs-updates-page.c:895
 msgid "Update All"
 msgstr "تحديث الكل"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-page.c:871
+#: src/gs-updates-page.c:902
 msgid "Device Firmware"
 msgstr "البرامج الثابتة للجهاز"
 
 #. TRANSLATORS: this is an offline update
-#: src/gs-updates-page.c:1056
+#: src/gs-updates-page.c:1087
 msgid "_Restart & Update"
 msgstr "_إعادة تشغيل & تحديث"
 
 #. TRANSLATORS: all updates will be installed
-#: src/gs-updates-page.c:1060
+#: src/gs-updates-page.c:1091
 msgid "U_pdate All"
 msgstr "تحديث الجميع"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:1144
+#: src/gs-updates-page.c:1175
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "لم يعد %s %s متاحًا."
 
 #. TRANSLATORS: OS refers to operating system, e.g. Fedora
-#: src/gs-updates-page.c:1149
+#: src/gs-updates-page.c:1180
 msgid "Your OS is no longer supported."
 msgstr "لم يعد نظام التشغيل لديك مدعومًا."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:1154
+#: src/gs-updates-page.c:1185
 msgid "This means that it does not receive security updates."
 msgstr "هذا يعني أنه لا يتسلم تحديثات أمان."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:1158
+#: src/gs-updates-page.c:1189
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "من الموصى به أن تقوم بترقية التطبيق لإصدار أحدث من هذا."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:1413
+#: src/gs-updates-page.c:1446
 msgid "Charges may apply"
 msgstr "قد تُطبَّق الرّسوم"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1417
+#: src/gs-updates-page.c:1450
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -3215,26 +3225,26 @@ msgstr "التماس التّحديثات أثناء الاتّصال بشبكة
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:1421
+#: src/gs-updates-page.c:1454
 msgid "Check Anyway"
 msgstr "التمس بأيّ حال"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:1437
+#: src/gs-updates-page.c:1470
 msgid "No Network"
 msgstr "لا شبكة"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1441
+#: src/gs-updates-page.c:1474
 msgid "Internet access is required to check for updates."
 msgstr "الوصول بالإنترنت مطلوب لالتماس التّحديثات."
 
-#: src/gs-updates-page.c:1837
+#: src/gs-updates-page.c:1939
 msgid "Restart & _Install"
 msgstr "أعد التشغيل و_ثبّت"
 
-#: src/gs-updates-page.c:1855
+#: src/gs-updates-page.c:1957
 msgid "Check for updates"
 msgstr "التمس التّحديثات"
 
@@ -3242,29 +3252,29 @@ msgstr "التمس التّحديثات"
 msgid "Updates page"
 msgstr "صفحة التّحديثات"
 
-#: src/gs-updates-page.ui:194
+#: src/gs-updates-page.ui:227
 msgid "Software is up to date"
 msgstr "البرمجيّات مُحدَّثة"
 
-#: src/gs-updates-page.ui:245
+#: src/gs-updates-page.ui:278
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges"
 msgstr "التماس التّحديثات عند الاتّصال بشبكة الجوّال قد يسبّب لك تحمّلًا للرّسوم"
 
-#: src/gs-updates-page.ui:257
+#: src/gs-updates-page.ui:290
 msgid "_Check Anyway"
 msgstr "ال_تمس بأيّ حال"
 
-#: src/gs-updates-page.ui:300
+#: src/gs-updates-page.ui:333
 msgid "Go online to check for updates"
 msgstr "اتّصل بالإنترنت لالتماس التّحديثات"
 
-#: src/gs-updates-page.ui:311
+#: src/gs-updates-page.ui:344
 msgid "_Network Settings"
 msgstr "إعدادات ال_شّبكة"
 
-#: src/gs-updates-page.ui:393
+#: src/gs-updates-page.ui:426
 msgid "Updates are automatically managed"
 msgstr "التحديثات مُدارة تلقائية"
 
@@ -3303,15 +3313,11 @@ msgstr "ا_طلع على المزيد"
 
 #: src/gs-upgrade-banner.ui:98
 msgid "Updates will be applied when the computer is restarted."
-msgstr ""
-
-#: src/gs-upgrade-banner.ui:116
-msgid "_Download"
-msgstr "ن_زّل"
+msgstr "سيتم تطبيق التحديثات عند إعادة تشغيل الكمبيوتر."
 
 #: src/gs-upgrade-banner.ui:146
 msgid "_Restart Now"
-msgstr ""
+msgstr "_إعادة التشغيل الآن"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
@@ -3622,12 +3628,12 @@ msgstr "الأخبار"
 #: plugins/core/gs-desktop-common.c:248
 msgctxt "Menu of Settings"
 msgid "Settings"
-msgstr ""
+msgstr "الإعدادات"
 
 #: plugins/core/gs-desktop-common.c:257
 msgctxt "Menu of System"
 msgid "System"
-msgstr ""
+msgstr "النظام"
 
 #: plugins/core/gs-desktop-common.c:270 plugins/core/gs-desktop-common.c:314
 msgctxt "Menu of Reference"
@@ -3757,22 +3763,22 @@ msgstr "يتضمّن تحسينات الأداء، والثّبات والأمن
 msgid "Downloading featured images…"
 msgstr "تنزيل الصور المميزة..."
 
-#: plugins/eos/gs-plugin-eos.c:1813
+#: plugins/eos/gs-plugin-eos.c:1890
 #, c-format
 msgid "Could not launch this application."
 msgstr "لا يمكن بدء هذا التطبيق."
 
-#: plugins/eos/gs-plugin-eos.c:1870
+#: plugins/eos/gs-plugin-eos.c:1947
 msgid "Endless Platform"
 msgstr "منصة Endless"
 
-#: plugins/eos/gs-plugin-eos.c:1873
+#: plugins/eos/gs-plugin-eos.c:1950
 msgid "Framework for applications"
 msgstr "إطار العمل للتطبيقات"
 
-#: plugins/eos/gs-plugin-eos.c:2023
+#: plugins/eos/gs-plugin-eos.c:2099
 msgid "An Endless update with new features and fixes."
-msgstr ""
+msgstr "تحديث لنظام Endless، به ميزات وإصلاحات جديدة."
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
@@ -3836,7 +3842,7 @@ msgid "Getting flatpak metadata for %s…"
 msgstr "الحصول على بيانات تعريف flatpak لـ %s..."
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3193
+#: plugins/flatpak/gs-flatpak.c:3155
 msgid "Getting runtime source…"
 msgstr "الحصول على مصدر وقت التشغيل..."
 

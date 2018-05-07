@@ -11,6 +11,7 @@
 # Dz Chen <wsxy162@gmail.com>, 2015-2017
 # Dz Chen <wsxy162@gmail.com>, 2016
 # e2f_cn c5 <jarvisn@ecinnovations.com>, 2017
+# e2f_cn c9 <e2f_cn_c9@outlook.com>, 2018
 # e2f_STM STM <STMcnhktw@outlook.com>, 2017
 # eternalhui  <www.eternalhui@gmail.com>, 2013
 # Mingcong Bai <jeffbai@aosc.xyz>, 2015-2016
@@ -29,8 +30,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-27 14:28-0700\n"
-"PO-Revision-Date: 2018-04-27 21:30+0000\n"
+"POT-Creation-Date: 2018-05-07 13:37-0700\n"
+"PO-Revision-Date: 2018-05-07 20:38+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Chinese (China) (http://www.transifex.com/endless-os/gnome-software/language/zh_CN/)\n"
 "MIME-Version: 1.0\n"
@@ -355,7 +356,7 @@ msgstr "检查磁盘"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gnome-software.ui:372 src/gs-updates-page.c:1445
+#: src/gnome-software.ui:372 src/gs-updates-page.c:1478
 msgid "Network Settings"
 msgstr "网络设置"
 
@@ -373,7 +374,7 @@ msgstr "更多信息"
 msgid "Pending"
 msgstr "正在等待"
 
-#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:209 src/gs-app-tile.ui:51
+#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:210 src/gs-app-tile.ui:51
 #: src/gs-background-tile.ui:61 src/gs-feature-tile.c:88
 #: src/gs-popular-tile.c:70
 msgid "Installed"
@@ -381,7 +382,7 @@ msgstr "已安装"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
-#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:455
+#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:466
 msgid "Installing"
 msgstr "正在安装"
 
@@ -594,7 +595,7 @@ msgstr "PIN"
 
 #: src/gs-auth-dialog.ui:325
 msgid "Authenticate"
-msgstr ""
+msgstr "验证"
 
 #: src/gs-auth-dialog.ui:337
 msgid "Continue"
@@ -1156,14 +1157,20 @@ msgstr "在“软件”中查找"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:290 src/gs-details-page.c:319
+#: src/gs-details-page.c:296 src/gs-details-page.c:330
 #: src/gs-details-page.ui:237
 msgid "_Install"
 msgstr "安装(_I)"
 
 #. TRANSLATORS: button text in the header when an application
+#. * can be installed but needs to be downloaded first
+#: src/gs-details-page.c:300 src/gs-upgrade-banner.ui:116
+msgid "_Download"
+msgstr "下载(_D)"
+
+#. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: src/gs-details-page.c:323
+#: src/gs-details-page.c:334
 msgid "_Update"
 msgstr "更新(_U)"
 
@@ -1171,80 +1178,80 @@ msgstr "更新(_U)"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: src/gs-details-page.c:335
+#: src/gs-details-page.c:346
 msgid "_Install…"
 msgstr "安装(_I)…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:382 src/gs-details-page.ui:536
+#: src/gs-details-page.c:393 src/gs-details-page.ui:536
 msgid "_Uninstall"
 msgstr "卸载(_U)"
 
-#: src/gs-details-page.c:450
+#: src/gs-details-page.c:461
 msgid "Removing…"
 msgstr "正在移除…"
 
-#: src/gs-details-page.c:469
+#: src/gs-details-page.c:480
 msgid "Pending installation…"
-msgstr ""
+msgstr "等待安装......"
 
-#: src/gs-details-page.c:476
+#: src/gs-details-page.c:487
 msgid "Pending update…"
-msgstr ""
+msgstr "等待更新......"
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:790
+#: src/gs-details-page.c:801
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "这个应用只能在联网情况下使用。"
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:934
+#: src/gs-details-page.c:945
 msgctxt "version"
 msgid "Unknown"
 msgstr "未知"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:970
+#: src/gs-details-page.c:981
 msgctxt "updated"
 msgid "Never"
 msgstr "未知"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1018
+#: src/gs-details-page.c:1029
 msgctxt "origin"
 msgid "Unknown"
 msgstr "未知"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1427
+#: src/gs-details-page.c:1438
 msgid "You need internet access to write a review"
 msgstr "您需要互联网连接以编写评论"
 
-#: src/gs-details-page.c:1556
+#: src/gs-details-page.c:1567
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "无法找到“%s”"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2160
+#: src/gs-details-page.c:2171
 msgid "Public domain"
 msgstr "公有领域"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2176 src/gs-details-page.ui:1386
+#: src/gs-details-page.c:2187 src/gs-details-page.ui:1386
 msgid "Free Software"
 msgstr "自由软件"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2233
+#: src/gs-details-page.c:2244
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "用户受以下许可证的约束："
 
-#: src/gs-details-page.c:2249 src/gs-details-page.ui:1495
+#: src/gs-details-page.c:2260 src/gs-details-page.ui:1495
 msgid "More information"
 msgstr "更多信息"
 
@@ -1870,14 +1877,10 @@ msgid "_Software Sources"
 msgstr "软件源(_S)"
 
 #: src/gs-menus.ui:14
-msgid "Automatic _updates"
-msgstr "Automatic _updates（自动更新）"
-
-#: src/gs-menus.ui:20
 msgid "_About"
 msgstr "关于(_A)"
 
-#: src/gs-menus.ui:24
+#: src/gs-menus.ui:18
 msgid "_Quit"
 msgstr "退出(_Q)"
 
@@ -2876,7 +2879,7 @@ msgid "Important OS and application updates are ready to be installed"
 msgstr "重要系统和应用程序更新安装准备就绪"
 
 #. TRANSLATORS: button text
-#: src/gs-update-monitor.c:180 src/gs-updates-page.c:769
+#: src/gs-update-monitor.c:180 src/gs-updates-page.c:800
 msgid "Not Now"
 msgstr "现在不"
 
@@ -2885,7 +2888,7 @@ msgid "View"
 msgstr "查看"
 
 #. TRANSLATORS: this is when the current OS version goes end-of-life
-#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:46
+#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:79
 msgid "Operating System Updates Unavailable"
 msgstr "无可用的操作系统更新"
 
@@ -2907,27 +2910,27 @@ msgid "Software Upgrade Available"
 msgstr "有可用的软件更新"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:1012
+#: src/gs-update-monitor.c:996
 msgid "Software Updates Failed"
 msgstr "软件更新失败"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:1014
+#: src/gs-update-monitor.c:998
 msgid "An important OS update failed to be installed."
 msgstr "重要的操作系统更新安装失败。"
 
-#: src/gs-update-monitor.c:1015
+#: src/gs-update-monitor.c:999
 msgid "Show Details"
 msgstr "显示详细信息"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1037
+#: src/gs-update-monitor.c:1021
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "软件更新已安装"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1041
+#: src/gs-update-monitor.c:1025
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "重要系统和应用程序更新已安装"
@@ -2937,108 +2940,108 @@ msgstr[0] "重要系统和应用程序更新已安装"
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1052
+#: src/gs-update-monitor.c:1036
 msgctxt "updates"
 msgid "Review"
 msgstr "回顾"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1099
+#: src/gs-update-monitor.c:1083
 msgid "Failed To Update"
 msgstr "更新失败"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1105
+#: src/gs-update-monitor.c:1089
 msgid "The system was already up to date."
 msgstr "该系统已是最新的。"
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1110
+#: src/gs-update-monitor.c:1094
 msgid "The update was cancelled."
 msgstr "更新被取消。"
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1116
+#: src/gs-update-monitor.c:1100
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "需要互联网连接但是未发现有效连接。请确认您有接入互联网并在此尝试。"
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1122
+#: src/gs-update-monitor.c:1106
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "本次更新有安全性问题。请联系您的软件提供商以获取更多信息。"
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1128
+#: src/gs-update-monitor.c:1112
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "没有足够的磁盘空间。请释放一些空间后再试一次。"
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1133
+#: src/gs-update-monitor.c:1117
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
 msgstr "很抱歉：更新安装失败。请等待下一次更新时再试一次。如果问题仍存在，请联系您的软件提供商。"
 
 #. TRANSLATORS: Time in 24h format
-#: src/gs-updates-page.c:298
+#: src/gs-updates-page.c:306
 msgid "%R"
 msgstr "%R"
 
 #. TRANSLATORS: Time in 12h format
-#: src/gs-updates-page.c:301
+#: src/gs-updates-page.c:309
 msgid "%l:%M %p"
 msgstr "%p %l:%M"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: src/gs-updates-page.c:307
+#: src/gs-updates-page.c:315
 msgid "Yesterday, %R"
 msgstr "昨天，%R"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 PM"
-#: src/gs-updates-page.c:311
+#: src/gs-updates-page.c:319
 msgid "Yesterday, %l:%M %p"
 msgstr "昨天%p %l:%M"
 
-#: src/gs-updates-page.c:314
+#: src/gs-updates-page.c:322
 msgid "Two days ago"
 msgstr "两天前"
 
-#: src/gs-updates-page.c:316
+#: src/gs-updates-page.c:324
 msgid "Three days ago"
 msgstr "三天前"
 
-#: src/gs-updates-page.c:318
+#: src/gs-updates-page.c:326
 msgid "Four days ago"
 msgstr "四天前"
 
-#: src/gs-updates-page.c:320
+#: src/gs-updates-page.c:328
 msgid "Five days ago"
 msgstr "五天前"
 
-#: src/gs-updates-page.c:322
+#: src/gs-updates-page.c:330
 msgid "Six days ago"
 msgstr "六天前"
 
-#: src/gs-updates-page.c:324
+#: src/gs-updates-page.c:332
 msgid "One week ago"
 msgstr "一周前"
 
-#: src/gs-updates-page.c:326
+#: src/gs-updates-page.c:334
 msgid "Two weeks ago"
 msgstr "两周前"
 
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
-#: src/gs-updates-page.c:330
+#: src/gs-updates-page.c:338
 msgid "%e %B %Y"
 msgstr "%Y %B %e"
 
@@ -3051,44 +3054,52 @@ msgstr "%Y %B %e"
 #. return _("Downloading new updates…");
 #. }
 #. TRANSLATORS: the update panel is doing *something* vague
-#: src/gs-updates-page.c:351
+#: src/gs-updates-page.c:359
 msgid "Looking for new updates…"
 msgstr "正在查找新更新…"
 
+#: src/gs-updates-page.c:389
+msgid "automatic updates on"
+msgstr "自动更新开启"
+
+#: src/gs-updates-page.c:392
+msgid "automatic updates off"
+msgstr "自动更新关闭"
+
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:411
+#: src/gs-updates-page.c:440
 msgid "Setting up updates…"
 msgstr "正在设置更新…"
 
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:412 src/gs-updates-page.c:419
+#: src/gs-updates-page.c:441 src/gs-updates-page.c:448
 msgid "(This could take a while)"
 msgstr "（该过程会持续一会儿）"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:525
+#: src/gs-updates-page.c:554
 #, c-format
 msgid "Last checked: %s"
 msgstr "上次检查：%s"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-updates-page.c:765
+#: src/gs-updates-page.c:796
 msgid "Updates have been installed"
 msgstr "已安装更新"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-updates-page.c:767
+#: src/gs-updates-page.c:798
 msgid "A restart is required for them to take effect."
 msgstr "需要重新启动以使更新生效。"
 
 #. TRANSLATORS: button text
-#: src/gs-updates-page.c:771
+#: src/gs-updates-page.c:802
 msgid "Restart"
 msgstr "重新启动"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-page.c:841
+#: src/gs-updates-page.c:872
 msgid "Integrated Firmware"
 msgstr "集成固件"
 
@@ -3096,74 +3107,74 @@ msgstr "集成固件"
 #. * system firmware
 #. TRANSLATORS: This is the button for upgrading all
 #. * offline updates
-#: src/gs-updates-page.c:844 src/gs-updates-page.c:854
+#: src/gs-updates-page.c:875 src/gs-updates-page.c:885
 msgid "Restart & Update"
 msgstr "重启并更新"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-page.c:851
+#: src/gs-updates-page.c:882
 msgid "Requires Restart"
 msgstr "重新启动"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-page.c:861
+#: src/gs-updates-page.c:892
 msgid "Application Updates"
 msgstr "应用程序更新"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-page.c:864
+#: src/gs-updates-page.c:895
 msgid "Update All"
 msgstr "全部更新"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-page.c:871
+#: src/gs-updates-page.c:902
 msgid "Device Firmware"
 msgstr "设备固件"
 
 #. TRANSLATORS: this is an offline update
-#: src/gs-updates-page.c:1056
+#: src/gs-updates-page.c:1087
 msgid "_Restart & Update"
 msgstr "重启并更新(_R)"
 
 #. TRANSLATORS: all updates will be installed
-#: src/gs-updates-page.c:1060
+#: src/gs-updates-page.c:1091
 msgid "U_pdate All"
 msgstr "全部更新(_P)"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:1144
+#: src/gs-updates-page.c:1175
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "不再支持 %s %s。"
 
 #. TRANSLATORS: OS refers to operating system, e.g. Fedora
-#: src/gs-updates-page.c:1149
+#: src/gs-updates-page.c:1180
 msgid "Your OS is no longer supported."
 msgstr "不再支持您的操作系统。"
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:1154
+#: src/gs-updates-page.c:1185
 msgid "This means that it does not receive security updates."
 msgstr "这意味着不会收到安全更新。"
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:1158
+#: src/gs-updates-page.c:1189
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "建议您升级到更新版本。"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:1413
+#: src/gs-updates-page.c:1446
 msgid "Charges may apply"
 msgstr "可能需要收费"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1417
+#: src/gs-updates-page.c:1450
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -3171,26 +3182,26 @@ msgstr "使用移动宽带检查更新可能会花费流量。"
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:1421
+#: src/gs-updates-page.c:1454
 msgid "Check Anyway"
 msgstr "依然检查"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:1437
+#: src/gs-updates-page.c:1470
 msgid "No Network"
 msgstr "无网络连接"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1441
+#: src/gs-updates-page.c:1474
 msgid "Internet access is required to check for updates."
 msgstr "检查更新需要可访问网络。"
 
-#: src/gs-updates-page.c:1837
+#: src/gs-updates-page.c:1939
 msgid "Restart & _Install"
 msgstr "重启并安装(_I)"
 
-#: src/gs-updates-page.c:1855
+#: src/gs-updates-page.c:1957
 msgid "Check for updates"
 msgstr "检查更新"
 
@@ -3198,29 +3209,29 @@ msgstr "检查更新"
 msgid "Updates page"
 msgstr "更新页面"
 
-#: src/gs-updates-page.ui:194
+#: src/gs-updates-page.ui:227
 msgid "Software is up to date"
 msgstr "软件已为最新"
 
-#: src/gs-updates-page.ui:245
+#: src/gs-updates-page.ui:278
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges"
 msgstr "使用移动宽带检查更新可能会花费流量"
 
-#: src/gs-updates-page.ui:257
+#: src/gs-updates-page.ui:290
 msgid "_Check Anyway"
 msgstr "依然检查(_C)"
 
-#: src/gs-updates-page.ui:300
+#: src/gs-updates-page.ui:333
 msgid "Go online to check for updates"
 msgstr "上线以检查更新"
 
-#: src/gs-updates-page.ui:311
+#: src/gs-updates-page.ui:344
 msgid "_Network Settings"
 msgstr "网络设置(_N)"
 
-#: src/gs-updates-page.ui:393
+#: src/gs-updates-page.ui:426
 msgid "Updates are automatically managed"
 msgstr "更新将被自动管理"
 
@@ -3259,15 +3270,11 @@ msgstr "了解更多(_L)"
 
 #: src/gs-upgrade-banner.ui:98
 msgid "Updates will be applied when the computer is restarted."
-msgstr ""
-
-#: src/gs-upgrade-banner.ui:116
-msgid "_Download"
-msgstr "下载(_D)"
+msgstr "电脑重新启动时将更新应用。"
 
 #: src/gs-upgrade-banner.ui:146
 msgid "_Restart Now"
-msgstr ""
+msgstr "现在重新启动"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
@@ -3578,12 +3585,12 @@ msgstr "新闻"
 #: plugins/core/gs-desktop-common.c:248
 msgctxt "Menu of Settings"
 msgid "Settings"
-msgstr ""
+msgstr "设置"
 
 #: plugins/core/gs-desktop-common.c:257
 msgctxt "Menu of System"
 msgid "System"
-msgstr ""
+msgstr "系统"
 
 #: plugins/core/gs-desktop-common.c:270 plugins/core/gs-desktop-common.c:314
 msgctxt "Menu of Reference"
@@ -3713,22 +3720,22 @@ msgstr "包括性能、稳定性及安全改进。"
 msgid "Downloading featured images…"
 msgstr "正在下载特色图像…"
 
-#: plugins/eos/gs-plugin-eos.c:1813
+#: plugins/eos/gs-plugin-eos.c:1890
 #, c-format
 msgid "Could not launch this application."
 msgstr "无法启动此应用程序。"
 
-#: plugins/eos/gs-plugin-eos.c:1870
+#: plugins/eos/gs-plugin-eos.c:1947
 msgid "Endless Platform"
 msgstr "Endless 平台"
 
-#: plugins/eos/gs-plugin-eos.c:1873
+#: plugins/eos/gs-plugin-eos.c:1950
 msgid "Framework for applications"
 msgstr "应用框架"
 
-#: plugins/eos/gs-plugin-eos.c:2023
+#: plugins/eos/gs-plugin-eos.c:2099
 msgid "An Endless update with new features and fixes."
-msgstr ""
+msgstr "Endless 更新，具有新功能和问题修复功能。"
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
@@ -3792,7 +3799,7 @@ msgid "Getting flatpak metadata for %s…"
 msgstr "正在获取 %s 的 flatpak 元数据…"
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3193
+#: plugins/flatpak/gs-flatpak.c:3155
 msgid "Getting runtime source…"
 msgstr "正在获取运行时源…"
 

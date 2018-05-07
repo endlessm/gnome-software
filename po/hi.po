@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-27 14:28-0700\n"
-"PO-Revision-Date: 2018-04-27 21:30+0000\n"
+"POT-Creation-Date: 2018-05-07 13:37-0700\n"
+"PO-Revision-Date: 2018-05-07 20:38+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Hindi (http://www.transifex.com/endless-os/gnome-software/language/hi/)\n"
 "MIME-Version: 1.0\n"
@@ -335,7 +335,7 @@ msgstr "डिस्क का परीक्षण करें"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gnome-software.ui:372 src/gs-updates-page.c:1445
+#: src/gnome-software.ui:372 src/gs-updates-page.c:1478
 msgid "Network Settings"
 msgstr "नेटवर्क सेटिंग"
 
@@ -353,7 +353,7 @@ msgstr "अधिक जानकारी"
 msgid "Pending"
 msgstr "लंबित"
 
-#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:209 src/gs-app-tile.ui:51
+#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:210 src/gs-app-tile.ui:51
 #: src/gs-background-tile.ui:61 src/gs-feature-tile.c:88
 #: src/gs-popular-tile.c:70
 msgid "Installed"
@@ -361,7 +361,7 @@ msgstr "स्थापित किया गया"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
-#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:455
+#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:466
 msgid "Installing"
 msgstr "स्थापित करना"
 
@@ -574,7 +574,7 @@ msgstr "पिन"
 
 #: src/gs-auth-dialog.ui:325
 msgid "Authenticate"
-msgstr ""
+msgstr "प्रमाणित करें"
 
 #: src/gs-auth-dialog.ui:337
 msgid "Continue"
@@ -1136,14 +1136,20 @@ msgstr "सॉफ़्टवेयर में खोजें"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:290 src/gs-details-page.c:319
+#: src/gs-details-page.c:296 src/gs-details-page.c:330
 #: src/gs-details-page.ui:237
 msgid "_Install"
 msgstr "_स्थापित करें"
 
 #. TRANSLATORS: button text in the header when an application
+#. * can be installed but needs to be downloaded first
+#: src/gs-details-page.c:300 src/gs-upgrade-banner.ui:116
+msgid "_Download"
+msgstr "_डाउनलोड करें"
+
+#. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: src/gs-details-page.c:323
+#: src/gs-details-page.c:334
 msgid "_Update"
 msgstr "_अपडेट करें"
 
@@ -1151,81 +1157,81 @@ msgstr "_अपडेट करें"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: src/gs-details-page.c:335
+#: src/gs-details-page.c:346
 msgid "_Install…"
 msgstr "_स्थापित करना…"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:382 src/gs-details-page.ui:536
+#: src/gs-details-page.c:393 src/gs-details-page.ui:536
 msgid "_Uninstall"
 msgstr "_स्थापना रद्द करें"
 
-#: src/gs-details-page.c:450
+#: src/gs-details-page.c:461
 msgid "Removing…"
 msgstr "निकाल रहा है…"
 
-#: src/gs-details-page.c:469
+#: src/gs-details-page.c:480
 msgid "Pending installation…"
-msgstr ""
+msgstr "इंस्टालेशन लंबित है..."
 
-#: src/gs-details-page.c:476
+#: src/gs-details-page.c:487
 msgid "Pending update…"
-msgstr ""
+msgstr "अपडेट लंबित है..."
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:790
+#: src/gs-details-page.c:801
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "इस एप्लिकेशन का उपयोग केवल सक्रिय इंटरनेट कनेक्शन होने पर ही किया जा सकता है."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:934
+#: src/gs-details-page.c:945
 msgctxt "version"
 msgid "Unknown"
 msgstr "अज्ञात"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:970
+#: src/gs-details-page.c:981
 msgctxt "updated"
 msgid "Never"
-msgstr ""
+msgstr "कभी नहीं"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1018
+#: src/gs-details-page.c:1029
 msgctxt "origin"
 msgid "Unknown"
 msgstr "अज्ञात"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1427
+#: src/gs-details-page.c:1438
 msgid "You need internet access to write a review"
 msgstr "समीक्षा लिखने के लिए आपको इंटरनेट पहुँच की आवश्यकता है"
 
-#: src/gs-details-page.c:1556
+#: src/gs-details-page.c:1567
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "“%s” को ढूँढ़ने में असमर्थ"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2160
+#: src/gs-details-page.c:2171
 msgid "Public domain"
 msgstr "सार्वजनिक डोमेन"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2176 src/gs-details-page.ui:1386
+#: src/gs-details-page.c:2187 src/gs-details-page.ui:1386
 msgid "Free Software"
 msgstr "निशुल्क सॉफ़्टवेयर"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2233
+#: src/gs-details-page.c:2244
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "उपयोगकर्ता निम्न लाइसेंस द्वारा बँधे हुए हैं:"
 msgstr[1] "उपयोगकर्ता निम्न लाइसेंसों द्वारा बँधे हुए हैं:"
 
-#: src/gs-details-page.c:2249 src/gs-details-page.ui:1495
+#: src/gs-details-page.c:2260 src/gs-details-page.ui:1495
 msgid "More information"
 msgstr "अधिक जानकारी"
 
@@ -1854,14 +1860,10 @@ msgid "_Software Sources"
 msgstr "_सॉफ़्टवेयर स्रोत"
 
 #: src/gs-menus.ui:14
-msgid "Automatic _updates"
-msgstr "Automatic _updates"
-
-#: src/gs-menus.ui:20
 msgid "_About"
 msgstr "_इसके बारे में"
 
-#: src/gs-menus.ui:24
+#: src/gs-menus.ui:18
 msgid "_Quit"
 msgstr "_छोड़ें"
 
@@ -2866,7 +2868,7 @@ msgid "Important OS and application updates are ready to be installed"
 msgstr "महत्वपूर्ण OS और एप्लिकेशन अपडेट अब स्थापित किए जाने के लिए तैयार हैं"
 
 #. TRANSLATORS: button text
-#: src/gs-update-monitor.c:180 src/gs-updates-page.c:769
+#: src/gs-update-monitor.c:180 src/gs-updates-page.c:800
 msgid "Not Now"
 msgstr "अभी नहीं"
 
@@ -2875,7 +2877,7 @@ msgid "View"
 msgstr "देखें"
 
 #. TRANSLATORS: this is when the current OS version goes end-of-life
-#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:46
+#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:79
 msgid "Operating System Updates Unavailable"
 msgstr "ऑपरेटिंग तंत्र के अपडेट अनुपलब्ध हैं"
 
@@ -2897,28 +2899,28 @@ msgid "Software Upgrade Available"
 msgstr "सॉफ़्टवेयर नवीनीकरण उपलब्ध"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:1012
+#: src/gs-update-monitor.c:996
 msgid "Software Updates Failed"
 msgstr "सॉफ़्टवेयर अपडेट विफल"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:1014
+#: src/gs-update-monitor.c:998
 msgid "An important OS update failed to be installed."
 msgstr "कोई महत्वपूर्ण OS अपडेट स्थापित करना विफल."
 
-#: src/gs-update-monitor.c:1015
+#: src/gs-update-monitor.c:999
 msgid "Show Details"
 msgstr "विवरण दिखाएँ"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1037
+#: src/gs-update-monitor.c:1021
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "सॉफ़्टवेयर अपडेट स्थापित"
 msgstr[1] "सॉफ़्टवेयर अपडेट स्थापित"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1041
+#: src/gs-update-monitor.c:1025
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "महत्वपूर्ण OS अपेडट स्थापित कर दिया गया है."
@@ -2929,108 +2931,108 @@ msgstr[1] "महत्वपूर्ण OS अपेडट स्थापि�
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1052
+#: src/gs-update-monitor.c:1036
 msgctxt "updates"
 msgid "Review"
 msgstr "समीक्षा"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1099
+#: src/gs-update-monitor.c:1083
 msgid "Failed To Update"
 msgstr "अपेडट करना विफल"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1105
+#: src/gs-update-monitor.c:1089
 msgid "The system was already up to date."
 msgstr "सिस्टम पहले से अप टू डेट था."
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1110
+#: src/gs-update-monitor.c:1094
 msgid "The update was cancelled."
 msgstr "अपडेट रद्द कर दिया गया था."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1116
+#: src/gs-update-monitor.c:1100
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "इंटरनेट पहुँच आवश्यक थी लेकिन उपलब्ध नहीं थी. कृपया सुनिश्चित करें कि आपके पास इंटरनेट पहुँच है और पुनः प्रयास करें."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1122
+#: src/gs-update-monitor.c:1106
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "अपडेट के साथ सुरक्षा समस्याएँ थीं. कृपया अधिक विवरण के लिए अपने सॉफ़्टवेयर प्रदाता से परामर्श लें."
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1128
+#: src/gs-update-monitor.c:1112
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "पर्याप्त डिस्क स्थान नहीं था. कृपया कुछ स्थान रिक्त करें और पुनः प्रयास करें."
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1133
+#: src/gs-update-monitor.c:1117
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
 msgstr "हमें क्षमा करें: अपडेट स्थापित करना विफल. कृपया अन्य अपडेट के लिए प्रतीक्षा करें और पुनः प्रयास करें. यदि समस्या बनी रहती है, तो अपने सॉफ़्टवेयर प्रदाता से संपर्क करें."
 
 #. TRANSLATORS: Time in 24h format
-#: src/gs-updates-page.c:298
+#: src/gs-updates-page.c:306
 msgid "%R"
 msgstr "%R"
 
 #. TRANSLATORS: Time in 12h format
-#: src/gs-updates-page.c:301
+#: src/gs-updates-page.c:309
 msgid "%l:%M %p"
 msgstr "%l:%M %p"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: src/gs-updates-page.c:307
+#: src/gs-updates-page.c:315
 msgid "Yesterday, %R"
 msgstr "कल, %R"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 PM"
-#: src/gs-updates-page.c:311
+#: src/gs-updates-page.c:319
 msgid "Yesterday, %l:%M %p"
 msgstr "कल, %l:%M %p"
 
-#: src/gs-updates-page.c:314
+#: src/gs-updates-page.c:322
 msgid "Two days ago"
 msgstr "दो दिन पहले"
 
-#: src/gs-updates-page.c:316
+#: src/gs-updates-page.c:324
 msgid "Three days ago"
 msgstr "तीन दिन पहले"
 
-#: src/gs-updates-page.c:318
+#: src/gs-updates-page.c:326
 msgid "Four days ago"
 msgstr "चार दिन पहले"
 
-#: src/gs-updates-page.c:320
+#: src/gs-updates-page.c:328
 msgid "Five days ago"
 msgstr "पाँच दिन पहले"
 
-#: src/gs-updates-page.c:322
+#: src/gs-updates-page.c:330
 msgid "Six days ago"
 msgstr "छह दिन पहले"
 
-#: src/gs-updates-page.c:324
+#: src/gs-updates-page.c:332
 msgid "One week ago"
 msgstr "एक सप्ताह पहले"
 
-#: src/gs-updates-page.c:326
+#: src/gs-updates-page.c:334
 msgid "Two weeks ago"
 msgstr "दो सप्ताह पहले"
 
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
-#: src/gs-updates-page.c:330
+#: src/gs-updates-page.c:338
 msgid "%e %B %Y"
 msgstr "%e %B %Y"
 
@@ -3043,44 +3045,52 @@ msgstr "%e %B %Y"
 #. return _("Downloading new updates…");
 #. }
 #. TRANSLATORS: the update panel is doing *something* vague
-#: src/gs-updates-page.c:351
+#: src/gs-updates-page.c:359
 msgid "Looking for new updates…"
 msgstr "नए अपडेट की खोज कर रहा है..."
 
+#: src/gs-updates-page.c:389
+msgid "automatic updates on"
+msgstr "पर स्वचालित अपडेट"
+
+#: src/gs-updates-page.c:392
+msgid "automatic updates off"
+msgstr "स्वचालित अपडेट बंद"
+
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:411
+#: src/gs-updates-page.c:440
 msgid "Setting up updates…"
 msgstr "अपडेट सेट कर रहा है..."
 
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:412 src/gs-updates-page.c:419
+#: src/gs-updates-page.c:441 src/gs-updates-page.c:448
 msgid "(This could take a while)"
 msgstr "(इसमें कुछ समय लग सकता है)"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:525
+#: src/gs-updates-page.c:554
 #, c-format
 msgid "Last checked: %s"
 msgstr "अंतिम बार जाँचा गया: %s"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-updates-page.c:765
+#: src/gs-updates-page.c:796
 msgid "Updates have been installed"
 msgstr "अपडेट स्थापित हो चुके हैं"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-updates-page.c:767
+#: src/gs-updates-page.c:798
 msgid "A restart is required for them to take effect."
 msgstr "उन्हें प्रभाव में आने के लिए पुनः प्रारंभ करना आवश्यक है."
 
 #. TRANSLATORS: button text
-#: src/gs-updates-page.c:771
+#: src/gs-updates-page.c:802
 msgid "Restart"
 msgstr "पुनः प्रारंभ करें"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-page.c:841
+#: src/gs-updates-page.c:872
 msgid "Integrated Firmware"
 msgstr "समन्वित फ़र्मवेयर"
 
@@ -3088,74 +3098,74 @@ msgstr "समन्वित फ़र्मवेयर"
 #. * system firmware
 #. TRANSLATORS: This is the button for upgrading all
 #. * offline updates
-#: src/gs-updates-page.c:844 src/gs-updates-page.c:854
+#: src/gs-updates-page.c:875 src/gs-updates-page.c:885
 msgid "Restart & Update"
 msgstr "पुनः प्रारंभ करें और अपडेट करें"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-page.c:851
+#: src/gs-updates-page.c:882
 msgid "Requires Restart"
 msgstr "पुनः प्रारंभ करने की आवश्यकता है"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-page.c:861
+#: src/gs-updates-page.c:892
 msgid "Application Updates"
 msgstr "ऐप्लिकेशन अपडेट"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-page.c:864
+#: src/gs-updates-page.c:895
 msgid "Update All"
 msgstr "सभी अपडेट करें"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-page.c:871
+#: src/gs-updates-page.c:902
 msgid "Device Firmware"
 msgstr "यंत्र फ़र्मवेयर"
 
 #. TRANSLATORS: this is an offline update
-#: src/gs-updates-page.c:1056
+#: src/gs-updates-page.c:1087
 msgid "_Restart & Update"
 msgstr "_पुनरारंभ और अपडेट करें"
 
 #. TRANSLATORS: all updates will be installed
-#: src/gs-updates-page.c:1060
+#: src/gs-updates-page.c:1091
 msgid "U_pdate All"
 msgstr "सभी को अ_पडेट करें"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:1144
+#: src/gs-updates-page.c:1175
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "%s %s अब समर्थित नहीं है."
 
 #. TRANSLATORS: OS refers to operating system, e.g. Fedora
-#: src/gs-updates-page.c:1149
+#: src/gs-updates-page.c:1180
 msgid "Your OS is no longer supported."
 msgstr "आपका OS अब समर्थित नहीं है."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:1154
+#: src/gs-updates-page.c:1185
 msgid "This means that it does not receive security updates."
 msgstr "इसका अर्थ है कि यह सुरक्षा अपडेट प्राप्त नहीं करता."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:1158
+#: src/gs-updates-page.c:1189
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "यह सुझाव दिया जाता है कि आप सबसे हाल ही के संस्करण पर अपग्रेड करें."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:1413
+#: src/gs-updates-page.c:1446
 msgid "Charges may apply"
 msgstr "शुल्क लागू हो सकते हैं"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1417
+#: src/gs-updates-page.c:1450
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -3163,26 +3173,26 @@ msgstr "मोबाइल ब्रॉडबैंड का उपयोग �
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:1421
+#: src/gs-updates-page.c:1454
 msgid "Check Anyway"
 msgstr "किसी भी तरीके से जाँचें"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:1437
+#: src/gs-updates-page.c:1470
 msgid "No Network"
 msgstr "कोई नेटवर्क नहीं"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1441
+#: src/gs-updates-page.c:1474
 msgid "Internet access is required to check for updates."
 msgstr "अपडेट की जाँच करने के लिए इंटरनेट पहुँच आवश्यक है."
 
-#: src/gs-updates-page.c:1837
+#: src/gs-updates-page.c:1939
 msgid "Restart & _Install"
 msgstr "पुनः प्रारंभ करें और _स्थापित करें"
 
-#: src/gs-updates-page.c:1855
+#: src/gs-updates-page.c:1957
 msgid "Check for updates"
 msgstr "अपडेट की जाँच करें"
 
@@ -3190,29 +3200,29 @@ msgstr "अपडेट की जाँच करें"
 msgid "Updates page"
 msgstr "अपडेट पृष्ठ"
 
-#: src/gs-updates-page.ui:194
+#: src/gs-updates-page.ui:227
 msgid "Software is up to date"
 msgstr "सॉफ़्टवेयर अप टू डेट है"
 
-#: src/gs-updates-page.ui:245
+#: src/gs-updates-page.ui:278
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges"
 msgstr "मोबाइल ब्रॉडबैंड का उपयोग करते समय अपडेट की जाँच करने से शुल्क लागू हो सकते हैं"
 
-#: src/gs-updates-page.ui:257
+#: src/gs-updates-page.ui:290
 msgid "_Check Anyway"
 msgstr "_किसी भी तरीके से जाँचें"
 
-#: src/gs-updates-page.ui:300
+#: src/gs-updates-page.ui:333
 msgid "Go online to check for updates"
 msgstr "अपडेट की जाँच करने के लिए ऑनलाइन हो जाएँ"
 
-#: src/gs-updates-page.ui:311
+#: src/gs-updates-page.ui:344
 msgid "_Network Settings"
 msgstr "_नेटवर्क सेटिंग"
 
-#: src/gs-updates-page.ui:393
+#: src/gs-updates-page.ui:426
 msgid "Updates are automatically managed"
 msgstr "अपडेट स्वचालित रूप से प्रबंधित किए जाते हैं"
 
@@ -3251,15 +3261,11 @@ msgstr "_अधिक जानें"
 
 #: src/gs-upgrade-banner.ui:98
 msgid "Updates will be applied when the computer is restarted."
-msgstr ""
-
-#: src/gs-upgrade-banner.ui:116
-msgid "_Download"
-msgstr "_डाउनलोड करें"
+msgstr "जब कंप्यूटर फिर से चालू होगा तब अपडेट लागू होंगे."
 
 #: src/gs-upgrade-banner.ui:146
 msgid "_Restart Now"
-msgstr ""
+msgstr "_अब पुनःचालू करें"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
@@ -3570,12 +3576,12 @@ msgstr "समाचार"
 #: plugins/core/gs-desktop-common.c:248
 msgctxt "Menu of Settings"
 msgid "Settings"
-msgstr ""
+msgstr "सेटिंग्स "
 
 #: plugins/core/gs-desktop-common.c:257
 msgctxt "Menu of System"
 msgid "System"
-msgstr ""
+msgstr "सिस्टम"
 
 #: plugins/core/gs-desktop-common.c:270 plugins/core/gs-desktop-common.c:314
 msgctxt "Menu of Reference"
@@ -3705,22 +3711,22 @@ msgstr "प्रदर्शन, स्थिरता और सुरक्�
 msgid "Downloading featured images…"
 msgstr "फ़ीचर की गई छवियाँ डाउनलोड कर रहा है..."
 
-#: plugins/eos/gs-plugin-eos.c:1813
+#: plugins/eos/gs-plugin-eos.c:1890
 #, c-format
 msgid "Could not launch this application."
 msgstr "इस एप्लिकेशन को लॉन्च नहीं सके."
 
-#: plugins/eos/gs-plugin-eos.c:1870
+#: plugins/eos/gs-plugin-eos.c:1947
 msgid "Endless Platform"
 msgstr "अनंत प्लेटफ़ॉर्म"
 
-#: plugins/eos/gs-plugin-eos.c:1873
+#: plugins/eos/gs-plugin-eos.c:1950
 msgid "Framework for applications"
 msgstr "ऐप्लिकेशन्स के लिए फ़्रेमवर्क"
 
-#: plugins/eos/gs-plugin-eos.c:2023
+#: plugins/eos/gs-plugin-eos.c:2099
 msgid "An Endless update with new features and fixes."
-msgstr ""
+msgstr "नई सुविधाओं और सुधार के साथ एंडलेस का अपडेट."
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
@@ -3784,7 +3790,7 @@ msgid "Getting flatpak metadata for %s…"
 msgstr "%s के लिए flatpak मेटाडेटा प्राप्त कर रहा है…"
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3193
+#: plugins/flatpak/gs-flatpak.c:3155
 msgid "Getting runtime source…"
 msgstr "रनटाइम स्त्रोत प्राप्त कर रहा है..."
 

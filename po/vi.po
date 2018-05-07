@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-27 14:28-0700\n"
-"PO-Revision-Date: 2018-04-27 21:30+0000\n"
+"POT-Creation-Date: 2018-05-07 13:37-0700\n"
+"PO-Revision-Date: 2018-05-07 20:38+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Vietnamese (http://www.transifex.com/endless-os/gnome-software/language/vi/)\n"
 "MIME-Version: 1.0\n"
@@ -334,7 +334,7 @@ msgstr "Kiểm nghiệm ổ đĩa"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gnome-software.ui:372 src/gs-updates-page.c:1445
+#: src/gnome-software.ui:372 src/gs-updates-page.c:1478
 msgid "Network Settings"
 msgstr "Cài đặt Mạng"
 
@@ -352,7 +352,7 @@ msgstr "Thêm Thông tin"
 msgid "Pending"
 msgstr "Đang chờ xử lý"
 
-#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:209 src/gs-app-tile.ui:51
+#: src/gs-app-addon-row.c:101 src/gs-app-row.ui:210 src/gs-app-tile.ui:51
 #: src/gs-background-tile.ui:61 src/gs-feature-tile.c:88
 #: src/gs-popular-tile.c:70
 msgid "Installed"
@@ -360,7 +360,7 @@ msgstr "Đã cài đặt"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
-#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:455
+#: src/gs-app-addon-row.c:105 src/gs-app-row.c:218 src/gs-details-page.c:466
 msgid "Installing"
 msgstr "Đang cài đặt"
 
@@ -573,7 +573,7 @@ msgstr "PIN"
 
 #: src/gs-auth-dialog.ui:325
 msgid "Authenticate"
-msgstr ""
+msgstr "Xác thực"
 
 #: src/gs-auth-dialog.ui:337
 msgid "Continue"
@@ -1135,14 +1135,20 @@ msgstr "Tìm trong Phần mềm"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:290 src/gs-details-page.c:319
+#: src/gs-details-page.c:296 src/gs-details-page.c:330
 #: src/gs-details-page.ui:237
 msgid "_Install"
 msgstr "_Cài đặt"
 
 #. TRANSLATORS: button text in the header when an application
+#. * can be installed but needs to be downloaded first
+#: src/gs-details-page.c:300 src/gs-upgrade-banner.ui:116
+msgid "_Download"
+msgstr "_Tải xuống"
+
+#. TRANSLATORS: button text in the header when an application
 #. * can be live-updated
-#: src/gs-details-page.c:323
+#: src/gs-details-page.c:334
 msgid "_Update"
 msgstr "_Cập nhật"
 
@@ -1150,80 +1156,80 @@ msgstr "_Cập nhật"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software sources or the like
-#: src/gs-details-page.c:335
+#: src/gs-details-page.c:346
 msgid "_Install…"
 msgstr "_Cài đặt..."
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:382 src/gs-details-page.ui:536
+#: src/gs-details-page.c:393 src/gs-details-page.ui:536
 msgid "_Uninstall"
 msgstr "_Hủy cài đặt"
 
-#: src/gs-details-page.c:450
+#: src/gs-details-page.c:461
 msgid "Removing…"
 msgstr "Đang xóa..."
 
-#: src/gs-details-page.c:469
+#: src/gs-details-page.c:480
 msgid "Pending installation…"
-msgstr ""
+msgstr "Cài đặt đang chờ..."
 
-#: src/gs-details-page.c:476
+#: src/gs-details-page.c:487
 msgid "Pending update…"
-msgstr ""
+msgstr "Cập nhật đang chờ..."
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:790
+#: src/gs-details-page.c:801
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "Chỉ có thể dùng ứng dụng này khi có kết nối internet hoạt động."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:934
+#: src/gs-details-page.c:945
 msgctxt "version"
 msgid "Unknown"
 msgstr "Khuyết danh"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:970
+#: src/gs-details-page.c:981
 msgctxt "updated"
 msgid "Never"
-msgstr ""
+msgstr "Không bao giờ"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1018
+#: src/gs-details-page.c:1029
 msgctxt "origin"
 msgid "Unknown"
 msgstr "Không xác định"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1427
+#: src/gs-details-page.c:1438
 msgid "You need internet access to write a review"
 msgstr "Bạn cần truy cập internet để viết bình luận"
 
-#: src/gs-details-page.c:1556
+#: src/gs-details-page.c:1567
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "Không tìm thấy “%s”"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2160
+#: src/gs-details-page.c:2171
 msgid "Public domain"
 msgstr "Phạm vi công cộng"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2176 src/gs-details-page.ui:1386
+#: src/gs-details-page.c:2187 src/gs-details-page.ui:1386
 msgid "Free Software"
 msgstr "Phần mềm Miễn phí"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2233
+#: src/gs-details-page.c:2244
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Người dùng bị ràng buộc trong các quyền sử dụng sau đây:"
 
-#: src/gs-details-page.c:2249 src/gs-details-page.ui:1495
+#: src/gs-details-page.c:2260 src/gs-details-page.ui:1495
 msgid "More information"
 msgstr "Thêm thông tin"
 
@@ -1849,14 +1855,10 @@ msgid "_Software Sources"
 msgstr "_Nguồn Phần mềm"
 
 #: src/gs-menus.ui:14
-msgid "Automatic _updates"
-msgstr "Cập nhật_tự động"
-
-#: src/gs-menus.ui:20
 msgid "_About"
 msgstr "_Giới thiệu"
 
-#: src/gs-menus.ui:24
+#: src/gs-menus.ui:18
 msgid "_Quit"
 msgstr "_Thoát ra"
 
@@ -2855,7 +2857,7 @@ msgid "Important OS and application updates are ready to be installed"
 msgstr "Các cập nhật ứng dụng và hệ điều hành quan trọng đã sẵn sàng để được cài đặt"
 
 #. TRANSLATORS: button text
-#: src/gs-update-monitor.c:180 src/gs-updates-page.c:769
+#: src/gs-update-monitor.c:180 src/gs-updates-page.c:800
 msgid "Not Now"
 msgstr "Không phải Bây giờ"
 
@@ -2864,7 +2866,7 @@ msgid "View"
 msgstr "Xem"
 
 #. TRANSLATORS: this is when the current OS version goes end-of-life
-#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:46
+#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:79
 msgid "Operating System Updates Unavailable"
 msgstr "Cập nhật Hệ điều hành Không Khả dụng"
 
@@ -2886,27 +2888,27 @@ msgid "Software Upgrade Available"
 msgstr "Có Bản Cập Nhật Phần Mèm"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:1012
+#: src/gs-update-monitor.c:996
 msgid "Software Updates Failed"
 msgstr "Không Thể Cập Nhật Ứng Dụng"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:1014
+#: src/gs-update-monitor.c:998
 msgid "An important OS update failed to be installed."
 msgstr "Không thể cài đặt một bản cập nhật hệ điều hành quan trọng."
 
-#: src/gs-update-monitor.c:1015
+#: src/gs-update-monitor.c:999
 msgid "Show Details"
 msgstr "Hiển thị Chi tiết"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1037
+#: src/gs-update-monitor.c:1021
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Đã cài đặt các Bản cập nhật Phần mềm"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1041
+#: src/gs-update-monitor.c:1025
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "Các bản cập nhật Hệ điều hành quan trọng đã được cài đặt."
@@ -2916,108 +2918,108 @@ msgstr[0] "Các bản cập nhật Hệ điều hành quan trọng đã được
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1052
+#: src/gs-update-monitor.c:1036
 msgctxt "updates"
 msgid "Review"
 msgstr "Rà soát"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1099
+#: src/gs-update-monitor.c:1083
 msgid "Failed To Update"
 msgstr "Cập nhật Bất thành"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1105
+#: src/gs-update-monitor.c:1089
 msgid "The system was already up to date."
 msgstr "Hệ thống này đã được cập nhật."
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1110
+#: src/gs-update-monitor.c:1094
 msgid "The update was cancelled."
 msgstr "Bản cập nhật đã bị hủy bỏ."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1116
+#: src/gs-update-monitor.c:1100
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "Cần truy cập Internet nhưng đã không có sẵn. Vui lòng đảm bảo rằng bạn có truy cập internet và thử lại."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1122
+#: src/gs-update-monitor.c:1106
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "Có vấn đề về an ninh với bản cập nhật. Vui lòng tham vấn nhà cung cấp phần mềm của bạn để biết thêm chi tiết."
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1128
+#: src/gs-update-monitor.c:1112
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "Dung lượng đĩa không đủ. Vui lòng giải phóng dung lượng và thử lại."
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1133
+#: src/gs-update-monitor.c:1117
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
 msgstr "Chúng tôi rất tiếc: không cài đặt được bản cập nhật này. Vui lòng đợi bản cập nhật khác và thử lại. Nếu vấn đề còn tiếp diễn, hãy liên hệ với nhà cung cấp phần mềm của bạn."
 
 #. TRANSLATORS: Time in 24h format
-#: src/gs-updates-page.c:298
+#: src/gs-updates-page.c:306
 msgid "%R"
 msgstr "%R"
 
 #. TRANSLATORS: Time in 12h format
-#: src/gs-updates-page.c:301
+#: src/gs-updates-page.c:309
 msgid "%l:%M %p"
 msgstr "%l:%M %p"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: src/gs-updates-page.c:307
+#: src/gs-updates-page.c:315
 msgid "Yesterday, %R"
 msgstr "Hôm qua, %R"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 PM"
-#: src/gs-updates-page.c:311
+#: src/gs-updates-page.c:319
 msgid "Yesterday, %l:%M %p"
 msgstr "Hôm qua, %l:%M %p"
 
-#: src/gs-updates-page.c:314
+#: src/gs-updates-page.c:322
 msgid "Two days ago"
 msgstr "Hai ngày trước"
 
-#: src/gs-updates-page.c:316
+#: src/gs-updates-page.c:324
 msgid "Three days ago"
 msgstr "Cách đây ba ngày"
 
-#: src/gs-updates-page.c:318
+#: src/gs-updates-page.c:326
 msgid "Four days ago"
 msgstr "Bốn ngày trước"
 
-#: src/gs-updates-page.c:320
+#: src/gs-updates-page.c:328
 msgid "Five days ago"
 msgstr "Năm ngày trước"
 
-#: src/gs-updates-page.c:322
+#: src/gs-updates-page.c:330
 msgid "Six days ago"
 msgstr "Sáu ngày trước"
 
-#: src/gs-updates-page.c:324
+#: src/gs-updates-page.c:332
 msgid "One week ago"
 msgstr "Một tuần trước"
 
-#: src/gs-updates-page.c:326
+#: src/gs-updates-page.c:334
 msgid "Two weeks ago"
 msgstr "Hai tuần trước"
 
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
-#: src/gs-updates-page.c:330
+#: src/gs-updates-page.c:338
 msgid "%e %B %Y"
 msgstr "%e %B %Y"
 
@@ -3030,44 +3032,52 @@ msgstr "%e %B %Y"
 #. return _("Downloading new updates…");
 #. }
 #. TRANSLATORS: the update panel is doing *something* vague
-#: src/gs-updates-page.c:351
+#: src/gs-updates-page.c:359
 msgid "Looking for new updates…"
 msgstr "Đang tìm kiếm các cập nhật mới..."
 
+#: src/gs-updates-page.c:389
+msgid "automatic updates on"
+msgstr "tự động cập nhật bật"
+
+#: src/gs-updates-page.c:392
+msgid "automatic updates off"
+msgstr "Tự động cập nhật ở chế độ tắt"
+
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:411
+#: src/gs-updates-page.c:440
 msgid "Setting up updates…"
 msgstr "Đang thiết lập các cài đặt..."
 
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:412 src/gs-updates-page.c:419
+#: src/gs-updates-page.c:441 src/gs-updates-page.c:448
 msgid "(This could take a while)"
 msgstr "(Việc này có thể mất một lúc)"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:525
+#: src/gs-updates-page.c:554
 #, c-format
 msgid "Last checked: %s"
 msgstr "Lần cuối kiểm tra: %s"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-updates-page.c:765
+#: src/gs-updates-page.c:796
 msgid "Updates have been installed"
 msgstr "Các bản cập nhật đã được cài đặt"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-updates-page.c:767
+#: src/gs-updates-page.c:798
 msgid "A restart is required for them to take effect."
 msgstr "Phải khởi động lại để hiệu lực hóa chúng"
 
 #. TRANSLATORS: button text
-#: src/gs-updates-page.c:771
+#: src/gs-updates-page.c:802
 msgid "Restart"
 msgstr "Khởi động lại"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-page.c:841
+#: src/gs-updates-page.c:872
 msgid "Integrated Firmware"
 msgstr "Phần sụn Tích hợp"
 
@@ -3075,74 +3085,74 @@ msgstr "Phần sụn Tích hợp"
 #. * system firmware
 #. TRANSLATORS: This is the button for upgrading all
 #. * offline updates
-#: src/gs-updates-page.c:844 src/gs-updates-page.c:854
+#: src/gs-updates-page.c:875 src/gs-updates-page.c:885
 msgid "Restart & Update"
 msgstr "Khởi động lại & Cập nhật"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-page.c:851
+#: src/gs-updates-page.c:882
 msgid "Requires Restart"
 msgstr "Cần phải Khởi động lại"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-page.c:861
+#: src/gs-updates-page.c:892
 msgid "Application Updates"
 msgstr "Các bản cập nhật Ứng dụng"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-page.c:864
+#: src/gs-updates-page.c:895
 msgid "Update All"
 msgstr "Cập nhật Tất cả"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-page.c:871
+#: src/gs-updates-page.c:902
 msgid "Device Firmware"
 msgstr "Phần mềm Thiết bị"
 
 #. TRANSLATORS: this is an offline update
-#: src/gs-updates-page.c:1056
+#: src/gs-updates-page.c:1087
 msgid "_Restart & Update"
 msgstr "_Khởi động lại & Cập nhật"
 
 #. TRANSLATORS: all updates will be installed
-#: src/gs-updates-page.c:1060
+#: src/gs-updates-page.c:1091
 msgid "U_pdate All"
 msgstr "Cập nhật Tất cả"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:1144
+#: src/gs-updates-page.c:1175
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "%s %s không còn được hỗ trợ."
 
 #. TRANSLATORS: OS refers to operating system, e.g. Fedora
-#: src/gs-updates-page.c:1149
+#: src/gs-updates-page.c:1180
 msgid "Your OS is no longer supported."
 msgstr "HĐH của bạn không còn được hỗ trợ."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:1154
+#: src/gs-updates-page.c:1185
 msgid "This means that it does not receive security updates."
 msgstr "Điều này có nghĩa là distro EOL không nhận được những cập nhật bảo mật."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:1158
+#: src/gs-updates-page.c:1189
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "Bạn nên nâng cấp lên phiên bản mới hơn."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:1413
+#: src/gs-updates-page.c:1446
 msgid "Charges may apply"
 msgstr "Có thể thu phí"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1417
+#: src/gs-updates-page.c:1450
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -3150,26 +3160,26 @@ msgstr "Việc kiểm tra các cập nhật trong khi sử dụng băng thông r
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:1421
+#: src/gs-updates-page.c:1454
 msgid "Check Anyway"
 msgstr "Vẫn cứ xem"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:1437
+#: src/gs-updates-page.c:1470
 msgid "No Network"
 msgstr "Không có Mạng"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:1441
+#: src/gs-updates-page.c:1474
 msgid "Internet access is required to check for updates."
 msgstr "Cần truy cập Internet để tìm xem các bản cập nhật."
 
-#: src/gs-updates-page.c:1837
+#: src/gs-updates-page.c:1939
 msgid "Restart & _Install"
 msgstr "Khởi động lại & _Cài đặt"
 
-#: src/gs-updates-page.c:1855
+#: src/gs-updates-page.c:1957
 msgid "Check for updates"
 msgstr "Kiểm tra cập nhật"
 
@@ -3177,29 +3187,29 @@ msgstr "Kiểm tra cập nhật"
 msgid "Updates page"
 msgstr "Trang cập nhật"
 
-#: src/gs-updates-page.ui:194
+#: src/gs-updates-page.ui:227
 msgid "Software is up to date"
 msgstr "Phần mềm hiện đã cập nhật"
 
-#: src/gs-updates-page.ui:245
+#: src/gs-updates-page.ui:278
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges"
 msgstr "Tìm duyệt các bản cập nhật khi đang truy cập Internet băng rộng di động có thể khiến bạn bị phát sinh chi phí"
 
-#: src/gs-updates-page.ui:257
+#: src/gs-updates-page.ui:290
 msgid "_Check Anyway"
 msgstr "_Cứ Kiểm tra"
 
-#: src/gs-updates-page.ui:300
+#: src/gs-updates-page.ui:333
 msgid "Go online to check for updates"
 msgstr "Kết nối mạng để tìm xem các bản cập nhật"
 
-#: src/gs-updates-page.ui:311
+#: src/gs-updates-page.ui:344
 msgid "_Network Settings"
 msgstr "_Cài đặt mạng"
 
-#: src/gs-updates-page.ui:393
+#: src/gs-updates-page.ui:426
 msgid "Updates are automatically managed"
 msgstr "Các cập nhật được quản lý tự động"
 
@@ -3238,15 +3248,11 @@ msgstr "_Tìm hiểu thêm"
 
 #: src/gs-upgrade-banner.ui:98
 msgid "Updates will be applied when the computer is restarted."
-msgstr ""
-
-#: src/gs-upgrade-banner.ui:116
-msgid "_Download"
-msgstr "_Tải xuống"
+msgstr "Cập nhật sẽ được áp dụng khi máy tính khởi động lại."
 
 #: src/gs-upgrade-banner.ui:146
 msgid "_Restart Now"
-msgstr ""
+msgstr "_Khởi động lại Ngay"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
@@ -3557,12 +3563,12 @@ msgstr "TIn tức"
 #: plugins/core/gs-desktop-common.c:248
 msgctxt "Menu of Settings"
 msgid "Settings"
-msgstr ""
+msgstr "Cài đặt"
 
 #: plugins/core/gs-desktop-common.c:257
 msgctxt "Menu of System"
 msgid "System"
-msgstr ""
+msgstr "Hệ thống"
 
 #: plugins/core/gs-desktop-common.c:270 plugins/core/gs-desktop-common.c:314
 msgctxt "Menu of Reference"
@@ -3692,22 +3698,22 @@ msgstr "Bao gồm cải thiện về hiệu suất, tính ổn định và bảo
 msgid "Downloading featured images…"
 msgstr "Đang tải hình ảnh đặc sắc..."
 
-#: plugins/eos/gs-plugin-eos.c:1813
+#: plugins/eos/gs-plugin-eos.c:1890
 #, c-format
 msgid "Could not launch this application."
 msgstr "Không thể khởi chạy ứng dụng này"
 
-#: plugins/eos/gs-plugin-eos.c:1870
+#: plugins/eos/gs-plugin-eos.c:1947
 msgid "Endless Platform"
 msgstr "Nền tảng Endless"
 
-#: plugins/eos/gs-plugin-eos.c:1873
+#: plugins/eos/gs-plugin-eos.c:1950
 msgid "Framework for applications"
 msgstr "Khung cho các ứng dụng"
 
-#: plugins/eos/gs-plugin-eos.c:2023
+#: plugins/eos/gs-plugin-eos.c:2099
 msgid "An Endless update with new features and fixes."
-msgstr ""
+msgstr "Bản cập nhật Endless với các tính năng và bản sửa lỗi mới."
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
@@ -3771,7 +3777,7 @@ msgid "Getting flatpak metadata for %s…"
 msgstr "Đang tải siêu dữ liệu flatapak cho %s..."
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3193
+#: plugins/flatpak/gs-flatpak.c:3155
 msgid "Getting runtime source…"
 msgstr "Đang nhận nguồn thời gian chạy..."
 
