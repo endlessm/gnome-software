@@ -331,19 +331,41 @@ setup_os_upgrade_cancellable (GsPlugin *plugin)
 }
 
 static void
+app_ensure_set_metadata_variant (GsApp *app, const gchar *key, GVariant *var)
+{
+	/* we need to assign it to NULL in order to be able to override it
+	 * (safeguard mechanism in GsApp...) */
+	gs_app_set_metadata_variant (app, key, NULL);
+	gs_app_set_metadata_variant (app, key, var);
+}
+
+static void
 os_upgrade_set_download_by_user (GsApp *app, gboolean value)
 {
 	g_autoptr(GVariant) var = g_variant_new_boolean (value);
-	/* we need to assign it to NULL in order to be able to override it
-	 * (safeguard mechanism in GsApp...) */
-	gs_app_set_metadata_variant (app, "eos::DownloadByUser", NULL);
-	gs_app_set_metadata_variant (app, "eos::DownloadByUser", var);
+	app_ensure_set_metadata_variant (app, "eos::DownloadByUser", var);
 }
 
 static gboolean
 os_upgrade_get_download_by_user (GsApp *app)
 {
 	GVariant *value = gs_app_get_metadata_variant (app, "eos::DownloadByUser");
+	if (value == NULL)
+		return FALSE;
+	return g_variant_get_boolean (value);
+}
+
+static void
+os_upgrade_set_restart_on_error (GsApp *app, gboolean value)
+{
+	g_autoptr(GVariant) var = g_variant_new_boolean (value);
+	app_ensure_set_metadata_variant (app, "eos::RestartOnError", var);
+}
+
+static gboolean
+os_upgrade_get_restart_on_error (GsApp *app)
+{
+	GVariant *value = gs_app_get_metadata_variant (app, "eos::RestartOnError");
 	if (value == NULL)
 		return FALSE;
 	return g_variant_get_boolean (value);
@@ -379,6 +401,15 @@ eos_updater_error_is_cancelled (const gchar *error_name)
 static void
 updater_state_changed (GsPlugin *plugin)
 {
+	sync_state_from_updater (plugin);
+}
+
+static void
+updater_downloaded_bytes_changed (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	app_ensure_installing_state (priv->os_upgrade);
 	sync_state_from_updater (plugin);
 }
 
@@ -445,6 +476,20 @@ fake_os_upgrade_progress (GsPlugin *plugin)
 	g_debug ("OS upgrade fake progress: %f", priv->upgrade_fake_progress);
 
 	return G_SOURCE_CONTINUE;
+}
+
+static gboolean
+updater_is_stalled (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GsApp *app = priv->os_upgrade;
+
+	/* in case the OS upgrade has been disabled */
+	if (priv->updater_proxy == NULL)
+		return FALSE;
+
+	return eos_updater_get_state (priv->updater_proxy) == EOS_UPDATER_STATE_FETCHING &&
+	       gs_app_get_state (app) != AS_APP_STATE_INSTALLING;
 }
 
 /* This method deals with the synchronization between the EOS updater's states
@@ -524,6 +569,18 @@ sync_state_from_updater (GsPlugin *plugin)
 			return state;
 		}
 
+		/* if we need to restart when an error occurred, just call poll
+		 * since it will perform the full upgrade as the
+		 * eos::DownloadByUser is true */
+		if (os_upgrade_get_restart_on_error (app)) {
+			g_debug ("Restarting OS upgrade on error");
+			os_upgrade_set_restart_on_error (app, FALSE);
+			app_ensure_installing_state (app);
+			eos_updater_call_poll (priv->updater_proxy, NULL, NULL,
+					       NULL);
+			break;
+		}
+
 		/* only set up an error to be shown to the user if the user had
 		 * manually started the upgrade, and if the error in question is not
 		 * originated by the user canceling the upgrade */
@@ -544,7 +601,10 @@ sync_state_from_updater (GsPlugin *plugin)
 		guint64 downloaded = 0;
 		gfloat progress = 0;
 
-		app_ensure_installing_state (app);
+		if (!updater_is_stalled (plugin))
+			app_ensure_installing_state (app);
+		else
+			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 
 		downloaded = eos_updater_get_downloaded_bytes (priv->updater_proxy);
 		total_size = eos_updater_get_download_size (priv->updater_proxy);
@@ -2061,7 +2121,7 @@ setup_os_upgrade (GsPlugin *plugin)
 					 plugin, G_CONNECT_SWAPPED);
 		g_signal_connect_object (priv->updater_proxy,
 					 "notify::downloaded-bytes",
-					 G_CALLBACK (updater_state_changed),
+					 G_CALLBACK (updater_downloaded_bytes_changed),
 					 plugin, G_CONNECT_SWAPPED);
 		g_signal_connect_object (priv->updater_proxy, "notify::version",
 					 G_CALLBACK (updater_version_changed),
@@ -2170,6 +2230,12 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 	}
 
 	os_upgrade_set_download_by_user (app, TRUE);
+
+	if (updater_is_stalled (plugin)) {
+		os_upgrade_set_restart_on_error (app, TRUE);
+		eos_updater_call_cancel (priv->updater_proxy, NULL, NULL, NULL);
+		return TRUE;
+	}
 
 	/* we need to poll again if there has been an error; the state of the
 	 * OS upgrade will then be dealt with from outside this function,
