@@ -42,8 +42,10 @@ struct _GsBackgroundTile
 	GtkWidget	*image;
 	GtkWidget	*image_box;
 	GtkWidget	*installed_icon;
+	GtkWidget	*scheduled_update_icon;
 	GtkWidget	*price;
 	GtkWidget	*stack;
+	GtkWidget	*stack_tile_status;
 };
 
 G_DEFINE_TYPE (GsBackgroundTile, gs_background_tile, GS_TYPE_APP_TILE)
@@ -111,29 +113,27 @@ update_tile_background (GsBackgroundTile *tile)
 }
 
 static void
-update_tile_price (GsBackgroundTile *tile)
+update_tile_status (GsBackgroundTile *tile)
 {
 	GsPrice *price = NULL;
-	g_autofree gchar *price_str = NULL;
+	GtkStack *status_stack = GTK_STACK (tile->stack_tile_status);
+
 
 	if (gs_app_is_installed (tile->app)) {
-		gtk_widget_hide (tile->price);
-		gtk_widget_show (tile->installed_icon);
+		gtk_stack_set_visible_child (status_stack,
+					     tile->installed_icon);
 		return;
 	}
 
 	price = gs_app_get_price (tile->app);
 	if (price == NULL || (gs_price_get_amount (price) == (gdouble) 0)) {
-		/* TRANSLATORS: This is the price of the app, as in gratis */
-		price_str = g_utf8_strup (_("Free"), -1);
-		gtk_label_set_label (GTK_LABEL (tile->price), price_str);
+		gtk_stack_set_visible_child (status_stack,
+					     tile->requires_download_icon);
 	} else {
-		price_str = gs_price_to_string (price);
+		g_autofree gchar *price_str = gs_price_to_string (price);
 		gtk_label_set_label (GTK_LABEL (tile->price), price_str);
+		gtk_stack_set_visible_child (status_stack, tile->price);
 	}
-
-	gtk_widget_show (tile->price);
-	gtk_widget_hide (tile->installed_icon);
 }
 
 static void
@@ -160,7 +160,7 @@ update_tile_info (GsBackgroundTile *tile)
 	gtk_label_set_label (GTK_LABEL (tile->name_label), gs_app_get_name (tile->app));
 	gtk_label_set_label (GTK_LABEL (tile->summary_label), summary);
 
-	update_tile_price (tile);
+	update_tile_status (tile);
 }
 
 static gboolean
@@ -272,8 +272,10 @@ gs_background_tile_class_init (GsBackgroundTileClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, image);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, image_box);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, installed_icon);
+	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, scheduled_update_icon);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, price);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, stack);
+	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, stack_tile_status);
 }
 
 GtkWidget *

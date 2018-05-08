@@ -44,28 +44,49 @@
                 <property name="valign">start</property>
                 <property name="margin">12</property>
                 <child>
-                  <object class="GtkLabel" id="price">
+                  <object class="GtkStack" id="stack_tile_status">
                     <property name="visible">True</property>
-                    <property name="xalign">0.0</property>
-                    <property name="ellipsize">end</property>
-                    <style>
-                      <class name="app-price"/>
-                    </style>
+                    <child>
+                      <object class="GtkLabel" id="price">
+                        <property name="visible">True</property>
+                        <property name="xalign">0.0</property>
+                        <property name="ellipsize">end</property>
+                        <style>
+                          <class name="app-price"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage" id="installed_icon">
+                        <property name="no_show_all">False</property>
+                        <property name="visible">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="pixel-size">16</property>
+                        <property name="icon-name">software-installed-symbolic</property>
+                        <property name="tooltip-text" translatable="yes">Installed</property>
+                        <style>
+                          <class name="installed-icon"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage" id="requires_download_icon">
+                        <property name="no_show_all">False</property>
+                        <property name="visible">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="pixel-size">16</property>
+                        <property name="icon-name">gs-requires-download-symbolic</property>
+                        <style>
+                          <class name="installed-icon"/>
+                        </style>
+                      </object>
+                    </child>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkImage" id="installed_icon">
-                    <property name="no_show_all">False</property>
-                    <property name="visible">True</property>
-                    <property name="halign">center</property>
-                    <property name="valign">center</property>
-                    <property name="pixel-size">16</property>
-                    <property name="icon-name">software-installed-symbolic</property>
-                    <property name="tooltip-text" translatable="yes">Installed</property>
-                    <style>
-                      <class name="installed-icon"/>
-                    </style>
-                  </object>
+                  <packing>
+                    <property name="pack_type">end</property>
+                  </packing>
                 </child>
               </object>
             </child>
