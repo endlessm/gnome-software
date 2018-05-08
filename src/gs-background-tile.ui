@@ -71,6 +71,19 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkImage" id="scheduled_update_icon">
+                        <property name="no_show_all">False</property>
+                        <property name="visible">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="pixel-size">16</property>
+                        <property name="icon-name">gs-update-scheduled-symbolic</property>
+                        <style>
+                          <class name="installed-icon"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImage" id="requires_download_icon">
                         <property name="no_show_all">False</property>
                         <property name="visible">True</property>
