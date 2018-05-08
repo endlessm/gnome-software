@@ -43,6 +43,7 @@ struct _GsBackgroundTile
 	GtkWidget	*installed_icon;
 	GtkWidget	*scheduled_update_icon;
 	GtkWidget	*requires_download_icon;
+	GtkWidget	*available_in_usb_icon;
 	GtkWidget	*stack;
 	GtkWidget	*stack_tile_status;
 	GtkCssProvider	*image_box_provider;  /* (owned) (nullable) */
@@ -134,8 +135,12 @@ update_tile_status (GsBackgroundTile *tile)
 		return;
 	}
 
-	gtk_stack_set_visible_child (status_stack,
-				     tile->requires_download_icon);
+	if (gs_app_has_category (app, "usb"))
+		gtk_stack_set_visible_child (status_stack,
+					     tile->available_in_usb_icon);
+	else
+		gtk_stack_set_visible_child (status_stack,
+					     tile->requires_download_icon);
 }
 
 static void
@@ -227,6 +232,7 @@ gs_background_tile_class_init (GsBackgroundTileClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, installed_icon);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, scheduled_update_icon);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, requires_download_icon);
+	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, available_in_usb_icon);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, stack);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, stack_tile_status);
 }
