@@ -588,7 +588,7 @@ flowboxchild {
 	background: transparent;
 }
 
-.background-tile stack {
+.background-tile .main-stack {
 	background-color: #fafafa;
 	border-radius: 8px;
 	border: 0;
@@ -597,16 +597,16 @@ flowboxchild {
 	box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
 }
 
-.background-tile:hover stack {
+.background-tile:hover .main-stack {
 	background-color: #ffffff;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, .3);
 }
 
-.background-tile.loading stack {
+.background-tile.loading .main-stack {
 	background-color: #fafafa;
 }
 
-.background-tile.loading stack image {
+.background-tile.loading .main-stack image {
 	color: #bfbfbf;
 }
 
