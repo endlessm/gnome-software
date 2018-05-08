@@ -394,7 +394,8 @@ schedule_entry_scheduled_cb (GObject *source_object,
 	g_autoptr(GError) local_error = NULL;
 	g_autoptr(UpdateScheduleHelper) helper = (UpdateScheduleHelper *) data;
 	GsUpdateMonitor *monitor = helper->monitor;
-	const gchar *app_id = gs_app_get_unique_id (helper->app);
+	GsApp *app = helper->app;
+	const gchar *app_id = gs_app_get_unique_id (app);
 
 	g_assert (monitor->num_scheduled_updates > 0);
 	g_assert (monitor->scheduler != NULL);
@@ -414,6 +415,7 @@ schedule_entry_scheduled_cb (GObject *source_object,
 		 mwsc_schedule_entry_get_id (helper->entry));
 	g_hash_table_insert (monitor->scheduled_updates, g_strdup (app_id),
 			     g_steal_pointer (&helper));
+	gs_app_set_pending_action (app, GS_PLUGIN_ACTION_UPDATE);
 
 	/* when all apps have been scheduled, try to update any that should be
 	 * updated already, and connect to MwscScheduleEntry signals; we do this

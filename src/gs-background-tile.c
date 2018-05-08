@@ -43,6 +43,7 @@ struct _GsBackgroundTile
 	GtkWidget	*image_box;
 	GtkWidget	*installed_icon;
 	GtkWidget	*scheduled_update_icon;
+	GtkWidget	*requires_download_icon;
 	GtkWidget	*price;
 	GtkWidget	*stack;
 	GtkWidget	*stack_tile_status;
@@ -118,6 +119,11 @@ update_tile_status (GsBackgroundTile *tile)
 	GsPrice *price = NULL;
 	GtkStack *status_stack = GTK_STACK (tile->stack_tile_status);
 
+	if (gs_app_get_pending_action (tile->app) == GS_PLUGIN_ACTION_UPDATE) {
+	        gtk_stack_set_visible_child (status_stack,
+					     tile->scheduled_update_icon);
+		return;
+	}
 
 	if (gs_app_is_installed (tile->app)) {
 		gtk_stack_set_visible_child (status_stack,
@@ -214,6 +220,8 @@ gs_background_tile_set_app (GsAppTile *app_tile,
 
 	g_signal_connect (tile->app, "notify::state",
 			  G_CALLBACK (app_state_changed), tile);
+	g_signal_connect (tile->app, "notify::pending-action",
+			  G_CALLBACK (app_state_changed), tile);
 	g_signal_connect (tile->app, "notify::name",
 			  G_CALLBACK (app_state_changed), tile);
 	g_signal_connect (tile->app, "notify::summary",
@@ -273,6 +281,7 @@ gs_background_tile_class_init (GsBackgroundTileClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, image_box);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, installed_icon);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, scheduled_update_icon);
+	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, requires_download_icon);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, price);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, stack);
 	gtk_widget_class_bind_template_child (widget_class, GsBackgroundTile, stack_tile_status);
