@@ -75,6 +75,20 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkImage" id="available_in_usb_icon">
+                        <property name="no_show_all">False</property>
+                        <property name="visible">True</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+                        <property name="pixel-size">16</property>
+                        <property name="icon-name">media-removable-symbolic</property>
+                        <property name="tooltip-text" translatable="yes">Available in a USB drive</property>
+                        <style>
+                          <class name="installed-icon"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImage" id="requires_download_icon">
                         <property name="no_show_all">False</property>
                         <property name="visible">True</property>
