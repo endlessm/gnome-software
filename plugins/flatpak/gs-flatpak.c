@@ -2948,11 +2948,14 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 			return FALSE;
 		runtime = gs_app_get_update_runtime (app);
 	}
-	if (runtime != NULL)
+	if (runtime != NULL) {
 		gs_flatpak_add_app_to_list_if_not_installed (runtime, list, hash_installed, FALSE);
 
-	/* add services flatpak */
-	services_app = gs_flatpak_get_services_app_if_needed (self, app, runtime, cancellable);
+		/* add services flatpak */
+		services_app = gs_flatpak_get_services_app_if_needed (self, app, runtime,
+								      cancellable);
+	}
+
 	if (g_cancellable_set_error_if_cancelled (cancellable, error))
 		return FALSE;
 	if (services_app != NULL) {
