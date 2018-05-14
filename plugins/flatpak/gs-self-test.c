@@ -369,7 +369,6 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert (ret);
 	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
-	g_assert_cmpint (gs_app_get_progress (app), ==, 0);
 	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
 
 	/* check the application exists in the right places */
@@ -430,15 +429,11 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 					 NULL);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 
-	/* progress should be set to zero right before installing */
-	g_assert_cmpint (gs_app_get_progress (app), ==, 0);
-
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
-	g_assert_cmpint (gs_app_get_progress (app), ==, 0);
 
 	/* remove the application */
 	g_object_unref (plugin_job);
@@ -1339,7 +1334,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
 	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
-	g_assert_cmpint (gs_app_get_progress (app), ==, 0);
 
 	/* switch to the new repo */
 	g_assert (unlink ("/var/tmp/self-test/repo") == 0);
