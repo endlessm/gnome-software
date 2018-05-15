@@ -227,11 +227,13 @@ gs_plugin_refine_item_scope (GsFlatpak *self,
 	}
 
 	/* no runtime was found in either of the installations, so log the error and
-	 * fallback to using the current GsFlatpak scope */
-	g_warning ("Failed to find a runtime %s in either of the installations for "
-		   "assigning its scope; fallback to using the %s scope",
-		   gs_app_get_unique_id (app),
-		   (self->scope == AS_APP_SCOPE_SYSTEM ? "system" : "user"));
+	 * fallback to using the current GsFlatpak scope;
+	 * FIXME: We should keep the UNKNOWN scope so it can get refined later if
+	 * availabale, but that requires other changes to support this */
+	g_debug ("Failed to find a runtime %s in either of the installations for "
+		 "assigning its scope; fallback to using the %s scope",
+		 gs_app_get_unique_id (app),
+		 (self->scope == AS_APP_SCOPE_SYSTEM ? "system" : "user"));
 	scope = self->scope;
  out:
 	gs_app_set_scope (app, scope);
