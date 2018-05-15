@@ -1243,8 +1243,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	guint pending_app_changed_cnt = 0;
 	guint pending_apps_changed_id;
 	guint progress_cnt = 0;
-	guint updates_changed_cnt = 0;
-	guint updates_changed_id;
 	g_autofree gchar *repodir1_fn = NULL;
 	g_autofree gchar *repodir2_fn = NULL;
 	g_autoptr(GError) error = NULL;
@@ -1381,10 +1379,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 		g_signal_connect (plugin_loader, "pending-apps-changed",
 				  G_CALLBACK (gs_plugins_flatpak_count_signal_cb),
 				  &pending_app_changed_cnt);
-	updates_changed_id =
-		g_signal_connect (plugin_loader, "updates-changed",
-				  G_CALLBACK (gs_plugins_flatpak_count_signal_cb),
-				  &updates_changed_cnt);
 	notify_state_id =
 		g_signal_connect (app, "notify::state",
 				  G_CALLBACK (update_app_state_notify_cb),
@@ -1420,7 +1414,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert (got_progress_installing);
 	//g_assert_cmpint (progress_cnt, >, 20); //FIXME: bug in OSTree
 	g_assert_cmpint (pending_app_changed_cnt, ==, 0);
-	g_assert_cmpint (updates_changed_cnt, ==, 1);
 
 	/* check that the app's runtime has changed */
 	runtime = gs_app_get_runtime (app);
@@ -1431,7 +1424,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 
 	/* no longer care */
 	g_signal_handler_disconnect (plugin_loader, pending_apps_changed_id);
-	g_signal_handler_disconnect (plugin_loader, updates_changed_id);
 	g_signal_handler_disconnect (app, notify_state_id);
 	g_signal_handler_disconnect (app, notify_progress_id);
 
