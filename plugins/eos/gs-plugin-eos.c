@@ -88,6 +88,7 @@ static const gchar *eos_updater_state_str[] = {"None",
 
 static void setup_os_upgrade (GsPlugin *plugin);
 static EosUpdaterState sync_state_from_updater (GsPlugin *plugin);
+static gboolean app_is_flatpak (GsApp *app);
 
 struct GsPluginData
 {
@@ -1449,17 +1450,27 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	return blacklist_app;
 }
 
-static const char*
+static char *
 get_desktop_file_id (GsApp *app)
 {
 	const char *desktop_file_id =
 		gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE);
 
-	if (!desktop_file_id)
+	if (!desktop_file_id) {
+		if (app_is_flatpak (app)) {
+			/* ensure we add the .desktop suffix to the app's ref name
+			 * since in Flatpak the app ID can have that suffix already
+			 * or not, depending on how the appdata has been generated */
+			const char *ref_name = gs_flatpak_app_get_ref_name (app);
+			return g_strconcat (ref_name, ".desktop", NULL);
+		}
+
+		/* just use the app ID if this is not a Flatpak app */
 		desktop_file_id = gs_app_get_id (app);
+	}
 
 	g_assert (desktop_file_id != NULL);
-	return desktop_file_id;
+	return g_strdup (desktop_file_id);
 }
 
 static void
@@ -1467,7 +1478,7 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 					 GsApp *app)
 {
 	GsPluginData *priv = NULL;
-	const char *desktop_file_id = NULL;
+	g_autofree char *desktop_file_id = NULL;
 	g_autofree char *kde_desktop_file_id = NULL;
 
 	if (!gs_app_is_installed (app)) {
@@ -1718,7 +1729,7 @@ remove_app_from_shell (GsPlugin		*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *desktop_file_id = get_desktop_file_id (app);
+	g_autofree char *desktop_file_id = get_desktop_file_id (app);
 	g_autoptr(GDesktopAppInfo) app_info =
 		gs_utils_get_desktop_app_info (desktop_file_id);
 	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
@@ -1793,7 +1804,7 @@ add_app_to_shell (GsPlugin	*plugin,
 {
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *desktop_file_id = get_desktop_file_id (app);
+	g_autofree char *desktop_file_id = get_desktop_file_id (app);
 	g_autoptr(GDesktopAppInfo) app_info =
 		gs_utils_get_desktop_app_info (desktop_file_id);
 	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
@@ -1874,7 +1885,7 @@ launch_with_sys_desktop_file (GsApp *app,
 {
 	GdkDisplay *display;
 	g_autoptr(GAppLaunchContext) context = NULL;
-	const char *desktop_file_id = get_desktop_file_id (app);
+	g_autofree char *desktop_file_id = get_desktop_file_id (app);
 	g_autoptr(GDesktopAppInfo) app_info =
 		gs_utils_get_desktop_app_info (desktop_file_id);
 	g_autoptr(GError) local_error = NULL;
