@@ -39,7 +39,13 @@
 #include <string.h>
 #include <glib/gstdio.h>
 #include <json-glib/json-glib.h>
+
+#if defined(__linux__)
 #include <sys/sysinfo.h>
+#elif defined(__FreeBSD__)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
 
 #ifdef HAVE_POLKIT
 #include <polkit/polkit.h>
@@ -353,6 +359,8 @@ gs_utils_strv_fnmatch (gchar **strv, const gchar *str)
  * @id: A desktop ID, e.g. "gimp.desktop"
  *
  * Gets a a #GDesktopAppInfo taking into account the kde4- prefix.
+ * If the given @id doesn not have a ".desktop" suffix, it will add one to it
+ * for convenience.
  *
  * Returns: a #GDesktopAppInfo for a specific ID, or %NULL
  */
@@ -360,6 +368,14 @@ GDesktopAppInfo *
 gs_utils_get_desktop_app_info (const gchar *id)
 {
 	GDesktopAppInfo *app_info;
+	g_autofree gchar *desktop_id = NULL;
+
+	/* for convenience, if the given id doesn't have the required .desktop
+	 * suffix, we add it here */
+	if (!g_str_has_suffix (id, ".desktop")) {
+		desktop_id = g_strconcat (id, ".desktop", NULL);
+		id = desktop_id;
+	}
 
 	/* try to get the standard app-id */
 	app_info = g_desktop_app_info_new (id);
@@ -1036,9 +1052,17 @@ gs_utils_is_low_resolution (GtkWidget *toplevel)
 guint
 gs_utils_get_memory_total (void)
 {
+#if defined(__linux__)
 	struct sysinfo si = { 0 };
 	sysinfo (&si);
 	return si.totalram / MB_IN_BYTES / si.mem_unit;
+#elif defined(__FreeBSD__)
+	unsigned long physmem;
+	sysctl ((int[]){ CTL_HW, HW_PHYSMEM }, 2, &physmem, &(size_t){ sizeof (physmem) }, NULL, 0);
+	return physmem / MB_IN_BYTES;
+#else
+#error "Please implement gs_utils_get_memory_total for your system."
+#endif
 }
 
 /**

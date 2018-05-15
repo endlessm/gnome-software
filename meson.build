@@ -1,5 +1,5 @@
 project('gnome-software', 'c',
-  version : '3.28.1',
+  version : '3.28.2',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
   meson_version : '>=0.37.0'
@@ -90,7 +90,7 @@ add_global_link_arguments(
 )
 
 # Needed for PATH_MAX and symlink()
-add_project_arguments('-D_XOPEN_SOURCE=500', language : 'c')
+add_project_arguments('-D_XOPEN_SOURCE=700', language : 'c')
 
 appstream_glib = dependency('appstream-glib', version : '>= 0.7.3')
 gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.32.0')
