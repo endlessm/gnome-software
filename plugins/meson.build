@@ -10,9 +10,11 @@ subdir('core')
 subdir('dpkg')
 subdir('dummy')
 subdir('eos')
-subdir('epiphany')
 subdir('fedora-pkgdb-collections')
 
+if get_option('enable-epiphany')
+  subdir('epiphany')
+endif
 if get_option('enable-flatpak')
   subdir('flatpak')
 endif
