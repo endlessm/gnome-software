@@ -961,7 +961,7 @@ gs_plugins_flatpak_broken_remote_func (GsPluginLoader *plugin_loader)
 	gs_app_set_kind (app_source, AS_APP_KIND_SOURCE);
 	gs_app_set_management_plugin (app_source, "flatpak");
 	gs_app_set_state (app_source, AS_APP_STATE_AVAILABLE);
-	gs_flatpak_app_set_repo_url (app_source, "file:///wont/work");
+	gs_flatpak_app_set_repo_url (app_source, "https://wont/work");
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app_source,
 					 NULL);
