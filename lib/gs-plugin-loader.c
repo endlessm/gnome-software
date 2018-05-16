@@ -2255,6 +2255,7 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 			GCancellable *cancellable,
 			GError **error)
 {
+	g_debug ("_____PL_SETUP0");
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	const gchar *filename_tmp;
 	const gchar *plugin_name;
@@ -2268,6 +2269,7 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(GsPluginLoaderHelper) helper = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	g_debug ("_____PL_SETUP1");
 
 	/* use the default, but this requires a 'make install' */
 	if (priv->locations->len == 0) {
@@ -2289,7 +2291,9 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 		g_signal_connect (monitor, "changed",
 				  G_CALLBACK (gs_plugin_loader_plugin_dir_changed_cb), plugin_loader);
 		g_ptr_array_add (priv->file_monitors, monitor);
+		g_debug ("_____PL_SETUP1.%u", i + 1);
 	}
+	g_debug ("_____PL_SETUP2");
 
 	/* search for plugins */
 	ptask = as_profile_start_literal (priv->profile, "GsPlugin::setup");
@@ -2312,6 +2316,7 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 				break;
 			if (!g_str_has_suffix (filename_tmp, ".so"))
 				continue;
+			g_debug ("_____PL_SETUP3 %s", filename_tmp);
 			filename_plugin = g_build_filename (location,
 							    filename_tmp,
 							    NULL);
@@ -2322,8 +2327,12 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	/* optional whitelist */
 	if (whitelist != NULL) {
 		for (i = 0; i < priv->plugins->len; i++) {
+			const gchar *name;
 			gboolean ret;
+			g_debug ("_____PL_SETUP4_START %u", i);
 			plugin = g_ptr_array_index (priv->plugins, i);
+			name = gs_plugin_get_name (plugin);
+			g_debug ("_____PL_SETUP4 %u %p", i, plugin);
 			if (!gs_plugin_get_enabled (plugin))
 				continue;
 			ret = g_strv_contains ((const gchar * const *) whitelist,
@@ -2333,9 +2342,13 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 					 gs_plugin_get_name (plugin));
 			}
 			gs_plugin_set_enabled (plugin, ret);
+			g_debug ("_____PL_SETUP4.1 CHECK");
+			g_debug ("_____PL_SETUP4.1 %s", name);
+			g_debug ("_____PL_SETUP4.1 DONE");
 		}
 	}
 
+	g_debug ("_____PL_SETUP4_FINISHED");
 	/* optional blacklist */
 	if (blacklist != NULL) {
 		for (i = 0; i < priv->plugins->len; i++) {
@@ -2343,6 +2356,7 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 			plugin = g_ptr_array_index (priv->plugins, i);
 			if (!gs_plugin_get_enabled (plugin))
 				continue;
+			g_debug ("_____PL_SETUP_BLACKLIST %s", gs_plugin_get_name (plugin));
 			ret = g_strv_contains ((const gchar * const *) blacklist,
 					       gs_plugin_get_name (plugin));
 			if (ret)
@@ -2350,15 +2364,19 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 		}
 	}
 
+	g_debug ("_____PL_SETUP5");
+
 	/* run the plugins */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INITIALIZE, NULL);
 	helper = gs_plugin_loader_helper_new (plugin_loader, plugin_job);
 	gs_plugin_job_set_failure_flags (helper->plugin_job,
 					 failure_flags |
 					 GS_PLUGIN_FAILURE_FLAGS_NO_CONSOLE);
+	g_debug ("_____PL_SETUP6");
 	if (!gs_plugin_loader_run_results (helper, cancellable, error))
 		return FALSE;
 
+	g_debug ("_____PL_SETUP7");
 	/* order by deps */
 	do {
 		changes = FALSE;
@@ -2507,6 +2525,8 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	for (i = 0; i < priv->plugins->len; i++) {
 		g_autoptr(GError) error_local = NULL;
 		plugin = g_ptr_array_index (priv->plugins, i);
+		g_debug ("_____PL_RUN_PLUGIN_SETUP %u", i);
+		g_debug ("_____PL_RUN_PLUGIN_SETUP::NAME %s", gs_plugin_get_name (plugin));
 		if (!gs_plugin_loader_call_vfunc (helper, plugin, NULL, NULL,
 						  cancellable, &error_local)) {
 			g_debug ("disabling %s as setup failed: %s",

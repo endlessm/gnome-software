@@ -605,6 +605,12 @@ gs_auth_secret_func (void)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAuth) auth1 = NULL;
 	g_autoptr(GsAuth) auth2 = NULL;
+	g_autofree gchar *dbus_launch_program = g_find_program_in_path ("dbus-launch");
+
+	if (dbus_launch_program == NULL) {
+		g_test_skip ("Cannot use dbus-launch");
+		return;
+	}
 
 	/* save secrets to disk */
 	auth1 = gs_auth_new ("self-test");

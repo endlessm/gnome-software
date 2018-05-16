@@ -232,10 +232,10 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsAppList) sources = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
-
+	g_debug ("....SETUP 0");
 	/* drop all caches */
 	gs_plugin_loader_setup_again (plugin_loader);
-
+	g_debug ("....SETUP 1");
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
 		return;
@@ -262,6 +262,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert_cmpint (kf_remote_repo_version, ==, 1);
 
+	g_debug ("....INSTALL 0");
+
 	/* add a remote */
 	app_source = gs_flatpak_app_new ("test");
 	testdir = gs_test_get_filename (TESTDATADIR, "app-with-runtime");
@@ -280,6 +282,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+
+	g_debug ("....INSTALL 1");
 
 	/* check remote was set up */
 	ret = g_key_file_load_from_file (kf2, config_fn, G_KEY_FILE_NONE, &error);
@@ -1754,6 +1758,7 @@ main (int argc, char **argv)
 	plugin_loader = gs_plugin_loader_new ();
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR_CORE);
+	g_debug ("....INITIAL SETUP 0");
 	ret = gs_plugin_loader_setup (plugin_loader,
 				      (gchar**) whitelist,
 				      NULL,
@@ -1762,6 +1767,7 @@ main (int argc, char **argv)
 				      &error);
 	g_assert_no_error (error);
 	g_assert (ret);
+	g_debug ("....INITIAL SETUP 1");
 
 	/* plugin tests go here */
 	g_test_add_data_func ("/gnome-software/plugins/flatpak/app-with-runtime",
