@@ -59,6 +59,7 @@ struct _GsUpdateMonitor {
 	GHashTable	*scheduled_updates; /* (element-type utf8 UpdateScheduleHelper) */
 	guint		 num_scheduled_updates;
 	GCancellable	*scheduled_updates_cancellable;
+	gulong		 allow_downloads_handler;
 };
 
 G_DEFINE_TYPE (GsUpdateMonitor, gs_update_monitor, G_TYPE_OBJECT)
@@ -415,7 +416,9 @@ schedule_entry_scheduled_cb (GObject *source_object,
 		 mwsc_schedule_entry_get_id (helper->entry));
 	g_hash_table_insert (monitor->scheduled_updates, g_strdup (app_id),
 			     g_steal_pointer (&helper));
-	gs_app_set_pending_action (app, GS_PLUGIN_ACTION_UPDATE);
+	if (monitor->scheduler &&
+	    mwsc_scheduler_get_allow_downloads (monitor->scheduler))
+		gs_app_set_pending_action (app, GS_PLUGIN_ACTION_UPDATE);
 
 	/* when all apps have been scheduled, try to update any that should be
 	 * updated already, and connect to MwscScheduleEntry signals; we do this
@@ -478,8 +481,42 @@ schedule_updates_real (GsUpdateMonitor *monitor,
 }
 
 static void
+monitor_refresh_pending_updates (GsUpdateMonitor *monitor)
+{
+	GHashTableIter iter;
+	gpointer value;
+	gboolean allow_downloads;
+
+	if (monitor->scheduler == NULL)
+		return;
+
+	allow_downloads = mwsc_scheduler_get_allow_downloads (monitor->scheduler);
+
+	g_hash_table_iter_init (&iter, monitor->scheduled_updates);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		UpdateScheduleHelper *helper = value;
+		GsApp *app = helper->app;
+		GsPluginAction update_action = GS_PLUGIN_ACTION_UPDATE;
+
+		if (allow_downloads)
+			gs_app_set_pending_action (app, update_action);
+		else if (gs_app_get_pending_action (app) == update_action)
+			gs_app_set_pending_action (app, GS_PLUGIN_ACTION_UNKNOWN);
+	}
+}
+
+static void
 monitor_clear_scheduler (GsUpdateMonitor *monitor)
 {
+	monitor_refresh_pending_updates (monitor);
+
+	/* disconnect the function that refreshes the pending action in the apps */
+	if (monitor->scheduler != NULL && monitor->allow_downloads_handler > 0) {
+		g_signal_handler_disconnect (monitor->scheduler,
+					     monitor->allow_downloads_handler);
+		monitor->allow_downloads_handler = 0;
+	}
+
 	g_clear_object (&monitor->scheduler);
 }
 
@@ -504,6 +541,11 @@ scheduler_ready_cb (GObject *source_object,
 				 (GCallback) monitor_clear_scheduler,
 				 monitor,
 				 G_CONNECT_SWAPPED);
+	monitor->allow_downloads_handler =
+		g_signal_connect_object (scheduler, "notify::allow-downloads",
+					 (GCallback) monitor_refresh_pending_updates,
+					 monitor,
+					 G_CONNECT_SWAPPED);
 	monitor->scheduler = scheduler;
 
 	schedule_updates_real (monitor, helper->apps_to_update);
