@@ -2905,6 +2905,72 @@ gs_flatpak_add_app_to_list_if_not_installed (GsApp *app, GsAppList *list,
 	gs_app_list_add (list, app);
 }
 
+static GPtrArray *
+gs_flatpak_get_app_remote_related_refs (GsFlatpak *self,
+					GsApp *app,
+					GCancellable *cancellable,
+					GError **error)
+{
+	g_autofree gchar *ref = gs_flatpak_app_get_ref_display (app);
+	/* lookup any related refs for this ref */
+	return flatpak_installation_list_remote_related_refs_sync (self->installation,
+								   gs_app_get_origin (app),
+								   ref, cancellable, error);
+}
+
+static gboolean
+gs_flatpak_add_related_refs_to_list (GsFlatpak *self,
+				     GsApp *app,
+				     GPtrArray *related_refs,
+				     GHashTable *hash_installed,
+				     gboolean is_update,
+				     GsAppList *list,
+				     GCancellable *cancellable,
+				     GError **error)
+{
+	for (guint i = 0; i < related_refs->len; i++) {
+		FlatpakRelatedRef *xref_related = g_ptr_array_index (related_refs, i);
+		g_autofree gchar *ref_display = NULL;
+		g_autoptr(GsApp) app_tmp = NULL;
+		g_autoptr(GError) error_local = NULL;
+
+		/* not included */
+		if (!gs_flatpak_related_should_download (self, app, xref_related))
+			continue;
+
+		/* already installed? */
+		app_tmp = gs_flatpak_create_app (self, FLATPAK_REF (xref_related));
+		ref_display = gs_flatpak_app_get_ref_display (app_tmp);
+		if (!is_update && g_hash_table_contains (hash_installed, ref_display)) {
+			g_debug ("not adding related %s as already installed", ref_display);
+			continue;
+		}
+
+		if (gs_app_get_origin (app_tmp) == NULL)
+			gs_app_set_origin (app_tmp, gs_app_get_origin (app));
+
+		if (!gs_plugin_refine_item_state (self, app_tmp, cancellable, &error_local)) {
+			if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+				g_propagate_error (error, g_steal_pointer (&error_local));
+				return FALSE;
+			}
+			g_warning ("Failed to refine %s when getting the list of apps to "
+				   "install/update: %s; not adding the app...",
+				   gs_app_get_unique_id (app_tmp),
+				   error_local->message);
+			continue;
+		}
+		if (gs_app_is_installed (app_tmp) && is_update &&
+		    !gs_app_is_updatable (app_tmp)) {
+			g_debug ("not adding related %s as it's not updatable", ref_display);
+			continue;
+		}
+		g_debug ("adding related %s for install/update", ref_display);
+		gs_app_list_add (list, app_tmp);
+	}
+	return TRUE;
+}
+
 static GsAppList *
 gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 					   GsApp *app,
@@ -2915,6 +2981,7 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 	GsApp *runtime, *services_runtime;
 	g_autofree gchar *ref = NULL;
 	g_autoptr(GPtrArray) related = NULL;
+	g_autoptr(GPtrArray) runtime_related = NULL;
 	g_autoptr(GPtrArray) xrefs_installed = NULL;
 	g_autoptr(GHashTable) hash_installed = NULL;
 	g_autoptr(GsAppList) list = gs_app_list_new ();
@@ -2949,11 +3016,23 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 		runtime = gs_app_get_update_runtime (app);
 	}
 	if (runtime != NULL) {
+		g_autoptr(GError) local_error = NULL;
 		gs_flatpak_add_app_to_list_if_not_installed (runtime, list, hash_installed, FALSE);
 
 		/* add services flatpak */
 		services_app = gs_flatpak_get_services_app_if_needed (self, app, runtime,
 								      cancellable);
+
+		/* add refs related to the runtime */
+		runtime_related = gs_flatpak_get_app_remote_related_refs (self, runtime,
+									  cancellable,
+									  &local_error);
+		if (runtime_related == NULL)
+			g_debug ("Failed to get related refs for runtime %s when "
+				 "installing/updating %s: %s; continuing nonetheless...",
+				 gs_app_get_unique_id (runtime),
+				 gs_app_get_unique_id (app),
+				 local_error->message);
 	}
 
 	if (g_cancellable_set_error_if_cancelled (cancellable, error))
@@ -2976,59 +3055,26 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 	}
 
 	/* lookup any related refs for this ref */
-	ref = g_strdup_printf ("%s/%s/%s/%s",
-			       gs_flatpak_app_get_ref_kind_as_str (app),
-			       gs_flatpak_app_get_ref_name (app),
-			       gs_flatpak_app_get_ref_arch (app),
-			       gs_flatpak_app_get_ref_branch (app));
-	related = flatpak_installation_list_remote_related_refs_sync (self->installation,
-								      gs_app_get_origin (app),
-								      ref, cancellable, error);
+	related = gs_flatpak_get_app_remote_related_refs (self, app, cancellable, error);
 	if (related == NULL) {
 		g_prefix_error (error, "using origin %s: ", gs_app_get_origin (app));
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
 
-	/* any extra bits */
-	for (guint i = 0; i < related->len; i++) {
-		FlatpakRelatedRef *xref_related = g_ptr_array_index (related, i);
-		g_autofree gchar *ref_display = NULL;
-		g_autoptr(GsApp) app_tmp = NULL;
-		g_autoptr(GError) error_local = NULL;
+	/* add refs related to the app */
+	if (!gs_flatpak_add_related_refs_to_list (self, app, related, hash_installed,
+						  is_update, list, cancellable, error))
+		return FALSE;
 
-		/* not included */
-		if (!gs_flatpak_related_should_download (self, app, xref_related))
-			continue;
-
-		/* already installed? */
-		app_tmp = gs_flatpak_create_app (self, FLATPAK_REF (xref_related));
-		ref_display = gs_flatpak_app_get_ref_display (app_tmp);
-		if (!is_update && g_hash_table_contains (hash_installed, ref_display)) {
-			g_debug ("not adding related %s as already installed", ref_display);
-			continue;
-		}
-
-		gs_app_set_origin (app_tmp, gs_app_get_origin (app));
-		if (!gs_plugin_refine_item_state (self, app_tmp, cancellable, &error_local)) {
-			if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-				g_propagate_error (error, g_steal_pointer (&error_local));
-				return NULL;
-			}
-			g_warning ("Failed to refine %s when getting the list of apps to "
-				   "install/update: %s; not adding the app...",
-				   gs_app_get_unique_id (app_tmp),
-				   error_local->message);
-			continue;
-		}
-		if (gs_app_is_installed (app_tmp) && is_update &&
-		    !gs_app_is_updatable (app_tmp)) {
-			g_debug ("not adding related %s as it's not updatable", ref_display);
-			continue;
-		}
-		g_debug ("adding related %s for install/update", ref_display);
-		gs_app_list_add (list, app_tmp);
-	}
+	/* add refs related to the runtime; however, we're only adding them if they
+	 * need to be installed, as their update should be performed together with
+	 * the runtime instead */
+	if (runtime_related != NULL &&
+	    !gs_flatpak_add_related_refs_to_list (self, runtime, runtime_related,
+						  hash_installed, FALSE, list,
+						  cancellable, error))
+		return FALSE;
 
 	/* add the original app last unless it's a proxy app */
 	if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
