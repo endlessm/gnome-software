@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-07 13:37-0700\n"
-"PO-Revision-Date: 2018-05-07 20:38+0000\n"
+"POT-Creation-Date: 2018-05-21 14:15-0700\n"
+"PO-Revision-Date: 2018-05-22 00:10+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/endless-os/gnome-software/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
@@ -353,7 +353,7 @@ msgid "Pending"
 msgstr "擱置中"
 
 #: src/gs-app-addon-row.c:101 src/gs-app-row.ui:210 src/gs-app-tile.ui:51
-#: src/gs-background-tile.ui:61 src/gs-feature-tile.c:88
+#: src/gs-background-tile.ui:67 src/gs-feature-tile.c:88
 #: src/gs-popular-tile.c:70
 msgid "Installed"
 msgstr "已安裝"
@@ -579,17 +579,23 @@ msgstr "核對"
 msgid "Continue"
 msgstr "繼續"
 
-#. TRANSLATORS: This is the price of the app, as in gratis
-#. This refers to the license of the application
-#: src/gs-background-tile.c:128 src/gs-details-page.ui:1078
-msgid "Free"
-msgstr "自由授權"
-
 #. TRANSLATORS: This is the name and state of an app for the ATK object
-#: src/gs-background-tile.c:148 src/gs-summary-tile.c:75
+#: src/gs-background-tile.c:159 src/gs-summary-tile.c:75
 #, c-format
 msgid "%s (Installed)"
 msgstr "%s（已安裝）"
+
+#: src/gs-background-tile.ui:81
+msgid "Scheduled update"
+msgstr "排定的更新"
+
+#: src/gs-background-tile.ui:95
+msgid "Available in a USB drive"
+msgstr "可用於 USB 硬碟"
+
+#: src/gs-background-tile.ui:109
+msgid "Requires download"
+msgstr "需要下載"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1359,6 +1365,11 @@ msgstr "開發者"
 #: src/gs-details-page.ui:1058
 msgid "License"
 msgstr "授權"
+
+#. This refers to the license of the application
+#: src/gs-details-page.ui:1078
+msgid "Free"
+msgstr "自由授權"
 
 #. This refers to the license of the application
 #: src/gs-details-page.ui:1095
@@ -2836,79 +2847,79 @@ msgstr "降級"
 msgid "No updates have been installed on this system."
 msgstr "這個系統沒有安裝過更新。"
 
-#: src/gs-update-monitor.c:168
+#: src/gs-update-monitor.c:169
 msgid "Security Updates Pending"
 msgstr "擱置的安全性更新"
 
-#: src/gs-update-monitor.c:169
+#: src/gs-update-monitor.c:170
 msgid "It is recommended that you install important updates now"
 msgstr "建議您現在安裝重要更新"
 
-#: src/gs-update-monitor.c:172
+#: src/gs-update-monitor.c:173
 msgid "Restart & Install"
 msgstr "重新啟動並安裝更新"
 
-#: src/gs-update-monitor.c:176
+#: src/gs-update-monitor.c:177
 msgid "Software Updates Available"
 msgstr "有軟體更新可用"
 
-#: src/gs-update-monitor.c:177
+#: src/gs-update-monitor.c:178
 msgid "Important OS and application updates are ready to be installed"
 msgstr "已備妥重要的作業系統與應用程式更新可供安裝"
 
 #. TRANSLATORS: button text
-#: src/gs-update-monitor.c:180 src/gs-updates-page.c:800
+#: src/gs-update-monitor.c:181 src/gs-updates-page.c:800
 msgid "Not Now"
 msgstr "現在不是時候"
 
-#: src/gs-update-monitor.c:181
+#: src/gs-update-monitor.c:182
 msgid "View"
 msgstr "檢視"
 
 #. TRANSLATORS: this is when the current OS version goes end-of-life
-#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:79
+#: src/gs-update-monitor.c:696 src/gs-updates-page.ui:79
 msgid "Operating System Updates Unavailable"
 msgstr "沒有作業系統更新"
 
 #. TRANSLATORS: this is the message dialog for the distro EOL notice
-#: src/gs-update-monitor.c:654
+#: src/gs-update-monitor.c:698
 msgid "Upgrade to continue receiving security updates."
 msgstr "升級以繼續接受安全性更新。"
 
 #. TRANSLATORS: this is a distro upgrade, the replacement would be the
 #. * distro name, e.g. 'Fedora'
-#: src/gs-update-monitor.c:708
+#: src/gs-update-monitor.c:752
 #, c-format
 msgid "A new version of %s is available to install"
 msgstr "有新版本的「%s」可安裝"
 
 #. TRANSLATORS: this is a distro upgrade
-#: src/gs-update-monitor.c:712
+#: src/gs-update-monitor.c:756
 msgid "Software Upgrade Available"
 msgstr "有可用的軟體升級"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:996
+#: src/gs-update-monitor.c:1040
 msgid "Software Updates Failed"
 msgstr "軟體更新失敗"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:998
+#: src/gs-update-monitor.c:1042
 msgid "An important OS update failed to be installed."
 msgstr "重要的作業系統更新安裝失敗。"
 
-#: src/gs-update-monitor.c:999
+#: src/gs-update-monitor.c:1043
 msgid "Show Details"
 msgstr "顯示細節"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1021
+#: src/gs-update-monitor.c:1065
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "軟體更新已安裝"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1025
+#: src/gs-update-monitor.c:1069
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "重要的作業系統更新已安裝。"
@@ -2918,50 +2929,50 @@ msgstr[0] "重要的作業系統更新已安裝。"
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1036
+#: src/gs-update-monitor.c:1080
 msgctxt "updates"
 msgid "Review"
 msgstr "檢閱"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1083
+#: src/gs-update-monitor.c:1127
 msgid "Failed To Update"
 msgstr "無法更新"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1089
+#: src/gs-update-monitor.c:1133
 msgid "The system was already up to date."
 msgstr "該系統已經是最新的。"
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1094
+#: src/gs-update-monitor.c:1138
 msgid "The update was cancelled."
 msgstr "更新已取消。"
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1100
+#: src/gs-update-monitor.c:1144
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "需要存取網際網路但無法使用。請確定您能使用網際網路後再試一次。"
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1106
+#: src/gs-update-monitor.c:1150
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "這次更新中有安全性問題。請詢問您的軟體供應商以了解更多資訊。"
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1112
+#: src/gs-update-monitor.c:1156
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "沒有足夠的磁碟空間。請空出部分空間後再試一次。"
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1117
+#: src/gs-update-monitor.c:1161
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -3175,11 +3186,11 @@ msgstr "沒有網路"
 msgid "Internet access is required to check for updates."
 msgstr "需要存取網際網路以檢查更新。"
 
-#: src/gs-updates-page.c:1939
+#: src/gs-updates-page.c:1907
 msgid "Restart & _Install"
 msgstr "重新啟動並安裝(_I)"
 
-#: src/gs-updates-page.c:1957
+#: src/gs-updates-page.c:1925
 msgid "Check for updates"
 msgstr "檢查軟體更新"
 
@@ -3698,20 +3709,20 @@ msgstr "包括效能、穩定性、安全性等改善。"
 msgid "Downloading featured images…"
 msgstr "下載特選影像中…"
 
-#: plugins/eos/gs-plugin-eos.c:1890
+#: plugins/eos/gs-plugin-eos.c:1902
 #, c-format
 msgid "Could not launch this application."
 msgstr "無法啟動本應用程序。"
 
-#: plugins/eos/gs-plugin-eos.c:1947
+#: plugins/eos/gs-plugin-eos.c:1959
 msgid "Endless Platform"
 msgstr "Endless 平台"
 
-#: plugins/eos/gs-plugin-eos.c:1950
+#: plugins/eos/gs-plugin-eos.c:1962
 msgid "Framework for applications"
 msgstr "應用程式的架構"
 
-#: plugins/eos/gs-plugin-eos.c:2099
+#: plugins/eos/gs-plugin-eos.c:2111
 msgid "An Endless update with new features and fixes."
 msgstr "提供新功能和修復錯誤的 Endless 更新。"
 
@@ -3777,7 +3788,7 @@ msgid "Getting flatpak metadata for %s…"
 msgstr "取得 %s 的 flatpak 中介資料…"
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3155
+#: plugins/flatpak/gs-flatpak.c:3158
 msgid "Getting runtime source…"
 msgstr "取得執行時期來源中…"
 

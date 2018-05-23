@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-07 13:37-0700\n"
-"PO-Revision-Date: 2018-05-07 20:38+0000\n"
+"POT-Creation-Date: 2018-05-21 14:15-0700\n"
+"PO-Revision-Date: 2018-05-21 21:16+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Latvian (http://www.transifex.com/endless-os/gnome-software/language/lv/)\n"
 "MIME-Version: 1.0\n"
@@ -353,7 +353,7 @@ msgid "Pending"
 msgstr "Gaida"
 
 #: src/gs-app-addon-row.c:101 src/gs-app-row.ui:210 src/gs-app-tile.ui:51
-#: src/gs-background-tile.ui:61 src/gs-feature-tile.c:88
+#: src/gs-background-tile.ui:67 src/gs-feature-tile.c:88
 #: src/gs-popular-tile.c:70
 msgid "Installed"
 msgstr "Instalēts"
@@ -579,17 +579,23 @@ msgstr ""
 msgid "Continue"
 msgstr "Turpināt"
 
-#. TRANSLATORS: This is the price of the app, as in gratis
-#. This refers to the license of the application
-#: src/gs-background-tile.c:128 src/gs-details-page.ui:1078
-msgid "Free"
-msgstr "Brīva"
-
 #. TRANSLATORS: This is the name and state of an app for the ATK object
-#: src/gs-background-tile.c:148 src/gs-summary-tile.c:75
+#: src/gs-background-tile.c:159 src/gs-summary-tile.c:75
 #, c-format
 msgid "%s (Installed)"
 msgstr "%s (instalēts)"
+
+#: src/gs-background-tile.ui:81
+msgid "Scheduled update"
+msgstr ""
+
+#: src/gs-background-tile.ui:95
+msgid "Available in a USB drive"
+msgstr ""
+
+#: src/gs-background-tile.ui:109
+msgid "Requires download"
+msgstr ""
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1361,6 +1367,11 @@ msgstr "Izstrādātājs"
 #: src/gs-details-page.ui:1058
 msgid "License"
 msgstr "Licence"
+
+#. This refers to the license of the application
+#: src/gs-details-page.ui:1078
+msgid "Free"
+msgstr "Brīva"
 
 #. This refers to the license of the application
 #: src/gs-details-page.ui:1095
@@ -2856,73 +2867,73 @@ msgstr "Pazeminājumi"
 msgid "No updates have been installed on this system."
 msgstr "Uz šīs sistēmas netika instalēti nekādi atjauninājumi."
 
-#: src/gs-update-monitor.c:168
+#: src/gs-update-monitor.c:169
 msgid "Security Updates Pending"
 msgstr "Rindā gaida drošības atjauninājumi"
 
-#: src/gs-update-monitor.c:169
+#: src/gs-update-monitor.c:170
 msgid "It is recommended that you install important updates now"
 msgstr "Ieteicams jau tagad instalēt svarīgus atjauninājumus"
 
-#: src/gs-update-monitor.c:172
+#: src/gs-update-monitor.c:173
 msgid "Restart & Install"
 msgstr "Pārstartēt un instalēt"
 
-#: src/gs-update-monitor.c:176
+#: src/gs-update-monitor.c:177
 msgid "Software Updates Available"
 msgstr "Pieejami programmatūras atjauninājumi"
 
-#: src/gs-update-monitor.c:177
+#: src/gs-update-monitor.c:178
 msgid "Important OS and application updates are ready to be installed"
 msgstr "Svarīgi operētājsistēmas un lietotņu atjauninājumi ir gatavi instalēšanai"
 
 #. TRANSLATORS: button text
-#: src/gs-update-monitor.c:180 src/gs-updates-page.c:800
+#: src/gs-update-monitor.c:181 src/gs-updates-page.c:800
 msgid "Not Now"
 msgstr "Ne tagad"
 
-#: src/gs-update-monitor.c:181
+#: src/gs-update-monitor.c:182
 msgid "View"
 msgstr "Skatīt"
 
 #. TRANSLATORS: this is when the current OS version goes end-of-life
-#: src/gs-update-monitor.c:652 src/gs-updates-page.ui:79
+#: src/gs-update-monitor.c:696 src/gs-updates-page.ui:79
 msgid "Operating System Updates Unavailable"
 msgstr "Operētājsistēmai atjauninājumi nav pieejami"
 
 #. TRANSLATORS: this is the message dialog for the distro EOL notice
-#: src/gs-update-monitor.c:654
+#: src/gs-update-monitor.c:698
 msgid "Upgrade to continue receiving security updates."
 msgstr "Pārejiet uz jaunāku OS versiju, lai turpinātu saņemt drošības atjauninājumus."
 
 #. TRANSLATORS: this is a distro upgrade, the replacement would be the
 #. * distro name, e.g. 'Fedora'
-#: src/gs-update-monitor.c:708
+#: src/gs-update-monitor.c:752
 #, c-format
 msgid "A new version of %s is available to install"
 msgstr "Jauna %s versija ir pieejama instalēšanai"
 
 #. TRANSLATORS: this is a distro upgrade
-#: src/gs-update-monitor.c:712
+#: src/gs-update-monitor.c:756
 msgid "Software Upgrade Available"
 msgstr "Pieejami programmatūras atjauninājumi"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:996
+#: src/gs-update-monitor.c:1040
 msgid "Software Updates Failed"
 msgstr "Neizdevās atjaunināt programmatūru"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:998
+#: src/gs-update-monitor.c:1042
 msgid "An important OS update failed to be installed."
 msgstr "Neizdevās uzinstalēt svarīgus OS atjauninājumus."
 
-#: src/gs-update-monitor.c:999
+#: src/gs-update-monitor.c:1043
 msgid "Show Details"
 msgstr "Rādīt sīkāku informāciju"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1021
+#: src/gs-update-monitor.c:1065
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Programmatūras atjauninājums uzinstalēts"
@@ -2930,7 +2941,7 @@ msgstr[1] "Programmatūras atjauninājumi uzinstalēti"
 msgstr[2] "Programmatūras atjauninājumi uzinstalēti"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1025
+#: src/gs-update-monitor.c:1069
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "Tika uzinstalēts svarīgs OS atjauninājums."
@@ -2942,50 +2953,50 @@ msgstr[2] "Tika uzinstalēti svarīgi OS atjauninājumi."
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1036
+#: src/gs-update-monitor.c:1080
 msgctxt "updates"
 msgid "Review"
 msgstr "Pārskats"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1083
+#: src/gs-update-monitor.c:1127
 msgid "Failed To Update"
 msgstr "Neizdevās atjaunināt"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1089
+#: src/gs-update-monitor.c:1133
 msgid "The system was already up to date."
 msgstr "Sistēma jau ir aktuāla."
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1094
+#: src/gs-update-monitor.c:1138
 msgid "The update was cancelled."
 msgstr "Atjaunināšana tika atcelta."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1100
+#: src/gs-update-monitor.c:1144
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you"
 " have internet access and try again."
 msgstr "Bija nepieciešama pieeja internetam, bet tā nebija pieejama. Pārliecinieties, ka jums ir pieeja internetam un mēģiniet vēlreiz."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1106
+#: src/gs-update-monitor.c:1150
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
 msgstr "Šim atjauninājumam bija problēmas ar drošību. Lūdzu, sazinieties ar programmatūras nodrošinātāju, lai uzzinātu vairāk."
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1112
+#: src/gs-update-monitor.c:1156
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "Nepietika diska vietas. Lūdzu, atbrīvojiet vietu un mēģiniet vēlreiz."
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1117
+#: src/gs-update-monitor.c:1161
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -3199,11 +3210,11 @@ msgstr "Nav tīkla"
 msgid "Internet access is required to check for updates."
 msgstr "Lai pārbaudītu atjauninājumus, nepieciešama piekļuve internetam."
 
-#: src/gs-updates-page.c:1939
+#: src/gs-updates-page.c:1907
 msgid "Restart & _Install"
 msgstr "Pārstartēt un _instalēt"
 
-#: src/gs-updates-page.c:1957
+#: src/gs-updates-page.c:1925
 msgid "Check for updates"
 msgstr "Pārbaudīt atjauninājumus"
 
@@ -3722,20 +3733,20 @@ msgstr "Iekļauj veiktspējas, stabilitātes un drošības uzlabojumus."
 msgid "Downloading featured images…"
 msgstr "Lejupielādē piedāvātos attēlus…"
 
-#: plugins/eos/gs-plugin-eos.c:1890
+#: plugins/eos/gs-plugin-eos.c:1902
 #, c-format
 msgid "Could not launch this application."
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:1947
+#: plugins/eos/gs-plugin-eos.c:1959
 msgid "Endless Platform"
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:1950
+#: plugins/eos/gs-plugin-eos.c:1962
 msgid "Framework for applications"
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:2099
+#: plugins/eos/gs-plugin-eos.c:2111
 msgid "An Endless update with new features and fixes."
 msgstr ""
 
@@ -3801,7 +3812,7 @@ msgid "Getting flatpak metadata for %s…"
 msgstr "Saņem %s flatpak metadatus…"
 
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3155
+#: plugins/flatpak/gs-flatpak.c:3158
 msgid "Getting runtime source…"
 msgstr "Saņem izpildlaika pirmkodu…"
 
