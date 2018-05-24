@@ -1128,6 +1128,8 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 	static const char *buggy_apps[] = {
 		/* Missing lots of keys and defaults specified in eos-theme */
 		"ca.desrt.dconf-editor",
+		/* Requires kdeconnect on the host, which is not supported on Endless */
+		"com.github.bajoja.indicator-kdeconnect",
 		NULL
 	};
 
