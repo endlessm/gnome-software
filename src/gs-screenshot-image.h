@@ -47,6 +47,7 @@ void		 gs_screenshot_image_set_use_desktop_background
 							 gboolean		 use_desktop_background);
 void		 gs_screenshot_image_load_async		(GsScreenshotImage	*ssimg,
 							 GCancellable		*cancellable);
+gboolean	 gs_screenshot_image_is_showing		(GsScreenshotImage	*ssimg);
 
 G_END_DECLS
 
