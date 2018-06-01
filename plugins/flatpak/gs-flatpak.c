@@ -1706,6 +1706,14 @@ gs_flatpak_create_fake_ref (GsApp *app, GError **error)
 	return xref;
 }
 
+static void
+gs_flatpak_app_clear_repair_status (GsApp *app)
+{
+	if (gs_app_has_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE) &&
+	    gs_app_get_kind (app) == AS_APP_KIND_DESKTOP)
+		gs_app_remove_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+}
+
 gboolean
 gs_flatpak_refine_app_state (GsFlatpak *self,
 			     GsApp *app,
@@ -1724,8 +1732,10 @@ gs_flatpak_refine_app_state (GsFlatpak *self,
 
 	/* already found */
 	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN &&
-	    (runtime == NULL || gs_app_is_installed (runtime)))
+	    (runtime == NULL || gs_app_is_installed (runtime))) {
+		gs_flatpak_app_clear_repair_status (app);
 		return TRUE;
+	}
 
 	/* need broken out metadata */
 	if (!gs_refine_item_metadata (self, app, cancellable, error))
@@ -1806,6 +1816,7 @@ gs_flatpak_refine_app_state (GsFlatpak *self,
 
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
 
 		/* show event if needed */
 		if ((flags & GS_PLUGIN_REFINE_FLAGS_INTERACTIVE) != 0) {
