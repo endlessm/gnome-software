@@ -69,6 +69,10 @@ static gboolean
 gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 			      GsPluginRefreshFlags flags,
 			      GCancellable *cancellable, GError **error);
+static gboolean
+gs_plugin_refine_item_metadata (GsFlatpak *self, GsApp *app,
+				GCancellable *cancellable,
+				GError **error);
 
 static gchar *
 gs_flatpak_build_id (FlatpakRef *xref)
@@ -1463,6 +1467,15 @@ get_real_app_for_update (GsFlatpak *self,
 	return main_app;
 }
 
+static gboolean
+gs_flatpak_app_needs_repair (GsApp *app)
+{
+	GsApp *runtime = gs_app_get_runtime (app);
+
+	return gs_app_is_installed (app) && runtime != NULL &&
+		!gs_app_is_installed (runtime);
+}
+
 gboolean
 gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 			GCancellable *cancellable,
@@ -1496,20 +1509,44 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 				 flatpak_ref_get_name (FLATPAK_REF (xref)));
 			continue;
 		}
-		if (g_strcmp0 (commit, latest_commit) == 0) {
-			g_debug ("no downloaded update for %s",
-				 flatpak_ref_get_name (FLATPAK_REF (xref)));
+
+		app = gs_flatpak_create_installed (self, xref, &error_local);
+		/* if we don't have a runtime set yet, then refine the metadata */
+		if (gs_app_get_runtime (app) == NULL &&
+		    !gs_plugin_refine_item_metadata (self,
+						     app,
+						     cancellable,
+						     &error_local)) {
+			g_debug ("Failed to refine state for app %s: %s",
+				 gs_app_get_unique_id (app),
+				 error_local->message);
 			continue;
 		}
-
-		/* we have an update to show */
-		g_debug ("%s has a downloaded update %s->%s",
-			 flatpak_ref_get_name (FLATPAK_REF (xref)),
-			 commit, latest_commit);
-		app = gs_flatpak_create_installed (self, xref, &error_local);
 		if (app == NULL) {
 			g_warning ("failed to add flatpak: %s", error_local->message);
 			continue;
+		}
+
+		/* if an installed app needs to be repaired, we add it to the updates
+		 * list too, so its chances of getting repaired increase (it gets more
+		 * noticeable to the user, and may be also automatically updated) */
+		if (gs_flatpak_app_needs_repair (app)) {
+			GsApp *runtime = gs_app_get_runtime (app);
+			g_debug ("%s is missing its runtime '%s'; making it "
+				 "updatable so it can be repaired",
+				 gs_app_get_unique_id (app),
+				 gs_app_get_unique_id (runtime));
+		} else {
+			if (g_strcmp0 (commit, latest_commit) == 0) {
+				g_debug ("no downloaded update for %s",
+					 flatpak_ref_get_name (FLATPAK_REF (xref)));
+				continue;
+			}
+
+			/* we have an update to show */
+			g_debug ("%s has a downloaded update %s->%s",
+				 flatpak_ref_get_name (FLATPAK_REF (xref)),
+				 commit, latest_commit);
 		}
 
 		main_app = get_real_app_for_update (self, app, cancellable, &error_local);
@@ -2058,7 +2095,7 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 	/* if the app is installed but doesn't have its runtime installed, then it's
 	 * unusable and we should show it as updatable in order for the runtime to be
 	 * installed */
-	if (gs_app_is_installed (app) && runtime != NULL && !gs_app_is_installed (runtime)) {
+	if (gs_flatpak_app_needs_repair (app)) {
 		GError *local_error = NULL;
 		g_autoptr(GsPluginEvent) event = NULL;
 
