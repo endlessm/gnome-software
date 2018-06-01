@@ -319,7 +319,7 @@ gs_plugin_flatpak_refine_app (GsPlugin *plugin,
 		for (guint i = 0; i < priv->flatpaks->len; i++) {
 			GsFlatpak *flatpak_tmp = g_ptr_array_index (priv->flatpaks, i);
 			g_autoptr(GError) error_local = NULL;
-			if (gs_flatpak_refine_app_state (flatpak_tmp, app,
+			if (gs_flatpak_refine_app_state (flatpak_tmp, app, flags,
 							 cancellable, &error_local)) {
 				flatpak = flatpak_tmp;
 				break;

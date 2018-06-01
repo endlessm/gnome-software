@@ -1708,9 +1708,10 @@ gs_flatpak_create_fake_ref (GsApp *app, GError **error)
 
 gboolean
 gs_flatpak_refine_app_state (GsFlatpak *self,
-			      GsApp *app,
-			      GCancellable *cancellable,
-			      GError **error)
+			     GsApp *app,
+			     GsPluginRefineFlags flags,
+			     GCancellable *cancellable,
+			     GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) ref = NULL;
 	g_autoptr(GError) error_local = NULL;
@@ -1796,11 +1797,27 @@ gs_flatpak_refine_app_state (GsFlatpak *self,
 	 * unusable and we should show it as updatable in order for the runtime to be
 	 * installed */
 	if (gs_app_is_installed (app) && runtime != NULL && !gs_app_is_installed (runtime)) {
+		GError *local_error = NULL;
+		g_autoptr(GsPluginEvent) event = NULL;
+
 		g_debug ("App '%s' is installed but its runtime '%s' is not; setting the app"
 			 "as updatable for a chance to fix this", gs_app_get_unique_id (app),
 			 gs_app_get_unique_id (runtime));
+
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+
+		/* show event if needed */
+		if ((flags & GS_PLUGIN_REFINE_FLAGS_INTERACTIVE) != 0) {
+			event = gs_plugin_event_new ();
+			g_set_error (&local_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+				     _("The app %s is missing its runtime. "
+				       "Update the app to repair this problem."),
+				     gs_app_get_name (app));
+			gs_plugin_event_set_app (event, app);
+			gs_plugin_event_set_error (event, local_error);
+			gs_plugin_report_event (self->plugin, event);
+		}
 	}
 
 	/* success */
@@ -2074,6 +2091,7 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 		app_runtime = gs_app_get_runtime (app);
 		if (!gs_flatpak_refine_app_state (self,
 						  app_runtime,
+						  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 						  cancellable,
 						  error))
 			return FALSE;
@@ -2281,7 +2299,7 @@ gs_flatpak_refine_app (GsFlatpak *self,
 	}
 
 	/* check the installed state */
-	if (!gs_flatpak_refine_app_state (self, app, cancellable, error)) {
+	if (!gs_flatpak_refine_app_state (self, app, flags, cancellable, error)) {
 		g_prefix_error (error, "failed to get state: ");
 		return FALSE;
 	}
