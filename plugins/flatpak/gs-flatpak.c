@@ -2045,14 +2045,14 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 	}
 
 	/* if the app is installed but doesn't have its runtime installed, then it's
-	 * unusable and we should show it as available in order for the runtime to be
+	 * unusable and we should show it as updatable in order for the runtime to be
 	 * installed */
 	if (gs_app_is_installed (app) && runtime != NULL && !gs_app_is_installed (runtime)) {
 		g_debug ("App '%s' is installed but its runtime '%s' is not; setting the app"
-			 "as available for a chance to fix this", gs_app_get_unique_id (app),
+			 "as updatable for a chance to fix this", gs_app_get_unique_id (app),
 			 gs_app_get_unique_id (runtime));
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
 	}
 
 	/* success */
