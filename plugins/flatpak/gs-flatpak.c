@@ -1930,6 +1930,7 @@ gs_flatpak_create_fake_ref (GsApp *app, GError **error)
 static gboolean
 gs_plugin_refine_item_state (GsFlatpak *self,
 			     GsApp *app,
+			     GsPluginRefineFlags flags,
 			     GCancellable *cancellable,
 			     GError **error)
 {
@@ -2048,11 +2049,27 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 	 * unusable and we should show it as updatable in order for the runtime to be
 	 * installed */
 	if (gs_app_is_installed (app) && runtime != NULL && !gs_app_is_installed (runtime)) {
+		GError *local_error = NULL;
+		g_autoptr(GsPluginEvent) event = NULL;
+
 		g_debug ("App '%s' is installed but its runtime '%s' is not; setting the app"
 			 "as updatable for a chance to fix this", gs_app_get_unique_id (app),
 			 gs_app_get_unique_id (runtime));
+
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+
+		/* show event if needed */
+		if ((flags & GS_PLUGIN_REFINE_FLAGS_INTERACTIVE) != 0) {
+			event = gs_plugin_event_new ();
+			g_set_error (&local_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+				     _("The app %s is missing its runtime. "
+				       "Update the app to repair this problem."),
+				     gs_app_get_name (app));
+			gs_plugin_event_set_app (event, app);
+			gs_plugin_event_set_error (event, local_error);
+			gs_plugin_report_event (self->plugin, event);
+		}
 	}
 
 	/* success */
@@ -2347,6 +2364,7 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 		app_runtime = gs_app_get_runtime (app);
 		if (!gs_plugin_refine_item_state (self,
 						  app_runtime,
+						  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 						  cancellable,
 						  error))
 			return FALSE;
@@ -2513,7 +2531,7 @@ gs_flatpak_refine_app (GsFlatpak *self,
 	}
 
 	/* check the installed state */
-	if (!gs_plugin_refine_item_state (self, app, cancellable, error)) {
+	if (!gs_plugin_refine_item_state (self, app, flags, cancellable, error)) {
 		g_prefix_error (error, "failed to get state: ");
 		return FALSE;
 	}
@@ -2761,7 +2779,8 @@ gs_flatpak_get_list_for_remove (GsFlatpak *self, GsApp *app,
 			continue;
 		app_tmp = gs_flatpak_create_app (self, FLATPAK_REF (xref_related));
 		gs_app_set_origin (app_tmp, gs_app_get_origin (app));
-		if (!gs_plugin_refine_item_state (self, app_tmp, cancellable, &error_local)) {
+		if (!gs_plugin_refine_item_state (self, app_tmp, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+						  cancellable, &error_local)) {
 			if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 				g_propagate_error (error, g_steal_pointer (&error_local));
 				return NULL;
@@ -2864,7 +2883,8 @@ gs_flatpak_refine_runtime_for_install (GsFlatpak *self,
 		gs_utils_error_add_unique_id (error, runtime);
 		return FALSE;
 	}
-	if (!gs_plugin_refine_item_state (self, runtime, cancellable, error)) {
+	if (!gs_plugin_refine_item_state (self, runtime, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+					  cancellable, error)) {
 		gs_utils_error_add_unique_id (error, runtime);
 		return FALSE;
 	}
@@ -2949,7 +2969,8 @@ gs_flatpak_add_related_refs_to_list (GsFlatpak *self,
 		if (gs_app_get_origin (app_tmp) == NULL)
 			gs_app_set_origin (app_tmp, gs_app_get_origin (app));
 
-		if (!gs_plugin_refine_item_state (self, app_tmp, cancellable, &error_local)) {
+		if (!gs_plugin_refine_item_state (self, app_tmp, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+						  cancellable, &error_local)) {
 			if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 				g_propagate_error (error, g_steal_pointer (&error_local));
 				return FALSE;
@@ -3181,7 +3202,8 @@ gs_flatpak_app_remove (GsFlatpak *self,
 	}
 
 	/* refresh the state */
-	if (!gs_plugin_refine_item_state (self, app, cancellable, error))
+	if (!gs_plugin_refine_item_state (self, app, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+					  cancellable, error))
 		return FALSE;
 
 	/* success */
@@ -3440,7 +3462,9 @@ gs_flatpak_app_install (GsFlatpak *self,
 			}
 
 			/* get the new state */
-			if (!gs_plugin_refine_item_state (self, runtime, cancellable, error)) {
+			if (!gs_plugin_refine_item_state (self, runtime,
+							  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+							  cancellable, error)) {
 				g_prefix_error (error, "cannot refine runtime using %s: ",
 						gs_flatpak_app_get_repo_url (app_src));
 				gs_app_set_state_recover (app);
