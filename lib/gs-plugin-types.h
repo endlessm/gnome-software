@@ -126,6 +126,7 @@ typedef enum {
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS:		Require kudos
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING:	Require content rating
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE_DATA:		Require user and cache data sizes (Since: 41)
+ * @GS_PLUGIN_REFINE_FLAGS_INTERACTIVE:			Running by user request (Since: 41)
  * @GS_PLUGIN_REFINE_FLAGS_MASK:			All flags (Since: 40)
  *
  * The refine flags.
@@ -164,6 +165,7 @@ typedef enum {
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_DEVELOPER_NAME	= 1 << 29,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS		= 1 << 30,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING	= 1 << 31,
+	GS_PLUGIN_REFINE_FLAGS_INTERACTIVE		= (guint64) 1 << 32,
 	GS_PLUGIN_REFINE_FLAGS_MASK			= ~0,
 } GsPluginRefineFlags;
 
