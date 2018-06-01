@@ -59,7 +59,8 @@
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE | \
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE_DATA | \
 					GS_PLUGIN_REFINE_FLAGS_REQUIRE_URL | \
-					GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION
+					GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION | \
+					GS_PLUGIN_REFINE_FLAGS_INTERACTIVE
 
 static void gs_details_page_refresh_addons (GsDetailsPage *self);
 static void gs_details_page_refresh_all (GsDetailsPage *self);
