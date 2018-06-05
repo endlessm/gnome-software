@@ -138,6 +138,21 @@ sort_button_clicked (GtkButton *button, gpointer data)
 }
 
 static void
+gs_category_page_remove_apps_for_category (GsCategoryPage *self,
+					   GsCategory *category,
+					   GsAppList *apps_to_remove)
+{
+	GsAppList *list = g_hash_table_lookup (self->category_apps, category);
+	if (list == NULL)
+		return;
+
+	for (guint i = 0; i < gs_app_list_length (apps_to_remove); ++i) {
+		GsApp *app = gs_app_list_index (apps_to_remove, i);
+		gs_app_list_remove (list, app);
+	}
+}
+
+static void
 gs_category_page_get_apps_cb (GObject *source_object,
                               GAsyncResult *res,
                               gpointer user_data)
@@ -199,6 +214,24 @@ gs_category_page_get_apps_cb (GObject *source_object,
 			gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
 		}
 		gs_app_list_add (category_app_list, app);
+	}
+
+	/* if an app is no longer part of a category, remove it from there */
+	if (gs_app_list_length (category_app_list) != gs_app_list_length (list)) {
+		g_autoptr(GsAppList) apps_to_remove = gs_app_list_new ();
+		for (guint i = 0; i < gs_app_list_length (category_app_list); ++i) {
+			GsApp *app = gs_app_list_index (category_app_list, i);
+			if (gs_app_list_lookup (list, gs_app_get_unique_id (app)) == NULL) {
+				g_debug ("App %s is no longer in category %s::%s",
+					 gs_app_get_unique_id (app),
+					 gs_category_get_id (self->category),
+					 gs_category_get_id (self->subcategory));
+				gs_app_list_add (apps_to_remove, app);
+			}
+		}
+		gs_category_page_remove_apps_for_category (self,
+							   self->subcategory,
+							   apps_to_remove);
 	}
 
 	/* ensure the filter will show the apps, not the placeholders */
