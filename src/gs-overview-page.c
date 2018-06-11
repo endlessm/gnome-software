@@ -35,6 +35,7 @@
 #include "gs-common.h"
 
 #define N_TILES 35
+#define MIN_POPULAR_TILES 2
 
 typedef struct
 {
@@ -207,7 +208,7 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 	}
 
 	/* not enough to show */
-	if (gs_app_list_length (list) < N_TILES) {
+	if (gs_app_list_length (list) < MIN_POPULAR_TILES) {
 		g_warning ("Only %u apps for popular list, hiding",
 		           gs_app_list_length (list));
 		gtk_widget_set_visible (priv->box_popular, FALSE);
