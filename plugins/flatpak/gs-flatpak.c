@@ -69,6 +69,10 @@ static gboolean
 gs_flatpak_refresh_appstream (GsFlatpak *self, guint cache_age,
 			      GsPluginRefreshFlags flags,
 			      GCancellable *cancellable, GError **error);
+static gboolean
+gs_plugin_refine_item_metadata (GsFlatpak *self, GsApp *app,
+				GCancellable *cancellable,
+				GError **error);
 
 static gchar *
 gs_flatpak_build_id (FlatpakRef *xref)
@@ -1463,6 +1467,15 @@ get_real_app_for_update (GsFlatpak *self,
 	return main_app;
 }
 
+static gboolean
+gs_flatpak_app_needs_repair (GsApp *app)
+{
+	GsApp *runtime = gs_app_get_runtime (app);
+
+	return gs_app_is_installed (app) && runtime != NULL &&
+		!gs_app_is_installed (runtime);
+}
+
 gboolean
 gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 			GCancellable *cancellable,
@@ -1496,20 +1509,44 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 				 flatpak_ref_get_name (FLATPAK_REF (xref)));
 			continue;
 		}
-		if (g_strcmp0 (commit, latest_commit) == 0) {
-			g_debug ("no downloaded update for %s",
-				 flatpak_ref_get_name (FLATPAK_REF (xref)));
+
+		app = gs_flatpak_create_installed (self, xref, &error_local);
+		/* if we don't have a runtime set yet, then refine the metadata */
+		if (gs_app_get_runtime (app) == NULL &&
+		    !gs_plugin_refine_item_metadata (self,
+						     app,
+						     cancellable,
+						     &error_local)) {
+			g_debug ("Failed to refine state for app %s: %s",
+				 gs_app_get_unique_id (app),
+				 error_local->message);
 			continue;
 		}
-
-		/* we have an update to show */
-		g_debug ("%s has a downloaded update %s->%s",
-			 flatpak_ref_get_name (FLATPAK_REF (xref)),
-			 commit, latest_commit);
-		app = gs_flatpak_create_installed (self, xref, &error_local);
 		if (app == NULL) {
 			g_warning ("failed to add flatpak: %s", error_local->message);
 			continue;
+		}
+
+		/* if an installed app needs to be repaired, we add it to the updates
+		 * list too, so its chances of getting repaired increase (it gets more
+		 * noticeable to the user, and may be also automatically updated) */
+		if (gs_flatpak_app_needs_repair (app)) {
+			GsApp *runtime = gs_app_get_runtime (app);
+			g_debug ("%s is missing its runtime '%s'; making it "
+				 "updatable so it can be repaired",
+				 gs_app_get_unique_id (app),
+				 gs_app_get_unique_id (runtime));
+		} else {
+			if (g_strcmp0 (commit, latest_commit) == 0) {
+				g_debug ("no downloaded update for %s",
+					 flatpak_ref_get_name (FLATPAK_REF (xref)));
+				continue;
+			}
+
+			/* we have an update to show */
+			g_debug ("%s has a downloaded update %s->%s",
+				 flatpak_ref_get_name (FLATPAK_REF (xref)),
+				 commit, latest_commit);
 		}
 
 		main_app = get_real_app_for_update (self, app, cancellable, &error_local);
@@ -1927,9 +1964,18 @@ gs_flatpak_create_fake_ref (GsApp *app, GError **error)
 	return xref;
 }
 
+static void
+gs_flatpak_app_clear_repair_status (GsApp *app)
+{
+	if (gs_app_has_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE) &&
+	    gs_app_get_kind (app) == AS_APP_KIND_DESKTOP)
+		gs_app_remove_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+}
+
 static gboolean
 gs_plugin_refine_item_state (GsFlatpak *self,
 			     GsApp *app,
+			     GsPluginRefineFlags flags,
 			     GCancellable *cancellable,
 			     GError **error)
 {
@@ -1941,8 +1987,10 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 
 	/* already found */
 	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN &&
-	    (runtime == NULL || gs_app_is_installed (runtime)))
+	    (runtime == NULL || gs_app_is_installed (runtime))) {
+		gs_flatpak_app_clear_repair_status (app);
 		return TRUE;
+	}
 
 	/* need broken out metadata */
 	if (!gs_refine_item_metadata (self, app, cancellable, error))
@@ -2045,14 +2093,31 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 	}
 
 	/* if the app is installed but doesn't have its runtime installed, then it's
-	 * unusable and we should show it as available in order for the runtime to be
+	 * unusable and we should show it as updatable in order for the runtime to be
 	 * installed */
-	if (gs_app_is_installed (app) && runtime != NULL && !gs_app_is_installed (runtime)) {
+	if (gs_flatpak_app_needs_repair (app)) {
+		GError *local_error = NULL;
+		g_autoptr(GsPluginEvent) event = NULL;
+
 		g_debug ("App '%s' is installed but its runtime '%s' is not; setting the app"
-			 "as available for a chance to fix this", gs_app_get_unique_id (app),
+			 "as updatable for a chance to fix this", gs_app_get_unique_id (app),
 			 gs_app_get_unique_id (runtime));
+
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+
+		/* show event if needed */
+		if ((flags & GS_PLUGIN_REFINE_FLAGS_INTERACTIVE) != 0) {
+			event = gs_plugin_event_new ();
+			g_set_error (&local_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED,
+				     _("The app %s is missing its runtime. "
+				       "Update the app to repair this problem."),
+				     gs_app_get_name (app));
+			gs_plugin_event_set_app (event, app);
+			gs_plugin_event_set_error (event, local_error);
+			gs_plugin_report_event (self->plugin, event);
+		}
 	}
 
 	/* success */
@@ -2347,6 +2412,7 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 		app_runtime = gs_app_get_runtime (app);
 		if (!gs_plugin_refine_item_state (self,
 						  app_runtime,
+						  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 						  cancellable,
 						  error))
 			return FALSE;
@@ -2513,7 +2579,7 @@ gs_flatpak_refine_app (GsFlatpak *self,
 	}
 
 	/* check the installed state */
-	if (!gs_plugin_refine_item_state (self, app, cancellable, error)) {
+	if (!gs_plugin_refine_item_state (self, app, flags, cancellable, error)) {
 		g_prefix_error (error, "failed to get state: ");
 		return FALSE;
 	}
@@ -2761,7 +2827,8 @@ gs_flatpak_get_list_for_remove (GsFlatpak *self, GsApp *app,
 			continue;
 		app_tmp = gs_flatpak_create_app (self, FLATPAK_REF (xref_related));
 		gs_app_set_origin (app_tmp, gs_app_get_origin (app));
-		if (!gs_plugin_refine_item_state (self, app_tmp, cancellable, &error_local)) {
+		if (!gs_plugin_refine_item_state (self, app_tmp, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+						  cancellable, &error_local)) {
 			if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 				g_propagate_error (error, g_steal_pointer (&error_local));
 				return NULL;
@@ -2864,7 +2931,8 @@ gs_flatpak_refine_runtime_for_install (GsFlatpak *self,
 		gs_utils_error_add_unique_id (error, runtime);
 		return FALSE;
 	}
-	if (!gs_plugin_refine_item_state (self, runtime, cancellable, error)) {
+	if (!gs_plugin_refine_item_state (self, runtime, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+					  cancellable, error)) {
 		gs_utils_error_add_unique_id (error, runtime);
 		return FALSE;
 	}
@@ -2949,7 +3017,8 @@ gs_flatpak_add_related_refs_to_list (GsFlatpak *self,
 		if (gs_app_get_origin (app_tmp) == NULL)
 			gs_app_set_origin (app_tmp, gs_app_get_origin (app));
 
-		if (!gs_plugin_refine_item_state (self, app_tmp, cancellable, &error_local)) {
+		if (!gs_plugin_refine_item_state (self, app_tmp, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+						  cancellable, &error_local)) {
 			if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 				g_propagate_error (error, g_steal_pointer (&error_local));
 				return FALSE;
@@ -3181,7 +3250,8 @@ gs_flatpak_app_remove (GsFlatpak *self,
 	}
 
 	/* refresh the state */
-	if (!gs_plugin_refine_item_state (self, app, cancellable, error))
+	if (!gs_plugin_refine_item_state (self, app, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+					  cancellable, error))
 		return FALSE;
 
 	/* success */
@@ -3440,7 +3510,9 @@ gs_flatpak_app_install (GsFlatpak *self,
 			}
 
 			/* get the new state */
-			if (!gs_plugin_refine_item_state (self, runtime, cancellable, error)) {
+			if (!gs_plugin_refine_item_state (self, runtime,
+							  GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+							  cancellable, error)) {
 				g_prefix_error (error, "cannot refine runtime using %s: ",
 						gs_flatpak_app_get_repo_url (app_src));
 				gs_app_set_state_recover (app);

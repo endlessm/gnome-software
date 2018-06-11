@@ -149,6 +149,7 @@ typedef enum {
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_UI:		Require the origin for UI
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME:		Require the runtime
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS:		Require screenshot information
+ * @GS_PLUGIN_REFINE_FLAGS_INTERACTIVE:			Running by user request
  *
  * The refine flags.
  **/
@@ -180,6 +181,7 @@ typedef enum {
 #define GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_UI	((guint64) 1 << 24)
 #define GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME		((guint64) 1 << 25)
 #define GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS	((guint64) 1 << 26)
+#define GS_PLUGIN_REFINE_FLAGS_INTERACTIVE		((guint64) 1 << 27)
 typedef guint64 GsPluginRefineFlags;
 
 /**
