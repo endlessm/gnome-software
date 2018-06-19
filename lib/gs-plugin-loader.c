@@ -1732,6 +1732,100 @@ gs_plugin_loader_pending_apps_remove (GsPluginLoader *plugin_loader,
 	g_idle_add (emit_pending_apps_idle, g_object_ref (plugin_loader));
 }
 
+static gboolean
+load_install_queue (GsPluginLoader *plugin_loader, GError **error)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	guint i;
+	g_autofree gchar *contents = NULL;
+	g_autofree gchar *file = NULL;
+	g_auto(GStrv) names = NULL;
+	g_autoptr(GsAppList) list = NULL;
+
+	/* load from file */
+	file = g_build_filename (g_get_user_data_dir (),
+				 "gnome-software",
+				 "install-queue",
+				 NULL);
+	if (!g_file_test (file, G_FILE_TEST_EXISTS))
+		return TRUE;
+	g_debug ("loading install queue from %s", file);
+	if (!g_file_get_contents (file, &contents, NULL, error))
+		return FALSE;
+
+	/* add each app-id */
+	list = gs_app_list_new ();
+	names = g_strsplit (contents, "\n", 0);
+	for (i = 0; names[i]; i++) {
+		g_autoptr(GsApp) app = NULL;
+		if (strlen (names[i]) == 0)
+			continue;
+		app = gs_app_new (names[i]);
+		gs_app_set_state (app, AS_APP_STATE_QUEUED_FOR_INSTALL);
+
+		g_mutex_lock (&priv->pending_apps_mutex);
+		g_ptr_array_add (priv->pending_apps,
+				 g_object_ref (app));
+		g_mutex_unlock (&priv->pending_apps_mutex);
+
+		g_debug ("adding pending app %s", gs_app_get_unique_id (app));
+		gs_app_list_add (list, app);
+	}
+
+	/* refine */
+	if (gs_app_list_length (list) > 0) {
+		g_autoptr(GsPluginLoaderHelper) helper = NULL;
+		g_autoptr(GsPluginJob) plugin_job = NULL;
+		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE, NULL);
+		helper = gs_plugin_loader_helper_new (plugin_loader, plugin_job);
+		gs_plugin_job_set_failure_flags (helper->plugin_job,
+						 GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS);
+		if (!gs_plugin_loader_run_refine (helper, list, NULL, error))
+			return FALSE;
+	}
+	return TRUE;
+}
+
+static void
+save_install_queue (GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	GPtrArray *pending_apps;
+	gboolean ret;
+	gint i;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GString) s = NULL;
+	g_autofree gchar *file = NULL;
+
+	s = g_string_new ("");
+	pending_apps = priv->pending_apps;
+	g_mutex_lock (&priv->pending_apps_mutex);
+	for (i = (gint) pending_apps->len - 1; i >= 0; i--) {
+		GsApp *app;
+		app = g_ptr_array_index (pending_apps, i);
+		if (gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL) {
+			g_string_append (s, gs_app_get_id (app));
+			g_string_append_c (s, '\n');
+		}
+	}
+	g_mutex_unlock (&priv->pending_apps_mutex);
+
+	/* save file */
+	file = g_build_filename (g_get_user_data_dir (),
+				 "gnome-software",
+				 "install-queue",
+				 NULL);
+	if (!gs_mkdir_parent (file, &error)) {
+		g_warning ("failed to create dir for %s: %s",
+			   file, error->message);
+		return;
+	}
+	g_debug ("saving install queue to %s", file);
+	ret = g_file_set_contents (file, s->str, (gssize) s->len, &error);
+	if (!ret)
+		g_warning ("failed to save install queue: %s", error->message);
+}
+
 static void
 add_app_to_install_queue (GsPluginLoader *plugin_loader, GsApp *app)
 {
@@ -1748,6 +1842,7 @@ add_app_to_install_queue (GsPluginLoader *plugin_loader, GsApp *app)
 	gs_app_set_state (app, AS_APP_STATE_QUEUED_FOR_INSTALL);
 	id = g_idle_add (emit_pending_apps_idle, g_object_ref (plugin_loader));
 	g_source_set_name_by_id (id, "[gnome-software] emit_pending_apps_idle");
+	save_install_queue (plugin_loader);
 
 	/* recursively queue any addons */
 	addons = gs_app_get_addons (app);
@@ -1775,6 +1870,7 @@ remove_app_from_install_queue (GsPluginLoader *plugin_loader, GsApp *app)
 		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 		id = g_idle_add (emit_pending_apps_idle, g_object_ref (plugin_loader));
 		g_source_set_name_by_id (id, "[gnome-software] emit_pending_apps_idle");
+		save_install_queue (plugin_loader);
 
 		/* recursively remove any queued addons */
 		addons = gs_app_get_addons (app);
@@ -2516,6 +2612,9 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 		}
 	}
 
+	/* now we can load the install-queue */
+	if (!load_install_queue (plugin_loader, error))
+		return FALSE;
 	return TRUE;
 }
 
