@@ -545,7 +545,7 @@ gs_details_page_refresh_screenshots (GsDetailsPage *self)
 		gtk_widget_set_visible (self->box_details_screenshot,
 		                        screenshots->len > 0);
 		gtk_widget_set_visible (self->box_details_screenshot_fallback,
-		                        screenshots->len == 0);
+		                        screenshots->len == 0 && !is_offline);
 		return;
 	}
 
@@ -565,16 +565,13 @@ gs_details_page_refresh_screenshots (GsDetailsPage *self)
 		break;
 	default:
 		gtk_widget_set_visible (self->box_details_screenshot_fallback,
-					screenshots->len == 0);
+					screenshots->len == 0 && !is_offline);
 		break;
 	}
 
 	/* reset screenshots */
 	gs_container_remove_all (GTK_CONTAINER (self->box_details_screenshot_main));
 	gs_container_remove_all (GTK_CONTAINER (self->box_details_screenshot_thumbnails));
-
-	if (screenshots->len == 0)
-		return;
 
 	list = gtk_list_box_new ();
 	gtk_style_context_add_class (gtk_widget_get_style_context (list), "image-list");
@@ -600,6 +597,7 @@ gs_details_page_refresh_screenshots (GsDetailsPage *self)
 			/* when we're offline, the load will be immediate, so we
 			 * can check if it succeeded, and just skip it and its
 			 * thumbnails otherwise */
+
 			if (is_offline &&
 			    !gs_screenshot_image_is_showing (GS_SCREENSHOT_IMAGE (ssmain)))
 				continue;
