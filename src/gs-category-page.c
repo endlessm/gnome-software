@@ -28,6 +28,8 @@
 #include "gs-background-tile.h"
 #include "gs-category-page.h"
 
+#define MAX_PLACEHOLDER_TILES 30
+
 struct _GsCategoryPage
 {
 	GsPage		 parent_instance;
@@ -38,6 +40,8 @@ struct _GsCategoryPage
 	GsShell		*shell;
 	GsCategory	*category;
 	GsCategory	*subcategory;
+	GHashTable	*category_apps; /* (element-type GsCategory GsAppList) */
+	gint		 num_placeholders_to_show;
 
 	GtkWidget	*infobar_category_shell_extensions;
 	GtkWidget	*button_category_shell_extensions;
@@ -69,21 +73,50 @@ app_tile_clicked (GsAppTile *tile, gpointer data)
 	gs_shell_show_app (self->shell, app);
 }
 
+static gboolean
+gs_category_page_has_app (GsCategoryPage *self,
+			  GsApp *app)
+{
+	GHashTableIter iter;
+	gpointer value;
+	const gchar *id = gs_app_get_unique_id (app);
+
+	g_hash_table_iter_init (&iter, self->category_apps);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		GsAppList *list = value;
+		if (gs_app_list_lookup (list, id) != NULL)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+static void
+gs_category_page_remove_apps_for_category (GsCategoryPage *self,
+					   GsCategory *category,
+					   GsAppList *apps_to_remove)
+{
+	GsAppList *list = g_hash_table_lookup (self->category_apps, category);
+	if (list == NULL)
+		return;
+
+	for (guint i = 0; i < gs_app_list_length (apps_to_remove); ++i) {
+		GsApp *app = gs_app_list_index (apps_to_remove, i);
+		gs_app_list_remove (list, app);
+	}
+}
+
 static void
 gs_category_page_get_apps_cb (GObject *source_object,
                               GAsyncResult *res,
                               gpointer user_data)
 {
-	guint i;
-	GsApp *app;
 	GtkWidget *tile;
 	GsCategoryPage *self = GS_CATEGORY_PAGE (user_data);
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
-
-	/* show an empty space for no results */
-	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
+	GsAppList *category_app_list = NULL;
+	g_autoptr(GsAppList) new_app_list = NULL;
 
 	list = gs_plugin_loader_job_process_finish (plugin_loader,
 						    res,
@@ -94,14 +127,60 @@ gs_category_page_get_apps_cb (GObject *source_object,
 		return;
 	}
 
-	for (i = 0; i < gs_app_list_length (list); i++) {
-		app = gs_app_list_index (list, i);
-		tile = gs_background_tile_new (app);
-		g_signal_connect (tile, "clicked",
-				  G_CALLBACK (app_tile_clicked), self);
-		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
-		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
+	category_app_list = g_hash_table_lookup (self->category_apps, self->subcategory);
+	if (category_app_list == NULL) {
+		category_app_list = gs_app_list_new ();
+		g_hash_table_insert (self->category_apps, self->subcategory,
+				     category_app_list);
 	}
+
+	/* gather any new apps that may not be already in the category view */
+	new_app_list = gs_app_list_new ();
+	for (guint i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (gs_app_list_lookup (category_app_list, gs_app_get_unique_id (app)) != NULL)
+			continue;
+
+		gs_app_list_add (new_app_list, app);
+	}
+
+	/* add the new apps to the category */
+	for (guint i = 0; i < gs_app_list_length (new_app_list); i++) {
+		GsApp *app = gs_app_list_index (new_app_list, i);
+		/* new tiles are only created if they don't exist yet
+		 * (they may have been added from another category since an
+		 * app may be in several categories) */
+		if (!gs_category_page_has_app (self, app)) {
+			tile = gs_background_tile_new (app);
+			g_signal_connect (tile, "clicked",
+					  G_CALLBACK (app_tile_clicked), self);
+			gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
+			gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
+		}
+		gs_app_list_add (category_app_list, app);
+	}
+
+	/* if an app is no longer part of a category, remove it from there */
+	if (gs_app_list_length (category_app_list) != gs_app_list_length (list)) {
+		g_autoptr(GsAppList) apps_to_remove = gs_app_list_new ();
+		for (guint i = 0; i < gs_app_list_length (category_app_list); ++i) {
+			GsApp *app = gs_app_list_index (category_app_list, i);
+			if (gs_app_list_lookup (list, gs_app_get_unique_id (app)) == NULL) {
+				g_debug ("App %s is no longer in category %s::%s",
+					 gs_app_get_unique_id (app),
+					 gs_category_get_id (self->category),
+					 gs_category_get_id (self->subcategory));
+				gs_app_list_add (apps_to_remove, app);
+			}
+		}
+		gs_category_page_remove_apps_for_category (self,
+							   self->subcategory,
+							   apps_to_remove);
+	}
+
+	/* ensure the filter will show the apps, not the placeholders */
+	self->num_placeholders_to_show = -1;
+	gtk_flow_box_invalidate_filter (GTK_FLOW_BOX (self->category_detail_box));
 
 	/* seems a good place */
 	gs_shell_profile_dump (self->shell);
@@ -112,8 +191,6 @@ gs_category_page_reload (GsPage *page)
 {
 	GsCategoryPage *self = GS_CATEGORY_PAGE (page);
 	GtkAdjustment *adj = NULL;
-	GtkWidget *tile;
-	guint i, count;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	if (self->subcategory == NULL)
@@ -137,13 +214,10 @@ gs_category_page_reload (GsPage *page)
 		gtk_widget_set_visible (self->infobar_category_shell_extensions, FALSE);
 	}
 
-	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
-	count = MIN(30, gs_category_get_size (self->subcategory));
-	for (i = 0; i < count; i++) {
-		tile = gs_background_tile_new (NULL);
-		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
-		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
-	}
+	/* ensure the placeholders are shown */
+	self->num_placeholders_to_show = MIN (MAX_PLACEHOLDER_TILES,
+					      (gint) gs_category_get_size (self->subcategory));
+	gtk_flow_box_invalidate_filter (GTK_FLOW_BOX (self->category_detail_box));
 
 	/* scroll the list of apps to the beginning, otherwise it will show
 	 * with the previous scroll value */
@@ -197,7 +271,6 @@ gs_category_page_create_filter_list (GsCategoryPage *self,
 	GPtrArray *children;
 	GtkWidget *first_subcat = NULL;
 
-	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
 	gs_container_remove_all (GTK_CONTAINER (self->listbox_filter));
 
 	children = gs_category_get_children (category);
@@ -245,6 +318,38 @@ gs_category_page_get_category (GsCategoryPage *self)
 	return self->category;
 }
 
+static gboolean
+gs_category_page_filter_apps_func (GtkFlowBoxChild *child,
+				   gpointer user_data)
+{
+	GsCategoryPage *self = user_data;
+	GsApp *app = gs_app_tile_get_app (GS_APP_TILE (gtk_bin_get_child (GTK_BIN (child))));
+	GsAppList *category_apps = NULL;
+
+	if (self->subcategory == NULL)
+		return TRUE;
+
+	/* let's show as many placeholders as desired */
+	if (self->num_placeholders_to_show > -1) {
+		/* don't show normal app tiles if we're supposed to show placeholders*/
+		if (app != NULL)
+			return FALSE;
+
+		/* we cannot drop below 0 here, otherwise it will start showing
+		 * the regular app tiles */
+		if (self->num_placeholders_to_show > 0)
+			--self->num_placeholders_to_show;
+		return TRUE;
+	}
+
+	if (app == NULL)
+		return FALSE;
+
+	category_apps = g_hash_table_lookup (self->category_apps, self->subcategory);
+	return category_apps != NULL &&
+		gs_app_list_lookup (category_apps, gs_app_get_unique_id (app));
+}
+
 static void
 gs_category_page_init (GsCategoryPage *self)
 {
@@ -265,6 +370,8 @@ gs_category_page_dispose (GObject *object)
 	g_clear_object (&self->category);
 	g_clear_object (&self->subcategory);
 	g_clear_object (&self->plugin_loader);
+
+	g_clear_pointer (&self->category_apps, g_hash_table_unref);
 
 	G_OBJECT_CLASS (gs_category_page_parent_class)->dispose (object);
 }
@@ -321,11 +428,28 @@ gs_category_page_setup (GsPage *page,
 	self->plugin_loader = g_object_ref (plugin_loader);
 	self->builder = g_object_ref (builder);
 	self->shell = shell;
+	self->category_apps = g_hash_table_new_full (g_direct_hash,
+						     g_direct_equal,
+						     g_object_unref,
+						     g_object_unref);
 
 	g_signal_connect (self->listbox_filter, "row-selected", G_CALLBACK (filter_selected), self);
 
 	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_category));
 	gtk_container_set_focus_vadjustment (GTK_CONTAINER (self->category_detail_box), adj);
+
+	gtk_flow_box_set_filter_func (GTK_FLOW_BOX (self->category_detail_box),
+				      gs_category_page_filter_apps_func,
+				      page,
+				      NULL);
+
+	/* add the placeholder tiles already, to be shown when loading the category view */
+	for (guint i = 0; i < MAX_PLACEHOLDER_TILES; ++i) {
+		GtkWidget *tile = gs_background_tile_new (NULL);
+		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
+		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
+	}
+
 
 	g_signal_connect (self->listbox_filter, "key-press-event",
 			  G_CALLBACK (key_event), self);
