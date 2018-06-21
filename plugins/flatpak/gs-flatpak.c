@@ -1970,8 +1970,6 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 		return FALSE;
 	}
 
-	/* we always get this, but it's a low bar... */
-	gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED);
 	shared = g_key_file_get_string_list (kf, "Context", "shared", NULL, NULL);
 	if (shared != NULL) {
 		/* SHM isn't secure enough */
@@ -2003,6 +2001,8 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 		gs_app_set_runtime (app, app_runtime);
 	}
 
+	/* we always get this, but it's a low bar... */
+	gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED);
 	return TRUE;
 }
 
