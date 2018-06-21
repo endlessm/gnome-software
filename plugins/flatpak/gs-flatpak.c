@@ -2229,8 +2229,6 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 	}
 	g_debug ("runtime for %s is %s", name, runtime);
 
-	/* we always get this, but it's a low bar... */
-	gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED);
 	shared = g_key_file_get_string_list (kf, "Context", "shared", NULL, NULL);
 	if (shared != NULL) {
 		/* SHM isn't secure enough */
@@ -2263,6 +2261,8 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 		}
 	}
 
+	/* we always get this, but it's a low bar... */
+	gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED);
 	return TRUE;
 }
 
