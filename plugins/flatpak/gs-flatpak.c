@@ -1911,9 +1911,6 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 		return FALSE;
 	}
 
-	/* we always get this, but it's a low bar... */
-	gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED);
-
 	gs_flatpak_app_set_extra_data (app, g_key_file_has_group (kf, "Extra Data"));
 
 	shared = g_key_file_get_string_list (kf, "Context", "shared", NULL, NULL);
@@ -1946,6 +1943,9 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 		gs_plugin_refine_item_scope (self, app_runtime);
 		gs_app_set_runtime (app, app_runtime);
 	}
+
+	/* we always get this, but it's a low bar... */
+	gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED);
 
 	return TRUE;
 }
