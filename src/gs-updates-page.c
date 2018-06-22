@@ -629,6 +629,10 @@ _app_state_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data)
 	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED) {
 		gs_app_row_unreveal (app_row);
 	}
+
+       if (page->scheduler != NULL && mwsc_scheduler_get_allow_downloads (page->scheduler))
+		gtk_list_box_invalidate_sort (page->listboxes[GS_UPDATE_PAGE_SECTION_ONLINE]);
+
 	gs_updates_page_update_ui_state (page);
 }
 
@@ -645,6 +649,11 @@ _get_app_sort_key (GsApp *app)
 	 * 3. online apps (apps, runtimes, addons, other)
 	 * 4. online device firmware */
 	g_string_append_printf (key, "%u:", _get_app_section (app));
+
+	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLING)
+		g_string_append (key, "1:");
+	else
+		g_string_append (key, "2:");
 
 	/* sort apps by kind */
 	switch (gs_app_get_kind (app)) {
