@@ -649,15 +649,12 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 	helper->cancellable = g_object_ref (cancellable);
 	if (gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
-		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
-						 "app", app,
-						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
-						 NULL);
-		g_debug ("remove %s", gs_app_get_id (app));
-		gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
-						    helper->cancellable,
-						    gs_page_app_removed_cb,
-						    helper);
+
+		/* cancel any ongoing job, this allows to e.g. cancel pending
+		 * installations, updates, or other ops that may have been queued
+		 * in the plugin loader (due to reaching the max parallel ops allowed) */
+		g_cancellable_cancel (gs_app_get_cancellable (app));
+		gs_app_set_state_recover (app);
 		return;
 	}
 
