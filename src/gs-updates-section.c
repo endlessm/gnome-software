@@ -81,6 +81,12 @@ _app_state_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data)
 		GsAppRow *app_row = GS_APP_ROW (user_data);
 		_unreveal_row (app_row);
 	}
+
+#if 0
+	/* TODO: needs reworking for move from gs-updates-page.c */
+	if (page->scheduler != NULL && mwsc_scheduler_get_allow_downloads (page->scheduler))
+		gtk_list_box_invalidate_sort (GTK_LIST_BOX (self));
+#endif
 }
 
 void
@@ -132,6 +138,11 @@ _get_app_sort_key (GsApp *app)
 	GString *key;
 
 	key = g_string_sized_new (64);
+
+	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLING)
+		g_string_append (key, "1:");
+	else
+		g_string_append (key, "2:");
 
 	/* sort apps by kind */
 	switch (gs_app_get_kind (app)) {
