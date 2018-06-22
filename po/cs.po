@@ -6,12 +6,13 @@
 # Marek Černocký <marek@manet.cz>, 2013-2017
 # Petr Kovar <pknbe@volny.cz>, 2015
 # Roddy Shuler <roddy@endlessm.com>, 2017
+# Vendula Durakova, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-21 14:15-0700\n"
-"PO-Revision-Date: 2018-05-21 21:16+0000\n"
+"POT-Creation-Date: 2018-06-12 13:14-0700\n"
+"PO-Revision-Date: 2018-06-12 20:17+0000\n"
 "Last-Translator: Roddy Shuler <roddy@endlessm.com>\n"
 "Language-Team: Czech (http://www.transifex.com/endless-os/gnome-software/language/cs/)\n"
 "MIME-Version: 1.0\n"
@@ -96,14 +97,14 @@ msgstr "Když je vypnuto, Software GNOME skryje panel s aktualizacemi a nebude p
 
 #: data/org.gnome.software.gschema.xml:15
 msgid "Whether to automatically perform updates"
-msgstr ""
+msgstr "Zda automaticky provádět aktualizace"
 
 #: data/org.gnome.software.gschema.xml:16
 msgid ""
 "If enabled, GNOME Software automatically downloads and installs updates in "
 "the background (except for some app types like packages, where it prompts "
 "the user to install them when ready)."
-msgstr ""
+msgstr "Když je zapnuto, bude Software GNOME na pozadí automaticky stahovat a instalovat aktualizace (s výjímkou některých typů aplikací, jakou jsou balíčky, které uživatele vyzvou k instalaci, jakmile jsou připraveny)."
 
 #: data/org.gnome.software.gschema.xml:20
 msgid "Whether to automatically refresh when on a metered connection"
@@ -517,7 +518,7 @@ msgstr "Aktualizovat"
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:203 src/gs-app-row.c:212 src/gs-page.c:700
 msgid "Uninstall"
-msgstr ""
+msgstr "Odinstalovat"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -589,15 +590,15 @@ msgstr "%s (nainstalováno)"
 
 #: src/gs-background-tile.ui:81
 msgid "Scheduled update"
-msgstr ""
+msgstr "Plánované aktualizace"
 
 #: src/gs-background-tile.ui:95
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "K dispozici na USB disku"
 
 #: src/gs-background-tile.ui:109
 msgid "Requires download"
-msgstr ""
+msgstr "Vyžaduje stažení"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1171,7 +1172,7 @@ msgstr "_Instalovat…"
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:393 src/gs-details-page.ui:536
 msgid "_Uninstall"
-msgstr ""
+msgstr "_Odinstalovat"
 
 #: src/gs-details-page.c:461
 msgid "Removing…"
@@ -1179,60 +1180,60 @@ msgstr "Odebírá se…"
 
 #: src/gs-details-page.c:480
 msgid "Pending installation…"
-msgstr ""
+msgstr "Instalace čekající na zpracování..."
 
 #: src/gs-details-page.c:487
 msgid "Pending update…"
-msgstr ""
+msgstr "Aktualizace čekající na zpracování..."
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:801
+#: src/gs-details-page.c:844
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
 msgstr "Tuto aplikaci je možné používat, jen když je funkční připojení k Internetu."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:945
+#: src/gs-details-page.c:988
 msgctxt "version"
 msgid "Unknown"
 msgstr "Neznámá"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:981
+#: src/gs-details-page.c:1024
 msgctxt "updated"
 msgid "Never"
 msgstr "Nikdy"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1029
+#: src/gs-details-page.c:1072
 msgctxt "origin"
 msgid "Unknown"
 msgstr "Neznámý"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1438
+#: src/gs-details-page.c:1481
 msgid "You need internet access to write a review"
 msgstr "Abyste mohli napsat recenzi, musíte být připojeni k Internetu"
 
-#: src/gs-details-page.c:1567
+#: src/gs-details-page.c:1610
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "Nelze najít „%s“"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2171
+#: src/gs-details-page.c:2217
 msgid "Public domain"
 msgstr "Volné dílo"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2187 src/gs-details-page.ui:1386
+#: src/gs-details-page.c:2233 src/gs-details-page.ui:1386
 msgid "Free Software"
 msgstr "Svobodný software"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2244
+#: src/gs-details-page.c:2290
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Uživatelé jsou vázáni následující licencí:"
@@ -1240,7 +1241,7 @@ msgstr[1] "Uživatelé jsou vázáni následujícími licencemi:"
 msgstr[2] "Uživatelé jsou vázáni následujícími licencemi:"
 msgstr[3] "Uživatelé jsou vázáni následujícími licencemi:"
 
-#: src/gs-details-page.c:2260 src/gs-details-page.ui:1495
+#: src/gs-details-page.c:2306 src/gs-details-page.ui:1495
 msgid "More information"
 msgstr "Podrobné informace"
 
@@ -1252,13 +1253,13 @@ msgstr "Stránka s podrobnostmi"
 #. application.
 #: src/gs-details-page.ui:209
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_Přidat na Plochu"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:226
 msgid "_Remove from Desktop"
-msgstr ""
+msgstr "_Odstanit z Plochy"
 
 #. Translators: A label for a button to execute the selected application.
 #: src/gs-details-page.ui:259
@@ -1896,54 +1897,54 @@ msgid "There are no reviews to moderate"
 msgstr "Nejsou k dispozici žádné recenze k moderování"
 
 #. add button
-#: src/gs-overview-page.c:371
+#: src/gs-overview-page.c:372
 msgid "More…"
 msgstr "Více…"
 
 #. TRANSLATORS: this is a heading for audio applications which
 #. * have been featured ('recommended') by the distribution
-#: src/gs-overview-page.c:587
+#: src/gs-overview-page.c:588
 msgid "Recommended Audio & Video Applications"
 msgstr "Z kategorie zvuk a video doporučujeme"
 
 #. TRANSLATORS: this is a heading for games which have been
 #. * featured ('recommended') by the distribution
-#: src/gs-overview-page.c:592
+#: src/gs-overview-page.c:593
 msgid "Recommended Games"
 msgstr "Z her doporučujeme"
 
 #. TRANSLATORS: this is a heading for graphics applications
 #. * which have been featured ('recommended') by the distribution
-#: src/gs-overview-page.c:597
+#: src/gs-overview-page.c:598
 msgid "Recommended Graphics Applications"
 msgstr "Z kategorie grafika doporučujeme"
 
 #. TRANSLATORS: this is a heading for office applications which
 #. * have been featured ('recommended') by the distribution
-#: src/gs-overview-page.c:602
+#: src/gs-overview-page.c:603
 msgid "Recommended Productivity Applications"
 msgstr "Z kategorie kancelář doporučujeme"
 
 #. TRANSLATORS: this is the proprietary info bar
-#: src/gs-overview-page.c:991
+#: src/gs-overview-page.c:992
 msgid ""
 "Provides access to additional software, including web browsers and games."
 msgstr "Poskytuje přístup k dalšímu softwaru, včetně webových prohlížečů a her."
 
 #. TRANSLATORS: this is the proprietary info bar
-#: src/gs-overview-page.c:995
+#: src/gs-overview-page.c:996
 msgid ""
 "Proprietary software has restrictions on use and access to source code."
 msgstr "Nesvobodný software má omezení v tom, jak jej smíte používat, a v přístupu ke zdrojovým kódům."
 
 #. TRANSLATORS: this is the clickable
 #. * link on the proprietary info bar
-#: src/gs-overview-page.c:1002 src/gs-sources-dialog.c:290
+#: src/gs-overview-page.c:1003 src/gs-sources-dialog.c:290
 msgid "Find out more…"
 msgstr "Vyhledat další…"
 
 #. TRANSLATORS: button to turn on proprietary software sources
-#: src/gs-overview-page.c:1053
+#: src/gs-overview-page.c:1054
 msgid "Enable"
 msgstr "Povolit"
 
@@ -2290,7 +2291,7 @@ msgstr "Snímek není platný"
 msgid "Screenshot not available"
 msgstr "Snímek není k dispozici"
 
-#: src/gs-screenshot-image.c:620
+#: src/gs-screenshot-image.c:626
 msgid "Screenshot"
 msgstr "Snímek"
 
@@ -3087,11 +3088,11 @@ msgstr "Vyhledávají se nové aktualizace…"
 
 #: src/gs-updates-page.c:389
 msgid "automatic updates on"
-msgstr ""
+msgstr "automatické aktualizace zapnuty"
 
 #: src/gs-updates-page.c:392
 msgid "automatic updates off"
-msgstr ""
+msgstr "automatické aktualizace vypnuty"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:440
@@ -3297,15 +3298,15 @@ msgstr "_Dozvědět se více"
 
 #: src/gs-upgrade-banner.ui:98
 msgid "Updates will be applied when the computer is restarted."
-msgstr ""
+msgstr "Aktualizace budou aplikovány při restartování počítače."
 
 #: src/gs-upgrade-banner.ui:146
 msgid "_Restart Now"
-msgstr ""
+msgstr "_Restartovat nyní"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Centrum aplikací"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
@@ -3612,12 +3613,12 @@ msgstr "Diskuzní skupiny"
 #: plugins/core/gs-desktop-common.c:248
 msgctxt "Menu of Settings"
 msgid "Settings"
-msgstr ""
+msgstr "Nastavení"
 
 #: plugins/core/gs-desktop-common.c:257
 msgctxt "Menu of System"
 msgid "System"
-msgstr ""
+msgstr "Systém"
 
 #: plugins/core/gs-desktop-common.c:270 plugins/core/gs-desktop-common.c:314
 msgctxt "Menu of Reference"
@@ -3632,7 +3633,7 @@ msgstr "Významné"
 #: plugins/core/gs-desktop-common.c:276
 msgctxt "Menu of Reference"
 msgid "Art"
-msgstr ""
+msgstr "Umění"
 
 #: plugins/core/gs-desktop-common.c:279
 msgctxt "Menu of Reference"
@@ -3697,7 +3698,7 @@ msgstr "Hry"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:330
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimédia"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:333
@@ -3723,7 +3724,7 @@ msgstr "Vývojářské nástroje"
 
 #: plugins/core/gs-desktop-common.c:346
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/core/gs-plugin-appstream.c:693
@@ -3747,20 +3748,20 @@ msgstr "Zahrnuje zdokonalení výkonu, stability a bezpečnosti."
 msgid "Downloading featured images…"
 msgstr "Stahují se obrázky k významným aplikacím…"
 
-#: plugins/eos/gs-plugin-eos.c:1902
+#: plugins/eos/gs-plugin-eos.c:1917
 #, c-format
 msgid "Could not launch this application."
-msgstr ""
+msgstr "Aplikaci nešlo spustit."
 
-#: plugins/eos/gs-plugin-eos.c:1959
+#: plugins/eos/gs-plugin-eos.c:1974
 msgid "Endless Platform"
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:1962
+#: plugins/eos/gs-plugin-eos.c:1977
 msgid "Framework for applications"
 msgstr ""
 
-#: plugins/eos/gs-plugin-eos.c:2111
+#: plugins/eos/gs-plugin-eos.c:2126
 msgid "An Endless update with new features and fixes."
 msgstr ""
 
@@ -3820,13 +3821,19 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak je systém pro provozování aplikací na Linuxu"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:867
+#: plugins/flatpak/gs-flatpak.c:871
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "Získávají se metadata Flatpak pro %s…"
 
+#: plugins/flatpak/gs-flatpak.c:2114
+#, c-format
+msgid ""
+"The app %s is missing its runtime. Update the app to repair this problem."
+msgstr ""
+
 #. TRANSLATORS: status text when downloading the RuntimeRepo
-#: plugins/flatpak/gs-flatpak.c:3158
+#: plugins/flatpak/gs-flatpak.c:3274
 msgid "Getting runtime source…"
 msgstr "Získávají se zdroje běhových prostředí…"
 
