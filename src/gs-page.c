@@ -505,16 +505,7 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 		 * installations, updates, or other ops that may have been queued
 		 * in the plugin loader (due to reaching the max parallel ops allowed) */
 		g_cancellable_cancel (gs_app_get_cancellable (app));
-
-		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
-						 "interactive", TRUE,
-						 "app", app,
-							 NULL);
-		g_debug ("remove %s", gs_app_get_id (app));
-		gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
-						    helper->cancellable,
-						    gs_page_app_removed_cb,
-						    helper);
+		gs_app_set_state_recover (app);
 		return;
 	}
 
