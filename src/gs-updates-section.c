@@ -93,6 +93,10 @@ _app_state_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data)
 	}
 
 	g_signal_emit (updates_section, signals[SIGNAL_APP_STATE_CHANGED], 0, app);
+
+	/* The app state affects sorting, as the apps which are currently being
+	 * installed are ordered at the top of the list. */
+	gtk_list_box_invalidate_sort (GTK_LIST_BOX (updates_section));
 }
 
 void
@@ -144,6 +148,11 @@ _get_app_sort_key (GsApp *app)
 	GString *key;
 
 	key = g_string_sized_new (64);
+
+	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLING)
+		g_string_append (key, "1:");
+	else
+		g_string_append (key, "2:");
 
 	/* sort apps by kind */
 	switch (gs_app_get_kind (app)) {
