@@ -71,6 +71,7 @@ typedef struct
 
 static void gs_plugin_loader_monitor_network (GsPluginLoader *plugin_loader);
 static void add_app_to_install_queue (GsPluginLoader *plugin_loader, GsApp *app);
+static gboolean remove_app_from_install_queue (GsPluginLoader *plugin_loader, GsApp *app);
 static void gs_plugin_loader_process_in_thread_pool_cb (gpointer data, gpointer user_data);
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsPluginLoader, gs_plugin_loader, G_TYPE_OBJECT)
@@ -1976,6 +1977,18 @@ load_install_queue (GsPluginLoader *plugin_loader, GError **error)
 }
 
 static void
+pending_app_state_changed_cb (GsApp *app,
+			      GParamSpec *pspec,
+			      GsPluginLoader *plugin_loader)
+{
+	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLING ||
+	    gs_app_get_state (app) != AS_APP_STATE_QUEUED_FOR_INSTALL)
+		return;
+
+	remove_app_from_install_queue (plugin_loader, app);
+}
+
+static void
 add_app_to_install_queue (GsPluginLoader *plugin_loader, GsApp *app)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
@@ -1992,6 +2005,10 @@ add_app_to_install_queue (GsPluginLoader *plugin_loader, GsApp *app)
 	id = g_idle_add (emit_pending_apps_idle, g_object_ref (plugin_loader));
 	g_source_set_name_by_id (id, "[gnome-software] emit_pending_apps_idle");
 	save_install_queue (plugin_loader);
+
+	g_signal_connect (app, "notify::state",
+			  G_CALLBACK (pending_app_state_changed_cb),
+			  plugin_loader);
 
 	/* recursively queue any addons */
 	addons = gs_app_get_addons (app);
@@ -2014,6 +2031,9 @@ remove_app_from_install_queue (GsPluginLoader *plugin_loader, GsApp *app)
 	g_mutex_lock (&priv->pending_apps_mutex);
 	ret = (gs_app_list_lookup (priv->pending_apps, gs_app_get_unique_id (app)) != NULL);
 	gs_app_list_remove (priv->pending_apps, app);
+	g_signal_handlers_disconnect_by_func (app,
+					      G_CALLBACK (pending_app_state_changed_cb),
+					      plugin_loader);
 	g_mutex_unlock (&priv->pending_apps_mutex);
 
 	if (ret) {
@@ -3052,6 +3072,18 @@ gs_plugin_loader_dispose (GObject *object)
 	g_clear_object (&priv->volume_monitor);
 	g_list_free_full (priv->removable_mounts, g_object_unref);
 	priv->removable_mounts = NULL;
+
+	if (priv->pending_apps != NULL) {
+		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->pending_apps_mutex);
+
+		for (guint i = 0; i < gs_app_list_length (priv->pending_apps); ++i) {
+			GsApp *app = gs_app_list_index (priv->pending_apps, i);
+			g_signal_handlers_disconnect_by_func (app,
+							      G_CALLBACK (pending_app_state_changed_cb),
+							      plugin_loader);
+		}
+	}
+
 	g_clear_object (&priv->network_monitor);
 	g_clear_object (&priv->soup_session);
 	g_clear_object (&priv->settings);
@@ -3848,16 +3880,7 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 		return;
 	}
 
-	/* deal with the install queue */
 	action = gs_plugin_job_get_action (plugin_job);
-	if (action == GS_PLUGIN_ACTION_REMOVE) {
-		if (remove_app_from_install_queue (plugin_loader, gs_plugin_job_get_app (plugin_job))) {
-			GsAppList *list = gs_plugin_job_get_list (plugin_job);
-			task = g_task_new (plugin_loader, cancellable, callback, user_data);
-			g_task_return_pointer (task, g_object_ref (list), (GDestroyNotify) g_object_unref);
-			return;
-		}
-	}
 
 	/* hardcoded, so resolve a set list */
 	if (action == GS_PLUGIN_ACTION_GET_POPULAR) {
