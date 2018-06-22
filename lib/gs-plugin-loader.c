@@ -3065,7 +3065,7 @@ gs_plugin_loader_dispose (GObject *object)
 	g_clear_object (&priv->soup_session);
 	g_clear_object (&priv->settings);
 	g_clear_pointer (&priv->auth_array, g_ptr_array_unref);
-	g_clear_pointer (&priv->pending_apps, g_ptr_array_unref);
+	g_clear_object (&priv->pending_apps);
 
 	G_OBJECT_CLASS (gs_plugin_loader_parent_class)->dispose (object);
 }
