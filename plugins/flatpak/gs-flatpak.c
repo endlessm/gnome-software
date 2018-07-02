@@ -2274,6 +2274,7 @@ gs_flatpak_fetch_remote_metadata (GsFlatpak *self,
 {
 	g_autoptr(GBytes) data = NULL;
 	g_autoptr(FlatpakRef) xref = NULL;
+	g_autoptr(GError) local_error = NULL;
 
 	/* no origin */
 	if (gs_app_get_origin (app) == NULL) {
@@ -2293,9 +2294,17 @@ gs_flatpak_fetch_remote_metadata (GsFlatpak *self,
 								gs_app_get_origin (app),
 								xref,
 								cancellable,
-								error);
+								&local_error);
 	if (data == NULL) {
-		gs_flatpak_error_convert (error);
+		GError original_error = *local_error;
+		gs_flatpak_error_convert (&local_error);
+		/* check if we should return a plugin's network error instead of a
+		 * generic one */
+		if (!gs_plugin_get_network_available (self->plugin) &&
+		    g_error_matches (&original_error, G_IO_ERROR, G_IO_ERROR_FAILED)) {
+			local_error->code = GS_PLUGIN_ERROR_NO_NETWORK;
+		}
+		g_propagate_error (error, g_steal_pointer (&local_error));
 		return NULL;
 	}
 	return g_steal_pointer (&data);
@@ -2601,10 +2610,21 @@ gs_flatpak_refine_app (GsFlatpak *self,
 
 	/* size */
 	if (flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE) {
+		g_autoptr(GError) local_error = NULL;
 		if (!gs_plugin_refine_item_size (self, app,
-						 cancellable, error)) {
-			g_prefix_error (error, "failed to get size: ");
-			return FALSE;
+						 cancellable, &local_error)) {
+			if (!gs_plugin_get_network_available (self->plugin) &&
+			    g_error_matches (local_error, GS_PLUGIN_ERROR,
+					     GS_PLUGIN_ERROR_NO_NETWORK)) {
+				g_warning ("failed to get size while "
+					   "refining app %s: %s",
+					   gs_app_get_unique_id (app),
+					   local_error->message);
+			} else {
+				g_prefix_error (&local_error, "failed to get size: ");
+				g_propagate_error (error, g_steal_pointer (&local_error));
+				return FALSE;
+			}
 		}
 	}
 
@@ -2621,10 +2641,21 @@ gs_flatpak_refine_app (GsFlatpak *self,
 	/* permissions */
 	if (flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME ||
 	    flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS) {
+		g_autoptr(GError) local_error = NULL;
 		if (!gs_plugin_refine_item_metadata (self, app,
-						     cancellable, error)) {
-			g_prefix_error (error, "failed to get permissions: ");
-			return FALSE;
+						     cancellable, &local_error)) {
+			if (!gs_plugin_get_network_available (self->plugin) &&
+			    g_error_matches (local_error, GS_PLUGIN_ERROR,
+					     GS_PLUGIN_ERROR_NO_NETWORK)) {
+				g_warning ("failed to get permissions while "
+					   "refining app %s: %s",
+					   gs_app_get_unique_id (app),
+					   local_error->message);
+			} else {
+				g_prefix_error (&local_error, "failed to get permissions: ");
+				g_propagate_error (error, g_steal_pointer (&local_error));
+				return FALSE;
+			}
 		}
 	}
 
