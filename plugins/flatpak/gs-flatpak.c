@@ -2014,6 +2014,7 @@ gs_flatpak_fetch_remote_metadata (GsFlatpak *self,
 {
 	g_autoptr(GBytes) data = NULL;
 	g_autoptr(FlatpakRef) xref = NULL;
+	g_autoptr(GError) local_error = NULL;
 
 	/* no origin */
 	if (gs_app_get_origin (app) == NULL) {
@@ -2033,9 +2034,17 @@ gs_flatpak_fetch_remote_metadata (GsFlatpak *self,
 								gs_app_get_origin (app),
 								xref,
 								cancellable,
-								error);
+								&local_error);
 	if (data == NULL) {
-		gs_flatpak_error_convert (error);
+		GError original_error = *local_error;
+		gs_flatpak_error_convert (&local_error);
+		/* check if we should return a plugin's network error instead of a
+		 * generic one */
+		if (!gs_plugin_get_network_available (self->plugin) &&
+		    g_error_matches (&original_error, G_IO_ERROR, G_IO_ERROR_FAILED)) {
+			local_error->code = GS_PLUGIN_ERROR_NO_NETWORK;
+		}
+		g_propagate_error (error, g_steal_pointer (&local_error));
 		return NULL;
 	}
 	return g_steal_pointer (&data);
