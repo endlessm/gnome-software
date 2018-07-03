@@ -771,6 +771,11 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	if (as_app_has_category (item, "featured"))
 		gs_app_add_kudo (app, GS_APP_KUDO_FEATURED_RECOMMENDED);
 
+	/* Mark com.endlessm. apps with featured kudo. See discussion on T23152 */
+	if (!gs_app_has_kudo (app, GS_APP_KUDO_FEATURED_RECOMMENDED) &&
+	     g_str_has_prefix (gs_app_get_id (app), "com.endlessm."))
+		gs_app_add_kudo (app, GS_APP_KUDO_FEATURED_RECOMMENDED);
+
 	/* add new-style kudos */
 	kudos = as_app_get_kudos (item);
 	for (i = 0; i < kudos->len; i++) {
