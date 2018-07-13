@@ -1041,4 +1041,22 @@ gs_utils_get_memory_total (void)
 	return si.totalram / MB_IN_BYTES / si.mem_unit;
 }
 
+/**
+ * gs_utils_update_install_timestamp:
+ *
+ * Sets the value of install-timestamp to current epoch. "install-timestamp" represents
+ * the last time we had an update or upgrade.
+ *
+ **/
+void
+gs_utils_update_install_timestamp (GSettings *settings)
+{
+	g_autoptr(GDateTime) now = NULL;
+
+	g_return_if_fail (settings != NULL);
+
+	now = g_date_time_new_now_local ();
+	g_settings_set (settings, "install-timestamp", "x", g_date_time_to_unix (now));
+}
+
 /* vim: set noexpandtab: */

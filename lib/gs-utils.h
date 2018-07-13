@@ -91,6 +91,7 @@ void		 gs_utils_append_key_value	(GString	*str,
 						 const gchar	*key,
 						 const gchar	*value);
 guint		 gs_utils_get_memory_total	(void);
+void		 gs_utils_update_install_timestamp (GSettings *settings);
 
 G_END_DECLS
 
