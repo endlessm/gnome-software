@@ -1185,3 +1185,21 @@ gs_utils_parse_evr (const gchar *evr,
 	g_assert (*out_release != NULL);
 	return TRUE;
 }
+
+/**
+ * gs_utils_update_install_timestamp:
+ *
+ * Sets the value of install-timestamp to current epoch. "install-timestamp" represents
+ * the last time we had an update or upgrade.
+ *
+ **/
+void
+gs_utils_update_install_timestamp (GSettings *settings)
+{
+	g_autoptr(GDateTime) now = NULL;
+
+	g_return_if_fail (settings != NULL);
+
+	now = g_date_time_new_now_local ();
+	g_settings_set (settings, "install-timestamp", "x", g_date_time_to_unix (now));
+}
