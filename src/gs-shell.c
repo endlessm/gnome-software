@@ -2427,6 +2427,7 @@ gs_shell_show_local_file (GsShell *shell, GFile *file)
 	gs_app_set_local_file (app, file);
 	gs_shell_change_mode (shell, GS_SHELL_MODE_DETAILS,
 			      app, TRUE);
+	gs_shell_activate (shell);
 }
 
 void
