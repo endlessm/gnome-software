@@ -71,6 +71,9 @@ typedef struct
 
 	GNetworkMonitor		*network_monitor;
 	gulong			 network_changed_handler;
+
+	GVolumeMonitor		*volume_monitor;
+	GList			*removable_mounts;
 } GsPluginLoaderPrivate;
 
 static void gs_plugin_loader_monitor_network (GsPluginLoader *plugin_loader);
@@ -93,6 +96,7 @@ enum {
 	PROP_EVENTS,
 	PROP_ALLOW_UPDATES,
 	PROP_NETWORK_AVAILABLE,
+	PROP_COPY_DESTS,
 	PROP_LAST
 };
 
@@ -180,6 +184,17 @@ typedef gboolean	 (*GsPluginUpdateFunc)		(GsPlugin	*plugin,
 							 GError		**error);
 typedef void		 (*GsPluginAdoptAppFunc)	(GsPlugin	*plugin,
 							 GsApp		*app);
+typedef gboolean	 (*GsPluginGetCopyableFunc)	(GsPlugin	*plugin,
+							 GsApp		*app,
+							 const gchar	*copy_dest,
+							 gboolean	*result,
+							 GCancellable	*cancellable,
+							 GError		**error);
+typedef gboolean	 (*GsPluginCopyFunc)		(GsPlugin	*plugin,
+							 GsApp		*app,
+							 const gchar	*copy_dest,
+							 GCancellable	*cancellable,
+							 GError		**error);
 
 /* async helper */
 typedef struct {
@@ -195,6 +210,7 @@ typedef struct {
 	guint				 timeout_id;
 	gboolean			 timeout_triggered;
 	gchar				**tokens;
+	gboolean			 boolean_retval;
 } GsPluginLoaderHelper;
 
 static GsPluginLoaderHelper *
@@ -734,6 +750,24 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 			GsPluginAuthFunc plugin_func = func;
 			ret = plugin_func (plugin,
 					   gs_plugin_job_get_auth (helper->plugin_job),
+					   cancellable, &error_local);
+		}
+		break;
+	case GS_PLUGIN_ACTION_GET_COPYABLE:
+		{
+			const gchar *copy_dest = gs_plugin_job_get_copy_dest (helper->plugin_job);
+			GsPluginGetCopyableFunc plugin_func = func;
+
+			ret = plugin_func (plugin, app, copy_dest,
+					   &helper->boolean_retval,
+					   cancellable, &error_local);
+		}
+		break;
+	case GS_PLUGIN_ACTION_COPY:
+		{
+			GsPluginCopyFunc plugin_func = func;
+			ret = plugin_func (plugin, app,
+					   gs_plugin_job_get_copy_dest (helper->plugin_job),
 					   cancellable, &error_local);
 		}
 		break;
@@ -1674,6 +1708,99 @@ gs_plugin_loader_job_get_categories_finish (GsPluginLoader *plugin_loader,
 	return g_task_propagate_pointer (G_TASK (res), error);
 }
 
+
+static gboolean
+gs_plugin_loader_app_get_copyable_run (GsPluginLoaderHelper *helper,
+				       GCancellable *cancellable,
+				       GError **error)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (helper->plugin_loader);
+	GsApp *app = gs_plugin_job_get_app (helper->plugin_job);
+
+	/* run each plugin */
+	for (guint i = 0; i < priv->plugins->len; i++) {
+		GsPlugin *plugin = g_ptr_array_index (priv->plugins, i);
+		if (g_cancellable_set_error_if_cancelled (cancellable, error)) {
+			gs_utils_error_convert_gio (error);
+			return FALSE;
+		}
+
+		helper->function_name = "gs_plugin_app_get_copyable";
+		if (!gs_plugin_loader_call_vfunc (helper, plugin, app, NULL,
+						  cancellable, error)) {
+			return FALSE;
+		}
+		gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_FINISHED);
+	}
+
+	return TRUE;
+}
+
+static void
+gs_plugin_loader_job_app_get_copyable_thread_cb (GTask *task,
+						 gpointer object,
+						 gpointer task_data,
+						 GCancellable *cancellable)
+{
+	GError *error = NULL;
+	GsPluginLoaderHelper *helper = (GsPluginLoaderHelper *) task_data;
+
+	if (!gs_plugin_loader_app_get_copyable_run (helper, cancellable, &error)) {
+		g_task_return_error (task, error);
+		return;
+	}
+
+	g_task_return_boolean (task, helper->boolean_retval);
+}
+
+/**
+ * gs_plugin_loader_job_app_get_copyable_async:
+ *
+ * This method calls gs_plugin_app_get_copyable() for the @plugin belonging to
+ * @plugin_job if the plugin implements it.
+ **/
+void
+gs_plugin_loader_job_app_get_copyable_async (GsPluginLoader *plugin_loader,
+					     GsPluginJob *plugin_job,
+					     GCancellable *cancellable,
+					     GAsyncReadyCallback callback,
+					     gpointer user_data)
+{
+	GsPluginLoaderHelper *helper;
+	g_autoptr(GTask) task = NULL;
+
+	g_return_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader));
+	g_return_if_fail (GS_IS_PLUGIN_JOB (plugin_job));
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+	/* save helper */
+	helper = gs_plugin_loader_helper_new (plugin_loader, plugin_job);
+
+	/* run in a thread */
+	task = g_task_new (plugin_loader, cancellable, callback, user_data);
+	g_task_set_task_data (task, helper, (GDestroyNotify) gs_plugin_loader_helper_free);
+	g_task_run_in_thread (task, gs_plugin_loader_job_app_get_copyable_thread_cb);
+}
+
+/**
+ * gs_plugin_loader_job_app_get_copyable_finish:
+ *
+ * Return value: the value of the plugin's gs_plugin_app_get_copyable(), if it
+ * exists, or %FALSE if not.
+ **/
+gboolean
+gs_plugin_loader_job_app_get_copyable_finish (GsPluginLoader *plugin_loader,
+					      GAsyncResult *res,
+					      GError **error)
+{
+	g_return_val_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader), FALSE);
+	g_return_val_if_fail (G_IS_TASK (res), FALSE);
+	g_return_val_if_fail (g_task_is_valid (res, plugin_loader), FALSE);
+	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+
+	return g_task_propagate_boolean (G_TASK (res), error);
+}
+
 /******************************************************************************/
 
 static gboolean
@@ -2336,6 +2463,96 @@ gs_plugin_loader_setup_again (GsPluginLoader *plugin_loader)
 	}
 }
 
+static GMount*
+find_mount_in_list (GList  *mounts, GMount *needle)
+{
+	g_autofree gchar* uuid_needle = g_mount_get_uuid (needle);
+
+	for (GList *l = mounts; l; l = l->next) {
+		g_autofree gchar *uuid_cur = g_mount_get_uuid (l->data);
+
+		if (g_strcmp0 (uuid_needle, uuid_cur) == 0)
+			return l->data;
+	}
+
+	return NULL;
+}
+
+static GList*
+mounts_dup_as_paths (GList *mounts)
+{
+	GList *paths = NULL;
+
+	for (GList *l = mounts; l; l = l->next) {
+		g_autoptr(GFile) root = g_mount_get_root (l->data);
+
+		if (root)
+			paths = g_list_append (paths, g_file_get_path (root));
+	}
+
+	return paths;
+}
+
+static void
+mount_added_cb (GVolumeMonitor *volume_monitor,
+		GMount *mount,
+		GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	g_autoptr(GDrive) drive = g_mount_get_drive (mount);
+	g_autoptr(GMount) existing_mount = NULL;
+
+	if (!g_drive_is_removable (drive))
+		return;
+
+	existing_mount = find_mount_in_list (priv->removable_mounts, mount);
+
+	/* update the list to remove any equivalent mounts and move this to the
+	 * front so we prioritize mounts by recency
+	 */
+	if (existing_mount)
+		priv->removable_mounts = g_list_remove (priv->removable_mounts,
+							existing_mount);
+
+	priv->removable_mounts = g_list_prepend (priv->removable_mounts,
+						 g_object_ref (mount));
+
+	g_object_notify (G_OBJECT (plugin_loader), "copy-dests");
+}
+
+static void
+mount_removed_cb (GVolumeMonitor *volume_monitor,
+		  GMount *mount,
+		  GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	GMount *existing_mount = find_mount_in_list (priv->removable_mounts,
+						     mount);
+	if (existing_mount) {
+		priv->removable_mounts = g_list_remove (priv->removable_mounts,
+							existing_mount);
+		g_object_notify (G_OBJECT (plugin_loader), "copy-dests");
+	}
+}
+
+/**
+ * gs_plugin_loader_get_copy_dests:
+ * @plugin_loader: a #GsPluginLoader
+ *
+ * Get the currently-valid list of copy destinations. Note this list is subject
+ * to change so you should also connect to the "copy-dests-changed" signal to be
+ * informed of updates.
+ *
+ * Returns: (transfer full): a #GList of strings of currently-valid copy
+ * destinations
+ */
+GList *
+gs_plugin_loader_dup_copy_dests (GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	return mounts_dup_as_paths (priv->removable_mounts);
+}
+
 /**
  * gs_plugin_loader_setup:
  * @plugin_loader: a #GsPluginLoader
@@ -2369,6 +2586,7 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(GsPluginLoaderHelper) helper = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GList *mounts = NULL;
 
 	/* use the default, but this requires a 'make install' */
 	if (priv->locations->len == 0) {
@@ -2391,6 +2609,17 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 				  G_CALLBACK (gs_plugin_loader_plugin_dir_changed_cb), plugin_loader);
 		g_ptr_array_add (priv->file_monitors, monitor);
 	}
+
+	priv->volume_monitor = g_volume_monitor_get ();
+	priv->removable_mounts = NULL;
+	g_signal_connect (priv->volume_monitor, "mount-added",
+			  G_CALLBACK (mount_added_cb), plugin_loader);
+	g_signal_connect (priv->volume_monitor, "mount-removed",
+			  G_CALLBACK (mount_removed_cb), plugin_loader);
+	mounts = g_volume_monitor_get_mounts (priv->volume_monitor);
+	for (GList *l = mounts; l; l = l->next)
+		mount_added_cb (priv->volume_monitor, l->data, plugin_loader);
+	g_list_free_full (mounts, g_object_unref);
 
 	/* search for plugins */
 	ptask = as_profile_start_literal (priv->profile, "GsPlugin::setup");
@@ -2721,6 +2950,10 @@ gs_plugin_loader_dispose (GObject *object)
 							      plugin_loader);
 		}
 	}
+	g_signal_handlers_disconnect_by_func (priv->volume_monitor, mount_added_cb, plugin_loader);
+	g_signal_handlers_disconnect_by_func (priv->volume_monitor, mount_removed_cb, plugin_loader);
+	g_clear_object (&priv->volume_monitor);
+	g_list_free_full (priv->removable_mounts, g_object_unref);
 	g_clear_object (&priv->network_monitor);
 	g_clear_object (&priv->soup_session);
 	g_clear_object (&priv->profile);
@@ -2777,6 +3010,9 @@ gs_plugin_loader_class_init (GsPluginLoaderClass *klass)
 				      FALSE,
 				      G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_NETWORK_AVAILABLE, pspec);
+
+	pspec = g_param_spec_pointer ("copy-dests", NULL, NULL, G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_COPY_DESTS, pspec);
 
 	signals [SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
