@@ -32,6 +32,7 @@ struct _GsPluginLoaderClass
 	void			(*pending_apps_changed)	(GsPluginLoader	*plugin_loader);
 	void			(*updates_changed)	(GsPluginLoader	*plugin_loader);
 	void			(*reload)		(GsPluginLoader	*plugin_loader);
+	void			(*copy_dests_changed)	(GsPluginLoader	*plugin_loader);
 };
 
 GsPluginLoader	*gs_plugin_loader_new			(void);
@@ -54,6 +55,14 @@ void		 gs_plugin_loader_job_get_categories_async (GsPluginLoader *plugin_loader,
 GPtrArray	*gs_plugin_loader_job_get_categories_finish (GsPluginLoader *plugin_loader,
 							 GAsyncResult	*res,
 							 GError		**error);
+void		 gs_plugin_loader_job_app_get_copyable_async (GsPluginLoader *plugin_loader,
+							      GsPluginJob *plugin_job,
+							      GCancellable *cancellable,
+							      GAsyncReadyCallback callback,
+							      gpointer user_data);
+gboolean	 gs_plugin_loader_job_app_get_copyable_finish (GsPluginLoader *plugin_loader,
+							       GAsyncResult *res,
+							       GError **error);
 gboolean	 gs_plugin_loader_setup			(GsPluginLoader	*plugin_loader,
 							 gchar		**whitelist,
 							 gchar		**blacklist,
@@ -92,5 +101,7 @@ GsPlugin	*gs_plugin_loader_find_plugin		(GsPluginLoader	*plugin_loader,
 							 const gchar	*plugin_name);
 void            gs_plugin_loader_set_max_parallel_ops  (GsPluginLoader *plugin_loader,
                                                         guint           max_ops);
+
+GList		*gs_plugin_loader_dup_copy_dests	(GsPluginLoader *plugin_loader);
 
 G_END_DECLS

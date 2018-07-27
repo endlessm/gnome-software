@@ -568,6 +568,47 @@ gboolean	 gs_plugin_app_purchase			(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
+ * gs_plugin_app_get_copyable:
+ * @plugin: a #GsPlugin
+ * @app: a #GsApp
+ * @copy_dest: an absolute path of the destination directory
+ * @copyable: whether this app can be copied
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Determine whether gs_plugin_app_copy() with this @app and @copy_dest should
+ * succeed (barring runtime errors which cannot be known in advance).
+ *
+ * Returns: %FALSE if copying @app to @copy_dest will certainly fail; %TRUE
+ * otherwise
+ **/
+gboolean	 gs_plugin_app_get_copyable			(GsPlugin	*plugin,
+								 GsApp		*app,
+								 const gchar	*copy_dest,
+								 gboolean	*copyable,
+								 GCancellable	*cancellable,
+								 GError		**error);
+
+/**
+ * gs_plugin_app_copy:
+ * @plugin: a #GsPlugin
+ * @app: a #GsApp
+ * @copy_dest: an absolute path of the destination directory
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Copy the application and its immediate dependencies (eg, dependent packages
+ * and runtimes) to the destination directory.
+ *
+ * Returns: %TRUE for success or if not relevant
+ **/
+gboolean	 gs_plugin_app_copy			(GsPlugin	*plugin,
+							 GsApp		*app,
+							 const gchar	*copy_dest,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+/**
  * gs_plugin_app_install:
  * @plugin: a #GsPlugin
  * @app: a #GsApp
