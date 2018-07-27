@@ -766,6 +766,35 @@ gs_plugin_update (GsPlugin *plugin,
 	return TRUE;
 }
 
+static gboolean
+gs_plugin_app_get_copyable (GsPlugin *plugin,
+			    GsApp *app,
+			    const gchar *copy_dest,
+			    gboolean *copyable,
+			    GCancellable *cancellable,
+			    GError **error)
+{
+	GsFlatpak *flatpak = gs_plugin_flatpak_get_handler (plugin, app);
+	if (flatpak == NULL)
+		return TRUE;
+	return gs_flatpak_app_get_copyable (flatpak, app, copyable, cancellable,
+					    error);
+}
+
+gboolean
+gs_plugin_app_copy (GsPlugin *plugin,
+		    GsApp *app,
+		    const gchar *copy_dest,
+		    GCancellable *cancellable,
+		    GError **error)
+{
+	GsFlatpak *flatpak = gs_plugin_flatpak_get_handler (plugin, app);
+	if (flatpak == NULL)
+		return TRUE;
+	return gs_flatpak_app_copy (flatpak, app, copy_dest, cancellable,
+				    error);
+}
+
 static gchar *
 get_dir_mount_point_name (GFile *dir,
 			  GCancellable *cancellable,

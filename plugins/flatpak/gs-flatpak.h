@@ -124,6 +124,18 @@ gboolean	gs_flatpak_add_recent		(GsFlatpak		*self,
 						 guint64		 age,
 						 GCancellable		*cancellable,
 						 GError			**error);
+gboolean	gs_flatpak_app_get_copyable	(GsFlatpak		*self,
+						 GsApp			*app,
+						 gboolean		*copyable,
+						 GCancellable		*cancellable,
+						 GError			**error);
+gboolean	gs_flatpak_app_copy		(GsFlatpak		*self,
+						 GsApp			*app,
+						 const gchar		*dest,
+						 GCancellable		*cancellable,
+						 GError			**error);
+const gchar*	gs_flatpak_get_collection_id	(GsFlatpak		*self,
+						 GsApp			*app);
 GsApp *
 gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 				     GFile *file,
