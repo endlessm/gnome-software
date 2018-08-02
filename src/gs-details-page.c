@@ -307,7 +307,7 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_cancel, FALSE);
 		break;
 	}
-	if (app_has_pending_action (self->app)) {
+	if (plugin_or_app_has_pending_action (self, self->app)) {
 		gtk_widget_set_visible (self->button_cancel, TRUE);
 		gtk_widget_set_sensitive (self->button_cancel,
 					  !g_cancellable_is_cancelled (self->app_cancellable) &&
@@ -315,23 +315,20 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	}
 
 	/* progress status label */
-	switch (state) {
-	case AS_APP_STATE_REMOVING:
+	if (state == AS_APP_STATE_REMOVING) {
 		gtk_widget_set_visible (self->label_progress_status, TRUE);
 		gtk_label_set_label (GTK_LABEL (self->label_progress_status),
 				     _("Removing…"));
-		break;
-	case AS_APP_STATE_INSTALLING:
+	} else if (state == AS_APP_STATE_INSTALLING) {
 		gtk_widget_set_visible (self->label_progress_status, TRUE);
 		gtk_label_set_label (GTK_LABEL (self->label_progress_status),
 				     _("Installing"));
-		break;
-	default:
+	} else {
 		gtk_widget_set_visible (self->label_progress_status, FALSE);
-		break;
 	}
 	if (app_has_pending_action (self->app)) {
 		GsPluginAction action = gs_app_get_pending_action (self->app);
+
 		gtk_widget_set_visible (self->label_progress_status, TRUE);
 		switch (action) {
 		case GS_PLUGIN_ACTION_INSTALL:
@@ -378,18 +375,15 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	}
 
 	/* spinner */
-	switch (state) {
-	case AS_APP_STATE_REMOVING:
+	if (state == AS_APP_STATE_REMOVING) {
 		gtk_spinner_start (GTK_SPINNER (self->spinner_remove));
 		gtk_widget_set_visible (self->spinner_remove, TRUE);
 		/* align text together with the spinner if we're showing it */
 		gtk_widget_set_halign (self->box_progress2, GTK_ALIGN_START);
-		break;
-	default:
+	} else {
 		gtk_widget_set_visible (self->spinner_remove, FALSE);
 		gtk_spinner_stop (GTK_SPINNER (self->spinner_remove));
 		gtk_widget_set_halign (self->box_progress2, GTK_ALIGN_CENTER);
-		break;
 	}
 
 	/* progress box */
@@ -402,8 +396,9 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->box_progress, FALSE);
 		break;
 	}
-	if (app_has_pending_action (self->app))
+	if (plugin_or_app_has_pending_action (self, self->app)) {
 		gtk_widget_set_visible (self->box_progress, TRUE);
+	}
 }
 
 static gboolean
