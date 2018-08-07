@@ -808,7 +808,7 @@ gs_plugin_flatpak_file_to_app_repo (GsPlugin *plugin,
 				continue;
 
 			gs_flatpak_error_convert (&local_error);
-			g_propagate_error (error, local_error);
+			g_propagate_error (error, g_steal_pointer (&local_error));
 			return NULL;
 		}
 
