@@ -661,8 +661,7 @@ gs_plugin_add_updates_historical (GsPlugin *plugin,
 				     FWUPD_ERROR,
 				     FWUPD_ERROR_NOT_FOUND))
 			return TRUE;
-		g_propagate_error (error, error_local);
-		error_local = NULL;
+		g_propagate_error (error, g_steal_pointer (&error_local));
 		gs_plugin_fwupd_error_convert (error);
 		return FALSE;
 	}
@@ -757,8 +756,7 @@ gs_plugin_fwupd_add_updates (GsPlugin *plugin,
 				     FWUPD_ERROR,
 				     FWUPD_ERROR_NOTHING_TO_DO))
 			return TRUE;
-		g_propagate_error (error, error_local);
-		error_local = NULL;
+		g_propagate_error (error, g_steal_pointer (&error_local));
 		gs_plugin_fwupd_error_convert (error);
 		return FALSE;
 	}
