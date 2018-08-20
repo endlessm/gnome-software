@@ -136,6 +136,8 @@ gs_plugin_status_to_string (GsPluginStatus status)
 		return "installing";
 	if (status == GS_PLUGIN_STATUS_REMOVING)
 		return "removing";
+	if (status == GS_PLUGIN_STATUS_COPYING)
+		return "copying";
 	return "unknown";
 }
 
@@ -1816,6 +1818,10 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_destroy";
 	if (action == GS_PLUGIN_ACTION_PURCHASE)
 		return "gs_plugin_app_purchase";
+	if (action == GS_PLUGIN_ACTION_GET_COPYABLE)
+		return "gs_plugin_app_get_copyable";
+	if (action == GS_PLUGIN_ACTION_COPY)
+		return "gs_plugin_app_copy";
 	return NULL;
 }
 
@@ -1916,6 +1922,10 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "destroy";
 	if (action == GS_PLUGIN_ACTION_PURCHASE)
 		return "purchase";
+	if (action == GS_PLUGIN_ACTION_GET_COPYABLE)
+		return "get-copyable";
+	if (action == GS_PLUGIN_ACTION_COPY)
+		return "copy";
 	return NULL;
 }
 
@@ -2016,6 +2026,10 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_DESTROY;
 	if (g_strcmp0 (action, "purchase") == 0)
 		return GS_PLUGIN_ACTION_PURCHASE;
+	if (g_strcmp0 (action, "get-copyable") == 0)
+		return GS_PLUGIN_ACTION_GET_COPYABLE;
+	if (g_strcmp0 (action, "copy") == 0)
+		return GS_PLUGIN_ACTION_COPY;
 	return GS_PLUGIN_ACTION_UNKNOWN;
 }
 
