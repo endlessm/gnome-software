@@ -2420,8 +2420,8 @@ gs_flatpak_app_copy (GsFlatpak *self,
 								       app);
 
 	gboolean spawn_retval;
-	const gchar *argv[] = {"/usr/bin/flatpak", "create-usb", copy_dest,
-			       app_ref, NULL};
+	const gchar *argv[] = {"/usr/bin/flatpak", "--system", "create-usb",
+			       copy_dest, app_ref, NULL};
 	GPid child_pid;
 	gulong cancelled_id;
 
