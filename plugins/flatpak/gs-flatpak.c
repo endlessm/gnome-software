@@ -2249,6 +2249,8 @@ gs_flatpak_set_app_metadata (GsFlatpak *self,
 	}
 	g_debug ("runtime for %s is %s", name, runtime);
 
+	gs_flatpak_app_set_extra_data (app, g_key_file_has_group (kf, "Extra Data"));
+
 	shared = g_key_file_get_string_list (kf, "Context", "shared", NULL, NULL);
 	if (shared != NULL) {
 		/* SHM isn't secure enough */
