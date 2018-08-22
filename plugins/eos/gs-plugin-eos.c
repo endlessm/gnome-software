@@ -896,7 +896,7 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 	if (is_same_app (cached_app, app))
 		return;
 
-	if (cached_app && !gs_app_is_installed (cached_app) && 
+	if (cached_app && !gs_app_is_installed (cached_app) &&
 	    !gs_app_has_category (cached_app, "USB")) {
 		const char *app_id = gs_app_get_unique_id (app);
 		const char *cached_app_id = gs_app_get_unique_id (cached_app);
@@ -955,7 +955,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 
 	/* skip if the cached app is already our best */
 	if (cached_app &&
-	    gs_plugin_app_is_locale_best_match (plugin, cached_app)  && 
+	    gs_plugin_app_is_locale_best_match (plugin, cached_app) &&
 	    !gs_app_has_category (cached_app, "USB")) {
 		if (!gs_app_is_installed (app)) {
 			g_debug ("Blacklisting '%s': cached app '%s' is best "
@@ -1345,10 +1345,9 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 }
 
 static void
-gs_plugin_eos_remove_blacklist_from_usb_if_needed (GsPlugin *plugin,
-						  GsApp *app)
+gs_plugin_eos_remove_blacklist_from_usb_if_needed (GsPlugin *plugin, GsApp *app)
 {
-	if (!gs_app_has_category (app, "Blacklisted") || 
+	if (!gs_app_has_category (app, "Blacklisted") ||
 	    !gs_app_has_category (app, "USB"))
 		return;
 
@@ -1743,7 +1742,7 @@ gs_plugin_refine (GsPlugin		*plugin,
 
 		if (gs_plugin_eos_blacklist_app_for_remote_if_needed (plugin, app))
 			continue;
-		
+
 		gs_plugin_eos_remove_blacklist_from_usb_if_needed (plugin, app);
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
@@ -2054,7 +2053,7 @@ gs_plugin_add_category_apps (GsPlugin *plugin,
 {
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
-		
+
 		gs_plugin_eos_remove_blacklist_from_usb_if_needed (plugin, app);
 	}
 
