@@ -3389,7 +3389,7 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 
 	if (!dir_has_repo) {
 		g_autofree gchar *file_uri = g_file_get_uri (file);
-		g_set_error (error, G_IO_ERROR_FAILED, G_IO_ERROR_NOT_FOUND,
+		g_set_error (error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND,
 			     "No remotes from the given directory: %s", file_uri);
 		return NULL;
 	}
