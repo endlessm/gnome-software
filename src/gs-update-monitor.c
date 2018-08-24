@@ -30,6 +30,7 @@
 
 #include "gs-update-monitor.h"
 #include "gs-common.h"
+#include "gs-utils.h"
 
 #define APP_METADATA_AUTO_UPDATING "GnomeSoftware::auto-updating"
 
@@ -243,15 +244,6 @@ app_set_auto_updating (GsApp *app,
 	}
 }
 
-static gboolean
-app_is_auto_updating (GsApp *app)
-{
-	GVariant *tmp = gs_app_get_metadata_variant (app, APP_METADATA_AUTO_UPDATING);
-	if (tmp == NULL)
-		return FALSE;
-	return g_variant_get_boolean (tmp);
-}
-
 static void
 app_update_finished_cb (GObject *source,
 			GAsyncResult *res,
@@ -333,7 +325,7 @@ download_now_cb (GObject *obj,
 	if (state == AS_APP_STATE_INSTALLING) {
 		/* if we cannot update at the moment, cancel any automatically
 		 * started update */
-		if (!app_is_auto_updating (helper->app))
+		if (!gs_utils_app_is_auto_updating (helper->app))
 			return;
 
 		g_debug ("Cancelling scheduled update of app %s, as "

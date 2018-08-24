@@ -1059,4 +1059,13 @@ gs_utils_update_install_timestamp (GSettings *settings)
 	g_settings_set (settings, "install-timestamp", "x", g_date_time_to_unix (now));
 }
 
+gboolean
+gs_utils_app_is_auto_updating (GsApp *app)
+{
+       GVariant *tmp = gs_app_get_metadata_variant (app, "GnomeSoftware::auto-updating");
+       if (tmp == NULL)
+               return FALSE;
+       return g_variant_get_boolean (tmp);
+}
+
 /* vim: set noexpandtab: */

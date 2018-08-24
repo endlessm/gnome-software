@@ -92,6 +92,7 @@ void		 gs_utils_append_key_value	(GString	*str,
 						 const gchar	*value);
 guint		 gs_utils_get_memory_total	(void);
 void		 gs_utils_update_install_timestamp (GSettings *settings);
+gboolean	 gs_utils_app_is_auto_updating (GsApp *app);
 
 G_END_DECLS
 
