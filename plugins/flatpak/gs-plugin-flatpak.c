@@ -1049,6 +1049,109 @@ gs_plugin_flatpak_update_apps_async (GsPlugin                           *plugin,
 				update_apps_thread_cb, g_steal_pointer (&task));
 }
 
+static gboolean
+get_installation_dir_free_space (GsFlatpak *flatpak, guint64 *free_space, gboolean interactive, GError **error)
+{
+	FlatpakInstallation *installation;
+	g_autoptr (GFile) installation_dir = NULL;
+	g_autoptr (GFileInfo) info = NULL;
+
+	installation = gs_flatpak_get_installation (flatpak, interactive);
+	installation_dir = flatpak_installation_get_path (installation);
+
+	info = g_file_query_filesystem_info (installation_dir,
+					     G_FILE_ATTRIBUTE_FILESYSTEM_FREE,
+					     NULL,
+					     error);
+	if (info == NULL)
+		return FALSE;
+
+	*free_space = g_file_info_get_attribute_uint64 (info, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+	return TRUE;
+}
+
+static gboolean
+gs_flatpak_has_space_to_install (GsFlatpak *flatpak, GsApp *app, gboolean interactive)
+{
+	g_autoptr(GError) error = NULL;
+	guint64 free_space = 0;
+	guint64 min_free_space = 0;
+	guint64 space_required = 0;
+	FlatpakInstallation *installation;
+	GsSizeType size_type;
+
+	size_type = gs_app_get_size_download (app, &space_required);
+	if (size_type == GS_SIZE_TYPE_UNKNOWN) {
+		g_warning ("Failed to query download size: %s", gs_app_get_unique_id (app));
+		space_required = 0;
+	}
+
+	installation = gs_flatpak_get_installation (flatpak, interactive);
+
+	if (!flatpak_installation_get_min_free_space_bytes (installation, &min_free_space, &error)) {
+		g_autoptr(GFile) installation_file = flatpak_installation_get_path (installation);
+		g_autofree gchar *path = g_file_get_path (installation_file);
+		g_warning ("Error getting min-free-space config value of OSTree repo at %s:%s", path, error->message);
+		g_clear_error (&error);
+	}
+	space_required = space_required + min_free_space;
+
+	if (!get_installation_dir_free_space (flatpak, &free_space, interactive, &error)) {
+		g_warning ("Error getting the free space available for installing %s: %s",
+			   gs_app_get_unique_id (app), error->message);
+		g_clear_error (&error);
+		/* Even if we fail to get free space, we don't want to block this user-intiated
+		 * install action. It might happen that there is enough space to install but
+		 * an error happened during querying the filesystem info. */
+		return TRUE;
+	}
+
+	return free_space >= space_required;
+}
+
+static gboolean
+gs_flatpak_has_space_to_update (GsFlatpak *flatpak, GsAppList *list, gboolean interactive)
+{
+	g_autoptr(GError) error = NULL;
+	guint64 free_space = 0;
+	guint64 min_free_space = 0;
+	guint64 space_required = 0;
+	FlatpakInstallation *installation;
+
+	if (!interactive) {
+		for (guint i = 0; i < gs_app_list_length (list); i++) {
+			GsApp *app_temp = gs_app_list_index (list, i);
+			GsSizeType size_type;
+			guint64 installed_size;
+
+			size_type = gs_app_get_size_installed (app_temp, &installed_size);
+
+			if (size_type == GS_SIZE_TYPE_VALID)
+				space_required += installed_size;
+		}
+	}
+
+	installation = gs_flatpak_get_installation (flatpak, interactive);
+
+	if (!flatpak_installation_get_min_free_space_bytes (installation, &min_free_space, &error)) {
+		g_autoptr(GFile) installation_file = flatpak_installation_get_path (installation);
+		g_autofree gchar *path = g_file_get_path (installation_file);
+		g_warning ("Error getting min-free-space config value of OSTree repo at %s:%s", path, error->message);
+		g_clear_error (&error);
+	}
+	space_required = space_required + min_free_space;
+	if (!get_installation_dir_free_space (flatpak, &free_space, interactive, &error)) {
+		g_warning ("Error getting the free space available for updating an app list: %s",
+			   error->message);
+		g_clear_error (&error);
+		/* Only fail autoupdates if we cannot query the filesystem info.
+		 * Manual updates follow the pattern similar to install's case. */
+		return interactive;
+	}
+
+	return free_space >= space_required;
+}
+
 /* Run in @worker. */
 static void
 update_apps_thread_cb (GTask        *task,
@@ -1104,6 +1207,42 @@ update_apps_thread_cb (GTask        *task,
 					   local_error->message);
 				g_clear_error (&local_error);
 			}
+		}
+
+		/* Is there enough disk space to download updates in this
+		 * installation?
+		 */
+		if (!gs_flatpak_has_space_to_update (flatpak, list_tmp, interactive)) {
+			g_autoptr(GsPluginEvent) event = NULL;
+
+			g_debug ("Skipping %s for %s: not enough space on disk",
+				 (!interactive ? "automatic update" : "update"),
+				 gs_flatpak_get_id (flatpak));
+
+			remove_schedule_entry (schedule_entry_handle);
+
+			if (!interactive) {
+				/* If we're performing automatic updates in the
+				 * background, don't return an error: we don't
+				 * want an error banner showing up out of the
+				 * blue. Continue to the next installation (if
+				 * any).
+				 */
+				continue;
+			}
+
+			g_set_error (&local_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
+				     _("You don’t have enough space to update these apps. Please remove apps or documents to create more space."));
+
+			event = gs_plugin_event_new ("error", local_error, NULL);
+			gs_plugin_event_add_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE);
+			gs_plugin_event_add_flag (event, GS_PLUGIN_EVENT_FLAG_WARNING);
+			gs_plugin_report_event (GS_PLUGIN (self), event);
+			g_clear_error (&local_error);
+
+			g_task_return_boolean (task, FALSE);
+
+			return;
 		}
 
 		/* Now apply the updates. */
@@ -1498,6 +1637,17 @@ gs_plugin_app_install (GsPlugin *plugin,
 	transaction = _build_transaction (plugin, flatpak, GS_FLATPAK_ERROR_MODE_STOP_ON_FIRST_ERROR, interactive, cancellable, error);
 	if (transaction == NULL) {
 		gs_flatpak_error_convert (error);
+		return FALSE;
+	}
+
+	/* Is there enough disk space free to install? */
+	if (!gs_flatpak_has_space_to_install (flatpak, app, interactive)) {
+		g_debug ("Skipping installation for %s: not enough space on disk",
+			 gs_app_get_unique_id (app));
+		gs_app_set_state_recover (app);
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
+			     _("You don’t have enough space to install %s. Please remove apps or documents to create more space."),
+			     gs_app_get_unique_id (app));
 		return FALSE;
 	}
 
