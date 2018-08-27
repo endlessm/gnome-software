@@ -1372,7 +1372,10 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 		"io.github.FreeDM",
 		"io.github.Freedoom-Phase-1",
 		"io.github.Freedoom-Phase-2",
+		"net.redeclipse.RedEclipse",
 		"org.openarena.Openarena",
+		"org.sauerbraten.Sauerbraten",
+		"org.xonotic.Xonotic",
 		NULL
 	};
 
