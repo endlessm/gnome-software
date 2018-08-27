@@ -461,6 +461,100 @@ _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 	return g_steal_pointer (&transaction);
 }
 
+static gboolean
+get_installation_dir_free_space (GsFlatpak *flatpak, guint64 *free_space, GError **error)
+{
+	FlatpakInstallation *installation;
+	g_autoptr (GFile) installation_dir = NULL;
+	g_autoptr (GFileInfo) info = NULL;
+
+	installation = gs_flatpak_get_installation (flatpak);
+	installation_dir = flatpak_installation_get_path (installation);
+
+	info = g_file_query_filesystem_info (installation_dir,
+					     G_FILE_ATTRIBUTE_FILESYSTEM_FREE,
+					     NULL,
+					     error);
+	if (info == NULL)
+		return FALSE;
+
+	*free_space = g_file_info_get_attribute_uint64 (info, G_FILE_ATTRIBUTE_FILESYSTEM_FREE);
+	return TRUE;
+}
+
+static gboolean
+gs_flatpak_has_space_to_install (GsFlatpak *flatpak, GsApp *app)
+{
+	g_autoptr(GError) error = NULL;
+	guint64 free_space = 0;
+	guint64 min_free_space = 0;
+	guint64 space_required = 0;
+	FlatpakInstallation *installation;
+
+	space_required = gs_app_get_size_download (app);
+	if (space_required == GS_APP_SIZE_UNKNOWABLE) {
+		g_warning ("Failed to query download size: %s", gs_app_get_unique_id (app));
+		space_required = 0;
+	}
+
+	installation = gs_flatpak_get_installation (flatpak);
+
+	if (!flatpak_installation_get_min_free_space_bytes (installation, &min_free_space, &error)) {
+		g_autoptr(GFile) installation_file = flatpak_installation_get_path (installation);
+		g_autofree gchar *path = g_file_get_path (installation_file);
+		g_warning ("Error getting min-free-space config value of OSTree repo at %s:%s", path, error->message);
+		g_clear_error (&error);
+	}
+	space_required = space_required + min_free_space;
+
+	if (!get_installation_dir_free_space (flatpak, &free_space, &error)) {
+		g_warning ("Error getting the free space available for installing %s: %s",
+			   gs_app_get_unique_id (app), error->message);
+		/* Even if we fail to get free space, we don't want to block this user-intiated
+		 * install action. It might happen that there is enough space to install but
+		 * an error happened during querying the filesystem info. */
+		return TRUE;
+	}
+
+	return free_space >= space_required;
+}
+
+static gboolean
+gs_flatpak_has_space_to_update (GsFlatpak *flatpak, GsAppList *list, gboolean is_auto_update)
+{
+	g_autoptr(GError) error = NULL;
+	guint64 free_space = 0;
+	guint64 min_free_space = 0;
+	guint64 space_required = 0;
+	FlatpakInstallation *installation;
+
+	if (is_auto_update) {
+		for (guint i = 0; i < gs_app_list_length (list); i++) {
+			GsApp *app_temp = gs_app_list_index (list, i);
+			space_required += gs_app_get_size_installed (app_temp);
+		}
+	}
+
+	installation = gs_flatpak_get_installation (flatpak);
+
+	if (!flatpak_installation_get_min_free_space_bytes (installation, &min_free_space, &error)) {
+		g_autoptr(GFile) installation_file = flatpak_installation_get_path (installation);
+		g_autofree gchar *path = g_file_get_path (installation_file);
+		g_warning ("Error getting min-free-space config value of OSTree repo at %s:%s", path, error->message);
+		g_clear_error (&error);
+	}
+	space_required = (space_required * 2) + min_free_space;
+	if (!get_installation_dir_free_space (flatpak, &free_space, &error)) {
+		g_warning ("Error getting the free space available for updating an app list: %s",
+			   error->message);
+		/* Only fail autoupdates if we cannot query the filesystem info.
+		 * Manual updates follow the pattern similar to install's case. */
+		return is_auto_update ? FALSE : TRUE;
+	}
+
+	return free_space >= space_required;
+}
+
 gboolean
 gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 		    GCancellable *cancellable, GError **error)
@@ -468,6 +562,7 @@ gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 	GsFlatpak *flatpak = NULL;
 	g_autoptr(FlatpakTransaction) transaction = NULL;
 	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
+	gboolean is_auto_update;
 
 	/* not supported */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
@@ -487,6 +582,21 @@ gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 				   error_local->message);
 			g_clear_error (&error_local);
 		}
+	}
+
+	/* Is there enough disk space to download? */
+	is_auto_update = !gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE);
+	if (!gs_flatpak_has_space_to_update (flatpak, list_tmp, is_auto_update)) {
+		g_debug ("Skipping %s: not enough space on disk",
+			 (is_auto_update ? "automatic update" : "update"));
+		if (is_auto_update) {
+			/* Do not return an error because we don't want to see a banner
+			 * showing up out of the blue for possibly multiple update failures */
+			return TRUE;
+		}
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
+			     _("You don’t have enough space to update these apps. Please remove apps or documents to create more space."));
+		return FALSE;
 	}
 
 	/* build and run non-deployed transaction */
@@ -638,6 +748,17 @@ gs_plugin_app_install (GsPlugin *plugin,
 		return FALSE;
 	}
 
+	/* Is there enough disk space free to install? */
+	if (!gs_flatpak_has_space_to_install (flatpak, app)) {
+		g_debug ("Skipping installation for %s: not enough space on disk",
+			 gs_app_get_unique_id (app));
+		gs_app_set_state_recover (app);
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
+			     _("You don’t have enough space to install %s. Please remove apps or documents to create more space."),
+			     gs_app_get_unique_id (app));
+		return FALSE;
+	}
+
 	/* add to the transaction cache for quick look up -- other unrelated
 	 * refs will be matched using gs_plugin_flatpak_find_app_by_ref() */
 	gs_flatpak_transaction_add_app (transaction, app);
@@ -748,6 +869,7 @@ gs_plugin_update (GsPlugin *plugin,
 	GsFlatpak *flatpak = NULL;
 	g_autoptr(FlatpakTransaction) transaction = NULL;
 	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
+	gboolean is_auto_update;
 
 	/* not supported */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
@@ -758,6 +880,21 @@ gs_plugin_update (GsPlugin *plugin,
 	}
 	if (flatpak == NULL)
 		return TRUE;
+
+	/* Is there enough disk space to download? */
+	is_auto_update = !gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE);
+	if (!gs_flatpak_has_space_to_update (flatpak, list_tmp, is_auto_update)) {
+		g_debug ("Skipping %s: not enough space on disk",
+			 (is_auto_update ? "automatic update" : "update"));
+		if (is_auto_update) {
+			/* Do not return an error because we don't want to see a banner
+			 * showing up out of the blue for possibly multiple update failures */
+			return TRUE;
+		}
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
+			     _("You don’t have enough space to update these apps. Please remove apps or documents to create more space."));
+		return FALSE;
+	}
 
 	/* build and run transaction */
 	transaction = _build_transaction (plugin, flatpak, cancellable, error);
