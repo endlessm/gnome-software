@@ -2316,39 +2316,39 @@ gs_flatpak_app_get_copyable (GsFlatpak *self,
 			     GCancellable *cancellable,
 			     GError **error)
 {
-	if (copyable) {
-		GsApp *runtime;
-		g_autoptr(FlatpakRemote) app_remote = NULL;
-		g_autoptr(FlatpakRemote) runtime_remote = NULL;
-		g_autofree char *app_collection_id = NULL;
-		g_autofree char *runtime_collection_id = NULL;
-		gboolean is_extra_data;
+	GsApp *runtime;
+	g_autoptr(FlatpakRemote) app_remote = NULL;
+	g_autoptr(FlatpakRemote) runtime_remote = NULL;
+	g_autofree char *app_collection_id = NULL;
+	g_autofree char *runtime_collection_id = NULL;
+	gboolean is_extra_data;
 
-		/* Check if the app's remote has a collection ID set */
-		app_remote = flatpak_installation_get_remote_by_name (self->installation,
-								      gs_app_get_origin (app),
-								      cancellable, NULL);
-		if (app_remote != NULL)
-			app_collection_id = flatpak_remote_get_collection_id (app_remote);
+	g_assert (copyable != NULL);
 
-		/* Check if the runtime's remote has a collection ID set */
-		runtime = gs_app_get_runtime (app);
-		if (runtime != NULL) {
-			runtime_remote = flatpak_installation_get_remote_by_name (self->installation,
-										  gs_app_get_origin (runtime),
-										  cancellable, NULL);
-			if (runtime_remote != NULL)
-				runtime_collection_id = flatpak_remote_get_collection_id (runtime_remote);
-		}
+	/* Check if the app's remote has a collection ID set */
+	app_remote = flatpak_installation_get_remote_by_name (self->installation,
+							      gs_app_get_origin (app),
+							      cancellable, NULL);
+	if (app_remote != NULL)
+		app_collection_id = flatpak_remote_get_collection_id (app_remote);
 
-		/* Check if it's an extra-data app (which is not supported for P2P distribution) */
-		is_extra_data = gs_flatpak_app_get_extra_data (app);
-
-		if (app_collection_id != NULL && runtime_collection_id != NULL && !is_extra_data)
-			*copyable = TRUE;
-		else
-			*copyable = FALSE;
+	/* Check if the runtime's remote has a collection ID set */
+	runtime = gs_app_get_runtime (app);
+	if (runtime != NULL) {
+		runtime_remote = flatpak_installation_get_remote_by_name (self->installation,
+									  gs_app_get_origin (runtime),
+									  cancellable, NULL);
+		if (runtime_remote != NULL)
+			runtime_collection_id = flatpak_remote_get_collection_id (runtime_remote);
 	}
+
+	/* Check if it's an extra-data app (which is not supported for P2P distribution) */
+	is_extra_data = gs_flatpak_app_get_extra_data (app);
+
+	if (app_collection_id != NULL && runtime_collection_id != NULL && !is_extra_data)
+		*copyable = TRUE;
+	else
+		*copyable = FALSE;
 
 	return TRUE;
 }
