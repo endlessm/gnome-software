@@ -3511,8 +3511,6 @@ copy_process_watch_cb (GPid pid, gint status, gpointer user_data)
 	g_cancellable_disconnect (helper->cancellable, helper->cancelled_id);
 	g_spawn_close_pid (pid);
 
-	helper->finished = TRUE;
-
 	/* once the copy terminates (successfully or not), set plugin status to
 	 * update UI accordingly */
 	gs_plugin_status_update (helper->self->plugin, helper->app,
@@ -3526,6 +3524,8 @@ copy_process_watch_cb (GPid pid, gint status, gpointer user_data)
 	if (error != NULL)
 		g_warning ("failed to refresh flatpak metadata after copying "
 			   "app to USB: %s", error->message);
+
+	helper->finished = TRUE;
 }
 
 static void
