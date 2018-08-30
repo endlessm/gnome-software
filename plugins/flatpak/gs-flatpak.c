@@ -3555,12 +3555,24 @@ gs_flatpak_app_copy (GsFlatpak *self,
 						     app_arch, app_branch);
 	const gchar* app_collection_id = gs_flatpak_get_collection_id (self,
 								       app);
-
+	g_autofree gchar* installation_arg = NULL;
 	gboolean spawn_retval;
-	const gchar *argv[] = {"/usr/bin/flatpak", "--system", "create-usb",
-			       copy_dest, app_ref, NULL};
+	const gchar *argv[] = {"/usr/bin/flatpak",
+			       NULL, /* installation arg */
+			       "create-usb",
+			       copy_dest,
+			       app_ref,
+			       NULL
+			      };
 	GPid child_pid;
 	gulong cancelled_id;
+
+	if (flatpak_installation_get_is_user (self->installation))
+		installation_arg = g_strdup ("--user");
+	else
+		installation_arg = g_strdup_printf ("--installation=%s", flatpak_installation_get_id (self->installation));
+
+	argv[1] = installation_arg;
 
 	g_debug ("Copying app %s with collection ID: %s", app_ref,
 		 app_collection_id);
