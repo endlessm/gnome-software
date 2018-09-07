@@ -232,16 +232,11 @@ _refresh_cache (GsPlugin *plugin,
 gboolean
 gs_plugin_refresh (GsPlugin *plugin,
 		   guint cache_age,
-		   GsPluginRefreshFlags flags,
 		   GCancellable *cancellable,
 		   GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
-
-	/* only for update metadata */
-	if ((flags & GS_PLUGIN_REFRESH_FLAGS_METADATA) == 0)
-		return TRUE;
 	return _refresh_cache (plugin, cache_age, cancellable, error);
 }
 
@@ -317,7 +312,6 @@ _create_upgrade_from_info (GsPlugin *plugin, PkgdbItem *item)
 	gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
 	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_REVIEWABLE);
 	gs_app_add_icon (app, ic);
-	gs_app_set_management_plugin (app, "packagekit");
 
 	/* show a Fedora magazine article for the release */
 	url = g_strdup_printf ("https://fedoramagazine.org/whats-new-fedora-%u-workstation",

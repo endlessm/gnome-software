@@ -95,7 +95,6 @@ gs_plugins_shell_extensions_remote_func (GsPluginLoader *plugin_loader)
 	g_setenv ("GS_SELF_TEST_SHELL_EXTENSIONS_XML_FN", xml_fn, TRUE);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 					 "age", (guint64) G_MAXUINT,
-					 "refresh-flags", GS_PLUGIN_REFRESH_FLAGS_METADATA,
 					 NULL);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
@@ -133,7 +132,6 @@ main (int argc, char **argv)
 	ret = gs_plugin_loader_setup (plugin_loader,
 				      (gchar**) whitelist,
 				      NULL,
-				      GS_PLUGIN_FAILURE_FLAGS_NONE,
 				      NULL,
 				      &error);
 	g_assert_no_error (error);

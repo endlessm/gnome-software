@@ -39,21 +39,14 @@ typedef struct {
 static void
 gs_cmd_show_results_apps (GsAppList *list)
 {
-	GPtrArray *related;
-	GsApp *app;
-	GsApp *app_rel;
-	guint i;
-	guint j;
-
-	for (j = 0; j < gs_app_list_length (list); j++) {
-		g_autofree gchar *tmp = NULL;
-		app = gs_app_list_index (list, j);
-		tmp = gs_app_to_string (app);
+	for (guint j = 0; j < gs_app_list_length (list); j++) {
+		GsApp *app = gs_app_list_index (list, j);
+		GsAppList *related = gs_app_get_related (app);
+		g_autofree gchar *tmp = gs_app_to_string (app);
 		g_print ("%s\n", tmp);
-		related = gs_app_get_related (app);
-		for (i = 0; i < related->len; i++) {
+		for (guint i = 0; i < gs_app_list_length (related); i++) {
 			g_autofree gchar *tmp_rel = NULL;
-			app_rel = GS_APP (g_ptr_array_index (related, i));
+			GsApp *app_rel = GS_APP (gs_app_list_index (related, i));
 			tmp_rel = gs_app_to_string (app_rel);
 			g_print ("\t%s\n", tmp_rel);
 		}
@@ -75,15 +68,10 @@ gs_cmd_pad_spaces (const gchar *text, guint length)
 static void
 gs_cmd_show_results_categories (GPtrArray *list)
 {
-	GPtrArray *subcats;
-	GsCategory *cat;
-	GsCategory *parent;
-	guint i;
-
-	for (i = 0; i < list->len; i++) {
+	for (guint i = 0; i < list->len; i++) {
+		GsCategory *cat = GS_CATEGORY (g_ptr_array_index (list, i));
+		GsCategory *parent = gs_category_get_parent (cat);
 		g_autofree gchar *tmp = NULL;
-		cat = GS_CATEGORY (g_ptr_array_index (list, i));
-		parent = gs_category_get_parent (cat);
 		if (parent != NULL){
 			g_autofree gchar *id = NULL;
 			id = g_strdup_printf ("%s/%s [%u]",
@@ -94,10 +82,10 @@ gs_cmd_show_results_categories (GPtrArray *list)
 			g_print ("%s : %s\n",
 				 tmp, gs_category_get_name (cat));
 		} else {
+			GPtrArray *subcats = gs_category_get_children (cat);
 			tmp = gs_cmd_pad_spaces (gs_category_get_id (cat), 32);
 			g_print ("%s : %s\n",
 				 tmp, gs_category_get_name (cat));
-			subcats = gs_category_get_children (cat);
 			gs_cmd_show_results_categories (subcats);
 		}
 	}
@@ -283,18 +271,6 @@ gs_cmd_action_exec (GsCmdSelf *self, GsPluginAction action, const gchar *name, G
 					    NULL, error);
 }
 
-static GsPluginRefreshFlags
-gs_cmd_refresh_flag_from_string (const gchar *flag)
-{
-	if (flag == NULL || g_strcmp0 (flag, "all") == 0)
-		return G_MAXINT32;
-	if (g_strcmp0 (flag, "metadata") == 0)
-		return GS_PLUGIN_REFRESH_FLAGS_METADATA;
-	if (g_strcmp0 (flag, "payload") == 0)
-		return GS_PLUGIN_REFRESH_FLAGS_PAYLOAD;
-	return GS_PLUGIN_REFRESH_FLAGS_NONE;
-}
-
 static void
 gs_cmd_self_free (GsCmdSelf *self)
 {
@@ -402,7 +378,6 @@ main (int argc, char **argv)
 	ret = gs_plugin_loader_setup (self->plugin_loader,
 				      plugin_whitelist,
 				      plugin_blacklist,
-				      GS_PLUGIN_FAILURE_FLAGS_NONE,
 				      NULL,
 				      &error);
 	if (!ret) {
@@ -417,7 +392,6 @@ main (int argc, char **argv)
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 						 "age", (guint64) G_MAXUINT,
-						 "refresh-flags", GS_PLUGIN_REFRESH_FLAGS_METADATA,
 						 NULL);
 		ret = gs_plugin_loader_job_action (self->plugin_loader, plugin_job,
 						    NULL, &error);
@@ -679,12 +653,9 @@ main (int argc, char **argv)
 			}
 		}
 	} else if (argc >= 2 && g_strcmp0 (argv[1], "refresh") == 0) {
-		GsPluginRefreshFlags refresh_flags;
 		g_autoptr(GsPluginJob) plugin_job = NULL;
-		refresh_flags = gs_cmd_refresh_flag_from_string (argv[2]);
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 						 "age", (guint64) cache_age,
-						 "refresh-flags", refresh_flags,
 						 NULL);
 		ret = gs_plugin_loader_job_action (self->plugin_loader, plugin_job,
 						    NULL, &error);

@@ -1,6 +1,6 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2017 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2017-2018 Richard Hughes <richard@hughsie.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -40,10 +40,8 @@ void		 gs_plugin_job_set_refine_flags		(GsPluginJob	*self,
 							 GsPluginRefineFlags refine_flags);
 void		 gs_plugin_job_set_filter_flags		(GsPluginJob	*self,
 							 GsPluginRefineFlags filter_flags);
-void		 gs_plugin_job_set_refresh_flags	(GsPluginJob	*self,
-							 GsPluginRefreshFlags refresh_flags);
-void		 gs_plugin_job_set_failure_flags	(GsPluginJob	*self,
-							 GsPluginFailureFlags failure_flags);
+void		 gs_plugin_job_set_interactive		(GsPluginJob	*self,
+							 gboolean	 interactive);
 void		 gs_plugin_job_set_max_results		(GsPluginJob	*self,
 							 guint		 max_results);
 void		 gs_plugin_job_set_timeout		(GsPluginJob	*self,

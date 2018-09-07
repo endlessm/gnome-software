@@ -74,6 +74,8 @@ typedef struct
 	GHashTable		*vfuncs;		/* string:pointer */
 	GMutex			 vfuncs_mutex;
 	gboolean		 enabled;
+	guint			 interactive_cnt;
+	GMutex			 interactive_mutex;
 	gchar			*locale;		/* allow-none */
 	gchar			*language;		/* allow-none */
 	gchar			*name;
@@ -234,6 +236,7 @@ gs_plugin_finalize (GObject *object)
 	g_hash_table_unref (priv->cache);
 	g_hash_table_unref (priv->vfuncs);
 	g_mutex_clear (&priv->cache_mutex);
+	g_mutex_clear (&priv->interactive_mutex);
 	g_mutex_clear (&priv->timer_mutex);
 	g_mutex_clear (&priv->vfuncs_mutex);
 #ifndef RUNNING_ON_VALGRIND
@@ -439,6 +442,26 @@ gs_plugin_set_enabled (GsPlugin *plugin, gboolean enabled)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
 	priv->enabled = enabled;
+}
+
+void
+gs_plugin_interactive_inc (GsPlugin *plugin)
+{
+	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->interactive_mutex);
+	priv->interactive_cnt++;
+	gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE);
+}
+
+void
+gs_plugin_interactive_dec (GsPlugin *plugin)
+{
+	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->interactive_mutex);
+	if (priv->interactive_cnt > 0)
+		priv->interactive_cnt--;
+	if (priv->interactive_cnt == 0)
+		gs_plugin_remove_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE);
 }
 
 /**
@@ -1721,6 +1744,8 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_refine";
 	if (action == GS_PLUGIN_ACTION_UPDATE)
 		return "gs_plugin_update";
+	if (action == GS_PLUGIN_ACTION_DOWNLOAD)
+		return "gs_plugin_download";
 	if (action == GS_PLUGIN_ACTION_FILE_TO_APP)
 		return "gs_plugin_file_to_app";
 	if (action == GS_PLUGIN_ACTION_URL_TO_APP)
@@ -1789,6 +1814,8 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "setup";
 	if (action == GS_PLUGIN_ACTION_INSTALL)
 		return "install";
+	if (action == GS_PLUGIN_ACTION_DOWNLOAD)
+		return "download";
 	if (action == GS_PLUGIN_ACTION_REMOVE)
 		return "remove";
 	if (action == GS_PLUGIN_ACTION_UPDATE)
@@ -1889,6 +1916,8 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_SETUP;
 	if (g_strcmp0 (action, "install") == 0)
 		return GS_PLUGIN_ACTION_INSTALL;
+	if (g_strcmp0 (action, "download") == 0)
+		return GS_PLUGIN_ACTION_DOWNLOAD;
 	if (g_strcmp0 (action, "remove") == 0)
 		return GS_PLUGIN_ACTION_REMOVE;
 	if (g_strcmp0 (action, "update") == 0)
@@ -1970,34 +1999,6 @@ gs_plugin_action_from_string (const gchar *action)
 	if (g_strcmp0 (action, "purchase") == 0)
 		return GS_PLUGIN_ACTION_PURCHASE;
 	return GS_PLUGIN_ACTION_UNKNOWN;
-}
-
-/**
- * gs_plugin_failure_flags_to_string:
- * @action: some #GsPluginFailureFlags, e.g. %GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY
- *
- * Converts the flags to a string.
- *
- * Returns: a string
- **/
-gchar *
-gs_plugin_failure_flags_to_string (GsPluginFailureFlags failure_flags)
-{
-	g_autoptr(GPtrArray) cstrs = g_ptr_array_new ();
-	if (failure_flags & GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS)
-		g_ptr_array_add (cstrs, "use-events");
-	if (failure_flags & GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY)
-		g_ptr_array_add (cstrs, "fatal-any");
-	if (failure_flags & GS_PLUGIN_FAILURE_FLAGS_FATAL_AUTH)
-		g_ptr_array_add (cstrs, "fatal-auth");
-	if (failure_flags & GS_PLUGIN_FAILURE_FLAGS_NO_CONSOLE)
-		g_ptr_array_add (cstrs, "no-console");
-	if (failure_flags & GS_PLUGIN_FAILURE_FLAGS_FATAL_PURCHASE)
-		g_ptr_array_add (cstrs, "fatal-purchase");
-	if (cstrs->len == 0)
-		return g_strdup ("none");
-	g_ptr_array_add (cstrs, NULL);
-	return g_strjoinv (",", (gchar**) cstrs->pdata);
 }
 
 /**
@@ -2171,6 +2172,7 @@ gs_plugin_init (GsPlugin *plugin)
 	priv->vfuncs = g_hash_table_new_full (g_str_hash, g_str_equal,
 					      g_free, NULL);
 	g_mutex_init (&priv->cache_mutex);
+	g_mutex_init (&priv->interactive_mutex);
 	g_mutex_init (&priv->timer_mutex);
 	g_mutex_init (&priv->vfuncs_mutex);
 	g_rw_lock_init (&priv->rwlock);

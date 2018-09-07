@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __APPSTREAM_CACHE_H
-#define __APPSTREAM_CACHE_H
+#ifndef __PACKAGEKIT_COMMON_H
+#define __PACKAGEKIT_COMMON_H
 
 #include <glib.h>
 #include <gnome-software.h>
@@ -28,12 +28,6 @@
 #include <packagekit-glib2/packagekit.h>
 
 G_BEGIN_DECLS
-
-typedef struct {
-	GsApp		*app;
-	GsPlugin	*plugin;
-	AsProfileTask	*ptask;
-} ProgressData;
 
 GsPluginStatus 	packagekit_status_enum_to_plugin_status		(PkStatusEnum	 status);
 
@@ -44,9 +38,6 @@ gboolean	gs_plugin_packagekit_add_results		(GsPlugin	*plugin,
 gboolean	gs_plugin_packagekit_error_convert		(GError		**error);
 gboolean	gs_plugin_packagekit_results_valid		(PkResults	*results,
 								 GError		**error);
-void		gs_plugin_packagekit_progress_cb		(PkProgress	*progress,
-								 PkProgressType	type,
-								 gpointer	user_data);
 void		gs_plugin_packagekit_resolve_packages_app	(GsPlugin *plugin,
 								 GPtrArray *packages,
 								 GsApp *app);
@@ -59,4 +50,4 @@ void		gs_plugin_packagekit_refine_details_app		(GsPlugin *plugin,
 
 G_END_DECLS
 
-#endif /* __APPSTREAM_CACHE_H */
+#endif /* __PACKAGEKIT_COMMON_H */

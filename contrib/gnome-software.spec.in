@@ -69,7 +69,7 @@ Requires: libsoup%{?_isa} >= %{libsoup_version}
 Requires: PackageKit%{?_isa} >= %{packagekit_version}
 
 # this is not a library version
-%define gs_plugin_version               11
+%define gs_plugin_version               12
 
 %description
 gnome-software is an application that makes it easy to add, remove
@@ -104,14 +104,14 @@ Adds support for Snap packages from the Snap store.
 
 %build
 %meson \
-    -Denable-snap=true \
-    -Denable-gudev=true \
-    -Denable-packagekit=true \
-    -Denable-external-appstream=false \
-    -Denable-rpm-ostree=true \
-    -Denable-tests=false \
-    -Denable-ubuntuone=false \
-    -Denable-ubuntu-reviews=false
+    -Dsnap=false \
+    -Dgudev=true \
+    -Dpackagekit=true \
+    -Dexternal_appstream=false \
+    -Drpm_ostree=true \
+    -Dtests=false \
+    -Dubuntuone=false \
+    -Dubuntu_reviews=false
 %meson_build
 
 %install
@@ -175,6 +175,7 @@ DESTDIR=%{buildroot} appstream-util check-root
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-local.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-offline.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-proxy.so
+%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-refine-repos.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-refine.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-refresh.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-upgrade.so
@@ -189,6 +190,7 @@ DESTDIR=%{buildroot} appstream-util check-root
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_steam.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_systemd-updates.so
 %{_sysconfdir}/xdg/autostart/gnome-software-service.desktop
+%{_datadir}/app-info/xmls/org.gnome.Software.Featured.xml
 %{_datadir}/dbus-1/services/org.freedesktop.PackageKit.service
 %{_datadir}/dbus-1/services/org.gnome.Software.service
 %{_datadir}/gnome-shell/search-providers/org.gnome.Software-search-provider.ini
@@ -198,8 +200,8 @@ DESTDIR=%{buildroot} appstream-util check-root
 %{_libexecdir}/gnome-software-restarter
 
 %files snap
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_snap.so
-%{_datadir}/metainfo/org.gnome.Software.Plugin.Snap.metainfo.xml
+#%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_snap.so
+#%{_datadir}/metainfo/org.gnome.Software.Plugin.Snap.metainfo.xml
 
 %files devel
 %{_libdir}/pkgconfig/gnome-software.pc
@@ -209,7 +211,6 @@ DESTDIR=%{buildroot} appstream-util check-root
 
 %files editor
 %{_bindir}/gnome-software-editor
-%{_datadir}/app-info/xmls/org.gnome.Software.Featured.xml
 %{_datadir}/applications/org.gnome.Software.Editor.desktop
 %{_mandir}/man1/gnome-software-editor.1*
 

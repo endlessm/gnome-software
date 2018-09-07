@@ -41,6 +41,13 @@ typedef struct
 
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (GsPage, gs_page, GTK_TYPE_BIN)
 
+GsShell *
+gs_page_get_shell (GsPage *page)
+{
+	GsPagePrivate *priv = gs_page_get_instance_private (page);
+	return priv->shell;
+}
+
 typedef struct {
 	GsApp		*app;
 	GsPage		*page;
@@ -85,7 +92,8 @@ gs_page_authenticate_cb (GtkDialog *dialog,
 	/* unmap the dialog */
 	gtk_widget_destroy (GTK_WIDGET (dialog));
 
-	helper->callback (helper->page, response_type == GTK_RESPONSE_OK, helper->callback_data);
+	if (helper->callback != NULL)
+		helper->callback (helper->page, response_type == GTK_RESPONSE_OK, helper->callback_data);
 }
 
 void
@@ -102,6 +110,7 @@ gs_page_authenticate (GsPage *page,
 	g_autoptr(GError) error = NULL;
 
 	helper = g_slice_new0 (GsPageHelper);
+	helper->app = app != NULL ? g_object_ref (app) : NULL;
 	helper->page = g_object_ref (page);
 	helper->callback = callback;
 	helper->callback_data = user_data;
@@ -139,8 +148,8 @@ gs_page_install_authenticate_cb (GsPage *page,
 		return;
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
+					 "interactive", TRUE,
 					 "app", helper->app,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
 					    helper->cancellable,
@@ -167,6 +176,7 @@ gs_page_remove_authenticate_cb (GsPage *page,
 		return;
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
+					 "interactive", TRUE,
 					 "app", helper->app,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
@@ -326,10 +336,9 @@ gs_page_purchase_authenticate_cb (GsPage *page,
 		return;
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_PURCHASE,
+					 "interactive", TRUE,
 					 "app", helper->app,
 					 "price", gs_app_get_price (helper->app),
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS |
-							  GS_PLUGIN_FAILURE_FLAGS_FATAL_PURCHASE,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
 					    helper->cancellable,
@@ -408,8 +417,8 @@ gs_page_app_purchased_cb (GObject *source,
 
 	/* now install */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
+					 "interactive", TRUE,
 					 "app", helper->app,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader,
 					    plugin_job,
@@ -438,11 +447,9 @@ gs_page_install_purchase_response_cb (GtkDialog *dialog,
 	g_debug ("purchase %s", gs_app_get_id (helper->app));
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_PURCHASE,
+					 "interactive", TRUE,
 					 "app", helper->app,
 					 "price", gs_app_get_price (helper->app),
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS |
-							  GS_PLUGIN_FAILURE_FLAGS_FATAL_AUTH |
-							  GS_PLUGIN_FAILURE_FLAGS_FATAL_PURCHASE,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader,
 					    plugin_job,
@@ -513,9 +520,8 @@ gs_page_install_app (GsPage *page,
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 
 		plugin_job = gs_plugin_job_newv (helper->action,
+						 "interactive", TRUE,
 						 "app", helper->app,
-						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS |
-								  GS_PLUGIN_FAILURE_FLAGS_FATAL_AUTH,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,
@@ -543,6 +549,7 @@ gs_page_update_app_response_cb (GtkDialog *dialog,
 
 	g_debug ("update %s", gs_app_get_id (helper->app));
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE,
+					 "interactive", TRUE,
 					 "app", helper->app,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader,
@@ -642,8 +649,8 @@ gs_page_update_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 
 	/* generic fallback */
 	plugin_job = gs_plugin_job_newv (helper->action,
+					 "interactive", TRUE,
 					 "app", app,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
 					    helper->cancellable,
@@ -669,6 +676,7 @@ gs_page_remove_app_response_cb (GtkDialog *dialog,
 
 	g_debug ("remove %s", gs_app_get_id (helper->app));
 	plugin_job = gs_plugin_job_newv (helper->action,
+					 "interactive", TRUE,
 					 "app", helper->app,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
@@ -696,9 +704,9 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 	if (gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
+						 "interactive", TRUE,
 						 "app", app,
-						 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
-						 NULL);
+							 NULL);
 		g_debug ("remove %s", gs_app_get_id (app));
 		gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
 						    helper->cancellable,
@@ -770,8 +778,8 @@ gs_page_launch_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 	GsPagePrivate *priv = gs_page_get_instance_private (page);
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_LAUNCH,
+					 "interactive", TRUE,
 					 "app", app,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
 					    cancellable,
@@ -798,6 +806,7 @@ gs_page_shortcut_add (GsPage *page, GsApp *app, GCancellable *cancellable)
 	GsPagePrivate *priv = gs_page_get_instance_private (page);
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_ADD_SHORTCUT,
+					 "interactive", TRUE,
 					 "app", app,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
@@ -825,6 +834,7 @@ gs_page_shortcut_remove (GsPage *page, GsApp *app, GCancellable *cancellable)
 	GsPagePrivate *priv = gs_page_get_instance_private (page);
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE_SHORTCUT,
+					 "interactive", TRUE,
 					 "app", app,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,

@@ -30,6 +30,11 @@
 
 #include "gs-rpmostree-generated.h"
 
+/* This shows up in the `rpm-ostree status` as the software that
+ * initiated the update.
+ */
+#define GS_RPMOSTREE_CLIENT_ID PACKAGE_NAME
+
 struct GsPluginData {
 	GsRPMOSTreeOS		*os_proxy;
 	GsRPMOSTreeSysroot	*sysroot_proxy;
@@ -85,6 +90,7 @@ gboolean
 gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GVariantBuilder) options_builder = NULL;
 
 	/* Create a proxy for sysroot */
 	if (priv->sysroot_proxy == NULL) {
@@ -127,9 +133,12 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 		}
 	}
 
+	options_builder = g_variant_builder_new (G_VARIANT_TYPE ("a{sv}"));
+	g_variant_builder_add (options_builder, "{sv}", "id",
+			       g_variant_new_string (GS_RPMOSTREE_CLIENT_ID));
 	/* Register as a client so that the rpm-ostree daemon doesn't exit */
 	if (!gs_rpmostree_sysroot_call_register_client_sync (priv->sysroot_proxy,
-	                                                     g_variant_new ("a{sv}", NULL),
+	                                                     g_variant_builder_end (options_builder),
 	                                                     cancellable,
 	                                                     error)) {
 		gs_utils_error_convert_gio (error);
@@ -164,6 +173,10 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 {
 	if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_PACKAGE &&
 	    gs_app_get_scope (app) == AS_APP_SCOPE_SYSTEM) {
+		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+	}
+
+	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE) {
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	}
 }
@@ -395,74 +408,93 @@ make_rpmostree_options_variant (gboolean reboot,
 	return g_variant_ref_sink (g_variant_dict_end (&dict));
 }
 
+static gboolean
+_download_only (GsPlugin *plugin, GCancellable *cancellable, GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autofree gchar *transaction_address = NULL;
+	g_autoptr(GVariant) options = NULL;
+
+	options = make_rpmostree_options_variant (FALSE,  /* reboot */
+						  FALSE,  /* allow-downgrade */
+						  FALSE,  /* cache-only */
+						  TRUE,   /* download-only */
+						  FALSE,  /* skip-purge */
+						  FALSE,  /* no-pull-base */
+						  FALSE,  /* dry-run */
+						  FALSE); /* no-overrides */
+	if (!gs_rpmostree_os_call_upgrade_sync (priv->os_proxy,
+						options,
+						NULL /* fd list */,
+						&transaction_address,
+						NULL /* fd list out */,
+						cancellable,
+						error)) {
+		gs_utils_error_convert_gio (error);
+		return FALSE;
+	}
+
+	if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
+							 transaction_address,
+							 cancellable,
+							 error)) {
+		gs_utils_error_convert_gio (error);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_download (GsPlugin *plugin,
+		    GsAppList *list,
+		    GCancellable *cancellable,
+		    GError **error)
+{
+	/* any are us? */
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (g_strcmp0 (gs_app_get_management_plugin (app), "rpm-ostree") == 0)
+			return _download_only (plugin, cancellable, error);
+	}
+	return TRUE;
+}
+
 gboolean
 gs_plugin_refresh (GsPlugin *plugin,
                    guint cache_age,
-                   GsPluginRefreshFlags flags,
                    GCancellable *cancellable,
                    GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	GVariantDict dict;
+	g_autofree gchar *transaction_address = NULL;
+	g_autoptr(GVariant) options = NULL;
 
-	if (flags & GS_PLUGIN_REFRESH_FLAGS_PAYLOAD) {
-		g_autofree gchar *transaction_address = NULL;
-		g_autoptr(GVariant) options = NULL;
+	g_variant_dict_init (&dict, NULL);
+	g_variant_dict_insert (&dict, "mode", "s", "check");
+	options = g_variant_ref_sink (g_variant_dict_end (&dict));
 
-		options = make_rpmostree_options_variant (FALSE,  /* reboot */
-		                                          FALSE,  /* allow-downgrade */
-		                                          FALSE,  /* cache-only */
-		                                          TRUE,   /* download-only */
-		                                          FALSE,  /* skip-purge */
-		                                          FALSE,  /* no-pull-base */
-		                                          FALSE,  /* dry-run */
-		                                          FALSE); /* no-overrides */
-		if (!gs_rpmostree_os_call_upgrade_sync (priv->os_proxy,
-		                                        options,
-		                                        NULL /* fd list */,
-		                                        &transaction_address,
-		                                        NULL /* fd list out */,
-		                                        cancellable,
-		                                        error)) {
-			gs_utils_error_convert_gio (error);
-			return FALSE;
-		}
-
-		if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
-		                                                 transaction_address,
-		                                                 cancellable,
-		                                                 error)) {
-			gs_utils_error_convert_gio (error);
-			return FALSE;
-		}
+	if (!gs_rpmostree_os_call_automatic_update_trigger_sync (priv->os_proxy,
+								 options,
+								 NULL,
+								 &transaction_address,
+								 cancellable,
+								 error)) {
+		gs_utils_error_convert_gio (error);
+		return FALSE;
 	}
 
-	if (flags & GS_PLUGIN_REFRESH_FLAGS_PAYLOAD) {
-		g_autofree gchar *transaction_address = NULL;
-		g_autoptr(GVariant) options = NULL;
-		GVariantDict dict;
-
-		g_variant_dict_init (&dict, NULL);
-		g_variant_dict_insert (&dict, "mode", "s", "check");
-		options = g_variant_ref_sink (g_variant_dict_end (&dict));
-
-		if (!gs_rpmostree_os_call_automatic_update_trigger_sync (priv->os_proxy,
-		                                                         options,
-		                                                         NULL,
-		                                                         &transaction_address,
-		                                                         cancellable,
-		                                                         error)) {
-			gs_utils_error_convert_gio (error);
-			return FALSE;
-		}
-
-		if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
-		                                                 transaction_address,
-		                                                 cancellable,
-		                                                 error)) {
-			gs_utils_error_convert_gio (error);
-			return FALSE;
-		}
+	if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
+							 transaction_address,
+							 cancellable,
+							 error)) {
+		gs_utils_error_convert_gio (error);
+		return FALSE;
 	}
+
+	/* update UI */
+	gs_plugin_updates_changed (plugin);
 
 	return TRUE;
 }
@@ -639,20 +671,79 @@ gs_plugin_update_app (GsPlugin *plugin,
                       GCancellable *cancellable,
                       GError **error)
 {
-	GPtrArray *related = gs_app_get_related (app);
+	GsAppList *related = gs_app_get_related (app);
 
 	/* we don't currently don't put all updates in the OsUpdate proxy app */
 	if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
 		return trigger_rpmostree_update (plugin, app, cancellable, error);
 
 	/* try to trigger each related app */
-	for (guint i = 0; i < related->len; i++) {
-		GsApp *app_tmp = g_ptr_array_index (related, i);
+	for (guint i = 0; i < gs_app_list_length (related); i++) {
+		GsApp *app_tmp = gs_app_list_index (related, i);
 		if (!trigger_rpmostree_update (plugin, app_tmp, cancellable, error))
 			return FALSE;
 	}
 
 	/* success */
+	return TRUE;
+}
+
+gboolean
+gs_plugin_app_remove (GsPlugin *plugin,
+                      GsApp *app,
+                      GCancellable *cancellable,
+                      GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autofree gchar *transaction_address = NULL;
+	g_autoptr(GVariant) options = NULL;
+	g_auto(GStrv) packages_to_remove = NULL;
+	char *strv_empty[] = { NULL };
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	gs_app_set_state (app, AS_APP_STATE_REMOVING);
+
+	options = make_rpmostree_options_variant (FALSE,  /* reboot */
+	                                          FALSE,  /* allow-downgrade */
+	                                          TRUE,   /* cache-only */
+	                                          FALSE,  /* download-only */
+	                                          FALSE,  /* skip-purge */
+	                                          TRUE,  /* no-pull-base */
+	                                          FALSE,  /* dry-run */
+	                                          FALSE); /* no-overrides */
+
+	packages_to_remove = g_new0 (gchar *, 2);
+	packages_to_remove[0] = g_strdup (gs_app_get_source_default (app));
+
+	if (!gs_rpmostree_os_call_pkg_change_sync (priv->os_proxy,
+	                                           options,
+	                                           (const gchar * const*)strv_empty /* packages to add */,
+	                                           (const gchar * const*)packages_to_remove,
+	                                           NULL /* fd list */,
+	                                           &transaction_address,
+	                                           NULL /* fd list out */,
+	                                           cancellable,
+	                                           error)) {
+		gs_utils_error_convert_gio (error);
+		gs_app_set_state_recover (app);
+		return FALSE;
+	}
+
+	if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
+	                                                 transaction_address,
+	                                                 cancellable,
+	                                                 error)) {
+		gs_utils_error_convert_gio (error);
+		gs_app_set_state_recover (app);
+		return FALSE;
+	}
+
+	/* state is not known: we don't know if we can re-install this app */
+	gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+
 	return TRUE;
 }
 
@@ -723,6 +814,68 @@ gs_plugin_refine (GsPlugin *plugin,
 			resolve_packages_app (plugin, pkglist, layered_packages, app);
 	}
 
+	return TRUE;
+}
+
+gboolean
+gs_plugin_app_upgrade_download (GsPlugin *plugin,
+                                GsApp *app,
+                                GCancellable *cancellable,
+                                GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const char *packages[] = { NULL };
+	g_autofree gchar *new_refspec = NULL;
+	g_autofree gchar *transaction_address = NULL;
+	g_autoptr(GVariant) options = NULL;
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	/* check is distro-upgrade */
+	if (gs_app_get_kind (app) != AS_APP_KIND_OS_UPGRADE)
+		return TRUE;
+
+	/* construct new refspec based on the distro version we're upgrading to */
+	new_refspec = g_strdup_printf ("ostree://fedora/%s/x86_64/workstation",
+	                               gs_app_get_version (app));
+
+	options = make_rpmostree_options_variant (FALSE,  /* reboot */
+	                                          FALSE,  /* allow-downgrade */
+	                                          FALSE,  /* cache-only */
+	                                          TRUE,   /* download-only */
+	                                          FALSE,  /* skip-purge */
+	                                          FALSE,  /* no-pull-base */
+	                                          FALSE,  /* dry-run */
+	                                          FALSE); /* no-overrides */
+
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	if (!gs_rpmostree_os_call_rebase_sync (priv->os_proxy,
+	                                       options,
+	                                       new_refspec,
+	                                       packages,
+	                                       NULL /* fd list */,
+	                                       &transaction_address,
+	                                       NULL /* fd list out */,
+	                                       cancellable,
+	                                       error)) {
+		gs_utils_error_convert_gio (error);
+		gs_app_set_state_recover (app);
+		return FALSE;
+	}
+
+	if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
+	                                                 transaction_address,
+	                                                 cancellable,
+	                                                 error)) {
+		gs_utils_error_convert_gio (error);
+		gs_app_set_state_recover (app);
+		return FALSE;
+	}
+
+	/* state is known */
+	gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
 	return TRUE;
 }
 

@@ -72,10 +72,12 @@ struct _GsDetailsPage
 	GtkWidget		*box_addons;
 	GtkWidget		*box_details;
 	GtkWidget		*box_details_description;
+	GtkWidget		*box_details_support;
 	GtkWidget		*box_progress;
 	GtkWidget		*box_progress2;
 	GtkWidget		*star;
 	GtkWidget		*label_review_count;
+	GtkWidget		*box_details_screenshot;
 	GtkWidget		*box_details_screenshot_main;
 	GtkWidget		*box_details_screenshot_thumbnails;
 	GtkWidget		*box_details_license_list;
@@ -663,6 +665,8 @@ gs_details_page_refresh_screenshots (GsDetailsPage *self)
 			gtk_box_pack_start (GTK_BOX (self->box_details_screenshot_main), ssimg, FALSE, FALSE, 0);
 			gtk_widget_set_visible (ssimg, TRUE);
 		}
+		gtk_widget_set_visible (self->box_details_screenshot,
+		                        screenshots->len > 0);
 		gtk_widget_set_visible (self->box_details_screenshot_fallback,
 		                        screenshots->len == 0);
 		return;
@@ -690,6 +694,8 @@ gs_details_page_refresh_screenshots (GsDetailsPage *self)
 
 	/* set screenshots */
 	gs_container_remove_all (GTK_CONTAINER (self->box_details_screenshot_main));
+	gtk_widget_set_visible (self->box_details_screenshot,
+				screenshots->len > 0);
 	if (screenshots->len == 0) {
 		gs_container_remove_all (GTK_CONTAINER (self->box_details_screenshot_thumbnails));
 		return;
@@ -872,7 +878,7 @@ gs_details_page_refresh_size (GsDetailsPage *self)
 static void
 gs_details_page_refresh_all (GsDetailsPage *self)
 {
-	GPtrArray *history;
+	GsAppList *history;
 	GdkPixbuf *pixbuf = NULL;
 	GList *addons;
 	GtkWidget *widget;
@@ -882,6 +888,7 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 	guint64 kudos;
 	guint64 updated;
 	guint64 user_integration_bf;
+	gboolean show_support_box = FALSE;
 	g_autoptr(GError) error = NULL;
 
 	/* change widgets */
@@ -919,15 +926,18 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 	tmp = gs_app_get_url (self->app, AS_URL_KIND_HOMEPAGE);
 	if (tmp != NULL && tmp[0] != '\0') {
 		gtk_widget_set_visible (self->button_details_website, TRUE);
+		show_support_box = TRUE;
 	} else {
 		gtk_widget_set_visible (self->button_details_website, FALSE);
 	}
 	tmp = gs_app_get_url (self->app, AS_URL_KIND_DONATION);
 	if (tmp != NULL && tmp[0] != '\0') {
 		gtk_widget_set_visible (self->button_donate, TRUE);
+		show_support_box = TRUE;
 	} else {
 		gtk_widget_set_visible (self->button_donate, FALSE);
 	}
+	gtk_widget_set_visible (self->box_details_support, show_support_box);
 
 	/* set the developer name, falling back to the project group */
 	tmp = gs_app_get_developer_name (self->app);
@@ -988,7 +998,7 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 
 		history = gs_app_get_history (self->app);
 
-		if (history->len == 0) {
+		if (gs_app_list_length (history) == 0) {
 			gtk_label_set_label (GTK_LABEL (self->label_details_updated_value), updated_str);
 		} else {
 			GString *url;
@@ -1165,17 +1175,17 @@ static void gs_details_page_addon_selected_cb (GsAppAddonRow *row, GParamSpec *p
 static void
 gs_details_page_refresh_addons (GsDetailsPage *self)
 {
-	GPtrArray *addons;
+	GsAppList *addons;
 	guint i;
 
 	gs_container_remove_all (GTK_CONTAINER (self->list_box_addons));
 
 	addons = gs_app_get_addons (self->app);
-	for (i = 0; i < addons->len; i++) {
+	for (i = 0; i < gs_app_list_length (addons); i++) {
 		GsApp *addon;
 		GtkWidget *row;
 
-		addon = g_ptr_array_index (addons, i);
+		addon = gs_app_list_index (addons, i);
 		if (gs_app_get_state (addon) == AS_APP_STATE_UNAVAILABLE)
 			continue;
 
@@ -1229,8 +1239,6 @@ gs_details_page_authenticate_cb (GsPage *page,
 	plugin_job = gs_plugin_job_newv (helper->action,
 					 "app", helper->app,
 					 "review", helper->review,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY |
-							  GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 NULL);
 	gs_plugin_loader_job_process_async (helper->self->plugin_loader, plugin_job,
 					    helper->self->cancellable,
@@ -1282,10 +1290,9 @@ gs_details_page_review_button_clicked_cb (GsReviewRow *row,
 	helper->review = g_object_ref (gs_review_row_get_review (row));
 	helper->action = action;
 	plugin_job = gs_plugin_job_newv (helper->action,
+					 "interactive", TRUE,
 					 "app", helper->app,
 					 "review", helper->review,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY |
-							  GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
@@ -1456,7 +1463,6 @@ gs_details_page_app_refine2 (GsDetailsPage *self)
 	 * of no huge importance if we don't get the required data */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
 					 "app", self->app,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS |
@@ -1692,7 +1698,6 @@ gs_details_page_set_local_file (GsDetailsPage *self, GFile *file)
 	gs_details_page_set_state (self, GS_DETAILS_PAGE_STATE_LOADING);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_FILE_TO_APP,
 					 "file", file,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
@@ -1721,7 +1726,6 @@ gs_details_page_set_url (GsDetailsPage *self, const gchar *url)
 	gs_details_page_set_state (self, GS_DETAILS_PAGE_STATE_LOADING);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_URL_TO_APP,
 					 "search", url,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
@@ -1750,7 +1754,6 @@ gs_details_page_load (GsDetailsPage *self)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
 					 "app", self->app,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
@@ -2006,10 +2009,9 @@ gs_details_page_review_response_cb (GtkDialog *dialog,
 	helper->review = g_object_ref (review);
 	helper->action = GS_PLUGIN_ACTION_REVIEW_SUBMIT;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REVIEW_SUBMIT,
+					 "interactive", TRUE,
 					 "app", helper->app,
 					 "review", helper->review,
-					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY |
-							  GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
@@ -2407,10 +2409,12 @@ gs_details_page_class_init (GsDetailsPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_addons);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_description);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_support);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_progress);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_progress2);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, star);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_review_count);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot_main);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_screenshot_thumbnails);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_license_list);

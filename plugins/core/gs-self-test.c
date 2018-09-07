@@ -109,7 +109,7 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 {
 	gboolean ret;
 	GsApp *os_update;
-	GPtrArray *related;
+	GsAppList *related;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	g_autoptr(GsPluginJob) plugin_job2 = NULL;
 	g_autoptr(GError) error = NULL;
@@ -160,7 +160,7 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 
 	/* must have two related apps, the ones we added earlier */
 	related = gs_app_get_related (os_update);
-	g_assert_cmpint (related->len, ==, 2);
+	g_assert_cmpint (gs_app_list_length (related), ==, 2);
 
 	/* another test to make sure that we don't get an OsUpdate item created for wildcard apps */
 	list_wildcard = gs_app_list_new ();
@@ -249,7 +249,6 @@ main (int argc, char **argv)
 	ret = gs_plugin_loader_setup (plugin_loader,
 				      (gchar**) whitelist,
 				      NULL,
-				      GS_PLUGIN_FAILURE_FLAGS_NONE,
 				      NULL,
 				      &error);
 	g_assert_no_error (error);

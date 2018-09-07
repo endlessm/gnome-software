@@ -89,9 +89,7 @@ gs_app_row_get_description (GsAppRow *app_row)
 	const gchar *tmp = NULL;
 
 	/* convert the markdown update description into PangoMarkup */
-	if (priv->show_update &&
-	    (gs_app_get_state (priv->app) == AS_APP_STATE_UPDATABLE ||
-	     gs_app_get_state (priv->app) == AS_APP_STATE_UPDATABLE_LIVE)) {
+	if (priv->show_update) {
 		tmp = gs_app_get_update_details (priv->app);
 		if (tmp != NULL && tmp[0] != '\0')
 			return g_string_new (tmp);
@@ -289,7 +287,7 @@ gs_app_row_refresh (GsAppRow *app_row)
 	GString *str = NULL;
 	const gchar *tmp;
 	gboolean missing_search_result;
-	guint64 installed_size;
+	guint64 size = 0;
 
 	if (priv->app == NULL)
 		return;
@@ -370,9 +368,7 @@ gs_app_row_refresh (GsAppRow *app_row)
 		gtk_label_set_label (GTK_LABEL (priv->name_label),
 				     gs_app_get_name (priv->app));
 	}
-	if (priv->show_update &&
-	    (gs_app_get_state (priv->app) == AS_APP_STATE_UPDATABLE ||
-	     gs_app_get_state (priv->app) == AS_APP_STATE_UPDATABLE_LIVE)) {
+	if (priv->show_update) {
 		g_autofree gchar *verstr = NULL;
 		verstr = gs_app_row_format_version_update (priv->app);
 		gtk_label_set_label (GTK_LABEL (priv->version_label), verstr);
@@ -467,12 +463,15 @@ gs_app_row_refresh (GsAppRow *app_row)
 		gtk_widget_set_visible (priv->checkbox, FALSE);
 	}
 
-	installed_size = gs_app_get_size_installed (priv->app);
-	if (priv->show_installed_size &&
-	    installed_size != GS_APP_SIZE_UNKNOWABLE && installed_size != 0) {
-		g_autofree gchar *size = NULL;
-		size = g_format_size (installed_size);
-		gtk_label_set_label (GTK_LABEL (priv->label_app_size), size);
+	/* show the right size */
+	if (priv->show_installed_size)
+		size = gs_app_get_size_installed (priv->app);
+	else if (priv->show_update)
+		size = gs_app_get_size_download (priv->app);
+	if (size != GS_APP_SIZE_UNKNOWABLE && size != 0) {
+		g_autofree gchar *sizestr = NULL;
+		sizestr = g_format_size (size);
+		gtk_label_set_label (GTK_LABEL (priv->label_app_size), sizestr);
 		gtk_widget_show (priv->label_app_size);
 	} else {
 		gtk_widget_hide (priv->label_app_size);
