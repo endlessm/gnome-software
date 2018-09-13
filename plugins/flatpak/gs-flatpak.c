@@ -3611,7 +3611,7 @@ gs_flatpak_app_copy (GsFlatpak *self,
 		g_main_context_iteration (NULL, FALSE);
 
 	if (helper->error) {
-		g_propagate_error (error, helper->error);
+		g_propagate_error (error, g_steal_pointer (&helper->error));
 		return FALSE;
 	}
 
