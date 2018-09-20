@@ -2091,6 +2091,9 @@ gs_shell_file_to_app_cb (GObject *source,
 	removable_media_cat = gs_app_get_metadata_item (app, "EndlessOS::RemovableMediaCategory");
 	if (removable_media_cat != NULL) {
 		GsCategory *category;
+		/* XXX: this seems to be a logic error; if the app does not have
+		 * metadata indicating the overview should be reloaded, it's
+		 * reloaded anyway */
 		if (gs_app_get_metadata_item (app, "EndlessOS::ReloadOverview") == NULL) {
 			reload_overview_and_select_category (shell, removable_media_cat);
 		} else {
