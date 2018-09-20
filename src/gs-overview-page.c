@@ -588,8 +588,21 @@ get_categories_cb (GObject *source_object,
 	gs_shell_side_filter_clear_categories (priv->shell);
 
 	for (guint i = 0; i < list->len; i++) {
+		gboolean usb_category_inserted = FALSE;
 		cat = GS_CATEGORY (g_ptr_array_index (list, i));
-		if (gs_category_get_size (cat) == 0)
+
+		if (g_strcmp0 (gs_category_get_id (cat), "usb") == 0) {
+			g_autoptr(GList) copy_dests = gs_plugin_loader_dup_copy_dests (plugin_loader);
+
+			if (copy_dests != NULL)
+				usb_category_inserted = TRUE;
+		}
+
+		/* allow empty categories for USB since there are usable actions
+		 * (such as copy OS to USB) in the USB category even when it has
+		 * no apps available
+		 */
+		if (gs_category_get_size (cat) == 0 && !usb_category_inserted)
 			continue;
 		has_category = TRUE;
 		gs_shell_side_filter_add_category (priv->shell, cat);

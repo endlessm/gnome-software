@@ -601,7 +601,7 @@ on_overview_categories_loaded (GsOverviewPage *page, gpointer user_data)
 }
 
 static void
-reload_overview_and_select_category (GsShell *shell, const gchar *category_name)
+reload_overview_and_select_category (GsShell *shell, const gchar *category_id)
 {
 	GsPage *page;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
@@ -860,6 +860,17 @@ main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 	gs_shell_clean_back_entry_stack (shell);
 	gtk_widget_hide (dialog);
 	return TRUE;
+}
+
+static void
+gs_shell_copy_dests_notify_cb (GsPluginLoader *plugin_loader,
+			       GParamSpec *pspec,
+			       GsShell *shell)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "overview"));
+
+	gs_page_reload (page);
 }
 
 static void
@@ -2036,6 +2047,10 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	g_return_if_fail (GS_IS_SHELL (shell));
 
 	priv->plugin_loader = g_object_ref (plugin_loader);
+	g_signal_connect (priv->plugin_loader, "notify::copy-dests",
+			  G_CALLBACK (gs_shell_copy_dests_notify_cb),
+			  shell);
+	gs_shell_copy_dests_notify_cb (plugin_loader, NULL, shell);
 	g_signal_connect_object (priv->plugin_loader, "notify::events",
 				 G_CALLBACK (gs_shell_events_notify_cb),
 				 shell, 0);
@@ -2633,6 +2648,10 @@ gs_shell_dispose (GObject *object)
 {
 	GsShell *shell = GS_SHELL (object);
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+
+	g_signal_handlers_disconnect_by_func (priv->plugin_loader,
+					      gs_shell_copy_dests_notify_cb,
+					      shell);
 
 	if (priv->back_entry_stack != NULL) {
 		g_queue_free_full (priv->back_entry_stack, (GDestroyNotify) free_back_entry);
