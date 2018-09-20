@@ -85,14 +85,14 @@ static guint signals [SIGNAL_LAST] = { 0 };
 
 typedef struct {
 	GsShell *shell;
-	gchar *category_name;
+	gchar *category_id;
 } CategoriesLoadedData;
 
 static void gs_shell_side_filter_add_mode (GsShell *shell, GsShellMode mode);
 static void side_filter_select_by_mode (GsShell *shell, GsShellMode mode);
 static void side_filter_row_selected (GtkListBox *side_filter,
 				      GsSideFilterRow *row, gpointer data);
-static GsCategory *side_filter_get_category_by_name (GsShell *shell, const gchar *category_id);
+static GsCategory *side_filter_get_category_by_id (GsShell *shell, const gchar *category_id);
 
 static void
 modal_dialog_unmapped_cb (GtkWidget *dialog,
@@ -583,15 +583,15 @@ static void
 on_overview_categories_loaded (GsOverviewPage *page, gpointer user_data)
 {
 	g_autofree CategoriesLoadedData *data = (CategoriesLoadedData *) user_data;
-	GsCategory *category = side_filter_get_category_by_name (data->shell,
-								 data->category_name);
+	GsCategory *category = side_filter_get_category_by_id (data->shell,
+							       data->category_id);
 
 	g_signal_handlers_disconnect_by_func (page, on_overview_categories_loaded,
 					      user_data);
 
 	if (category == NULL) {
 		g_warning ("No %s category after overview categories are refreshed!",
-			   data->category_name);
+			   data->category_id);
 		gs_shell_change_mode (data->shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
 		return;
 	}
@@ -608,7 +608,7 @@ reload_overview_and_select_category (GsShell *shell, const gchar *category_id)
 	CategoriesLoadedData *data = g_new (CategoriesLoadedData, 1);
 
 	data->shell = shell;
-	data->category_name = g_strdup (category_name);
+	data->category_id = g_strdup (category_id);
 	page = GS_PAGE (g_hash_table_lookup (priv->pages, "overview"));
 
 	g_signal_connect (page, "categories-loaded",
@@ -2390,7 +2390,7 @@ gs_shell_file_to_app_cb (GObject *source,
 		if (gs_app_get_metadata_item (app, "EndlessOS::ReloadOverview") == NULL) {
 			reload_overview_and_select_category (shell, removable_media_cat);
 		} else {
-			category = side_filter_get_category_by_name (shell, removable_media_cat);
+			category = side_filter_get_category_by_id (shell, removable_media_cat);
 			if (category == NULL)
 				reload_overview_and_select_category (shell, removable_media_cat);
 			else {
@@ -2578,7 +2578,7 @@ side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
 }
 
 static GsCategory *
-side_filter_get_category_by_name (GsShell *shell, const gchar *category_id)
+side_filter_get_category_by_id (GsShell *shell, const gchar *category_id)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	g_autoptr(GList) rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
