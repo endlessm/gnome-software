@@ -811,3 +811,118 @@ gs_plugin_add_updates (GsPlugin *plugin,
 {
 	return add_updates (plugin, list, cancellable, error);
 }
+
+typedef struct {
+	GCancellable *cancellable;
+	gulong cancelled_id;
+	gboolean finished;
+	GError *error;
+} OsCopyProcessHelper;
+
+static void
+os_copy_process_helper_free (OsCopyProcessHelper *helper)
+{
+	g_clear_object (&helper->cancellable);
+	g_clear_error (&helper->error);
+	g_free (helper);
+}
+
+static OsCopyProcessHelper *
+os_copy_process_helper_new (GCancellable *cancellable, gulong cancelled_id)
+{
+	OsCopyProcessHelper *helper = g_new0 (OsCopyProcessHelper, 1);
+	helper->cancellable = g_object_ref (cancellable);
+	helper->cancelled_id = cancelled_id;
+	helper->finished = FALSE;
+	helper->error = NULL;
+	return helper;
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(OsCopyProcessHelper, os_copy_process_helper_free)
+
+static void
+os_copy_process_watch_cb (GPid pid, gint status, gpointer user_data)
+{
+	OsCopyProcessHelper *helper = user_data;
+	g_autoptr(GError) error = NULL;
+
+	if (!g_cancellable_is_cancelled (helper->cancellable) && status != 0)
+		g_set_error (&helper->error,
+			     GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_FAILED,
+			     "failed to copy OS to removable media: command "
+			     "failed with status %d", status);
+
+	g_cancellable_disconnect (helper->cancellable, helper->cancelled_id);
+	g_spawn_close_pid (pid);
+
+	/* once the copy terminates (successfully or not), set plugin status to
+	 * update UI accordingly */
+
+	helper->finished = TRUE;
+}
+
+static void
+os_copy_cancelled_cb (GCancellable *cancellable, gpointer user_data)
+{
+	GPid pid = GPOINTER_TO_INT (user_data);
+
+	/* terminate the process which is copying the OS */
+	kill (pid, SIGTERM);
+}
+
+gboolean
+gs_plugin_os_copy (GsPlugin *plugin,
+		   GFile *copy_dest,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	/* this is used in an async function but we block here until that
+	 * returns so we won't auto-free while other threads depend on this */
+	g_autoptr (OsCopyProcessHelper) helper = NULL;
+	gboolean spawn_retval;
+	const gchar *argv[] = {"/usr/bin/pkexec",
+			       "/usr/bin/eos-updater-prepare-volume",
+			       g_file_peek_path (copy_dest),
+			       NULL};
+	GPid child_pid;
+	gulong cancelled_id;
+
+	g_debug ("Copying OS to: %s", g_file_peek_path (copy_dest));
+
+	spawn_retval = g_spawn_async (".",
+				      (gchar **) argv,
+				      NULL,
+				      G_SPAWN_DO_NOT_REAP_CHILD,
+				      NULL,
+				      NULL,
+				      &child_pid,
+				      error);
+
+	if (spawn_retval) {
+		cancelled_id = g_cancellable_connect (cancellable,
+						      G_CALLBACK (os_copy_cancelled_cb),
+						      GINT_TO_POINTER (child_pid),
+						      NULL);
+
+		helper = os_copy_process_helper_new (cancellable,
+								cancelled_id);
+		g_child_watch_add (child_pid, os_copy_process_watch_cb, helper);
+	} else
+		return FALSE;
+
+	/* Iterate the main loop until either the copy process completes or the
+	 * user cancels the copy. Without this, it is impossible to cancel the
+	 * copy because we reach the end of this function, its parent GTask
+	 * returns and we disconnect the handler that would kill the copy
+	 * process. */
+	while (!helper->finished)
+		g_main_context_iteration (NULL, FALSE);
+
+	if (helper->error) {
+		g_propagate_error (error, g_steal_pointer (&helper->error));
+		return FALSE;
+	}
+
+	return TRUE;
+}
