@@ -188,6 +188,10 @@ typedef gboolean	 (*GsPluginCopyFunc)		(GsPlugin	*plugin,
 							 const gchar	*copy_dest,
 							 GCancellable	*cancellable,
 							 GError		**error);
+typedef gboolean	 (*GsPluginOsCopyFunc)		(GsPlugin	*plugin,
+							 const gchar	*copy_dest,
+							 GCancellable	*cancellable,
+							 GError		**error);
 
 /* async helper */
 typedef struct {
@@ -738,6 +742,14 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 		{
 			GsPluginCopyFunc plugin_func = func;
 			ret = plugin_func (plugin, app,
+					   gs_plugin_job_get_copy_dest (helper->plugin_job),
+					   cancellable, &error_local);
+		}
+		break;
+	case GS_PLUGIN_ACTION_OS_COPY:
+		{
+			GsPluginOsCopyFunc plugin_func = func;
+			ret = plugin_func (plugin,
 					   gs_plugin_job_get_copy_dest (helper->plugin_job),
 					   cancellable, &error_local);
 		}
