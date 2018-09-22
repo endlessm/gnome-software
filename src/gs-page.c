@@ -80,6 +80,10 @@ static void
 gs_page_app_copied_cb (GObject *source,
                        GAsyncResult *res,
                        gpointer user_data);
+static void
+gs_page_os_copied_cb (GObject *source,
+                      GAsyncResult *res,
+                      gpointer user_data);
 
 static void
 gs_page_install_authenticate_cb (GtkDialog *dialog,
@@ -276,6 +280,33 @@ gs_page_app_copied_cb (GObject *source,
 
 	if (GS_PAGE_GET_CLASS (page)->app_copied != NULL)
 		GS_PAGE_GET_CLASS (page)->app_copied (page, helper->app);
+}
+
+static void
+gs_page_os_copied_cb (GObject *source,
+		      GAsyncResult *res,
+		      gpointer user_data)
+{
+	g_autoptr(GsPageHelper) helper = (GsPageHelper *) user_data;
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
+	GsPage *page = helper->page;
+	gboolean ret;
+	g_autoptr(GError) error = NULL;
+
+	ret = gs_plugin_loader_job_action_finish (plugin_loader, res, &error);
+	if (g_error_matches (error,
+			     GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_CANCELLED)) {
+		g_debug ("app copy cancelled: %s", error->message);
+		return;
+	}
+	if (!ret) {
+		g_warning ("failed to copy OS: %s", error->message);
+		return;
+	}
+
+	if (GS_PAGE_GET_CLASS (page)->os_copied != NULL)
+		GS_PAGE_GET_CLASS (page)->os_copied (page);
 }
 
 GtkWidget *
@@ -548,6 +579,33 @@ gs_page_copy_app (GsPage *page,
 		g_warning ("App %s must be installed to copy to USB",
 			   gs_app_get_name (app));
 	}
+}
+
+void
+gs_page_copy_os (GsPage *page,
+		  const gchar *copy_dest,
+		  GsShellInteraction interaction,
+		  GCancellable *cancellable)
+{
+	GsPagePrivate *priv = gs_page_get_instance_private (page);
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsPageHelper *helper = g_slice_new0 (GsPageHelper);
+	helper->action = GS_PLUGIN_ACTION_OS_COPY;
+	helper->page = g_object_ref (page);
+	helper->cancellable = g_object_ref (cancellable);
+	helper->interaction = interaction;
+
+	plugin_job = gs_plugin_job_newv (helper->action,
+					 "copy-dest", copy_dest,
+					 "failure-flags", GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS |
+							  GS_PLUGIN_FAILURE_FLAGS_FATAL_ANY,
+					 NULL);
+
+	gs_plugin_loader_job_process_async (priv->plugin_loader,
+					    plugin_job,
+					    helper->cancellable,
+					    gs_page_os_copied_cb,
+					    helper);
 }
 
 static void
