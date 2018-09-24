@@ -196,6 +196,10 @@ typedef gboolean	 (*GsPluginCopyFunc)		(GsPlugin	*plugin,
 							 const gchar	*copy_dest,
 							 GCancellable	*cancellable,
 							 GError		**error);
+typedef gboolean	 (*GsPluginOsCopyFunc)		(GsPlugin	*plugin,
+							 const gchar	*copy_dest,
+							 GCancellable	*cancellable,
+							 GError		**error);
 
 /* async helper */
 typedef struct {
@@ -768,6 +772,14 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 		{
 			GsPluginCopyFunc plugin_func = func;
 			ret = plugin_func (plugin, app,
+					   gs_plugin_job_get_copy_dest (helper->plugin_job),
+					   cancellable, &error_local);
+		}
+		break;
+	case GS_PLUGIN_ACTION_OS_COPY:
+		{
+			GsPluginOsCopyFunc plugin_func = func;
+			ret = plugin_func (plugin,
 					   gs_plugin_job_get_copy_dest (helper->plugin_job),
 					   cancellable, &error_local);
 		}
@@ -2464,21 +2476,6 @@ gs_plugin_loader_setup_again (GsPluginLoader *plugin_loader)
 	}
 }
 
-static GMount*
-find_mount_in_list (GList  *mounts, GMount *needle)
-{
-	g_autofree gchar* uuid_needle = g_mount_get_uuid (needle);
-
-	for (GList *l = mounts; l; l = l->next) {
-		g_autofree gchar *uuid_cur = g_mount_get_uuid (l->data);
-
-		if (g_strcmp0 (uuid_needle, uuid_cur) == 0)
-			return l->data;
-	}
-
-	return NULL;
-}
-
 static GList*
 mounts_dup_as_paths (GList *mounts)
 {
@@ -2494,6 +2491,21 @@ mounts_dup_as_paths (GList *mounts)
 	return paths;
 }
 
+static gboolean
+mount_list_remove_if_exists (GList  **list,
+			     GMount  *mount)
+{
+	guint orig_len = 0;
+
+	g_return_val_if_fail (list != NULL, FALSE);
+
+	orig_len = g_list_length (*list);
+	if (*list != NULL)
+		*list = g_list_remove (*list, mount);
+
+	return orig_len != g_list_length (*list);
+}
+
 static void
 mount_added_cb (GVolumeMonitor *volume_monitor,
 		GMount *mount,
@@ -2501,23 +2513,15 @@ mount_added_cb (GVolumeMonitor *volume_monitor,
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	g_autoptr(GDrive) drive = g_mount_get_drive (mount);
-	g_autoptr(GMount) existing_mount = NULL;
 
 	if (!g_drive_is_removable (drive))
 		return;
 
-	existing_mount = find_mount_in_list (priv->removable_mounts, mount);
-
-	/* update the list to remove any equivalent mounts and move this to the
-	 * front so we prioritize mounts by recency
-	 */
-	if (existing_mount)
-		priv->removable_mounts = g_list_remove (priv->removable_mounts,
-							existing_mount);
-
+	/* remove this mount if it already exists in the list and add it to the
+	 * front so we prioritize mounts by recency */
+	mount_list_remove_if_exists (&priv->removable_mounts, mount);
 	priv->removable_mounts = g_list_prepend (priv->removable_mounts,
 						 g_object_ref (mount));
-
 	g_object_notify (G_OBJECT (plugin_loader), "copy-dests");
 }
 
@@ -2527,13 +2531,9 @@ mount_removed_cb (GVolumeMonitor *volume_monitor,
 		  GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	GMount *existing_mount = find_mount_in_list (priv->removable_mounts,
-						     mount);
-	if (existing_mount) {
-		priv->removable_mounts = g_list_remove (priv->removable_mounts,
-							existing_mount);
+
+	if (mount_list_remove_if_exists (&priv->removable_mounts, mount))
 		g_object_notify (G_OBJECT (plugin_loader), "copy-dests");
-	}
 }
 
 /**

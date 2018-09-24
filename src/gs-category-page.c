@@ -49,6 +49,11 @@ struct _GsCategoryPage
 	GtkWidget	*listbox_filter;
 	GtkWidget	*scrolledwindow_category;
 	GtkWidget	*scrolledwindow_filter;
+	GtkWidget	*no_apps_box;
+	GtkWidget	*usb_action_box;
+	GtkWidget	*copy_os_to_usb_button;
+	GtkWidget	*cancel_os_copy_button;
+	GtkWidget	*os_copy_spinner;
 };
 
 G_DEFINE_TYPE (GsCategoryPage, gs_category_page, GS_TYPE_PAGE)
@@ -187,6 +192,45 @@ gs_category_page_get_apps_cb (GObject *source_object,
 }
 
 static void
+set_os_copying_state (GsCategoryPage *self,
+                      gboolean        copying)
+{
+	gtk_widget_set_visible (self->copy_os_to_usb_button, !copying);
+	gtk_widget_set_visible (self->os_copy_spinner, copying);
+	gtk_widget_set_visible (self->cancel_os_copy_button, copying);
+
+	if (copying)
+		gs_start_spinner (GTK_SPINNER (self->os_copy_spinner));
+	else
+		gs_stop_spinner (GTK_SPINNER (self->os_copy_spinner));
+}
+
+static void
+gs_category_page_os_copied (GsPage *page)
+{
+	GsCategoryPage *self = GS_CATEGORY_PAGE (page);
+	set_os_copying_state (self, FALSE);
+}
+
+static void
+cancel_os_copy_button_cb (GtkButton *button, GsCategoryPage *self)
+{
+	g_cancellable_cancel (self->cancellable);
+	set_os_copying_state (self, FALSE);
+}
+
+static void
+copy_os_to_usb_button_cb (GtkButton *button, GsCategoryPage *self)
+{
+	g_autoptr(GList) copy_dests = gs_plugin_loader_dup_copy_dests (self->plugin_loader);
+	g_return_if_fail (copy_dests != NULL);
+
+	set_os_copying_state (self, TRUE);
+	gs_page_copy_os (GS_PAGE (self), copy_dests->data, GS_SHELL_INTERACTION_FULL,
+			 self->cancellable);
+}
+
+static void
 gs_category_page_reload (GsPage *page)
 {
 	GsCategoryPage *self = GS_CATEGORY_PAGE (page);
@@ -213,6 +257,17 @@ gs_category_page_reload (GsPage *page)
 	} else {
 		gtk_widget_set_visible (self->infobar_category_shell_extensions, FALSE);
 	}
+
+	if (g_strcmp0 (gs_category_get_id (self->category), "usb") == 0) {
+		g_signal_connect (self->copy_os_to_usb_button, "clicked",
+				  G_CALLBACK (copy_os_to_usb_button_cb), self);
+		gtk_widget_set_visible (self->usb_action_box, TRUE);
+		set_os_copying_state (self, FALSE);
+	} else
+		gtk_widget_set_visible (self->usb_action_box, FALSE);
+
+	g_signal_connect (self->cancel_os_copy_button, "clicked",
+			  G_CALLBACK (cancel_os_copy_button_cb), self);
 
 	/* ensure the placeholders are shown */
 	self->num_placeholders_to_show = MIN (MAX_PLACEHOLDER_TILES,
@@ -277,9 +332,24 @@ gs_category_page_create_filter_list (GsCategoryPage *self,
 	for (i = 0; i < children->len; i++) {
 		s = GS_CATEGORY (g_ptr_array_index (children, i));
 		if (gs_category_get_size (s) < 1) {
+			gboolean category_is_usb = FALSE;
+
 			g_debug ("not showing %s/%s as no apps",
 				 gs_category_get_id (category),
 				 gs_category_get_id (s));
+
+			/* re-filter USB category with no apps so the
+			 * placeholder app tiles get cleared out, then set
+			 * "empty state" message for an empty USB disk
+			 */
+			if (g_strcmp0 (gs_category_get_id (category), "usb") == 0) {
+				gs_category_page_populate_filtered (self, s);
+				category_is_usb = TRUE;
+			}
+
+			gtk_widget_set_visible (self->no_apps_box, category_is_usb);
+			gtk_widget_set_visible (self->scrolledwindow_category, !category_is_usb);
+
 			continue;
 		}
 		row = gtk_label_new (gs_category_get_name (s));
@@ -470,6 +540,7 @@ gs_category_page_class_init (GsCategoryPageClass *klass)
 	page_class->switch_to = gs_category_page_switch_to;
 	page_class->reload = gs_category_page_reload;
 	page_class->setup = gs_category_page_setup;
+	page_class->os_copied = gs_category_page_os_copied;
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-category-page.ui");
 
@@ -479,6 +550,11 @@ gs_category_page_class_init (GsCategoryPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, listbox_filter);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, scrolledwindow_category);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, scrolledwindow_filter);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, no_apps_box);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, usb_action_box);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, copy_os_to_usb_button);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, cancel_os_copy_button);
+	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, os_copy_spinner);
 }
 
 GsCategoryPage *

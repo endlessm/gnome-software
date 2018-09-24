@@ -624,6 +624,22 @@ gboolean	 gs_plugin_app_copy			(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
+ * gs_plugin_os_copy:
+ * @plugin: a #GsPlugin
+ * @copy_dest: an absolute path of the destination directory
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Copy the latest version of the OS to the destination directory.
+ *
+ * Returns: %TRUE for success or if not relevant
+ **/
+gboolean	 gs_plugin_os_copy			(GsPlugin	*plugin,
+							 const gchar	*copy_dest,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+/**
  * gs_plugin_app_install:
  * @plugin: a #GsPlugin
  * @app: a #GsApp
