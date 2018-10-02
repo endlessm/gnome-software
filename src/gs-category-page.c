@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <string.h>
+#include <ostree.h>
 
 #include "gs-common.h"
 #include "gs-background-tile.h"
@@ -230,6 +231,43 @@ copy_os_to_usb_button_cb (GtkButton *button, GsCategoryPage *self)
 			 self->cancellable);
 }
 
+static char *
+get_os_collection_id (void)
+{
+	OstreeDeployment *booted_deployment;
+	GKeyFile *origin;
+	g_autofree char *refspec = NULL;
+	g_autofree char *remote = NULL;
+	g_autofree char *collection_id = NULL;
+	g_autoptr(OstreeRepo) repo = NULL;
+	g_autoptr(OstreeSysroot) sysroot = NULL;
+
+	sysroot = ostree_sysroot_new_default ();
+	if (!ostree_sysroot_load (sysroot, NULL, NULL))
+		return NULL;
+
+	booted_deployment = ostree_sysroot_get_booted_deployment (sysroot);
+	if (booted_deployment == NULL)
+		return NULL;
+
+	origin = ostree_deployment_get_origin (booted_deployment);
+	if (origin == NULL)
+		return NULL;
+
+	refspec = g_key_file_get_string (origin, "origin", "refspec", NULL);
+	if (refspec == NULL)
+		return NULL;
+
+	ostree_parse_refspec (refspec, &remote, NULL, NULL);
+	if (remote == NULL)
+		return NULL;
+
+	repo = ostree_repo_new_default ();
+	ostree_repo_get_remote_option (repo, remote, "collection-id", NULL, &collection_id, NULL);
+
+	return g_steal_pointer (&collection_id);
+}
+
 static void
 gs_category_page_reload (GsPage *page)
 {
@@ -259,10 +297,15 @@ gs_category_page_reload (GsPage *page)
 	}
 
 	if (g_strcmp0 (gs_category_get_id (self->category), "usb") == 0) {
-		g_signal_connect (self->copy_os_to_usb_button, "clicked",
-				  G_CALLBACK (copy_os_to_usb_button_cb), self);
-		gtk_widget_set_visible (self->usb_action_box, TRUE);
-		set_os_copying_state (self, FALSE);
+		g_autofree char *os_collection_id = get_os_collection_id ();
+		if (os_collection_id != NULL)
+		  {
+			g_signal_connect (self->copy_os_to_usb_button, "clicked",
+					  G_CALLBACK (copy_os_to_usb_button_cb), self);
+			gtk_widget_set_visible (self->usb_action_box, TRUE);
+			set_os_copying_state (self, FALSE);
+		} else
+			gtk_widget_set_visible (self->usb_action_box, FALSE);
 	} else
 		gtk_widget_set_visible (self->usb_action_box, FALSE);
 
