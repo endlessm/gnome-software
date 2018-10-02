@@ -1,5 +1,7 @@
 cargs = ['-DG_LOG_DOMAIN="GsPluginEos"']
 
+ostree = dependency('ostree-1')
+
 shared_module(
   'gs_plugin_eos',
   sources : [
@@ -12,5 +14,5 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, flatpak ]
+  dependencies : [ plugin_libs, flatpak, ostree, ]
 )
