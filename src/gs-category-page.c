@@ -34,6 +34,8 @@ struct _GsCategoryPage
 	GtkBuilder	*builder;
 	GCancellable	*cancellable;
 	GsShell		*shell;
+	GList		*copy_dests;
+	gboolean	 copying;
 	GsCategory	*category;
 	GsCategory	*subcategory;
 	guint		sort_rating_handler_id;
@@ -390,6 +392,8 @@ set_os_copying_state (GsCategoryPage *self,
 		gs_start_spinner (GTK_SPINNER (self->os_copy_spinner));
 	else
 		gs_stop_spinner (GTK_SPINNER (self->os_copy_spinner));
+
+	self->copying = copying;
 }
 
 static void
@@ -415,6 +419,81 @@ copy_os_to_usb_button_cb (GtkButton *button, GsCategoryPage *self)
 	set_os_copying_state (self, TRUE);
 	gs_page_copy_os (GS_PAGE (self), copy_dests->data, GS_SHELL_INTERACTION_FULL,
 			 self->cancellable);
+}
+
+static void
+gs_category_page_os_get_copyable_cb (GObject *source_object,
+				     GAsyncResult *res,
+				     gpointer user_data)
+{
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
+	GsCategoryPage *self = GS_CATEGORY_PAGE (user_data);
+	g_autoptr(GError) error = NULL;
+	gboolean copyable;
+
+	copyable = gs_plugin_loader_job_os_get_copyable_finish (plugin_loader,
+								res, &error);
+	gtk_button_set_label (GTK_BUTTON (self->copy_os_to_usb_button),
+			      _("Copy OS to USB"));
+	gtk_widget_set_sensitive (self->copy_os_to_usb_button, copyable);
+	gtk_widget_set_visible (self->copy_os_to_usb_button, copyable);
+	gtk_widget_set_visible (self->usb_action_box, copyable);
+}
+
+static void
+gs_category_page_update_os_copy_button (GsCategoryPage *self)
+{
+	g_autofree gchar* copy_dest = NULL;
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	gtk_widget_set_visible (self->usb_action_box, FALSE);
+	gtk_widget_set_sensitive (self->copy_os_to_usb_button, FALSE);
+	gtk_widget_set_visible (self->copy_os_to_usb_button, FALSE);
+
+	if (self->category == NULL ||
+	    g_strcmp0 (gs_category_get_id (self->category), "usb") != 0) {
+		return;
+	}
+
+	if (self->copying)
+		return;
+
+	if (self->copy_dests != NULL) {
+		/* check (asynchronously) whether the OS will certainly fail a
+		 * copy so we can update the UI accordingly. Cases where the
+		 * plugin would know a copy would fail include an OSTree remote
+		 * which lacks a collection ID or broader issues like the user
+		 * lacking write access to the destination. */
+		plugin_job = gs_plugin_job_newv (
+			GS_PLUGIN_ACTION_OS_GET_COPYABLE,
+			"failure-flags", GS_PLUGIN_FAILURE_FLAGS_NONE,
+			"copy-dest", copy_dest,
+			 NULL);
+		gs_plugin_loader_job_os_get_copyable_async (
+			self->plugin_loader,
+			plugin_job,
+			self->cancellable,
+			gs_category_page_os_get_copyable_cb,
+			self);
+	}
+}
+
+static void
+gs_category_page_clear_copy_dests (GsCategoryPage *self)
+{
+	if (self->copy_dests != NULL)
+		g_list_free_full (self->copy_dests, (GDestroyNotify) g_free);
+	self->copy_dests = NULL;
+}
+
+static void
+gs_category_page_copy_dests_notify_cb (GsPluginLoader *plugin_loader,
+				       GParamSpec *pspec,
+				       GsCategoryPage *self)
+{
+	gs_category_page_clear_copy_dests (self);
+	self->copy_dests = gs_plugin_loader_dup_copy_dests (plugin_loader);
+	gs_category_page_update_os_copy_button (self);
 }
 
 static void
@@ -465,16 +544,8 @@ gs_category_page_reload (GsPage *page)
 	/* just ensure the sort button has the correct label */
 	gs_category_page_sort_by_type (self, self->sort_type);
 
-	if (g_strcmp0 (gs_category_get_id (self->category), "usb") == 0) {
-		g_signal_connect (self->copy_os_to_usb_button, "clicked",
-				  G_CALLBACK (copy_os_to_usb_button_cb), self);
-		gtk_widget_set_visible (self->usb_action_box, TRUE);
-		set_os_copying_state (self, FALSE);
-	} else
-		gtk_widget_set_visible (self->usb_action_box, FALSE);
-
-	g_signal_connect (self->cancel_os_copy_button, "clicked",
-			  G_CALLBACK (cancel_os_copy_button_cb), self);
+	gtk_widget_set_visible (self->cancel_os_copy_button, FALSE);
+	gs_category_page_copy_dests_notify_cb (self->plugin_loader, NULL, self);
 
 	/* ensure the placeholders are shown */
 	self->num_placeholders_to_show = MIN (MAX_PLACEHOLDER_TILES,
@@ -697,6 +768,9 @@ gs_category_page_dispose (GObject *object)
 	g_cancellable_cancel (self->cancellable);
 	g_clear_object (&self->cancellable);
 
+	g_signal_handlers_disconnect_by_func (self->plugin_loader, gs_category_page_copy_dests_notify_cb, self);
+	gs_category_page_clear_copy_dests (self);
+
 	g_clear_object (&self->builder);
 	g_clear_object (&self->category);
 	g_clear_object (&self->subcategory);
@@ -741,6 +815,16 @@ gs_category_page_setup (GsPage *page,
 						     g_direct_equal,
 						     g_object_unref,
 						     g_object_unref);
+	self->copying = FALSE;
+	self->copy_dests = NULL;
+	g_signal_connect (self->copy_os_to_usb_button, "clicked",
+			  G_CALLBACK (copy_os_to_usb_button_cb), self);
+	g_signal_connect (self->cancel_os_copy_button, "clicked",
+			  G_CALLBACK (cancel_os_copy_button_cb), self);
+	g_signal_connect (plugin_loader, "notify::copy-dests",
+			  G_CALLBACK (gs_category_page_copy_dests_notify_cb),
+			  self);
+	gs_category_page_copy_dests_notify_cb (plugin_loader, NULL, self);
 
 	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_category));
 	gtk_container_set_focus_vadjustment (GTK_CONTAINER (self->category_detail_box), adj);
