@@ -24,6 +24,7 @@
 
 #include <config.h>
 
+#include <ostree.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
 #include <gs-plugin.h>
@@ -717,6 +718,67 @@ gs_plugin_launch (GsPlugin *plugin,
 	/* for apps that have a special desktop file (e.g. Google Chrome) */
 	if (gs_app_get_metadata_item (app, METADATA_SYS_DESKTOP_FILE))
 		return launch_with_sys_desktop_file (app, error);
+
+	return TRUE;
+}
+
+static char *
+get_os_collection_id (void)
+{
+	OstreeDeployment *booted_deployment;
+	GKeyFile *origin;
+	g_autofree char *refspec = NULL;
+	g_autofree char *remote = NULL;
+	g_autofree char *collection_id = NULL;
+	g_autoptr(OstreeRepo) repo = NULL;
+	g_autoptr(OstreeSysroot) sysroot = NULL;
+	g_autoptr(GError) error = NULL;
+
+	sysroot = ostree_sysroot_new_default ();
+	if (!ostree_sysroot_load (sysroot, NULL, &error))
+		goto err_out;
+
+	booted_deployment = ostree_sysroot_get_booted_deployment (sysroot);
+	if (booted_deployment == NULL)
+		return NULL;
+
+	origin = ostree_deployment_get_origin (booted_deployment);
+	if (origin == NULL)
+		return NULL;
+
+	refspec = g_key_file_get_string (origin, "origin", "refspec", &error);
+	if (refspec == NULL)
+		goto err_out;
+
+	ostree_parse_refspec (refspec, &remote, NULL, &error);
+	if (remote == NULL)
+		goto err_out;
+
+	repo = ostree_repo_new_default ();
+	if (!ostree_repo_open (repo, NULL, &error))
+		goto err_out;
+
+	if (!ostree_repo_get_remote_option (repo, remote, "collection-id", NULL, &collection_id, &error))
+		goto err_out;
+
+	return g_steal_pointer (&collection_id);
+
+err_out:
+	if (error != NULL)
+		g_debug ("failed to get OSTree collection ID: %s", error->message);
+	return NULL;
+}
+
+gboolean
+gs_plugin_os_get_copyable (GsPlugin *plugin,
+			   GFile *copy_dest,
+			   gboolean *copyable,
+			   GCancellable *cancellable,
+			   GError **error)
+{
+	g_autofree char *collection_id = get_os_collection_id ();
+
+	*copyable = (collection_id != NULL);
 
 	return TRUE;
 }
