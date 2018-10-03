@@ -1337,9 +1337,9 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 		"io.github.Freedoom-Phase-1",
 		"io.github.Freedoom-Phase-2",
 		"net.redeclipse.RedEclipse",
-		"org.openarena.Openarena",
 		"org.sauerbraten.Sauerbraten",
 		"org.xonotic.Xonotic",
+		"ws.openarena.OpenArena",
 		NULL
 	};
 
@@ -2063,22 +2063,24 @@ gs_plugin_add_popular (GsPlugin *plugin,
 {
 	g_autoptr(AsProfileTask) ptask = NULL;
 	GsAppList *new_list = NULL;
-	const gchar *popular_apps[] = {"com.google.Chrome.desktop",
-				       "com.spotify.Client.desktop",
-				       "com.transmissionbt.Transmission.desktop",
-				       "com.valvesoftware.Steam.desktop",
-				       "org.libreoffice.LibreOffice.desktop",
-				       "net.gcompris.Gcompris.desktop",
-				       "net.minetest.Minetest.desktop",
-				       "net.sourceforge.Audacity.desktop",
-				       "org.debian.alioth.tux4kids.Tuxmath.desktop",
-				       "org.gimp.Gimp.desktop",
-				       "org.inkscape.Inkscape.desktop",
-				       "org.mozilla.Firefox.desktop",
-				       "org.tuxpaint.Tuxpaint.desktop",
-				       "org.videolan.VLC.desktop",
-				       "simple-scan.desktop",
-				       NULL};
+	const gchar *popular_apps[] = {
+		"com.google.Chrome.desktop",
+		"com.spotify.Client.desktop",
+		"com.transmissionbt.Transmission.desktop",
+		"com.tux4kids.tuxmath.desktop",
+		"com.valvesoftware.Steam.desktop",
+		"net.minetest.Minetest.desktop",
+		"org.audacityteam.Audacity.desktop",
+		"org.gimp.GIMP.desktop",
+		"org.inkscape.Inkscape.desktop",
+		"org.kde.gcompris.desktop",
+		"org.libreoffice.LibreOffice.desktop",
+		"org.mozilla.Firefox.desktop",
+		"org.tuxpaint.Tuxpaint.desktop",
+		"org.videolan.VLC.desktop",
+		"simple-scan.desktop",
+		NULL
+	};
 
 	ptask = as_profile_start_literal (gs_plugin_get_profile (plugin),
 					  "eos::add-popular");
