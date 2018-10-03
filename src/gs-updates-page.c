@@ -827,7 +827,7 @@ _update_all (GsUpdatesPage *self, GsAppList *apps)
 	/* look at each app in turn */
 	for (guint i = 0; apps != NULL && i < gs_app_list_length (apps); i++) {
 		GsApp *app = gs_app_list_index (apps, i);
-		if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE_LIVE)
+		if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE)
 			helper->do_reboot = TRUE;
 		if (gs_app_has_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT))
 			helper->do_reboot_notification = TRUE;
