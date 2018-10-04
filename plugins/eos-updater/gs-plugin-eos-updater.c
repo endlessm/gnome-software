@@ -960,3 +960,35 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 
 	return TRUE;
 }
+
+/* Called in a #GTask worker thread, but it can run without holding
+ * `priv->mutex` since it doesn’t need to synchronise on state. */
+gboolean
+gs_plugin_file_to_app (GsPlugin *plugin,
+		       GsAppList *list,
+		       GFile *file,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	g_autofree gchar *content_type = NULL;
+	const gchar *mimetypes_repo[] = {
+		"inode/directory",
+		"x-content/ostree-repository",
+		NULL };
+
+	/* does this match any of the mimetypes we support */
+	content_type = gs_utils_get_content_type (file, cancellable, error);
+	if (content_type == NULL)
+		return FALSE;
+	if (g_strv_contains (mimetypes_repo, content_type)) {
+		/* If it looks like an ostree repo that could be on a USB drive,
+		 * have eos-updater check it for available OS updates */
+		g_autoptr(GFile) repo_dir = NULL;
+
+		repo_dir = g_file_get_child (file, ".ostree");
+		if (g_file_query_exists (repo_dir, NULL))
+			return gs_plugin_refresh (plugin, 0, cancellable, error);
+	}
+
+	return TRUE;
+}
