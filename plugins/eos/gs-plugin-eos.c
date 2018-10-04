@@ -2186,19 +2186,15 @@ should_add_os_upgrade (GsApp *os_upgrade)
 	return FALSE;
 }
 
-gboolean
-gs_plugin_refresh (GsPlugin *plugin,
-		   guint cache_age,
-		   GsPluginRefreshFlags flags,
-		   GCancellable *cancellable,
-		   GError **error)
+static void
+check_for_os_updates (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	EosUpdaterState updater_state;
 
 	/* check if the OS upgrade has been disabled */
 	if (priv->updater_proxy == NULL)
-		return TRUE;
+		return;
 
 	/* poll in the error/none/ready states to check if there's an
 	 * update available */
@@ -2211,6 +2207,16 @@ gs_plugin_refresh (GsPlugin *plugin,
 	default:
 		break;
 	}
+}
+
+gboolean
+gs_plugin_refresh (GsPlugin *plugin,
+		   guint cache_age,
+		   GsPluginRefreshFlags flags,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+	check_for_os_updates (plugin);
 
 	return TRUE;
 }
@@ -2286,6 +2292,35 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 		eos_updater_call_poll (priv->updater_proxy, NULL, NULL, NULL);
 	else
 		sync_state_from_updater (plugin);
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_file_to_app (GsPlugin *plugin,
+		       GsAppList *list,
+		       GFile *file,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	g_autofree gchar *content_type = NULL;
+	const gchar *mimetypes_repo[] = {
+		"inode/directory",
+		NULL };
+
+	/* does this match any of the mimetypes we support */
+	content_type = gs_utils_get_content_type (file, cancellable, error);
+	if (content_type == NULL)
+		return FALSE;
+	if (g_strv_contains (mimetypes_repo, content_type)) {
+		/* If it looks like an ostree repo that could be on a USB drive,
+		 * have eos-updater check it for available OS updates */
+		g_autoptr (GFile) repo_dir = NULL;
+
+		repo_dir = g_file_get_child (file, ".ostree");
+		if (g_file_query_exists (repo_dir, NULL))
+			check_for_os_updates (plugin);
+	}
 
 	return TRUE;
 }
