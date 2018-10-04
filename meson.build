@@ -136,9 +136,7 @@ if get_option('enable-polkit')
   conf.set('HAVE_POLKIT', 1)
 endif
 
-if get_option('enable-ostree')
-  ostree = dependency('ostree-1')
-endif
+ostree = dependency('ostree-1')
 
 if get_option('enable-packagekit')
   packagekit = dependency('packagekit-glib2', version : '>= 1.1.0')

@@ -90,6 +90,7 @@ gnome_software_dependencies = [
   libsecret,
   libsoup,
   mogwai_schedule_client,
+  ostree,
 ]
 
 if get_option('enable-packagekit')
