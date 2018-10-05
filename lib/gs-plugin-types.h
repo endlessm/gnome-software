@@ -271,6 +271,8 @@ typedef enum {
  * @GS_PLUGIN_ACTION_INITIALIZE:		Initialize the plugin
  * @GS_PLUGIN_ACTION_DESTROY:			Destroy the plugin
  * @GS_PLUGIN_ACTION_PURCHASE:			Purchase an app
+ * @GS_PLUGIN_ACTION_GET_COPYABLE:		Get whether the app is copyable to a destination
+ * @GS_PLUGIN_ACTION_COPY:			Copy the app to a destination
  * @GS_PLUGIN_ACTION_OS_COPY:			Copy the OS to a destination
  * @GS_PLUGIN_ACTION_OS_GET_COPYABLE:		Get whether the OS is copyable to a destination
  *
