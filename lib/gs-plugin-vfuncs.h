@@ -624,6 +624,26 @@ gboolean	 gs_plugin_app_copy			(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
+ * gs_plugin_os_get_copyable:
+ * @plugin: a #GsPlugin
+ * @copy_dest: an absolute path of the destination directory
+ * @copyable: whether this app can be copied
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Determine whether gs_plugin_os_copy() with this @app and @copy_dest should
+ * succeed (barring runtime errors which cannot be known in advance).
+ *
+ * Returns: %FALSE if copying the OS to @copy_dest will certainly fail; %TRUE
+ * otherwise
+ **/
+gboolean	 gs_plugin_os_get_copyable			(GsPlugin	*plugin,
+								 const gchar	*copy_dest,
+								 gboolean	*copyable,
+								 GCancellable	*cancellable,
+								 GError		**error);
+
+/**
  * gs_plugin_os_copy:
  * @plugin: a #GsPlugin
  * @copy_dest: an absolute path of the destination directory
