@@ -495,6 +495,7 @@ gs_overview_page_get_featured_cb (GObject *source_object,
 	if (g_getenv ("GNOME_SOFTWARE_FEATURED") == NULL) {
 		/* Don't show apps from the category that's currently featured as the category of the day */
 		gs_app_list_filter (list, filter_category, priv->category_of_day);
+		gs_app_list_filter_duplicates (list, GS_APP_LIST_FILTER_FLAG_KEY_ID);
 		gs_app_list_randomize (list);
 	}
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
@@ -768,7 +769,7 @@ gs_overview_page_load (GsOverviewPage *self)
 		priv->loading_featured = TRUE;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_FEATURED,
 						 "max-results", 5,
-							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,

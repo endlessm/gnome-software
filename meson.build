@@ -1,8 +1,8 @@
 project('gnome-software', 'c',
-  version : '3.30.0',
+  version : '3.30.1',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
-  meson_version : '>=0.37.0'
+  meson_version : '>=0.40.0'
 )
 
 conf = configuration_data()
@@ -91,6 +91,10 @@ add_global_link_arguments(
 
 # Needed for PATH_MAX and symlink()
 add_project_arguments('-D_XOPEN_SOURCE=700', language : 'c')
+# Needed for syscall()
+add_project_arguments('-D_GNU_SOURCE', language : 'c')
+
+conf.set('HAVE_LINUX_UNISTD_H', cc.has_header('linux/unistd.h'))
 
 appstream_glib = dependency('appstream-glib', version : '>= 0.7.3')
 gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.32.0')

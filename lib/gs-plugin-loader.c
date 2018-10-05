@@ -31,6 +31,7 @@
 #include "gs-app-private.h"
 #include "gs-app-list-private.h"
 #include "gs-category-private.h"
+#include "gs-ioprio.h"
 #include "gs-plugin-loader.h"
 #include "gs-plugin.h"
 #include "gs-plugin-event.h"
@@ -67,6 +68,7 @@ typedef struct
 	guint			 scale;
 
 	guint			 updates_changed_id;
+	guint			 updates_changed_cnt;
 	guint			 reload_id;
 	GHashTable		*disallow_updates;	/* GsPlugin : const char *name */
 
@@ -1480,6 +1482,9 @@ gs_plugin_loader_convert_unavailable (GsAppList *list, const gchar *search)
 
 /**
  * gs_plugin_loader_job_process_finish:
+ * @plugin_loader: A #GsPluginLoader
+ * @res: a #GAsyncResult
+ * @error: A #GError, or %NULL
  *
  * Return value: (element-type GsApp) (transfer full): A list of applications
  **/
@@ -1499,6 +1504,9 @@ gs_plugin_loader_job_process_finish (GsPluginLoader *plugin_loader,
 
 /**
  * gs_plugin_loader_job_action_finish:
+ * @plugin_loader: A #GsPluginLoader
+ * @res: a #GAsyncResult
+ * @error: A #GError, or %NULL
  *
  * Return value: success
  **/
@@ -1612,6 +1620,11 @@ gs_plugin_loader_job_get_categories_thread_cb (GTask *task,
 
 /**
  * gs_plugin_loader_job_get_categories_async:
+ * @plugin_loader: A #GsPluginLoader
+ * @plugin_job: job to process
+ * @cancellable: a #GCancellable, or %NULL
+ * @callback: function to call when complete
+ * @user_data: user data to pass to @callback
  *
  * This method calls all plugins that implement the gs_plugin_add_categories()
  * function. The plugins return #GsCategory objects.
@@ -1642,6 +1655,9 @@ gs_plugin_loader_job_get_categories_async (GsPluginLoader *plugin_loader,
 
 /**
  * gs_plugin_loader_job_get_categories_finish:
+ * @plugin_loader: A #GsPluginLoader
+ * @res: a #GAsyncResult
+ * @error: A #GError, or %NULL
  *
  * Return value: (element-type GsCategory) (transfer full): A list of applications
  **/
@@ -2076,14 +2092,21 @@ gs_plugin_loader_job_actions_changed_delay_cb (gpointer user_data)
 	g_debug ("updates-changed");
 	g_signal_emit (plugin_loader, signals[SIGNAL_UPDATES_CHANGED], 0);
 	priv->updates_changed_id = 0;
+	priv->updates_changed_cnt = 0;
 
 	g_object_unref (plugin_loader);
 	return FALSE;
 }
 
 static void
-gs_plugin_loader_job_actions_changed_cb (GsPlugin *plugin,
-				     GsPluginLoader *plugin_loader)
+gs_plugin_loader_job_actions_changed_cb (GsPlugin *plugin, GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	priv->updates_changed_cnt++;
+}
+
+static void
+gs_plugin_loader_updates_changed (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	if (priv->updates_changed_id != 0)
@@ -3105,6 +3128,7 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	GsAppList *list = gs_plugin_job_get_list (helper->plugin_job);
 	GsPluginAction action = gs_plugin_job_get_action (helper->plugin_job);
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (object);
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	GsPluginRefineFlags filter_flags;
 	GsPluginRefineFlags refine_flags;
 	gboolean add_to_pending_array = FALSE;
@@ -3410,6 +3434,10 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	/* sort these again as the refine may have added useful metadata */
 	gs_plugin_loader_job_sorted_truncation_again (helper);
 
+	/* if the plugin used updates-changed actually schedule it now */
+	if (priv->updates_changed_cnt > 0)
+		gs_plugin_loader_updates_changed (plugin_loader);
+
 	/* show elapsed time */
 	gs_plugin_loader_job_debug (helper);
 
@@ -3425,6 +3453,8 @@ gs_plugin_loader_process_in_thread_pool_cb (gpointer data,
 	gpointer source_object = g_task_get_source_object (task);
 	gpointer task_data = g_task_get_task_data (task);
 	GCancellable *cancellable = g_task_get_cancellable (task);
+
+	gs_ioprio_init ();
 
 	gs_plugin_loader_process_thread_cb (task, source_object, task_data, cancellable);
 	g_object_unref (task);
@@ -3471,6 +3501,11 @@ gs_plugin_loader_schedule_task (GsPluginLoader *plugin_loader,
 
 /**
  * gs_plugin_loader_job_process_async:
+ * @plugin_loader: A #GsPluginLoader
+ * @plugin_job: job to process
+ * @cancellable: a #GCancellable, or %NULL
+ * @callback: function to call when complete
+ * @user_data: user data to pass to @callback
  *
  * This method calls all plugins.
  **/
@@ -3689,6 +3724,8 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 
 /**
  * gs_plugin_loader_get_plugin_supported:
+ * @plugin_loader: A #GsPluginLoader
+ * @function_name: a function name
  *
  * This function returns TRUE if the symbol is found in any enabled plugin.
  */

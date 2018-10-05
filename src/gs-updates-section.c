@@ -109,6 +109,14 @@ gs_updates_section_remove_all (GsUpdatesSection *self)
 		GtkWidget *w = GTK_WIDGET (l->data);
 		gtk_container_remove (GTK_CONTAINER (self), w);
 	}
+
+	/* the following are set in _build_section_header(); clear these so
+	 * that they don't become dangling pointers once all items are removed
+	 * from self->list */
+	self->button = NULL;
+	self->button_cancel = NULL;
+	self->button_stack = NULL;
+
 	gs_app_list_remove_all (self->list);
 	gtk_widget_hide (GTK_WIDGET (self));
 }
@@ -302,6 +310,7 @@ _perform_update_cb (GsPluginLoader *plugin_loader, GAsyncResult *res, gpointer u
 		/* TRANSLATORS: button text */
 		g_notification_add_button_with_target (n, _("Restart"), "app.reboot", NULL);
 		g_notification_set_default_action_and_target (n, "app.set-mode", "s", "updates");
+		g_notification_set_priority (n, G_NOTIFICATION_PRIORITY_URGENT);
 		g_application_send_notification (g_application_get_default (), "restart-required", n);
 	}
 	g_clear_object (&self->cancellable);
@@ -502,6 +511,9 @@ gs_updates_section_progress_notify_cb (GsAppList *list,
 				       GParamSpec *pspec,
 				       GsUpdatesSection *self)
 {
+	if (self->button_cancel == NULL)
+		return;
+
 	gs_progress_button_set_progress (GS_PROGRESS_BUTTON (self->button_cancel),
 					 gs_app_list_get_progress (list));
 }
