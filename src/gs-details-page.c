@@ -2448,6 +2448,9 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
                                           GsPluginStatus status,
                                           GsDetailsPage *self)
 {
+	if (!app)
+		return;
+
 	if (status == GS_PLUGIN_STATUS_COPYING) {
 		/* prevent the app from being deleted, etc. while it's being copied */
 		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
@@ -2484,7 +2487,6 @@ gs_details_page_setup (GsPage *page,
 	g_signal_connect (plugin_loader, "notify::copy-dests",
 			  G_CALLBACK (gs_details_page_copy_dests_notify_cb),
 			  self);
-	gs_details_page_copy_dests_notify_cb (plugin_loader, NULL, self);
 
 	/* show review widgets if we have plugins that provide them */
 	self->enable_reviews =
