@@ -790,7 +790,9 @@ gs_shell_copy_dests_notify_cb (GsPluginLoader *plugin_loader,
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "overview"));
 
-	/* the overview page has not been loaded yet */
+	/* reloading the overview page before the initial refresh is completed
+	   means the categories and popular apps don't get initialised properly
+	   and the UI appears very broken */
 	if (priv->mode == GS_SHELL_MODE_LOADING)
 		return;
 
