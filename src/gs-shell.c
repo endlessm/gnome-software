@@ -2218,7 +2218,8 @@ gs_shell_side_filter_clear_categories (GsShell *shell)
 
 	/* select the overview mode to prevent removing a category row
 	 * that may be selected */
-	gs_shell_set_mode (shell, GS_SHELL_MODE_OVERVIEW);
+	if (priv->mode == GS_SHELL_MODE_CATEGORY)
+		gs_shell_set_mode (shell, GS_SHELL_MODE_OVERVIEW);
 
 	rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
 	for (GList *l = rows; l; l = l->next) {
