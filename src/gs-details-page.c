@@ -2723,6 +2723,11 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
                                           GsPluginStatus status,
                                           GsDetailsPage *self)
 {
+	self->plugin_status = status;
+
+	if (app == NULL)
+		return;
+
 	if (status == GS_PLUGIN_STATUS_COPYING) {
 		/* prevent the app from being deleted, etc. while it's being copied */
 		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
@@ -2730,8 +2735,6 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
 		/* allow removal once copying has completed */
 		gs_app_remove_quirk (app, AS_APP_QUIRK_COMPULSORY);
 	}
-
-	self->plugin_status = status;
 }
 
 static gboolean
@@ -2760,7 +2763,6 @@ gs_details_page_setup (GsPage *page,
 	g_signal_connect (plugin_loader, "notify::copy-dests",
 			  G_CALLBACK (gs_details_page_copy_dests_notify_cb),
 			  self);
-	gs_details_page_copy_dests_notify_cb (plugin_loader, NULL, self);
 
 	/* show review widgets if we have plugins that provide them */
 	self->enable_reviews =
