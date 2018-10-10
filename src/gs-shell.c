@@ -790,6 +790,10 @@ gs_shell_copy_dests_notify_cb (GsPluginLoader *plugin_loader,
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "overview"));
 
+	/* the overview page has not been loaded yet */
+	if (priv->mode == GS_SHELL_MODE_LOADING)
+		return;
+
 	gs_page_reload (page);
 }
 
@@ -1812,7 +1816,6 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	g_signal_connect (priv->plugin_loader, "notify::copy-dests",
 			  G_CALLBACK (gs_shell_copy_dests_notify_cb),
 			  shell);
-	gs_shell_copy_dests_notify_cb (plugin_loader, NULL, shell);
 	g_signal_connect_object (priv->plugin_loader, "notify::events",
 				 G_CALLBACK (gs_shell_events_notify_cb),
 				 shell, 0);
