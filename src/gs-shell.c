@@ -763,9 +763,6 @@ main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 	g_application_withdraw_notification (g_application_get_default (),
 					     "install-resources");
 
-	/* When the window is closed, reset the initial mode to overview */
-	priv->mode = GS_SHELL_MODE_OVERVIEW;
-
 	gs_shell_clean_back_entry_stack (shell);
 	gtk_widget_hide (dialog);
 	return TRUE;
@@ -788,6 +785,12 @@ gs_shell_copy_dests_notify_cb (GsPluginLoader *plugin_loader,
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "overview"));
+
+	/* reloading the overview page before the initial refresh is completed
+	   means the categories and popular apps don't get initialised properly
+	   and the UI appears very broken */
+	if (priv->mode == GS_SHELL_MODE_LOADING)
+		return;
 
 	gs_page_reload (page);
 }
@@ -1811,7 +1814,6 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	g_signal_connect (priv->plugin_loader, "notify::copy-dests",
 			  G_CALLBACK (gs_shell_copy_dests_notify_cb),
 			  shell);
-	gs_shell_copy_dests_notify_cb (plugin_loader, NULL, shell);
 	g_signal_connect_object (priv->plugin_loader, "notify::events",
 				 G_CALLBACK (gs_shell_events_notify_cb),
 				 shell, 0);
@@ -1965,18 +1967,7 @@ void
 gs_shell_set_mode (GsShell *shell, GsShellMode mode)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	guint matched;
 
-	/* if we're loading a different mode at startup then don't wait for
-	 * the overview page to load before showing content */
-	if (mode != GS_SHELL_MODE_OVERVIEW) {
-		GsPage *page = g_hash_table_lookup (priv->pages, "overview");
-		matched = g_signal_handlers_disconnect_by_func (page,
-								initial_overview_load_done,
-								shell);
-		if (matched > 0)
-			g_signal_emit (shell, signals[SIGNAL_LOADED], 0);
-	}
 	gs_shell_change_mode (shell, mode, NULL, TRUE);
 }
 
@@ -2222,7 +2213,8 @@ gs_shell_side_filter_clear_categories (GsShell *shell)
 
 	/* select the overview mode to prevent removing a category row
 	 * that may be selected */
-	gs_shell_set_mode (shell, GS_SHELL_MODE_OVERVIEW);
+	if (priv->mode == GS_SHELL_MODE_CATEGORY)
+		gs_shell_set_mode (shell, GS_SHELL_MODE_OVERVIEW);
 
 	rows = gtk_container_get_children (GTK_CONTAINER (priv->side_filter));
 	for (GList *l = rows; l; l = l->next) {
