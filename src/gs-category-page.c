@@ -403,27 +403,33 @@ gs_category_page_create_filter_list (GsCategoryPage *self,
 	children = gs_category_get_children (category);
 	for (i = 0; i < children->len; i++) {
 		s = GS_CATEGORY (g_ptr_array_index (children, i));
-		if (gs_category_get_size (s) < 1) {
-			gboolean category_is_usb = FALSE;
+		gboolean category_is_usb = FALSE;
 
+		// re-filter USB category
+		if (g_strcmp0 (gs_category_get_id (category), "usb") == 0) {
+			gs_category_page_populate_filtered (self, s);
+			category_is_usb = TRUE;
+		}
+		GsAppList *list = g_hash_table_lookup (self->category_apps, self->subcategory);
+		g_debug ("%u Apps detected",
+			gs_app_list_length(list));
+
+		/* For USB apps we use the category to set the
+		 * visibility of the no_apps box as there's only
+                 * one subcategory.
+                 */
+		if ((gs_category_get_size(s) < 1) || (gs_app_list_length(list) < 1)) {
 			g_debug ("not showing %s/%s as no apps",
 				 gs_category_get_id (category),
 				 gs_category_get_id (s));
 
-			/* re-filter USB category with no apps so the
-			 * placeholder app tiles get cleared out, then set
-			 * "empty state" message for an empty USB disk
-			 */
-			if (g_strcmp0 (gs_category_get_id (category), "usb") == 0) {
-				gs_category_page_populate_filtered (self, s);
-				category_is_usb = TRUE;
-			}
-
+			// Set "empty state" message for an empty USB disk
 			gtk_widget_set_visible (self->no_apps_box, category_is_usb);
 			gtk_widget_set_visible (self->scrolledwindow_category, !category_is_usb);
 
 			continue;
 		}
+
 		row = gtk_label_new (gs_category_get_name (s));
 		g_object_set_data_full (G_OBJECT (row), "category", g_object_ref (s), g_object_unref);
 		g_object_set (row, "xalign", 0.0, "margin", 10, NULL);

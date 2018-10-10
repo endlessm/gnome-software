@@ -3667,8 +3667,8 @@ gs_flatpak_mount_removed (GVolumeMonitor *volume_monitor,
 
 	/* reload so we show an updated USB category or no USB category at
 	 * all (if no USB remotes are found anymore) */
-	if (should_reload)
-		gs_plugin_reload (self->plugin);
+//	if (should_reload)
+//		gs_plugin_reload (self->plugin);
 }
 
 static gboolean
