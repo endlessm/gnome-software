@@ -2620,7 +2620,7 @@ mount_added_cb (GVolumeMonitor *volume_monitor,
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	g_autoptr(GDrive) drive = g_mount_get_drive (mount);
 
-	if (!g_drive_is_removable (drive))
+	if (!drive || !g_drive_is_removable (drive))
 		return;
 
 	/* remove this mount if it already exists in the list and add it to the
