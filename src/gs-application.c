@@ -291,16 +291,12 @@ gs_application_initialize_ui (GsApplication *app)
 
 	app->cancellable = g_cancellable_new ();
 
-	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
-	gtk_application_add_window (GTK_APPLICATION (app), gs_shell_get_window (app->shell));
-
 	app->shell_loaded_handler_id = g_signal_connect (app->shell, "loaded",
 							 G_CALLBACK (gs_application_shell_loaded_cb),
 							 app);
 
-	/* it's very important to set the loading as the first mode because it will
-	 * make the plugins load all their needed initial catalogs/information */
-	gs_shell_set_mode (app->shell, GS_SHELL_MODE_LOADING);
+	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
+	gtk_application_add_window (GTK_APPLICATION (app), gs_shell_get_window (app->shell));
 }
 
 static void
