@@ -2448,7 +2448,9 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
                                           GsPluginStatus status,
                                           GsDetailsPage *self)
 {
-	if (!app)
+	self->plugin_status = status;
+
+	if (app == NULL)
 		return;
 
 	if (status == GS_PLUGIN_STATUS_COPYING) {
@@ -2458,8 +2460,6 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
 		/* allow removal once copying has completed */
 		gs_app_remove_quirk (app, AS_APP_QUIRK_COMPULSORY);
 	}
-
-	self->plugin_status = status;
 }
 
 static gboolean
