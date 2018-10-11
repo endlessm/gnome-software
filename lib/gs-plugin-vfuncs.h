@@ -594,8 +594,10 @@ gboolean	 gs_plugin_app_purchase			(GsPlugin	*plugin,
  * Determine whether gs_plugin_app_copy() with this @app and @copy_dest should
  * succeed (barring runtime errors which cannot be known in advance).
  *
- * Returns: %FALSE if copying @app to @copy_dest will certainly fail; %TRUE
- * otherwise
+ * @copyable will be pointed to %FALSE if copying @app to @copy_dest will
+ * certainly fail or %TRUE otherwise
+ *
+ * Returns: %TRUE for success or if not relevant
  **/
 gboolean	 gs_plugin_app_get_copyable			(GsPlugin	*plugin,
 								 GsApp		*app,
@@ -631,11 +633,13 @@ gboolean	 gs_plugin_app_copy			(GsPlugin	*plugin,
  * @cancellable: a #GCancellable, or %NULL
  * @error: a #GError, or %NULL
  *
- * Determine whether gs_plugin_os_copy() with this @app and @copy_dest should
- * succeed (barring runtime errors which cannot be known in advance).
+ * Determine whether gs_plugin_os_copy() with this @copy_dest should succeed
+ * (barring runtime errors which cannot be known in advance).
  *
- * Returns: %FALSE if copying the OS to @copy_dest will certainly fail; %TRUE
- * otherwise
+ * @copyable will be pointed to %FALSE if copying the OS to @copy_dest will
+ * certainly fail or %TRUE otherwise
+ *
+ * Returns: %TRUE for success or if not relevant
  **/
 gboolean	 gs_plugin_os_get_copyable			(GsPlugin	*plugin,
 								 const gchar	*copy_dest,
