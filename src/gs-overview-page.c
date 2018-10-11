@@ -510,8 +510,10 @@ out:
 	priv->empty = !has_category;
 
 	/* We always show the side filter in the overview page because it
-	 * has the "Featured" row */
-	gs_shell_side_filter_set_visible (priv->shell, TRUE);
+	 * has the "Featured" row. Re-check the mode because it's possible
+	 * to switch mode before the categories have loaded. */
+	if (gs_shell_get_mode (priv->shell) == GS_SHELL_MODE_OVERVIEW)
+		gs_shell_side_filter_set_visible (priv->shell, TRUE);
 
 	priv->loading_categories = FALSE;
 
