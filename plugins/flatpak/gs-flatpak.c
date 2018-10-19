@@ -3403,7 +3403,7 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Removable Media Repo");
 	gs_app_set_management_plugin (app, gs_plugin_get_name (self->plugin));
-	gs_app_set_metadata (app, "EndlessOS::RemovableMediaCategory", "usb");
+	gs_app_set_metadata (app, "EndlessOS::RemovableMediaCategory", "USB");
 	if (reload_overview) {
 		gs_app_set_metadata (app, "EndlessOS::ReloadOverview", "true");
 		/* also make it load the updates again since there may be some

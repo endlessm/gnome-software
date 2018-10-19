@@ -403,9 +403,13 @@ gs_category_page_create_filter_list (GsCategoryPage *self,
 	children = gs_category_get_children (category);
 	for (i = 0; i < children->len; i++) {
 		s = GS_CATEGORY (g_ptr_array_index (children, i));
-		if (gs_category_get_size (s) < 1) {
-			gboolean category_is_usb = FALSE;
+		gboolean category_is_usb = FALSE;
 
+		if (g_strcmp0 (gs_category_get_id (category), "usb") == 0) {
+			category_is_usb = TRUE;
+		}
+
+		if (gs_category_get_size (s) < 1) {
 			g_debug ("not showing %s/%s as no apps",
 				 gs_category_get_id (category),
 				 gs_category_get_id (s));
@@ -414,15 +418,27 @@ gs_category_page_create_filter_list (GsCategoryPage *self,
 			 * placeholder app tiles get cleared out, then set
 			 * "empty state" message for an empty USB disk
 			 */
-			if (g_strcmp0 (gs_category_get_id (category), "usb") == 0) {
+			if (category_is_usb) {
 				gs_category_page_populate_filtered (self, s);
-				category_is_usb = TRUE;
 			}
 
 			gtk_widget_set_visible (self->no_apps_box, category_is_usb);
 			gtk_widget_set_visible (self->scrolledwindow_category, !category_is_usb);
 
 			continue;
+		}
+
+		g_debug ("Showing %u apps from %s/%s",
+			 gs_category_get_size (s),
+			 gs_category_get_id (category),
+			 gs_category_get_id (s));
+
+		/* Enforce the state of the no_apps_boxon the chance an empty usb
+		 * was inserted previously
+		 */
+		if (category_is_usb) {
+			gtk_widget_set_visible (self->no_apps_box, !category_is_usb);
+			gtk_widget_set_visible (self->scrolledwindow_category, category_is_usb);
 		}
 		row = gtk_label_new (gs_category_get_name (s));
 		g_object_set_data_full (G_OBJECT (row), "category", g_object_ref (s), g_object_unref);
