@@ -56,7 +56,6 @@ struct _GsFlatpak {
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
 
 #define APP_METADATA_MOGWAI_UPDATE_PRIORITY "Mogwai::update-priority"
-#define EOS_MIN_FREE_SPACE_NEEDED_BYTES (500 * 1024 * 1024)
 
 /* higher has the value that is used by eos-updater for OS updates */
 typedef enum {
@@ -3703,6 +3702,7 @@ gs_flatpak_has_space_to_install (GsFlatpak *self, GsApp *app, GsAppList *list)
 {
 	g_autoptr(GError) error = NULL;
 	guint64 free_space = 0;
+	guint64 min_free_space = 0;
 	guint64 space_required = 0;
 
 	space_required = gs_app_get_size_download (app);
@@ -3710,7 +3710,13 @@ gs_flatpak_has_space_to_install (GsFlatpak *self, GsApp *app, GsAppList *list)
 		g_warning ("Failed to query download size: %s", gs_app_get_unique_id (app));
 		space_required = 0;
 	}
-	space_required = space_required + EOS_MIN_FREE_SPACE_NEEDED_BYTES;
+	if (!flatpak_installation_get_min_free_space_bytes (self->installation, &min_free_space, &error)) {
+		g_autoptr(GFile) installation_file = flatpak_installation_get_path (self->installation);
+		g_autofree gchar *path = g_file_get_path (installation_file);
+		g_warning ("Error getting min-free-space config value of OSTree repo at %s:%s", path, error->message);
+		g_clear_error (&error);
+	}
+	space_required = space_required + min_free_space;
 
 	if (!get_installation_dir_free_space (self, &free_space, &error)) {
 		g_warning ("Error getting the free space available for installing %s: %s",
@@ -3729,6 +3735,7 @@ gs_flatpak_has_space_to_update (GsFlatpak *self, GsApp *app, GsAppList *list, gb
 {
 	g_autoptr(GError) error = NULL;
 	guint64 free_space = 0;
+	guint64 min_free_space = 0;
 	guint64 space_required = 0;
 
 	if (is_auto_update && gs_app_get_kind (app) != AS_APP_KIND_RUNTIME) {
@@ -3737,8 +3744,13 @@ gs_flatpak_has_space_to_update (GsFlatpak *self, GsApp *app, GsAppList *list, gb
 			space_required += gs_app_get_size_installed (app_temp);
 		}
 	}
-
-	space_required = (space_required * 2) + EOS_MIN_FREE_SPACE_NEEDED_BYTES;
+	if (!flatpak_installation_get_min_free_space_bytes (self->installation, &min_free_space, &error)) {
+		g_autoptr(GFile) installation_file = flatpak_installation_get_path (self->installation);
+		g_autofree gchar *path = g_file_get_path (installation_file);
+		g_warning ("Error getting min-free-space config value of OSTree repo at %s:%s", path, error->message);
+		g_clear_error (&error);
+	}
+	space_required = (space_required * 2) + min_free_space;
 	if (!get_installation_dir_free_space (self, &free_space, &error)) {
 		g_warning ("Error getting the free space available for updating %s: %s",
 			   gs_app_get_unique_id (app), error->message);
