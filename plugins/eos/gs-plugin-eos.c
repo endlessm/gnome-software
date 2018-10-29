@@ -2056,7 +2056,6 @@ gs_plugin_add_popular (GsPlugin *plugin,
 		"com.google.Chrome.desktop",
 		"com.spotify.Client.desktop",
 		"com.transmissionbt.Transmission.desktop",
-		"com.tux4kids.tuxmath.desktop",
 		"com.valvesoftware.Steam.desktop",
 		"net.minetest.Minetest.desktop",
 		"org.audacityteam.Audacity.desktop",
@@ -2068,6 +2067,13 @@ gs_plugin_add_popular (GsPlugin *plugin,
 		"org.tuxpaint.Tuxpaint.desktop",
 		"org.videolan.VLC.desktop",
 		"simple-scan.desktop",
+		"net.scribus.Scribus.desktop",
+		"org.telegram.desktop.desktop",
+		"org.kde.krita.desktop",
+		"org.gnome.chess.desktop",
+		"io.github.mmstick.FontFinder.desktop",
+		"com.calibre_ebook.calibre.desktop",
+		"org.gnome.SwellFoop.desktop"
 		NULL
 	};
 
