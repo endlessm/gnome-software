@@ -25,6 +25,7 @@
 #include <config.h>
 
 #include <flatpak.h>
+#include <libeos-parental-controls/app-filter.h>
 #include <ostree.h>
 #include <gnome-software.h>
 #include <glib/gi18n.h>
@@ -1401,6 +1402,71 @@ app_is_evergreen (GsApp *app)
 		g_str_has_prefix (id, "com.endlessm.word_of_the_day");
 }
 
+/* Convert an #EpcAppFilterOarsValue to an #AsContentRatingValue. This is
+ * actually a trivial cast, since the types are defined the same; but throw in
+ * a static assertion to be sure. */
+static AsContentRatingValue
+convert_app_filter_oars_value (EpcAppFilterOarsValue filter_value)
+{
+  G_STATIC_ASSERT (AS_CONTENT_RATING_VALUE_LAST == EPC_APP_FILTER_OARS_VALUE_INTENSE + 1);
+
+  return (AsContentRatingValue) filter_value;
+}
+
+/* Check whether the OARS rating for @app is as, or less, extreme than the
+ * user’s preferences in @app_filter. If so (i.e. if the app is suitable for
+ * this user to use), return %TRUE; otherwise return %FALSE.
+ *
+ * The #AsContentRating in @app may be %NULL if no OARS ratings are provided for
+ * the app. If so, we have to assume the most restrictive ratings.
+ *
+ * We don’t need to worry about updating the app list when the app filter value
+ * is changed, as changing it requires logging out and back in as an
+ * administrator. */
+static gboolean
+app_is_content_rating_appropriate (GsApp *app, EpcAppFilter *app_filter)
+{
+	AsContentRating *rating = gs_app_get_content_rating (app);  /* (nullable) */
+	g_autofree const gchar **oars_sections = epc_app_filter_get_oars_sections (app_filter);
+
+	if (rating == NULL)
+		g_debug ("No OARS ratings provided for ‘%s’: assuming most extreme",
+		         gs_app_get_unique_id (app));
+
+	for (gsize i = 0; oars_sections[i] != NULL; i++) {
+		AsContentRatingValue rating_value;
+		EpcAppFilterOarsValue filter_value;
+
+		filter_value = epc_app_filter_get_oars_value (app_filter, oars_sections[i]);
+
+		if (rating != NULL)
+			rating_value = as_content_rating_get_value (rating, oars_sections[i]);
+		else
+			rating_value = AS_CONTENT_RATING_VALUE_INTENSE;
+
+		if (rating_value == AS_CONTENT_RATING_VALUE_UNKNOWN ||
+		    filter_value == EPC_APP_FILTER_OARS_VALUE_UNKNOWN)
+			continue;
+		else if (convert_app_filter_oars_value (filter_value) < rating_value)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean
+gs_plugin_eos_parental_filter_if_needed (GsPlugin *plugin, GsApp *app, EpcAppFilter *app_filter)
+{
+	if (!app_is_content_rating_appropriate (app, app_filter)) {
+		g_debug ("Filtering ‘%s’: app OARS rating is too extreme for this user",
+		         gs_app_get_unique_id (app));
+		gs_app_add_quirk (app, GS_APP_QUIRK_PARENTAL_FILTER);
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 static gboolean
 gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
@@ -1688,6 +1754,13 @@ gs_plugin_refine (GsPlugin		*plugin,
 		  GCancellable		*cancellable,
 		  GError		**error)
 {
+	/* Query the app filter once, rather than one per app. */
+	g_autoptr(EpcAppFilter) app_filter = NULL;
+	app_filter = epc_get_app_filter (NULL, getuid (), TRUE, cancellable, error);
+	if (app_filter == NULL)
+		return FALSE;
+
+	/* Refine each app. */
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
 
@@ -1702,6 +1775,9 @@ gs_plugin_refine (GsPlugin		*plugin,
 			continue;
 
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
+			continue;
+
+		if (gs_plugin_eos_parental_filter_if_needed (plugin, app, app_filter))
 			continue;
 
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app);

@@ -27,5 +27,5 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, flatpak, ostree, ]
+  dependencies : [ plugin_libs, flatpak, ostree, eos_parental_controls, ]
 )
