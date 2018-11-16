@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2016 Joaquim Rocha <jrocha@endlessm.com>
  * Copyright (C) 2016-2018 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2017 Kalev Lember <klember@redhat.com>
+ * Copyright (C) 2017-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -58,6 +58,9 @@ gs_plugin_initialize (GsPlugin *plugin)
 	/* getting app properties from appstream is quicker */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
 
+	/* like appstream, we need the icon plugin to load cached icons into pixbufs */
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_BEFORE, "icons");
+
 	/* prioritize over packages */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_BETTER_THAN, "packagekit");
 
@@ -109,12 +112,7 @@ gs_plugin_flatpak_add_installation (GsPlugin *plugin,
 				    GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(GsFlatpak) flatpak = NULL;
-
-	ptask = as_profile_start_literal (gs_plugin_get_profile (plugin),
-					  "flatpak::add-installation");
-	g_assert (ptask != NULL);
 
 	/* create and set up */
 	flatpak = gs_flatpak_new (plugin, installation, GS_FLATPAK_FLAG_NONE);
@@ -485,7 +483,7 @@ gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 			return FALSE;
 		}
 	}
-	if (!flatpak_transaction_run (transaction, cancellable, error)) {
+	if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
@@ -523,9 +521,13 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
-	if (!flatpak_transaction_run (transaction, cancellable, error)) {
+
+	/* run transaction */
+	gs_app_set_state (app, AS_APP_STATE_REMOVING);
+	if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
 		g_prefix_error (error, "failed to run transaction for %s: ", ref);
 		gs_flatpak_error_convert (error);
+		gs_app_set_state_recover (app);
 		return FALSE;
 	}
 
@@ -659,10 +661,12 @@ gs_plugin_app_install (GsPlugin *plugin,
 	}
 
 	/* run transaction */
-	if (!flatpak_transaction_run (transaction, cancellable, error)) {
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
 		g_prefix_error (error, "failed to run transaction for %s: ",
 				gs_app_get_unique_id (app));
 		gs_flatpak_error_convert (error);
+		gs_app_set_state_recover (app);
 		return FALSE;
 	}
 
@@ -709,9 +713,13 @@ gs_plugin_update_app (GsPlugin *plugin,
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
-	if (!flatpak_transaction_run (transaction, cancellable, error)) {
+
+	/* run transaction */
+	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
 		g_prefix_error (error, "failed to run transaction for %s: ", ref);
 		gs_flatpak_error_convert (error);
+		gs_app_set_state_recover (app);
 		return FALSE;
 	}
 	gs_plugin_updates_changed (plugin);
@@ -899,7 +907,7 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 		"application/vnd.flatpak.ref",
 		NULL };
 
-	/* does this match any of the mimetypes_bundle we support */
+	/* does this match any of the mimetypes we support */
 	content_type = gs_utils_get_content_type (file, cancellable, error);
 	if (content_type == NULL)
 		return FALSE;

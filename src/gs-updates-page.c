@@ -42,8 +42,6 @@
 
 #include <langinfo.h>
 
-#define GS_REFRESH_MIN_AGE 10 /* sec */
-
 typedef enum {
 	GS_UPDATES_PAGE_FLAG_NONE		= 0,
 	GS_UPDATES_PAGE_FLAG_HAS_UPDATES	= 1 << 0,
@@ -281,11 +279,6 @@ gs_updates_page_last_checked_time_string (GsUpdatesPage *self)
 static const gchar *
 gs_updates_page_get_state_string (GsPluginStatus status)
 {
-	if (status == GS_PLUGIN_STATUS_DOWNLOADING) {
-		/* TRANSLATORS: the updates are being downloaded */
-		return _("Downloading new updates…");
-	}
-
 	/* TRANSLATORS: the update panel is doing *something* vague */
 	return _("Looking for new updates…");
 }
@@ -383,7 +376,7 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 	case GS_UPDATES_PAGE_STATE_MANAGED:
 		gtk_widget_hide (self->button_refresh);
 		break;
-	default:
+	case GS_UPDATES_PAGE_STATE_IDLE:
 		gtk_image_set_from_icon_name (GTK_IMAGE (gtk_button_get_image (GTK_BUTTON (self->button_refresh))),
 					      "view-refresh-symbolic", GTK_ICON_SIZE_MENU);
 		if (self->result_flags != GS_UPDATES_PAGE_FLAG_NONE) {
@@ -394,6 +387,14 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 				allow_mobile_refresh = FALSE;
 			gtk_widget_set_visible (self->button_refresh, allow_mobile_refresh);
 		}
+		break;
+	case GS_UPDATES_PAGE_STATE_FAILED:
+		gtk_image_set_from_icon_name (GTK_IMAGE (gtk_button_get_image (GTK_BUTTON (self->button_refresh))),
+					      "view-refresh-symbolic", GTK_ICON_SIZE_MENU);
+		gtk_widget_show (self->button_refresh);
+		break;
+	default:
+		g_assert_not_reached ();
 		break;
 	}
 	gtk_widget_set_sensitive (self->button_refresh,
@@ -499,9 +500,6 @@ gs_updates_page_decrement_refresh_count (GsUpdatesPage *self)
 
 	/* all done */
 	gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_IDLE);
-
-	/* seems a good place */
-	gs_shell_profile_dump (self->shell);
 }
 
 static void
@@ -590,7 +588,8 @@ gs_updates_page_get_upgrades_cb (GObject *source_object,
 		gs_updates_page_clear_flag (self, GS_UPDATES_PAGE_FLAG_HAS_UPGRADES);
 		gtk_widget_set_visible (self->upgrade_banner, FALSE);
 	} else {
-		/* rely on the app list already being sorted */
+		/* rely on the app list already being sorted with the
+		 * chronologically newest release last */
 		GsApp *app = gs_app_list_index (list, gs_app_list_length (list) - 1);
 		g_debug ("got upgrade %s", gs_app_get_id (app));
 		gs_upgrade_banner_set_app (GS_UPGRADE_BANNER (self->upgrade_banner), app);
@@ -812,7 +811,7 @@ gs_updates_page_get_new_updates (GsUpdatesPage *self)
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 					 "interactive", TRUE,
-					 "age", (guint64) GS_REFRESH_MIN_AGE,
+					 "age", (guint64) 0,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable_refresh,
@@ -887,7 +886,8 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 		gs_updates_page_get_new_updates (self);
 
 	/* expensive network connection */
-	} else if (gs_plugin_loader_get_network_metered (self->plugin_loader)) {
+	} else if (gs_plugin_loader_get_network_available (self->plugin_loader) &&
+	           gs_plugin_loader_get_network_metered (self->plugin_loader)) {
 		if (self->has_agreed_to_mobile_data) {
 			gs_updates_page_get_new_updates (self);
 			return;
@@ -1251,8 +1251,9 @@ gs_updates_page_status_changed_cb (GsPluginLoader *plugin_loader,
 	switch (status) {
 	case GS_PLUGIN_STATUS_INSTALLING:
 	case GS_PLUGIN_STATUS_REMOVING:
-		if (gs_app_get_kind (app) != AS_APP_KIND_OS_UPGRADE &&
-		    gs_app_get_id (app) != NULL) {
+		if (app == NULL ||
+		    (gs_app_get_kind (app) != AS_APP_KIND_OS_UPGRADE &&
+		     gs_app_get_id (app) != NULL)) {
 			/* if we do a install or remove then make sure all new
 			 * packages are downloaded */
 			gs_updates_page_invalidate_downloaded_upgrade (self);

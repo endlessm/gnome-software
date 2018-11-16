@@ -1,6 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2018 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -28,6 +29,7 @@ struct _GsFlatpakTransaction {
 	FlatpakTransaction	 parent_instance;
 	FlatpakInstallation	*installation;
 	GHashTable		*refhash;	/* ref:GsApp */
+	GError			*first_operation_error;
 };
 
 enum {
@@ -55,6 +57,8 @@ gs_flatpak_transaction_finalize (GObject *object)
 
 	g_assert (self != NULL);
 	g_hash_table_unref (self->refhash);
+	if (self->first_operation_error != NULL)
+		g_error_free (self->first_operation_error);
 
 	G_OBJECT_CLASS (gs_flatpak_transaction_parent_class)->finalize (object);
 }
@@ -103,6 +107,41 @@ static GsApp *
 _transaction_operation_get_app (FlatpakTransactionOperation *op)
 {
 	return g_object_get_data (G_OBJECT (op), "GsApp");
+}
+
+gboolean
+gs_flatpak_transaction_run (FlatpakTransaction *transaction,
+                            GCancellable *cancellable,
+                            GError **error)
+
+{
+	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
+	g_autoptr(GError) error_local = NULL;
+
+	if (!flatpak_transaction_run (transaction, cancellable, &error_local)) {
+		/* whole transaction failed; restore the state for all the apps involved */
+		g_autolist(GObject) ops = flatpak_transaction_get_operations (transaction);
+		for (GList *l = ops; l != NULL; l = l->next) {
+			FlatpakTransactionOperation *op = l->data;
+			const gchar *ref = flatpak_transaction_operation_get_ref (op);
+			g_autoptr(GsApp) app = _ref_to_app (self, ref);
+			if (app == NULL) {
+				g_warning ("failed to find app for %s", ref);
+				continue;
+			}
+			gs_app_set_state_recover (app);
+		}
+
+		if (self->first_operation_error != NULL) {
+			g_propagate_error (error, g_steal_pointer (&self->first_operation_error));
+			return FALSE;
+		} else {
+			g_propagate_error (error, g_steal_pointer (&error_local));
+			return FALSE;
+		}
+	}
+
+	return TRUE;
 }
 
 static gboolean
@@ -194,7 +233,7 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UPDATE:
 		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
-			gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
 		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UNINSTALL:
@@ -242,23 +281,37 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 	}
 }
 
-
 static gboolean
 _transaction_operation_error (FlatpakTransaction *transaction,
 			      FlatpakTransactionOperation *operation,
 			      const GError *error,
 			      FlatpakTransactionErrorDetails detail)
 {
-	/* invalidate */
-	GsApp *app = _transaction_operation_get_app (operation);
-	if (app != NULL)
-		gs_app_set_state_recover (app);
+	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
+	FlatpakTransactionOperationType operation_type = flatpak_transaction_operation_get_operation_type (operation);
+	const gchar *ref = flatpak_transaction_operation_get_ref (operation);
+
 	if (g_error_matches (error, FLATPAK_ERROR, FLATPAK_ERROR_SKIPPED)) {
-		g_printerr ("%s", error->message);
-		return TRUE;
+		g_debug ("skipped to %s %s: %s",
+		         _flatpak_transaction_operation_type_to_string (operation_type),
+		         ref,
+		         error->message);
+		return TRUE; /* continue */
 	}
-	g_printerr ("%s", error->message);
-	return FALSE;
+
+	if (detail & FLATPAK_TRANSACTION_ERROR_DETAILS_NON_FATAL) {
+		g_warning ("failed to %s %s (non fatal): %s",
+		           _flatpak_transaction_operation_type_to_string (operation_type),
+		           ref,
+		           error->message);
+		return TRUE; /* continue */
+	}
+
+	if (self->first_operation_error == NULL) {
+		g_propagate_error (&self->first_operation_error,
+		                   g_error_copy (error));
+	}
+	return FALSE; /* stop */
 }
 
 static int

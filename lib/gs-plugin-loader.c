@@ -48,7 +48,6 @@ typedef struct
 	GPtrArray		*locations;
 	gchar			*locale;
 	gchar			*language;
-	AsProfile		*profile;
 	SoupSession		*soup_session;
 	GPtrArray		*auth_array;
 	GPtrArray		*file_monitors;
@@ -210,6 +209,24 @@ gs_plugin_loader_helper_new (GsPluginLoader *plugin_loader, GsPluginJob *plugin_
 }
 
 static void
+reset_app_progress (GsApp *app)
+{
+	GsAppList *addons = gs_app_get_addons (app);
+	GsAppList *related = gs_app_get_related (app);
+
+	gs_app_set_progress (app, 0);
+
+	for (guint i = 0; i < gs_app_list_length (addons); i++) {
+		GsApp *app_addons = gs_app_list_index (addons, i);
+		gs_app_set_progress (app_addons, 0);
+	}
+	for (guint i = 0; i < gs_app_list_length (related); i++) {
+		GsApp *app_related = gs_app_list_index (related, i);
+		gs_app_set_progress (app_related, 0);
+	}
+}
+
+static void
 gs_plugin_loader_helper_free (GsPluginLoaderHelper *helper)
 {
 	/* reset progress */
@@ -219,9 +236,18 @@ gs_plugin_loader_helper_free (GsPluginLoaderHelper *helper)
 	case GS_PLUGIN_ACTION_UPDATE:
 	case GS_PLUGIN_ACTION_DOWNLOAD:
 		{
-			GsApp *app = gs_plugin_job_get_app (helper->plugin_job);
+			GsApp *app;
+			GsAppList *list;
+
+			app = gs_plugin_job_get_app (helper->plugin_job);
 			if (app != NULL)
-				gs_app_set_progress (app, 0);
+				reset_app_progress (app);
+
+			list = gs_plugin_job_get_list (helper->plugin_job);
+			for (guint i = 0; i < gs_app_list_length (list); i++) {
+				GsApp *app_tmp = gs_app_list_index (list, i);
+				reset_app_progress (app_tmp);
+			}
 		}
 		break;
 	default:
@@ -515,35 +541,16 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 			     GCancellable *cancellable,
 			     GError **error)
 {
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (helper->plugin_loader);
 	GsPluginAction action = gs_plugin_job_get_action (helper->plugin_job);
 	gboolean ret = TRUE;
 	gpointer func = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GTimer) timer = g_timer_new ();
-	g_autoptr(AsProfileTask) ptask = NULL;
 
 	/* load the possible symbol */
 	func = gs_plugin_get_symbol (plugin, helper->function_name);
 	if (func == NULL)
 		return TRUE;
-
-	/* profile */
-	if (g_strcmp0 (helper->function_name, "gs_plugin_refine_app") != 0) {
-		if (helper->function_name_parent == NULL) {
-			ptask = as_profile_start (priv->profile,
-						  "GsPlugin::%s(%s)",
-						  gs_plugin_get_name (plugin),
-						  helper->function_name);
-		} else {
-			ptask = as_profile_start (priv->profile,
-						  "GsPlugin::%s(%s;%s)",
-						  gs_plugin_get_name (plugin),
-						  helper->function_name_parent,
-						  helper->function_name);
-		}
-		g_assert (ptask != NULL);
-	}
 
 	/* fallback if unset */
 	if (app == NULL)
@@ -820,7 +827,6 @@ gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 
 	/* run each plugin */
 	for (guint i = 0; i < priv->plugins->len; i++) {
-		g_autoptr(AsProfileTask) ptask = NULL;
 		GsPlugin *plugin = g_ptr_array_index (priv->plugins, i);
 		g_autoptr(GsAppList) app_list = NULL;
 
@@ -1129,12 +1135,6 @@ gs_plugin_loader_run_results (GsPluginLoaderHelper *helper,
 			      GError **error)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (helper->plugin_loader);
-	g_autoptr(AsProfileTask) ptask = NULL;
-
-	/* profile */
-	ptask = as_profile_start (priv->profile, "GsPlugin::*(%s)",
-				  helper->function_name);
-	g_assert (ptask != NULL);
 
 	/* run each plugin */
 	for (guint i = 0; i < priv->plugins->len; i++) {
@@ -1418,6 +1418,19 @@ gs_plugin_loader_app_sort_match_value_cb (GsApp *app1, GsApp *app2, gpointer use
 	if (gs_app_get_match_value (app1) < gs_app_get_match_value (app2))
 		return 1;
 	return 0;
+}
+
+static gint
+gs_plugin_loader_app_sort_version_cb (GsApp *app1, GsApp *app2, gpointer user_data)
+{
+#if AS_CHECK_VERSION(0,7,15)
+	return as_utils_vercmp_full (gs_app_get_version (app1),
+	                             gs_app_get_version (app2),
+	                             AS_VERSION_COMPARE_FLAG_NONE);
+#else
+	return as_utils_vercmp (gs_app_get_version (app1),
+	                        gs_app_get_version (app2));
+#endif
 }
 
 /******************************************************************************/
@@ -2176,7 +2189,6 @@ gs_plugin_loader_open_plugin (GsPluginLoader *plugin_loader,
 			  plugin_loader);
 	gs_plugin_set_soup_session (plugin, priv->soup_session);
 	gs_plugin_set_auth_array (plugin, priv->auth_array);
-	gs_plugin_set_profile (plugin, priv->profile);
 	gs_plugin_set_locale (plugin, priv->locale);
 	gs_plugin_set_language (plugin, priv->language);
 	gs_plugin_set_scale (plugin, gs_plugin_loader_get_scale (plugin_loader));
@@ -2394,7 +2406,6 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	guint dep_loop_check = 0;
 	guint i;
 	guint j;
-	g_autoptr(AsProfileTask) ptask = NULL;
 	g_autoptr(GsPluginLoaderHelper) helper = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
@@ -2421,8 +2432,6 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	}
 
 	/* search for plugins */
-	ptask = as_profile_start_literal (priv->profile, "GsPlugin::setup");
-	g_assert (ptask != NULL);
 	for (i = 0; i < priv->locations->len; i++) {
 		const gchar *location = g_ptr_array_index (priv->locations, i);
 		g_autoptr(GPtrArray) fns = NULL;
@@ -2727,7 +2736,6 @@ gs_plugin_loader_dispose (GObject *object)
 	}
 	g_clear_object (&priv->network_monitor);
 	g_clear_object (&priv->soup_session);
-	g_clear_object (&priv->profile);
 	g_clear_object (&priv->settings);
 	g_clear_pointer (&priv->auth_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->pending_apps, g_ptr_array_unref);
@@ -2856,7 +2864,6 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	priv->auth_array = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->file_monitors = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->locations = g_ptr_array_new_with_free_func (g_free);
-	priv->profile = as_profile_new ();
 	priv->settings = g_settings_new ("org.gnome.software");
 	g_signal_connect (priv->settings, "changed",
 			  G_CALLBACK (gs_plugin_loader_settings_changed_cb), plugin_loader);
@@ -3076,12 +3083,15 @@ gs_plugin_loader_generic_update (GsPluginLoader *plugin_loader,
 			GCancellable *app_cancellable;
 			GsApp *app = gs_app_list_index (list, j);
 			gboolean ret;
-			g_autoptr(AsProfileTask) ptask = NULL;
 			g_autoptr(GError) error_local = NULL;
 
 			/* if the whole operation should be cancelled */
 			if (g_cancellable_set_error_if_cancelled (cancellable, error))
 				return FALSE;
+
+			/* already installed? */
+			if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED)
+				continue;
 
 			/* make sure that the app update is cancelled when the whole op is cancelled */
 			app_cancellable = gs_app_get_cancellable (app);
@@ -3091,12 +3101,6 @@ gs_plugin_loader_generic_update (GsPluginLoader *plugin_loader,
 								   g_object_unref);
 
 			gs_plugin_job_set_app (helper->plugin_job, app);
-			ptask = as_profile_start (priv->profile,
-						  "GsPlugin::%s(%s){%s}",
-						  gs_plugin_get_name (plugin),
-						  helper->function_name,
-						  gs_app_get_id (app));
-			g_assert (ptask != NULL);
 			gs_plugin_loader_action_start (plugin_loader, plugin, FALSE);
 			ret = plugin_app_func (plugin, app, app_cancellable, &error_local);
 			gs_plugin_loader_action_stop (plugin_loader, plugin);
@@ -3414,12 +3418,7 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 		}
 		if (gs_app_list_length (list) > 1) {
 			g_autofree gchar *str = gs_plugin_job_to_string (helper->plugin_job);
-			g_task_return_new_error (task,
-						 GS_PLUGIN_ERROR,
-						 GS_PLUGIN_ERROR_NOT_SUPPORTED,
-						 "more than one application was created for %s",
-						 str);
-			return;
+			g_debug ("more than one application was created for %s", str);
 		}
 	}
 
@@ -3649,6 +3648,12 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 						     gs_plugin_loader_app_sort_name_cb);
 		}
 		break;
+	case GS_PLUGIN_ACTION_GET_DISTRO_UPDATES:
+		if (gs_plugin_job_get_sort_func (plugin_job) == NULL) {
+			gs_plugin_job_set_sort_func (plugin_job,
+						     gs_plugin_loader_app_sort_version_cb);
+		}
+		break;
 	default:
 		break;
 	}
@@ -3796,13 +3801,6 @@ GsApp *
 gs_plugin_loader_get_system_app (GsPluginLoader *plugin_loader)
 {
 	return gs_plugin_loader_app_create (plugin_loader, "*/*/*/*/system/*");
-}
-
-AsProfile *
-gs_plugin_loader_get_profile (GsPluginLoader *plugin_loader)
-{
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	return priv->profile;
 }
 
 /**

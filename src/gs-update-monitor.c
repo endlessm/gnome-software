@@ -53,6 +53,26 @@ struct _GsUpdateMonitor {
 
 G_DEFINE_TYPE (GsUpdateMonitor, gs_update_monitor, G_TYPE_OBJECT)
 
+typedef enum {
+	GS_UPDATE_MONITOR_MODE_NONE		= 0,
+	GS_UPDATE_MONITOR_MODE_DO_AUTOUPDATES	= 1 << 0,
+	GS_UPDATE_MONITOR_MODE_LAST
+} GsUpdateMonitorMode;
+
+typedef struct {
+	GsUpdateMonitor		*monitor;
+	GsUpdateMonitorMode	 mode;
+} DownloadUpdatesData;
+
+static void
+download_updates_data_free (DownloadUpdatesData *data)
+{
+	g_clear_object (&data->monitor);
+	g_slice_free (DownloadUpdatesData, data);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(DownloadUpdatesData, download_updates_data_free);
+
 static gboolean
 reenable_offline_update_notification (gpointer data)
 {
@@ -265,7 +285,7 @@ _build_autoupdated_notification (GsUpdateMonitor *monitor, GsAppList *list)
 	n = g_notification_new (title);
 	if (body->len > 0)
 		g_notification_set_body (n, body->str);
-	g_notification_set_default_action_and_target (n, "app.set-mode", "s", "updated");
+	g_notification_set_default_action_and_target (n, "app.set-mode", "s", "updates");
 	return g_steal_pointer (&n);
 }
 
@@ -312,7 +332,8 @@ download_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	GsUpdateMonitor *monitor = GS_UPDATE_MONITOR (data);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
-	g_autoptr(GsAppList) list2 = NULL;
+	g_autoptr(GsAppList) update_online = NULL;
+	g_autoptr(GsAppList) update_offline = NULL;
 
 	/* get result */
 	list = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
@@ -322,19 +343,23 @@ download_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		return;
 	}
 
-	/* install any apps that can be installed LIVE */
-	list2 = gs_app_list_new ();
+	update_online = gs_app_list_new ();
+	update_offline = gs_app_list_new ();
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 		if (_should_auto_update (app)) {
 			g_debug ("auto-updating %s", gs_app_get_unique_id (app));
-			gs_app_list_add (list2, app);
+			gs_app_list_add (update_online, app);
+		} else {
+			gs_app_list_add (update_offline, app);
 		}
 	}
-	if (gs_app_list_length (list2) > 0) {
+
+	/* install any apps that can be installed LIVE */
+	if (gs_app_list_length (update_online) > 0) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE,
-						 "list", list2,
+						 "list", update_online,
 						 NULL);
 		gs_plugin_loader_job_process_async (monitor->plugin_loader,
 						    plugin_job,
@@ -342,12 +367,21 @@ download_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 						    update_finished_cb,
 						    monitor);
 	}
+
+	/* show a notification for offline updates */
+	if (gs_app_list_length (update_offline) > 0) {
+		if (has_important_updates (update_offline) ||
+		    no_updates_for_a_week (monitor)) {
+			notify_offline_update_available (monitor);
+		}
+	}
 }
 
 static void
 get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
-	GsUpdateMonitor *monitor = GS_UPDATE_MONITOR (data);
+	g_autoptr(DownloadUpdatesData) download_updates_data = (DownloadUpdatesData *) data;
+	GsUpdateMonitor *monitor = download_updates_data->monitor;
 	guint64 security_timestamp = 0;
 	guint64 security_timestamp_old = 0;
 	g_autoptr(GError) error = NULL;
@@ -387,7 +421,8 @@ get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_debug ("got %u updates", gs_app_list_length (apps));
 
 	/* download any updates if auto-updates are turned on */
-	if (g_settings_get_boolean (monitor->settings, "download-updates")) {
+	if (download_updates_data->mode == GS_UPDATE_MONITOR_MODE_DO_AUTOUPDATES &&
+	    g_settings_get_boolean (monitor->settings, "download-updates")) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_DOWNLOAD,
 						 "list", apps,
@@ -399,12 +434,6 @@ get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 						    download_finished_cb,
 						    monitor);
 		return;
-	}
-
-
-	if (has_important_updates (apps) ||
-	    no_updates_for_a_week (monitor)) {
-		notify_offline_update_available (monitor);
 	}
 }
 
@@ -513,8 +542,9 @@ get_upgrades_finished_cb (GObject *object,
 	g_settings_set (monitor->settings, "upgrade-notification-timestamp", "x",
 	                g_date_time_to_unix (now));
 
-	/* just get the first result : FIXME, do we sort these by date? */
-	app = gs_app_list_index (apps, 0);
+	/* rely on the app list already being sorted with the
+	 * chronologically newest release last */
+	app = gs_app_list_index (apps, gs_app_list_length (apps) - 1);
 
 	/* TRANSLATORS: this is a distro upgrade, the replacement would be the
 	 * distro name, e.g. 'Fedora' */
@@ -528,16 +558,21 @@ get_upgrades_finished_cb (GObject *object,
 	g_application_send_notification (monitor->application, "upgrades-available", n);
 }
 
-void
-gs_update_monitor_get_updates (GsUpdateMonitor *monitor)
+static void
+get_updates (GsUpdateMonitor *monitor, GsUpdateMonitorMode mode)
 {
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	g_autoptr(DownloadUpdatesData) download_updates_data = NULL;
 
 	/* disabled in gsettings or from a plugin */
 	if (!gs_plugin_loader_get_allow_updates (monitor->plugin_loader)) {
 		g_debug ("not getting updates as not enabled");
 		return;
 	}
+
+	download_updates_data = g_slice_new0 (DownloadUpdatesData);
+	download_updates_data->monitor = g_object_ref (monitor);
+	download_updates_data->mode = mode;
 
 	/* NOTE: this doesn't actually do any network access */
 	g_debug ("Getting updates");
@@ -549,7 +584,13 @@ gs_update_monitor_get_updates (GsUpdateMonitor *monitor)
 					    plugin_job,
 					    monitor->cancellable,
 					    get_updates_finished_cb,
-					    monitor);
+					    g_steal_pointer (&download_updates_data));
+}
+
+void
+gs_update_monitor_autoupdate (GsUpdateMonitor *monitor)
+{
+	get_updates (monitor, GS_UPDATE_MONITOR_MODE_DO_AUTOUPDATES);
 }
 
 static void
@@ -613,7 +654,7 @@ refresh_cache_finished_cb (GObject *object,
 	g_settings_set (monitor->settings, "check-timestamp", "x",
 	                g_date_time_to_unix (now));
 
-	gs_update_monitor_get_updates (monitor);
+	get_updates (monitor, GS_UPDATE_MONITOR_MODE_DO_AUTOUPDATES);
 }
 
 typedef enum {
@@ -797,7 +838,7 @@ updates_changed_cb (GsPluginLoader *plugin_loader, GsUpdateMonitor *monitor)
 {
 	/* when the list of downloaded-and-ready-to-go updates changes get the
 	 * new list and perhaps show/hide the notification */
-	gs_update_monitor_get_updates (monitor);
+	get_updates (monitor, GS_UPDATE_MONITOR_MODE_NONE);
 }
 
 static void

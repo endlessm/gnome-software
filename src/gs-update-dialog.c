@@ -374,12 +374,22 @@ is_downgrade (const gchar *evr1,
 	 * part of the semantic version */
 
 	/* check version */
+#if AS_CHECK_VERSION(0,7,15)
+	rc = as_utils_vercmp_full (version1, version2,
+	                           AS_VERSION_COMPARE_FLAG_NONE);
+#else
 	rc = as_utils_vercmp (version1, version2);
+#endif
 	if (rc != 0)
 		return rc > 0;
 
 	/* check release */
+#if AS_CHECK_VERSION(0,7,15)
+	rc = as_utils_vercmp_full (version1, version2,
+	                           AS_VERSION_COMPARE_FLAG_NONE);
+#else
 	rc = as_utils_vercmp (release1, release2);
+#endif
 	if (rc != 0)
 		return rc > 0;
 
@@ -538,8 +548,11 @@ void
 gs_update_dialog_show_update_details (GsUpdateDialog *dialog, GsApp *app)
 {
 	AsAppKind kind;
+	g_autofree gchar *str = NULL;
 
-	kind = gs_app_get_kind (app);
+	/* debug */
+	str = gs_app_to_string (app);
+	g_debug ("%s", str);
 
 	/* set update header */
 	set_updates_description_ui (dialog, app);
@@ -549,6 +562,7 @@ gs_update_dialog_show_update_details (GsUpdateDialog *dialog, GsApp *app)
 	unset_focus (GTK_WIDGET (dialog));
 
 	/* set update description */
+	kind = gs_app_get_kind (app);
 	if (kind == AS_APP_KIND_OS_UPDATE) {
 		GsAppList *related;
 		GsApp *app_related;

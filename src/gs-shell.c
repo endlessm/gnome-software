@@ -79,7 +79,6 @@ typedef struct
 	GPtrArray		*modal_dialogs;
 	gulong			 search_changed_id;
 	gchar			*events_info_uri;
-	gboolean		 profile_mode;
 	gboolean		 in_mode_change;
 	GsPage			*page_last;
 } GsShellPrivate;
@@ -148,24 +147,6 @@ gs_shell_activate (GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	gtk_window_present (priv->main_window);
-}
-
-void
-gs_shell_profile_dump (GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	if (priv->profile_mode) {
-		AsProfile *profile = gs_plugin_loader_get_profile (priv->plugin_loader);
-		as_profile_prune (profile, 5000);
-		as_profile_dump (profile);
-	}
-}
-
-void
-gs_shell_set_profile_mode (GsShell *shell, gboolean profile_mode)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	priv->profile_mode = profile_mode;
 }
 
 static void
@@ -1044,6 +1025,7 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
+	GsPluginAction action = gs_plugin_event_get_action (event);
 	g_autofree gchar *str_origin = NULL;
 	g_autoptr(GString) str = g_string_new (NULL);
 
@@ -1113,8 +1095,13 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 		/* non-interactive generic */
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 			return FALSE;
-		/* TRANSLATORS: failure text for the in-app notification */
-		g_string_append (str, _("Unable to get list of updates"));
+		if (action == GS_PLUGIN_ACTION_DOWNLOAD) {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append (str, _("Unable to download updates"));
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append (str, _("Unable to get list of updates"));
+		}
 		break;
 	}
 	if (str->len == 0)
@@ -1889,11 +1876,11 @@ gs_shell_show_event (GsShell *shell, GsPluginEvent *event)
 	action = gs_plugin_event_get_action (event);
 	switch (action) {
 	case GS_PLUGIN_ACTION_REFRESH:
+	case GS_PLUGIN_ACTION_DOWNLOAD:
 		return gs_shell_show_event_refresh (shell, event);
 	case GS_PLUGIN_ACTION_PURCHASE:
 		return gs_shell_show_event_purchase (shell, event);
 	case GS_PLUGIN_ACTION_INSTALL:
-	case GS_PLUGIN_ACTION_DOWNLOAD:
 		return gs_shell_show_event_install (shell, event);
 	case GS_PLUGIN_ACTION_UPDATE:
 		return gs_shell_show_event_update (shell, event);
@@ -2330,9 +2317,9 @@ gs_shell_dispose (GObject *object)
 	g_clear_object (&priv->header_start_widget);
 	g_clear_object (&priv->header_end_widget);
 	g_clear_object (&priv->page_last);
-	g_clear_pointer (&priv->pages, (GDestroyNotify) g_hash_table_unref);
-	g_clear_pointer (&priv->events_info_uri, (GDestroyNotify) g_free);
-	g_clear_pointer (&priv->modal_dialogs, (GDestroyNotify) g_ptr_array_unref);
+	g_clear_pointer (&priv->pages, g_hash_table_unref);
+	g_clear_pointer (&priv->events_info_uri, g_free);
+	g_clear_pointer (&priv->modal_dialogs, g_ptr_array_unref);
 
 	G_OBJECT_CLASS (gs_shell_parent_class)->dispose (object);
 }
