@@ -182,7 +182,7 @@ on_desktop_apps_changed (GDBusConnection *connection,
 
 		app = gs_plugin_cache_lookup (plugin, key);
 		if (app)
-			gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+			gs_app_remove_quirk (app, GS_APP_QUIRK_HAS_SHORTCUT);
 
 		g_hash_table_iter_remove (&iter);
 	}
@@ -193,7 +193,7 @@ on_desktop_apps_changed (GDBusConnection *connection,
 		GsApp *app = gs_plugin_cache_lookup (plugin, key);
 
 		if (app)
-			gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+			gs_app_add_quirk (app, GS_APP_QUIRK_HAS_SHORTCUT);
 
 		g_hash_table_add (priv->desktop_apps, g_strdup (key));
 	}
@@ -1408,8 +1408,8 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	const char *id = gs_app_get_id (app);
 
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
-	    gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
-	    !gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY)) {
+	    gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
+	    !gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY)) {
 		g_debug ("Blacklisting '%s': it's a compulsory, non-desktop app",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
@@ -1417,7 +1417,7 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 		g_debug ("Blacklisting '%s': app is an eos-link",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
-	} else if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+	} else if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
 		g_debug ("Blacklisting '%s': app is GNOME Software itself",
 			 gs_app_get_unique_id (app));
@@ -1479,7 +1479,7 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 	g_autofree char *kde_desktop_file_id = NULL;
 
 	if (!gs_app_is_installed (app)) {
-		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+		gs_app_remove_quirk (app, GS_APP_QUIRK_HAS_SHORTCUT);
 		return;
 	}
 
@@ -1496,9 +1496,9 @@ gs_plugin_eos_update_app_shortcuts_info (GsPlugin *plugin,
 
 	if (g_hash_table_lookup (priv->desktop_apps, desktop_file_id) ||
 	    g_hash_table_lookup (priv->desktop_apps, kde_desktop_file_id))
-		gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+		gs_app_add_quirk (app, GS_APP_QUIRK_HAS_SHORTCUT);
 	else
-		gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+		gs_app_remove_quirk (app, GS_APP_QUIRK_HAS_SHORTCUT);
 }
 
 static gboolean
@@ -1537,7 +1537,7 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 	}
 
 	/* we only allow to remove flatpak apps */
-	gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
 
 	if (!gs_app_is_installed (app)) {
 		/* forcibly set the installed state */
@@ -1836,7 +1836,7 @@ gs_plugin_add_shortcut (GsPlugin	*plugin,
 			GCancellable	*cancellable,
 			GError		**error)
 {
-	gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+	gs_app_add_quirk (app, GS_APP_QUIRK_HAS_SHORTCUT);
 	return add_app_to_shell (plugin, app, cancellable, error);
 }
 
@@ -1846,7 +1846,7 @@ gs_plugin_remove_shortcut (GsPlugin	*plugin,
 			   GCancellable	*cancellable,
 			   GError	**error)
 {
-	gs_app_remove_quirk (app, AS_APP_QUIRK_HAS_SHORTCUT);
+	gs_app_remove_quirk (app, GS_APP_QUIRK_HAS_SHORTCUT);
 	return remove_app_from_shell (plugin, app, cancellable, error);
 }
 
@@ -1927,7 +1927,7 @@ gs_plugin_launch (GsPlugin *plugin,
 {
 	/* if the app is one of the system ones, we simply launch it through the
 	 * plugin's app launcher */
-	if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 	    !app_is_flatpak (app))
 		return gs_plugin_app_launch (plugin, app, error);
 
@@ -1952,7 +1952,7 @@ gs_plugin_eos_create_proxy_app (GsPlugin *plugin,
 	gs_app_set_name (proxy, GS_APP_QUALITY_NORMAL, name);
 	gs_app_set_summary (proxy, GS_APP_QUALITY_NORMAL, summary);
 	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
-	gs_app_add_quirk (proxy, AS_APP_QUIRK_IS_PROXY);
+	gs_app_add_quirk (proxy, GS_APP_QUIRK_IS_PROXY);
 	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
 
 	icon = as_icon_new ();
@@ -2122,7 +2122,7 @@ gs_plugin_add_popular (GsPlugin *plugin,
 	/* add the hardcoded list of popular apps */
 	for (guint i = 0; popular_apps[i] != NULL; ++i) {
 		g_autoptr(GsApp) app = gs_app_new (popular_apps[i]);
-		gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 		gs_app_list_add (new_list, app);
 	}
 
@@ -2167,9 +2167,9 @@ setup_os_upgrade (GsPlugin *plugin)
 	 * should be changed to the right value when it changes in the eos-updater */
 	gs_app_set_version (app, "");
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Endless OS");
-	gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
-	gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_REVIEWABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
+	gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_REVIEWABLE);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css",
 			     "background: url('" DATADIR "/gnome-software/upgrade-bg.png');"

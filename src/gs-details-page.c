@@ -225,7 +225,7 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 		gs_plugin_loader_get_plugin_supported (self->plugin_loader,
 						       "gs_plugin_remove_shortcut");
 
-	has_shortcut = gs_app_has_quirk (self->app, AS_APP_QUIRK_HAS_SHORTCUT);
+	has_shortcut = gs_app_has_quirk (self->app, GS_APP_QUIRK_HAS_SHORTCUT);
 
 	if (add_shortcut_func) {
 		gtk_widget_set_visible (self->button_details_add_shortcut,
@@ -440,7 +440,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 	case AS_APP_STATE_INSTALLED:
 	case AS_APP_STATE_UPDATABLE:
 	case AS_APP_STATE_UPDATABLE_LIVE:
-		if (!gs_app_has_quirk (self->app, AS_APP_QUIRK_NOT_LAUNCHABLE)) {
+		if (!gs_app_has_quirk (self->app, GS_APP_QUIRK_NOT_LAUNCHABLE)) {
 			gtk_widget_set_visible (self->button_details_launch, TRUE);
 		} else {
 			gtk_widget_set_visible (self->button_details_launch, FALSE);
@@ -457,7 +457,7 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 	}
 
 	/* remove button */
-	if (gs_app_has_quirk (self->app, AS_APP_QUIRK_COMPULSORY) ||
+	if (gs_app_has_quirk (self->app, GS_APP_QUIRK_COMPULSORY) ||
 	    gs_app_get_kind (self->app) == AS_APP_KIND_FIRMWARE) {
 		gtk_widget_set_visible (self->button_remove, FALSE);
 	} else {
@@ -1200,7 +1200,7 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 
 	/* are we trying to replace something in the baseos */
 	gtk_widget_set_visible (self->infobar_details_package_baseos,
-				gs_app_has_quirk (self->app, AS_APP_QUIRK_COMPULSORY) &&
+				gs_app_has_quirk (self->app, GS_APP_QUIRK_COMPULSORY) &&
 				gs_app_get_state (self->app) == AS_APP_STATE_AVAILABLE_LOCAL);
 
 	/* is this a repo-release */
@@ -1218,7 +1218,7 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 	case AS_APP_KIND_DESKTOP:
 		gtk_widget_set_visible (self->infobar_details_app_repo,
 					gs_app_has_quirk (self->app,
-							  AS_APP_QUIRK_HAS_SOURCE) &&
+							  GS_APP_QUIRK_HAS_SOURCE) &&
 					gs_app_get_state (self->app) == AS_APP_STATE_AVAILABLE_LOCAL);
 		break;
 	default:
@@ -1234,7 +1234,7 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 		} else {
 			gtk_widget_set_visible (self->infobar_details_app_norepo,
 						!gs_app_has_quirk (self->app,
-							  AS_APP_QUIRK_HAS_SOURCE) &&
+							  GS_APP_QUIRK_HAS_SOURCE) &&
 						gs_app_get_state (self->app) == AS_APP_STATE_AVAILABLE_LOCAL);
 		}
 		break;
@@ -1475,7 +1475,7 @@ gs_details_page_refresh_reviews (GsDetailsPage *self)
 	}
 
 	/* some apps are unreviewable */
-	if (gs_app_has_quirk (self->app, AS_APP_QUIRK_NOT_REVIEWABLE))
+	if (gs_app_has_quirk (self->app, GS_APP_QUIRK_NOT_REVIEWABLE))
 		show_reviews = FALSE;
 
 	/* set the star rating */
@@ -2455,10 +2455,10 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
 
 	if (status == GS_PLUGIN_STATUS_COPYING) {
 		/* prevent the app from being deleted, etc. while it's being copied */
-		gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+		gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
 	} else {
 		/* allow removal once copying has completed */
-		gs_app_remove_quirk (app, AS_APP_QUIRK_COMPULSORY);
+		gs_app_remove_quirk (app, GS_APP_QUIRK_COMPULSORY);
 	}
 }
 

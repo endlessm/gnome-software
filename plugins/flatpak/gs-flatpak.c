@@ -1987,9 +1987,9 @@ gs_flatpak_create_fake_ref (GsApp *app, GError **error)
 static void
 gs_flatpak_app_clear_repair_status (GsApp *app)
 {
-	if (gs_app_has_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE) &&
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE) &&
 	    gs_app_get_kind (app) == AS_APP_KIND_DESKTOP)
-		gs_app_remove_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_remove_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 }
 
 static gboolean
@@ -2125,7 +2125,7 @@ gs_plugin_refine_item_state (GsFlatpak *self,
 
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 
 		/* show event if needed */
 		if ((flags & GS_PLUGIN_REFINE_FLAGS_INTERACTIVE) != 0) {
@@ -2598,7 +2598,7 @@ gs_flatpak_refine_app (GsFlatpak *self,
 		return FALSE;
 
 	/* flatpak apps can always be removed */
-	gs_app_remove_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	gs_app_remove_quirk (app, GS_APP_QUIRK_COMPULSORY);
 
 	/* scope is fast, do unconditionally */
 	gs_plugin_refine_item_scope (self, app);
@@ -2896,7 +2896,7 @@ gs_flatpak_get_list_for_remove (GsFlatpak *self, GsApp *app,
 	}
 
 	/* add the original app last unless it's a proxy app */
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY))
 		gs_app_list_add (list, app);
 
 	return g_steal_pointer (&list);
@@ -3199,7 +3199,7 @@ gs_flatpak_get_list_for_install_or_update (GsFlatpak *self,
 		return FALSE;
 
 	/* add the original app last unless it's a proxy app */
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY))
 		gs_app_list_add (list, app);
 
 	return g_steal_pointer (&list);
@@ -3399,7 +3399,7 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 	app = gs_flatpak_app_new ("com.endlessm.RemovableMediaRepo");
 	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
 	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Removable Media Repo");
 	gs_app_set_management_plugin (app, gs_plugin_get_name (self->plugin));
 	gs_app_set_metadata (app, "EndlessOS::RemovableMediaCategory", "usb");
@@ -4056,7 +4056,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 	}
 
 	/* get the list of apps to process */
-	is_proxy_app = gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY);
+	is_proxy_app = gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY);
 	if (is_proxy_app) {
 		GPtrArray *proxied_apps = gs_app_get_related (app);
 
@@ -4363,7 +4363,7 @@ gs_flatpak_file_to_app_bundle (GsFlatpak *self,
 
 	/* not quite true: this just means we can update this specific app */
 	if (flatpak_bundle_ref_get_origin (xref_bundle))
-		gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SOURCE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_HAS_SOURCE);
 
 	/* success */
 	return g_steal_pointer (&app);
@@ -4448,7 +4448,7 @@ gs_flatpak_file_to_app_ref (GsFlatpak *self,
 			gs_flatpak_set_metadata (self, app, FLATPAK_REF (xref));
 		return g_steal_pointer (&app);
 	}
-	gs_app_add_quirk (app, AS_APP_QUIRK_HAS_SOURCE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_HAS_SOURCE);
 	gs_flatpak_app_set_file_kind (app, GS_FLATPAK_APP_FILE_KIND_REF);
 	gs_app_set_state (app, AS_APP_STATE_AVAILABLE_LOCAL);
 	gs_flatpak_set_metadata (self, app, FLATPAK_REF (xref));

@@ -171,7 +171,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 
 	/* check the not-launchable quirk */
 
-	g_assert (!gs_app_has_quirk(app, AS_APP_QUIRK_NOT_LAUNCHABLE));
+	g_assert (!gs_app_has_quirk(app, GS_APP_QUIRK_NOT_LAUNCHABLE));
 
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", "true");
 
@@ -184,7 +184,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert (ret);
 
-	g_assert (gs_app_has_quirk(app, AS_APP_QUIRK_NOT_LAUNCHABLE));
+	g_assert (gs_app_has_quirk(app, GS_APP_QUIRK_NOT_LAUNCHABLE));
 
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", NULL);
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", "false");
@@ -198,7 +198,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert (ret);
 
-	g_assert (!gs_app_has_quirk(app, AS_APP_QUIRK_NOT_LAUNCHABLE));
+	g_assert (!gs_app_has_quirk(app, GS_APP_QUIRK_NOT_LAUNCHABLE));
 }
 
 static void
@@ -277,7 +277,7 @@ gs_plugins_dummy_updates_func (GsPluginLoader *plugin_loader)
 	/* get the virtual non-apps OS update */
 	app = gs_app_list_index (list, 1);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "proxy.desktop");
-	g_assert (gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY));
+	g_assert (gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY));
 	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpint (gs_app_get_related(app)->len, ==, 2);
 }
@@ -368,7 +368,7 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_assert (gs_app_get_pixbuf (app) != NULL);
 
 	/* check various bitfields */
-	g_assert (gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE));
+	g_assert (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE));
 	g_assert_cmpstr (gs_app_get_license (app), ==, "GPL-2.0+");
 	g_assert (gs_app_get_license_is_free (app));
 

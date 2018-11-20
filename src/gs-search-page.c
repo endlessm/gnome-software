@@ -131,7 +131,7 @@ gs_search_page_get_search_cb (GObject *source_object,
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
 		app_row = gs_app_row_new (app);
-		if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
+		if (!gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE) ||
 		    gs_utils_list_has_app_fuzzy (list, app))
 			gs_app_row_set_show_source (GS_APP_ROW (app_row), TRUE);
 		g_signal_connect (app_row, "button-clicked",

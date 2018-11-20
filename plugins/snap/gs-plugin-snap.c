@@ -333,11 +333,11 @@ snap_to_app (GsPlugin *plugin, SnapdSnap *snap)
 		app = g_object_ref (cached_app);
 
 	gs_app_set_management_plugin (app, "snap");
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_REVIEWABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_REVIEWABLE);
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
-		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	if (gs_plugin_check_distro_id (plugin, "ubuntu"))
-		gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 	if (priv->system_confinement == SNAPD_SYSTEM_CONFINEMENT_STRICT && snapd_snap_get_confinement (snap) == SNAPD_CONFINEMENT_STRICT)
 		gs_app_add_kudo (app, GS_APP_KUDO_SANDBOXED);
 
@@ -655,7 +655,7 @@ find_launch_app (GsApp *app, SnapdSnap *local_snap)
 	gs_app_set_metadata (app, "snap::launch-desktop", launch_desktop);
 
 	if (!launch_name)
-		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 }
 
 gboolean

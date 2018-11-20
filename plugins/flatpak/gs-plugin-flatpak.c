@@ -313,7 +313,7 @@ gs_plugin_flatpak_get_handler (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const gchar *object_id;
 
-	if (gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY))
 		goto select_by_scope;
 
 	/* only process this app if was created by this plugin */

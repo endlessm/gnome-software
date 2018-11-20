@@ -624,7 +624,7 @@ gs_plugin_packagekit_refine_update_urgency (GsPlugin *plugin,
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		g_autoptr (PkPackage) pkg = NULL;
 		app = gs_app_list_index (list, i);
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		package_id = gs_app_get_source_id_default (app);
 		if (package_id == NULL)
@@ -695,7 +695,7 @@ gs_plugin_packagekit_refine_details (GsPlugin *plugin,
 	list_tmp = gs_app_list_new ();
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_kind (app) == AS_APP_KIND_WEB_APP)
 			continue;
@@ -850,7 +850,7 @@ gs_plugin_packagekit_refine_name_to_id (GsPlugin *plugin,
 		GPtrArray *sources;
 		GsApp *app = gs_app_list_index (list, i);
 		const gchar *tmp;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_kind (app) == AS_APP_KIND_WEB_APP)
 			continue;
@@ -899,7 +899,7 @@ gs_plugin_packagekit_refine_filename_to_id (GsPlugin *plugin,
 		g_autofree gchar *fn = NULL;
 		GsApp *app = gs_app_list_index (list, i);
 		const gchar *tmp;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_source_id_default (app) != NULL)
 			continue;
@@ -955,7 +955,7 @@ gs_plugin_packagekit_refine_update_details (GsPlugin *plugin,
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 		const gchar *tmp;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE)
 			continue;

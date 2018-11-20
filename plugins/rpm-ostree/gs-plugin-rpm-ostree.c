@@ -336,7 +336,7 @@ make_app (GVariant *variant)
 
 	/* create new app */
 	app = gs_app_new (NULL);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
 	gs_app_set_management_plugin (app, "rpm-ostree");
 	gs_app_set_size_download (app, 0);
 	gs_app_set_kind (app, AS_APP_KIND_GENERIC);

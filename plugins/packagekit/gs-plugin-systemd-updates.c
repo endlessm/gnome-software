@@ -191,7 +191,7 @@ gs_plugin_add_updates (GsPlugin *plugin,
 
 		/* create new app */
 		app = gs_app_new (NULL);
-		gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
 		gs_app_set_management_plugin (app, "packagekit");
 		gs_app_add_source_id (app, package_ids[i]);
 		gs_app_add_source (app, split[PK_PACKAGE_ID_NAME]);
@@ -250,7 +250,7 @@ gs_plugin_update_app (GsPlugin *plugin,
 	GPtrArray *related = gs_app_get_related (app);
 
 	/* not a proxy, which is somewhat odd... */
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY))
 		return _systemd_trigger_app (plugin, app, cancellable, error);
 
 	/* try to trigger each related app */
