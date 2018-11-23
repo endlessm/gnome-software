@@ -507,7 +507,7 @@ gs_plugin_loader_run_adopt (GsPluginLoader *plugin_loader, GsAppList *list)
 			GsApp *app = gs_app_list_index (list, j);
 			if (gs_app_get_management_plugin (app) != NULL)
 				continue;
-			if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+			if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 				continue;
 			gs_plugin_loader_action_start (plugin_loader, plugin, FALSE);
 			adopt_app_func (plugin, app);
@@ -523,7 +523,7 @@ gs_plugin_loader_run_adopt (GsPluginLoader *plugin_loader, GsAppList *list)
 		GsApp *app = gs_app_list_index (list, j);
 		if (gs_app_get_management_plugin (app) != NULL)
 			continue;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		g_debug ("nothing adopted %s", gs_app_get_unique_id (app));
 	}
@@ -903,7 +903,7 @@ gs_plugin_loader_run_refine_internal (GsPluginLoaderHelper *helper,
 		app_list = gs_app_list_copy (list);
 		for (j = 0; j < gs_app_list_length (app_list); j++) {
 			app = gs_app_list_index (app_list, j);
-			if (!gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
+			if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
 				helper->function_name = "gs_plugin_refine_app";
 			} else {
 				helper->function_name = "gs_plugin_refine_wildcard";
@@ -1058,7 +1058,7 @@ gs_plugin_loader_run_refine (GsPluginLoaderHelper *helper,
 	/* second pass for any unadopted apps */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
 			has_match_any_prefix = TRUE;
 			break;
 		}
@@ -1319,6 +1319,15 @@ gs_plugin_loader_app_is_valid (GsApp *app, gpointer user_data)
 		return FALSE;
 	}
 
+	/* Don’t show parentally filtered apps unless they’re already
+	 * installed. See the comments in gs-details-page.c for details. */
+	if (!gs_app_is_installed (app) &&
+	    gs_app_has_quirk (app, GS_APP_QUIRK_PARENTAL_FILTER)) {
+		g_debug ("app invalid as parentally filtered %s",
+		         gs_plugin_loader_get_app_str (app));
+		return FALSE;
+	}
+
 	/* don't show sources */
 	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
 		g_debug ("app invalid as source %s",
@@ -1405,7 +1414,7 @@ gs_plugin_loader_filter_qt_for_gtk (GsApp *app, gpointer user_data)
 static gboolean
 gs_plugin_loader_app_is_non_compulsory (GsApp *app, gpointer user_data)
 {
-	return !gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	return !gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY);
 }
 
 static gboolean
@@ -3857,7 +3866,7 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 			GsAppList *list = gs_plugin_job_get_list (plugin_job);
 			for (guint i = 0; apps[i] != NULL; i++) {
 				g_autoptr(GsApp) app = gs_app_new (apps[i]);
-				gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+				gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 				gs_app_list_add (list, app);
 			}
 			gs_plugin_job_set_action (plugin_job, GS_PLUGIN_ACTION_REFINE);

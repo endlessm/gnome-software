@@ -115,7 +115,7 @@ gs_app_list_check_for_duplicate (GsAppList *list, GsApp *app)
 
 	/* existing app is a wildcard */
 	id_old = gs_app_get_unique_id (app_old);
-	if (gs_app_has_quirk (app_old, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
+	if (gs_app_has_quirk (app_old, GS_APP_QUIRK_IS_WILDCARD)) {
 		g_debug ("adding %s as %s is a wildcard", id, id_old);
 		return TRUE;
 	}

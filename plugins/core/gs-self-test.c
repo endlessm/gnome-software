@@ -53,18 +53,18 @@ gs_plugins_core_app_creation_func (GsPluginLoader *plugin_loader)
 
 	app = gs_plugin_loader_app_create (plugin_loader,
 					   "*/*/*/desktop/demeter.desktop/*");
-	gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+	gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 
 	cached_app = gs_plugin_loader_app_create (plugin_loader,
 						  "*/*/*/desktop/demeter.desktop/*");
 
 	g_assert (app == cached_app);
 
-	/* Make sure the app still has the match-any-prefix quirk*/
-	g_assert(gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX));
+	/* Make sure the app still has the is-wildcard quirk*/
+	g_assert(gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD));
 
 	/* Ensure gs_appstream creates a new app when a matching one is cached but
-	 * has the match-any-prefix quirk */
+	 * has the is-wildcard quirk */
 	store = as_store_new ();
 	ret = as_store_from_xml (store, xml, test_icon_root, &error);
 	g_assert_no_error (error);
@@ -79,7 +79,7 @@ gs_plugins_core_app_creation_func (GsPluginLoader *plugin_loader)
 	app2 = gs_appstream_create_app (plugin, as_app, NULL);
 	g_assert (app2 != NULL);
 	g_assert (cached_app != app2);
-	g_assert (!gs_app_has_quirk (app2, AS_APP_QUIRK_MATCH_ANY_PREFIX));
+	g_assert (!gs_app_has_quirk (app2, GS_APP_QUIRK_IS_WILDCARD));
 
 	cached_app2 = gs_plugin_loader_app_create (plugin_loader,
 						   "*/*/*/desktop/demeter.desktop/*");

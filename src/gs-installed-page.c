@@ -190,7 +190,7 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 	app_row = gs_app_row_new (app);
 	gs_app_row_set_show_folders (GS_APP_ROW (app_row), TRUE);
 	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE) ||
 	    gs_utils_list_has_app_fuzzy (list, app))
 		gs_app_row_set_show_source (GS_APP_ROW (app_row), TRUE);
 	g_signal_connect (app_row, "button-clicked",
@@ -207,7 +207,7 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 				    self->sizegroup_desc,
 				    self->sizegroup_button);
 
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY)) {
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY)) {
 		gs_app_row_set_show_installed_size (GS_APP_ROW (app_row),
 						    should_show_installed_size (self));
 	}
@@ -445,7 +445,7 @@ gs_installed_page_get_app_sort_key (GsApp *app)
 	}
 
 	/* sort normal, compulsory */
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY))
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY))
 		g_string_append (key, "1:");
 	else
 		g_string_append (key, "2:");
@@ -494,7 +494,7 @@ gs_installed_page_get_app_section (GsApp *app)
 {
 	if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP ||
 	    gs_app_get_kind (app) == AS_APP_KIND_WEB_APP) {
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY))
 			return GS_UPDATE_LIST_SECTION_SYSTEM_APPS;
 		return GS_UPDATE_LIST_SECTION_REMOVABLE_APPS;
 	}
