@@ -208,6 +208,11 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 	    self->plugin_status == GS_PLUGIN_STATUS_COPYING)
 		return;
 
+	/* Leave the button hidden if the app can’t be launched by the current
+	 * user. */
+	if (gs_app_has_quirk (self->app, GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE))
+		return;
+
 	/* only consider the shortcut button if the app is installed */
 	switch (gs_app_get_state (self->app)) {
 	case AS_APP_STATE_INSTALLED:
