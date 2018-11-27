@@ -1455,12 +1455,37 @@ app_is_content_rating_appropriate (GsApp *app, EpcAppFilter *app_filter)
 }
 
 static gboolean
+app_is_parentally_blacklisted (GsApp *app, EpcAppFilter *app_filter)
+{
+	const gchar *desktop_id;
+	g_autoptr(GAppInfo) appinfo = NULL;
+
+	desktop_id = gs_app_get_id (app);
+	if (desktop_id == NULL)
+		return FALSE;
+	appinfo = G_APP_INFO (gs_utils_get_desktop_app_info (desktop_id));
+	if (appinfo == NULL)
+		return FALSE;
+
+	return !epc_app_filter_is_appinfo_allowed (app_filter, appinfo);
+}
+
+static gboolean
 gs_plugin_eos_parental_filter_if_needed (GsPlugin *plugin, GsApp *app, EpcAppFilter *app_filter)
 {
+	/* Check the OARS ratings to see if this app should be installable. */
 	if (!app_is_content_rating_appropriate (app, app_filter)) {
 		g_debug ("Filtering ‘%s’: app OARS rating is too extreme for this user",
 		         gs_app_get_unique_id (app));
 		gs_app_add_quirk (app, GS_APP_QUIRK_PARENTAL_FILTER);
+		return TRUE;
+	}
+
+	/* Check the app blacklist to see if this app should be launchable. */
+	if (app_is_parentally_blacklisted (app, app_filter)) {
+		g_debug ("Filtering ‘%s’: app is blacklisted for this user",
+		         gs_app_get_unique_id (app));
+		gs_app_add_quirk (app, GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE);
 		return TRUE;
 	}
 
