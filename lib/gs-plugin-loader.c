@@ -457,6 +457,12 @@ gs_plugin_error_handle_failure (GsPluginLoaderHelper *helper,
 		return TRUE;
 	}
 
+        /* this is only ever informational */
+        if (g_error_matches (error_local, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+                g_debug ("ignoring error cancelled: %s", error_local->message);
+                return TRUE;
+        }
+
 	/* create event which is handled by the GsShell */
 	flags = gs_plugin_job_get_failure_flags (helper->plugin_job);
 	if (flags & GS_PLUGIN_FAILURE_FLAGS_USE_EVENTS) {
