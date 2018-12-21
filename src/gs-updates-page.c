@@ -527,7 +527,6 @@ gs_updates_page_get_updates_cb (GsPluginLoader *plugin_loader,
 		gs_updates_page_clear_flag (self, GS_UPDATES_PAGE_FLAG_HAS_UPDATES);
 		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
 			g_warning ("updates-shell: failed to get updates: %s", error->message);
-		gs_utils_error_strip_unique_id (error);
 		gtk_label_set_label (GTK_LABEL (self->label_updates_failed),
 				     error->message);
 		gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_FAILED);
@@ -542,12 +541,6 @@ gs_updates_page_get_updates_cb (GsPluginLoader *plugin_loader,
 		GsApp *app = gs_app_list_index (list, i);
 		GsUpdatesSectionKind section = _get_app_section (app);
 		gs_updates_section_add_app (GS_UPDATES_SECTION (self->sections[section]), app);
-	}
-
-	/* invalidate the headers */
-	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++) {
-		if (self->sections[i] != NULL)
-			gtk_list_box_invalidate_headers (self->sections[i]);
 	}
 
 	/* update the counter in headerbar */
@@ -678,6 +671,7 @@ gs_updates_page_load (GsUpdatesPage *self)
 	gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_ACTION_GET_UPDATES);
 	self->action_cnt++;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_UPDATES,
+					 "interactive", TRUE,
 					 "refine-flags", refine_flags,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
@@ -689,6 +683,7 @@ gs_updates_page_load (GsUpdatesPage *self)
 	g_object_unref (plugin_job);
 	app = gs_plugin_loader_get_system_app (self->plugin_loader);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
+					 "interactive", TRUE,
 					 "app", app,
 					 "refine-flags", refine_flags,
 					 NULL);
@@ -702,8 +697,9 @@ gs_updates_page_load (GsUpdatesPage *self)
 		refine_flags |= GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPGRADE_REMOVED;
 		g_object_unref (plugin_job);
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_DISTRO_UPDATES,
+						 "interactive", TRUE,
 						 "refine-flags", refine_flags,
-							 NULL);
+						 NULL);
 		gs_plugin_loader_job_process_async (self->plugin_loader,
 						    plugin_job,
 						    self->cancellable,
@@ -717,6 +713,12 @@ static void
 gs_updates_page_reload (GsPage *page)
 {
 	GsUpdatesPage *self = GS_UPDATES_PAGE (page);
+
+	if (self->state == GS_UPDATES_PAGE_STATE_ACTION_REFRESH) {
+		g_debug ("ignoring reload as refresh is already in progress");
+		return;
+	}
+
 	gs_updates_page_invalidate (self);
 	gs_updates_page_load (self);
 }
@@ -778,7 +780,6 @@ gs_updates_page_refresh_cb (GsPluginLoader *plugin_loader,
 			return;
 		}
 		g_warning ("failed to refresh: %s", error->message);
-		gs_utils_error_strip_unique_id (error);
 		gtk_label_set_label (GTK_LABEL (self->label_updates_failed),
 				     error->message);
 		gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_FAILED);
@@ -811,7 +812,7 @@ gs_updates_page_get_new_updates (GsUpdatesPage *self)
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 					 "interactive", TRUE,
-					 "age", (guint64) 0,
+					 "age", (guint64) 1,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable_refresh,

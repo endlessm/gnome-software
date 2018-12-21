@@ -247,7 +247,7 @@ theme_changed (GtkSettings *settings, GParamSpec *pspec, GsApplication *app)
 static void
 gs_application_shell_loaded_cb (GsShell *shell, GsApplication *app)
 {
-	gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
+	g_signal_handler_disconnect (app->shell, app->shell_loaded_handler_id);
 	app->shell_loaded_handler_id = 0;
 }
 
@@ -277,16 +277,12 @@ gs_application_initialize_ui (GsApplication *app)
 	app->shell = gs_shell_new ();
 	app->cancellable = g_cancellable_new ();
 
+	app->shell_loaded_handler_id = g_signal_connect (app->shell, "loaded",
+							 G_CALLBACK (gs_application_shell_loaded_cb),
+							 app);
+
 	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
 	gtk_application_add_window (GTK_APPLICATION (app), gs_shell_get_window (app->shell));
-
-        app->shell_loaded_handler_id = g_signal_connect (app->shell, "loaded",
-                                                         G_CALLBACK (gs_application_shell_loaded_cb),
-                                                         app);
-
-	/* it's very important to set the loading as the first mode because it will
-	 * make the plugins load all their needed initial catalogs/information */
-	gs_shell_set_mode (app->shell, GS_SHELL_MODE_LOADING);
 }
 
 static void
@@ -577,17 +573,12 @@ details_activated (GSimpleAction *action,
 	if (search != NULL && search[0] != '\0')
 		gs_shell_show_search_result (app->shell, id, search);
 	else {
-		if (as_utils_unique_id_valid (id)) {
-			g_autoptr (GsApp) a = NULL;
+		g_autoptr (GsApp) a = NULL;
+		if (as_utils_unique_id_valid (id))
 			a = gs_plugin_loader_app_create (app->plugin_loader, id);
-			gs_shell_show_app (app->shell, a);
-		} else {
-			g_autofree gchar *id_fn = g_strdup (id);
-			gchar *str = g_strrstr (id_fn, ".desktop");
-			if (str != NULL)
-				*str = '\0';
-			gs_shell_show_search (app->shell, id_fn);
-		}
+		else
+			a = gs_app_new (id);
+		gs_shell_show_app (app->shell, a);
 	}
 }
 
@@ -867,9 +858,6 @@ wrapper_action_activated_cb (GSimpleAction *action,
 		GsActivationHelper *helper = gs_activation_helper_new (app,
 								       G_SIMPLE_ACTION (real_action),
 								       g_variant_ref (parameter));
-
-		g_signal_handler_disconnect (app->shell, app->shell_loaded_handler_id);
-		app->shell_loaded_handler_id = 0;
 
 		g_signal_connect_swapped (app->shell, "loaded",
 					  G_CALLBACK (activate_on_shell_loaded_cb), helper);

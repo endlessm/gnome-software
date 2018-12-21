@@ -244,22 +244,52 @@ gs_flatpak_remove_prefixed_names (AsApp *app)
 	}
 }
 
+#if !FLATPAK_CHECK_VERSION(1,1,1)
+static gchar *
+gs_flatpak_get_xremote_main_ref (GsFlatpak *self, FlatpakRemote *xremote, GError **error)
+{
+	g_autoptr(GFile) dir = NULL;
+	g_autofree gchar *dir_path = NULL;
+	g_autofree gchar *config_fn = NULL;
+	g_autofree gchar *group = NULL;
+	g_autofree gchar *main_ref = NULL;
+	g_autoptr(GKeyFile) kf = NULL;
+
+	/* figure out the path to the config keyfile */
+	dir = flatpak_installation_get_path (self->installation);
+	if (dir == NULL)
+		return NULL;
+	dir_path = g_file_get_path (dir);
+	if (dir_path == NULL)
+		return NULL;
+	config_fn = g_build_filename (dir_path, "repo", "config", NULL);
+
+	kf = g_key_file_new ();
+	if (!g_key_file_load_from_file (kf, config_fn, G_KEY_FILE_NONE, error))
+		return NULL;
+
+	group = g_strdup_printf ("remote \"%s\"", flatpak_remote_get_name (xremote));
+	main_ref = g_key_file_get_string (kf, group, "xa.main-ref", error);
+	return g_steal_pointer (&main_ref);
+}
+#endif
+
 static gboolean
 gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 				  FlatpakRemote *xremote,
 				  GCancellable *cancellable,
 				  GError **error)
 {
-	GPtrArray *apps;
 	g_autofree gchar *appstream_dir_fn = NULL;
 	g_autofree gchar *appstream_fn = NULL;
 	g_autofree gchar *default_branch = NULL;
-	g_autofree gchar *only_app_id = NULL;
+	g_autofree gchar *main_ref = NULL;
 	g_autoptr(AsStore) store = NULL;
 	g_autoptr(GFile) appstream_dir = NULL;
 	g_autoptr(GFile) file = NULL;
 	g_autoptr(GSettings) settings = NULL;
 	g_autoptr(GPtrArray) app_filtered = NULL;
+	g_autoptr(GPtrArray) apps = NULL;
 
 	/* get the AppStream data location */
 	appstream_dir = flatpak_remote_get_appstream_dir (xremote, NULL);
@@ -298,7 +328,11 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	}
 
 	/* override the *AppStream* origin */
-	apps = as_store_get_apps (store);
+#if AS_CHECK_VERSION(0,7,15)
+	apps = as_store_dup_apps (store);
+#else
+	apps = g_ptr_array_ref (as_store_get_apps (store));
+#endif
 	for (guint i = 0; i < apps->len; i++) {
 		AsApp *app = g_ptr_array_index (apps, i);
 		as_app_set_origin (app, flatpak_remote_get_name (xremote));
@@ -306,10 +340,14 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 
 	/* only add the specific app for noenumerate=true */
 	if (flatpak_remote_get_noenumerate (xremote)) {
-		g_autofree gchar *tmp = NULL;
-		tmp = g_strdup (flatpak_remote_get_name (xremote));
-		g_strdelimit (tmp, "-", '\0');
-		only_app_id = g_strdup_printf ("%s.desktop", tmp);
+#if FLATPAK_CHECK_VERSION(1,1,1)
+		main_ref = flatpak_remote_get_main_ref (xremote);
+#else
+		g_autoptr(GError) error_local = NULL;
+		main_ref = gs_flatpak_get_xremote_main_ref (self, xremote, &error_local);
+		if (main_ref == NULL)
+			g_warning ("failed to get main ref: %s", error_local->message);
+#endif
 	}
 
 	/* do we want to filter to the default branch */
@@ -323,10 +361,12 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 		AsApp *app = g_ptr_array_index (apps, i);
 
 		/* filter to app */
-		if (only_app_id != NULL &&
-		    g_strcmp0 (as_app_get_id (app), only_app_id) != 0) {
-			as_app_set_kind (app, AS_APP_KIND_UNKNOWN);
-			continue;
+		if (flatpak_remote_get_noenumerate (xremote)) {
+			AsBundle *bundle = as_app_get_bundle_default (app);
+			if (bundle == NULL || main_ref == NULL)
+				continue;
+			if (g_strcmp0 (as_bundle_get_id (bundle), main_ref) != 0)
+				continue;
 		}
 
 		/* filter by branch */
@@ -357,19 +397,6 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	return TRUE;
 }
 
-static gchar *
-gs_flatpak_discard_desktop_suffix (const gchar *app_id)
-{
-	const gchar *desktop_suffix = ".desktop";
-	guint app_prefix_len;
-
-	if (!g_str_has_suffix (app_id, desktop_suffix))
-		return g_strdup (app_id);
-
-	app_prefix_len = strlen (app_id) - strlen (desktop_suffix);
-	return g_strndup (app_id, app_prefix_len);
-}
-
 static void
 gs_flatpak_rescan_installed (GsFlatpak *self,
 			     GCancellable *cancellable,
@@ -397,7 +424,6 @@ gs_flatpak_rescan_installed (GsFlatpak *self,
 		g_autoptr(AsApp) app = NULL;
 		g_autoptr(AsFormat) format = as_format_new ();
 		g_autoptr(FlatpakInstalledRef) app_ref = NULL;
-		g_autofree gchar *app_id = NULL;
 
 		/* ignore */
 		if (g_strcmp0 (fn, "mimeinfo.cache") == 0)
@@ -432,14 +458,13 @@ gs_flatpak_rescan_installed (GsFlatpak *self,
 		as_format_set_filename (format, fn_desktop);
 		as_app_add_format (app, format);
 
-		app_id = gs_flatpak_discard_desktop_suffix (fn);
 		app_ref = flatpak_installation_get_current_installed_app (self->installation,
-									  app_id,
+									  as_app_get_id (app),
 									  cancellable,
 									  &error_local);
 		if (app_ref == NULL) {
 			g_warning ("Could not get app (from ID '%s') for installed desktop "
-				   "file %s: %s", app_id, fn_desktop, error_local->message);
+				   "file %s: %s", as_app_get_id (app), fn_desktop, error_local->message);
 			continue;
 		}
 
@@ -2035,7 +2060,7 @@ gs_flatpak_launch (GsFlatpak *self,
 					     GS_PLUGIN_ERROR,
 					     GS_PLUGIN_ERROR_NOT_SUPPORTED,
 					     "runtime is not installed");
-			gs_utils_error_add_unique_id (error, runtime);
+			gs_utils_error_add_origin_id (error, runtime);
 			gs_plugin_cache_add (self->plugin, NULL, runtime);
 			return FALSE;
 		}

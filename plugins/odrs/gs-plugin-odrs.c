@@ -1,7 +1,7 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2016 Kalev Lember <klember@redhat.com>
+ * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
  *
  * Licensed under the GNU General Public License Version 2
  *
@@ -42,6 +42,7 @@ struct GsPluginData {
 	gchar			*user_hash;
 	gchar			*review_server;
 	GHashTable		*ratings;
+	GMutex			 ratings_mutex;
 	GsApp			*cached_origin;
 };
 
@@ -52,6 +53,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsOsRelease) os_release = NULL;
 
+	g_mutex_init (&priv->ratings_mutex);
 	priv->settings = g_settings_new ("org.gnome.software");
 	priv->review_server = g_settings_get_string (priv->settings,
 						     "review-server");
@@ -125,6 +127,7 @@ gs_plugin_odrs_load_ratings (GsPlugin *plugin, const gchar *fn, GError **error)
 	JsonObject *json_item;
 	g_autoptr(GList) apps = NULL;
 	g_autoptr(JsonParser) json_parser = NULL;
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->ratings_mutex);
 
 	/* remove all existing */
 	g_hash_table_remove_all (priv->ratings);
@@ -177,6 +180,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autofree gchar *fn = NULL;
 	g_autofree gchar *uri = NULL;
+	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GsApp) app_dl = gs_app_new (gs_plugin_get_name (plugin));
 
 	/* check cache age */
@@ -203,9 +207,20 @@ gs_plugin_refresh (GsPlugin *plugin,
 	gs_app_set_summary_missing (app_dl,
 				    /* TRANSLATORS: status text when downloading */
 				    _("Downloading application ratings…"));
-	if (!gs_plugin_download_file (plugin, app_dl, uri, fn, cancellable, error)) {
-		gs_utils_error_add_unique_id (error, priv->cached_origin);
-		return FALSE;
+	if (!gs_plugin_download_file (plugin, app_dl, uri, fn, cancellable, &error_local)) {
+		g_autoptr(GsPluginEvent) event = gs_plugin_event_new ();
+
+		gs_plugin_event_set_error (event, error_local);
+		gs_plugin_event_set_action (event, GS_PLUGIN_ACTION_DOWNLOAD);
+		gs_plugin_event_set_origin (event, priv->cached_origin);
+		if (gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE))
+			gs_plugin_event_add_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE);
+		else
+			gs_plugin_event_add_flag (event, GS_PLUGIN_EVENT_FLAG_WARNING);
+		gs_plugin_report_event (plugin, event);
+
+		/* don't fail updates if the ratings server is unavailable */
+		return TRUE;
 	}
 	return gs_plugin_odrs_load_ratings (plugin, fn, error);
 }
@@ -220,6 +235,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_hash_table_unref (priv->ratings);
 	g_object_unref (priv->settings);
 	g_object_unref (priv->cached_origin);
+	g_mutex_clear (&priv->ratings_mutex);
 }
 
 static AsReview *
@@ -497,6 +513,7 @@ gs_plugin_odrs_refine_ratings (GsPlugin *plugin,
 	reviewable_ids = _gs_app_get_reviewable_ids (app);
 	for (guint i = 0; i < reviewable_ids->len; i++) {
 		const gchar *id = g_ptr_array_index (reviewable_ids, i);
+		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->ratings_mutex);
 		GArray *ratings_tmp = g_hash_table_lookup (priv->ratings, id);
 		if (ratings_tmp == NULL) {
 			g_debug ("no ratings results for %s", id);
@@ -636,7 +653,7 @@ gs_plugin_odrs_fetch_for_app (GsPlugin *plugin, GsApp *app, GError **error)
 				     GS_PLUGIN_ERROR,
 				     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
 				     "status code invalid");
-		gs_utils_error_add_unique_id (error, priv->cached_origin);
+		gs_utils_error_add_origin_id (error, priv->cached_origin);
 		return NULL;
 	}
 	reviews = gs_plugin_odrs_parse_reviews (plugin,
@@ -1014,7 +1031,7 @@ gs_plugin_add_unvoted_reviews (GsPlugin *plugin,
 				     GS_PLUGIN_ERROR,
 				     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
 				     "status code invalid");
-		gs_utils_error_add_unique_id (error, priv->cached_origin);
+		gs_utils_error_add_origin_id (error, priv->cached_origin);
 		return FALSE;
 	}
 	g_debug ("odrs returned: %s", msg->response_body->data);

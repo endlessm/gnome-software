@@ -62,30 +62,30 @@ _download_only (GsPlugin *plugin, GsAppList *list,
 		GCancellable *cancellable, GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	guint cache_age_save;
 	g_auto(GStrv) package_ids = NULL;
 	g_autoptr(GsPackagekitHelper) helper = gs_packagekit_helper_new (plugin);
 	g_autoptr(PkPackageSack) sack = NULL;
 	g_autoptr(PkResults) results2 = NULL;
 	g_autoptr(PkResults) results = NULL;
 
-	/* refresh the metadata */
-	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
-	cache_age_save = pk_client_get_cache_age (PK_CLIENT (priv->task));
+	/* never refresh the metadata here as this can surprise the frontend if
+	 * we end up downloading a different set of packages than what was
+	 * shown to the user */
 	pk_client_set_cache_age (PK_CLIENT (priv->task), G_MAXUINT);
+
+	/* get the list of packages to update */
+	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
 	results = pk_client_get_updates (PK_CLIENT (priv->task),
 					 pk_bitfield_value (PK_FILTER_ENUM_NONE),
 					 cancellable,
 					 gs_packagekit_helper_cb, helper,
 					 error);
-	pk_client_set_cache_age (PK_CLIENT (priv->task), cache_age_save);
-
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to get updates for refresh: ");
 		return FALSE;
 	}
 
-	/* download all the packages themselves */
+	/* download all the packages */
 	sack = pk_results_get_package_sack (results);
 	if (pk_package_sack_get_size (sack) == 0)
 		return TRUE;
@@ -118,6 +118,15 @@ gs_plugin_download (GsPlugin *plugin,
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 		GsAppList *related = gs_app_get_related (app);
+
+		/* add this app */
+		if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+			if (g_strcmp0 (gs_app_get_management_plugin (app), "packagekit") == 0) {
+				gs_app_list_add (list_tmp, app);
+			continue;
+		}
+
+		/* add each related app */
 		for (guint j = 0; j < gs_app_list_length (related); j++) {
 			GsApp *app_tmp = gs_app_list_index (related, j);
 			if (g_strcmp0 (gs_app_get_management_plugin (app_tmp), "packagekit") == 0)
@@ -141,20 +150,20 @@ gs_plugin_refresh (GsPlugin *plugin,
 	g_autoptr(GsApp) app_dl = gs_app_new (gs_plugin_get_name (plugin));
 	g_autoptr(PkResults) results = NULL;
 
-	/* cache age of 0 is user-initiated */
-	pk_client_set_background (PK_CLIENT (priv->task), cache_age > 0);
+	/* cache age of 1 is user-initiated */
+	pk_client_set_background (PK_CLIENT (priv->task), cache_age > 1);
+	pk_client_set_cache_age (PK_CLIENT (priv->task), cache_age);
 
 	/* refresh the metadata */
-	pk_client_set_cache_age (PK_CLIENT (priv->task), cache_age);
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
 	gs_packagekit_helper_add_app (helper, app_dl);
-	results = pk_client_get_updates (PK_CLIENT (priv->task),
-					 pk_bitfield_value (PK_FILTER_ENUM_NONE),
-					 cancellable,
-					 gs_packagekit_helper_cb, helper,
-					 error);
+	results = pk_client_refresh_cache (PK_CLIENT (priv->task),
+	                                   FALSE /* force */,
+	                                   cancellable,
+	                                   gs_packagekit_helper_cb, helper,
+	                                   error);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
-		g_prefix_error (error, "failed to get updates for refresh: ");
+		g_prefix_error (error, "failed to refresh cache: ");
 		return FALSE;
 	}
 

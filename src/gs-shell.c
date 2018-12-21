@@ -546,13 +546,24 @@ gs_shell_back_button_cb (GtkWidget *widget, GsShell *shell)
 }
 
 static void
-initial_overview_load_done (GsOverviewPage *overview_page, gpointer data)
+gs_shell_reload_cb (GsPluginLoader *plugin_loader, GsShell *shell)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	g_autoptr(GList) keys = g_hash_table_get_keys (priv->pages);
+	for (GList *l = keys; l != NULL; l = l->next) {
+		GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, l->data));
+		gs_page_reload (page);
+	}
+}
+
+static void
+initial_refresh_done (GsLoadingPage *loading_page, gpointer data)
 {
 	GsPage *page;
 	GsShell *shell = data;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 
-	g_signal_handlers_disconnect_by_func (overview_page, initial_overview_load_done, data);
+	g_signal_handlers_disconnect_by_func (loading_page, initial_refresh_done, data);
 
 	page = GS_PAGE (gtk_builder_get_object (priv->builder, "updates_page"));
 	gs_page_reload (page);
@@ -560,6 +571,14 @@ initial_overview_load_done (GsOverviewPage *overview_page, gpointer data)
 	gs_page_reload (page);
 
 	g_signal_emit (shell, signals[SIGNAL_LOADED], 0);
+
+	/* go to OVERVIEW, unless the "loading" callbacks changed mode already */
+	if (priv->mode == GS_SHELL_MODE_LOADING)
+		gs_shell_change_mode (shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
+
+	/* now that we're finished with the loading page, connect the reload signal handler */
+	g_signal_connect (priv->plugin_loader, "reload",
+	                  G_CALLBACK (gs_shell_reload_cb), shell);
 }
 
 static gboolean
@@ -819,7 +838,6 @@ static gboolean
 main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 {
 	GsShell *shell = user_data;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 
 	/* hide any notifications */
 	g_application_withdraw_notification (g_application_get_default (),
@@ -827,23 +845,9 @@ main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 	g_application_withdraw_notification (g_application_get_default (),
 					     "install-resources");
 
-	/* When the window is closed, reset the initial mode to overview */
-	priv->mode = GS_SHELL_MODE_OVERVIEW;
-
 	gs_shell_clean_back_entry_stack (shell);
 	gtk_widget_hide (dialog);
 	return TRUE;
-}
-
-static void
-gs_shell_reload_cb (GsPluginLoader *plugin_loader, GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	g_autoptr(GList) keys = g_hash_table_get_keys (priv->pages);
-	for (GList *l = keys; l != NULL; l = l->next) {
-		GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, l->data));
-		gs_page_reload (page);
-	}
 }
 
 static void
@@ -1905,9 +1909,9 @@ gs_shell_show_event (GsShell *shell, GsPluginEvent *event)
 static void
 gs_shell_rescan_events (GsShell *shell)
 {
-	GsPluginEvent *event;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *widget;
+	g_autoptr(GsPluginEvent) event = NULL;
 
 	/* find the first active event and show it */
 	event = gs_plugin_loader_get_event_default (priv->plugin_loader);
@@ -1995,8 +1999,6 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	g_return_if_fail (GS_IS_SHELL (shell));
 
 	priv->plugin_loader = g_object_ref (plugin_loader);
-	g_signal_connect (priv->plugin_loader, "reload",
-			  G_CALLBACK (gs_shell_reload_cb), shell);
 	g_signal_connect_object (priv->plugin_loader, "notify::events",
 				 G_CALLBACK (gs_shell_events_notify_cb),
 				 shell, 0);
@@ -2129,28 +2131,18 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	/* load content */
 	page = GS_PAGE (gtk_builder_get_object (priv->builder, "loading_page"));
 	g_signal_connect (page, "refreshed",
-			  G_CALLBACK (initial_overview_load_done), shell);
+			  G_CALLBACK (initial_refresh_done), shell);
 
 	/* coldplug */
 	gs_shell_rescan_events (shell);
+
+	/* show loading page, which triggers the initial refresh */
+	gs_shell_change_mode (shell, GS_SHELL_MODE_LOADING, NULL, TRUE);
 }
 
 void
 gs_shell_set_mode (GsShell *shell, GsShellMode mode)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	guint matched;
-
-	/* if we're loading a different mode at startup then don't wait for
-	 * the overview page to load before showing content */
-	if (mode != GS_SHELL_MODE_OVERVIEW) {
-		GsPage *page = g_hash_table_lookup (priv->pages, "overview");
-		matched = g_signal_handlers_disconnect_by_func (page,
-								initial_overview_load_done,
-								shell);
-		if (matched > 0)
-			g_signal_emit (shell, signals[SIGNAL_LOADED], 0);
-	}
 	gs_shell_change_mode (shell, mode, NULL, TRUE);
 }
 
