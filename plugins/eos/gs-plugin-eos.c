@@ -977,8 +977,6 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 
 	static const char *duplicated_apps[] = {
 		"com.google.Chrome",
-		"com.microsoft.Skype",
-		"com.skype.Client",
 		"com.mojang.Minecraft",
 		"com.sparklinlabs.Superpowers",
 		"com.stencyl.Game",
