@@ -1471,12 +1471,14 @@ app_is_parentally_blacklisted (GsApp *app, EpcAppFilter *app_filter)
 static gboolean
 gs_plugin_eos_parental_filter_if_needed (GsPlugin *plugin, GsApp *app, EpcAppFilter *app_filter)
 {
+	gboolean filtered = FALSE;
+
 	/* Check the OARS ratings to see if this app should be installable. */
 	if (!app_is_content_rating_appropriate (app, app_filter)) {
 		g_debug ("Filtering ‘%s’: app OARS rating is too extreme for this user",
 		         gs_app_get_unique_id (app));
 		gs_app_add_quirk (app, GS_APP_QUIRK_PARENTAL_FILTER);
-		return TRUE;
+		filtered = TRUE;
 	}
 
 	/* Check the app blacklist to see if this app should be launchable. */
@@ -1484,10 +1486,10 @@ gs_plugin_eos_parental_filter_if_needed (GsPlugin *plugin, GsApp *app, EpcAppFil
 		g_debug ("Filtering ‘%s’: app is blacklisted for this user",
 		         gs_app_get_unique_id (app));
 		gs_app_add_quirk (app, GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE);
-		return TRUE;
+		filtered = TRUE;
 	}
 
-	return FALSE;
+	return filtered;
 }
 
 static gboolean
