@@ -2293,27 +2293,42 @@ gs_plugin_add_popular (GsPlugin *plugin,
 {
 	g_autoptr(AsProfileTask) ptask = NULL;
 	GsAppList *new_list = NULL;
+	/* These IDs must match the <component><id> element in the app's
+	 * appdata. Note in particular that some apps have a .desktop suffix
+	 * there, and some do not.
+	 */
 	const gchar *popular_apps[] = {
 		"com.calibre_ebook.calibre.desktop",
 		"com.google.Chrome.desktop",
 		"com.spotify.Client.desktop",
-		"com.transmissionbt.Transmission.desktop",
+		"com.transmissionbt.Transmission",
 		"com.valvesoftware.Steam.desktop",
 		"io.github.mmstick.FontFinder.desktop",
-		"net.minetest.Minetest.desktop",
-		"net.scribus.Scribus.desktop",
-		"org.audacityteam.Audacity.desktop",
-		"org.gimp.GIMP.desktop",
-		"org.gnome.chess.desktop",
-		"org.gnome.SwellFoop.desktop",
-		"org.inkscape.Inkscape.desktop",
+		"net.minetest.Minetest",
+		"net.scribus.Scribus",
+		"org.audacityteam.Audacity",
+		"org.gimp.GIMP",
+		"org.gnome.Chess",
+		"org.gnome.SwellFoop",
+		"org.inkscape.Inkscape",
 		"org.kde.gcompris.desktop",
-		"org.kde.krita.desktop",
+		"org.kde.krita",
 		"org.libreoffice.LibreOffice.desktop",
 		"org.mozilla.Firefox.desktop",
 		"org.telegram.desktop.desktop",
 		"org.tuxpaint.Tuxpaint.desktop",
 		"org.videolan.VLC.desktop",
+		/* TODO: this doesn't end up in the list of apps used by the
+		 * overview. Relevant log output:
+		 *
+		 *   As  run 0x562bb3977e30~GsPlugin::appstream(gs_plugin_add_popular;gs_plugin_refine_wildcard)
+		 *   Gs  not using simple-scan.desktop for wildcard as no bundle or pkgname
+		 *
+		 * This app is built into the ostree. Its ID is, without spaces:
+		 *
+		 *   system / * / * / desktop / simple-scan.desktop / *
+		 *            ^   ^ these are probably bundle and pkgname?
+		 */
 		"simple-scan.desktop",
 		NULL
 	};
