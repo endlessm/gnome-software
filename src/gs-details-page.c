@@ -310,7 +310,7 @@ gs_details_page_update_copy_button (GsDetailsPage *self)
 				gs_details_page_app_get_copyable_cb,
 				self);
 		} else {
-			gtk_button_set_label (GTK_BUTTON (self->button_copy), _("Insert USB to copy"));
+			gtk_button_set_label (GTK_BUTTON (self->button_copy), _("Insert USB to Copy To"));
 			gtk_widget_set_sensitive (self->button_copy, FALSE);
 		}
 		gtk_widget_set_visible (self->button_copy, TRUE);
