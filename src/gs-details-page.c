@@ -288,7 +288,7 @@ gs_details_page_update_copy_button (GsDetailsPage *self)
 	copy_dest = removable_destination_dup (self);
 	if (self->app != NULL && gs_app_is_installed (self->app)) {
 		if (copy_dest != NULL) {
-			gtk_button_set_label (GTK_BUTTON (self->button_copy), _("Copy to USB"));
+			gtk_button_set_label (GTK_BUTTON (self->button_copy), _("Copy to US_B"));
 			gtk_widget_set_sensitive (self->button_copy, TRUE);
 
 			/* also check (asynchronously) whether the app will
