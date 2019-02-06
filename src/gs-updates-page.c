@@ -1799,9 +1799,11 @@ gs_updates_page_upgrade_cancel_cb (GsUpgradeBanner *upgrade_banner,
 static void
 scheduler_invalidated_cb (GsUpdatesPage *self)
 {
-	g_warning ("The Mogwai Scheduler has just been invalidated when "
-		   "it should still be held!");
-	g_assert_not_reached ();
+	/* The scheduler shouldn’t normally be invalidated, since we Hold() it
+	 * until we’re done with it. However, if the scheduler is stopped by
+	 * systemd (`systemctl stop mogwai-scheduled`) this signal will be
+	 * emitted. */
+	g_clear_object (&self->scheduler);
 }
 
 static void
@@ -1825,9 +1827,6 @@ scheduler_hold_cb (GObject *source_object,
 		return;
 	}
 
-	/* we connect to the invalidated signal just for sanity check, as it
-	 * should not be reached (we disconnect it before releasing the Mogwai
-	 * Scheduler daemon) */
 	self->scheduler_invalidated_handler =
 		g_signal_connect_swapped (scheduler, "invalidated",
 					  (GCallback) scheduler_invalidated_cb,
