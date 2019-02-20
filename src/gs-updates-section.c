@@ -510,20 +510,15 @@ static void
 _app_row_activated_cb (GtkListBox *list_box, GtkListBoxRow *row, GsUpdatesSection *self)
 {
 	GsApp *app = gs_app_row_get_app (GS_APP_ROW (row));
-	GtkWidget *dialog;
-	g_autofree gchar *str = NULL;
+	GsShell *shell = gs_page_get_shell (self->page);
 
-	/* debug */
-	str = gs_app_to_string (app);
-	g_debug ("%s", str);
-
-	dialog = gs_update_dialog_new (self->plugin_loader);
-	gs_update_dialog_show_update_details (GS_UPDATE_DIALOG (dialog), app);
-	gs_shell_modal_dialog_present (gs_page_get_shell (self->page), GTK_DIALOG (dialog));
-
-	/* just destroy */
-	g_signal_connect_swapped (dialog, "response",
-				  G_CALLBACK (gtk_widget_destroy), dialog);
+	/* XXX: (Endless): since we don't publish details about updates for our apps
+	 * and runtimes yet, just show the app page instead of the update
+	 * details; for runtimes however, we do nothing as the details page for
+	 * runtimes does not have a lot of useful information and allows users
+	 * to remove the runtimes which is unintended. */
+	if (gs_app_get_kind (app) != AS_APP_KIND_RUNTIME)
+		gs_shell_show_app (shell, app);
 }
 
 static void
