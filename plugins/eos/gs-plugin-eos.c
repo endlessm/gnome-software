@@ -2132,6 +2132,8 @@ add_updates (GsPlugin *plugin,
 					   "com.endlessm.HackToolbox.desktop",
 					   "com.endlessm.HackUnlock.desktop",
 					   "com.endlessm.Hackdex_chapter_one.desktop",
+					   "com.endlessm.Hackdex_chapter_two.desktop",
+					   "com.endlessm.LightSpeed.desktop",
 					   "com.endlessm.OperatingSystemApp.desktop",
 					   NULL};
 
