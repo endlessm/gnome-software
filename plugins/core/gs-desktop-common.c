@@ -169,6 +169,13 @@ static const GsDesktopMap map_games[] = {
 	{ NULL }
 };
 
+static const GsDesktopMap map_learn_to_code[] = {
+	{ "all",		NC_("Menu of Learn to Code", "All"),
+					{ "LearnToCode",
+					  NULL } },
+	{ NULL }
+};
+
 /* Office */
 static const GsDesktopMap map_productivity[] = {
 	{ "all",		NC_("Menu of Productivity", "All"),
@@ -326,6 +333,10 @@ static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Game */
 	{ "games",		map_games,		N_("Games"),
 				"applications-games-symbolic", "#5cae4b", 70 },
+	/* TRANSLATORS: this is the menu spec main category for Endless
+	 * Studios' "learn to code" category */
+	{ "learn-to-code",	map_learn_to_code,		N_("Learn to Code"),
+				"applications-games-symbolic", "#af07af", 65 },
 	/* TRANSLATORS: this is the menu spec main category for Multimedia */
 	{ "multimedia",		map_multimedia,		N_("Multimedia"),
 				"applications-multimedia-symbolic", "#07afa7", 60 },
