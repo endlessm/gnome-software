@@ -4068,8 +4068,28 @@ gs_flatpak_update_app (GsFlatpak *self,
 		}
 
 		list = gs_app_list_new ();
-		for (guint i = 0; i < proxied_apps->len; ++i)
-			gs_app_list_add (list, g_ptr_array_index (proxied_apps, i));
+		for (guint i = 0; i < proxied_apps->len; ++i) {
+			g_autoptr(GsAppList) app_related_list = NULL;
+			g_autoptr(GError) local_error = NULL;
+			GsApp *proxied_app = g_ptr_array_index (proxied_apps, i);
+
+			/* Add not only the app but also any eventual related apps to be
+			 * updated; otherwise, the related apps of proxied apps may never
+			 * get updated. */
+			app_related_list = gs_flatpak_get_list_for_update (self, proxied_app,
+									   cancellable,
+									   &local_error);
+			if (app_related_list == NULL) {
+				g_warning ("Error getting the list for updating the proxied "
+					   "app %s: %s; adding only the main app itself.",
+					   gs_app_get_unique_id (proxied_app),
+					   local_error->message);
+				gs_app_list_add (list, proxied_app);
+				continue;
+			}
+
+			gs_app_list_add_list (list, app_related_list);
+		}
 	} else {
 		list = gs_flatpak_get_list_for_update (self, app, cancellable, error);
 		if (list == NULL) {
