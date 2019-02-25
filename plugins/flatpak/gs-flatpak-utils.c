@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2017-2018 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -79,7 +65,7 @@ gs_flatpak_app_new_from_remote (FlatpakRemote *xremote)
 	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
 	gs_app_set_state (app, flatpak_remote_get_disabled (xremote) ?
 			  AS_APP_STATE_AVAILABLE : AS_APP_STATE_INSTALLED);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST,
 			 flatpak_remote_get_name (xremote));
 
@@ -175,7 +161,7 @@ gs_flatpak_app_new_from_repo_file (GFile *file,
 	gs_flatpak_app_set_file_kind (app, GS_FLATPAK_APP_FILE_KIND_REPO);
 	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
 	gs_app_set_state (app, AS_APP_STATE_AVAILABLE_LOCAL);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, repo_title);
 	gs_flatpak_app_set_repo_url (app, repo_url);
 	gs_app_set_origin_hostname (app, repo_url);

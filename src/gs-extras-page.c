@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -262,16 +248,22 @@ static void
 app_row_button_clicked_cb (GsAppRow *app_row,
                            GsExtrasPage *self)
 {
-	GsApp *app;
-	app = gs_app_row_get_app (app_row);
-	if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE ||
-	    gs_app_get_state (app) == AS_APP_STATE_AVAILABLE_LOCAL)
+	GsApp *app = gs_app_row_get_app (app_row);
+
+	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE &&
+	    gs_app_get_url (app, AS_URL_KIND_MISSING) != NULL) {
+		gs_shell_show_uri (self->shell,
+	                           gs_app_get_url (app, AS_URL_KIND_MISSING));
+	} else if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE ||
+	           gs_app_get_state (app) == AS_APP_STATE_AVAILABLE_LOCAL ||
+	           gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
 		gs_page_install_app (GS_PAGE (self), app, GS_SHELL_INTERACTION_FULL,
 				     self->search_cancellable);
-	else if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED)
+	} else if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED) {
 		gs_page_remove_app (GS_PAGE (self), app, self->search_cancellable);
-	else
+	} else {
 		g_critical ("extras: app in unexpected state %u", gs_app_get_state (app));
+	}
 }
 
 static void
@@ -294,9 +286,6 @@ gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, GsAppList *list, SearchD
 	app_row = gs_app_row_new (app);
 	gs_app_row_set_colorful (GS_APP_ROW (app_row), TRUE);
 	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
-	    gs_utils_list_has_app_fuzzy (list, app))
-		gs_app_row_set_show_source (GS_APP_ROW (app_row), TRUE);
 
 	g_object_set_data_full (G_OBJECT (app_row), "missing-title", g_strdup (search_data->title), g_free);
 
@@ -663,10 +652,8 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 	guint i;
 
 	/* cancel any pending searches */
-	if (self->search_cancellable != NULL) {
-		g_cancellable_cancel (self->search_cancellable);
-		g_object_unref (self->search_cancellable);
-	}
+	g_cancellable_cancel (self->search_cancellable);
+	g_clear_object (&self->search_cancellable);
 	self->search_cancellable = g_cancellable_new ();
 
 	if (array_search_data != NULL) {
@@ -692,7 +679,7 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 			g_autoptr(GsPluginJob) plugin_job = NULL;
 			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH_FILES,
 							 "search", search_data->search_filename,
-									 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 									 GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES,
 							 NULL);
@@ -708,7 +695,7 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 			file = g_file_new_for_path (search_data->package_filename);
 			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_FILE_TO_APP,
 							 "file", file,
-									 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 									 GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES,
 							 NULL);
@@ -722,9 +709,8 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 			g_debug ("searching what provides: '%s'", search_data->search);
 			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH_PROVIDES,
 							 "search", search_data->search,
-									 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
-									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_HISTORY |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
@@ -1159,10 +1145,8 @@ gs_extras_page_dispose (GObject *object)
 {
 	GsExtrasPage *self = GS_EXTRAS_PAGE (object);
 
-	if (self->search_cancellable != NULL) {
-		g_cancellable_cancel (self->search_cancellable);
-		g_clear_object (&self->search_cancellable);
-	}
+	g_cancellable_cancel (self->search_cancellable);
+	g_clear_object (&self->search_cancellable);
 
 	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
@@ -1228,5 +1212,3 @@ gs_extras_page_new (void)
 	self = g_object_new (GS_TYPE_EXTRAS_PAGE, NULL);
 	return GS_EXTRAS_PAGE (self);
 }
-
-/* vim: set noexpandtab: */

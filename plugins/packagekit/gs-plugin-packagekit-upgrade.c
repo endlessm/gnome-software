@@ -3,21 +3,7 @@
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2016 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -31,12 +17,15 @@
 
 struct GsPluginData {
 	PkTask			*task;
+	GMutex			 task_mutex;
 };
 
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+
+	g_mutex_init (&priv->task_mutex);
 	priv->task = pk_task_new ();
 	pk_task_set_only_download (priv->task, TRUE);
 	pk_client_set_background (PK_CLIENT (priv->task), TRUE);
@@ -47,6 +36,7 @@ void
 gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_mutex_clear (&priv->task_mutex);
 	g_object_unref (priv->task);
 }
 
@@ -78,12 +68,14 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 	/* ask PK to download enough packages to upgrade the system */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 	gs_packagekit_helper_add_app (helper, app);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_task_upgrade_system_sync (priv->task,
 					       gs_app_get_version (app),
 					       PK_UPGRADE_KIND_ENUM_COMPLETE,
 					       cancellable,
 					       gs_packagekit_helper_cb, helper,
 					       error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_app_set_state_recover (app);
 		return FALSE;

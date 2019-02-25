@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2015 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -539,9 +525,11 @@ gs_folders_revert (GsFolders *folders)
 	load (folders);
 }
 
-/* Ensure we have the default folders for Utilities and Sundry.
+/* Ensure we have the default folders for Utilities and YaST.
  * We can't do this as default values, since the schemas have
  * no fixed path.
+ *
+ * The app lists come from gnome-menus: layout/gnome-applications.menu
  */
 void
 gs_folders_convert (void)
@@ -554,7 +542,6 @@ gs_folders_convert (void)
 	if (g_strv_length (ids) == 0) {
 		const gchar * const children[] = {
 			"Utilities",
-			"Sundry",
 			"YaST",
 			NULL
 		};
@@ -563,66 +550,25 @@ gs_folders_convert (void)
 			NULL
 		};
 		const gchar * const utilities_apps[] = {
-			"org.gnome.baobab.desktop",
-			"deja-dup-preferences.desktop",
 			"eog.desktop",
-			"evince.desktop",
-			"org.gnome.FileRoller.desktop",
-			"gnome-calculator.desktop",
-			"gnome-dictionary.desktop",
-			"org.gnome.Characters.desktop",
-			"org.gnome.DiskUtility.desktop",
-			"org.gnome.font-viewer.desktop",
-			"org.gnome.Terminal.desktop",
-			"org.gnome.Screenshot.desktop",
+			"gnome-abrt.desktop",
 			"gnome-system-log.desktop",
 			"gnome-system-monitor.desktop",
-			"gnome-tweak-tool.desktop",
 			"gucharmap.desktop",
+			"org.gnome.baobab.desktop",
+			"org.gnome.Calculator.desktop",
+			"org.gnome.DejaDup.desktop",
+			"org.gnome.Dictionary.desktop",
+			"org.gnome.DiskUtility.desktop",
+			"org.gnome.Evince.desktop",
+			"org.gnome.FileRoller.desktop",
+			"org.gnome.fonts.desktop",
+			"org.gnome.Screenshot.desktop",
+			"org.gnome.Terminal.desktop",
+			"org.gnome.tweaks.desktop",
 			"seahorse.desktop",
 			"vinagre.desktop",
 			"yelp.desktop",
-			NULL
-		};
-		const gchar * const sundry_categories[] = {
-			"X-GNOME-Sundry",
-			NULL
-		};
-		const gchar * const sundry_apps[] = {
-			"alacarte.desktop",
-			"authconfig.desktop",
-			"ca.desrt.dconf-editor.desktop",
-			"fedora-release-notes.desktop",
-			"firewall-config.desktop",
-			"flash-player-properties.desktop",
-			"gconf-editor.desktop",
-			"gnome-abrt.desktop",
-			"gnome-power-statistics.desktop",
-			"ibus-setup-anthy.desktop",
-			"ibus-setup.desktop",
-			"ibus-setup-hangul.desktop",
-			"ibus-setup-libbopomofo.desktop",
-			"ibus-setup-libpinyin.desktop",
-			"ibus-setup-m17n.desktop",
-			"ibus-setup-typing-booster.desktop",
-			"im-chooser.desktop",
-			"itweb-settings.desktop",
-			"jhbuild.desktop",
-			"javaws.desktop",
-			"java-1.7.0-openjdk-jconsole.desktop",
-			"java-1.7.0-openjdk-policytool.desktop",
-			"log4j-chainsaw.desktop",
-			"log4j-logfactor5.desktop",
-			"nm-connection-editor.desktop",
-			"orca.desktop",
-			"setroubleshoot.desktop",
-			"system-config-date.desktop",
-			"system-config-firewall.desktop",
-			"system-config-keyboard.desktop",
-			"system-config-language.desktop",
-			"system-config-printer.desktop",
-			"system-config-users.desktop",
-			"vino-preferences.desktop",
 			NULL
 		};
 		const gchar * const yast_categories[] = {
@@ -647,16 +593,6 @@ gs_folders_convert (void)
 		g_object_unref (child);
 		g_free (child_path);
 
-		child_path = g_strconcat (path, "folders/Sundry/", NULL);
-		child = g_settings_new_with_path (APP_FOLDER_CHILD_SCHEMA, child_path);
-		g_settings_set_string (child, "name", "X-GNOME-Sundry.directory");
-		g_settings_set_boolean (child, "translate", TRUE);
-		g_settings_set_strv (child, "categories", sundry_categories);
-		g_settings_set_strv (child, "apps", sundry_apps);
-
-		g_object_unref (child);
-		g_free (child_path);
-
 		child_path = g_strconcat (path, "folders/YaST/", NULL);
 		child = g_settings_new_with_path (APP_FOLDER_CHILD_SCHEMA, child_path);
 		g_settings_set_string (child, "name", "suse-yast.directory");
@@ -668,5 +604,3 @@ gs_folders_convert (void)
 		
 	}
 }
-
-/* vim: set noexpandtab: */

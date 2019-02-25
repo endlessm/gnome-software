@@ -2,26 +2,13 @@
  *
  * Copyright (C) 2017 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
 
 #include <glib/gstdio.h>
+#include <xmlb.h>
 
 #include "gnome-software-private.h"
 
@@ -42,7 +29,9 @@ gs_plugins_shell_extensions_installed_func (GsPluginLoader *plugin_loader)
 	}
 
 	/* get installed packages */
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_INSTALLED, NULL);
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_INSTALLED,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES,
+					 NULL);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -75,12 +64,14 @@ gs_plugins_shell_extensions_installed_func (GsPluginLoader *plugin_loader)
 static void
 gs_plugins_shell_extensions_remote_func (GsPluginLoader *plugin_loader)
 {
-	const gchar *xml_fn = "/var/tmp/self-test/extensions-web.xml";
+	const gchar *cachedir = "/var/tmp/gs-self-test";
 	gboolean ret;
+	g_autofree gchar *fn = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GFile) file = NULL;
+	g_autoptr(GPtrArray) components = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
-	g_autoptr(AsStore) store = NULL;
+	g_autoptr(XbSilo) silo = NULL;
 
 	/* no shell-extensions, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "shell-extensions")) {
@@ -89,10 +80,10 @@ gs_plugins_shell_extensions_remote_func (GsPluginLoader *plugin_loader)
 	}
 
 	/* ensure files are removed */
-	g_unlink (xml_fn);
+	g_setenv ("GS_SELF_TEST_CACHEDIR", cachedir, TRUE);
+	gs_utils_rmtree (cachedir, NULL);
 
 	/* refresh the metadata */
-	g_setenv ("GS_SELF_TEST_SHELL_EXTENSIONS_XML_FN", xml_fn, TRUE);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
 					 "age", (guint64) G_MAXUINT,
 					 NULL);
@@ -101,12 +92,23 @@ gs_plugins_shell_extensions_remote_func (GsPluginLoader *plugin_loader)
 	g_assert (ret);
 
 	/* ensure file was populated */
-	store = as_store_new ();
-	file = g_file_new_for_path (xml_fn);
-	ret = as_store_from_file (store, file, NULL, NULL, &error);
+	silo = xb_silo_new ();
+	fn = gs_utils_get_cache_filename ("shell-extensions",
+					  "extensions-web.xmlb",
+					  GS_UTILS_CACHE_FLAG_WRITEABLE,
+					  &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (fn);
+	file = g_file_new_for_path (fn);
+	ret = xb_silo_load_from_file (silo, file,
+				      XB_SILO_LOAD_FLAG_NONE,
+				      NULL, &error);
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert_cmpint (as_store_get_size (store), >, 20);
+	components = xb_silo_query (silo, "components/component", 0, &error);
+	g_assert_no_error (error);
+	g_assert_nonnull (components);
+	g_assert_cmpint (components->len, >, 20);
 }
 
 int
@@ -147,5 +149,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-
-/* vim: set noexpandtab: */

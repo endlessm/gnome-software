@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -138,7 +124,7 @@ gs_moderate_page_add_app (GsModeratePage *self, GsApp *app)
 	guint i;
 
 	/* this hides the action button */
-	gs_app_add_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
 
 	/* add top level app */
 	app_row = gs_app_row_new (app);
@@ -351,5 +337,3 @@ gs_moderate_page_new (void)
 	self = g_object_new (GS_TYPE_MODERATE_PAGE, NULL);
 	return GS_MODERATE_PAGE (self);
 }
-
-/* vim: set noexpandtab: */

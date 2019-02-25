@@ -3,6 +3,7 @@ data/org.gnome.software.external-appstream.policy.in
 data/org.gnome.software.gschema.xml
 src/gnome-software-local-file.desktop.in
 src/gnome-software.ui
+lib/gs-app.c
 src/gs-app-addon-row.c
 src/gs-app-folder-dialog.c
 src/gs-app-folder-dialog.ui
@@ -36,8 +37,9 @@ src/gs-installed-page.ui
 src/gs-loading-page.c
 src/gs-loading-page.ui
 src/gs-main.c
-src/gs-menus.ui
 src/gs-moderate-page.ui
+src/gs-origin-popover-row.c
+src/gs-origin-popover-row.ui
 src/gs-overview-page.c
 src/gs-overview-page.ui
 src/gs-page.c
@@ -93,5 +95,3 @@ plugins/odrs/org.gnome.Software.Plugin.Odrs.metainfo.xml.in
 plugins/shell-extensions/gs-plugin-shell-extensions.c
 plugins/snap/gs-plugin-snap.c
 plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in
-plugins/steam/gs-plugin-steam.c
-plugins/steam/org.gnome.Software.Plugin.Steam.metainfo.xml.in

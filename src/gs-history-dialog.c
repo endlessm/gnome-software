@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2015 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -108,9 +94,10 @@ gs_history_dialog_set_app (GsHistoryDialog *dialog, GsApp *app)
 			      "margin-top", 6,
 			      "margin-bottom", 6,
 			      "xalign", 0.0,
+			      "hexpand", TRUE,
 			      NULL);
 		gtk_size_group_add_widget (dialog->sizegroup_state, widget);
-		gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+		gtk_container_add (GTK_CONTAINER (box), widget);
 
 		/* add the timestamp */
 		timestamp = gs_app_get_install_date (app);
@@ -127,9 +114,10 @@ gs_history_dialog_set_app (GsHistoryDialog *dialog, GsApp *app)
 			      "margin-top", 6,
 			      "margin-bottom", 6,
 			      "xalign", 0.0,
+			      "hexpand", TRUE,
 			      NULL);
 		gtk_size_group_add_widget (dialog->sizegroup_timestamp, widget);
-		gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+		gtk_container_add (GTK_CONTAINER (box), widget);
 
 		/* add the version */
 		widget = gtk_label_new (gs_app_get_version (app));
@@ -141,9 +129,10 @@ gs_history_dialog_set_app (GsHistoryDialog *dialog, GsApp *app)
 			      "xalign", 1.0,
 			      "ellipsize", PANGO_ELLIPSIZE_END,
 			      "width-chars", 10,
+			      "hexpand", TRUE,
 			      NULL);
 		gtk_size_group_add_widget (dialog->sizegroup_version, widget);
-		gtk_box_pack_start (box, widget, TRUE, TRUE, 0);
+		gtk_container_add (GTK_CONTAINER (box), widget);
 
 		gtk_widget_show_all (GTK_WIDGET (box));
 		gtk_list_box_insert (GTK_LIST_BOX (dialog->list_box), GTK_WIDGET (box), -1);
@@ -245,5 +234,3 @@ gs_history_dialog_new (void)
 					 "use-header-bar", TRUE,
 					 NULL));
 }
-
-/* vim: set noexpandtab: */

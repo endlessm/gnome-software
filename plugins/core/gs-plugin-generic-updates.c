@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -29,6 +15,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 {
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "packagekit-refine");
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "rpm-ostree");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_BEFORE, "icons");
 }
 
@@ -57,7 +44,7 @@ gs_plugin_generic_updates_get_os_update (GsPlugin *plugin)
 
 	/* create new */
 	app = gs_app_new (id);
-	gs_app_add_quirk (app, AS_APP_QUIRK_IS_PROXY);
+	gs_app_add_quirk (app, GS_APP_QUIRK_IS_PROXY);
 	gs_app_set_management_plugin (app, "");
 	gs_app_set_kind (app, AS_APP_KIND_OS_UPDATE);
 	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
@@ -98,7 +85,7 @@ gs_plugin_refine (GsPlugin *plugin,
 	/* do we have any packages left that are not apps? */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app_tmp = gs_app_list_index (list, i);
-		if (gs_app_has_quirk (app_tmp, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app_tmp, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_plugin_generic_updates_merge_os_update (app_tmp))
 			gs_app_list_add (os_updates, app_tmp);
@@ -113,8 +100,6 @@ gs_plugin_refine (GsPlugin *plugin,
 		const gchar *id = gs_app_get_unique_id (app_tmp);
 		if (id == NULL)
 			id = gs_app_get_source_default (app_tmp);
-		g_debug ("moving %s to parent %s",
-			 id, gs_app_get_unique_id (app));
 		gs_app_add_related (app, app_tmp);
 		gs_app_list_remove (list, app_tmp);
 	}

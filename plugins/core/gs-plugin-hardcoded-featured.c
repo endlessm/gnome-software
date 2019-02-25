@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -76,7 +62,7 @@ gs_plugin_add_featured (GsPlugin *plugin,
 
 		/* create new */
 		app = gs_app_new (myapps[i].id);
-		gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 		gs_app_set_metadata (app, "GnomeSoftware::Creator",
 				     gs_plugin_get_name (plugin));
 		gs_app_set_metadata (app, "GnomeSoftware::FeatureTile-css",

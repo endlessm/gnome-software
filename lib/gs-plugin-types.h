@@ -2,25 +2,10 @@
  *
  * Copyright (C) 2012-2018 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef __GS_PLUGIN_TYPES_H
-#define __GS_PLUGIN_TYPES_H
+#pragma once
 
 #include <glib-object.h>
 
@@ -55,19 +40,11 @@ typedef enum {
 /**
  * GsPluginFlags:
  * @GS_PLUGIN_FLAGS_NONE:		No flags set
- * @GS_PLUGIN_FLAGS_RUNNING_SELF:	The plugin is running
- * @GS_PLUGIN_FLAGS_RUNNING_OTHER:	Another plugin is running
- * @GS_PLUGIN_FLAGS_EXCLUSIVE:		An exclusive action is running
- * @GS_PLUGIN_FLAGS_RECENT:		This plugin recently ran
  * @GS_PLUGIN_FLAGS_INTERACTIVE:	User initiated the job
  *
  * The flags for the plugin at this point in time.
  **/
 #define GS_PLUGIN_FLAGS_NONE		(0u)
-#define GS_PLUGIN_FLAGS_RUNNING_SELF	(1u << 0)
-#define GS_PLUGIN_FLAGS_RUNNING_OTHER	(1u << 1)
-#define GS_PLUGIN_FLAGS_EXCLUSIVE	(1u << 2)
-#define GS_PLUGIN_FLAGS_RECENT		(1u << 3)
 #define GS_PLUGIN_FLAGS_INTERACTIVE	(1u << 4)
 typedef guint64 GsPluginFlags;
 
@@ -81,9 +58,6 @@ typedef guint64 GsPluginFlags;
  * @GS_PLUGIN_ERROR_NO_SPACE:			No disk space to allow action
  * @GS_PLUGIN_ERROR_AUTH_REQUIRED:		Authentication was required
  * @GS_PLUGIN_ERROR_AUTH_INVALID:		Provided authentication was invalid
- * @GS_PLUGIN_ERROR_PIN_REQUIRED:		PIN required for authentication
- * @GS_PLUGIN_ERROR_ACCOUNT_SUSPENDED:		User account has been suspended
- * @GS_PLUGIN_ERROR_ACCOUNT_DEACTIVATED:	User account has been deactivated
  * @GS_PLUGIN_ERROR_PLUGIN_DEPSOLVE_FAILED:	The plugins installed are incompatible
  * @GS_PLUGIN_ERROR_DOWNLOAD_FAILED:		The download action failed
  * @GS_PLUGIN_ERROR_WRITE_FAILED:		The save-to-disk failed
@@ -106,9 +80,6 @@ typedef enum {
 	GS_PLUGIN_ERROR_NO_SPACE,
 	GS_PLUGIN_ERROR_AUTH_REQUIRED,
 	GS_PLUGIN_ERROR_AUTH_INVALID,
-	GS_PLUGIN_ERROR_PIN_REQUIRED,
-	GS_PLUGIN_ERROR_ACCOUNT_SUSPENDED,
-	GS_PLUGIN_ERROR_ACCOUNT_DEACTIVATED,
 	GS_PLUGIN_ERROR_PLUGIN_DEPSOLVE_FAILED,
 	GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
 	GS_PLUGIN_ERROR_WRITE_FAILED,
@@ -153,6 +124,11 @@ typedef enum {
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_UI:		Require the origin for UI
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME:		Require the runtime
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS:		Require screenshot information
+ * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES:		Require categories
+ * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROJECT_GROUP:	Require project group
+ * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_DEVELOPER_NAME:	Require developer name
+ * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS:		Require kudos
+ * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING:	Require content rating
  *
  * The refine flags.
  **/
@@ -184,6 +160,11 @@ typedef enum {
 #define GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_UI	((guint64) 1 << 24)
 #define GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME		((guint64) 1 << 25)
 #define GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS	((guint64) 1 << 26)
+#define GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES	((guint64) 1 << 27)
+#define GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROJECT_GROUP	((guint64) 1 << 28)
+#define GS_PLUGIN_REFINE_FLAGS_REQUIRE_DEVELOPER_NAME	((guint64) 1 << 29)
+#define GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS		((guint64) 1 << 30)
+#define GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING	((guint64) 1 << 31)
 typedef guint64 GsPluginRefineFlags;
 
 /**
@@ -240,10 +221,6 @@ typedef enum {
  * @GS_PLUGIN_ACTION_REFINE:			Refine the application
  * @GS_PLUGIN_ACTION_REFRESH:			Refresh all the sources
  * @GS_PLUGIN_ACTION_FILE_TO_APP:		Convert the file to an application
- * @GS_PLUGIN_ACTION_AUTH_LOGIN:		Authentication login action
- * @GS_PLUGIN_ACTION_AUTH_LOGOUT:		Authentication logout action
- * @GS_PLUGIN_ACTION_AUTH_REGISTER:		Authentication register action
- * @GS_PLUGIN_ACTION_AUTH_LOST_PASSWORD:	Authentication lost password action
  * @GS_PLUGIN_ACTION_URL_TO_APP:		Convert the file to an application
  * @GS_PLUGIN_ACTION_GET_RECENT:		Get the apps recently released
  * @GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL:    Get the list of historical updates
@@ -251,6 +228,7 @@ typedef enum {
  * @GS_PLUGIN_ACTION_DESTROY:			Destroy the plugin
  * @GS_PLUGIN_ACTION_PURCHASE:			Purchase an app
  * @GS_PLUGIN_ACTION_DOWNLOAD:			Download an application
+ * @GS_PLUGIN_ACTION_GET_ALTERNATES:		Get the alternates for a specific application
  *
  * The plugin action.
  **/
@@ -288,10 +266,6 @@ typedef enum {
 	GS_PLUGIN_ACTION_REFINE,
 	GS_PLUGIN_ACTION_REFRESH,
 	GS_PLUGIN_ACTION_FILE_TO_APP,
-	GS_PLUGIN_ACTION_AUTH_LOGIN,
-	GS_PLUGIN_ACTION_AUTH_LOGOUT,
-	GS_PLUGIN_ACTION_AUTH_REGISTER,
-	GS_PLUGIN_ACTION_AUTH_LOST_PASSWORD,
 	GS_PLUGIN_ACTION_URL_TO_APP,
 	GS_PLUGIN_ACTION_GET_RECENT,
 	GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL,
@@ -299,12 +273,9 @@ typedef enum {
 	GS_PLUGIN_ACTION_DESTROY,
 	GS_PLUGIN_ACTION_PURCHASE,
 	GS_PLUGIN_ACTION_DOWNLOAD,
+	GS_PLUGIN_ACTION_GET_ALTERNATES,
 	/*< private >*/
 	GS_PLUGIN_ACTION_LAST
 } GsPluginAction;
 
 G_END_DECLS
-
-#endif /* __GS_PLUGIN_TYPES_H */
-
-/* vim: set noexpandtab: */

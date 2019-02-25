@@ -2,6 +2,7 @@ plugin_dir = join_paths(get_option('libdir'), 'gs-plugins-' + gs_plugin_api_vers
 plugin_libs = [
   appstream_glib,
   gio_unix,
+  goa,
   gtk,
   json_glib,
   libsoup
@@ -37,15 +38,6 @@ if get_option('shell_extensions')
 endif
 if get_option('snap')
   subdir('snap')
-endif
-if get_option('steam')
-  subdir('steam')
-endif
-if get_option('ubuntuone')
-  subdir('ubuntuone')
-endif
-if get_option('ubuntu_reviews')
-  subdir('ubuntu-reviews')
 endif
 if get_option('external_appstream')
   subdir('external-appstream')

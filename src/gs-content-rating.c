@@ -2,26 +2,13 @@
  *
  * Copyright (C) 2015-2016 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
 
 #include <glib/gi18n.h>
+#include <string.h>
 
 #include "gs-content-rating.h"
 
@@ -159,7 +146,7 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("Prolonged nudity") },
 	{ "sex-themes",		AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
-	_("No references or depictions of sexual nature") },
+	_("No references to or depictions of sexual nature") },
 	{ "sex-themes",		AS_CONTENT_RATING_VALUE_MILD,
 	/* TRANSLATORS: content rating description */
 	_("Provocative references or depictions") },
@@ -237,13 +224,13 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("Users are encouraged to donate real money") },
 	{ "money-purchasing",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
-	_("Ability to spend real money in-game") },
+	_("Ability to spend real money in-app") },
 	{ "social-chat",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
 	_("No way to chat with other users") },
 	{ "social-chat",	AS_CONTENT_RATING_VALUE_MILD,
 	/* TRANSLATORS: content rating description */
-	_("User-to-user game interactions without chat functionality") },
+	_("User-to-user interactions without chat functionality") },
 	{ "social-chat",	AS_CONTENT_RATING_VALUE_MODERATE,
 	/* TRANSLATORS: content rating description */
 	_("Moderated chat functionality between users") },
@@ -264,7 +251,7 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("Sharing social network usernames or email addresses") },
 	{ "social-info",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
-	_("No sharing of user information with 3rd parties") },
+	_("No sharing of user information with third parties") },
 	{ "social-info",	AS_CONTENT_RATING_VALUE_MILD,		/* v1.1 */
 	/* TRANSLATORS: content rating description */
 	_("Checking for the latest application version") },
@@ -276,10 +263,10 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("Sharing information that lets others identify the user") },
 	{ "social-location",	AS_CONTENT_RATING_VALUE_NONE,
 	/* TRANSLATORS: content rating description */
-	_("No sharing of physical location to other users") },
+	_("No sharing of physical location with other users") },
 	{ "social-location",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
-	_("Sharing physical location to other users") },
+	_("Sharing physical location with other users") },
 
 	/* v1.1 */
 	{ "sex-homosexuality",	AS_CONTENT_RATING_VALUE_NONE,
@@ -302,7 +289,7 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("Indirect references to prostitution") },
 	{ "sex-prostitution",	AS_CONTENT_RATING_VALUE_MODERATE,
 	/* TRANSLATORS: content rating description */
-	_("Direct references of prostitution") },
+	_("Direct references to prostitution") },
 	{ "sex-prostitution",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
 	_("Graphic depictions of the act of prostitution") },
@@ -314,7 +301,7 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("Indirect references to adultery") },
 	{ "sex-adultery",	AS_CONTENT_RATING_VALUE_MODERATE,
 	/* TRANSLATORS: content rating description */
-	_("Direct references of adultery") },
+	_("Direct references to adultery") },
 	{ "sex-adultery",	AS_CONTENT_RATING_VALUE_INTENSE,
 	/* TRANSLATORS: content rating description */
 	_("Graphic depictions of the act of adultery") },
@@ -332,7 +319,7 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("No references to desecration") },
 	{ "violence-worship",	AS_CONTENT_RATING_VALUE_MILD,
 	/* TRANSLATORS: content rating description */
-	_("Depictions or references to historical desecration") },
+	_("Depictions of or references to historical desecration") },
 	{ "violence-worship",	AS_CONTENT_RATING_VALUE_MODERATE,
 	/* TRANSLATORS: content rating description */
 	_("Depictions of modern-day human desecration") },
@@ -356,7 +343,7 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	_("No references to slavery") },
 	{ "violence-slavery",	AS_CONTENT_RATING_VALUE_MILD,
 	/* TRANSLATORS: content rating description */
-	_("Depictions or references to historical slavery") },
+	_("Depictions of or references to historical slavery") },
 	{ "violence-slavery",	AS_CONTENT_RATING_VALUE_MODERATE,
 	/* TRANSLATORS: content rating description */
 	_("Depictions of modern-day slavery") },
@@ -450,11 +437,12 @@ gs_utils_content_rating_age_to_str (GsContentRatingSystem system, guint age)
 			return "6";
 		return "0";
 	}
+	/* Reference: http://www.esra.org.ir/ */
 	if (system == GS_CONTENT_RATING_SYSTEM_ESRA) {
-		if (age >= 25)
-			return "+25";
 		if (age >= 18)
 			return "+18";
+		if (age >= 15)
+			return "+15";
 		if (age >= 12)
 			return "+12";
 		if (age >= 7)
@@ -539,121 +527,206 @@ gs_utils_content_rating_age_to_str (GsContentRatingSystem system, guint age)
 	return NULL;
 }
 
+/*
+ * parse_locale:
+ * @locale: (transfer full): a locale to parse
+ * @language_out: (out) (optional) (nullable): return location for the parsed
+ *    language, or %NULL to ignore
+ * @territory_out: (out) (optional) (nullable): return location for the parsed
+ *    territory, or %NULL to ignore
+ * @codeset_out: (out) (optional) (nullable): return location for the parsed
+ *    codeset, or %NULL to ignore
+ * @modifier_out: (out) (optional) (nullable): return location for the parsed
+ *    modifier, or %NULL to ignore
+ *
+ * Parse @locale as a locale string of the form
+ * `language[_territory][.codeset][@modifier]` — see `man 3 setlocale` for
+ * details.
+ *
+ * On success, %TRUE will be returned, and the components of the locale will be
+ * returned in the given addresses, with each component not including any
+ * separators. Otherwise, %FALSE will be returned and the components will be set
+ * to %NULL.
+ *
+ * @locale is modified, and any returned non-%NULL pointers will point inside
+ * it.
+ *
+ * Returns: %TRUE on success, %FALSE otherwise
+ */
+static gboolean
+parse_locale (gchar *locale  /* (transfer full) */,
+	      const gchar **language_out,
+	      const gchar **territory_out,
+	      const gchar **codeset_out,
+	      const gchar **modifier_out)
+{
+	gchar *separator;
+	const gchar *language = NULL, *territory = NULL, *codeset = NULL, *modifier = NULL;
+
+	separator = strrchr (locale, '@');
+	if (separator != NULL) {
+		modifier = separator + 1;
+		*separator = '\0';
+	}
+
+	separator = strrchr (locale, '.');
+	if (separator != NULL) {
+		codeset = separator + 1;
+		*separator = '\0';
+	}
+
+	separator = strrchr (locale, '_');
+	if (separator != NULL) {
+		territory = separator + 1;
+		*separator = '\0';
+	}
+
+	language = locale;
+
+	/* Parse failure? */
+	if (*language == '\0') {
+		language = NULL;
+		territory = NULL;
+		codeset = NULL;
+		modifier = NULL;
+	}
+
+	if (language_out != NULL)
+		*language_out = language;
+	if (territory_out != NULL)
+		*territory_out = territory;
+	if (codeset_out != NULL)
+		*codeset_out = codeset;
+	if (modifier_out != NULL)
+		*modifier_out = modifier;
+
+	return (language != NULL);
+}
+
 /* data obtained from https://en.wikipedia.org/wiki/Video_game_rating_system */
 GsContentRatingSystem
 gs_utils_content_rating_system_from_locale (const gchar *locale)
 {
-	g_auto(GStrv) split = g_strsplit (locale, "_", -1);
+	g_autofree gchar *locale_copy = g_strdup (locale);
+	const gchar *language, *territory;
+
+	/* Default to IARC for locales which can’t be parsed. */
+	if (!parse_locale (locale_copy, &language, &territory, NULL, NULL))
+		return GS_CONTENT_RATING_SYSTEM_IARC;
 
 	/* Argentina */
-	if (g_strcmp0 (split[0], "ar") == 0)
+	if (g_strcmp0 (language, "ar") == 0)
 		return GS_CONTENT_RATING_SYSTEM_INCAA;
 
 	/* Australia */
-	if (g_strcmp0 (split[0], "au") == 0)
+	if (g_strcmp0 (language, "au") == 0)
 		return GS_CONTENT_RATING_SYSTEM_ACB;
 
 	/* Brazil */
-	if (g_strcmp0 (split[0], "br") == 0)
+	if (g_strcmp0 (language, "pt") == 0 &&
+	    g_strcmp0 (territory, "BR") == 0)
 		return GS_CONTENT_RATING_SYSTEM_DJCTQ;
 
 	/* Taiwan */
-	if (g_strcmp0 (locale, "zh_TW") == 0)
+	if (g_strcmp0 (language, "zh") == 0 &&
+	    g_strcmp0 (territory, "TW") == 0)
 		return GS_CONTENT_RATING_SYSTEM_GSRR;
 
 	/* Europe (but not Finland or Germany), India, Israel,
 	 * Pakistan, Quebec, South Africa */
-	if (g_strcmp0 (locale, "en_GB") == 0 ||
-	    g_strcmp0 (split[0], "gb") == 0 ||
-	    g_strcmp0 (split[0], "al") == 0 ||
-	    g_strcmp0 (split[0], "ad") == 0 ||
-	    g_strcmp0 (split[0], "am") == 0 ||
-	    g_strcmp0 (split[0], "at") == 0 ||
-	    g_strcmp0 (split[0], "az") == 0 ||
-	    g_strcmp0 (split[0], "by") == 0 ||
-	    g_strcmp0 (split[0], "be") == 0 ||
-	    g_strcmp0 (split[0], "ba") == 0 ||
-	    g_strcmp0 (split[0], "bg") == 0 ||
-	    g_strcmp0 (split[0], "hr") == 0 ||
-	    g_strcmp0 (split[0], "cy") == 0 ||
-	    g_strcmp0 (split[0], "cz") == 0 ||
-	    g_strcmp0 (split[0], "dk") == 0 ||
-	    g_strcmp0 (split[0], "ee") == 0 ||
-	    g_strcmp0 (split[0], "fr") == 0 ||
-	    g_strcmp0 (split[0], "ge") == 0 ||
-	    g_strcmp0 (split[0], "gr") == 0 ||
-	    g_strcmp0 (split[0], "hu") == 0 ||
-	    g_strcmp0 (split[0], "is") == 0 ||
-	    g_strcmp0 (split[0], "it") == 0 ||
-	    g_strcmp0 (split[0], "kz") == 0 ||
-	    g_strcmp0 (split[0], "xk") == 0 ||
-	    g_strcmp0 (split[0], "lv") == 0 ||
-	    g_strcmp0 (split[0], "fl") == 0 ||
-	    g_strcmp0 (split[0], "lu") == 0 ||
-	    g_strcmp0 (split[0], "lt") == 0 ||
-	    g_strcmp0 (split[0], "mk") == 0 ||
-	    g_strcmp0 (split[0], "mt") == 0 ||
-	    g_strcmp0 (split[0], "md") == 0 ||
-	    g_strcmp0 (split[0], "mc") == 0 ||
-	    g_strcmp0 (split[0], "me") == 0 ||
-	    g_strcmp0 (split[0], "nl") == 0 ||
-	    g_strcmp0 (split[0], "no") == 0 ||
-	    g_strcmp0 (split[0], "pl") == 0 ||
-	    g_strcmp0 (split[0], "pt") == 0 ||
-	    g_strcmp0 (split[0], "ro") == 0 ||
-	    g_strcmp0 (split[0], "sm") == 0 ||
-	    g_strcmp0 (split[0], "rs") == 0 ||
-	    g_strcmp0 (split[0], "sk") == 0 ||
-	    g_strcmp0 (split[0], "si") == 0 ||
-	    g_strcmp0 (split[0], "es") == 0 ||
-	    g_strcmp0 (split[0], "se") == 0 ||
-	    g_strcmp0 (split[0], "ch") == 0 ||
-	    g_strcmp0 (split[0], "tr") == 0 ||
-	    g_strcmp0 (split[0], "ua") == 0 ||
-	    g_strcmp0 (split[0], "va") == 0 ||
-	    g_strcmp0 (split[0], "in") == 0 ||
-	    g_strcmp0 (split[0], "il") == 0 ||
-	    g_strcmp0 (split[0], "pk") == 0 ||
-	    g_strcmp0 (split[0], "za") == 0)
+	if ((g_strcmp0 (language, "en") == 0 &&
+	     g_strcmp0 (territory, "GB") == 0) ||
+	    g_strcmp0 (language, "gb") == 0 ||
+	    g_strcmp0 (language, "al") == 0 ||
+	    g_strcmp0 (language, "ad") == 0 ||
+	    g_strcmp0 (language, "am") == 0 ||
+	    g_strcmp0 (language, "at") == 0 ||
+	    g_strcmp0 (language, "az") == 0 ||
+	    g_strcmp0 (language, "by") == 0 ||
+	    g_strcmp0 (language, "be") == 0 ||
+	    g_strcmp0 (language, "ba") == 0 ||
+	    g_strcmp0 (language, "bg") == 0 ||
+	    g_strcmp0 (language, "hr") == 0 ||
+	    g_strcmp0 (language, "cy") == 0 ||
+	    g_strcmp0 (language, "cz") == 0 ||
+	    g_strcmp0 (language, "dk") == 0 ||
+	    g_strcmp0 (language, "ee") == 0 ||
+	    g_strcmp0 (language, "fr") == 0 ||
+	    g_strcmp0 (language, "ge") == 0 ||
+	    g_strcmp0 (language, "gr") == 0 ||
+	    g_strcmp0 (language, "hu") == 0 ||
+	    g_strcmp0 (language, "is") == 0 ||
+	    g_strcmp0 (language, "it") == 0 ||
+	    g_strcmp0 (language, "kz") == 0 ||
+	    g_strcmp0 (language, "xk") == 0 ||
+	    g_strcmp0 (language, "lv") == 0 ||
+	    g_strcmp0 (language, "fl") == 0 ||
+	    g_strcmp0 (language, "lu") == 0 ||
+	    g_strcmp0 (language, "lt") == 0 ||
+	    g_strcmp0 (language, "mk") == 0 ||
+	    g_strcmp0 (language, "mt") == 0 ||
+	    g_strcmp0 (language, "md") == 0 ||
+	    g_strcmp0 (language, "mc") == 0 ||
+	    g_strcmp0 (language, "me") == 0 ||
+	    g_strcmp0 (language, "nl") == 0 ||
+	    g_strcmp0 (language, "no") == 0 ||
+	    g_strcmp0 (language, "pl") == 0 ||
+	    g_strcmp0 (language, "pt") == 0 ||
+	    g_strcmp0 (language, "ro") == 0 ||
+	    g_strcmp0 (language, "sm") == 0 ||
+	    g_strcmp0 (language, "rs") == 0 ||
+	    g_strcmp0 (language, "sk") == 0 ||
+	    g_strcmp0 (language, "si") == 0 ||
+	    g_strcmp0 (language, "es") == 0 ||
+	    g_strcmp0 (language, "se") == 0 ||
+	    g_strcmp0 (language, "ch") == 0 ||
+	    g_strcmp0 (language, "tr") == 0 ||
+	    g_strcmp0 (language, "ua") == 0 ||
+	    g_strcmp0 (language, "va") == 0 ||
+	    g_strcmp0 (language, "in") == 0 ||
+	    g_strcmp0 (language, "il") == 0 ||
+	    g_strcmp0 (language, "pk") == 0 ||
+	    g_strcmp0 (language, "za") == 0)
 		return GS_CONTENT_RATING_SYSTEM_PEGI;
 
 	/* Finland */
-	if (g_strcmp0 (split[0], "fi") == 0)
+	if (g_strcmp0 (language, "fi") == 0)
 		return GS_CONTENT_RATING_SYSTEM_KAVI;
 
 	/* Germany */
-	if (g_strcmp0 (split[0], "de") == 0)
+	if (g_strcmp0 (language, "de") == 0)
 		return GS_CONTENT_RATING_SYSTEM_USK;
 
 	/* Iran */
-	if (g_strcmp0 (split[0], "ir") == 0)
+	if (g_strcmp0 (language, "ir") == 0)
 		return GS_CONTENT_RATING_SYSTEM_ESRA;
 
 	/* Japan */
-	if (g_strcmp0 (split[0], "jp") == 0)
+	if (g_strcmp0 (language, "jp") == 0)
 		return GS_CONTENT_RATING_SYSTEM_CERO;
 
 	/* New Zealand */
-	if (g_strcmp0 (split[0], "nz") == 0)
+	if (g_strcmp0 (language, "nz") == 0)
 		return GS_CONTENT_RATING_SYSTEM_OFLCNZ;
 
 	/* Russia: Content rating law */
-	if (g_strcmp0 (split[0], "ru") == 0)
+	if (g_strcmp0 (language, "ru") == 0)
 		return GS_CONTENT_RATING_SYSTEM_RUSSIA;
 
 	/* Singapore */
-	if (g_strcmp0 (split[0], "sg") == 0)
+	if (g_strcmp0 (language, "sg") == 0)
 		return GS_CONTENT_RATING_SYSTEM_MDA;
 
 	/* South Korea */
-	if (g_strcmp0 (split[0], "kr") == 0)
+	if (g_strcmp0 (language, "kr") == 0)
 		return GS_CONTENT_RATING_SYSTEM_GRAC;
 
 	/* USA, Canada, Mexico */
-	if (g_strcmp0 (locale, "en_US") == 0 ||
-	    g_strcmp0 (split[0], "us") == 0 ||
-	    g_strcmp0 (split[0], "ca") == 0 ||
-	    g_strcmp0 (split[0], "mx") == 0)
+	if ((g_strcmp0 (language, "en") == 0 &&
+	     g_strcmp0 (territory, "US") == 0) ||
+	    g_strcmp0 (language, "us") == 0 ||
+	    g_strcmp0 (language, "ca") == 0 ||
+	    g_strcmp0 (language, "mx") == 0)
 		return GS_CONTENT_RATING_SYSTEM_ESRB;
 
 	/* everything else is IARC */

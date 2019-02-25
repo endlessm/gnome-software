@@ -2,25 +2,10 @@
  *
  * Copyright (C) 2012-2016 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef __GS_PLUGIN_H
-#define __GS_PLUGIN_H
+#pragma once
 
 #include <appstream-glib.h>
 #include <glib-object.h>
@@ -89,7 +74,7 @@ void		 gs_plugin_set_soup_session		(GsPlugin	*plugin,
 void		 gs_plugin_add_auth			(GsPlugin	*plugin,
 							 GsAuth		*auth);
 GsAuth		*gs_plugin_get_auth_by_id		(GsPlugin	*plugin,
-							 const gchar	*provider_id);
+							 const gchar	*auth_id);
 void		 gs_plugin_add_rule			(GsPlugin	*plugin,
 							 GsPluginRule	 rule,
 							 const gchar	*name);
@@ -138,7 +123,3 @@ void		 gs_plugin_set_allow_updates		(GsPlugin	*plugin,
 gboolean	 gs_plugin_get_network_available	(GsPlugin	*plugin);
 
 G_END_DECLS
-
-#endif /* __GS_PLUGIN_H */
-
-/* vim: set noexpandtab: */

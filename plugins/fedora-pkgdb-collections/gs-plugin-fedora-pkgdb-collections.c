@@ -3,21 +3,7 @@
  * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
  * Copyright (C) 2017 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -108,17 +94,6 @@ _file_changed_cb (GFileMonitor *monitor,
 {
 	GsPlugin *plugin = GS_PLUGIN (user_data);
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	/* only reload the update list if the plugin is NOT running itself
-	 * and the time since it ran is greater than 5 seconds (inotify FTW) */
-	if (gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_RUNNING_SELF)) {
-		g_debug ("no notify as plugin %s active", gs_plugin_get_name (plugin));
-		return;
-	}
-	if (gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_RECENT)) {
-		g_debug ("no notify as plugin %s recently active", gs_plugin_get_name (plugin));
-		return;
-	}
 
 	g_debug ("cache file changed, so reloading upgrades list");
 	gs_plugin_updates_changed (plugin);
@@ -301,17 +276,18 @@ _create_upgrade_from_info (GsPlugin *plugin, PkgdbItem *item)
 	app = gs_app_new (app_id);
 	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 	gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, item->name);
 	gs_app_set_summary (app, GS_APP_QUALITY_LOWEST,
 			    /* TRANSLATORS: this is a title for Fedora distro upgrades */
-			    _("Upgrade your Fedora system to the latest features and improvements."));
+			    _("Upgrade for the latest features, performance and stability improvements."));
 	gs_app_set_version (app, app_version);
 	gs_app_set_size_installed (app, 1024 * 1024 * 1024); /* estimate */
 	gs_app_set_size_download (app, 256 * 1024 * 1024); /* estimate */
 	gs_app_set_license (app, GS_APP_QUALITY_LOWEST, "LicenseRef-free");
-	gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
-	gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_REVIEWABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
+	gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_REVIEWABLE);
 	gs_app_add_icon (app, ic);
 
 	/* show a Fedora magazine article for the release */

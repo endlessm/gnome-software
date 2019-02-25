@@ -4,21 +4,7 @@
  * Copyright (C) 2013-2018 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -330,7 +316,7 @@ about_activated (GSimpleAction *action,
 		"William Jon McCann",
 		NULL
 	};
-	const gchar *copyright = "Copyright \xc2\xa9 2016 Richard Hughes, Matthias Clasen, Kalev Lember";
+	const gchar *copyright = "Copyright \xc2\xa9 2016-2019 Richard Hughes, Matthias Clasen, Kalev Lember";
 	GtkAboutDialog *dialog;
 	g_autofree gchar *title = NULL;
 
@@ -952,10 +938,8 @@ gs_application_dispose (GObject *object)
 {
 	GsApplication *app = GS_APPLICATION (object);
 
-	if (app->cancellable != NULL) {
-		g_cancellable_cancel (app->cancellable);
-		g_clear_object (&app->cancellable);
-	}
+	g_cancellable_cancel (app->cancellable);
+	g_clear_object (&app->cancellable);
 
 	g_clear_object (&app->plugin_loader);
 	g_clear_object (&app->shell);
@@ -1111,5 +1095,3 @@ gs_application_new (void)
 			     "inactivity-timeout", 12000,
 			     NULL);
 }
-
-/* vim: set noexpandtab: */

@@ -10,7 +10,6 @@
     <child>
       <object class="GtkGrid" id="grid">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
         <property name="margin_top">32</property>
         <property name="row_spacing">6</property>
         <property name="column_spacing">10</property>
@@ -19,7 +18,6 @@
         <child>
           <object class="GtkLabel" id="summary_label">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="label">Steep learning curve, but worth it</property>
             <property name="ellipsize">end</property>
@@ -37,7 +35,6 @@
         <child>
           <object class="GtkLabel" id="date_label">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="halign">end</property>
             <property name="label">3 January 2016</property>
             <property name="hexpand">True</property>
@@ -54,7 +51,6 @@
         <child>
           <object class="GtkLabel" id="author_label">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="label">Angela Avery</property>
             <property name="selectable">True</property>
@@ -71,7 +67,6 @@
         <child>
           <object class="GtkLabel" id="text_label">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="margin_top">10</property>
             <property name="margin_bottom">8</property>
@@ -102,28 +97,20 @@
         <child>
           <object class="GtkBox" id="box_voting">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="spacing">9</property>
             <property name="halign">start</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="label" translatable="yes" comments="Translators: Users can express their opinions about other users&apos; opinions about the apps.">Was this review useful to you?</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkBox" id="box_vote_buttons">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="spacing">0</property>
                 <property name="halign">start</property>
                 <style>
@@ -137,11 +124,6 @@
                     <property name="receives_default">True</property>
                     <property name="relief">none</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="button_no">
@@ -151,11 +133,6 @@
                     <property name="receives_default">True</property>
                     <property name="relief">none</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="button_dismiss">
@@ -165,18 +142,8 @@
                     <property name="receives_default">True</property>
                     <property name="relief">none</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">2</property>
-                  </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
           <packing>
@@ -188,7 +155,6 @@
         <child>
           <object class="GtkBox" id="box_action_buttons">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="spacing">9</property>
             <property name="halign">end</property>
             <child>
@@ -200,11 +166,6 @@
                 <property name="halign">end</property>
                 <property name="relief">none</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkButton" id="button_remove">
@@ -215,11 +176,6 @@
                 <property name="halign">end</property>
                 <property name="relief">none</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
           <packing>

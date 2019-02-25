@@ -4,21 +4,7 @@
  *
  * Copyright (C) 2013 Matthias Clasen
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -167,10 +153,8 @@ execute_search (GsShellSearchProvider  *self,
 
 	value = g_strjoinv (" ", terms);
 
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_clear_object (&self->cancellable);
-	}
+	g_cancellable_cancel (self->cancellable);
+	g_clear_object (&self->cancellable);
 
 	/* don't attempt searches for a single character */
 	if (g_strv_length (terms) == 1 &&
@@ -191,6 +175,8 @@ execute_search (GsShellSearchProvider  *self,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 					                 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
 					 "max-results", GS_SHELL_SEARCH_PROVIDER_MAX_RESULTS,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					 NULL);
 	gs_plugin_job_set_sort_func (plugin_job, gs_shell_search_provider_sort_cb);
 	gs_plugin_job_set_sort_func_data (plugin_job, self);
@@ -355,10 +341,8 @@ search_provider_dispose (GObject *obj)
 {
 	GsShellSearchProvider *self = GS_SHELL_SEARCH_PROVIDER (obj);
 
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_clear_object (&self->cancellable);
-	}
+	g_cancellable_cancel (self->cancellable);
+	g_clear_object (&self->cancellable);
 
 	if (self->metas_cache != NULL) {
 		g_hash_table_destroy (self->metas_cache);

@@ -2,7 +2,7 @@
 %global gtk3_version 3.22.4
 %global json_glib_version 1.2.0
 %global packagekit_version 1.1.1
-%global appstream_glib_version 0.7.8
+%global appstream_glib_version 0.7.11
 %global libsoup_version 2.52.0
 %global gsettings_desktop_schemas_version 3.12.0
 %global gnome_desktop_version 3.18.0
@@ -18,7 +18,7 @@ Summary:   A software center for GNOME
 
 License:   GPLv2+
 URL:       https://wiki.gnome.org/Apps/Software
-Source0:   https://download.gnome.org/sources/gnome-software/3.29/%{name}-%{version}.tar.xz
+Source0:   https://download.gnome.org/sources/gnome-software/3.31/%{name}-%{version}.tar.xz
 
 BuildRequires: gcc
 BuildRequires: gettext
@@ -34,13 +34,14 @@ BuildRequires: gtk3-devel >= %{gtk3_version}
 BuildRequires: gtk-doc
 BuildRequires: json-glib-devel >= %{json_glib_version}
 BuildRequires: libappstream-glib-devel >= %{appstream_glib_version}
+BuildRequires: gnome-online-accounts-devel
 BuildRequires: libsoup-devel
 BuildRequires: meson
 BuildRequires: PackageKit-glib-devel >= %{packagekit_version}
 BuildRequires: polkit-devel
-BuildRequires: libsecret-devel
 BuildRequires: flatpak-devel >= %{flatpak_version}
 BuildRequires: ostree-devel
+BuildRequires: rpm-devel
 BuildRequires: rpm-ostree-devel
 BuildRequires: libgudev1-devel
 BuildRequires: valgrind-devel
@@ -71,7 +72,7 @@ Requires: libsoup%{?_isa} >= %{libsoup_version}
 Requires: PackageKit%{?_isa} >= %{packagekit_version}
 
 # this is not a library version
-%define gs_plugin_version               12
+%define gs_plugin_version               13
 
 %description
 gnome-software is an application that makes it easy to add, remove
@@ -117,9 +118,7 @@ Adds support for Snap packages from the Snap store.
     -Dpackagekit=true \
     -Dexternal_appstream=false \
     -Drpm_ostree=true \
-    -Dtests=false \
-    -Dubuntuone=false \
-    -Dubuntu_reviews=false
+    -Dtests=false
 %meson_build
 
 %install
@@ -132,7 +131,7 @@ desktop-file-edit %{buildroot}%{_datadir}/applications/org.gnome.Software.deskto
 # set up for Fedora
 cat >> %{buildroot}%{_datadir}/glib-2.0/schemas/org.gnome.software-fedora.gschema.override << FOE
 [org.gnome.software]
-official-repos = [ 'fedora', 'fedora-debuginfo', 'fedora-source', 'koji-override-0', 'koji-override-1', 'rawhide', 'rawhide-debuginfo', 'rawhide-source', 'updates', 'updates-debuginfo', 'updates-source', 'updates-testing', 'updates-testing-debuginfo', 'updates-testing-source' ]
+official-repos = [ 'fedora', 'fedora-debuginfo', 'fedora-source', 'koji-override-0', 'koji-override-1', 'rawhide', 'rawhide-debuginfo', 'rawhide-source', 'updates', 'updates-debuginfo', 'updates-source', 'updates-testing', 'updates-testing-debuginfo', 'updates-testing-source', 'fedora-modular', 'fedora-modular-debuginfo', 'fedora-modular-source', 'rawhide-modular', 'rawhide-modular-debuginfo', 'rawhide-modular-source' ]
 FOE
 
 %find_lang %name --with-gnome
@@ -149,7 +148,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %dir %{_datadir}/gnome-software
 %{_datadir}/gnome-software/*.png
 %{_mandir}/man1/gnome-software.1.gz
-%{_datadir}/icons/hicolor/*/apps/*
+%{_datadir}/icons/hicolor/*/apps/org.gnome.Software.svg
+%{_datadir}/icons/hicolor/symbolic/apps/org.gnome.Software-symbolic.svg
+%{_datadir}/icons/hicolor/symbolic/status/software-installed-symbolic.svg
 %{_datadir}/gnome-software/featured-*.svg
 %{_datadir}/gnome-software/featured-*.jpg
 %{_datadir}/metainfo/org.gnome.Software.appdata.xml
@@ -157,7 +158,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Flatpak.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Fwupd.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Odrs.metainfo.xml
-%{_datadir}/metainfo/org.gnome.Software.Plugin.Steam.metainfo.xml
 %dir %{_libdir}/gs-plugins-%{gs_plugin_version}
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_appstream.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_desktop-categories.so
@@ -194,7 +194,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_rewrite-resource.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_rpm-ostree.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_shell-extensions.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_steam.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_systemd-updates.so
 %{_sysconfdir}/xdg/autostart/gnome-software-service.desktop
 %{_datadir}/app-info/xmls/org.gnome.Software.Featured.xml

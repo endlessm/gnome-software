@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -37,7 +23,7 @@ gs_plugins_modalias_func (GsPluginLoader *plugin_loader)
 	/* get search result based on addon keyword */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
 					 "search", "colorhug2",
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES,
 					 NULL);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
@@ -56,6 +42,7 @@ gs_plugins_modalias_func (GsPluginLoader *plugin_loader)
 int
 main (int argc, char **argv)
 {
+	const gchar *tmp_root = "/var/tmp/self-test";
 	gboolean ret;
 	g_autofree gchar *xml = NULL;
 	g_autoptr(GError) error = NULL;
@@ -77,12 +64,14 @@ main (int argc, char **argv)
 		"    <id>com.hughski.ColorHug2.driver</id>\n"
 		"    <name>ColorHug2</name>\n"
 		"    <summary>ColorHug2 Colorimeter Driver</summary>\n"
+		"    <pkgname>colorhug-client</pkgname>\n"
 		"    <provides>\n"
 		"      <modalias>pci:*</modalias>\n"
 		"    </provides>\n"
 		"  </component>\n"
 		"</components>\n");
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
+	g_setenv ("GS_SELF_TEST_CACHEDIR", tmp_root, TRUE);
 
 	/* only critical and error are fatal */
 	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
@@ -107,5 +96,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-
-/* vim: set noexpandtab: */

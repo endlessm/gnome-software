@@ -3,21 +3,7 @@
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -256,6 +242,7 @@ gs_plugin_packagekit_add_results (GsPlugin *plugin,
 		app = gs_plugin_cache_lookup (plugin, pk_package_get_id (package));
 		if (app == NULL) {
 			app = gs_app_new (NULL);
+			gs_plugin_packagekit_set_packaging_format (plugin, app);
 			gs_app_add_source (app, pk_package_get_name (package));
 			gs_app_add_source_id (app, pk_package_get_id (package));
 			gs_plugin_cache_add (plugin, pk_package_get_id (package), app);
@@ -293,6 +280,7 @@ gs_plugin_packagekit_add_results (GsPlugin *plugin,
 				   pk_info_enum_to_string (pk_package_get_info (package)));
 		}
 		gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 		gs_app_list_add (list, app);
 	}
 	return TRUE;
@@ -368,6 +356,7 @@ gs_plugin_packagekit_set_metadata_from_package (GsPlugin *plugin,
 {
 	const gchar *data;
 
+	gs_plugin_packagekit_set_packaging_format (plugin, app);
 	gs_app_set_management_plugin (app, "packagekit");
 	gs_app_add_source (app, pk_package_get_name (package));
 	gs_app_add_source_id (app, pk_package_get_id (package));
@@ -489,5 +478,17 @@ gs_plugin_packagekit_refine_details_app (GsPlugin *plugin,
 			gs_app_set_size_installed (app, GS_APP_SIZE_UNKNOWABLE);
 		if (size > 0 && gs_app_get_size_download (app) == 0)
 			gs_app_set_size_download (app, size);
+	}
+}
+
+void
+gs_plugin_packagekit_set_packaging_format (GsPlugin *plugin, GsApp *app)
+{
+	if (gs_plugin_check_distro_id (plugin, "fedora") ||
+	    gs_plugin_check_distro_id (plugin, "rhel")) {
+		gs_app_set_metadata (app, "GnomeSoftware::PackagingFormat", "RPM");
+	} else if (gs_plugin_check_distro_id (plugin, "debian") ||
+	           gs_plugin_check_distro_id (plugin, "ubuntu")) {
+		gs_app_set_metadata (app, "GnomeSoftware::PackagingFormat", "deb");
 	}
 }

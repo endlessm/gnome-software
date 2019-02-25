@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2018 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -48,10 +34,8 @@ gs_prefs_dialog_dispose (GObject *object)
 {
 	GsPrefsDialog *dialog = GS_PREFS_DIALOG (object);
 	g_clear_object (&dialog->plugin_loader);
-	if (dialog->cancellable != NULL) {
-		g_cancellable_cancel (dialog->cancellable);
-		g_clear_object (&dialog->cancellable);
-	}
+	g_cancellable_cancel (dialog->cancellable);
+	g_clear_object (&dialog->cancellable);
 	g_clear_object (&dialog->settings);
 
 	G_OBJECT_CLASS (gs_prefs_dialog_parent_class)->dispose (object);
@@ -101,5 +85,3 @@ gs_prefs_dialog_new (GtkWindow *parent, GsPluginLoader *plugin_loader)
 	dialog->plugin_loader = g_object_ref (plugin_loader);
 	return GTK_WIDGET (dialog);
 }
-
-/* vim: set noexpandtab: */

@@ -3,21 +3,7 @@
  * Copyright (C) 2007-2018 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -105,6 +91,11 @@ typedef gboolean	 (*GsPluginSetupFunc)		(GsPlugin	*plugin,
 							 GError		**error);
 typedef gboolean	 (*GsPluginSearchFunc)		(GsPlugin	*plugin,
 							 gchar		**value,
+							 GsAppList	*list,
+							 GCancellable	*cancellable,
+							 GError		**error);
+typedef gboolean	 (*GsPluginAlternatesFunc)	(GsPlugin	*plugin,
+							 GsApp		*app,
 							 GsAppList	*list,
 							 GCancellable	*cancellable,
 							 GError		**error);
@@ -309,42 +300,6 @@ gs_plugin_loader_find_plugin (GsPluginLoader *plugin_loader,
 	return NULL;
 }
 
-static void
-gs_plugin_loader_action_start (GsPluginLoader *plugin_loader,
-			       GsPlugin *plugin,
-			       gboolean exclusive)
-{
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	guint i;
-
-	/* set plugin as SELF and all plugins as OTHER */
-	gs_plugin_action_start (plugin, exclusive);
-	for (i = 0; i < priv->plugins->len; i++) {
-		GsPlugin *plugin_tmp;
-		plugin_tmp = g_ptr_array_index (priv->plugins, i);
-		if (!gs_plugin_get_enabled (plugin_tmp))
-			continue;
-		gs_plugin_set_running_other (plugin_tmp, TRUE);
-	}
-}
-
-static void
-gs_plugin_loader_action_stop (GsPluginLoader *plugin_loader, GsPlugin *plugin)
-{
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	guint i;
-
-	/* clear plugin as SELF and all plugins as OTHER */
-	gs_plugin_action_stop (plugin);
-	for (i = 0; i < priv->plugins->len; i++) {
-		GsPlugin *plugin_tmp;
-		plugin_tmp = g_ptr_array_index (priv->plugins, i);
-		if (!gs_plugin_get_enabled (plugin_tmp))
-			continue;
-		gs_plugin_set_running_other (plugin_tmp, FALSE);
-	}
-}
-
 static gboolean
 gs_plugin_loader_notify_idle_cb (gpointer user_data)
 {
@@ -510,11 +465,9 @@ gs_plugin_loader_run_adopt (GsPluginLoader *plugin_loader, GsAppList *list)
 			GsApp *app = gs_app_list_index (list, j);
 			if (gs_app_get_management_plugin (app) != NULL)
 				continue;
-			if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+			if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 				continue;
-			gs_plugin_loader_action_start (plugin_loader, plugin, FALSE);
 			adopt_app_func (plugin, app);
-			gs_plugin_loader_action_stop (plugin_loader, plugin);
 			if (gs_app_get_management_plugin (app) != NULL) {
 				g_debug ("%s adopted %s",
 					 gs_plugin_get_name (plugin),
@@ -526,7 +479,7 @@ gs_plugin_loader_run_adopt (GsPluginLoader *plugin_loader, GsAppList *list)
 		GsApp *app = gs_app_list_index (list, j);
 		if (gs_app_get_management_plugin (app) != NULL)
 			continue;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		g_debug ("nothing adopted %s", gs_app_get_unique_id (app));
 	}
@@ -576,7 +529,6 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 	gs_plugin_job_set_plugin (helper->plugin_job, plugin);
 
 	/* run the correct vfunc */
-	gs_plugin_loader_action_start (helper->plugin_loader, plugin, FALSE);
 	if (gs_plugin_job_get_interactive (helper->plugin_job))
 		gs_plugin_interactive_inc (plugin);
 	switch (action) {
@@ -707,6 +659,13 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 					   cancellable, &error_local);
 		}
 		break;
+	case GS_PLUGIN_ACTION_GET_ALTERNATES:
+		{
+			GsPluginAlternatesFunc plugin_func = func;
+			ret = plugin_func (plugin, app, list,
+					   cancellable, &error_local);
+		}
+		break;
 	case GS_PLUGIN_ACTION_GET_CATEGORIES:
 		{
 			GsPluginCategoriesFunc plugin_func = func;
@@ -747,22 +706,10 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 					   cancellable, &error_local);
 		}
 		break;
-	case GS_PLUGIN_ACTION_AUTH_LOGIN:
-	case GS_PLUGIN_ACTION_AUTH_LOGOUT:
-	case GS_PLUGIN_ACTION_AUTH_REGISTER:
-	case GS_PLUGIN_ACTION_AUTH_LOST_PASSWORD:
-		{
-			GsPluginAuthFunc plugin_func = func;
-			ret = plugin_func (plugin,
-					   gs_plugin_job_get_auth (helper->plugin_job),
-					   cancellable, &error_local);
-		}
-		break;
 	default:
 		g_critical ("no handler for %s", helper->function_name);
 		break;
 	}
-	gs_plugin_loader_action_stop (helper->plugin_loader, plugin);
 	if (gs_plugin_job_get_interactive (helper->plugin_job))
 		gs_plugin_interactive_dec (plugin);
 
@@ -856,7 +803,7 @@ gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 		app_list = gs_app_list_copy (list);
 		for (guint j = 0; j < gs_app_list_length (app_list); j++) {
 			GsApp *app = gs_app_list_index (app_list, j);
-			if (!gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
+			if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
 				helper->function_name = "gs_plugin_refine_app";
 			} else {
 				helper->function_name = "gs_plugin_refine_wildcard";
@@ -874,7 +821,7 @@ gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 static gboolean
 gs_plugin_loader_app_is_non_wildcard (GsApp *app, gpointer user_data)
 {
-	return !gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+	return !gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 }
 
 static gboolean
@@ -1002,7 +949,6 @@ gs_plugin_loader_run_refine (GsPluginLoaderHelper *helper,
 			     GCancellable *cancellable,
 			     GError **error)
 {
-	gboolean has_match_any_prefix = FALSE;
 	gboolean ret;
 	g_autoptr(GsAppList) freeze_list = NULL;
 	g_autoptr(GsPluginLoaderHelper) helper2 = NULL;
@@ -1030,23 +976,8 @@ gs_plugin_loader_run_refine (GsPluginLoaderHelper *helper,
 	if (!ret)
 		goto out;
 
-	/* second pass for any unadopted apps */
-	for (guint i = 0; i < gs_app_list_length (list); i++) {
-		GsApp *app = gs_app_list_index (list, i);
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
-			has_match_any_prefix = TRUE;
-			break;
-		}
-	}
-	if (has_match_any_prefix) {
-		g_debug ("2nd resolve pass for unadopted wildcards");
-		if (!gs_plugin_loader_run_refine_internal (helper2, list,
-							   cancellable,
-							   error))
-			goto out;
-		/* filter any MATCH_ANY_PREFIX apps left in the list */
-		gs_app_list_filter (list, gs_plugin_loader_app_is_non_wildcard, NULL);
-	}
+	/* filter any MATCH_ANY_PREFIX apps left in the list */
+	gs_app_list_filter (list, gs_plugin_loader_app_is_non_wildcard, NULL);
 
 	/* remove any addons that have the same source as the parent app */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
@@ -1285,6 +1216,15 @@ gs_plugin_loader_app_is_valid (GsApp *app, gpointer user_data)
 		return FALSE;
 	}
 
+	/* Don’t show parentally filtered apps unless they’re already
+	 * installed. See the comments in gs-details-page.c for details. */
+	if (!gs_app_is_installed (app) &&
+	    gs_app_has_quirk (app, GS_APP_QUIRK_PARENTAL_FILTER)) {
+		g_debug ("app invalid as parentally filtered %s",
+		         gs_plugin_loader_get_app_str (app));
+		return FALSE;
+	}
+
 	/* don't show sources */
 	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
 		g_debug ("app invalid as source %s",
@@ -1317,12 +1257,6 @@ gs_plugin_loader_app_is_valid (GsApp *app, gpointer user_data)
 	}
 	if (gs_app_get_summary (app) == NULL) {
 		g_debug ("app invalid as no summary %s",
-			 gs_plugin_loader_get_app_str (app));
-		return FALSE;
-	}
-	if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP &&
-	    gs_app_get_pixbuf (app) == NULL) {
-		g_debug ("app invalid as no pixbuf %s",
 			 gs_plugin_loader_get_app_str (app));
 		return FALSE;
 	}
@@ -1377,7 +1311,7 @@ gs_plugin_loader_filter_qt_for_gtk (GsApp *app, gpointer user_data)
 static gboolean
 gs_plugin_loader_app_is_non_compulsory (GsApp *app, gpointer user_data)
 {
-	return !gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY);
+	return !gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY);
 }
 
 static gboolean
@@ -1433,6 +1367,12 @@ gs_plugin_loader_app_sort_match_value_cb (GsApp *app1, GsApp *app2, gpointer use
 }
 
 static gint
+gs_plugin_loader_app_sort_prio_cb (GsApp *app1, GsApp *app2, gpointer user_data)
+{
+	return gs_app_compare_priority (app1, app2);
+}
+
+static gint
 gs_plugin_loader_app_sort_version_cb (GsApp *app1, GsApp *app2, gpointer user_data)
 {
 #if AS_CHECK_VERSION(0,7,15)
@@ -1446,64 +1386,6 @@ gs_plugin_loader_app_sort_version_cb (GsApp *app1, GsApp *app2, gpointer user_da
 }
 
 /******************************************************************************/
-
-static gboolean
-gs_plugin_loader_convert_unavailable_app (GsApp *app, const gchar *search)
-{
-	GPtrArray *keywords;
-	const gchar *keyword;
-	guint i;
-	g_autoptr(GString) tmp = NULL;
-
-	/* is the search string one of the codec keywords */
-	keywords = gs_app_get_keywords (app);
-	for (i = 0; i < keywords->len; i++) {
-		keyword = g_ptr_array_index (keywords, i);
-		if (g_ascii_strcasecmp (search, keyword) == 0) {
-			search = keyword;
-			break;
-		}
-	}
-
-	tmp = g_string_new ("");
-	/* TRANSLATORS: this is when we know about an application or
-	 * addon, but it can't be listed for some reason */
-	g_string_append_printf (tmp, _("No addon codecs are available "
-				"for the %s format."), search);
-	g_string_append (tmp, "\n");
-	g_string_append_printf (tmp, _("Information about %s, as well as options "
-				"for how to get a codec that can play this format "
-				"can be found on the website."), search);
-	gs_app_set_summary_missing (app, tmp->str);
-	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
-	gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
-	gs_app_set_size_installed (app, GS_APP_SIZE_UNKNOWABLE);
-	gs_app_set_size_download (app, GS_APP_SIZE_UNKNOWABLE);
-	return TRUE;
-}
-
-static void
-gs_plugin_loader_convert_unavailable (GsAppList *list, const gchar *search)
-{
-	guint i;
-	GsApp *app;
-
-	for (i = 0; i < gs_app_list_length (list); i++) {
-		app = gs_app_list_index (list, i);
-		if (gs_app_get_kind (app) != AS_APP_KIND_GENERIC)
-			continue;
-		if (gs_app_get_state (app) != AS_APP_STATE_UNAVAILABLE)
-			continue;
-		if (gs_app_get_kind (app) != AS_APP_KIND_CODEC)
-			continue;
-		if (gs_app_get_url (app, AS_URL_KIND_MISSING) == NULL)
-			continue;
-
-		/* only convert the first unavailable codec */
-		if (gs_plugin_loader_convert_unavailable_app (app, search))
-			break;
-	}
-}
 
 /**
  * gs_plugin_loader_job_process_finish:
@@ -2233,7 +2115,7 @@ gs_plugin_loader_get_scale (GsPluginLoader *plugin_loader)
 
 GsAuth *
 gs_plugin_loader_get_auth_by_id (GsPluginLoader *plugin_loader,
-				 const gchar *provider_id)
+				 const gchar *auth_id)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	guint i;
@@ -2241,7 +2123,7 @@ gs_plugin_loader_get_auth_by_id (GsPluginLoader *plugin_loader,
 	/* match on ID */
 	for (i = 0; i < priv->auth_array->len; i++) {
 		GsAuth *auth = g_ptr_array_index (priv->auth_array, i);
-		if (g_strcmp0 (gs_auth_get_provider_id (auth), provider_id) == 0)
+		if (g_strcmp0 (gs_auth_get_auth_id (auth), auth_id) == 0)
 			return auth;
 	}
 	return NULL;
@@ -2516,13 +2398,6 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 				if (!gs_plugin_get_enabled (dep))
 					continue;
 				if (gs_plugin_get_order (plugin) <= gs_plugin_get_order (dep)) {
-					g_debug ("%s [%u] to be ordered after %s [%u] "
-						 "so promoting to [%u]",
-						 gs_plugin_get_name (plugin),
-						 gs_plugin_get_order (plugin),
-						 gs_plugin_get_name (dep),
-						 gs_plugin_get_order (dep),
-						 gs_plugin_get_order (dep) + 1);
 					gs_plugin_set_order (plugin, gs_plugin_get_order (dep) + 1);
 					changes = TRUE;
 				}
@@ -2545,13 +2420,6 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 				if (!gs_plugin_get_enabled (dep))
 					continue;
 				if (gs_plugin_get_order (plugin) >= gs_plugin_get_order (dep)) {
-					g_debug ("%s [%u] to be ordered before %s [%u] "
-						 "so promoting to [%u]",
-						 gs_plugin_get_name (plugin),
-						 gs_plugin_get_order (plugin),
-						 gs_plugin_get_name (dep),
-						 gs_plugin_get_order (dep),
-						 gs_plugin_get_order (dep) + 1);
 					gs_plugin_set_order (dep, gs_plugin_get_order (plugin) + 1);
 					changes = TRUE;
 				}
@@ -2613,13 +2481,6 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 				if (!gs_plugin_get_enabled (dep))
 					continue;
 				if (gs_plugin_get_priority (plugin) <= gs_plugin_get_priority (dep)) {
-					g_debug ("%s [%u] is better than %s [%u] "
-						 "so promoting to [%u]",
-						 gs_plugin_get_name (plugin),
-						 gs_plugin_get_priority (plugin),
-						 gs_plugin_get_name (dep),
-						 gs_plugin_get_priority (dep),
-						 gs_plugin_get_priority (dep) + 1);
 					gs_plugin_set_priority (plugin, gs_plugin_get_priority (dep) + 1);
 					changes = TRUE;
 				}
@@ -3113,9 +2974,7 @@ gs_plugin_loader_generic_update (GsPluginLoader *plugin_loader,
 								   g_object_unref);
 
 			gs_plugin_job_set_app (helper->plugin_job, app);
-			gs_plugin_loader_action_start (plugin_loader, plugin, FALSE);
 			ret = plugin_app_func (plugin, app, app_cancellable, &error_local);
-			gs_plugin_loader_action_stop (plugin_loader, plugin);
 			g_cancellable_disconnect (cancellable, cancel_handler_id);
 
 			if (!ret) {
@@ -3141,6 +3000,7 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 {
 	GError *error = NULL;
 	GsPluginLoaderHelper *helper = (GsPluginLoaderHelper *) task_data;
+	GsAppListFilterFlags dedupe_flags;
 	GsAppList *list = gs_plugin_job_get_list (helper->plugin_job);
 	GsPluginAction action = gs_plugin_job_get_action (helper->plugin_job);
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (object);
@@ -3315,17 +3175,6 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 		g_debug ("no refine flags set for transaction");
 	}
 
-	/* convert any unavailable codecs */
-	switch (action) {
-	case GS_PLUGIN_ACTION_SEARCH:
-	case GS_PLUGIN_ACTION_SEARCH_FILES:
-	case GS_PLUGIN_ACTION_SEARCH_PROVIDES:
-		gs_plugin_loader_convert_unavailable (list, gs_plugin_job_get_search (helper->plugin_job));
-		break;
-	default:
-		break;
-	}
-
 	/* check the local files have an icon set */
 	switch (action) {
 	case GS_PLUGIN_ACTION_URL_TO_APP:
@@ -3337,7 +3186,7 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 			    _gs_app_get_icon_by_kind (app, AS_ICON_KIND_CACHED) == NULL) {
 				g_autoptr(AsIcon) ic = as_icon_new ();
 				as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-				if (gs_app_has_quirk (app, AS_APP_QUIRK_HAS_SOURCE))
+				if (gs_app_has_quirk (app, GS_APP_QUIRK_HAS_SOURCE))
 					as_icon_set_name (ic, "x-package-repository");
 				else
 					as_icon_set_name (ic, "application-x-executable");
@@ -3369,12 +3218,12 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	case GS_PLUGIN_ACTION_SEARCH:
 	case GS_PLUGIN_ACTION_SEARCH_FILES:
 	case GS_PLUGIN_ACTION_SEARCH_PROVIDES:
+	case GS_PLUGIN_ACTION_GET_ALTERNATES:
 		gs_app_list_filter (list, gs_plugin_loader_app_is_valid, helper);
 		gs_app_list_filter (list, gs_plugin_loader_filter_qt_for_gtk, NULL);
 		gs_app_list_filter (list, gs_plugin_loader_get_app_is_compatible, plugin_loader);
 		break;
 	case GS_PLUGIN_ACTION_GET_CATEGORY_APPS:
-		gs_app_list_filter (list, gs_plugin_loader_app_is_non_compulsory, NULL);
 		gs_app_list_filter (list, gs_plugin_loader_app_is_valid, helper);
 		gs_app_list_filter (list, gs_plugin_loader_filter_qt_for_gtk, NULL);
 		gs_app_list_filter (list, gs_plugin_loader_get_app_is_compatible, plugin_loader);
@@ -3437,10 +3286,9 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	/* filter duplicates with priority, taking into account the source name
 	 * & version, so we combine available updates with the installed app */
 	gs_app_list_filter (list, gs_plugin_loader_app_set_prio, plugin_loader);
-	gs_app_list_filter_duplicates (list,
-				       GS_APP_LIST_FILTER_FLAG_KEY_ID |
-				       GS_APP_LIST_FILTER_FLAG_KEY_SOURCE |
-				       GS_APP_LIST_FILTER_FLAG_KEY_VERSION);
+	dedupe_flags = gs_plugin_job_get_dedupe_flags (helper->plugin_job);
+	if (dedupe_flags != GS_APP_LIST_FILTER_FLAG_NONE)
+		gs_app_list_filter_duplicates (list, dedupe_flags);
 
 	/* sort these again as the refine may have added useful metadata */
 	gs_plugin_loader_job_sorted_truncation_again (helper);
@@ -3478,8 +3326,7 @@ gs_plugin_loader_job_timeout_cb (gpointer user_data)
 
 	/* call the cancellable */
 	g_debug ("cancelling job as it took too long");
-	if (!g_cancellable_is_cancelled (helper->cancellable))
-		g_cancellable_cancel (helper->cancellable);
+	g_cancellable_cancel (helper->cancellable);
 
 	/* failed */
 	helper->timeout_triggered = TRUE;
@@ -3571,7 +3418,7 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 			GsAppList *list = gs_plugin_job_get_list (plugin_job);
 			for (guint i = 0; apps[i] != NULL; i++) {
 				g_autoptr(GsApp) app = gs_app_new (apps[i]);
-				gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+				gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 				gs_app_list_add (list, app);
 			}
 			gs_plugin_job_set_action (plugin_job, GS_PLUGIN_ACTION_REFINE);
@@ -3590,6 +3437,11 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 						GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN);
 	}
 	if (gs_plugin_job_has_refine_flags (plugin_job,
+					    GS_PLUGIN_REFINE_FLAGS_REQUIRE_MENU_PATH)) {
+		gs_plugin_job_add_refine_flags (plugin_job,
+						GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES);
+	}
+	if (gs_plugin_job_has_refine_flags (plugin_job,
 					    GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME)) {
 		gs_plugin_job_add_refine_flags (plugin_job,
 						GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN);
@@ -3605,6 +3457,13 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 	    action == GS_PLUGIN_ACTION_GET_SOURCES) {
 		gs_plugin_job_add_refine_flags (plugin_job,
 						GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION);
+	}
+
+	/* get alternates is unusual in that it needs an app input and a list
+	 * output -- so undo the helpful app add in gs_plugin_job_set_app() */
+	if (action == GS_PLUGIN_ACTION_GET_ALTERNATES) {
+		GsAppList *list = gs_plugin_job_get_list (plugin_job);
+		gs_app_list_remove_all (list);
 	}
 
 	/* check required args */
@@ -3660,6 +3519,12 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 						     gs_plugin_loader_app_sort_name_cb);
 		}
 		break;
+	case GS_PLUGIN_ACTION_GET_ALTERNATES:
+		if (gs_plugin_job_get_sort_func (plugin_job) == NULL) {
+			gs_plugin_job_set_sort_func (plugin_job,
+						     gs_plugin_loader_app_sort_prio_cb);
+		}
+		break;
 	case GS_PLUGIN_ACTION_GET_DISTRO_UPDATES:
 		if (gs_plugin_job_get_sort_func (plugin_job) == NULL) {
 			gs_plugin_job_set_sort_func (plugin_job,
@@ -3703,6 +3568,7 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 
 	/* set up a hang handler */
 	switch (action) {
+	case GS_PLUGIN_ACTION_GET_ALTERNATES:
 	case GS_PLUGIN_ACTION_GET_CATEGORY_APPS:
 	case GS_PLUGIN_ACTION_GET_FEATURED:
 	case GS_PLUGIN_ACTION_GET_INSTALLED:
@@ -3778,7 +3644,7 @@ gs_plugin_loader_app_create (GsPluginLoader *plugin_loader, const gchar *unique_
 
 	/* use the plugin loader to convert a wildcard app*/
 	app = gs_app_new (NULL);
-	gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+	gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 	gs_app_set_from_unique_id (app, unique_id);
 	gs_app_list_add (list, app);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE, NULL);
@@ -3791,7 +3657,7 @@ gs_plugin_loader_app_create (GsPluginLoader *plugin_loader, const gchar *unique_
 	/* return the first returned app that's not a wildcard */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app_tmp = gs_app_list_index (list, i);
-		if (!gs_app_has_quirk (app_tmp, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (!gs_app_has_quirk (app_tmp, GS_APP_QUIRK_IS_WILDCARD))
 			return g_object_ref (app_tmp);
 	}
 
@@ -3834,5 +3700,3 @@ gs_plugin_loader_set_max_parallel_ops (GsPluginLoader *plugin_loader,
 		g_warning ("Failed to set the maximum number of ops in parallel: %s",
 			   error->message);
 }
-
-/* vim: set noexpandtab: */

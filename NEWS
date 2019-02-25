@@ -1,8 +1,55 @@
-Version 3.30.6
-~~~~~~~~~~~~~~
-Released: 2018-12-18
+Version 3.31.90
+~~~~~~~~~~~~~~~
+Released: 2019-02-24
 
-This is a stable release with the following changes:
+This is an unstable release in the 3.31 development series, with the following
+improvements:
+ * Fix showing the installed check mark on tiles
+ * Fix crashes in the packagekit plugin due to missing locking
+ * Add back support for appstream data in /var/{cache,lib}/app-info directories
+   that accidentally got left out with the libxmlb rewrite
+ * Update the featured banner for gnome-chess
+ * Fix the details page alignment when only one screenshot is shown
+ * Move the Update button to the right hand side on the details page
+ * Fix enabling repos when installing codecs through the extras page
+ * Remove the Sundry folder and sync the apps in the Utilities folder with
+   gnome-menus 3.31.90
+ * Improve various content rating texts
+ * Drop workarounds for locales with codesets
+ * Use the currently selected icon theme for stock icons
+ * Don't hide compulsory apps in the category views
+ * Use the SPDX-License-Identifier in all source files
+ * Remove various useless error prefixes, making flatpak and packagekit error
+   messages shorter and easier to read
+ * flatpak: Show the installation type (user, system) in the Source dropdown
+ * flatpak: Let apps control the name suffix/prefix they have and don't force
+   (Nightly) suffix for everything on the master branch
+ * flatpak: Various fixes for matching flatpaks to appstream entries
+ * flatpak: Distinguish between the same app coming from multiple remotes
+ * rpm-ostree: Correctly resolve installed appdata files to package names
+ * rpm-ostree: Hook up percentage progress for install and remove
+ * rpm-ostree: Implement layered package install
+ * rpm-ostree: Implement locally downloaded rpm install
+ * rpm-ostree: Show the source of the packages when installing layered packages
+ * rpm-ostree: Various fixes making things more robust
+ * snap: Use new media API
+
+This release also updates translations.
+
+Version 3.31.2
+~~~~~~~~~~~~~~
+Released: 2019-01-16
+
+This is an unstable release in the 3.31 development series, with the following
+improvements:
+ * Show permissions for installed flatpaks, and new permissions for updates
+ * Use libxmlb to parse AppStream XML, making gnome-software start up faster
+   and use less memory
+ * Update the app icon
+ * Update categories for ESRA rating system
+ * Improve various error messages to have more details
+ * Fix an issue that caused incorrect version numbers to be shown for installed
+   flatpaks
  * Fix various thread safety related crashes
  * Fix row unrevealing to not leave behind 2 pixels on the updates page
  * Make the refresh button to actually refresh packagekit cache
@@ -23,35 +70,12 @@ This is a stable release with the following changes:
  * Fix opening the details page when clicking on "Show Details" in GNOME Shell
  * Fix opening shell extensions details from GNOME Tweaks
  * Various fixes for initial loading state
-
-This release also updates translations.
-
-Version 3.30.5
-~~~~~~~~~~~~~~
-Released: 2018-10-24
-
-This is a quick followup release to 3.30.4, making it build with appstream-glib
-0.7.14.
-
-Version 3.30.4
-~~~~~~~~~~~~~~
-Released: 2018-10-24
-
-This is a stable release with the following changes:
  * Add a separate "Download" step for packagekit offline updates, so that
    "Restart & Update" is instant
  * Fix a version comparison issue that led to package updates sometimes showing
    as downgrades in the OS Updates section (this needs latest appstream-glib)
  * Show the refresh button when the updates page is in the failed state
  * Notify about offline updates only after they are fully downloaded
-
-This release also updates translations.
-
-Version 3.30.3
-~~~~~~~~~~~~~~
-Released: 2018-10-18
-
-This is a stable release with the following changes:
  * Fix a memory corruption issue on 32-bit arches that made gnome-software very
    crashy
  * Fix an issue with stuck back button on the details page after closing and
@@ -61,6 +85,31 @@ This is a stable release with the following changes:
  * Allow opening CAB files that include more than one update
  * Fix critical warnings when quickly switching between category pages
  * Small memory leak fixes
+
+This release also updates translations.
+
+Version 3.31.1
+~~~~~~~~~~~~~~
+Released: 2018-10-09
+
+This is an unstable release in the 3.31 development series, with the following
+improvements:
+ * Icon redesign
+ * Switch to using window menus instead of app menu
+ * Add a source selection drop down to details pages
+ * Move the search button to the left side in the header bar
+ * Various other minor UI tweaks
+ * GtkBuilder UI file changes to pave the way for an eventual GTK4 port (please
+   file issues for any UI layout regressions if you notice any!)
+ * Various internal plugin loader fixes and cleanups
+ * Remove the steam plugin
+ * Simplify the details page loading
+ * Fix an issue that caused icons to not get loaded for locally installed
+   flatpaks
+ * Update Fedora distro upgrades text
+ * Avoid a critical warning in the fwupd plugin when the device vendor is not
+   set
+ * Show verified developers for snaps
 
 This release also updates translations.
 

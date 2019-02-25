@@ -3,25 +3,10 @@
  * Copyright (C) 2007-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef __GS_PLUGIN_LOADER_H
-#define __GS_PLUGIN_LOADER_H
+#pragma once
 
 #include <glib-object.h>
 
@@ -80,7 +65,7 @@ gboolean	 gs_plugin_loader_get_enabled		(GsPluginLoader	*plugin_loader,
 void		 gs_plugin_loader_add_location		(GsPluginLoader	*plugin_loader,
 							 const gchar	*location);
 GsAuth		*gs_plugin_loader_get_auth_by_id	(GsPluginLoader	*plugin_loader,
-							 const gchar	*provider_id);
+							 const gchar	*auth_id);
 GPtrArray	*gs_plugin_loader_get_auths		(GsPluginLoader *plugin_loader);
 guint		 gs_plugin_loader_get_scale		(GsPluginLoader	*plugin_loader);
 void		 gs_plugin_loader_set_scale		(GsPluginLoader	*plugin_loader,
@@ -108,9 +93,4 @@ GsPlugin	*gs_plugin_loader_find_plugin		(GsPluginLoader	*plugin_loader,
 void            gs_plugin_loader_set_max_parallel_ops  (GsPluginLoader *plugin_loader,
                                                         guint           max_ops);
 
-
 G_END_DECLS
-
-#endif /* __GS_PLUGIN_LOADER_H */
-
-/* vim: set noexpandtab: */

@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -408,7 +394,7 @@ _button_update_all_clicked_cb (GtkButton *button, GsUpdatesSection *self)
 		GsApp *app = gs_app_list_index (self->list, i);
 		if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE)
 			helper->do_reboot = TRUE;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT))
 			helper->do_reboot_notification = TRUE;
 	}
 
@@ -458,7 +444,8 @@ _build_section_header (GsUpdatesSection *self)
 	gtk_style_context_add_class (context, "app-listbox-header");
 
 	/* put label into the header */
-	gtk_box_pack_start (GTK_BOX (header), label, TRUE, TRUE, 0);
+	gtk_widget_set_hexpand (label, TRUE);
+	gtk_container_add (GTK_CONTAINER (header), label);
 	gtk_widget_set_visible (label, TRUE);
 	gtk_widget_set_margin_start (label, 6);
 	gtk_label_set_xalign (GTK_LABEL (label), 0.0);
@@ -468,7 +455,8 @@ _build_section_header (GsUpdatesSection *self)
 	/* use a stack so we can switch which buttons are showing without the
 	 * sizegroup resizing */
 	self->button_stack = GTK_STACK (gtk_stack_new ());
-	gtk_box_pack_end (GTK_BOX (header), GTK_WIDGET (self->button_stack), FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (header), GTK_WIDGET (self->button_stack));
+	gtk_container_child_set (GTK_CONTAINER (header), GTK_WIDGET (self->button_stack), "pack-type", GTK_PACK_END, NULL);
 
 	/* add download button */
 	self->button_download = gs_progress_button_new ();
@@ -660,5 +648,3 @@ gs_updates_section_new (GsUpdatesSectionKind kind,
 	self->section_header = g_object_ref_sink (_build_section_header (self));
 	return GTK_LIST_BOX (self);
 }
-
-/* vim: set noexpandtab: */

@@ -10,7 +10,6 @@
     <child>
       <object class="GtkStack" id="stack">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
         <child>
           <object class="GtkImage" id="waiting">
             <property name="visible">True</property>
@@ -33,6 +32,7 @@
             <property name="valign">fill</property>
             <child type="overlay">
               <object class="GtkEventBox" id="eventbox">
+                <property name="visible">False</property>
                 <property name="no_show_all">True</property>
                 <property name="visible_window">True</property>
                 <property name="halign">end</property>
@@ -72,11 +72,8 @@
                         <property name="height-request">64</property>
                         <property name="visible">True</property>
                         <property name="valign">center</property>
+                        <property name="vexpand">True</property>
                       </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkLabel" id="label">
@@ -87,10 +84,6 @@
                         <property name="width_chars">12</property>
                         <property name="max_width_chars">12</property>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GsStarWidget" id="stars">
@@ -100,27 +93,6 @@
                           <class name="onlyjustvisible"/>
                         </style>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label_origin">
-                        <property name="visible">False</property>
-                        <property name="xalign">0.5</property>
-                        <property name="yalign">1.0</property>
-                        <property name="halign">center</property>
-                        <property name="ellipsize">end</property>
-                        <style>
-                          <class name="app-row-origin-text"/>
-                          <class name="dim-label"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                      </packing>
                     </child>
                   </object>
                 </child>

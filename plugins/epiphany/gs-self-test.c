@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -70,14 +56,16 @@ main (int argc, char **argv)
 
 	g_test_init (&argc, &argv, NULL);
 	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	g_setenv ("GS_XMLB_VERBOSE", "1", TRUE);
 
-	fn = gs_test_get_filename (TESTDATADIR, "icons/hicolor/48x48/org.gnome.Software.png");
+	fn = gs_test_get_filename (TESTDATADIR, "icons/hicolor/scalable/org.gnome.Software.svg");
 	g_assert (fn != NULL);
 	xml = g_strdup_printf ("<?xml version=\"1.0\"?>\n"
 		"<components version=\"0.9\">\n"
 		"  <component type=\"webapp\">\n"
 		"    <id>arachne.desktop</id>\n"
 		"    <name>test</name>\n"
+		"    <pkgname>test</pkgname>\n"
 		"    <icon type=\"remote\">file://%s</icon>\n"
 		"  </component>\n"
 		"</components>\n", fn);
@@ -105,5 +93,3 @@ main (int argc, char **argv)
 
 	return g_test_run ();
 }
-
-/* vim: set noexpandtab: */

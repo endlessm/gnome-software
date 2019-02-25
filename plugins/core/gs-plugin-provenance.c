@@ -3,21 +3,7 @@
  * Copyright (C) 2015-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -72,6 +58,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	/* after the package source is set */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "dummy");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "packagekit-refine");
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "rpm-ostree");
 }
 
 void
@@ -96,20 +83,18 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	/* not required */
 	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE) == 0)
 		return TRUE;
-	if (gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE))
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE))
 		return TRUE;
 
 	/* nothing to search */
 	sources = priv->sources;
-	if (sources == NULL || sources[0] == NULL) {
-		gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
+	if (sources == NULL || sources[0] == NULL)
 		return TRUE;
-	}
 
 	/* simple case */
 	origin = gs_app_get_origin (app);
 	if (origin != NULL && gs_utils_strv_fnmatch (sources, origin)) {
-		gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 		return TRUE;
 	}
 
@@ -123,7 +108,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	if (g_str_has_prefix (origin + 1, "installed:"))
 		origin += 10;
 	if (gs_utils_strv_fnmatch (sources, origin + 1)) {
-		gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 		return TRUE;
 	}
 	return TRUE;

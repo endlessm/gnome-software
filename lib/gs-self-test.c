@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -287,6 +273,7 @@ gs_plugin_func (void)
 	GsAppList *list_dup;
 	GsAppList *list_remove;
 	GsApp *app;
+	g_autoptr(AsProvide) prov = as_provide_new ();
 
 	/* check enums converted */
 	for (guint i = 0; i < GS_PLUGIN_ACTION_LAST; i++) {
@@ -437,6 +424,48 @@ gs_plugin_func (void)
 	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/foo/repo-security/*/*/*");
 	g_object_unref (list);
 
+	/* prefer installed applications */
+	list = gs_app_list_new ();
+	app = gs_app_new ("e");
+	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_unique_id (app, "user/foo/*/*/e/*");
+	gs_app_set_priority (app, 0);
+	gs_app_list_add (list, app);
+	g_object_unref (app);
+	app = gs_app_new ("e");
+	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_set_unique_id (app, "user/bar/*/*/e/*");
+	gs_app_set_priority (app, 100);
+	gs_app_list_add (list, app);
+	g_object_unref (app);
+	gs_app_list_filter_duplicates (list,
+				       GS_APP_LIST_FILTER_FLAG_KEY_ID |
+				       GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED);
+	g_assert_cmpint (gs_app_list_length (list), ==, 1);
+	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/foo/*/*/e/*");
+	g_object_unref (list);
+
+	/* use the provides ID to dedupe */
+	list = gs_app_list_new ();
+	app = gs_app_new ("gimp.desktop");
+	gs_app_set_unique_id (app, "user/fedora/*/*/gimp.desktop/*");
+	gs_app_set_priority (app, 0);
+	gs_app_list_add (list, app);
+	g_object_unref (app);
+	app = gs_app_new ("org.gimp.GIMP");
+	as_provide_set_kind (prov, AS_PROVIDE_KIND_ID);
+	as_provide_set_value (prov, "gimp.desktop");
+	gs_app_add_provide (app, prov);
+	gs_app_set_unique_id (app, "user/flathub/*/*/org.gimp.GIMP/*");
+	gs_app_set_priority (app, 100);
+	gs_app_list_add (list, app);
+	g_object_unref (app);
+	gs_app_list_filter_duplicates (list, GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES);
+	g_assert_cmpint (gs_app_list_length (list), ==, 1);
+	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==,
+			 "user/flathub/*/*/org.gimp.GIMP/*");
+	g_object_unref (list);
+
 	/* use globs when adding */
 	list = gs_app_list_new ();
 	app = gs_app_new ("b");
@@ -466,7 +495,7 @@ gs_plugin_func (void)
 	/* allow duplicating a wildcard */
 	list = gs_app_list_new ();
 	app = gs_app_new ("gimp.desktop");
-	gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+	gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	app = gs_app_new ("gimp.desktop");
@@ -474,6 +503,19 @@ gs_plugin_func (void)
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	g_assert_cmpint (gs_app_list_length (list), ==, 2);
+	g_object_unref (list);
+
+	/* allow duplicating a wildcard */
+	list = gs_app_list_new ();
+	app = gs_app_new ("gimp.desktop");
+	gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+	gs_app_list_add (list, app);
+	g_object_unref (app);
+	app = gs_app_new ("gimp.desktop");
+	gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+	gs_app_list_add (list, app);
+	g_object_unref (app);
+	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	g_object_unref (list);
 
 	/* add a list to a list */
@@ -652,54 +694,6 @@ gs_app_func (void)
 }
 
 static void
-gs_auth_secret_func (void)
-{
-	gboolean ret;
-	g_autoptr(GDBusConnection) conn = NULL;
-	g_autoptr(GError) error = NULL;
-	g_autoptr(GsAuth) auth1 = NULL;
-	g_autoptr(GsAuth) auth2 = NULL;
-
-	/* we not have an active session bus */
-	conn = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
-	if (conn == NULL) {
-		g_prefix_error (&error, "no session bus available: ");
-		g_test_skip (error->message);
-		return;
-	}
-
-	/* save secrets to disk */
-	auth1 = gs_auth_new ("self-test");
-	gs_auth_set_provider_schema (auth1, "org.gnome.Software.Dummy");
-	gs_auth_set_username (auth1, "hughsie");
-	gs_auth_set_password (auth1, "foobarbaz");
-	gs_auth_add_metadata (auth1, "day", "monday");
-	ret = gs_auth_store_save (auth1,
-				  GS_AUTH_STORE_FLAG_USERNAME |
-				  GS_AUTH_STORE_FLAG_PASSWORD |
-				  GS_AUTH_STORE_FLAG_METADATA,
-				  NULL, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-
-	/* load secrets from disk */
-	auth2 = gs_auth_new ("self-test");
-	gs_auth_add_metadata (auth2, "day", NULL);
-	gs_auth_add_metadata (auth2, "notgoingtoexist", NULL);
-	gs_auth_set_provider_schema (auth2, "org.gnome.Software.Dummy");
-	ret = gs_auth_store_load (auth2,
-				  GS_AUTH_STORE_FLAG_USERNAME |
-				  GS_AUTH_STORE_FLAG_PASSWORD |
-				  GS_AUTH_STORE_FLAG_METADATA,
-				  NULL, &error);
-	g_assert_no_error (error);
-	g_assert (ret);
-	g_assert_cmpstr (gs_auth_get_username (auth2), ==, "hughsie");
-	g_assert_cmpstr (gs_auth_get_password (auth2), ==, "foobarbaz");
-	g_assert_cmpstr (gs_auth_get_metadata_item (auth2, "day"), ==, "monday");
-}
-
-static void
 gs_app_list_func (void)
 {
 	g_autoptr(GsAppList) list = gs_app_list_new ();
@@ -775,9 +769,6 @@ main (int argc, char **argv)
 	g_test_add_func ("/gnome-software/lib/app{list-related}", gs_app_list_related_func);
 	g_test_add_func ("/gnome-software/lib/plugin", gs_plugin_func);
 	g_test_add_func ("/gnome-software/lib/plugin{download-rewrite}", gs_plugin_download_rewrite_func);
-	g_test_add_func ("/gnome-software/lib/auth{secret}", gs_auth_secret_func);
 
 	return g_test_run ();
 }
-
-/* vim: set noexpandtab: */

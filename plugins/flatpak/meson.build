@@ -19,7 +19,14 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, flatpak ]
+  dependencies : [
+    plugin_libs,
+    flatpak,
+    libxmlb,
+  ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 metainfo = 'org.gnome.Software.Plugin.Flatpak.metainfo.xml'
 

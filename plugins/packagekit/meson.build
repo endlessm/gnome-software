@@ -15,7 +15,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -32,7 +35,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -50,7 +56,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -67,7 +76,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -84,7 +96,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -101,12 +116,18 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
   'gs_plugin_packagekit-history',
-sources : 'gs-plugin-packagekit-history.c',
+  sources : [
+    'gs-plugin-packagekit-history.c',
+    'packagekit-common.c',
+  ],
   include_directories : [
     include_directories('../..'),
     include_directories('../../lib'),
@@ -114,7 +135,10 @@ sources : 'gs-plugin-packagekit-history.c',
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -131,12 +155,18 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
   'gs_plugin_packagekit-offline',
-sources : 'gs-plugin-packagekit-offline.c',
+sources : [
+    'gs-plugin-packagekit-offline.c',
+    'packagekit-common.c',
+  ],
   include_directories : [
     include_directories('../..'),
     include_directories('../../lib'),
@@ -144,7 +174,10 @@ sources : 'gs-plugin-packagekit-offline.c',
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -157,7 +190,11 @@ sources : 'gs-plugin-packagekit-proxy.c',
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ])
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
+)
 
 shared_module(
   'gs_plugin_packagekit-url-to-app',
@@ -173,7 +210,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [ plugin_libs, packagekit ]
+  dependencies : [ plugin_libs, packagekit ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 if get_option('tests')

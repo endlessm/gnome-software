@@ -3,21 +3,7 @@
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2016 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -99,10 +85,10 @@ gs_page_authenticate_cb (GtkDialog *dialog,
 void
 gs_page_authenticate (GsPage *page,
 		      GsApp *app,
-		      const gchar *provider_id,
+		      const gchar *auth_id,
 		      GCancellable *cancellable,
-                      GsPageAuthCallback callback,
-                      gpointer user_data)
+		      GsPageAuthCallback callback,
+		      gpointer user_data)
 {
 	GsPagePrivate *priv = gs_page_get_instance_private (page);
 	g_autoptr(GsPageHelper) helper = NULL;
@@ -117,7 +103,7 @@ gs_page_authenticate (GsPage *page,
 
 	dialog = gs_auth_dialog_new (priv->plugin_loader,
 				     app,
-				     provider_id,
+				     auth_id,
 				     &error);
 	if (dialog == NULL) {
 		g_warning ("%s", error->message);
@@ -565,7 +551,7 @@ gs_page_notify_quirk_cb (GsApp *app, GParamSpec *pspec, GsPageHelper *helper)
 {
 	gtk_widget_set_sensitive (helper->button_install,
 				  !gs_app_has_quirk (helper->app,
-						     AS_APP_QUIRK_NEEDS_USER_ACTION));
+						     GS_APP_QUIRK_NEEDS_USER_ACTION));
 }
 
 static void
@@ -612,7 +598,8 @@ gs_page_needs_user_action (GsPageHelper *helper, AsScreenshot *ss)
 	gtk_widget_set_margin_start (ssimg, 24);
 	gtk_widget_set_margin_end (ssimg, 24);
 	content_area = gtk_dialog_get_content_area (GTK_DIALOG (dialog));
-	gtk_box_pack_end (GTK_BOX (content_area), ssimg, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (content_area), ssimg);
+	gtk_container_child_set (GTK_CONTAINER (content_area), ssimg, "pack-type", GTK_PACK_END, NULL);
 
 	/* handle this async */
 	g_signal_connect (dialog, "response",
@@ -636,7 +623,7 @@ gs_page_update_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 
 	/* tell the user what they have to do */
 	if (gs_app_get_kind (app) == AS_APP_KIND_FIRMWARE &&
-	    gs_app_has_quirk (app, AS_APP_QUIRK_NEEDS_USER_ACTION)) {
+	    gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_USER_ACTION)) {
 		GPtrArray *screenshots = gs_app_get_screenshots (app);
 		if (screenshots->len > 0) {
 			AsScreenshot *ss = g_ptr_array_index (screenshots, 0);
@@ -719,14 +706,14 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 	switch (gs_app_get_kind (app)) {
 	case AS_APP_KIND_SOURCE:
 		/* TRANSLATORS: this is a prompt message, and '%s' is an
-		 * source name, e.g. 'GNOME Nightly' */
+		 * repository name, e.g. 'GNOME Nightly' */
 		title = g_strdup_printf (_("Are you sure you want to remove "
-					   "the %s source?"),
+					   "the %s repository?"),
 					 gs_app_get_name (app));
 		/* TRANSLATORS: longer dialog text */
 		message = g_strdup_printf (_("All applications from %s will be "
 					     "removed, and you will have to "
-					     "re-install the source to use them again."),
+					     "re-install the repository to use them again."),
 					   gs_app_get_name (app));
 		break;
 	default:
@@ -949,5 +936,3 @@ gs_page_new (void)
 	page = g_object_new (GS_TYPE_PAGE, NULL);
 	return GS_PAGE (page);
 }
-
-/* vim: set noexpandtab: */

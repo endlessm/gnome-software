@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2017-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 /**
@@ -304,6 +290,20 @@ gs_app_list_check_for_duplicate (GsAppList *list, GsApp *app)
 	const gchar *id;
 	const gchar *id_old = NULL;
 
+	/* adding a wildcard */
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
+		for (guint i = 0; i < list->array->len; i++) {
+			GsApp *app_tmp = g_ptr_array_index (list->array, i);
+			if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
+				continue;
+			/* not adding exactly the same wildcard */
+			if (g_strcmp0 (gs_app_get_unique_id (app_tmp),
+				       gs_app_get_unique_id (app)) == 0)
+				return FALSE;
+		}
+		return TRUE;
+	}
+
 	/* does not exist */
 	id = gs_app_get_unique_id (app);
 	if (id == NULL) {
@@ -322,10 +322,8 @@ gs_app_list_check_for_duplicate (GsAppList *list, GsApp *app)
 
 	/* existing app is a wildcard */
 	id_old = gs_app_get_unique_id (app_old);
-	if (gs_app_has_quirk (app_old, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
-		g_debug ("adding %s as %s is a wildcard", id, id_old);
+	if (gs_app_has_quirk (app_old, GS_APP_QUIRK_IS_WILDCARD))
 		return TRUE;
-	}
 
 	/* do a sanity check */
 	if (!as_utils_unique_id_equal (id, id_old)) {
@@ -335,17 +333,23 @@ gs_app_list_check_for_duplicate (GsAppList *list, GsApp *app)
 	}
 
 	/* already exists */
-	g_debug ("not adding duplicate %s as %s already exists", id, id_old);
 	return FALSE;
 }
 
+typedef enum {
+	GS_APP_LIST_ADD_FLAG_NONE		= 0,
+	GS_APP_LIST_ADD_FLAG_CHECK_FOR_DUPE	= 1 << 0,
+	GS_APP_LIST_ADD_FLAG_LAST
+} GsAppListAddFlag;
+
 static void
-gs_app_list_add_safe (GsAppList *list, GsApp *app)
+gs_app_list_add_safe (GsAppList *list, GsApp *app, GsAppListAddFlag flag)
 {
 	const gchar *id;
 
 	/* check for duplicate */
-	if (!gs_app_list_check_for_duplicate (list, app))
+	if ((flag & GS_APP_LIST_ADD_FLAG_CHECK_FOR_DUPE) > 0 &&
+	    !gs_app_list_check_for_duplicate (list, app))
 		return;
 
 	/* if we're lazy-loading the ID then we can't use the ID hash */
@@ -388,7 +392,7 @@ gs_app_list_add (GsAppList *list, GsApp *app)
 	g_return_if_fail (GS_IS_APP_LIST (list));
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&list->mutex);
-	gs_app_list_add_safe (list, app);
+	gs_app_list_add_safe (list, app, GS_APP_LIST_ADD_FLAG_CHECK_FOR_DUPE);
 
 	/* recalculate global state */
 	gs_app_list_invalidate_state (list);
@@ -460,7 +464,7 @@ gs_app_list_add_list (GsAppList *list, GsAppList *donor)
 	/* add each app */
 	for (i = 0; i < donor->array->len; i++) {
 		GsApp *app = gs_app_list_index (donor, i);
-		gs_app_list_add_safe (list, app);
+		gs_app_list_add_safe (list, app, GS_APP_LIST_ADD_FLAG_CHECK_FOR_DUPE);
 	}
 
 	/* recalculate global state */
@@ -563,7 +567,7 @@ gs_app_list_filter (GsAppList *list, GsAppListFilterFunc func, gpointer user_dat
 	for (i = 0; i < old->array->len; i++) {
 		app = gs_app_list_index (old, i);
 		if (func (app, user_data))
-			gs_app_list_add_safe (list, app);
+			gs_app_list_add_safe (list, app, GS_APP_LIST_ADD_FLAG_NONE);
 	}
 }
 
@@ -707,6 +711,74 @@ gs_app_list_randomize (GsAppList *list)
 	g_rand_free (rand);
 }
 
+static gboolean
+gs_app_list_filter_app_is_better (GsApp *app, GsApp *found, GsAppListFilterFlags flags)
+{
+	/* optional 1st layer sort */
+	if ((flags & GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED) > 0) {
+		if (gs_app_is_installed (app) && !gs_app_is_installed (found))
+			return TRUE;
+		if (!gs_app_is_installed (app) && gs_app_is_installed (found))
+			return FALSE;
+	}
+
+	/* 2nd layer, priority and bundle kind */
+	if (gs_app_compare_priority (app, found) < 0)
+		return TRUE;
+
+	/* assume is worse */
+	return FALSE;
+}
+
+static GPtrArray *
+gs_app_list_filter_app_get_keys (GsApp *app, GsAppListFilterFlags flags)
+{
+	GPtrArray *keys = g_ptr_array_new_with_free_func (g_free);
+	g_autoptr(GString) key = NULL;
+
+	/* just use the unique ID */
+	if (flags == GS_APP_LIST_FILTER_FLAG_NONE) {
+		if (gs_app_get_unique_id (app) != NULL)
+			g_ptr_array_add (keys, g_strdup (gs_app_get_unique_id (app)));
+		return keys;
+	}
+
+	/* use the ID and any provides */
+	if (flags & GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES) {
+		GPtrArray *provides = gs_app_get_provides (app);
+		g_ptr_array_add (keys, g_strdup (gs_app_get_id (app)));
+		for (guint i = 0; i < provides->len; i++) {
+			AsProvide *prov = g_ptr_array_index (provides, i);
+			if (as_provide_get_kind (prov) != AS_PROVIDE_KIND_ID)
+				continue;
+			g_ptr_array_add (keys, g_strdup (as_provide_get_value (prov)));
+		}
+		return keys;
+	}
+
+	/* specific compound type */
+	key = g_string_new (NULL);
+	if (flags & GS_APP_LIST_FILTER_FLAG_KEY_ID) {
+		const gchar *tmp = gs_app_get_id (app);
+		if (tmp != NULL)
+			g_string_append (key, gs_app_get_id (app));
+	}
+	if (flags & GS_APP_LIST_FILTER_FLAG_KEY_SOURCE) {
+		const gchar *tmp = gs_app_get_source_default (app);
+		if (tmp != NULL)
+			g_string_append_printf (key, ":%s", tmp);
+	}
+	if (flags & GS_APP_LIST_FILTER_FLAG_KEY_VERSION) {
+		const gchar *tmp = gs_app_get_version (app);
+		if (tmp != NULL)
+			g_string_append_printf (key, ":%s", tmp);
+	}
+	if (key->len == 0)
+		return keys;
+	g_ptr_array_add (keys, g_string_free (g_steal_pointer (&key), FALSE));
+	return keys;
+}
+
 /**
  * gs_app_list_filter_duplicates:
  * @list: A #GsAppList
@@ -734,69 +806,42 @@ gs_app_list_filter_duplicates (GsAppList *list, GsAppListFilterFlags flags)
 	kept_apps = g_hash_table_new (g_direct_hash, g_direct_equal);
 
 	for (guint i = 0; i < list->array->len; i++) {
-		GsApp *app;
-		GsApp *found;
-		g_autoptr(GString) key = NULL;
+		GsApp *app = gs_app_list_index (list, i);
+		GsApp *found = NULL;
+		g_autoptr(GPtrArray) keys = NULL;
 
-		app = gs_app_list_index (list, i);
-		if (flags == GS_APP_LIST_FILTER_FLAG_NONE) {
-			key = g_string_new (gs_app_get_unique_id (app));
-		} else {
-			key = g_string_new (NULL);
-			if (flags & GS_APP_LIST_FILTER_FLAG_KEY_ID) {
-				const gchar *tmp = gs_app_get_id (app);
-				if (tmp != NULL)
-					g_string_append (key, gs_app_get_id (app));
-			}
-			if (flags & GS_APP_LIST_FILTER_FLAG_KEY_SOURCE) {
-				const gchar *tmp = gs_app_get_source_default (app);
-				if (tmp != NULL)
-					g_string_append_printf (key, ":%s", tmp);
-			}
-			if (flags & GS_APP_LIST_FILTER_FLAG_KEY_VERSION) {
-				const gchar *tmp = gs_app_get_version (app);
-				if (tmp != NULL)
-					g_string_append_printf (key, ":%s", tmp);
-			}
+		/* get all the keys used to identify this app */
+		keys = gs_app_list_filter_app_get_keys (app, flags);
+		for (guint j = 0; j < keys->len; j++) {
+			const gchar *key = g_ptr_array_index (keys, j);
+			found = g_hash_table_lookup (hash, key);
+			if (found != NULL)
+				break;
 		}
-		if (key->len == 0) {
-			g_autofree gchar *str = gs_app_to_string (app);
-			g_debug ("adding without deduplication as no app key: %s", str);
-			g_hash_table_add (kept_apps, app);
-			continue;
-		}
-		found = g_hash_table_lookup (hash, key->str);
+
+		/* new app */
 		if (found == NULL) {
-			g_debug ("found new %s", key->str);
-			g_hash_table_insert (hash,
-					     g_strdup (key->str),
-					     app);
+			for (guint j = 0; j < keys->len; j++) {
+				const gchar *key = g_ptr_array_index (keys, j);
+				g_hash_table_insert (hash, g_strdup (key), app);
+			}
 			g_hash_table_add (kept_apps, app);
 			continue;
 		}
 
 		/* better? */
 		if (flags != GS_APP_LIST_FILTER_FLAG_NONE) {
-			if (gs_app_get_priority (app) >
-			    gs_app_get_priority (found)) {
-				g_debug ("using better %s (priority %u > %u)",
-					 key->str,
-					 gs_app_get_priority (app),
-					 gs_app_get_priority (found));
-				g_hash_table_insert (hash,
-						     g_strdup (key->str),
-						     app);
+			if (gs_app_list_filter_app_is_better (app, found, flags)) {
+				for (guint j = 0; j < keys->len; j++) {
+					const gchar *key = g_ptr_array_index (keys, j);
+					g_hash_table_insert (hash, g_strdup (key), app);
+				}
 				g_hash_table_remove (kept_apps, found);
 				g_hash_table_add (kept_apps, app);
 				continue;
 			}
-			g_debug ("ignoring worse duplicate %s (priority %u > %u)",
-				 key->str,
-				 gs_app_get_priority (app),
-				 gs_app_get_priority (found));
 			continue;
 		}
-		g_debug ("ignoring duplicate %s", key->str);
 		continue;
 	}
 
@@ -808,7 +853,7 @@ gs_app_list_filter_duplicates (GsAppList *list, GsAppListFilterFlags flags)
 	for (guint i = 0; i < old->array->len; i++) {
 		GsApp *app = gs_app_list_index (old, i);
 		if (g_hash_table_contains (kept_apps, app))
-			gs_app_list_add_safe (list, app);
+			gs_app_list_add_safe (list, app, GS_APP_LIST_ADD_FLAG_NONE);
 	}
 }
 
@@ -833,7 +878,7 @@ gs_app_list_copy (GsAppList *list)
 	new = gs_app_list_new ();
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
-		gs_app_list_add_safe (new, app);
+		gs_app_list_add_safe (new, app, GS_APP_LIST_ADD_FLAG_NONE);
 	}
 	return new;
 }
@@ -929,5 +974,3 @@ gs_app_list_new (void)
 	list = g_object_new (GS_TYPE_APP_LIST, NULL);
 	return GS_APP_LIST (list);
 }
-
-/* vim: set noexpandtab: */

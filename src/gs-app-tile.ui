@@ -13,7 +13,6 @@
     <child>
       <object class="GtkStack" id="stack">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
         <child>
           <object class="GtkImage" id="waiting">
             <property name="visible">True</property>
@@ -36,6 +35,7 @@
             <property name="valign">fill</property>
             <child type="overlay">
               <object class="GtkEventBox" id="eventbox">
+                <property name="visible">False</property>
                 <property name="no_show_all">True</property>
                 <property name="visible_window">True</property>
                 <property name="halign">start</property>

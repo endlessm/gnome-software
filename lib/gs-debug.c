@@ -3,21 +3,7 @@
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2017 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -65,6 +51,11 @@ gs_log_writer_console (GLogLevelFlags log_level,
 			continue;
 		}
 	}
+
+	/* this is really verbose */
+	if (g_strcmp0 (log_domain, "dconf") == 0 &&
+	    log_level == G_LOG_LEVEL_DEBUG)
+		return G_LOG_WRITER_HANDLED;
 
 	/* make threadsafe */
 	locker = g_mutex_locker_new (&debug->mutex);
@@ -196,5 +187,3 @@ gs_debug_new (void)
 {
 	return GS_DEBUG (g_object_new (GS_TYPE_DEBUG, NULL));
 }
-
-/* vim: set noexpandtab: */

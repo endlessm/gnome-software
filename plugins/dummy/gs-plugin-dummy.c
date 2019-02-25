@@ -3,21 +3,7 @@
  * Copyright (C) 2011-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2016 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -69,14 +55,11 @@ gs_plugin_initialize (GsPlugin *plugin)
 	}
 
 	/* set up a dummy authentication provider */
-	priv->auth = gs_auth_new (gs_plugin_get_name (plugin));
-	gs_auth_set_provider_name (priv->auth, "GNOME SSO");
-	gs_auth_set_provider_logo (priv->auth, "/usr/share/pixmaps/gnome-about-logo.png");
-	gs_auth_set_provider_uri (priv->auth, "http://www.gnome.org/sso");
-	gs_plugin_add_auth (plugin, priv->auth);
-
-	/* lets assume we read this from disk somewhere */
-	gs_auth_set_username (priv->auth, "dummy");
+	priv->auth = gs_auth_new (gs_plugin_get_name (plugin), "google", NULL);
+	if (priv->auth != NULL) {
+		gs_auth_set_provider_name (priv->auth, "GNOME SSO");
+		gs_plugin_add_auth (plugin, priv->auth);
+	}
 
 	/* add source */
 	priv->cached_origin = gs_app_new (gs_plugin_get_name (plugin));
@@ -184,12 +167,12 @@ gs_plugin_dummy_poll_cb (gpointer user_data)
 	}
 
 	/* toggle this to animate the hide/show the 3rd party banner */
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE)) {
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE)) {
 		g_debug ("about to make app distro-provided");
-		gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 	} else {
 		g_debug ("about to make app 3rd party");
-		gs_app_remove_quirk (app, AS_APP_QUIRK_PROVENANCE);
+		gs_app_remove_quirk (app, GS_APP_QUIRK_PROVENANCE);
 	}
 
 	/* continue polling */
@@ -278,6 +261,20 @@ gs_plugin_dummy_timeout_add (guint timeout_ms, GCancellable *cancellable)
 					  gs_plugin_dummy_timeout_hang_cb,
 					  helper);
 	g_main_loop_run (helper->loop);
+}
+
+gboolean
+gs_plugin_add_alternates (GsPlugin *plugin,
+			  GsApp *app,
+			  GsAppList *list,
+			  GCancellable *cancellable,
+			  GError **error)
+{
+	if (g_strcmp0 (gs_app_get_id (app), "zeus.desktop") == 0) {
+		g_autoptr(GsApp) app2 = gs_app_new ("chiron.desktop");
+		gs_app_list_add (list, app2);
+	}
+	return TRUE;
 }
 
 gboolean
@@ -417,7 +414,7 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	gs_app_set_update_urgency (proxy, AS_URGENCY_KIND_HIGH);
 	gs_app_add_icon (proxy, ic);
 	gs_app_set_kind (proxy, AS_APP_KIND_DESKTOP);
-	gs_app_add_quirk (proxy, AS_APP_QUIRK_IS_PROXY);
+	gs_app_add_quirk (proxy, GS_APP_QUIRK_IS_PROXY);
 	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
 	gs_app_list_add (list, proxy);
@@ -490,7 +487,7 @@ gs_plugin_add_popular (GsPlugin *plugin,
 
 	/* add wildcard */
 	app1 = gs_app_new ("zeus.desktop");
-	gs_app_add_quirk (app1, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+	gs_app_add_quirk (app1, GS_APP_QUIRK_IS_WILDCARD);
 	gs_app_set_metadata (app1, "GnomeSoftware::Creator",
 			     gs_plugin_get_name (plugin));
 	gs_app_list_add (list, app1);
@@ -790,15 +787,16 @@ gs_plugin_add_distro_upgrades (GsPlugin *plugin,
 	app = gs_app_new ("org.fedoraproject.release-rawhide.upgrade");
 	gs_app_set_scope (app, AS_APP_SCOPE_USER);
 	gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Fedora");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL,
 			    "A major upgrade, with new features and added polish.");
 	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE,
 			"https://fedoraproject.org/wiki/Releases/24/Schedule");
-	gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
-	gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_REVIEWABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
+	gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_REVIEWABLE);
 	gs_app_set_version (app, "25");
 	gs_app_set_size_installed (app, 256 * 1024 * 1024);
 	gs_app_set_size_download (app, 1024 * 1024 * 1024);
@@ -964,94 +962,4 @@ gs_plugin_review_remove (GsPlugin *plugin,
 	/* all okay */
 	g_debug ("Removing dummy self-review");
 	return TRUE;
-}
-
-gboolean
-gs_plugin_auth_login (GsPlugin *plugin, GsAuth *auth,
-		      GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	/* not us */
-	if (g_strcmp0 (gs_auth_get_provider_id (auth),
-		       gs_auth_get_provider_id (priv->auth)) != 0)
-		return TRUE;
-
-	/* already logged in */
-	if (priv->has_auth)
-		return TRUE;
-
-	/* check username and password */
-	if (g_strcmp0 (gs_auth_get_username (priv->auth), "dummy") != 0 ||
-	    g_strcmp0 (gs_auth_get_password (priv->auth), "dummy") != 0) {
-		g_set_error (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_AUTH_INVALID,
-			     "The password was not correct.");
-		return FALSE;
-	}
-
-	priv->has_auth = TRUE;
-	gs_auth_add_flags (priv->auth, GS_AUTH_FLAG_VALID);
-	g_debug ("dummy now authenticated");
-	return TRUE;
-}
-
-gboolean
-gs_plugin_auth_logout (GsPlugin *plugin, GsAuth *auth,
-		       GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	/* not us */
-	if (g_strcmp0 (gs_auth_get_provider_id (auth),
-		       gs_auth_get_provider_id (priv->auth)) != 0)
-		return TRUE;
-
-	/* not logged in */
-	if (!priv->has_auth)
-		return TRUE;
-
-	priv->has_auth = FALSE;
-	gs_auth_set_flags (priv->auth, 0);
-	g_debug ("dummy now not authenticated");
-	return TRUE;
-}
-
-gboolean
-gs_plugin_auth_lost_password (GsPlugin *plugin, GsAuth *auth,
-			      GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	/* not us */
-	if (g_strcmp0 (gs_auth_get_provider_id (auth),
-		       gs_auth_get_provider_id (priv->auth)) != 0)
-		return TRUE;
-
-	/* return with data */
-	g_set_error_literal (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_AUTH_INVALID,
-			     "do online using @http://www.gnome.org/lost-password/");
-	return FALSE;
-}
-
-gboolean
-gs_plugin_auth_register (GsPlugin *plugin, GsAuth *auth,
-			 GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	/* not us */
-	if (g_strcmp0 (gs_auth_get_provider_id (auth),
-		       gs_auth_get_provider_id (priv->auth)) != 0)
-		return TRUE;
-
-	/* return with data */
-	g_set_error_literal (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_AUTH_INVALID,
-			     "do online using @http://www.gnome.org/register/");
-	return FALSE;
 }

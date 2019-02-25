@@ -3,7 +3,10 @@ cargs += ['-DLOCALPLUGINDIR="' + meson.current_build_dir() + '"']
 
 shared_module(
   'gs_plugin_shell-extensions',
-sources : 'gs-plugin-shell-extensions.c',
+  sources : [
+    'gs-appstream.c',
+    'gs-plugin-shell-extensions.c'
+  ],
   include_directories : [
     include_directories('../..'),
     include_directories('../../lib'),
@@ -11,7 +14,13 @@ sources : 'gs-plugin-shell-extensions.c',
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : [
+    plugin_libs,
+    libxmlb,
+  ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 if get_option('tests')
@@ -27,6 +36,7 @@ if get_option('tests')
     ],
     dependencies : [
       plugin_libs,
+      libxmlb,
     ],
     link_with : [
       libgnomesoftware

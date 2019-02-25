@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2017 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -81,11 +67,11 @@ gs_fwupd_app_set_from_device (GsApp *app, FwupdDevice *dev)
 
 	/* reboot required to apply update */
 	if (fwupd_device_has_flag (dev, FWUPD_DEVICE_FLAG_NEEDS_REBOOT))
-		gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
 
 	/* is removable */
 	if (!fwupd_device_has_flag (dev, FWUPD_DEVICE_FLAG_INTERNAL))
-		gs_app_add_quirk (app, AS_APP_QUIRK_REMOVABLE_HARDWARE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_REMOVABLE_HARDWARE);
 
 	guids = fwupd_device_get_guids (dev);
 	if (guids->len > 0) {
@@ -128,9 +114,9 @@ gs_fwupd_app_set_from_device (GsApp *app, FwupdDevice *dev)
 
 	/* needs action */
 	if (fwupd_device_has_flag (dev, FWUPD_DEVICE_FLAG_NEEDS_BOOTLOADER))
-		gs_app_add_quirk (app, AS_APP_QUIRK_NEEDS_USER_ACTION);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_USER_ACTION);
 	else
-		gs_app_remove_quirk (app, AS_APP_QUIRK_NEEDS_USER_ACTION);
+		gs_app_remove_quirk (app, GS_APP_QUIRK_NEEDS_USER_ACTION);
 }
 
 void
@@ -171,5 +157,3 @@ gs_fwupd_app_set_from_release (GsApp *app, FwupdRelease *rel)
 			gs_app_set_update_details (app, tmp);
 	}
 }
-
-/* vim: set noexpandtab: */

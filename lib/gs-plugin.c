@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 /**
@@ -65,7 +51,6 @@ typedef struct
 	GHashTable		*cache;
 	GMutex			 cache_mutex;
 	GModule			*module;
-	GRWLock			 rwlock;
 	GsPluginData		*data;			/* for gs-plugin-{name}.c */
 	GsPluginFlags		 flags;
 	SoupSession		*soup_session;
@@ -224,7 +209,6 @@ gs_plugin_finalize (GObject *object)
 	g_free (priv->data);
 	g_free (priv->locale);
 	g_free (priv->language);
-	g_rw_lock_clear (&priv->rwlock);
 	if (priv->auth_array != NULL)
 		g_ptr_array_unref (priv->auth_array);
 	if (priv->soup_session != NULL)
@@ -298,79 +282,6 @@ gs_plugin_clear_data (GsPlugin *plugin)
 	if (priv->data == NULL)
 		return;
 	g_clear_pointer (&priv->data, g_free);
-}
-
-/**
- * gs_plugin_action_start:
- * @plugin: a #GsPlugin
- * @exclusive: if the plugin action should be performed exclusively
- *
- * Starts a plugin action.
- *
- * Since: 3.22
- **/
-void
-gs_plugin_action_start (GsPlugin *plugin, gboolean exclusive)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-
-	/* lock plugin */
-	if (exclusive) {
-		g_rw_lock_writer_lock (&priv->rwlock);
-		gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_EXCLUSIVE);
-	} else {
-		g_rw_lock_reader_lock (&priv->rwlock);
-	}
-
-	/* set plugin as SELF */
-	gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_RUNNING_SELF);
-}
-
-static gboolean
-gs_plugin_action_delay_cb (gpointer user_data)
-{
-	GsPlugin *plugin = GS_PLUGIN (user_data);
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->timer_mutex);
-
-	g_debug ("plugin no longer recently active: %s", priv->name);
-	gs_plugin_remove_flags (plugin, GS_PLUGIN_FLAGS_RECENT);
-	priv->timer_id = 0;
-	return FALSE;
-}
-
-/**
- * gs_plugin_action_stop:
- * @plugin: a #GsPlugin
- *
- * Stops an plugin action.
- *
- * Since: 3.22
- **/
-void
-gs_plugin_action_stop (GsPlugin *plugin)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->timer_mutex);
-
-	/* clear plugin as SELF */
-	gs_plugin_remove_flags (plugin, GS_PLUGIN_FLAGS_RUNNING_SELF);
-
-	/* unlock plugin */
-	if (priv->flags & GS_PLUGIN_FLAGS_EXCLUSIVE) {
-		g_rw_lock_writer_unlock (&priv->rwlock);
-		gs_plugin_remove_flags (plugin, GS_PLUGIN_FLAGS_EXCLUSIVE);
-	} else {
-		g_rw_lock_reader_unlock (&priv->rwlock);
-	}
-
-	/* unset this flag after 5 seconds */
-	gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_RECENT);
-	if (priv->timer_id > 0)
-		g_source_remove (priv->timer_id);
-	priv->timer_id = g_timeout_add (5000,
-					gs_plugin_action_delay_cb,
-					plugin);
 }
 
 /**
@@ -720,7 +631,7 @@ gs_plugin_add_auth (GsPlugin *plugin, GsAuth *auth)
 /**
  * gs_plugin_get_auth_by_id:
  * @plugin: a #GsPlugin
- * @provider_id: an ID, e.g. "dummy-sso"
+ * @auth_id: an ID, e.g. "dummy-sso"
  *
  * Gets a specific authentication object.
  *
@@ -729,7 +640,7 @@ gs_plugin_add_auth (GsPlugin *plugin, GsAuth *auth)
  * Since: 3.22
  **/
 GsAuth *
-gs_plugin_get_auth_by_id (GsPlugin *plugin, const gchar *provider_id)
+gs_plugin_get_auth_by_id (GsPlugin *plugin, const gchar *auth_id)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
 	guint i;
@@ -737,7 +648,7 @@ gs_plugin_get_auth_by_id (GsPlugin *plugin, const gchar *provider_id)
 	/* match on ID */
 	for (i = 0; i < priv->auth_array->len; i++) {
 		GsAuth *auth = g_ptr_array_index (priv->auth_array, i);
-		if (g_strcmp0 (gs_auth_get_provider_id (auth), provider_id) == 0)
+		if (g_strcmp0 (gs_auth_get_auth_id (auth), auth_id) == 0)
 			return auth;
 	}
 	return NULL;
@@ -861,24 +772,6 @@ gs_plugin_remove_flags (GsPlugin *plugin, GsPluginFlags flags)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
 	priv->flags &= ~flags;
-}
-
-/**
- * gs_plugin_set_running_other:
- * @plugin: a #GsPlugin
- * @running_other: %TRUE if another plugin is running
- *
- * Inform the plugin that another plugin is running in the loader.
- *
- * Since: 3.22
- **/
-void
-gs_plugin_set_running_other (GsPlugin *plugin, gboolean running_other)
-{
-	if (running_other)
-		gs_plugin_add_flags (plugin, GS_PLUGIN_FLAGS_RUNNING_OTHER);
-	else
-		gs_plugin_remove_flags (plugin, GS_PLUGIN_FLAGS_RUNNING_OTHER);
 }
 
 /**
@@ -1038,7 +931,9 @@ gs_plugin_app_launch (GsPlugin *plugin, GsApp *app, GError **error)
 	const gchar *desktop_id;
 	g_autoptr(GAppInfo) appinfo = NULL;
 
-	desktop_id = gs_app_get_id (app);
+	desktop_id = gs_app_get_launchable (app, AS_LAUNCHABLE_KIND_DESKTOP_ID);
+	if (desktop_id == NULL)
+		desktop_id = gs_app_get_id (app);
 	if (desktop_id == NULL) {
 		g_set_error (error,
 			     GS_PLUGIN_ERROR,
@@ -1637,12 +1532,6 @@ gs_plugin_error_to_string (GsPluginError error)
 		return "auth-required";
 	if (error == GS_PLUGIN_ERROR_AUTH_INVALID)
 		return "auth-invalid";
-	if (error == GS_PLUGIN_ERROR_PIN_REQUIRED)
-		return "pin-required";
-	if (error == GS_PLUGIN_ERROR_ACCOUNT_SUSPENDED)
-		return "account-suspended";
-	if (error == GS_PLUGIN_ERROR_ACCOUNT_DEACTIVATED)
-		return "account-deactivated";
 	if (error == GS_PLUGIN_ERROR_PLUGIN_DEPSOLVE_FAILED)
 		return "plugin-depsolve-failed";
 	if (error == GS_PLUGIN_ERROR_DOWNLOAD_FAILED)
@@ -1743,14 +1632,6 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_add_search_files";
 	if (action == GS_PLUGIN_ACTION_SEARCH_PROVIDES)
 		return "gs_plugin_add_search_what_provides";
-	if (action == GS_PLUGIN_ACTION_AUTH_LOGIN)
-		return "gs_plugin_auth_login";
-	if (action == GS_PLUGIN_ACTION_AUTH_LOGOUT)
-		return "gs_plugin_auth_logout";
-	if (action == GS_PLUGIN_ACTION_AUTH_REGISTER)
-		return "gs_plugin_auth_register";
-	if (action == GS_PLUGIN_ACTION_AUTH_LOST_PASSWORD)
-		return "gs_plugin_auth_lost_password";
 	if (action == GS_PLUGIN_ACTION_GET_CATEGORY_APPS)
 		return "gs_plugin_add_category_apps";
 	if (action == GS_PLUGIN_ACTION_GET_CATEGORIES)
@@ -1763,6 +1644,8 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_destroy";
 	if (action == GS_PLUGIN_ACTION_PURCHASE)
 		return "gs_plugin_app_purchase";
+	if (action == GS_PLUGIN_ACTION_GET_ALTERNATES)
+		return "gs_plugin_add_alternates";
 	return NULL;
 }
 
@@ -1847,14 +1730,6 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "file-to-app";
 	if (action == GS_PLUGIN_ACTION_URL_TO_APP)
 		return "url-to-app";
-	if (action == GS_PLUGIN_ACTION_AUTH_LOGIN)
-		return "auth-login";
-	if (action == GS_PLUGIN_ACTION_AUTH_LOGOUT)
-		return "auth-logout";
-	if (action == GS_PLUGIN_ACTION_AUTH_REGISTER)
-		return "auth-register";
-	if (action == GS_PLUGIN_ACTION_AUTH_LOST_PASSWORD)
-		return "auth-lost-password";
 	if (action == GS_PLUGIN_ACTION_GET_RECENT)
 		return "get-recent";
 	if (action == GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL)
@@ -1865,6 +1740,8 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "destroy";
 	if (action == GS_PLUGIN_ACTION_PURCHASE)
 		return "purchase";
+	if (action == GS_PLUGIN_ACTION_GET_ALTERNATES)
+		return "get-alternates";
 	return NULL;
 }
 
@@ -1949,14 +1826,6 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_FILE_TO_APP;
 	if (g_strcmp0 (action, "url-to-app") == 0)
 		return GS_PLUGIN_ACTION_URL_TO_APP;
-	if (g_strcmp0 (action, "auth-login") == 0)
-		return GS_PLUGIN_ACTION_AUTH_LOGIN;
-	if (g_strcmp0 (action, "auth-logout") == 0)
-		return GS_PLUGIN_ACTION_AUTH_LOGOUT;
-	if (g_strcmp0 (action, "auth-register") == 0)
-		return GS_PLUGIN_ACTION_AUTH_REGISTER;
-	if (g_strcmp0 (action, "auth-lost-password") == 0)
-		return GS_PLUGIN_ACTION_AUTH_LOST_PASSWORD;
 	if (g_strcmp0 (action, "get-recent") == 0)
 		return GS_PLUGIN_ACTION_GET_RECENT;
 	if (g_strcmp0 (action, "get-updates-historical") == 0)
@@ -1967,6 +1836,8 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_DESTROY;
 	if (g_strcmp0 (action, "purchase") == 0)
 		return GS_PLUGIN_ACTION_PURCHASE;
+	if (g_strcmp0 (action, "get-alternates") == 0)
+		return GS_PLUGIN_ACTION_GET_ALTERNATES;
 	return GS_PLUGIN_ACTION_UNKNOWN;
 }
 
@@ -2036,6 +1907,16 @@ gs_plugin_refine_flags_to_string (GsPluginRefineFlags refine_flags)
 		g_ptr_array_add (cstrs, "require-runtime");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS)
 		g_ptr_array_add (cstrs, "require-screenshots");
+	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES)
+		g_ptr_array_add (cstrs, "require-categories");
+	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROJECT_GROUP)
+		g_ptr_array_add (cstrs, "require-project-group");
+	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_DEVELOPER_NAME)
+		g_ptr_array_add (cstrs, "require-developer-name");
+	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS)
+		g_ptr_array_add (cstrs, "require-kudos");
+	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING)
+		g_ptr_array_add (cstrs, "content-rating");
 	if (cstrs->len == 0)
 		return g_strdup ("none");
 	g_ptr_array_add (cstrs, NULL);
@@ -2143,7 +2024,6 @@ gs_plugin_init (GsPlugin *plugin)
 	g_mutex_init (&priv->interactive_mutex);
 	g_mutex_init (&priv->timer_mutex);
 	g_mutex_init (&priv->vfuncs_mutex);
-	g_rw_lock_init (&priv->rwlock);
 }
 
 /**
@@ -2162,5 +2042,3 @@ gs_plugin_new (void)
 	plugin = g_object_new (GS_TYPE_PLUGIN, NULL);
 	return plugin;
 }
-
-/* vim: set noexpandtab: */

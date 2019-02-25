@@ -3,21 +3,7 @@
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2017 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -25,6 +11,8 @@
 #include <packagekit-glib2/packagekit.h>
 
 #include <gnome-software.h>
+
+#include "packagekit-common.h"
 
 /*
  * SECTION:
@@ -152,9 +140,10 @@ gs_plugin_add_updates_historical (GsPlugin *plugin,
 		app = gs_app_new (NULL);
 		gs_app_set_from_unique_id (app, "*/*/*/*/system/*");
 		gs_app_set_management_plugin (app, "packagekit");
-		gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 		gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 		gs_app_set_install_date (app, mtime);
 		gs_app_set_metadata (app, "GnomeSoftware::Creator",
 				     gs_plugin_get_name (plugin));
@@ -175,12 +164,14 @@ gs_plugin_add_updates_historical (GsPlugin *plugin,
 		app = gs_app_new (NULL);
 		package_id = pk_package_get_id (pkg);
 		split = g_strsplit (package_id, ";", 4);
+		gs_plugin_packagekit_set_packaging_format (plugin, app);
 		gs_app_add_source (app, split[0]);
 		gs_app_set_update_version (app, split[1]);
 		gs_app_set_management_plugin (app, "packagekit");
 		gs_app_add_source_id (app, package_id);
 		gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
 		gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 		gs_app_set_install_date (app, mtime);
 		gs_app_set_metadata (app, "GnomeSoftware::Creator",
 				     gs_plugin_get_name (plugin));

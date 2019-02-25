@@ -1,5 +1,5 @@
 project('gnome-software', 'c',
-  version : '3.30.6',
+  version : '3.31.90',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
   meson_version : '>=0.40.0'
@@ -12,7 +12,7 @@ conf.set_quoted('PACKAGE_VERSION', meson.project_version())
 
 # this refers to the gnome-software plugin API version
 # this is not in any way related to a package or soname version
-gs_plugin_api_version = '12'
+gs_plugin_api_version = '13'
 conf.set_quoted('GS_PLUGIN_API_VERSION', gs_plugin_api_version)
 
 # install docs
@@ -98,12 +98,13 @@ conf.set('HAVE_LINUX_UNISTD_H', cc.has_header('linux/unistd.h'))
 
 appstream_glib = dependency('appstream-glib', version : '>= 0.7.14')
 gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.32.0')
+libxmlb = dependency('xmlb', version : '>= 0.1.4', fallback : ['libxmlb', 'libxmlb_dep'])
 gio_unix = dependency('gio-unix-2.0', version : '>= 2.56.0')
 gmodule = dependency('gmodule-2.0')
+goa = dependency('goa-1.0')
 gtk = dependency('gtk+-3.0', version : '>= 3.22.4')
 json_glib = dependency('json-glib-1.0', version : '>= 1.2.0')
 libm = cc.find_library('m', required: false)
-libsecret = dependency('libsecret-1')
 libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')
 
 if get_option('valgrind')
@@ -157,13 +158,10 @@ if get_option('flatpak')
 endif
 
 if get_option('rpm_ostree')
+  libdnf = dependency('libdnf')
   ostree = dependency('ostree-1')
+  rpm = dependency('rpm')
   rpm_ostree = dependency('rpm-ostree-1', version : '>= 2018.4')
-endif
-
-if get_option('ubuntu_reviews')
-  oauth = dependency('oauth')
-  sqlite3 = dependency('sqlite3')
 endif
 
 if get_option('gudev')
@@ -171,7 +169,7 @@ if get_option('gudev')
 endif
 
 if get_option('snap')
-  snap = dependency('snapd-glib', version : '>= 1.41')
+  snap = dependency('snapd-glib', version : '>= 1.45')
 endif
 
 gnome = import('gnome')

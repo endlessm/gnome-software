@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2015 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -140,6 +126,16 @@ gs_cmd_refine_flag_from_string (const gchar *flag, GError **error)
 		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_UI;
 	if (g_strcmp0 (flag, "runtime") == 0)
 		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME;
+	if (g_strcmp0 (flag, "categories") == 0)
+		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES;
+	if (g_strcmp0 (flag, "project-group") == 0)
+		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROJECT_GROUP;
+	if (g_strcmp0 (flag, "developer-name") == 0)
+		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_DEVELOPER_NAME;
+	if (g_strcmp0 (flag, "kudos") == 0)
+		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS;
+	if (g_strcmp0 (flag, "content-rating") == 0)
+		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING;
 	g_set_error (error,
 		     GS_PLUGIN_ERROR,
 		     GS_PLUGIN_ERROR_NOT_SUPPORTED,
@@ -425,6 +421,24 @@ main (int argc, char **argv)
 				break;
 			}
 		}
+	} else if (argc == 3 && g_strcmp0 (argv[1], "get-alternates") == 0) {
+		app = gs_app_new (argv[2]);
+		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+		for (i = 0; i < repeat; i++) {
+			g_autoptr(GsPluginJob) plugin_job = NULL;
+			if (list != NULL)
+				g_object_unref (list);
+			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_ALTERNATES,
+							 "app", app,
+							 "refine-flags", self->refine_flags,
+							 "max-results", self->max_results,
+							 NULL);
+			list = gs_plugin_loader_job_process (self->plugin_loader, plugin_job, NULL, &error);
+			if (list == NULL) {
+				ret = FALSE;
+				break;
+			}
+		}
 	} else if (argc == 4 && g_strcmp0 (argv[1], "action") == 0) {
 		GsPluginAction action = gs_plugin_action_from_string (argv[2]);
 		if (action == GS_PLUGIN_ACTION_UNKNOWN) {
@@ -665,7 +679,7 @@ main (int argc, char **argv)
 				     GS_PLUGIN_ERROR_FAILED,
 				     "Did not recognise option, use 'installed', "
 				     "'updates', 'popular', 'get-categories', "
-				     "'get-category-apps', 'filename-to-app', "
+				     "'get-category-apps', 'get-alternates', 'filename-to-app', "
 				     "'action install', 'action remove', "
 				     "'sources', 'refresh', 'launch' or 'search'");
 	}
@@ -682,5 +696,3 @@ main (int argc, char **argv)
 	}
 	return EXIT_SUCCESS;
 }
-
-/* vim: set noexpandtab: */

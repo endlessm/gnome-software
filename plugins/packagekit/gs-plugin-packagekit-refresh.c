@@ -3,21 +3,7 @@
  * Copyright (C) 2014-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -36,12 +22,15 @@
 
 struct GsPluginData {
 	PkTask			*task;
+	GMutex			 task_mutex;
 };
 
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+
+	g_mutex_init (&priv->task_mutex);
 	priv->task = pk_task_new ();
 	pk_task_set_only_download (priv->task, TRUE);
 	pk_client_set_background (PK_CLIENT (priv->task), TRUE);
@@ -54,6 +43,7 @@ void
 gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_mutex_clear (&priv->task_mutex);
 	g_object_unref (priv->task);
 }
 
@@ -68,20 +58,21 @@ _download_only (GsPlugin *plugin, GsAppList *list,
 	g_autoptr(PkResults) results2 = NULL;
 	g_autoptr(PkResults) results = NULL;
 
+	/* get the list of packages to update */
+	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
+
+	g_mutex_lock (&priv->task_mutex);
 	/* never refresh the metadata here as this can surprise the frontend if
 	 * we end up downloading a different set of packages than what was
 	 * shown to the user */
 	pk_client_set_cache_age (PK_CLIENT (priv->task), G_MAXUINT);
-
-	/* get the list of packages to update */
-	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
 	results = pk_client_get_updates (PK_CLIENT (priv->task),
 					 pk_bitfield_value (PK_FILTER_ENUM_NONE),
 					 cancellable,
 					 gs_packagekit_helper_cb, helper,
 					 error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
-		g_prefix_error (error, "failed to get updates for refresh: ");
 		return FALSE;
 	}
 
@@ -94,11 +85,17 @@ _download_only (GsPlugin *plugin, GsAppList *list,
 		GsApp *app = gs_app_list_index (list, i);
 		gs_packagekit_helper_add_app (helper, app);
 	}
+	g_mutex_lock (&priv->task_mutex);
+	/* never refresh the metadata here as this can surprise the frontend if
+	 * we end up downloading a different set of packages than what was
+	 * shown to the user */
+	pk_client_set_cache_age (PK_CLIENT (priv->task), G_MAXUINT);
 	results2 = pk_task_update_packages_sync (priv->task,
 						 package_ids,
 						 cancellable,
 						 gs_packagekit_helper_cb, helper,
 						 error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (results2 == NULL) {
 		gs_plugin_packagekit_error_convert (error);
 		return FALSE;
@@ -150,20 +147,21 @@ gs_plugin_refresh (GsPlugin *plugin,
 	g_autoptr(GsApp) app_dl = gs_app_new (gs_plugin_get_name (plugin));
 	g_autoptr(PkResults) results = NULL;
 
+	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
+	gs_packagekit_helper_add_app (helper, app_dl);
+
+	g_mutex_lock (&priv->task_mutex);
 	/* cache age of 1 is user-initiated */
 	pk_client_set_background (PK_CLIENT (priv->task), cache_age > 1);
 	pk_client_set_cache_age (PK_CLIENT (priv->task), cache_age);
-
 	/* refresh the metadata */
-	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
-	gs_packagekit_helper_add_app (helper, app_dl);
 	results = pk_client_refresh_cache (PK_CLIENT (priv->task),
 	                                   FALSE /* force */,
 	                                   cancellable,
 	                                   gs_packagekit_helper_cb, helper,
 	                                   error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
-		g_prefix_error (error, "failed to refresh cache: ");
 		return FALSE;
 	}
 

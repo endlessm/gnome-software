@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 /**
@@ -53,6 +39,7 @@
 
 #include "gs-app-collation.h"
 #include "gs-app-private.h"
+#include "gs-os-release.h"
 #include "gs-plugin.h"
 #include "gs-utils.h"
 
@@ -83,7 +70,6 @@ typedef struct
 	GPtrArray		*screenshots;
 	GPtrArray		*categories;
 	GPtrArray		*key_colors;
-	GPtrArray		*keywords;
 	GHashTable		*urls;
 	GHashTable		*launchables;
 	gchar			*license;
@@ -96,6 +82,7 @@ typedef struct
 	gchar			*update_version_ui;
 	gchar			*update_details;
 	AsUrgencyKind		 update_urgency;
+	GsAppPermissions         update_permissions;
 	gchar			*management_plugin;
 	guint			 match_value;
 	guint			 priority;
@@ -119,7 +106,7 @@ typedef struct
 	guint64			 install_date;
 	guint64			 kudos;
 	gboolean		 to_be_installed;
-	AsAppQuirk		 quirk;
+	GsAppQuirk		 quirk;
 	gboolean		 license_is_free;
 	GsApp			*runtime;
 	GFile			*local_file;
@@ -128,6 +115,7 @@ typedef struct
 	GsPrice			*price;
 	GCancellable		*cancellable;
 	GsPluginAction		 pending_action;
+	GsAppPermissions         permissions;
 } GsAppPrivate;
 
 enum {
@@ -223,29 +211,29 @@ gs_app_kv_printf (GString *str, const gchar *key, const gchar *fmt, ...)
 }
 
 static const gchar *
-_as_app_quirk_flag_to_string (AsAppQuirk quirk)
+_as_app_quirk_flag_to_string (GsAppQuirk quirk)
 {
-	if (quirk == AS_APP_QUIRK_PROVENANCE)
+	if (quirk == GS_APP_QUIRK_PROVENANCE)
 		return "provenance";
-	if (quirk == AS_APP_QUIRK_COMPULSORY)
+	if (quirk == GS_APP_QUIRK_COMPULSORY)
 		return "compulsory";
-	if (quirk == AS_APP_QUIRK_HAS_SOURCE)
+	if (quirk == GS_APP_QUIRK_HAS_SOURCE)
 		return "has-source";
-	if (quirk == AS_APP_QUIRK_MATCH_ANY_PREFIX)
-		return "match-any-prefix";
-	if (quirk == AS_APP_QUIRK_NEEDS_REBOOT)
+	if (quirk == GS_APP_QUIRK_IS_WILDCARD)
+		return "is-wildcard";
+	if (quirk == GS_APP_QUIRK_NEEDS_REBOOT)
 		return "needs-reboot";
-	if (quirk == AS_APP_QUIRK_NOT_REVIEWABLE)
+	if (quirk == GS_APP_QUIRK_NOT_REVIEWABLE)
 		return "not-reviewable";
-	if (quirk == AS_APP_QUIRK_HAS_SHORTCUT)
+	if (quirk == GS_APP_QUIRK_HAS_SHORTCUT)
 		return "has-shortcut";
-	if (quirk == AS_APP_QUIRK_NOT_LAUNCHABLE)
+	if (quirk == GS_APP_QUIRK_NOT_LAUNCHABLE)
 		return "not-launchable";
-	if (quirk == AS_APP_QUIRK_NEEDS_USER_ACTION)
+	if (quirk == GS_APP_QUIRK_NEEDS_USER_ACTION)
 		return "needs-user-action";
-	if (quirk == AS_APP_QUIRK_IS_PROXY)
+	if (quirk == GS_APP_QUIRK_IS_PROXY)
 		return "is-proxy";
-	if (quirk == AS_APP_QUIRK_REMOVABLE_HARDWARE)
+	if (quirk == GS_APP_QUIRK_REMOVABLE_HARDWARE)
 		return "removable-hardware";
 	return NULL;
 }
@@ -262,7 +250,6 @@ gs_app_get_unique_id_unlocked (GsApp *app)
 
 	/* hmm, do what we can */
 	if (priv->unique_id == NULL || !priv->unique_id_valid) {
-		g_debug ("autogenerating unique-id for %s", priv->id);
 		g_free (priv->unique_id);
 		priv->unique_id = as_utils_unique_id_build (priv->scope,
 							    priv->bundle_kind,
@@ -276,27 +263,60 @@ gs_app_get_unique_id_unlocked (GsApp *app)
 }
 
 /**
- * _as_app_quirk_to_string:
- * @quirk: a #AsAppQuirk
+ * gs_app_compare_priority:
+ * @app1: a #GsApp
+ * @app2: a #GsApp
+ *
+ * Compares two applications using thier priority.
+ *
+ * Use `gs_plugin_add_rule(plugin,GS_PLUGIN_RULE_BETTER_THAN,"plugin-name")`
+ * to set the application priority values.
+ *
+ * Returns: a negative value if @app1 is less than @app2, a positive value if
+ *          @app1 is greater than @app2, and zero if @app1 is equal to @app2
+ **/
+gint
+gs_app_compare_priority (GsApp *app1, GsApp *app2)
+{
+	GsAppPrivate *priv1 = gs_app_get_instance_private (app1);
+	GsAppPrivate *priv2 = gs_app_get_instance_private (app2);
+
+	/* prefer prio */
+	if (priv1->priority > priv2->priority)
+		return -1;
+	if (priv1->priority < priv2->priority)
+		return 1;
+
+	/* fall back to bundle kind */
+	if (priv1->bundle_kind < priv2->bundle_kind)
+		return -1;
+	if (priv1->bundle_kind > priv2->bundle_kind)
+		return 1;
+	return 0;
+}
+
+/**
+ * gs_app_quirk_to_string:
+ * @quirk: a #GsAppQuirk
  *
  * Returns the quirk bitfield as a string.
  *
  * Returns: (transfer full): a string
  **/
 static gchar *
-_as_app_quirk_to_string (AsAppQuirk quirk)
+gs_app_quirk_to_string (GsAppQuirk quirk)
 {
 	GString *str = g_string_new ("");
 	guint64 i;
 
 	/* nothing set */
-	if (quirk == AS_APP_QUIRK_NONE) {
+	if (quirk == GS_APP_QUIRK_NONE) {
 		g_string_append (str, "none");
 		return g_string_free (str, FALSE);
 	}
 
 	/* get flags */
-	for (i = 1; i < AS_APP_QUIRK_LAST; i *= 2) {
+	for (i = 1; i < GS_APP_QUIRK_LAST; i *= 2) {
 		if ((quirk & i) == 0)
 			continue;
 		g_string_append_printf (str, "%s,",
@@ -332,16 +352,12 @@ gs_app_kudos_to_string (guint64 kudos)
 		g_ptr_array_add (array, "installs-user-docs");
 	if ((kudos & GS_APP_KUDO_USES_NOTIFICATIONS) > 0)
 		g_ptr_array_add (array, "uses-notifications");
-	if ((kudos & GS_APP_KUDO_USES_APP_MENU) > 0)
-		g_ptr_array_add (array, "uses-app-menu");
 	if ((kudos & GS_APP_KUDO_HAS_KEYWORDS) > 0)
 		g_ptr_array_add (array, "has-keywords");
 	if ((kudos & GS_APP_KUDO_HAS_SCREENSHOTS) > 0)
 		g_ptr_array_add (array, "has-screenshots");
 	if ((kudos & GS_APP_KUDO_POPULAR) > 0)
 		g_ptr_array_add (array, "popular");
-	if ((kudos & GS_APP_KUDO_PERFECT_SCREENSHOTS) > 0)
-		g_ptr_array_add (array, "perfect-screenshots");
 	if ((kudos & GS_APP_KUDO_HIGH_CONTRAST) > 0)
 		g_ptr_array_add (array, "high-contrast");
 	if ((kudos & GS_APP_KUDO_HI_DPI_ICON) > 0)
@@ -402,7 +418,7 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	gs_app_kv_lpad (str, "kind", as_app_kind_to_string (priv->kind));
 	gs_app_kv_lpad (str, "state", as_app_state_to_string (priv->state));
 	if (priv->quirk > 0) {
-		g_autofree gchar *qstr = _as_app_quirk_to_string (priv->quirk);
+		g_autofree gchar *qstr = gs_app_quirk_to_string (priv->quirk);
 		gs_app_kv_lpad (str, "quirk", qstr);
 	}
 	if (priv->progress > 0)
@@ -588,12 +604,6 @@ gs_app_to_string_append (GsApp *app, GString *str)
 				  color->red * 255.f,
 				  color->green * 255.f,
 				  color->blue * 255.f);
-	}
-	if (priv->keywords != NULL) {
-		for (i = 0; i < priv->keywords->len; i++) {
-			tmp = g_ptr_array_index (priv->keywords, i);
-			gs_app_kv_lpad (str, "keyword", tmp);
-		}
 	}
 	keys = g_hash_table_get_keys (priv->metadata);
 	for (GList *l = keys; l != NULL; l = l->next) {
@@ -1006,12 +1016,8 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 		/* transient, so ignore */
 		break;
 	default:
-		if (priv->state_recover != state) {
-			g_debug ("%s non-transient state now %s",
-				 gs_app_get_unique_id_unlocked (app),
-				 as_app_state_to_string (state));
+		if (priv->state_recover != state)
 			priv->state_recover = state;
-		}
 		break;
 	}
 
@@ -2329,8 +2335,6 @@ gs_app_set_license (GsApp *app, GsAppQuality quality, const gchar *license)
 		    g_strcmp0 (tokens[i], "|") == 0)
 			continue;
 		if (gs_app_get_license_token_is_nonfree (tokens[i])) {
-			g_debug ("nonfree license from %s: '%s'",
-				 gs_app_get_id (app), tokens[i]);
 			priv->license_is_free = FALSE;
 			break;
 		}
@@ -2817,7 +2821,7 @@ gs_app_set_management_plugin (GsApp *app, const gchar *management_plugin)
 	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* plugins cannot adopt wildcard packages */
-	if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX)) {
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
 		g_warning ("plugins should not set the management plugin on "
 			   "%s to %s -- create a new GsApp in refine()!",
 			   gs_app_get_unique_id_unlocked (app),
@@ -3641,44 +3645,6 @@ gs_app_add_key_color (GsApp *app, GdkRGBA *key_color)
 }
 
 /**
- * gs_app_get_keywords:
- * @app: a #GsApp
- *
- * Gets the list of application keywords in the users locale.
- *
- * Returns: (element-type utf8) (transfer none): a list
- *
- * Since: 3.22
- **/
-GPtrArray *
-gs_app_get_keywords (GsApp *app)
-{
-	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	return priv->keywords;
-}
-
-/**
- * gs_app_set_keywords:
- * @app: a #GsApp
- * @keywords: (element-type utf8): a set of keywords
- *
- * Sets the list of application keywords in the users locale.
- *
- * Since: 3.22
- **/
-void
-gs_app_set_keywords (GsApp *app, GPtrArray *keywords)
-{
-	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = NULL;
-	g_return_if_fail (GS_IS_APP (app));
-	g_return_if_fail (keywords != NULL);
-	locker = g_mutex_locker_new (&priv->mutex);
-	_g_set_ptr_array (&priv->keywords, keywords);
-}
-
-/**
  * gs_app_add_kudo:
  * @app: a #GsApp
  * @kudo: a #GsAppKudo, e.g. %GS_APP_KUDO_MY_LANGUAGE
@@ -3785,11 +3751,7 @@ gs_app_get_kudos_percentage (GsApp *app)
 		percentage += 20;
 	if ((priv->kudos & GS_APP_KUDO_HAS_KEYWORDS) > 0)
 		percentage += 5;
-	if ((priv->kudos & GS_APP_KUDO_USES_APP_MENU) > 0)
-		percentage += 10;
 	if ((priv->kudos & GS_APP_KUDO_HAS_SCREENSHOTS) > 0)
-		percentage += 20;
-	if ((priv->kudos & GS_APP_KUDO_PERFECT_SCREENSHOTS) > 0)
 		percentage += 20;
 	if ((priv->kudos & GS_APP_KUDO_HIGH_CONTRAST) > 0)
 		percentage += 20;
@@ -3853,7 +3815,7 @@ gs_app_set_to_be_installed (GsApp *app, gboolean to_be_installed)
 /**
  * gs_app_has_quirk:
  * @app: a #GsApp
- * @quirk: a #AsAppQuirk, e.g. %AS_APP_QUIRK_COMPULSORY
+ * @quirk: a #GsAppQuirk, e.g. %GS_APP_QUIRK_COMPULSORY
  *
  * Finds out if an application has a specific quirk.
  *
@@ -3862,7 +3824,7 @@ gs_app_set_to_be_installed (GsApp *app, gboolean to_be_installed)
  * Since: 3.22
  **/
 gboolean
-gs_app_has_quirk (GsApp *app, AsAppQuirk quirk)
+gs_app_has_quirk (GsApp *app, GsAppQuirk quirk)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), FALSE);
@@ -3873,18 +3835,22 @@ gs_app_has_quirk (GsApp *app, AsAppQuirk quirk)
 /**
  * gs_app_add_quirk:
  * @app: a #GsApp
- * @quirk: a #AsAppQuirk, e.g. %AS_APP_QUIRK_COMPULSORY
+ * @quirk: a #GsAppQuirk, e.g. %GS_APP_QUIRK_COMPULSORY
  *
  * Adds a quirk to an application.
  *
  * Since: 3.22
  **/
 void
-gs_app_add_quirk (GsApp *app, AsAppQuirk quirk)
+gs_app_add_quirk (GsApp *app, GsAppQuirk quirk)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	/* same */
+	if ((priv->quirk & quirk) > 0)
+		return;
 
 	locker = g_mutex_locker_new (&priv->mutex);
 	priv->quirk |= quirk;
@@ -3894,18 +3860,22 @@ gs_app_add_quirk (GsApp *app, AsAppQuirk quirk)
 /**
  * gs_app_remove_quirk:
  * @app: a #GsApp
- * @quirk: a #AsAppQuirk, e.g. %AS_APP_QUIRK_COMPULSORY
+ * @quirk: a #GsAppQuirk, e.g. %GS_APP_QUIRK_COMPULSORY
  *
  * Removes a quirk from an application.
  *
  * Since: 3.22
  **/
 void
-gs_app_remove_quirk (GsApp *app, AsAppQuirk quirk)
+gs_app_remove_quirk (GsApp *app, GsAppQuirk quirk)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+
+	/* same */
+	if ((priv->quirk & quirk) == 0)
+		return;
 
 	locker = g_mutex_locker_new (&priv->mutex);
 	priv->quirk &= ~quirk;
@@ -4210,8 +4180,6 @@ gs_app_finalize (GObject *object)
 	g_ptr_array_unref (priv->categories);
 	g_ptr_array_unref (priv->key_colors);
 	g_clear_object (&priv->cancellable);
-	if (priv->keywords != NULL)
-		g_ptr_array_unref (priv->keywords);
 	if (priv->local_file != NULL)
 		g_object_unref (priv->local_file);
 	if (priv->content_rating != NULL)
@@ -4467,4 +4435,146 @@ gs_app_new_from_unique_id (const gchar *unique_id)
 	return app;
 }
 
-/* vim: set noexpandtab: */
+/**
+ * gs_app_get_origin_ui:
+ * @app: a #GsApp
+ *
+ * Gets the package origin that's suitable for UI use.
+ *
+ * Returns: The package origin for UI use
+ *
+ * Since: 3.32
+ **/
+gchar *
+gs_app_get_origin_ui (GsApp *app)
+{
+	/* use the distro name for official packages */
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE)) {
+		g_autoptr(GsOsRelease) os_release = gs_os_release_new (NULL);
+		if (os_release != NULL)
+			return g_strdup (gs_os_release_get_name (os_release));
+	}
+
+	/* use "Local file" rather than the filename for local files */
+	if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE_LOCAL) {
+		/* TRANSLATORS: this is a locally downloaded package */
+		return g_strdup (_("Local file"));
+	}
+
+	/* capitalize "Flathub" and "Flathub Beta" */
+	if (g_strcmp0 (gs_app_get_origin (app), "flathub") == 0) {
+		return g_strdup ("Flathub");
+	} else if (g_strcmp0 (gs_app_get_origin (app), "flathub-beta") == 0) {
+		return g_strdup ("Flathub Beta");
+	}
+
+	/* fall back to origin */
+	return g_strdup (gs_app_get_origin (app));
+}
+
+/**
+ * gs_app_get_packaging_format:
+ * @app: a #GsApp
+ *
+ * Gets the packaging format, e.g. 'RPM' or 'Flatpak'.
+ *
+ * Returns: The packaging format
+ *
+ * Since: 3.32
+ **/
+gchar *
+gs_app_get_packaging_format (GsApp *app)
+{
+	AsBundleKind bundle_kind;
+	const gchar *bundle_kind_ui;
+	const gchar *packaging_format;
+
+	/* does the app have packaging format set? */
+	packaging_format = gs_app_get_metadata_item (app, "GnomeSoftware::PackagingFormat");
+	if (packaging_format != NULL)
+		return g_strdup (packaging_format);
+
+	/* fall back to bundle kind */
+	bundle_kind = gs_app_get_bundle_kind (app);
+	switch (bundle_kind) {
+	case AS_BUNDLE_KIND_LIMBA:
+		bundle_kind_ui = "Limba";
+		break;
+	case AS_BUNDLE_KIND_FLATPAK:
+		bundle_kind_ui = "Flatpak";
+		break;
+	case AS_BUNDLE_KIND_SNAP:
+		bundle_kind_ui = "Snap";
+		break;
+	case AS_BUNDLE_KIND_PACKAGE:
+		bundle_kind_ui = _("Package");
+		break;
+	case AS_BUNDLE_KIND_CABINET:
+		bundle_kind_ui = "Cabinet";
+		break;
+	case AS_BUNDLE_KIND_APPIMAGE:
+		bundle_kind_ui = "AppImage";
+		break;
+	default:
+		g_warning ("unhandled bundle kind %s", as_bundle_kind_to_string (bundle_kind));
+		bundle_kind_ui = as_bundle_kind_to_string (bundle_kind);
+	}
+
+	g_assert (bundle_kind_ui != NULL);
+	return g_strdup (bundle_kind_ui);
+}
+
+/**
+ * gs_app_subsume_metadata:
+ * @app: a #GsApp
+ * @donor: another #GsApp
+ *
+ * Copies any metadata from @donor to @app.
+ *
+ * Since: 3.32
+ **/
+void
+gs_app_subsume_metadata (GsApp *app, GsApp *donor)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (donor);
+	g_autoptr(GList) keys = g_hash_table_get_keys (priv->metadata);
+	for (GList *l = keys; l != NULL; l = l->next) {
+		const gchar *key = l->data;
+		const gchar *value = gs_app_get_metadata_item (donor, key);
+		if (gs_app_get_metadata_item (app, key) != NULL)
+			continue;
+		gs_app_set_metadata (app, key, value);
+	}
+}
+
+GsAppPermissions
+gs_app_get_permissions (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
+	return priv->permissions;
+}
+
+void
+gs_app_set_permissions (GsApp *app, GsAppPermissions permissions)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
+	priv->permissions = permissions;
+}
+
+GsAppPermissions
+gs_app_get_update_permissions (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
+	return priv->update_permissions;
+}
+
+void
+gs_app_set_update_permissions (GsApp *app, GsAppPermissions update_permissions)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
+	priv->update_permissions = update_permissions;
+}

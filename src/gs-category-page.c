@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more category.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -164,9 +150,6 @@ gs_category_page_get_apps_cb (GObject *source_object,
 			tile = make_addon_tile_for_category (app, self->subcategory);
 		} else {
 			tile = gs_popular_tile_new (app);
-			if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
-			    gs_utils_list_has_app_fuzzy (list, app))
-				gs_popular_tile_show_source (GS_POPULAR_TILE (tile), TRUE);
 		}
 
 		g_signal_connect (tile, "clicked",
@@ -306,6 +289,8 @@ gs_category_page_set_featured_apps (GsCategoryPage *self)
 					 "category", featured_subcat,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader,
 					    plugin_job,
@@ -325,10 +310,8 @@ gs_category_page_reload (GsPage *page)
 	if (self->subcategory == NULL)
 		return;
 
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_object_unref (self->cancellable);
-	}
+	g_cancellable_cancel (self->cancellable);
+	g_clear_object (&self->cancellable);
 	self->cancellable = g_cancellable_new ();
 
 	g_debug ("search using %s/%s",
@@ -384,9 +367,9 @@ gs_category_page_reload (GsPage *page)
 					 "category", self->subcategory,
 					 "filter-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE,
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					 NULL);
 	gs_plugin_job_set_sort_func (plugin_job, _max_results_sort_cb);
 	gs_plugin_loader_job_process_async (self->plugin_loader,
@@ -543,10 +526,8 @@ gs_category_page_dispose (GObject *object)
 {
 	GsCategoryPage *self = GS_CATEGORY_PAGE (object);
 
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_clear_object (&self->cancellable);
-	}
+	g_cancellable_cancel (self->cancellable);
+	g_clear_object (&self->cancellable);
 
 	g_clear_object (&self->builder);
 	g_clear_object (&self->category);
@@ -634,5 +615,3 @@ gs_category_page_new (void)
 	self = g_object_new (GS_TYPE_CATEGORY_PAGE, NULL);
 	return self;
 }
-
-/* vim: set noexpandtab: */

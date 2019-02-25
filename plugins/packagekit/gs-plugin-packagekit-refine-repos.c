@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -38,12 +24,15 @@
 
 struct GsPluginData {
 	PkClient	*client;
+	GMutex		 client_mutex;
 };
 
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+
+	g_mutex_init (&priv->client_mutex);
 	priv->client = pk_client_new ();
 	pk_client_set_background (priv->client, FALSE);
 	pk_client_set_cache_age (priv->client, G_MAXUINT);
@@ -56,6 +45,7 @@ void
 gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_mutex_clear (&priv->client_mutex);
 	g_object_unref (priv->client);
 }
 
@@ -74,12 +64,14 @@ gs_plugin_packagekit_refine_repo_from_filename (GsPlugin *plugin,
 
 	to_array[0] = filename;
 	gs_packagekit_helper_add_app (helper, app);
+	g_mutex_lock (&priv->client_mutex);
 	results = pk_client_search_files (priv->client,
 	                                  pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1),
 	                                  (gchar **) to_array,
 	                                  cancellable,
 	                                  gs_packagekit_helper_cb, helper,
 	                                  error);
+	g_mutex_unlock (&priv->client_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to search file %s: ", filename);
 		return FALSE;
@@ -107,7 +99,7 @@ gs_plugin_refine (GsPlugin *plugin,
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 		const gchar *fn;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_kind (app) != AS_APP_KIND_SOURCE)
 			continue;

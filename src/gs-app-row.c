@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -37,7 +23,10 @@ typedef struct
 	GtkWidget	*image;
 	GtkWidget	*name_box;
 	GtkWidget	*name_label;
-	GtkWidget	*version_label;
+	GtkWidget	*version_box;
+	GtkWidget	*version_current_label;
+	GtkWidget	*version_arrow_label;
+	GtkWidget	*version_update_label;
 	GtkWidget	*star;
 	GtkWidget	*folder_label;
 	GtkWidget	*description_box;
@@ -115,39 +104,6 @@ gs_app_row_get_description (GsAppRow *app_row)
 	return g_string_new (tmp);
 }
 
-static gchar *
-gs_app_row_format_version_update (GsApp *app)
-{
-	const gchar *tmp;
-	const gchar *version_current = NULL;
-	const gchar *version_update = NULL;
-
-	/* current version */
-	tmp = gs_app_get_version_ui (app);
-	if (tmp != NULL && tmp[0] != '\0')
-		version_current = tmp;
-
-	/* update version */
-	tmp = gs_app_get_update_version_ui (app);
-	if (tmp != NULL && tmp[0] != '\0')
-		version_update = tmp;
-
-	/* have both */
-	if (version_current != NULL && version_update != NULL &&
-	    g_strcmp0 (version_current, version_update) != 0) {
-		return g_strdup_printf ("%s ▶ %s",
-					version_current,
-					version_update);
-	}
-
-	/* just update */
-	if (version_update)
-		return g_strdup (version_update);
-
-	/* we have nothing, nada, zilch */
-	return NULL;
-}
-
 static void
 gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 {
@@ -202,7 +158,7 @@ gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 		break;
 	case AS_APP_STATE_UPDATABLE:
 	case AS_APP_STATE_INSTALLED:
-		if (!gs_app_has_quirk (priv->app, AS_APP_QUIRK_COMPULSORY))
+		if (!gs_app_has_quirk (priv->app, GS_APP_QUIRK_COMPULSORY))
 			gtk_widget_set_visible (priv->button, TRUE);
 		/* TRANSLATORS: this is a button next to the search results that
 		 * allows the application to be easily removed */
@@ -239,7 +195,7 @@ gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 	case AS_APP_STATE_INSTALLED:
 		gtk_widget_set_visible (priv->button,
 					!gs_app_has_quirk (priv->app,
-							   AS_APP_QUIRK_COMPULSORY));
+							   GS_APP_QUIRK_COMPULSORY));
 		break;
 	default:
 		gtk_widget_set_visible (priv->button, FALSE);
@@ -319,7 +275,7 @@ gs_app_row_refresh (GsAppRow *app_row)
 	}
 
 	/* add warning */
-	if (gs_app_has_quirk (priv->app, AS_APP_QUIRK_REMOVABLE_HARDWARE)) {
+	if (gs_app_has_quirk (priv->app, GS_APP_QUIRK_REMOVABLE_HARDWARE)) {
 		gtk_label_set_text (GTK_LABEL (priv->label_warning),
 				    /* TRANSLATORS: during the update the device
 				     * will restart into a special update-only mode */
@@ -358,24 +314,53 @@ gs_app_row_refresh (GsAppRow *app_row)
 	}
 
 	/* name */
-	if (g_strcmp0 (gs_app_get_branch (priv->app), "master") == 0) {
-		g_autofree gchar *name = NULL;
-		/* TRANSLATORS: not translated to match what flatpak does */
-		name = g_strdup_printf ("%s (Nightly)",
-					gs_app_get_name (priv->app));
-		gtk_label_set_label (GTK_LABEL (priv->name_label), name);
-	} else {
-		gtk_label_set_label (GTK_LABEL (priv->name_label),
-				     gs_app_get_name (priv->app));
-	}
+	gtk_label_set_label (GTK_LABEL (priv->name_label),
+	                     gs_app_get_name (priv->app));
+
 	if (priv->show_update) {
-		g_autofree gchar *verstr = NULL;
-		verstr = gs_app_row_format_version_update (priv->app);
-		gtk_label_set_label (GTK_LABEL (priv->version_label), verstr);
-		gtk_widget_set_visible (priv->version_label, verstr != NULL);
+		const gchar *version_current = NULL;
+		const gchar *version_update = NULL;
+
+		/* current version */
+		tmp = gs_app_get_version_ui (priv->app);
+		if (tmp != NULL && tmp[0] != '\0') {
+			version_current = tmp;
+			gtk_label_set_label (GTK_LABEL (priv->version_current_label),
+			                     version_current);
+			gtk_widget_show (priv->version_current_label);
+		} else {
+			gtk_widget_hide (priv->version_current_label);
+		}
+
+		/* update version */
+		tmp = gs_app_get_update_version_ui (priv->app);
+		if (tmp != NULL && tmp[0] != '\0' &&
+		    g_strcmp0 (tmp, version_current) != 0) {
+			version_update = tmp;
+			gtk_label_set_label (GTK_LABEL (priv->version_update_label),
+			                     version_update);
+			gtk_widget_show (priv->version_update_label);
+		} else {
+			gtk_widget_hide (priv->version_update_label);
+		}
+
+		/* have both: show arrow */
+		if (version_current != NULL && version_update != NULL &&
+		    g_strcmp0 (version_current, version_update) != 0) {
+			gtk_widget_show (priv->version_arrow_label);
+		} else {
+			gtk_widget_hide (priv->version_arrow_label);
+		}
+
+		/* show the box if we have either of the versions */
+		if (version_current != NULL || version_update != NULL)
+			gtk_widget_show (priv->version_box);
+		else
+			gtk_widget_hide (priv->version_box);
+
 		gtk_widget_hide (priv->star);
 	} else {
-		gtk_widget_hide (priv->version_label);
+		gtk_widget_hide (priv->version_box);
 		if (missing_search_result || gs_app_get_rating (priv->app) <= 0) {
 			gtk_widget_hide (priv->star);
 		} else {
@@ -384,8 +369,6 @@ gs_app_row_refresh (GsAppRow *app_row)
 			gs_star_widget_set_rating (GS_STAR_WIDGET (priv->star),
 						   gs_app_get_rating (priv->app));
 		}
-		gtk_label_set_label (GTK_LABEL (priv->version_label),
-				     gs_app_get_version_ui (priv->app));
 	}
 
 	/* folders */
@@ -483,6 +466,14 @@ gs_app_row_refresh (GsAppRow *app_row)
 		gtk_widget_show (priv->label_app_size);
 	} else {
 		gtk_widget_hide (priv->label_app_size);
+	}
+
+	/* add warning */
+	if (priv->show_update &&
+	    gs_app_has_quirk (priv->app, GS_APP_QUIRK_NEW_PERMISSIONS)) {
+		gtk_label_set_text (GTK_LABEL (priv->label_warning),
+		                    _("Requires additional permissions"));
+		gtk_widget_show (priv->label_warning);
 	}
 }
 
@@ -667,7 +658,10 @@ gs_app_row_class_init (GsAppRowClass *klass)
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, image);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, name_box);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, name_label);
-	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_label);
+	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_box);
+	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_current_label);
+	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_arrow_label);
+	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_update_label);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, star);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, folder_label);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, description_box);
@@ -834,5 +828,3 @@ gs_app_row_new (GsApp *app)
 	gs_app_row_set_app (GS_APP_ROW (app_row), app);
 	return app_row;
 }
-
-/* vim: set noexpandtab: */

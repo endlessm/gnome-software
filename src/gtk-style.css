@@ -51,6 +51,7 @@
 
 .round-button {
 	border-radius: 16px;
+	-gtk-outline-radius: 16px;
 }
 
 .details-license-free,
@@ -132,7 +133,6 @@
 .details-license-unknown:backdrop {
 	border-color: #dbdbdb;
 }
-
 
 .kudo-pill {
 	color: @theme_selected_fg_color;
@@ -357,6 +357,10 @@
 	color: white;
 }
 
+.version-arrow-label {
+	font-size: x-small;
+}
+
 .overview-more-button {
 	font-size: smaller;
 	padding: 0px 15px;
@@ -405,6 +409,10 @@ button.star, .button.star {
 	padding: 0;
 	box-shadow: none;
 	outline-offset: -1px;
+}
+
+modelbutton {
+	padding: 3px;
 }
 
 /* i have no idea why GTK adds padding here */

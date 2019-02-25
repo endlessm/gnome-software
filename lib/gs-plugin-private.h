@@ -2,25 +2,10 @@
  *
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef __GS_PLUGIN_PRIVATE_H
-#define __GS_PLUGIN_PRIVATE_H
+#pragma once
 
 #include <appstream-glib.h>
 #include <glib-object.h>
@@ -40,9 +25,6 @@ GsPluginAction	 gs_plugin_action_from_string		(const gchar	*action);
 const gchar	*gs_plugin_action_to_function_name	(GsPluginAction	 action);
 
 void		 gs_plugin_clear_data			(GsPlugin	*plugin);
-void		 gs_plugin_action_start			(GsPlugin	*plugin,
-							 gboolean	 exclusive);
-void		 gs_plugin_action_stop			(GsPlugin	*plugin);
 void		 gs_plugin_set_scale			(GsPlugin	*plugin,
 							 guint		 scale);
 guint		 gs_plugin_get_order			(GsPlugin	*plugin);
@@ -59,8 +41,6 @@ void		 gs_plugin_set_language			(GsPlugin	*plugin,
 							 const gchar	*language);
 void		 gs_plugin_set_auth_array		(GsPlugin	*plugin,
 							 GPtrArray	*auth_array);
-void		 gs_plugin_set_running_other		(GsPlugin	*plugin,
-							 gboolean	 running_other);
 GPtrArray	*gs_plugin_get_rules			(GsPlugin	*plugin,
 							 GsPluginRule	 rule);
 gpointer	 gs_plugin_get_symbol			(GsPlugin	*plugin,
@@ -72,7 +52,3 @@ void		 gs_plugin_set_network_monitor		(GsPlugin		*plugin,
 							 GNetworkMonitor	*monitor);
 
 G_END_DECLS
-
-#endif /* __GS_PLUGIN_PRIVATE_H */
-
-/* vim: set noexpandtab: */

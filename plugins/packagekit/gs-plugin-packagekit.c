@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -40,12 +26,15 @@
 
 struct GsPluginData {
 	PkTask			*task;
+	GMutex			 task_mutex;
 };
 
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+
+	g_mutex_init (&priv->task_mutex);
 	priv->task = pk_task_new ();
 	pk_client_set_background (PK_CLIENT (priv->task), FALSE);
 	pk_client_set_cache_age (PK_CLIENT (priv->task), G_MAXUINT);
@@ -55,6 +44,7 @@ void
 gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_mutex_clear (&priv->task_mutex);
 	g_object_unref (priv->task);
 }
 
@@ -80,11 +70,13 @@ gs_plugin_add_sources_related (GsPlugin *plugin,
 					 PK_FILTER_ENUM_ARCH,
 					 PK_FILTER_ENUM_NOT_COLLECTIONS,
 					 -1);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_get_packages (PK_CLIENT(priv->task),
 					   filter,
 					   cancellable,
 					   gs_packagekit_helper_cb, helper,
 					   error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to get sources related: ");
 		return FALSE;
@@ -141,11 +133,13 @@ gs_plugin_add_sources (GsPlugin *plugin,
 					 PK_FILTER_ENUM_NOT_DEVELOPMENT,
 					 PK_FILTER_ENUM_NOT_SUPPORTED,
 					 -1);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_get_repo_list (PK_CLIENT(priv->task),
 					   filter,
 					   cancellable,
 					   gs_packagekit_helper_cb, helper,
 					   error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error))
 		return FALSE;
 	hash = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
@@ -157,7 +151,8 @@ gs_plugin_add_sources (GsPlugin *plugin,
 		app = gs_app_new (id);
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 		gs_app_set_kind (app, AS_APP_KIND_SOURCE);
-		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 		gs_app_set_state (app, pk_repo_detail_get_enabled (rd) ?
 				  AS_APP_STATE_INSTALLED : AS_APP_STATE_AVAILABLE);
 		gs_app_set_name (app,
@@ -189,12 +184,14 @@ gs_plugin_app_origin_repo_enable (GsPlugin *plugin,
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
 	                                 gs_app_get_origin (app),
 	                                 TRUE,
 	                                 cancellable,
 	                                 gs_packagekit_helper_cb, helper,
 	                                 error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_utils_error_add_origin_id (error, app);
 		return FALSE;
@@ -221,12 +218,14 @@ gs_plugin_repo_enable (GsPlugin *plugin,
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 	gs_packagekit_helper_add_app (helper, app);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
 					 gs_app_get_id (app),
 					 TRUE,
 					 cancellable,
 					 gs_packagekit_helper_cb, helper,
 					 error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_app_set_state_recover (app);
 		gs_utils_error_add_origin_id (error, app);
@@ -297,11 +296,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 		/* actually install the package */
 		gs_packagekit_helper_add_app (helper, app);
+		g_mutex_lock (&priv->task_mutex);
 		results = pk_task_install_packages_sync (priv->task,
 							 package_ids,
 							 cancellable,
 							 gs_packagekit_helper_cb, helper,
 							 error);
+		g_mutex_unlock (&priv->task_mutex);
 		if (!gs_plugin_packagekit_results_valid (results, error)) {
 			gs_app_set_state_recover (app);
 			return FALSE;
@@ -363,6 +364,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 					     "no packages to install");
 			return FALSE;
 		}
+
 		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		addons = gs_app_get_addons (app);
 		for (i = 0; i < gs_app_list_length (addons); i++) {
@@ -371,11 +373,13 @@ gs_plugin_app_install (GsPlugin *plugin,
 				gs_app_set_state (addon, AS_APP_STATE_INSTALLING);
 		}
 		gs_packagekit_helper_add_app (helper, app);
+		g_mutex_lock (&priv->task_mutex);
 		results = pk_task_install_packages_sync (priv->task,
 							 (gchar **) array_package_ids->pdata,
 							 cancellable,
 							 gs_packagekit_helper_cb, helper,
 							 error);
+		g_mutex_unlock (&priv->task_mutex);
 		if (!gs_plugin_packagekit_results_valid (results, error)) {
 			gs_app_set_state_recover (app);
 			return FALSE;
@@ -395,13 +399,16 @@ gs_plugin_app_install (GsPlugin *plugin,
 		}
 		local_filename = g_file_get_path (gs_app_get_local_file (app));
 		package_ids = g_strsplit (local_filename, "\t", -1);
+
 		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		gs_packagekit_helper_add_app (helper, app);
+		g_mutex_lock (&priv->task_mutex);
 		results = pk_task_install_files_sync (priv->task,
 						      package_ids,
 						      cancellable,
 						      gs_packagekit_helper_cb, helper,
 						      error);
+		g_mutex_unlock (&priv->task_mutex);
 		if (!gs_plugin_packagekit_results_valid (results, error)) {
 			gs_app_set_state_recover (app);
 			return FALSE;
@@ -444,12 +451,14 @@ gs_plugin_repo_disable (GsPlugin *plugin,
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
 	gs_app_set_state (app, AS_APP_STATE_REMOVING);
 	gs_packagekit_helper_add_app (helper, app);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
 					 gs_app_get_id (app),
 					 FALSE,
 					 cancellable,
 					 gs_packagekit_helper_cb, helper,
 					 error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_app_set_state_recover (app);
 		gs_utils_error_add_origin_id (error, app);
@@ -513,12 +522,14 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	/* do the action */
 	gs_app_set_state (app, AS_APP_STATE_REMOVING);
 	gs_packagekit_helper_add_app (helper, app);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_task_remove_packages_sync (priv->task,
 						package_ids,
 						TRUE, GS_PACKAGEKIT_AUTOREMOVE,
 						cancellable,
 						gs_packagekit_helper_cb, helper,
 						error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_app_set_state_recover (app);
 		return FALSE;
@@ -540,6 +551,7 @@ gs_plugin_packagekit_build_update_app (GsPlugin *plugin, PkPackage *package)
 	if (app != NULL)
 		return app;
 	app = gs_app_new (NULL);
+	gs_plugin_packagekit_set_packaging_format (plugin, app);
 	gs_app_add_source (app, pk_package_get_name (package));
 	gs_app_add_source_id (app, pk_package_get_id (package));
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST,
@@ -571,11 +583,13 @@ gs_plugin_add_updates (GsPlugin *plugin,
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_get_updates (PK_CLIENT (priv->task),
 					 pk_bitfield_value (PK_FILTER_ENUM_NONE),
 					 cancellable,
 					 gs_packagekit_helper_cb, helper,
 					 error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error))
 		return FALSE;
 
@@ -607,12 +621,14 @@ gs_plugin_add_search_files (GsPlugin *plugin,
 	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST,
 					 PK_FILTER_ENUM_ARCH,
 					 -1);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_search_files (PK_CLIENT (priv->task),
 	                                  filter,
 	                                  search,
 	                                  cancellable,
 	                                  gs_packagekit_helper_cb, helper,
 	                                  error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error))
 		return FALSE;
 
@@ -637,12 +653,14 @@ gs_plugin_add_search_what_provides (GsPlugin *plugin,
 	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST,
 					 PK_FILTER_ENUM_ARCH,
 					 -1);
+	g_mutex_lock (&priv->task_mutex);
 	results = pk_client_what_provides (PK_CLIENT (priv->task),
 	                                   filter,
 	                                   search,
 	                                   cancellable,
 	                                   gs_packagekit_helper_cb, helper,
 	                                   error);
+	g_mutex_unlock (&priv->task_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error))
 		return FALSE;
 

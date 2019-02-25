@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -80,7 +66,8 @@ typedef struct
 	gulong			 search_changed_id;
 	gchar			*events_info_uri;
 	gboolean		 in_mode_change;
-	GsPage			*page_last;
+	GsPage			*page;
+	GSimpleActionGroup	*auth_actions;
 } GsShellPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsShell, gs_shell, G_TYPE_OBJECT)
@@ -224,17 +211,6 @@ gs_shell_clean_back_entry_stack (GsShell *shell)
 	}
 }
 
-static void
-gs_shell_update_account_button_visibility (GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GPtrArray *auths = gs_plugin_loader_get_auths (priv->plugin_loader);
-	GtkWidget *account_button;
-
-	account_button = GTK_WIDGET (gtk_builder_get_object (priv->builder, "account_button"));
-	gtk_widget_set_visible (account_button, auths->len > 0);
-}
-
 void
 gs_shell_change_mode (GsShell *shell,
 		      GsShellMode mode,
@@ -260,7 +236,11 @@ gs_shell_change_mode (GsShell *shell,
 	gtk_widget_hide (widget);
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "buttonbox_main"));
 	gtk_widget_hide (widget);
+	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "menu_button"));
+	gtk_widget_hide (widget);
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "header_selection_menu_button"));
+	gtk_widget_hide (widget);
+	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "origin_box"));
 	gtk_widget_hide (widget);
 
 	priv->in_mode_change = TRUE;
@@ -357,9 +337,9 @@ gs_shell_change_mode (GsShell *shell,
 
 	priv->in_mode_change = TRUE;
 
-	if (priv->page_last)
-		gs_page_switch_from (priv->page_last);
-	g_set_object (&priv->page_last, page);
+	if (priv->page != NULL)
+		gs_page_switch_from (priv->page);
+	g_set_object (&priv->page, page);
 	gs_page_switch_to (page, scroll_up);
 	priv->in_mode_change = FALSE;
 
@@ -369,8 +349,6 @@ gs_shell_change_mode (GsShell *shell,
 
 	widget = gs_page_get_header_end_widget (page);
 	gs_shell_set_header_end_widget (shell, widget);
-
-	gs_shell_update_account_button_visibility (shell);
 
 	/* destroy any existing modals */
 	if (priv->modal_dialogs != NULL) {
@@ -661,130 +639,108 @@ search_mode_enabled_cb (GtkSearchBar *search_bar, GParamSpec *pspec, GsShell *sh
 }
 
 static void
-gs_shell_signin_button_cb (GtkButton *button, GsShell *shell)
+signin_activated_cb (GSimpleAction *action, GVariant *parameter, GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	const gchar *action_name, *auth_id;
 	GsAuth *auth;
 
-	auth = GS_AUTH (g_object_get_data (G_OBJECT (button), "auth"));
-	gs_page_authenticate (priv->page_last, NULL,
-			      gs_auth_get_provider_id (auth),
+	action_name = g_action_get_name (G_ACTION (action));
+	g_return_if_fail (g_str_has_prefix (action_name, "signin-"));
+	auth_id = action_name + strlen ("signin-");
+
+	auth = gs_plugin_loader_get_auth_by_id (priv->plugin_loader, auth_id);
+	g_return_if_fail (auth != NULL);
+
+	gs_page_authenticate (priv->page, NULL,
+			      gs_auth_get_auth_id (auth),
 			      priv->cancellable,
 			      NULL, NULL);
 }
 
 static void
-gs_shell_logout_cb (GObject *source,
-		    GAsyncResult *res,
-		    gpointer user_data)
-{
-	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
-	g_autoptr(GError) error = NULL;
-
-	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
-		g_warning ("failed to logout: %s",  error->message);
-		return;
-	}
-}
-
-static void
-gs_shell_signout_button_cb (GtkButton *button, GsShell *shell)
+signout_activated_cb (GSimpleAction *action, GVariant *parameter, GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	const gchar *action_name, *auth_id;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsAuth *auth;
 
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_AUTH_LOGOUT,
-					 "interactive", TRUE,
-					 "auth", g_object_get_data (G_OBJECT (button), "auth"),
-					 NULL);
+	action_name = g_action_get_name (G_ACTION (action));
+	g_return_if_fail (g_str_has_prefix (action_name, "signout-"));
+	auth_id = action_name + strlen ("signout-");
 
-	gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
-					    priv->cancellable,
-					    gs_shell_logout_cb,
-					    shell);
+	auth = gs_plugin_loader_get_auth_by_id (priv->plugin_loader, auth_id);
+	g_return_if_fail (auth != NULL);
 
+	gs_auth_set_goa_object (auth, NULL);
 }
 
 static void
-add_buttons_for_auth (GsShell *shell, GsAuth *auth)
+gs_shell_reload_auth_menus (GsShell *shell)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *account_box;
-	gboolean logged_in;
-	GtkWidget *signin_button;
-	GtkWidget *signout_button;
-	g_autofree gchar *signout_label = NULL;
-	g_autofree gchar *signin_label = NULL;
-
-	account_box = GTK_WIDGET (gtk_builder_get_object (priv->builder, "account_box"));
-	logged_in = gs_auth_has_flag (auth, GS_AUTH_FLAG_VALID);
-	signin_button = gtk_model_button_new ();
-	signout_button = gtk_model_button_new ();
-
-	signout_label = g_strdup_printf (_("Sign out from %s"),
-					 gs_auth_get_provider_name (auth));
-	if (logged_in)
-		signin_label = g_strdup_printf (_("Signed in into %s as %s"),
-						gs_auth_get_provider_name (auth),
-						gs_auth_get_username (auth));
-	else
-		signin_label = g_strdup_printf (_("Sign in to %s…"),
-						gs_auth_get_provider_name (auth));
-
-	g_object_set (signin_button,
-		      "text", signin_label,
-		      "sensitive", !logged_in, NULL);
-	g_object_set_data (G_OBJECT (signin_button), "auth", auth);
-
-	g_object_set (signout_button,
-		      "text", signout_label,
-		      "sensitive", logged_in, NULL);
-	g_object_set_data (G_OBJECT (signout_button), "auth", auth);
-
-	g_signal_connect (signin_button, "clicked",
-			  G_CALLBACK (gs_shell_signin_button_cb), shell);
-	g_signal_connect (signout_button, "clicked",
-			  G_CALLBACK (gs_shell_signout_button_cb), shell);
-
-	gtk_widget_show (signin_button);
-	gtk_widget_show (signout_button);
-	gtk_box_pack_start (GTK_BOX (account_box), signin_button, TRUE, TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (account_box), signout_button, TRUE, TRUE, 0);
-}
-
-static void
-account_button_clicked_cb (GtkButton *button, GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	GMenu *accounts_menu;
 	GPtrArray *auth_array;
-	GtkWidget *account_popover;
-	GtkWidget *account_box;
-	g_autoptr(GList) children = NULL;
+
+	accounts_menu = G_MENU (gtk_builder_get_object (priv->builder, "accounts_menu"));
+	g_menu_remove_all (accounts_menu);
 
 	auth_array = gs_plugin_loader_get_auths (priv->plugin_loader);
-	account_popover = GTK_WIDGET (gtk_builder_get_object (priv->builder, "account_popover"));
-	account_box = GTK_WIDGET (gtk_builder_get_object (priv->builder, "account_box"));
-
-	/* Remove existing buttons... */
-	children = gtk_container_get_children (GTK_CONTAINER (account_box));
-	for (GList *l = children; l != NULL; l = l->next)
-		gtk_container_remove (GTK_CONTAINER (account_box), GTK_WIDGET (l->data));
-
-	/* Add new ones... */
 	for (guint i = 0; i < auth_array->len; i++) {
 		GsAuth *auth = g_ptr_array_index (auth_array, i);
-		add_buttons_for_auth (shell, auth);
+		gboolean logged_in;
+		g_autofree gchar *signin_action_name = NULL;
+		GSimpleAction *signin_action;
+		g_autofree gchar *signin_target = NULL;
+		g_autofree gchar *signout_action_name = NULL;
+		GSimpleAction *signout_action;
+		g_autofree gchar *signout_target = NULL;
+		GoaObject *goa_object;
+		g_autofree gchar *signin_label = NULL;
+		g_autofree gchar *signout_label = NULL;
+		g_autoptr(GMenu) auth_menu = NULL;
+		g_autoptr(GMenuItem) signin_item = NULL;
+		g_autoptr(GMenuItem) signout_item = NULL;
 
-		/* Add sepeartor between each block */
-		if (i < auth_array->len - 1) {
-			GtkWidget *seprator = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
-			gtk_widget_show (seprator);
-			gtk_box_pack_start (GTK_BOX (account_box), seprator, TRUE, TRUE, 0);
+
+		goa_object = gs_auth_peek_goa_object (auth);
+		logged_in = goa_object != NULL;
+
+		auth_menu = g_menu_new ();
+		accounts_menu = G_MENU (gtk_builder_get_object (priv->builder, "accounts_menu"));
+		g_menu_append_section (accounts_menu, gs_auth_get_provider_name (auth), G_MENU_MODEL (auth_menu));
+
+		signin_action_name = g_strdup_printf ("signin-%s", gs_auth_get_auth_id (auth));
+		signin_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (priv->auth_actions), signin_action_name));
+		g_simple_action_set_enabled (signin_action, !logged_in);
+
+		signout_action_name = g_strdup_printf ("signout-%s", gs_auth_get_auth_id (auth));
+		signout_action = G_SIMPLE_ACTION (g_action_map_lookup_action (G_ACTION_MAP (priv->auth_actions), signout_action_name));
+		g_simple_action_set_enabled (signout_action, logged_in);
+
+
+		if (logged_in) {
+			GoaAccount *goa_account = goa_object_peek_account (goa_object);
+
+			/* TRANSLATORS: menu item that signs into the named account with a particular username */
+			signin_label = g_strdup_printf (_("Signed in as %s"),
+							goa_account_get_presentation_identity (goa_account));
+		} else {
+			/* TRANSLATORS: menu item that signs into the named account */
+			signin_label = g_strdup_printf (_("Sign in…"));
 		}
-	}
 
-	gtk_popover_set_relative_to (GTK_POPOVER (account_popover), GTK_WIDGET (button));
-	gtk_popover_popup (GTK_POPOVER (account_popover));
+		signin_target = g_strdup_printf ("auth.%s", signin_action_name);
+		signin_item = g_menu_item_new (signin_label, signin_target);
+		g_menu_append_item (auth_menu, signin_item);
+
+		/* TRANSLATORS: menu item for signing out from the named account */
+		signout_label = g_strdup_printf (_("Sign out"));
+		signout_target = g_strdup_printf ("auth.%s", signout_action_name);
+		signout_item = g_menu_item_new (signout_label, signout_target);
+		g_menu_append_item (auth_menu, signout_item);
+	}
 }
 
 static gboolean
@@ -990,16 +946,6 @@ gs_shell_get_title_from_app (GsApp *app)
 	return g_strdup_printf (_("“%s”"), gs_app_get_id (app));
 }
 
-static gboolean
-gs_shell_show_detailed_error (GsShell *shell, const GError *error)
-{
-	if (error->code == GS_PLUGIN_ERROR_FAILED)
-		return TRUE;
-	if (error->code == GS_PLUGIN_ERROR_DOWNLOAD_FAILED)
-		return TRUE;
-	return FALSE;
-}
-
 static gchar *
 get_first_line (const gchar *str)
 {
@@ -1055,6 +1001,7 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 			/* TRANSLATORS: failure text for the in-app notification */
 			g_string_append (str, _("Unable to download updates"));
 		}
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	case GS_PLUGIN_ERROR_NO_NETWORK:
 		/* TRANSLATORS: failure text for the in-app notification */
@@ -1078,7 +1025,6 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
 		break;
 	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
-	case GS_PLUGIN_ERROR_PIN_REQUIRED:
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to download updates: "
 				        "authentication was required"));
@@ -1106,6 +1052,7 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 			/* TRANSLATORS: failure text for the in-app notification */
 			g_string_append (str, _("Unable to get list of updates"));
 		}
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
@@ -1120,10 +1067,6 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1141,7 +1084,6 @@ gs_shell_show_event_purchase (GsShell *shell, GsPluginEvent *event)
 	str_app = gs_shell_get_title_from_app (app);
 	switch (error->code) {
 	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
-	case GS_PLUGIN_ERROR_PIN_REQUIRED:
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to purchase %s: "
@@ -1173,14 +1115,11 @@ gs_shell_show_event_purchase (GsShell *shell, GsPluginEvent *event)
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to purchase %s"), str_app);
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
 		return FALSE;
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, GS_SHELL_EVENT_BUTTON_NONE);
@@ -1218,6 +1157,7 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 						       "as download failed"),
 						str_app);
 		}
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	case GS_PLUGIN_ERROR_NOT_SUPPORTED:
 		if (origin != NULL) {
@@ -1256,7 +1196,6 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
 		break;
 	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
-	case GS_PLUGIN_ERROR_PIN_REQUIRED:
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append_printf (str, _("Unable to install %s: "
 					       "authentication was required"),
@@ -1277,35 +1216,6 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 					       "install software"),
 					str_app);
 		break;
-	case GS_PLUGIN_ERROR_ACCOUNT_SUSPENDED:
-	case GS_PLUGIN_ERROR_ACCOUNT_DEACTIVATED:
-		if (origin != NULL) {
-			const gchar *url_homepage;
-
-			/* TRANSLATORS: failure text for the in-app notification,
-			 * the %s is the name of the authentication service,
-			 * e.g. "Ubuntu One" */
-			g_string_append_printf (str, _("Your %s account has been suspended."),
-						gs_app_get_name (origin));
-			g_string_append (str, " ");
-			/* TRANSLATORS: failure text for the in-app notification */
-			g_string_append (str, _("It is not possible to install "
-						"software until this has been resolved."));
-			url_homepage = gs_app_get_url (origin, AS_URL_KIND_HOMEPAGE);
-			if (url_homepage != NULL) {
-				g_autofree gchar *url = NULL;
-				url = g_strdup_printf ("<a href=\"%s\">%s</a>",
-						       url_homepage,
-						       url_homepage);
-				/* TRANSLATORS: failure text for the in-app notification,
-				 * where the %s is the clickable link (e.g.
-				 * "http://example.com/what-did-i-do-wrong/") */
-				msg = g_strdup_printf (_("For more information, visit %s."),
-							url);
-				g_string_append_printf (str, " %s", msg);
-			}
-		}
-		break;
 	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "Dell XPS 13") */
@@ -1319,6 +1229,7 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to install %s"), str_app);
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
@@ -1333,10 +1244,6 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1355,24 +1262,36 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 	g_autofree gchar *str_origin = NULL;
 	g_autoptr(GString) str = g_string_new (NULL);
 
-	str_app = gs_shell_get_title_from_app (app);
 	switch (error->code) {
 	case GS_PLUGIN_ERROR_DOWNLOAD_FAILED:
-		if (origin != NULL) {
+		if (app != NULL && origin != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
 			str_origin = gs_shell_get_title_from_origin (origin);
 			/* TRANSLATORS: failure text for the in-app notification,
 			 * where the first %s is the app name (e.g. "GIMP") and
 			 * the second %s is the origin, e.g. "Fedora" or
 			 * "Fedora Project [fedoraproject.org]" */
-			g_string_append_printf (str, _("Unable to update %s from %s"),
+			g_string_append_printf (str, _("Unable to update %s from %s as download failed"),
 					       str_app, str_origin);
 			buttons = TRUE;
-		} else {
+		} else if (app != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
 			 * where the %s is the application name (e.g. "GIMP") */
 			g_string_append_printf (str, _("Unable to update %s as download failed"),
 						str_app);
+		} else if (origin != NULL) {
+			str_origin = gs_shell_get_title_from_origin (origin);
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the origin, e.g. "Fedora" or
+			 * "Fedora Project [fedoraproject.org]" */
+			g_string_append_printf (str, _("Unable to install updates from %s as download failed"),
+						str_origin);
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append_printf (str, _("Unable to install updates as download failed"));
 		}
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	case GS_PLUGIN_ERROR_NO_NETWORK:
 		/* TRANSLATORS: failure text for the in-app notification */
@@ -1382,49 +1301,92 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 		buttons |= GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS;
 		break;
 	case GS_PLUGIN_ERROR_NO_SPACE:
-		/* TRANSLATORS: failure text for the in-app notification,
-		 * where the %s is the application name (e.g. "GIMP") */
-		g_string_append_printf (str, _("Unable to update %s: "
-					       "not enough disk space"),
-					str_app);
+		if (app != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the application name (e.g. "GIMP") */
+			g_string_append_printf (str, _("Unable to update %s: "
+						       "not enough disk space"),
+						str_app);
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append_printf (str, _("Unable to install updates: "
+						       "not enough disk space"));
+		}
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
 		break;
 	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
-	case GS_PLUGIN_ERROR_PIN_REQUIRED:
-		/* TRANSLATORS: failure text for the in-app notification,
-		 * where the %s is the application name (e.g. "GIMP") */
-		g_string_append_printf (str, _("Unable to update %s: "
-					       "authentication was required"),
-					str_app);
+		if (app != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the application name (e.g. "GIMP") */
+			g_string_append_printf (str, _("Unable to update %s: "
+						       "authentication was required"),
+						str_app);
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append_printf (str, _("Unable to install updates: "
+						       "authentication was required"));
+		}
 		break;
 	case GS_PLUGIN_ERROR_AUTH_INVALID:
-		/* TRANSLATORS: failure text for the in-app notification,
-		 * where the %s is the application name (e.g. "GIMP") */
-		g_string_append_printf (str, _("Unable to update %s: "
-					       "authentication was invalid"),
-					str_app);
+		if (app != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the application name (e.g. "GIMP") */
+			g_string_append_printf (str, _("Unable to update %s: "
+						       "authentication was invalid"),
+						str_app);
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append_printf (str, _("Unable to install updates: "
+						       "authentication was invalid"));
+		}
 		break;
 	case GS_PLUGIN_ERROR_NO_SECURITY:
-		/* TRANSLATORS: failure text for the in-app notification,
-		 * where the %s is the application name (e.g. "GIMP") */
-		g_string_append_printf (str, _("Unable to update %s: "
-					       "you do not have permission to "
-					       "update software"),
-					str_app);
+		if (app != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the application name (e.g. "GIMP") */
+			g_string_append_printf (str, _("Unable to update %s: "
+						       "you do not have permission to "
+						       "update software"),
+						str_app);
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append_printf (str, _("Unable to install updates: "
+						       "you do not have permission to "
+						       "update software"));
+		}
 		break;
 	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
-		/* TRANSLATORS: failure text for the in-app notification,
-		 * where the %s is the application name (e.g. "Dell XPS 13") */
-		g_string_append_printf (str, _("Unable to update %s: "
-					       "AC power is required"),
-					str_app);
+		if (app != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the application name (e.g. "Dell XPS 13") */
+			g_string_append_printf (str, _("Unable to update %s: "
+						       "AC power is required"),
+						str_app);
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the application name (e.g. "Dell XPS 13") */
+			g_string_append_printf (str, _("Unable to install updates: "
+						       "AC power is required"));
+		}
 		break;
 	case GS_PLUGIN_ERROR_CANCELLED:
 		break;
 	default:
-		/* TRANSLATORS: failure text for the in-app notification,
-		 * where the %s is the application name (e.g. "GIMP") */
-		g_string_append_printf (str, _("Unable to update %s"), str_app);
+		if (app != NULL) {
+			str_app = gs_shell_get_title_from_app (app);
+			/* TRANSLATORS: failure text for the in-app notification,
+			 * where the %s is the application name (e.g. "GIMP") */
+			g_string_append_printf (str, _("Unable to update %s"), str_app);
+		} else {
+			/* TRANSLATORS: failure text for the in-app notification */
+			g_string_append_printf (str, _("Unable to install updates"));
+		}
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
@@ -1439,10 +1401,6 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1478,12 +1436,15 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 						       "as download failed"),
 						str_app);
 		}
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	case GS_PLUGIN_ERROR_NO_NETWORK:
-		/* TRANSLATORS: failure text for the in-app notification */
-		g_string_append (str, _("Unable to upgrade: "
-					"internet access was required but "
-					"wasn’t available"));
+		/* TRANSLATORS: failure text for the in-app notification,
+		 * where the %s is the distro name (e.g. "Fedora 25") */
+		g_string_append_printf (str, _("Unable to upgrade to %s: "
+					       "internet access was required but "
+					       "wasn’t available"),
+					str_app);
 		buttons |= GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS;
 		break;
 	case GS_PLUGIN_ERROR_NO_SPACE:
@@ -1495,7 +1456,6 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
 		break;
 	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
-	case GS_PLUGIN_ERROR_PIN_REQUIRED:
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
@@ -1529,6 +1489,7 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s"), str_app);
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
@@ -1543,10 +1504,6 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1567,7 +1524,6 @@ gs_shell_show_event_remove (GsShell *shell, GsPluginEvent *event)
 	str_app = gs_shell_get_title_from_app (app);
 	switch (error->code) {
 	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
-	case GS_PLUGIN_ERROR_PIN_REQUIRED:
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s: authentication was required"),
@@ -1602,6 +1558,7 @@ gs_shell_show_event_remove (GsShell *shell, GsPluginEvent *event)
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s"), str_app);
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
@@ -1616,10 +1573,6 @@ gs_shell_show_event_remove (GsShell *shell, GsPluginEvent *event)
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1666,6 +1619,7 @@ gs_shell_show_event_launch (GsShell *shell, GsPluginEvent *event)
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
@@ -1680,10 +1634,6 @@ gs_shell_show_event_launch (GsShell *shell, GsPluginEvent *event)
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1720,14 +1670,11 @@ gs_shell_show_event_file_to_app (GsShell *shell, GsPluginEvent *event)
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
 		return FALSE;
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1764,14 +1711,11 @@ gs_shell_show_event_url_to_app (GsShell *shell, GsPluginEvent *event)
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
 		return FALSE;
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		g_string_append_printf (str, "\n%s", error->message);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1834,6 +1778,7 @@ gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
+		gs_shell_append_detailed_error (shell, str, error);
 		break;
 	}
 	if (str->len == 0)
@@ -1848,10 +1793,6 @@ gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
-
-	/* add extra debugging for debug builds */
-	if (gs_shell_show_detailed_error (shell, error))
-		gs_shell_append_detailed_error (shell, str, error);
 
 	/* show in-app notification */
 	gs_shell_show_event_app_notify (shell, str->str, buttons);
@@ -1936,7 +1877,6 @@ gs_shell_rescan_events (GsShell *shell)
 	}
 
 	/* nothing to show */
-	g_debug ("no events to show");
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "notification_event"));
 	gtk_revealer_set_reveal_child (GTK_REVEALER (widget), FALSE);
 }
@@ -1988,6 +1928,24 @@ gs_shell_setup_pages (GsShell *shell)
 	}
 }
 
+static void
+gs_shell_add_about_menu_item (GsShell *shell)
+{
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	GMenu *primary_menu;
+	g_autoptr(GMenuItem) menu_item = NULL;
+	g_autofree gchar *label = NULL;
+
+	primary_menu = G_MENU (gtk_builder_get_object (priv->builder, "primary_menu"));
+
+	/* TRANSLATORS: this is the menu item that opens the about window, e.g.
+	 * 'About Software' or 'About Application Installer' where the %s is
+	 * the application name chosen by the distro */
+	label = g_strdup_printf (_("About %s"), g_get_application_name ());
+	menu_item = g_menu_item_new (label, "app.about");
+	g_menu_append_item (primary_menu, menu_item);
+}
+
 void
 gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *cancellable)
 {
@@ -1995,6 +1953,7 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	GtkWidget *widget;
 	GtkStyleContext *style_context;
 	GsPage *page;
+	GPtrArray *auth_array;
 
 	g_return_if_fail (GS_IS_SHELL (shell));
 
@@ -2051,10 +2010,10 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	                  shell);
 
 	/* show the account popover when clicking on the account button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "account_button"));
+	/* widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "menu_button"));
 	g_signal_connect (widget, "clicked",
-	                  G_CALLBACK (account_button_clicked_cb),
-	                  shell);
+	                  G_CALLBACK (menu_button_clicked_cb),
+	                  shell); */
 
 	/* setup buttons */
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_back"));
@@ -2135,6 +2094,36 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 
 	/* coldplug */
 	gs_shell_rescan_events (shell);
+
+	/* primary menu */
+	gs_shell_add_about_menu_item (shell);
+
+	/* auth menu */
+	priv->auth_actions = g_simple_action_group_new ();
+	gtk_widget_insert_action_group (GTK_WIDGET (priv->main_window), "auth", G_ACTION_GROUP (priv->auth_actions));
+	auth_array = gs_plugin_loader_get_auths (priv->plugin_loader);
+	for (guint i = 0; i < auth_array->len; i++) {
+		GsAuth *auth = g_ptr_array_index (auth_array, i);
+		g_autoptr(GSimpleAction) signin_action = NULL;
+		g_autofree gchar *signin_action_name = NULL;
+		g_autoptr(GSimpleAction) signout_action = NULL;
+		g_autofree gchar *signout_action_name = NULL;
+
+		signin_action_name = g_strdup_printf ("signin-%s", gs_auth_get_auth_id (auth));
+		signin_action = g_simple_action_new (signin_action_name, NULL);
+		g_signal_connect (signin_action, "activate", G_CALLBACK (signin_activated_cb), shell);
+		g_action_map_add_action (G_ACTION_MAP (priv->auth_actions), G_ACTION (signin_action));
+
+		signout_action_name = g_strdup_printf ("signout-%s", gs_auth_get_auth_id (auth));
+		signout_action = g_simple_action_new (signout_action_name, NULL);
+		g_signal_connect (signout_action, "activate", G_CALLBACK (signout_activated_cb), shell);
+		g_action_map_add_action (G_ACTION_MAP (priv->auth_actions), G_ACTION (signout_action));
+
+		g_signal_connect_object (auth, "changed",
+					 G_CALLBACK (gs_shell_reload_auth_menus),
+					 shell, G_CONNECT_SWAPPED);
+		gs_shell_reload_auth_menus (shell);
+	}
 
 	/* show loading page, which triggers the initial refresh */
 	gs_shell_change_mode (shell, GS_SHELL_MODE_LOADING, NULL, TRUE);
@@ -2308,10 +2297,11 @@ gs_shell_dispose (GObject *object)
 	g_clear_object (&priv->plugin_loader);
 	g_clear_object (&priv->header_start_widget);
 	g_clear_object (&priv->header_end_widget);
-	g_clear_object (&priv->page_last);
+	g_clear_object (&priv->page);
 	g_clear_pointer (&priv->pages, g_hash_table_unref);
 	g_clear_pointer (&priv->events_info_uri, g_free);
 	g_clear_pointer (&priv->modal_dialogs, g_ptr_array_unref);
+	g_clear_object (&priv->auth_actions);
 
 	G_OBJECT_CLASS (gs_shell_parent_class)->dispose (object);
 }
@@ -2348,5 +2338,3 @@ gs_shell_new (void)
 	shell = g_object_new (GS_TYPE_SHELL, NULL);
 	return GS_SHELL (shell);
 }
-
-/* vim: set noexpandtab: */

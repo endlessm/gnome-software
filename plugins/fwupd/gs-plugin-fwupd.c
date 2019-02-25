@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2018 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -282,7 +268,8 @@ gs_plugin_fwupd_new_app_from_device (GsPlugin *plugin, FwupdDevice *dev)
 
 	/* default stuff */
 	gs_app_set_kind (app, AS_APP_KIND_FIRMWARE);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_CABINET);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_management_plugin (app, "fwupd");
 	gs_app_add_category (app, "System");
 	gs_fwupd_app_set_device_id (app, fwupd_device_get_id (dev));
@@ -328,7 +315,7 @@ gs_plugin_fwupd_new_app_from_device_raw (GsPlugin *plugin, FwupdDevice *device)
 	gs_app_set_kind (app, AS_APP_KIND_FIRMWARE);
 	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
 	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-	gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_version (app, fwupd_device_get_version (device));
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, fwupd_device_get_name (device));
 	gs_app_set_summary (app, GS_APP_QUALITY_LOWEST, fwupd_device_get_summary (device));
@@ -1031,7 +1018,7 @@ gs_plugin_add_sources (GsPlugin *plugin,
 		gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
 		gs_app_set_state (app, fwupd_remote_get_enabled (remote) ?
 				  AS_APP_STATE_INSTALLED : AS_APP_STATE_AVAILABLE);
-		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 		gs_app_set_name (app, GS_APP_QUALITY_LOWEST,
 				 fwupd_remote_get_title (remote));
 #if FWUPD_CHECK_VERSION(1,0,7)
@@ -1044,75 +1031,5 @@ gs_plugin_add_sources (GsPlugin *plugin,
 		gs_app_set_management_plugin (app, "fwupd");
 		gs_app_list_add (list, app);
 	}
-	return TRUE;
-}
-
-static gboolean
-gs_plugin_fwupd_add_releases (GsPlugin *plugin, GsApp *app,
-			      GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GError) error_local = NULL;
-	g_autoptr(GPtrArray) releases = NULL;
-
-	releases = fwupd_client_get_releases (priv->client,
-					      gs_fwupd_app_get_device_id (app),
-					      cancellable,
-					      &error_local);
-	if (releases == NULL) {
-		/* just ignore empty array */
-		if (g_error_matches (error_local,
-				     FWUPD_ERROR,
-				     FWUPD_ERROR_NOTHING_TO_DO)) {
-			return TRUE;
-		}
-		g_propagate_error (error, g_steal_pointer (&error_local));
-		return FALSE;
-	}
-	for (guint j = 0; j < releases->len; j++) {
-		FwupdRelease *rel = g_ptr_array_index (releases, j);
-		g_autoptr(GsApp) app2 = gs_app_new (NULL);
-		gs_fwupd_app_set_from_release (app2, rel);
-		gs_app_add_history (app, app2);
-	}
-	return TRUE;
-}
-
-static gboolean
-gs_plugin_fwupd_add_devices (GsPlugin *plugin, GsAppList *list,
-			     GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GPtrArray) devices = NULL;
-
-	/* get devices */
-	devices = fwupd_client_get_devices (priv->client, cancellable, error);
-	if (devices == NULL)
-		return FALSE;
-	for (guint i = 0; i < devices->len; i++) {
-		FwupdDevice *device = g_ptr_array_index (devices, i);
-		g_autoptr(GsApp) app = NULL;
-
-		/* ignore these, we can't do anything */
-		if (!fwupd_device_has_flag (device, FWUPD_DEVICE_FLAG_UPDATABLE))
-			continue;
-
-		/* add releases */
-		app = gs_plugin_fwupd_new_app_from_device_raw (plugin, device);
-		if (!gs_plugin_fwupd_add_releases (plugin, app, cancellable, error))
-			return FALSE;
-
-		/* add all */
-		gs_app_list_add (list, g_steal_pointer (&app));
-	}
-	return TRUE;
-}
-
-gboolean
-gs_plugin_add_search (GsPlugin *plugin, gchar **values, GsAppList *list,
-		      GCancellable *cancellable, GError **error)
-{
-	if (g_strv_contains ((const gchar * const *) values, "fwupd"))
-		return gs_plugin_fwupd_add_devices (plugin, list, cancellable, error);
 	return TRUE;
 }

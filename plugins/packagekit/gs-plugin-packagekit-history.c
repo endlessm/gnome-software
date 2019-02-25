@@ -3,21 +3,7 @@
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -25,6 +11,8 @@
 #include <packagekit-glib2/packagekit.h>
 
 #include <gnome-software.h>
+
+#include "packagekit-common.h"
 
 #define GS_PLUGIN_PACKAGEKIT_HISTORY_TIMEOUT	5000 /* ms */
 
@@ -67,6 +55,7 @@ gs_plugin_packagekit_refine_add_history (GsApp *app, GVariant *dict)
 	/* create new history item with same ID as parent */
 	history = gs_app_new (gs_app_get_id (app));
 	gs_app_set_kind (history, AS_APP_KIND_GENERIC);
+	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 	gs_app_set_name (history, GS_APP_QUALITY_NORMAL, gs_app_get_name (app));
 
 	/* get the installed state */
@@ -207,6 +196,7 @@ gs_plugin_packagekit_refine (GsPlugin *plugin,
 			if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED) {
 				g_autoptr(GsApp) app_dummy = NULL;
 				app_dummy = gs_app_new (gs_app_get_id (app));
+				gs_plugin_packagekit_set_packaging_format (plugin, app);
 				gs_app_set_metadata (app_dummy, "GnomeSoftware::Creator",
 						     gs_plugin_get_name (plugin));
 				gs_app_set_install_date (app_dummy, GS_APP_INSTALL_DATE_UNKNOWN);

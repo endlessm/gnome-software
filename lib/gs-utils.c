@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 /**
@@ -165,10 +151,16 @@ gs_utils_get_cache_filename (const gchar *kind,
 			     GsUtilsCacheFlags flags,
 			     GError **error)
 {
+	const gchar *tmp;
 	g_autofree gchar *basename = NULL;
 	g_autofree gchar *cachedir = NULL;
 	g_autoptr(GFile) cachedir_file = NULL;
 	g_autoptr(GPtrArray) candidates = g_ptr_array_new_with_free_func (g_free);
+
+	/* in the self tests */
+	tmp = g_getenv ("GS_SELF_TEST_CACHEDIR");
+	if (tmp != NULL)
+		return g_build_filename (tmp, kind, resource, NULL);
 
 	/* get basename */
 	if (flags & GS_UTILS_CACHE_FLAG_USE_HASH) {
@@ -1193,5 +1185,3 @@ gs_utils_parse_evr (const gchar *evr,
 	g_assert (*out_release != NULL);
 	return TRUE;
 }
-
-/* vim: set noexpandtab: */

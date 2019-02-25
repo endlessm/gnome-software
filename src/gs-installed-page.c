@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -188,8 +174,7 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 	app_row = gs_app_row_new (app);
 	gs_app_row_set_show_folders (GS_APP_ROW (app_row), TRUE);
 	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
-	    gs_utils_list_has_app_fuzzy (list, app))
+	if (gs_utils_list_has_app_fuzzy (list, app))
 		gs_app_row_set_show_source (GS_APP_ROW (app_row), TRUE);
 	g_signal_connect (app_row, "button-clicked",
 			  G_CALLBACK (gs_installed_page_app_remove_cb), self);
@@ -205,7 +190,7 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 				    self->sizegroup_desc,
 				    self->sizegroup_button);
 
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY)) {
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY)) {
 		gs_app_row_set_show_installed_size (GS_APP_ROW (app_row),
 						    should_show_installed_size (self));
 	}
@@ -272,6 +257,7 @@ gs_installed_page_load (GsInstalledPage *self)
 		GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
 		GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
 		GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
+		GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
 		GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING;
 
 	if (should_show_installed_size (self))
@@ -280,6 +266,7 @@ gs_installed_page_load (GsInstalledPage *self)
 	/* get installed apps */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_INSTALLED,
 					 "refine-flags", flags,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_NONE,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader,
 					    plugin_job,
@@ -325,6 +312,8 @@ gs_installed_page_switch_to (GsPage *page, gboolean scroll_up)
 
 	set_selection_mode (self, FALSE);
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
+	gtk_widget_show (widget);
+	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "menu_button"));
 	gtk_widget_show (widget);
 
 	gs_shell_update_button_select_visibility (self);
@@ -418,7 +407,7 @@ gs_installed_page_get_app_sort_key (GsApp *app)
 	}
 
 	/* sort normal, compulsory */
-	if (!gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY))
+	if (!gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY))
 		g_string_append (key, "1:");
 	else
 		g_string_append (key, "2:");
@@ -467,7 +456,7 @@ gs_installed_page_get_app_section (GsApp *app)
 {
 	if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP ||
 	    gs_app_get_kind (app) == AS_APP_KIND_WEB_APP) {
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY))
 			return GS_UPDATE_LIST_SECTION_SYSTEM_APPS;
 		return GS_UPDATE_LIST_SECTION_REMOVABLE_APPS;
 	}
@@ -611,6 +600,8 @@ set_selection_mode (GsInstalledPage *self, gboolean selection_mode)
 		gtk_widget_show (self->button_select);
 		widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
 		gtk_widget_hide (widget);
+		widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "menu_button"));
+		gtk_widget_hide (widget);
 		widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "header_selection_menu_button"));
 		gtk_widget_show (widget);
 		widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "header_selection_label"));
@@ -622,6 +613,8 @@ set_selection_mode (GsInstalledPage *self, gboolean selection_mode)
 		gtk_button_set_label (GTK_BUTTON (self->button_select), NULL);
 		gtk_widget_show (self->button_select);
 		widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
+		gtk_widget_show (widget);
+		widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "menu_button"));
 		gtk_widget_show (widget);
 		widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "header_selection_menu_button"));
 		gtk_widget_hide (widget);
@@ -896,5 +889,3 @@ gs_installed_page_new (void)
 	self = g_object_new (GS_TYPE_INSTALLED_PAGE, NULL);
 	return GS_INSTALLED_PAGE (self);
 }
-
-/* vim: set noexpandtab: */

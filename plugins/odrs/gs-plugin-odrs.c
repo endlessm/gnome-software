@@ -3,21 +3,7 @@
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -467,6 +453,11 @@ gs_plugin_odrs_json_post (SoupSession *session,
 	if (status_code != SOUP_STATUS_OK) {
 		g_warning ("Failed to set rating on odrs: %s",
 			   soup_status_get_phrase (status_code));
+		g_set_error (error,
+                             GS_PLUGIN_ERROR,
+                             GS_PLUGIN_ERROR_FAILED,
+                             "Failed to set submit review to ODRS: %s", soup_status_get_phrase (status_code));
+		return FALSE;
 	}
 
 	/* process returned JSON */
@@ -515,12 +506,9 @@ gs_plugin_odrs_refine_ratings (GsPlugin *plugin,
 		const gchar *id = g_ptr_array_index (reviewable_ids, i);
 		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->ratings_mutex);
 		GArray *ratings_tmp = g_hash_table_lookup (priv->ratings, id);
-		if (ratings_tmp == NULL) {
-			g_debug ("no ratings results for %s", id);
+		if (ratings_tmp == NULL)
 			continue;
-		}
 		/* copy into accumulator array */
-		g_debug ("using ratings results for %s", id);
 		for (guint j = 0; j < 6; j++)
 			ratings_raw[j] += g_array_index (ratings_tmp, guint32, j);
 		cnt++;
@@ -662,7 +650,6 @@ gs_plugin_odrs_fetch_for_app (GsPlugin *plugin, GsApp *app, GError **error)
 						error);
 	if (reviews == NULL)
 		return NULL;
-	g_debug ("odrs returned: %s", msg->response_body->data);
 
 	/* save to the cache */
 	if (!g_file_set_contents (cachefn,

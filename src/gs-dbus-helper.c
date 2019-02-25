@@ -3,21 +3,7 @@
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2017 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -785,10 +771,8 @@ gs_dbus_helper_dispose (GObject *object)
 {
 	GsDbusHelper *dbus_helper = GS_DBUS_HELPER (object);
 
-	if (dbus_helper->cancellable != NULL) {
-		g_cancellable_cancel (dbus_helper->cancellable);
-		g_clear_object (&dbus_helper->cancellable);
-	}
+	g_cancellable_cancel (dbus_helper->cancellable);
+	g_clear_object (&dbus_helper->cancellable);
 
 	if (dbus_helper->dbus_own_name_id != 0) {
 		g_bus_unown_name (dbus_helper->dbus_own_name_id);
@@ -827,5 +811,3 @@ gs_dbus_helper_new (void)
 {
 	return GS_DBUS_HELPER (g_object_new (GS_TYPE_DBUS_HELPER, NULL));
 }
-
-/* vim: set noexpandtab: */

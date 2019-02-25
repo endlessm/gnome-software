@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -176,7 +162,8 @@ create_row (GsAppFolderDialog *dialog, const gchar *folder)
 		      NULL);
 	gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 	gtk_widget_set_halign (label, GTK_ALIGN_START);
-	gtk_box_pack_start (GTK_BOX (box), label, TRUE, TRUE, 0);
+	gtk_widget_set_hexpand (label, TRUE);
+	gtk_container_add (GTK_CONTAINER (box), label);
 	image = gtk_image_new_from_icon_name ("object-select-symbolic", GTK_ICON_SIZE_MENU);
 	gtk_widget_set_no_show_all (image, TRUE);
 	gtk_widget_set_valign (image, GTK_ALIGN_CENTER);
@@ -373,5 +360,3 @@ gs_app_folder_dialog_new (GtkWindow *parent, GList *apps)
 
 	return GTK_WIDGET (dialog);
 }
-
-/* vim: set noexpandtab: */

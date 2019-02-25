@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -64,6 +50,8 @@ struct _GsUpdateDialog
 	GtkWidget	*scrolledwindow_details;
 	GtkWidget	*spinner;
 	GtkWidget	*stack;
+	GtkWidget       *permissions_section_box;
+	GtkWidget       *permissions_section_content;
 };
 
 G_DEFINE_TYPE (GsUpdateDialog, gs_update_dialog, GTK_TYPE_DIALOG)
@@ -94,6 +82,73 @@ back_entry_free (BackEntry *entry)
 	g_free (entry->stack_page);
 	g_free (entry->title);
 	g_slice_free (BackEntry, entry);
+}
+
+static struct {
+        GsAppPermissions permission;
+        const char *title;
+        const char *subtitle;
+} permission_display_data[] = {
+  { GS_APP_PERMISSIONS_NETWORK, N_("Network"), N_("Can communicate over the network") },
+  { GS_APP_PERMISSIONS_SYSTEM_BUS, N_("System Services"), N_("...") },
+  { GS_APP_PERMISSIONS_SESSION_BUS, N_("Session Services"), N_("...") },
+  { GS_APP_PERMISSIONS_DEVICES, N_("Devices"), N_("Can access system device files") },
+  { GS_APP_PERMISSIONS_HOME_FULL, N_("Home folder"), N_("Can view, edit and create files") },
+  { GS_APP_PERMISSIONS_HOME_READ, N_("Home folder"), N_("Can view files") },
+  { GS_APP_PERMISSIONS_FILESYSTEM_FULL, N_("File system"), N_("Can view, edit and create files") },
+  { GS_APP_PERMISSIONS_FILESYSTEM_READ, N_("File system"), N_("Can view files") },
+  { GS_APP_PERMISSIONS_DOWNLOADS_FULL, N_("Downloads folder"), N_("Can view, edit and create files") },
+  { GS_APP_PERMISSIONS_DOWNLOADS_READ, N_("Downloads folder"), N_("Can view files") },
+  { GS_APP_PERMISSIONS_SETTINGS, N_("Settings"), N_("Can view and change any settings") },
+  { GS_APP_PERMISSIONS_X11, N_("Legacy display system"), N_("Uses an old, insecure display system") },
+};
+
+static void
+populate_permissions_section (GsUpdateDialog *dialog, GsAppPermissions permissions)
+{
+	GList *children;
+
+	children = gtk_container_get_children (GTK_CONTAINER (dialog->permissions_section_content));
+	for (GList *l = children; l != NULL; l = l->next)
+		gtk_widget_destroy (GTK_WIDGET (l->data));
+	g_list_free (children);
+
+	for (gsize i = 0; i < G_N_ELEMENTS (permission_display_data); i++) {
+		GtkWidget *row, *image, *box, *label;
+
+		if ((permissions & permission_display_data[i].permission) == 0)
+			continue;
+
+		row = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
+		gtk_widget_show (row);
+		if ((permission_display_data[i].permission & ~MEDIUM_PERMISSIONS) != 0) {
+			gtk_style_context_add_class (gtk_widget_get_style_context (row), "permission-row-warning");
+		}
+
+		image = gtk_image_new_from_icon_name ("dialog-warning-symbolic", GTK_ICON_SIZE_MENU);
+		if ((permission_display_data[i].permission & ~MEDIUM_PERMISSIONS) == 0)
+			gtk_widget_set_opacity (image, 0);
+
+		gtk_widget_show (image);
+		gtk_container_add (GTK_CONTAINER (row), image);
+
+		box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+		gtk_widget_show (box);
+		gtk_container_add (GTK_CONTAINER (row), box);
+
+		label = gtk_label_new (_(permission_display_data[i].title));
+		gtk_label_set_xalign (GTK_LABEL (label), 0);
+		gtk_widget_show (label);
+		gtk_container_add (GTK_CONTAINER (box), label);
+
+		label = gtk_label_new (_(permission_display_data[i].subtitle));
+		gtk_label_set_xalign (GTK_LABEL (label), 0);
+		gtk_style_context_add_class (gtk_widget_get_style_context (label), "dim-label");
+		gtk_widget_show (label);
+		gtk_container_add (GTK_CONTAINER (box), label);
+
+		gtk_container_add (GTK_CONTAINER (dialog->permissions_section_content), row);
+	}
 }
 
 static void
@@ -140,6 +195,13 @@ set_updates_description_ui (GsUpdateDialog *dialog, GsApp *app)
 
 	/* show the back button if needed */
 	gtk_widget_set_visible (dialog->button_back, !g_queue_is_empty (dialog->back_entry_stack));
+
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_NEW_PERMISSIONS)) {
+		gtk_widget_show (dialog->permissions_section_box);
+		populate_permissions_section (dialog, gs_app_get_update_permissions (app));
+	} else {
+		gtk_widget_hide (dialog->permissions_section_box);
+	}
 }
 
 static void
@@ -324,8 +386,9 @@ create_app_row (GsApp *app)
 	              "ellipsize", PANGO_ELLIPSIZE_END,
 	              NULL);
 	gtk_widget_set_halign (label, GTK_ALIGN_START);
+	gtk_widget_set_hexpand (label, TRUE);
 	gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-	gtk_box_pack_start (GTK_BOX (row), label, TRUE, TRUE, 0);
+	gtk_container_add (GTK_CONTAINER (row), label);
 	if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE ||
 	    gs_app_get_state (app) == AS_APP_STATE_UPDATABLE_LIVE) {
 		g_autofree gchar *verstr = format_version_update (app);
@@ -343,7 +406,7 @@ create_app_row (GsApp *app)
 	              NULL);
 	gtk_widget_set_halign (label, GTK_ALIGN_END);
 	gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-	gtk_box_pack_start (GTK_BOX (row), label, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (row), label);
 	gtk_widget_show_all (row);
 
 	return row;
@@ -481,7 +544,8 @@ get_section_header (GsUpdateDialog *dialog, GsUpdateDialogSection section)
 	gtk_style_context_add_class (context, "app-listbox-header");
 
 	/* put label into the header */
-	gtk_box_pack_start (GTK_BOX (header), label, TRUE, TRUE, 0);
+	gtk_widget_set_hexpand (label, TRUE);
+	gtk_container_add (GTK_CONTAINER (header), label);
 	gtk_widget_set_visible (label, TRUE);
 	gtk_widget_set_margin_start (label, 6);
 	gtk_label_set_xalign (GTK_LABEL (label), 0.0);
@@ -526,9 +590,8 @@ create_section (GsUpdateDialog *dialog, GsUpdateDialogSection section)
 	g_signal_connect (GTK_LIST_BOX (dialog->list_boxes[section]), "row-activated",
 			  G_CALLBACK (row_activated_cb), dialog);
 	gtk_widget_set_visible (dialog->list_boxes[section], TRUE);
-	gtk_box_pack_start (GTK_BOX (dialog->os_update_box),
-			    dialog->list_boxes[section],
-			    TRUE, TRUE, 0);
+	gtk_widget_set_vexpand (dialog->list_boxes[section], TRUE);
+	gtk_container_add (GTK_CONTAINER (dialog->os_update_box), dialog->list_boxes[section]);
 	gtk_widget_set_margin_top (dialog->list_boxes[section], 24);
 
 	/* reorder the children */
@@ -696,10 +759,8 @@ gs_update_dialog_dispose (GObject *object)
 		dialog->back_entry_stack = NULL;
 	}
 
-	if (dialog->cancellable != NULL) {
-		g_cancellable_cancel (dialog->cancellable);
-		g_clear_object (&dialog->cancellable);
-	}
+	g_cancellable_cancel (dialog->cancellable);
+	g_clear_object (&dialog->cancellable);
 
 	g_clear_object (&dialog->plugin_loader);
 
@@ -759,6 +820,8 @@ gs_update_dialog_class_init (GsUpdateDialogClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, scrolledwindow_details);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, spinner);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, stack);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, permissions_section_box);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdateDialog, permissions_section_content);
 }
 
 GtkWidget *
@@ -773,5 +836,3 @@ gs_update_dialog_new (GsPluginLoader *plugin_loader)
 
 	return GTK_WIDGET (dialog);
 }
-
-/* vim: set noexpandtab: */

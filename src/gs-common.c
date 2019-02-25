@@ -1,23 +1,9 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
  * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
+ * Copyright (C) 2016-2019 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -143,20 +129,36 @@ gs_app_notify_installed (GsApp *app)
 		/* TRANSLATORS: this is the summary of a notification that an application
 		 * has been successfully installed */
 		summary = g_strdup_printf (_("%s is now installed"), gs_app_get_name (app));
-		/* TRANSLATORS: this is the body of a notification that an application
-		 * has been successfully installed */
-		body = _("Application is ready to be used.");
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+			/* TRANSLATORS: an application has been installed, but
+			 * needs a reboot to complete the installation */
+			body = _("A restart is required for the changes to take effect.");
+		} else {
+			/* TRANSLATORS: this is the body of a notification that an application
+			 * has been successfully installed */
+			body = _("Application is ready to be used.");
+		}
 		break;
 	default:
 		/* TRANSLATORS: this is the summary of a notification that a component
 		 * has been successfully installed */
 		summary = g_strdup_printf (_("%s is now installed"), gs_app_get_name (app));
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+			/* TRANSLATORS: an application has been installed, but
+			 * needs a reboot to complete the installation */
+			body = _("A restart is required for the changes to take effect.");
+		}
 		break;
 	}
 	n = g_notification_new (summary);
 	if (body != NULL)
 		g_notification_set_body (n, body);
-	if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP) {
+
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+		/* TRANSLATORS: button text */
+		g_notification_add_button_with_target (n, _("Restart"),
+						       "app.reboot", NULL);
+	} else if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP) {
 		/* TRANSLATORS: this is button that opens the newly installed application */
 		g_notification_add_button_with_target (n, _("Launch"),
 						       "app.launch", "s",
@@ -350,8 +352,6 @@ gs_utils_widget_set_css_internal (GtkWidget *widget,
 	GtkStyleContext *context;
 	g_autoptr(GtkCssProvider) provider = NULL;
 
-	g_debug ("using custom CSS %s", css);
-
 	/* set the custom CSS class */
 	context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_class (context, class_name);
@@ -454,7 +454,7 @@ insert_details_widget (GtkMessageDialog *dialog, const gchar *details)
 	label = gtk_label_new (_("Details"));
 	gtk_widget_set_halign (label, GTK_ALIGN_START);
 	gtk_widget_set_visible (label, TRUE);
-	gtk_box_pack_start (GTK_BOX (message_area), label, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (message_area), label);
 
 	sw = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
@@ -475,7 +475,9 @@ insert_details_widget (GtkMessageDialog *dialog, const gchar *details)
 	gtk_widget_set_visible (tv, TRUE);
 
 	gtk_container_add (GTK_CONTAINER (sw), tv);
-	gtk_box_pack_end (GTK_BOX (message_area), sw, TRUE, TRUE, 0);
+	gtk_widget_set_vexpand (sw, TRUE);
+	gtk_container_add (GTK_CONTAINER (message_area), sw);
+	gtk_container_child_set (GTK_CONTAINER (message_area), sw, "pack-type", GTK_PACK_END, NULL);
 
 	g_signal_connect (dialog, "map-event", G_CALLBACK (unset_focus), NULL);
 }
@@ -605,5 +607,3 @@ gs_utils_list_has_app_fuzzy (GsAppList *list, GsApp *app)
 	}
 	return FALSE;
 }
-
-/* vim: set noexpandtab: */

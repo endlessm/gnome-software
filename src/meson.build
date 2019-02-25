@@ -42,6 +42,7 @@ gnome_software_sources = [
   'gs-main.c',
   'gs-moderate-page.c',
   'gs-overview-page.c',
+  'gs-origin-popover-row.c',
   'gs-page.c',
   'gs-popular-tile.c',
   'gs-prefs-dialog.c',
@@ -73,10 +74,10 @@ gnome_software_dependencies = [
   appstream_glib,
   gio_unix,
   gmodule,
+  goa,
   gtk,
   json_glib,
   libm,
-  libsecret,
   libsoup
 ]
 
@@ -285,6 +286,7 @@ if get_option('tests')
     sources : [
       'gs-css.c',
       'gs-common.c',
+      'gs-content-rating.c',
       'gs-self-test.c',
     ],
     include_directories : [
@@ -295,10 +297,10 @@ if get_option('tests')
       appstream_glib,
       gio_unix,
       gmodule,
+      goa,
       gtk,
       json_glib,
       libm,
-      libsecret,
       libsoup,
     ],
     link_with : [

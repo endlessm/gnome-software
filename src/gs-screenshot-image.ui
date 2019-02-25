@@ -9,7 +9,6 @@
     <child>
       <object class="GtkStack" id="stack">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
         <property name="transition-type">crossfade</property>
         <child>
           <object class="GtkImage" id="image1">
@@ -43,11 +42,6 @@
                 <property name="visible">True</property>
                 <property name="icon-name">dialog-error-symbolic</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="label_error">
@@ -56,11 +50,6 @@
                   <class name="error-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
           <packing>

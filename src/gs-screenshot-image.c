@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -288,7 +274,6 @@ gs_screenshot_image_complete_cb (SoupSession *session,
 	g_autoptr(GsScreenshotImage) ssimg = GS_SCREENSHOT_IMAGE (user_data);
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(AsImage) im = NULL;
 	g_autoptr(GdkPixbuf) pixbuf = NULL;
 	g_autoptr(GInputStream) stream = NULL;
 
@@ -506,10 +491,9 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 		age_max = g_settings_get_uint (ssimg->settings,
 					       "screenshot-cache-age-maximum");
 		file = g_file_new_for_path (ssimg->filename);
-		if (age_max > 0 && gs_utils_get_file_age (file) < age_max) {
-			g_debug ("image new enough, not re-requesting from server");
+		/* image new enough, not re-requesting from server */
+		if (age_max > 0 && gs_utils_get_file_age (file) < age_max)
 			return;
-		}
 	}
 
 	/* if we're not showing a full-size image, we try loading a blurred
@@ -666,5 +650,3 @@ gs_screenshot_image_new (SoupSession *session)
 	ssimg->session = g_object_ref (session);
 	return GTK_WIDGET (ssimg);
 }
-
-/* vim: set noexpandtab: */

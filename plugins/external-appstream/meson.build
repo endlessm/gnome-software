@@ -9,7 +9,10 @@ executable(
   include_directories : [
     include_directories('../..'),
   ],
-  dependencies : [gio_unix, appstream_glib],
+  dependencies : [
+    gio_unix,
+    libxmlb,
+  ],
   c_args : cargs,
   install : true,
   install_dir : get_option('libexecdir')
@@ -28,5 +31,8 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : [gio_unix, appstream_glib, libsoup, plugin_libs]
+  dependencies : [gio_unix, appstream_glib, libsoup, plugin_libs],
+  link_with : [
+    libgnomesoftware
+  ]
 )

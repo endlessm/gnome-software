@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2016 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -74,7 +60,7 @@ add_app (GtkListBox *listbox, GsApp *app)
 	widget = gtk_label_new (gs_app_get_name (app));
 	gtk_widget_set_halign (widget, GTK_ALIGN_START);
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
-	gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (box), widget);
 
 	g_object_set_data_full (G_OBJECT (box),
 	                        "sort",
@@ -177,5 +163,3 @@ gs_removal_dialog_new (void)
 	                       NULL);
 	return GTK_WIDGET (dialog);
 }
-
-/* vim: set noexpandtab: */

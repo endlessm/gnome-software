@@ -4,21 +4,7 @@
  * Copyright (C) 2016-2018 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2017-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 /* Notes:
@@ -265,11 +251,8 @@ gs_plugin_flatpak_get_handler (GsPlugin *plugin, GsApp *app)
 	if (object_id != NULL) {
 		for (guint i = 0; i < priv->flatpaks->len; i++) {
 			GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
-			if (g_strcmp0 (gs_flatpak_get_id (flatpak), object_id) == 0) {
-				g_debug ("chose %s using ID",
-					 gs_flatpak_get_id (flatpak));
+			if (g_strcmp0 (gs_flatpak_get_id (flatpak), object_id) == 0)
 				return flatpak;
-			}
 		}
 	}
 
@@ -277,10 +260,8 @@ gs_plugin_flatpak_get_handler (GsPlugin *plugin, GsApp *app)
 	for (guint i = 0; i < priv->flatpaks->len; i++) {
 		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
 		if (_as_app_scope_is_compatible (gs_flatpak_get_scope (flatpak),
-						 gs_app_get_scope (app))) {
-			g_debug ("chose %s using scope", gs_flatpak_get_id (flatpak));
+						 gs_app_get_scope (app)))
 			return flatpak;
-		}
 	}
 	return NULL;
 }
@@ -294,6 +275,12 @@ gs_plugin_flatpak_refine_app (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	GsFlatpak *flatpak = NULL;
+
+	/* not us */
+	if (gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_FLATPAK) {
+		g_debug ("%s not a package, ignoring", gs_app_get_unique_id (app));
+		return TRUE;
+	}
 
 	/* we have to look for the app in all GsFlatpak stores */
 	if (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN) {
@@ -419,7 +406,6 @@ static FlatpakTransaction *
 _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 		    GCancellable *cancellable, GError **error)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
 	FlatpakInstallation *installation;
 	g_autoptr(FlatpakTransaction) transaction = NULL;
 
@@ -436,14 +422,9 @@ _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 	g_signal_connect (transaction, "ref-to-app",
 			  G_CALLBACK (_ref_to_app), plugin);
 
-	/* add the counterpart installations */
-	for (guint i = 0; i < priv->flatpaks->len; i++) {
-		GsFlatpak *flatpak_tmp = g_ptr_array_index (priv->flatpaks, i);
-		if (flatpak_tmp == flatpak)
-			continue;
-		installation = gs_flatpak_get_installation (flatpak_tmp);
-		flatpak_transaction_add_dependency_source (transaction, installation);
-	}
+	/* use system installations as dependency sources for user installations */
+	flatpak_transaction_add_default_dependency_sources (transaction);
+
 	return g_steal_pointer (&transaction);
 }
 
@@ -478,7 +459,6 @@ gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 
 		ref = gs_flatpak_app_get_ref_display (app);
 		if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error)) {
-			g_prefix_error (error, "failed to add update ref %s: ", ref);
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
@@ -517,7 +497,6 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	}
 	ref = gs_flatpak_app_get_ref_display (app);
 	if (!flatpak_transaction_add_uninstall (transaction, ref, error)) {
-		g_prefix_error (error, "failed to add uninstall ref %s: ", ref);
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
@@ -642,7 +621,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 		if (!flatpak_transaction_add_install_bundle (transaction, file,
 							     NULL, error)) {
 			g_autofree gchar *fn = g_file_get_path (file);
-			g_prefix_error (error, "failed to add install ref %s: ", fn);
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
@@ -653,7 +631,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 		if (!flatpak_transaction_add_install (transaction,
 						      gs_app_get_origin (app),
 						      ref, NULL, error)) {
-			g_prefix_error (error, "failed to add install ref %s: ", ref);
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
@@ -716,7 +693,6 @@ gs_plugin_update (GsPlugin *plugin,
 
 		ref = gs_flatpak_app_get_ref_display (app);
 		if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error)) {
-			g_prefix_error (error, "failed to add update ref %s: ", ref);
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
@@ -844,7 +820,7 @@ gs_plugin_flatpak_file_to_app_bundle (GsPlugin *plugin,
 	ref = gs_flatpak_app_get_ref_display (app);
 	app_tmp = gs_plugin_flatpak_find_app_by_ref (plugin, ref, cancellable, NULL);
 	if (app_tmp != NULL)
-		return g_steal_pointer (&app);
+		return g_steal_pointer (&app_tmp);
 
 	/* force this to be 'any' scope for installation */
 	gs_app_set_scope (app, AS_APP_SCOPE_UNKNOWN);
@@ -1015,6 +991,22 @@ gs_plugin_add_popular (GsPlugin *plugin,
 	for (guint i = 0; i < priv->flatpaks->len; i++) {
 		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
 		if (!gs_flatpak_add_popular (flatpak, list, cancellable, error))
+			return FALSE;
+	}
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_alternates (GsPlugin *plugin,
+			  GsApp *app,
+			  GsAppList *list,
+			  GCancellable *cancellable,
+			  GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	for (guint i = 0; i < priv->flatpaks->len; i++) {
+		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
+		if (!gs_flatpak_add_alternates (flatpak, app, list, cancellable, error))
 			return FALSE;
 	}
 	return TRUE;

@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -41,6 +27,7 @@
 struct GsPluginData {
 	PkControl		*control;
 	PkClient		*client;
+	GMutex			 client_mutex;
 };
 
 static void
@@ -59,6 +46,8 @@ void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+
+	g_mutex_init (&priv->client_mutex);
 	priv->client = pk_client_new ();
 	priv->control = pk_control_new ();
 	g_signal_connect (priv->control, "updates-changed",
@@ -77,6 +66,7 @@ void
 gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_mutex_clear (&priv->client_mutex);
 	g_object_unref (priv->client);
 	g_object_unref (priv->control);
 }
@@ -87,6 +77,7 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 	if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_PACKAGE &&
 	    gs_app_get_scope (app) == AS_APP_SCOPE_SYSTEM) {
 		gs_app_set_management_plugin (app, "packagekit");
+		gs_plugin_packagekit_set_packaging_format (plugin, app);
 		return;
 	}
 }
@@ -129,12 +120,14 @@ gs_plugin_packagekit_resolve_packages_with_filter (GsPlugin *plugin,
 	g_ptr_array_add (package_ids, NULL);
 
 	/* resolve them all at once */
+	g_mutex_lock (&priv->client_mutex);
 	results = pk_client_resolve (priv->client,
 				     filter,
 				     (gchar **) package_ids->pdata,
 				     cancellable,
 				     gs_packagekit_helper_cb, helper,
 				     error);
+	g_mutex_unlock (&priv->client_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to resolve package_ids: ");
 		return FALSE;
@@ -218,12 +211,14 @@ gs_plugin_packagekit_refine_from_desktop (GsPlugin *plugin,
 
 	to_array[0] = filename;
 	gs_packagekit_helper_add_app (helper, app);
+	g_mutex_lock (&priv->client_mutex);
 	results = pk_client_search_files (priv->client,
 					  pk_bitfield_from_enums (PK_FILTER_ENUM_INSTALLED, -1),
 					  (gchar **) to_array,
 					  cancellable,
 					  gs_packagekit_helper_cb, helper,
 					  error);
+	g_mutex_unlock (&priv->client_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to search file %s: ", filename);
 		return FALSE;
@@ -299,11 +294,13 @@ gs_plugin_packagekit_refine_updatedetails (GsPlugin *plugin,
 		return TRUE;
 
 	/* get any update details */
+	g_mutex_lock (&priv->client_mutex);
 	results = pk_client_get_update_detail (priv->client,
 					       (gchar **) package_ids,
 					       cancellable,
 					       gs_packagekit_helper_cb, helper,
 					       error);
+	g_mutex_unlock (&priv->client_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to get update details for %s: ",
 				package_ids[0]);
@@ -362,11 +359,13 @@ gs_plugin_packagekit_refine_details2 (GsPlugin *plugin,
 	g_ptr_array_add (package_ids, NULL);
 
 	/* get any details */
+	g_mutex_lock (&priv->client_mutex);
 	results = pk_client_get_details (priv->client,
 					 (gchar **) package_ids->pdata,
 					 cancellable,
 					 gs_packagekit_helper_cb, helper,
 					 error);
+	g_mutex_unlock (&priv->client_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_autofree gchar *package_ids_str = g_strjoinv (",", (gchar **) package_ids->pdata);
 		g_prefix_error (error, "failed to get details for %s: ",
@@ -405,11 +404,13 @@ gs_plugin_packagekit_refine_update_urgency (GsPlugin *plugin,
 
 	/* get the list of updates */
 	filter = pk_bitfield_value (PK_FILTER_ENUM_NONE);
+	g_mutex_lock (&priv->client_mutex);
 	results = pk_client_get_updates (priv->client,
 					 filter,
 					 cancellable,
 					 gs_packagekit_helper_cb, helper,
 					 error);
+	g_mutex_unlock (&priv->client_mutex);
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to get updates for urgency: ");
 		return FALSE;
@@ -420,7 +421,7 @@ gs_plugin_packagekit_refine_update_urgency (GsPlugin *plugin,
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		g_autoptr (PkPackage) pkg = NULL;
 		app = gs_app_list_index (list, i);
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		package_id = gs_app_get_source_id_default (app);
 		if (package_id == NULL)
@@ -485,7 +486,7 @@ gs_plugin_packagekit_refine_details (GsPlugin *plugin,
 	list_tmp = gs_app_list_new ();
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_kind (app) == AS_APP_KIND_WEB_APP)
 			continue;
@@ -582,10 +583,12 @@ gs_plugin_packagekit_refine_distro_upgrade (GsPlugin *plugin,
 	g_autoptr(GsAppList) list = NULL;
 	guint cache_age_save;
 
+	gs_packagekit_helper_add_app (helper, app);
+
 	/* ask PK to simulate upgrading the system */
+	g_mutex_lock (&priv->client_mutex);
 	cache_age_save = pk_client_get_cache_age (priv->client);
 	pk_client_set_cache_age (priv->client, 60 * 60 * 24 * 7); /* once per week */
-	gs_packagekit_helper_add_app (helper, app);
 	results = pk_client_upgrade_system (priv->client,
 					    pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_SIMULATE, -1),
 					    gs_app_get_version (app),
@@ -594,6 +597,7 @@ gs_plugin_packagekit_refine_distro_upgrade (GsPlugin *plugin,
 					    gs_packagekit_helper_cb, helper,
 					    error);
 	pk_client_set_cache_age (priv->client, cache_age_save);
+	g_mutex_unlock (&priv->client_mutex);
 
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to refine distro upgrade: ");
@@ -633,7 +637,7 @@ gs_plugin_packagekit_refine_name_to_id (GsPlugin *plugin,
 		GPtrArray *sources;
 		GsApp *app = gs_app_list_index (list, i);
 		const gchar *tmp;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_kind (app) == AS_APP_KIND_WEB_APP)
 			continue;
@@ -678,7 +682,7 @@ gs_plugin_packagekit_refine_filename_to_id (GsPlugin *plugin,
 		g_autofree gchar *fn = NULL;
 		GsApp *app = gs_app_list_index (list, i);
 		const gchar *tmp;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_source_id_default (app) != NULL)
 			continue;
@@ -729,7 +733,7 @@ gs_plugin_packagekit_refine_update_details (GsPlugin *plugin,
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 		const gchar *tmp;
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
 		if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE)
 			continue;

@@ -9,7 +9,6 @@
         <property name="margin-bottom">18</property>
         <property name="margin-start">18</property>
         <property name="margin-end">18</property>
-        <property name="can_focus">False</property>
         <property name="orientation">horizontal</property>
         <property name="spacing">16</property>
         <child>
@@ -17,6 +16,7 @@
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="spacing">6</property>
+            <property name="hexpand">True</property>
             <child>
               <object class="GtkBox" id="hbox">
                 <property name="visible">True</property>
@@ -28,10 +28,6 @@
                     <property name="halign">start</property>
                     <property name="ellipsize">end</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkLabel" id="status_label">
@@ -41,16 +37,10 @@
                     </style>
                   </object>
                   <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
                     <property name="pack-type">end</property>
                   </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-              </packing>
             </child>
             <child>
               <object class="GtkLabel" id="comment_label">
@@ -62,10 +52,6 @@
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-              </packing>
             </child>
             <child>
               <object class="GtkRevealer" id="details_revealer">
@@ -91,10 +77,6 @@
                               <class name="dim-label"/>
                             </style>
                           </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                          </packing>
                         </child>
                         <child>
                           <object class="GtkLabel" id="url_value_label">
@@ -106,16 +88,8 @@
                               <class name="dim-label"/>
                             </style>
                           </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">True</property>
-                          </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkBox">
@@ -132,26 +106,14 @@
                             <property name="halign">start</property>
                             <property name="valign">start</property>
                           </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                          </packing>
                         </child>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                      </packing>
                     </child>
                   </object>
                 </child>
               </object>
             </child>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-          </packing>
         </child>
       </object>
     </child>

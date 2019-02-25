@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -666,13 +652,13 @@ gs_updates_page_load (GsUpdatesPage *self)
 	refine_flags = GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS |
-		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION;
 	gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_ACTION_GET_UPDATES);
 	self->action_cnt++;
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_UPDATES,
 					 "interactive", TRUE,
 					 "refine-flags", refine_flags,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_NONE,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
@@ -737,6 +723,8 @@ gs_updates_page_switch_to (GsPage *page,
 	}
 
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
+	gtk_widget_show (widget);
+	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "menu_button"));
 	gtk_widget_show (widget);
 
 	gtk_widget_set_visible (self->button_refresh, TRUE);
@@ -804,10 +792,8 @@ gs_updates_page_get_new_updates (GsUpdatesPage *self)
 	/* force a check for updates and download */
 	gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_ACTION_REFRESH);
 
-	if (self->cancellable_refresh != NULL) {
-		g_cancellable_cancel (self->cancellable_refresh);
-		g_object_unref (self->cancellable_refresh);
-	}
+	g_cancellable_cancel (self->cancellable_refresh);
+	g_clear_object (&self->cancellable_refresh);
 	self->cancellable_refresh = g_cancellable_new ();
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
@@ -1308,9 +1294,8 @@ gs_updates_page_setup (GsPage *page,
 						    self->sizegroup_desc,
 						    self->sizegroup_button,
 						    self->sizegroup_header);
-		gtk_box_pack_start (GTK_BOX (self->updates_box),
-				    GTK_WIDGET (self->sections[i]),
-				    TRUE, TRUE, 0);
+		gtk_widget_set_vexpand (GTK_WIDGET (self->sections[i]), FALSE);
+		gtk_container_add (GTK_CONTAINER (self->updates_box), GTK_WIDGET (self->sections[i]));
 	}
 
 	self->shell = shell;
@@ -1354,16 +1339,20 @@ gs_updates_page_setup (GsPage *page,
 
 	/* This label indicates that the update check is in progress */
 	self->header_checking_label = gtk_label_new (_("Checking…"));
-	gtk_box_pack_end (GTK_BOX (self->header_start_box), self->header_checking_label, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (self->header_start_box), self->header_checking_label);
+	gtk_container_child_set(GTK_CONTAINER (self->header_start_box), self->header_checking_label,
+				"pack-type", GTK_PACK_END, NULL);
 	self->header_spinner_start = gtk_spinner_new ();
-	gtk_box_pack_end (GTK_BOX (self->header_start_box), self->header_spinner_start, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (self->header_start_box), self->header_spinner_start);
+	gtk_container_child_set (GTK_CONTAINER (self->header_start_box), self->header_spinner_start,
+				 "pack-type", GTK_PACK_END, NULL);
 
 	/* setup update details window */
 	self->button_refresh = gtk_button_new_from_icon_name ("view-refresh-symbolic", GTK_ICON_SIZE_MENU);
 	accessible = gtk_widget_get_accessible (self->button_refresh);
 	if (accessible != NULL)
 		atk_object_set_name (accessible, _("Check for updates"));
-	gtk_box_pack_start (GTK_BOX (self->header_start_box), self->button_refresh, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (self->header_start_box), self->button_refresh);
 	g_signal_connect (self->button_refresh, "clicked",
 			  G_CALLBACK (gs_updates_page_button_refresh_cb),
 			  self);
@@ -1393,14 +1382,10 @@ gs_updates_page_dispose (GObject *object)
 {
 	GsUpdatesPage *self = GS_UPDATES_PAGE (object);
 
-	if (self->cancellable_refresh != NULL) {
-		g_cancellable_cancel (self->cancellable_refresh);
-		g_clear_object (&self->cancellable_refresh);
-	}
-	if (self->cancellable_upgrade_download != NULL) {
-		g_cancellable_cancel (self->cancellable_upgrade_download);
-		g_clear_object (&self->cancellable_upgrade_download);
-	}
+	g_cancellable_cancel (self->cancellable_refresh);
+	g_clear_object (&self->cancellable_refresh);
+	g_cancellable_cancel (self->cancellable_upgrade_download);
+	g_clear_object (&self->cancellable_upgrade_download);
 
 	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++) {
 		if (self->sections[i] != NULL) {
@@ -1481,5 +1466,3 @@ gs_updates_page_new (void)
 	self = g_object_new (GS_TYPE_UPDATES_PAGE, NULL);
 	return GS_UPDATES_PAGE (self);
 }
-
-/* vim: set noexpandtab: */

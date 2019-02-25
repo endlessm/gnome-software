@@ -1,22 +1,8 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
  *
- * Copyright (C) 2015-2016 Canonical Ltd
+ * Copyright (C) 2015-2018 Canonical Ltd
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -54,6 +40,9 @@ get_client (GsPlugin *plugin, GError **error)
 	return g_steal_pointer (&client);
 }
 
+static void
+load_auth (GsPlugin *plugin);
+
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
@@ -72,13 +61,21 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->store_snaps = g_hash_table_new_full (g_str_hash, g_str_equal,
 						   g_free, (GDestroyNotify) g_object_unref);
 
-	priv->auth = gs_auth_new ("snapd");
-	gs_auth_set_provider_name (priv->auth, "Snap Store");
-	gs_auth_set_provider_schema (priv->auth, "com.ubuntu.SnapStore.GnomeSoftware");
-	gs_plugin_add_auth (plugin, priv->auth);
+	priv->auth = gs_auth_new ("snapd", "ubuntusso", &error);
+	if (priv->auth) {
+		gs_auth_set_provider_name (priv->auth, "Snap Store");
+		gs_auth_set_header (priv->auth, _("To continue, you need to use an Ubuntu One account."),
+						_("To continue, you need to use your Ubuntu One account."),
+						_("To continue, you need to use an Ubuntu One account."));
+		gs_plugin_add_auth (plugin, priv->auth);
+		g_signal_connect_object (priv->auth, "changed",
+					 G_CALLBACK (load_auth),
+					 plugin, G_CONNECT_SWAPPED);
+	} else {
+		g_warning ("Failed to instantiate the snapd authentication object: %s", error->message);
+	}
 
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "desktop-categories");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "ubuntu-reviews");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_BETTER_THAN, "packagekit");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_BEFORE, "icons");
 
@@ -117,13 +114,13 @@ snapd_error_convert (GError **perror)
 			g_free (error->message);
 			error->message = g_strdup ("Requires authentication with @snapd");
 			break;
-		case SNAPD_ERROR_TWO_FACTOR_REQUIRED:
-			error->code = GS_PLUGIN_ERROR_PIN_REQUIRED;
-			break;
 		case SNAPD_ERROR_AUTH_DATA_INVALID:
 		case SNAPD_ERROR_TWO_FACTOR_INVALID:
 			error->code = GS_PLUGIN_ERROR_AUTH_INVALID;
 			break;
+		case SNAPD_ERROR_AUTH_CANCELLED:
+			error->code = GS_PLUGIN_ERROR_CANCELLED;
+			break; 
 		case SNAPD_ERROR_CONNECTION_FAILED:
 		case SNAPD_ERROR_WRITE_FAILED:
 		case SNAPD_ERROR_READ_FAILED:
@@ -158,32 +155,53 @@ load_auth (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	GsAuth *auth;
-	const gchar *serialized_macaroon;
-	g_autoptr(GVariant) macaroon_variant = NULL;
-	const gchar *macaroon;
+	GoaObject *goa_object;
+	GoaPasswordBased *password_based;
+	g_autofree gchar *macaroon = NULL;
+	g_autofree gchar *discharges_str = NULL;
+	g_autoptr(GVariant) discharges_var = NULL;
 	g_auto(GStrv) discharges = NULL;
 	g_autoptr(SnapdAuthData) auth_data = NULL;
+	g_autoptr(GError) error = NULL;
 
 	auth = gs_plugin_get_auth_by_id (plugin, "snapd");
 	if (auth == NULL)
 		return;
 
-	serialized_macaroon = gs_auth_get_metadata_item (auth, "macaroon");
-	if (serialized_macaroon == NULL)
-		return;
-
-	macaroon_variant = g_variant_parse (G_VARIANT_TYPE ("(sas)"),
-					    serialized_macaroon,
-					    NULL,
-					    NULL,
-					    NULL);
-	if (macaroon_variant == NULL)
-		return;
-
-	g_variant_get (macaroon_variant, "(&s^as)", &macaroon, &discharges);
 	g_clear_object (&priv->auth_data);
+	goa_object = gs_auth_peek_goa_object (auth);
+	if (goa_object == NULL)
+		return;
+
+	password_based = goa_object_peek_password_based (goa_object);
+	g_return_if_fail (password_based != NULL);
+
+	goa_password_based_call_get_password_sync (password_based,
+						   "macaroon",
+						   &macaroon,
+						   NULL, &error);
+	if (error != NULL) {
+		g_warning ("Failed to get macaroon: %s", error->message);
+		return;
+	}
+
+	goa_password_based_call_get_password_sync (password_based,
+						   "discharges",
+						   &discharges_str,
+						   NULL, &error);
+	if (error != NULL) {
+		g_warning ("Failed to get discharges %s", error->message);
+		return;
+	}
+
+	if (discharges_str)
+		discharges_var = g_variant_parse (G_VARIANT_TYPE ("as"),
+						  discharges_str,
+						  NULL, NULL, NULL);
+	if (discharges_var)
+		discharges = g_variant_dup_strv (discharges_var, NULL);
+
 	priv->auth_data = snapd_auth_data_new (macaroon, discharges);
-	gs_auth_add_flags (priv->auth, GS_AUTH_FLAG_VALID);
 }
 
 gboolean
@@ -205,15 +223,6 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 		priv->store_name = g_strdup (/* TRANSLATORS: default snap store name */
 					     _("Snap Store"));
 	priv->system_confinement = snapd_system_information_get_confinement (system_information);
-
-	/* load from disk */
-	gs_auth_add_metadata (priv->auth, "macaroon", NULL);
-	if (!gs_auth_store_load (priv->auth,
-				 GS_AUTH_STORE_FLAG_USERNAME |
-				 GS_AUTH_STORE_FLAG_METADATA,
-				 cancellable, error))
-		return FALSE;
-	load_auth (plugin);
 
 	/* success */
 	return TRUE;
@@ -303,15 +312,16 @@ snap_to_app (GsPlugin *plugin, SnapdSnap *snap)
 	if (app == NULL) {
 		app = gs_app_new (NULL);
 		gs_app_set_from_unique_id (app, unique_id);
+		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_SNAP);
 		gs_app_set_metadata (app, "snap::name", snapd_snap_get_name (snap));
 		gs_plugin_cache_add (plugin, unique_id, app);
 	}
 
 	gs_app_set_management_plugin (app, "snap");
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
-		gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	if (gs_plugin_check_distro_id (plugin, "ubuntu"))
-		gs_app_add_quirk (app, AS_APP_QUIRK_PROVENANCE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 
 	confinement = snapd_snap_get_confinement (snap);
 	if (confinement != SNAPD_CONFINEMENT_UNKNOWN) {
@@ -345,7 +355,7 @@ gs_plugin_url_to_app (GsPlugin *plugin,
 
 	/* create app */
 	path = gs_utils_get_url_path (url);
-	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_MATCH_NAME, NULL, path, cancellable, NULL);
+	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_SCOPE_WIDE | SNAPD_FIND_FLAGS_MATCH_NAME, NULL, path, cancellable, NULL);
 	if (snaps == NULL || snaps->len < 1)
 		return TRUE;
 
@@ -387,6 +397,48 @@ is_banner_icon_image (const gchar *filename)
 	return g_regex_match_simple ("^banner-icon(?:_[a-zA-Z0-9]{7})?\\.(?:png|jpg)$", filename, 0, 0);
 }
 
+static const gchar *
+get_media_url (SnapdSnap *snap, gboolean (*match_func)(const gchar *filename))
+{
+	GPtrArray *media, *screenshots;
+	guint i;
+
+	media = snapd_snap_get_media (snap);
+	for (i = 0; i < media->len; i++) {
+		SnapdMedia *m = media->pdata[i];
+
+		/* FIXME: In the future there will be a media type for these */
+
+		/* Fall back to old specially named screenshots */
+		if (g_strcmp0 (snapd_media_get_media_type (m), "screenshot") == 0) {
+			const gchar *url;
+			g_autofree gchar *filename = NULL;
+
+			url = snapd_media_get_url (m);
+			filename = g_path_get_basename (url);
+			if (match_func (filename))
+				return url;
+		}
+	}
+
+	/* Fall back to old screenshots */
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	screenshots = snapd_snap_get_screenshots (snap);
+G_GNUC_END_IGNORE_DEPRECATIONS
+	for (i = 0; i < screenshots->len; i++) {
+		SnapdScreenshot *screenshot = screenshots->pdata[i];
+		const gchar *url;
+		g_autofree gchar *filename = NULL;
+
+		url = snapd_screenshot_get_url (screenshot);
+		filename = g_path_get_basename (url);
+		if (match_func (filename))
+			return url;
+	}
+
+	return NULL;
+}
+
 gboolean
 gs_plugin_add_featured (GsPlugin *plugin,
 		        GsAppList *list,
@@ -396,13 +448,11 @@ gs_plugin_add_featured (GsPlugin *plugin,
 	g_autoptr(GPtrArray) snaps = NULL;
 	SnapdSnap *snap;
 	g_autoptr(GsApp) app = NULL;
-	GPtrArray *screenshots;
-	guint i;
 	const gchar *banner_url = NULL, *icon_url = NULL;
 	g_autoptr(GString) background_css = NULL;
 	g_autofree gchar *css = NULL;
 
-	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_NONE, "featured", NULL, cancellable, error);
+	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_SCOPE_WIDE, "featured", NULL, cancellable, error);
 
 	if (snaps == NULL)
 		return FALSE;
@@ -415,19 +465,8 @@ gs_plugin_add_featured (GsPlugin *plugin,
 	app = snap_to_app (plugin, snap);
 
 	/* if has a screenshot called 'banner.png' or 'banner-icon.png' then use them for the banner */
-	screenshots = snapd_snap_get_screenshots (snap);
-	for (i = 0; i < screenshots->len; i++) {
-		SnapdScreenshot *screenshot = screenshots->pdata[i];
-		const gchar *url;
-		g_autofree gchar *filename = NULL;
-
-		url = snapd_screenshot_get_url (screenshot);
-		filename = g_path_get_basename (url);
-		if (is_banner_image (filename))
-			banner_url = url;
-		else if (is_banner_icon_image (filename))
-			icon_url = url;
-	}
+	banner_url = get_media_url (snap, is_banner_image);
+	icon_url = get_media_url (snap, is_banner_icon_image);
 
 	background_css = g_string_new ("");
 	if (icon_url != NULL)
@@ -469,7 +508,7 @@ gs_plugin_add_popular (GsPlugin *plugin,
 	g_autoptr(GPtrArray) snaps = NULL;
 	guint i;
 
-	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_NONE, "featured", NULL, cancellable, error);
+	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_SCOPE_WIDE, "featured", NULL, cancellable, error);
 	if (snaps == NULL)
 		return FALSE;
 
@@ -524,7 +563,7 @@ gs_plugin_add_category_apps (GsPlugin *plugin,
 			g_autoptr(GPtrArray) snaps = NULL;
 			guint j;
 
-			snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_NONE, tokens[i], NULL, cancellable, error);
+			snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_SCOPE_WIDE, tokens[i], NULL, cancellable, error);
 			if (snaps == NULL)
 				return FALSE;
 			for (j = 0; j < snaps->len; j++) {
@@ -579,7 +618,7 @@ gs_plugin_add_search (GsPlugin *plugin,
 	guint i;
 
 	query = g_strjoinv (" ", values);
-	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_NONE, NULL, query, cancellable, error);
+	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_SCOPE_WIDE, NULL, query, cancellable, error);
 	if (snaps == NULL)
 		return FALSE;
 
@@ -602,7 +641,7 @@ get_store_snap (GsPlugin *plugin, const gchar *name, GCancellable *cancellable, 
 	if (snap != NULL)
 		return g_object_ref (snap);
 
-	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_MATCH_NAME, NULL, name, cancellable, error);
+	snaps = find_snaps (plugin, SNAPD_FIND_FLAGS_SCOPE_WIDE | SNAPD_FIND_FLAGS_MATCH_NAME, NULL, name, cancellable, error);
 	if (snaps == NULL || snaps->len < 1)
 		return NULL;
 
@@ -769,6 +808,72 @@ gs_plugin_snap_get_description_safe (SnapdSnap *snap)
 	return g_string_free (str, FALSE);
 }
 
+static void
+refine_screenshots (GsApp *app, SnapdSnap *snap)
+{
+	GPtrArray *media, *screenshots;
+	guint i;
+
+	media = snapd_snap_get_media (snap);
+	for (i = 0; i < media->len; i++) {
+		SnapdMedia *m = media->pdata[i];
+		const gchar *url;
+		g_autofree gchar *filename = NULL;
+		g_autoptr(AsScreenshot) ss = NULL;
+		g_autoptr(AsImage) image = NULL;
+
+		if (g_strcmp0 (snapd_media_get_media_type (m), "screenshot") != 0)
+			continue;
+
+		/* skip screenshots used for banner when app is featured */
+		url = snapd_media_get_url (m);
+		filename = g_path_get_basename (url);
+		if (is_banner_image (filename) || is_banner_icon_image (filename))
+			continue;
+
+		ss = as_screenshot_new ();
+		as_screenshot_set_kind (ss, AS_SCREENSHOT_KIND_NORMAL);
+		image = as_image_new ();
+		as_image_set_url (image, snapd_media_get_url (m));
+		as_image_set_kind (image, AS_IMAGE_KIND_SOURCE);
+		as_image_set_width (image, snapd_media_get_width (m));
+		as_image_set_height (image, snapd_media_get_height (m));
+		as_screenshot_add_image (ss, image);
+		gs_app_add_screenshot (app, ss);
+	}
+
+	if (gs_app_get_screenshots (app)->len > 0)
+		return;
+
+	/* fallback to old screenshots data */
+G_GNUC_BEGIN_IGNORE_DEPRECATIONS
+	screenshots = snapd_snap_get_screenshots (snap);
+G_GNUC_END_IGNORE_DEPRECATIONS
+	for (i = 0; i < screenshots->len; i++) {
+		SnapdScreenshot *screenshot = screenshots->pdata[i];
+		const gchar *url;
+		g_autofree gchar *filename = NULL;
+		g_autoptr(AsScreenshot) ss = NULL;
+		g_autoptr(AsImage) image = NULL;
+
+		/* skip screenshots used for banner when app is featured */
+		url = snapd_screenshot_get_url (screenshot);
+		filename = g_path_get_basename (url);
+		if (is_banner_image (filename) || is_banner_icon_image (filename))
+			continue;
+
+		ss = as_screenshot_new ();
+		as_screenshot_set_kind (ss, AS_SCREENSHOT_KIND_NORMAL);
+		image = as_image_new ();
+		as_image_set_url (image, snapd_screenshot_get_url (screenshot));
+		as_image_set_kind (image, AS_IMAGE_KIND_SOURCE);
+		as_image_set_width (image, snapd_screenshot_get_width (screenshot));
+		as_image_set_height (image, snapd_screenshot_get_height (screenshot));
+		as_screenshot_add_image (ss, image);
+		gs_app_add_screenshot (app, ss);
+	}
+}
+
 gboolean
 gs_plugin_refine_app (GsPlugin *plugin,
 		      GsApp *app,
@@ -820,6 +925,8 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	if (developer_name == NULL)
 		developer_name = snapd_snap_get_publisher_username (snap);
 	gs_app_set_developer_name (app, developer_name);
+	if (snapd_snap_get_publisher_validation (snap) == SNAPD_PUBLISHER_VALIDATION_VERIFIED)
+		gs_app_add_quirk (app, GS_APP_QUIRK_DEVELOPER_VERIFIED);
 
 	snap = local_snap != NULL ? local_snap : store_snap;
 	gs_app_set_version (app, snapd_snap_get_version (snap));
@@ -838,7 +945,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 			gs_app_set_metadata (app, "snap::launch-name", snapd_app_get_name (snap_app));
 			gs_app_set_metadata (app, "snap::launch-desktop", snapd_app_get_desktop_file (snap_app));
 		} else {
-			gs_app_add_quirk (app, AS_APP_QUIRK_NOT_LAUNCHABLE);
+			gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 		}
 	}
 
@@ -847,35 +954,8 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		gs_app_set_origin (app, priv->store_name);
 		gs_app_set_size_download (app, snapd_snap_get_download_size (store_snap));
 
-		if (flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS && gs_app_get_screenshots (app)->len == 0) {
-			GPtrArray *screenshots;
-			guint i;
-
-			screenshots = snapd_snap_get_screenshots (store_snap);
-			for (i = 0; i < screenshots->len; i++) {
-				SnapdScreenshot *screenshot = screenshots->pdata[i];
-				const gchar *url;
-				g_autofree gchar *filename = NULL;
-				g_autoptr(AsScreenshot) ss = NULL;
-				g_autoptr(AsImage) image = NULL;
-
-				/* skip screenshots used for banner when app is featured */
-				url = snapd_screenshot_get_url (screenshot);
-				filename = g_path_get_basename (url);
-				if (is_banner_image (filename) || is_banner_icon_image (filename))
-					continue;
-
-				ss = as_screenshot_new ();
-				as_screenshot_set_kind (ss, AS_SCREENSHOT_KIND_NORMAL);
-				image = as_image_new ();
-				as_image_set_url (image, snapd_screenshot_get_url (screenshot));
-				as_image_set_kind (image, AS_IMAGE_KIND_SOURCE);
-				as_image_set_width (image, snapd_screenshot_get_width (screenshot));
-				as_image_set_height (image, snapd_screenshot_get_height (screenshot));
-				as_screenshot_add_image (ss, image);
-				gs_app_add_screenshot (app, ss);
-			}
-		}
+		if (flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS && gs_app_get_screenshots (app)->len == 0)
+			refine_screenshots (app, store_snap);
 	}
 
 	/* load icon if requested */
@@ -1036,106 +1116,4 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	}
 	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
 	return TRUE;
-}
-
-gboolean
-gs_plugin_auth_login (GsPlugin *plugin, GsAuth *auth,
-		      GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(SnapdClient) client = NULL;
-	g_autoptr(SnapdUserInformation) user_information = NULL;
-	g_autoptr(GVariant) macaroon_variant = NULL;
-	g_autofree gchar *serialized_macaroon = NULL;
-
-	if (auth != priv->auth)
-		return TRUE;
-
-	g_clear_object (&priv->auth_data);
-
-	client = get_client (plugin, error);
-	if (client == NULL)
-		return FALSE;
-
-	user_information = snapd_client_login2_sync (client, gs_auth_get_username (auth), gs_auth_get_password (auth), gs_auth_get_pin (auth), NULL, error);
-	if (user_information == NULL) {
-		snapd_error_convert (error);
-		return FALSE;
-	}
-
-	priv->auth_data = g_object_ref (snapd_user_information_get_auth_data (user_information));
-
-	macaroon_variant = g_variant_new ("(s^as)",
-					  snapd_auth_data_get_macaroon (priv->auth_data),
-					  snapd_auth_data_get_discharges (priv->auth_data));
-	serialized_macaroon = g_variant_print (macaroon_variant, FALSE);
-	gs_auth_add_metadata (auth, "macaroon", serialized_macaroon);
-
-	/* store */
-	if (!gs_auth_store_save (auth,
-				 GS_AUTH_STORE_FLAG_USERNAME |
-				 GS_AUTH_STORE_FLAG_METADATA,
-				 cancellable, error))
-		return FALSE;
-
-	gs_auth_add_flags (priv->auth, GS_AUTH_FLAG_VALID);
-
-	return TRUE;
-}
-
-gboolean
-gs_plugin_auth_logout (GsPlugin *plugin, GsAuth *auth,
-		       GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	if (auth != priv->auth)
-		return TRUE;
-
-	/* clear */
-	if (!gs_auth_store_clear (auth,
-				  GS_AUTH_STORE_FLAG_USERNAME |
-				  GS_AUTH_STORE_FLAG_METADATA,
-				  cancellable, error))
-		return FALSE;
-
-	g_clear_object (&priv->auth_data);
-	gs_auth_set_flags (priv->auth, 0);
-	return TRUE;
-}
-
-gboolean
-gs_plugin_auth_lost_password (GsPlugin *plugin, GsAuth *auth,
-			      GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	if (auth != priv->auth)
-		return TRUE;
-
-	// FIXME: snapd might not be using Ubuntu One accounts
-	// https://bugs.launchpad.net/bugs/1598667
-	g_set_error_literal (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_AUTH_INVALID,
-			     "do online using @https://login.ubuntu.com/+forgot_password");
-	return FALSE;
-}
-
-gboolean
-gs_plugin_auth_register (GsPlugin *plugin, GsAuth *auth,
-			 GCancellable *cancellable, GError **error)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	if (auth != priv->auth)
-		return TRUE;
-
-	// FIXME: snapd might not be using Ubuntu One accounts
-	// https://bugs.launchpad.net/bugs/1598667
-	g_set_error_literal (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_AUTH_INVALID,
-			     "do online using @https://login.ubuntu.com/+login");
-	return FALSE;
 }

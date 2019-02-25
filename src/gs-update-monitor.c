@@ -4,21 +4,7 @@
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -206,7 +192,7 @@ _build_autoupdated_notification (GsUpdateMonitor *monitor, GsAppList *list)
 	/* how many apps needs updating */
 	for (guint i = 0; i < gs_app_list_length (list_apps); i++) {
 		GsApp *app = gs_app_list_index (list_apps, i);
-		if (gs_app_has_quirk (app, AS_APP_QUIRK_NEEDS_REBOOT))
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT))
 			need_restart_cnt++;
 	}
 
@@ -315,6 +301,8 @@ _should_auto_update (GsApp *app)
 	if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE_LIVE)
 		return FALSE;
 	if (gs_app_get_kind (app) == AS_APP_KIND_FIRMWARE)
+		return FALSE;
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_NEW_PERMISSIONS))
 		return FALSE;
 	return TRUE;
 }
@@ -1086,14 +1074,10 @@ gs_update_monitor_dispose (GObject *object)
 		monitor->network_changed_handler = 0;
 	}
 
-	if (monitor->cancellable != NULL) {
-		g_cancellable_cancel (monitor->cancellable);
-		g_clear_object (&monitor->cancellable);
-	}
-	if (monitor->network_cancellable != NULL) {
-		g_cancellable_cancel (monitor->network_cancellable);
-		g_clear_object (&monitor->network_cancellable);
-	}
+	g_cancellable_cancel (monitor->cancellable);
+	g_clear_object (&monitor->cancellable);
+	g_cancellable_cancel (monitor->network_cancellable);
+	g_clear_object (&monitor->network_cancellable);
 
 	stop_updates_check (monitor);
 	stop_upgrades_check (monitor);
@@ -1158,5 +1142,3 @@ gs_update_monitor_new (GsApplication *application)
 
 	return monitor;
 }
-
-/* vim: set noexpandtab: */

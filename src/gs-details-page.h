@@ -3,25 +3,10 @@
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2017 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef __GS_DETAILS_PAGE_H
-#define __GS_DETAILS_PAGE_H
+#pragma once
 
 #include "gs-page.h"
 
@@ -41,7 +26,3 @@ void		 gs_details_page_set_url	(GsDetailsPage		*self,
 GsApp		*gs_details_page_get_app	(GsDetailsPage		*self);
 
 G_END_DECLS
-
-#endif /* __GS_DETAILS_PAGE_H */
-
-/* vim: set noexpandtab: */

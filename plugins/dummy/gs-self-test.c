@@ -2,24 +2,12 @@
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
+
+#include <glib/gstdio.h>
 
 #include "gnome-software-private.h"
 
@@ -104,6 +92,7 @@ gs_plugins_dummy_error_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* drop all caches */
+	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* update, which should cause an error to be emitted */
@@ -186,7 +175,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 
 	/* check the not-launchable quirk */
 
-	g_assert (!gs_app_has_quirk(app, AS_APP_QUIRK_NOT_LAUNCHABLE));
+	g_assert (!gs_app_has_quirk(app, GS_APP_QUIRK_NOT_LAUNCHABLE));
 
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", "true");
 
@@ -200,7 +189,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert (ret);
 
-	g_assert (gs_app_has_quirk(app, AS_APP_QUIRK_NOT_LAUNCHABLE));
+	g_assert (gs_app_has_quirk(app, GS_APP_QUIRK_NOT_LAUNCHABLE));
 
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", NULL);
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", "false");
@@ -215,7 +204,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert (ret);
 
-	g_assert (!gs_app_has_quirk(app, AS_APP_QUIRK_NOT_LAUNCHABLE));
+	g_assert (!gs_app_has_quirk(app, GS_APP_QUIRK_NOT_LAUNCHABLE));
 }
 
 static void
@@ -294,7 +283,7 @@ gs_plugins_dummy_updates_func (GsPluginLoader *plugin_loader)
 	/* get the virtual non-apps OS update */
 	app = gs_app_list_index (list, 1);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "proxy.desktop");
-	g_assert (gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY));
+	g_assert (gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY));
 	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpint (gs_app_list_length (gs_app_get_related (app)), ==, 2);
 }
@@ -354,7 +343,6 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	GsApp *app;
 	GsApp *addon;
 	GsAppList *addons;
-	guint64 kudos;
 	g_autofree gchar *menu_path = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
@@ -365,8 +353,10 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_MENU_PATH |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE,
 					 NULL);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
@@ -385,13 +375,12 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_assert (gs_app_get_pixbuf (app) != NULL);
 
 	/* check various bitfields */
-	g_assert (gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE));
+	g_assert (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE));
 	g_assert_cmpstr (gs_app_get_license (app), ==, "GPL-2.0+");
 	g_assert (gs_app_get_license_is_free (app));
 
 	/* check kudos */
-	kudos = gs_app_get_kudos (app);
-	g_assert (kudos & GS_APP_KUDO_MY_LANGUAGE);
+	g_assert_true (gs_app_has_kudo (app, GS_APP_KUDO_MY_LANGUAGE));
 
 	/* check categories */
 	g_assert (gs_app_has_category (app, "Player"));
@@ -426,7 +415,7 @@ gs_plugins_dummy_search_func (GsPluginLoader *plugin_loader)
 
 	/* get search result based on addon keyword */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
-					 "search", "spell",
+					 "search", "zeus",
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
 					 NULL);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
@@ -442,6 +431,36 @@ gs_plugins_dummy_search_func (GsPluginLoader *plugin_loader)
 }
 
 static void
+gs_plugins_dummy_search_alternate_func (GsPluginLoader *plugin_loader)
+{
+	GsApp *app_tmp;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GsAppList) list = NULL;
+	g_autoptr(GsApp) app = NULL;
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	/* get search result based on addon keyword */
+	app = gs_app_new ("zeus.desktop");
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_ALTERNATES,
+					 "app", app,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					 NULL);
+	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
+	gs_test_flush_main_context ();
+	g_assert_no_error (error);
+	g_assert (list != NULL);
+
+	/* make sure there is the original app, and the alternate */
+	g_assert_cmpint (gs_app_list_length (list), ==, 2);
+	app_tmp = gs_app_list_index (list, 0);
+	g_assert_cmpstr (gs_app_get_id (app_tmp), ==, "chiron.desktop");
+	g_assert_cmpint (gs_app_get_kind (app_tmp), ==, AS_APP_KIND_DESKTOP);
+	app_tmp = gs_app_list_index (list, 1);
+	g_assert_cmpstr (gs_app_get_id (app_tmp), ==, "zeus.desktop");
+	g_assert_cmpint (gs_app_get_kind (app_tmp), ==, AS_APP_KIND_DESKTOP);
+}
+
+static void
 gs_plugins_dummy_hang_func (GsPluginLoader *plugin_loader)
 {
 	g_autoptr(GCancellable) cancellable = g_cancellable_new ();
@@ -450,6 +469,7 @@ gs_plugins_dummy_hang_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* drop all caches */
+	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* get search result based on addon keyword */
@@ -530,86 +550,6 @@ gs_plugins_dummy_plugin_cache_func (GsPluginLoader *plugin_loader)
 	/* make sure there is one GObject */
 	g_assert_cmpstr (gs_app_get_id (app1), ==, gs_app_get_id (app2));
 	g_assert (app1 == app2);
-}
-
-static void
-gs_plugins_dummy_authentication_func (GsPluginLoader *plugin_loader)
-{
-	GsAuth *auth;
-	gboolean ret;
-	g_autoptr(GError) error = NULL;
-	g_autoptr(GsApp) app = NULL;
-	g_autoptr(GsAppList) list = NULL;
-	g_autoptr(AsReview) review = NULL;
-	g_autoptr(AsReview) review2 = NULL;
-	g_autoptr(GsPluginJob) plugin_job = NULL;
-
-	/* check initial state */
-	auth = gs_plugin_loader_get_auth_by_id (plugin_loader, "dummy");
-	g_assert (GS_IS_AUTH (auth));
-	g_assert_cmpint (gs_auth_get_flags (auth), ==, 0);
-
-	/* do an action that returns a URL */
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_AUTH_REGISTER,
-					 "auth", auth,
-					 NULL);
-	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
-	gs_test_flush_main_context ();
-	g_assert_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID);
-	g_assert (list == NULL);
-	g_clear_error (&error);
-	g_assert (!gs_auth_has_flag (auth, GS_AUTH_FLAG_VALID));
-
-	/* do an action that requires a login */
-	app = gs_app_new (NULL);
-	review = as_review_new ();
-	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REVIEW_REMOVE,
-					 "app", app,
-					 "review", review,
-					 NULL);
-	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
-	gs_test_flush_main_context ();
-	g_assert_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_REQUIRED);
-	g_assert (!ret);
-	g_clear_error (&error);
-
-	/* pretend to auth with no credentials */
-	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_AUTH_LOGIN,
-					 "auth", auth,
-					 NULL);
-	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
-	gs_test_flush_main_context ();
-	g_assert_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID);
-	g_assert (list == NULL);
-	g_clear_error (&error);
-	g_assert (!gs_auth_has_flag (auth, GS_AUTH_FLAG_VALID));
-
-	/* auth again with correct credentials */
-	gs_auth_set_username (auth, "dummy");
-	gs_auth_set_password (auth, "dummy");
-	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_AUTH_LOGIN,
-						 "auth", auth,
-						 NULL);
-	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
-	gs_test_flush_main_context ();
-	g_assert_no_error (error);
-	g_assert (list != NULL);
-	g_assert (gs_auth_has_flag (auth, GS_AUTH_FLAG_VALID));
-
-	/* do the action that requires a login */
-	review2 = as_review_new ();
-	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REVIEW_REMOVE,
-					 "app", app,
-					 "review", review2,
-					 NULL);
-	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
-	gs_test_flush_main_context ();
-	g_assert_no_error (error);
-	g_assert (ret);
 }
 
 static void
@@ -706,6 +646,7 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsDummyTestHelper) helper3 = gs_dummy_test_helper_new ();
 
 	/* drop all caches */
+	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* get the updates list */
@@ -797,6 +738,7 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 int
 main (int argc, char **argv)
 {
+	const gchar *tmp_root = "/var/tmp/self-test";
 	gboolean ret;
 	g_autofree gchar *xml = NULL;
 	g_autoptr(GError) error = NULL;
@@ -817,6 +759,7 @@ main (int argc, char **argv)
 
 	g_test_init (&argc, &argv, NULL);
 	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	g_setenv ("GS_XMLB_VERBOSE", "1", TRUE);
 
 	/* set all the things required as a dummy test harness */
 	g_setenv ("GS_SELF_TEST_LOCALE", "en_GB", TRUE);
@@ -825,6 +768,7 @@ main (int argc, char **argv)
 	g_setenv ("GS_SELF_TEST_PROVENANCE_LICENSE_SOURCES", "london*,boston", TRUE);
 	g_setenv ("GS_SELF_TEST_PROVENANCE_LICENSE_URL", "https://www.debian.org/", TRUE);
 	g_setenv ("GNOME_SOFTWARE_POPULAR", "", TRUE);
+	g_setenv ("GS_SELF_TEST_CACHEDIR", tmp_root, TRUE);
 
 	xml = g_strdup ("<?xml version=\"1.0\"?>\n"
 		"<components version=\"0.9\">\n"
@@ -870,6 +814,7 @@ main (int argc, char **argv)
 		"  <component type=\"os-upgrade\">\n"
 		"    <id>org.fedoraproject.release-rawhide.upgrade</id>\n"
 		"    <summary>Release specific tagline</summary>\n"
+		"    <pkgname>fedora-release</pkgname>\n"
 		"  </component>\n"
 		"</components>\n");
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
@@ -898,9 +843,6 @@ main (int argc, char **argv)
 	g_test_add_data_func ("/gnome-software/plugins/dummy/wildcard",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_dummy_wildcard_func);
-	g_test_add_data_func ("/gnome-software/plugins/dummy/authentication",
-			      plugin_loader,
-			      (GTestDataFunc) gs_plugins_dummy_authentication_func);
 	g_test_add_data_func ("/gnome-software/plugins/dummy/plugin-cache",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_dummy_plugin_cache_func);
@@ -910,6 +852,9 @@ main (int argc, char **argv)
 	g_test_add_data_func ("/gnome-software/plugins/dummy/search",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_dummy_search_func);
+	g_test_add_data_func ("/gnome-software/plugins/dummy/search-alternate",
+			      plugin_loader,
+			      (GTestDataFunc) gs_plugins_dummy_search_alternate_func);
 	g_test_add_data_func ("/gnome-software/plugins/dummy/hang",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_dummy_hang_func);
@@ -948,5 +893,3 @@ main (int argc, char **argv)
 			      (GTestDataFunc) gs_plugins_dummy_limit_parallel_ops_func);
 	return g_test_run ();
 }
-
-/* vim: set noexpandtab: */

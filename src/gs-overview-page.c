@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -510,7 +496,7 @@ gs_overview_page_get_featured_cb (GObject *source_object,
 		gtk_widget_show (event_box);
 		g_signal_connect (event_box, "button_release_event",
 			  G_CALLBACK (featured_switcher_clicked), self);
-		gtk_box_pack_start (GTK_BOX (priv->box_featured_switcher), event_box, FALSE, TRUE, 0);
+		gtk_container_add (GTK_CONTAINER (priv->box_featured_switcher), event_box);
 
 		label = gtk_label_new (i == 0 ? FEATURED_SWITCHER_ACTIVE_TEXT : FEATURED_SWITCHER_INACTIVE_TEXT);
 		gtk_style_context_add_class (gtk_widget_get_style_context (label),
@@ -767,6 +753,8 @@ gs_overview_page_load (GsOverviewPage *self)
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_FEATURED,
 						 "max-results", 5,
 						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+								 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,
@@ -782,8 +770,11 @@ gs_overview_page_load (GsOverviewPage *self)
 		priv->loading_popular = TRUE;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_POPULAR,
 						 "max-results", 20,
-							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
 								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+								 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,
@@ -800,8 +791,10 @@ gs_overview_page_load (GsOverviewPage *self)
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_RECENT,
 						 "age", (guint64) (60 * 60 * 24 * 60),
 						 "max-results", 20,
-							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+								 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 						 NULL);
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
 						    plugin_job,
@@ -843,8 +836,10 @@ gs_overview_page_load (GsOverviewPage *self)
 			plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORY_APPS,
 							 "max-results", 20,
 							 "category", featured_category,
-									 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
+							 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 									 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+							 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+									 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 							 NULL);
 			gs_plugin_loader_job_process_async (priv->plugin_loader,
 							    plugin_job,
@@ -859,8 +854,7 @@ gs_overview_page_load (GsOverviewPage *self)
 	if (!priv->loading_categories) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		priv->loading_categories = TRUE;
-		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORIES,
-							 NULL);
+		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_CATEGORIES, NULL);
 		gs_plugin_loader_job_get_categories_async (priv->plugin_loader, plugin_job,
 							  priv->cancellable,
 							  gs_overview_page_get_categories_cb,
@@ -898,6 +892,8 @@ gs_overview_page_switch_to (GsPage *page, gboolean scroll_up)
 	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), FALSE);
 
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "buttonbox_main"));
+	gtk_widget_show (widget);
+	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "menu_button"));
 	gtk_widget_show (widget);
 
 	/* hide the expander */
@@ -1137,5 +1133,3 @@ gs_overview_page_new (void)
 {
 	return GS_OVERVIEW_PAGE (g_object_new (GS_TYPE_OVERVIEW_PAGE, NULL));
 }
-
-/* vim: set noexpandtab: */

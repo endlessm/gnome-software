@@ -3,25 +3,10 @@
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2016 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
-#ifndef GS_PAGE_H
-#define GS_PAGE_H
+#pragma once
 
 #include "gs-shell.h"
 
@@ -63,7 +48,7 @@ void		 gs_page_set_header_end_widget		(GsPage		*page,
 							 GtkWidget	*widget);
 void		 gs_page_authenticate			(GsPage			*page,
 							 GsApp			*app,
-							 const gchar		*provider_id,
+							 const gchar		*auth_id,
 							 GCancellable		*cancellable,
 							 GsPageAuthCallback	 callback,
 							 gpointer		 user_data);
@@ -99,7 +84,3 @@ gboolean	 gs_page_setup				(GsPage		*page,
 gboolean	 gs_page_is_active			(GsPage		*page);
 
 G_END_DECLS
-
-#endif /* GS_PAGE_H */
-
-/* vim: set noexpandtab: */

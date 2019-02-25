@@ -10,7 +10,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -23,7 +26,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -36,7 +42,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -49,7 +58,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -62,7 +74,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 
@@ -76,7 +91,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -92,7 +110,13 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : [
+    plugin_libs,
+    libxmlb,
+  ],
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -108,7 +132,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -124,7 +151,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -137,7 +167,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -150,7 +183,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -163,7 +199,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -176,7 +215,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 shared_module(
@@ -189,7 +231,10 @@ shared_module(
   install : true,
   install_dir: plugin_dir,
   c_args : cargs,
-  dependencies : plugin_libs
+  dependencies : plugin_libs,
+  link_with : [
+    libgnomesoftware
+  ]
 )
 
 if get_option('tests')
@@ -208,6 +253,7 @@ if get_option('tests')
     ],
     dependencies : [
       plugin_libs,
+      libxmlb,
     ],
     link_with : [
       libgnomesoftware

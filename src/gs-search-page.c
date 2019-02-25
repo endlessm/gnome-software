@@ -3,21 +3,7 @@
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -132,9 +118,6 @@ gs_search_page_get_search_cb (GObject *source_object,
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
 		app_row = gs_app_row_new (app);
-		if (!gs_app_has_quirk (app, AS_APP_QUIRK_PROVENANCE) ||
-		    gs_utils_list_has_app_fuzzy (list, app))
-			gs_app_row_set_show_source (GS_APP_ROW (app_row), TRUE);
 		g_signal_connect (app_row, "button-clicked",
 				  G_CALLBACK (gs_search_page_app_row_clicked_cb),
 				  self);
@@ -252,10 +235,8 @@ gs_search_page_load (GsSearchPage *self)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* cancel any pending searches */
-	if (self->search_cancellable != NULL) {
-		g_cancellable_cancel (self->search_cancellable);
-		g_object_unref (self->search_cancellable);
-	}
+	g_cancellable_cancel (self->search_cancellable);
+	g_clear_object (&self->search_cancellable);
 	self->search_cancellable = g_cancellable_new ();
 
 	/* search for apps */
@@ -267,15 +248,15 @@ gs_search_page_load (GsSearchPage *self)
 					 "timeout", 10,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_HISTORY |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					 NULL);
 	gs_plugin_job_set_sort_func (plugin_job, gs_search_page_sort_cb);
 	gs_plugin_job_set_sort_func_data (plugin_job, self);
@@ -357,6 +338,8 @@ gs_search_page_switch_to (GsPage *page, gboolean scroll_up)
 
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
 	gtk_widget_show (widget);
+	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "menu_button"));
+	gtk_widget_show (widget);
 
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "search_bar"));
 	gtk_widget_show (widget);
@@ -399,8 +382,7 @@ static void
 gs_search_page_cancel_cb (GCancellable *cancellable,
                           GsSearchPage *self)
 {
-	if (self->search_cancellable != NULL)
-		g_cancellable_cancel (self->search_cancellable);
+	g_cancellable_cancel (self->search_cancellable);
 }
 
 static void
@@ -518,5 +500,3 @@ gs_search_page_new (void)
 	self = g_object_new (GS_TYPE_SEARCH_PAGE, NULL);
 	return GS_SEARCH_PAGE (self);
 }
-
-/* vim: set noexpandtab: */

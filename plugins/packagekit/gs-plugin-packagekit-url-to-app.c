@@ -2,21 +2,7 @@
  *
  * Copyright (C) 2017 Canonical Ltd
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
@@ -29,12 +15,15 @@
 
 struct GsPluginData {
 	PkClient		*client;
+	GMutex			 client_mutex;
 };
 
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+
+	g_mutex_init (&priv->client_mutex);
 	priv->client = pk_client_new ();
 
 	pk_client_set_background (priv->client, FALSE);
@@ -45,6 +34,7 @@ void
 gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_mutex_clear (&priv->client_mutex);
 	g_object_unref (priv->client);
 }
 
@@ -88,18 +78,22 @@ gs_plugin_url_to_app (GsPlugin *plugin,
 	}
 
 	app = gs_app_new (NULL);
+	gs_plugin_packagekit_set_packaging_format (plugin, app);
 	gs_app_add_source (app, path);
 	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 
 	package_ids = g_new0 (gchar *, 2);
 	package_ids[0] = g_strdup (path);
 
+	g_mutex_lock (&priv->client_mutex);
 	results = pk_client_resolve (priv->client,
 				     pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST, PK_FILTER_ENUM_ARCH, -1),
 				     package_ids,
 				     cancellable,
 				     gs_packagekit_helper_cb, helper,
 				     error);
+	g_mutex_unlock (&priv->client_mutex);
 
 	if (!gs_plugin_packagekit_results_valid (results, error)) {
 		g_prefix_error (error, "failed to resolve package_ids: ");

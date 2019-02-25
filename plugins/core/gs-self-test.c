@@ -2,24 +2,12 @@
  *
  * Copyright (C) 2017 Joaquim Rocha <jrocha@endlessm.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
+
+#include <glib/gstdio.h>
 
 #include "gnome-software-private.h"
 
@@ -37,6 +25,7 @@ gs_plugins_core_search_repo_name_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* drop all caches */
+	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* force this app to be installed */
@@ -70,6 +59,7 @@ gs_plugins_core_os_release_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GError) error = NULL;
 
 	/* drop all caches */
+	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* refine system application */
@@ -120,6 +110,7 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsAppList) list_wildcard = NULL;
 
 	/* drop all caches */
+	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* create a list with generic apps */
@@ -156,7 +147,7 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 	/* make sure the os update is valid */
 	g_assert_cmpstr (gs_app_get_id (os_update), ==, "org.gnome.Software.OsUpdate");
 	g_assert_cmpint (gs_app_get_kind (os_update), ==, AS_APP_KIND_OS_UPDATE);
-	g_assert (gs_app_has_quirk (os_update, AS_APP_QUIRK_IS_PROXY));
+	g_assert (gs_app_has_quirk (os_update, GS_APP_QUIRK_IS_PROXY));
 
 	/* must have two related apps, the ones we added earlier */
 	related = gs_app_get_related (os_update);
@@ -165,7 +156,7 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 	/* another test to make sure that we don't get an OsUpdate item created for wildcard apps */
 	list_wildcard = gs_app_list_new ();
 	app_wildcard = gs_app_new ("nosuchapp.desktop");
-	gs_app_add_quirk (app_wildcard, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+	gs_app_add_quirk (app_wildcard, GS_APP_QUIRK_IS_WILDCARD);
 	gs_app_set_kind (app_wildcard, AS_APP_KIND_GENERIC);
 	gs_app_list_add (list_wildcard, app_wildcard);
 	plugin_job2 = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
@@ -181,7 +172,7 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 	for (guint i = 0; i < gs_app_list_length (list_wildcard); i++) {
 		GsApp *app_tmp = gs_app_list_index (list_wildcard, i);
 		g_assert_cmpint (gs_app_get_kind (app_tmp), !=, AS_APP_KIND_OS_UPDATE);
-		g_assert (!gs_app_has_quirk (app_tmp, AS_APP_QUIRK_IS_PROXY));
+		g_assert (!gs_app_has_quirk (app_tmp, GS_APP_QUIRK_IS_PROXY));
 	}
 }
 
@@ -204,7 +195,7 @@ main (int argc, char **argv)
 
 	g_test_init (&argc, &argv, NULL);
 	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
-	g_setenv ("GS_SELF_TEST_CORE_DATADIR", tmp_root, TRUE);
+	g_setenv ("GS_SELF_TEST_CACHEDIR", tmp_root, TRUE);
 
 	os_release_filename = gs_test_get_filename (TESTDATADIR, "os-release");
 	g_assert (os_release_filename != NULL);
@@ -235,10 +226,10 @@ main (int argc, char **argv)
 		"  <component type=\"os-upgrade\">\n"
 		"    <id>org.fedoraproject.Fedora-25</id>\n"
 		"    <summary>Fedora Workstation</summary>\n"
+		"    <pkgname>fedora-release</pkgname>\n"
 		"  </component>\n"
 		"</components>\n";
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
-	g_setenv ("GS_SELF_TEST_ALL_ORIGIN_KEYWORDS", "1", TRUE);
 
 	/* only critical and error are fatal */
 	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
@@ -266,5 +257,3 @@ main (int argc, char **argv)
 			      (GTestDataFunc) gs_plugins_core_generic_updates_func);
 	return g_test_run ();
 }
-
-/* vim: set noexpandtab: */

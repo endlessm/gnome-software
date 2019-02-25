@@ -2,23 +2,10 @@
  *
  * Copyright (C) 2012-2017 Richard Hughes <richard@hughsie.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
+#pragma once
 
 /**
  * SECTION:gs-plugin-vfuncs
@@ -27,9 +14,6 @@
  * @stability: Unstable
  * @short_description: Vfuncs that plugins can implement
  */
-
-#ifndef __GS_PLUGIN_VFUNCS_H
-#define __GS_PLUGIN_VFUNCS_H
 
 #include <appstream-glib.h>
 #include <glib-object.h>
@@ -142,6 +126,27 @@ gboolean	 gs_plugin_add_search_files		(GsPlugin	*plugin,
  **/
 gboolean	 gs_plugin_add_search_what_provides	(GsPlugin	*plugin,
 							 gchar		**values,
+							 GsAppList	*list,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+/**
+ * gs_plugin_add_alternates
+ * @plugin: a #GsPlugin
+ * @app: a #GsApp
+ * @list: a #GsAppList
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Called when trying to find alternates to a specific app, for instance
+ * finding a flatpak version of an existing distro packaged application.
+ *
+ * Plugins are expected to add new apps using gs_app_list_add().
+ *
+ * Returns: %TRUE for success or if not relevant
+ **/
+gboolean	 gs_plugin_add_alternates		(GsPlugin	*plugin,
+							 GsApp		*app,
 							 GsAppList	*list,
 							 GCancellable	*cancellable,
 							 GError		**error);
@@ -660,7 +665,7 @@ gboolean	 gs_plugin_app_set_rating		(GsPlugin	*plugin,
  * NOTE: Once the action is complete, the plugin must set the new state of @app
  * to %AS_APP_STATE_INSTALLED or %AS_APP_STATE_UNKNOWN if not known.
  *
- * If %AS_APP_QUIRK_IS_PROXY is set on the application then the actual #GsApp
+ * If %GS_APP_QUIRK_IS_PROXY is set on the application then the actual #GsApp
  * set in @app will be the related application of the parent. Plugins do not
  * need to manually iterate on the related list of applications.
  *
@@ -956,72 +961,4 @@ gboolean	 gs_plugin_update			(GsPlugin	*plugin,
 							 GCancellable	*cancellable,
 							 GError		**error);
 
-/**
- * gs_plugin_auth_login:
- * @plugin: a #GsPlugin
- * @auth: a #GsAuth
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Performs a login using the given authentication details.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_auth_login			(GsPlugin	*plugin,
-							 GsAuth		*auth,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_auth_logout:
- * @plugin: a #GsPlugin
- * @auth: a #GsAuth
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Performs a logout using the given authentication details.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_auth_logout			(GsPlugin	*plugin,
-							 GsAuth		*auth,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_auth_lost_password:
- * @plugin: a #GsPlugin
- * @auth: a #GsAuth
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Performs the lost password action using the given authentication details.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_auth_lost_password		(GsPlugin	*plugin,
-							 GsAuth		*auth,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_auth_register:
- * @plugin: a #GsPlugin
- * @auth: a #GsAuth
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Performs the registration action using the given authentication details.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_auth_register		(GsPlugin	*plugin,
-							 GsAuth		*auth,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
 G_END_DECLS
-
-#endif /* __GS_PLUGIN_VFUNCS_H */
-
-/* vim: set noexpandtab: */
