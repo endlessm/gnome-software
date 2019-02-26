@@ -2568,6 +2568,43 @@ gs_flatpak_refine_appstream (GsFlatpak *self,
 	return TRUE;
 }
 
+static void
+gs_flatpak_refine_proxy_app (GsFlatpak *self,
+			     GsApp      *app)
+{
+	GsAppList *proxied_apps = gs_app_get_related (app);
+	g_autoptr(GsAppList) real_related_apps = NULL;
+
+	if (gs_app_list_length (proxied_apps) == 0)
+		return;
+
+	real_related_apps = gs_app_list_new ();
+
+	/* get a list of the real apps (not eventual wildcard ones) */
+	for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
+		GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
+		GsApp *app_cached = proxied_app;
+
+		if (gs_app_has_quirk (proxied_app, GS_APP_QUIRK_IS_WILDCARD) &&
+		    gs_app_get_bundle_kind (proxied_app) == AS_BUNDLE_KIND_FLATPAK) {
+			const gchar *id = gs_app_get_unique_id (proxied_app);
+			app_cached = gs_plugin_cache_lookup (self->plugin, id);
+			if (app_cached == NULL)
+				continue;
+		}
+
+		gs_app_list_add (real_related_apps, app_cached);
+	}
+
+	/* set the cached apps as the related ones instead */
+	gs_app_clear_related (app);
+
+	for (guint i = 0; i < gs_app_list_length (real_related_apps); ++i) {
+		GsApp *related_app = gs_app_list_index (real_related_apps, i);
+		gs_app_add_related (app, related_app);
+	}
+}
+
 gboolean
 gs_flatpak_refine_app (GsFlatpak *self,
 		       GsApp *app,
@@ -2584,6 +2621,11 @@ gs_flatpak_refine_app (GsFlatpak *self,
 	/* ensure valid */
 	if (!gs_flatpak_rescan_appstream_store (self, cancellable, error))
 		return FALSE;
+
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY)) {
+		gs_flatpak_refine_proxy_app (self, app);
+		return TRUE;
+	}
 
 	/* always do AppStream properties */
 	if (!gs_flatpak_refine_appstream (self, app, self->silo, flags, error))
