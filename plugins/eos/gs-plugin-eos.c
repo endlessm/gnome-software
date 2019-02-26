@@ -30,11 +30,17 @@
 #include <gs-plugin.h>
 #include <gs-utils.h>
 #include <libsoup/soup.h>
+#include <sys/types.h>
+#include <sys/xattr.h>
 
 #define ENDLESS_ID_PREFIX "com.endlessm."
 #define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
 #define METADATA_REPLACED_BY_DESKTOP_FILE "EndlessOS::replaced-by-desktop-file"
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
+
+#define EOS_IMAGE_VERSION_XATTR "user.eos-image-version"
+#define EOS_IMAGE_VERSION_PATH "/sysroot"
+#define EOS_IMAGE_VERSION_ALT_PATH "/"
 
 /*
  * SECTION:
@@ -58,6 +64,8 @@ struct GsPluginData
 	GHashTable *replacement_app_lookup;
 	int applications_changed_id;
 	SoupSession *soup_session;
+
+	char *product_name;
 };
 
 static gboolean
@@ -143,6 +151,59 @@ on_desktop_apps_changed (GDBusConnection *connection,
 	}
 }
 
+static char *
+get_image_version_for_path (const char *path)
+{
+	ssize_t xattr_size = 0;
+	char *image_version = NULL;
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR, NULL, 0);
+
+	if (xattr_size == -1)
+		return NULL;
+
+	image_version = g_malloc0 (xattr_size + 1);
+
+	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR,
+			       image_version, xattr_size);
+
+	/* this check is just in case the xattr has changed in between the
+	 * size checks */
+	if (xattr_size == -1) {
+		g_warning ("Error when getting the 'eos-image-version' from %s",
+			   path);
+		return NULL;
+	}
+
+	return image_version;
+}
+
+static char *
+get_image_version (void)
+{
+	char *image_version = get_image_version_for_path (EOS_IMAGE_VERSION_PATH);
+
+	if (!image_version)
+		image_version = get_image_version_for_path (EOS_IMAGE_VERSION_ALT_PATH);
+
+	return image_version;
+}
+
+static char *
+get_product_name (const char *image_version)
+{
+	char *hyphen_index = NULL;
+
+	if (image_version == NULL)
+		return NULL;
+
+	hyphen_index = strchr (image_version, '-');
+	if (hyphen_index == NULL)
+		return NULL;
+
+	return g_strndup (image_version, hyphen_index - image_version);
+}
+
 static void
 read_icon_replacement_overrides (GHashTable *replacement_app_lookup)
 {
@@ -195,6 +256,7 @@ gs_plugin_setup (GsPlugin *plugin,
 {
 	g_autoptr(GError) local_error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autofree char *image_version = NULL;
 
 	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, cancellable, error);
 	if (priv->session_bus == NULL)
@@ -219,6 +281,9 @@ gs_plugin_setup (GsPlugin *plugin,
 
 	priv->replacement_app_lookup = g_hash_table_new_full (g_str_hash, g_str_equal,
 							      g_free, g_free);
+
+	image_version = get_image_version ();
+	priv->product_name = get_product_name (image_version);
 
 	/* Synchronous, but this guarantees that the lookup table will be
 	 * there when we call ReplaceApplication later on */
@@ -254,6 +319,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->replacement_app_lookup);
+	g_free (priv->product_name);
 }
 
 /* Copy of the implementation of gs_flatpak_app_get_ref_name(). */
@@ -971,13 +1037,16 @@ add_updates (GsPlugin *plugin,
 					   "com.endlessm.OperatingSystemApp.desktop",
 					   NULL};
 
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	gboolean is_hack_product = g_strcmp0 (priv->product_name, "hack") == 0;
+
 	process_proxy_updates (plugin, list,
 			       framework_proxy_app,
 			       FALSE,
 			       framework_proxied_apps);
 	process_proxy_updates (plugin, list,
 			       hack_proxy_app,
-			       FALSE,
+			       is_hack_product,
 			       hack_proxied_apps);
 
 	return TRUE;
