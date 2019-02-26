@@ -1493,6 +1493,7 @@ gs_flatpak_app_needs_repair (GsApp *app)
 	GsApp *runtime = gs_app_get_runtime (app);
 
 	return gs_app_is_installed (app) && runtime != NULL &&
+		gs_app_get_state (runtime) != AS_APP_STATE_UNKNOWN &&
 		!gs_app_is_installed (runtime);
 }
 
