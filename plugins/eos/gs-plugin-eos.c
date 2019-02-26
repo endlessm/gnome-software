@@ -108,6 +108,7 @@ struct GsPluginData
 	int applications_changed_id;
 	SoupSession *soup_session;
 	char *personality;
+	char *product_name;
 	char *os_version_id;
 	gboolean eos_arch_is_arm;
 	EosUpdater *updater_proxy;
@@ -239,9 +240,8 @@ get_image_version (void)
 }
 
 static char *
-get_personality (void)
+get_personality (const char *image_version)
 {
-	g_autofree char *image_version = get_image_version ();
 	g_auto(GStrv) tokens = NULL;
 	guint num_tokens = 0;
 	char *personality = NULL;
@@ -254,6 +254,21 @@ get_personality (void)
 	personality = tokens[num_tokens - 1];
 
 	return g_strdup (personality);
+}
+
+static char *
+get_product_name (const char *image_version)
+{
+	char *hyphen_index = NULL;
+
+	if (image_version == NULL)
+		return NULL;
+
+	hyphen_index = strchr (image_version, '-');
+	if (hyphen_index == NULL)
+		return NULL;
+
+	return g_strndup (image_version, hyphen_index - image_version);
 }
 
 static char *
@@ -698,6 +713,7 @@ gs_plugin_setup (GsPlugin *plugin,
 {
 	GApplication *app = g_application_get_default ();
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autofree char *image_version = NULL;
 
 	priv->session_bus = g_application_get_dbus_connection (app);
 
@@ -734,7 +750,9 @@ gs_plugin_setup (GsPlugin *plugin,
 
 	priv->eos_arch_is_arm = g_strcmp0 (flatpak_get_default_arch (), "arm") == 0;
 
-	priv->personality = get_personality ();
+	image_version = get_image_version ();
+	priv->personality = get_personality (image_version);
+	priv->product_name = get_product_name (image_version);
 
 	if (!priv->personality)
 		g_warning ("No system personality could be retrieved!");
@@ -792,6 +810,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->replacement_app_lookup);
 	g_free (priv->personality);
+	g_free (priv->product_name);
 	g_free (priv->os_version_id);
 
 	disable_os_updater (plugin);
@@ -2205,13 +2224,16 @@ add_updates (GsPlugin *plugin,
 					   "com.endlessm.OperatingSystemApp.desktop",
 					   NULL};
 
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	gboolean is_hack_product = g_strcmp0 (priv->product_name, "hack") == 0;
+
 	process_proxy_updates (plugin, list,
 			       framework_proxy_app,
 			       FALSE,
 			       framework_proxied_apps);
 	process_proxy_updates (plugin, list,
 			       hack_proxy_app,
-			       FALSE,
+			       is_hack_product,
 			       hack_proxied_apps);
 
 	return TRUE;
