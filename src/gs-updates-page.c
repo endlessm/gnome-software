@@ -715,6 +715,7 @@ gs_updates_page_load (GsUpdatesPage *self)
 	refine_flags = GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS |
+		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_RELATED |
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION;
 	gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_ACTION_GET_UPDATES);
 	self->action_cnt++;
