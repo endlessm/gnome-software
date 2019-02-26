@@ -329,6 +329,7 @@ void		 gs_app_add_related		(GsApp		*app,
 						 GsApp		*app2);
 void		 gs_app_add_addon		(GsApp		*app,
 						 GsApp		*addon);
+void		 gs_app_clear_related		(GsApp		*app);
 void		 gs_app_add_history		(GsApp		*app,
 						 GsApp		*app2);
 guint64		 gs_app_get_install_date	(GsApp		*app);
