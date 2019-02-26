@@ -4133,7 +4133,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 
 		/* either install or update the ref */
 		ref_display = gs_flatpak_app_get_ref_display (app_tmp);
-		if (!is_proxy_app && !g_hash_table_contains (hash_installed, ref_display)) {
+		if (!g_hash_table_contains (hash_installed, ref_display)) {
 			g_debug ("installing %s", ref_display);
 			xref = flatpak_installation_install (self->installation,
 							     gs_app_get_origin (app_tmp),
