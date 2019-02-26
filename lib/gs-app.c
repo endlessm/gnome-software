@@ -3387,6 +3387,28 @@ gs_app_add_related (GsApp *app, GsApp *app2)
 }
 
 /**
+ * gs_app_clear_related:
+ * @app: a #GsApp
+ *
+ * Empties the related applications list.
+ *
+ * Since: 3.32
+ **/
+void
+gs_app_clear_related (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	g_clear_pointer (&priv->related, g_object_unref);
+	priv->related = gs_app_list_new ();
+}
+
+/**
  * gs_app_get_history:
  * @app: a #GsApp
  *
