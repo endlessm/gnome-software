@@ -313,6 +313,7 @@ void		 gs_app_add_addon		(GsApp		*app,
 GPtrArray	*gs_app_get_related		(GsApp		*app);
 void		 gs_app_add_related		(GsApp		*app,
 						 GsApp		*app2);
+void		 gs_app_clear_related		(GsApp		*app);
 GPtrArray	*gs_app_get_history		(GsApp		*app);
 void		 gs_app_add_history		(GsApp		*app,
 						 GsApp		*app2);

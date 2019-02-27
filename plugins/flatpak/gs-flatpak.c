@@ -1493,6 +1493,7 @@ gs_flatpak_app_needs_repair (GsApp *app)
 	GsApp *runtime = gs_app_get_runtime (app);
 
 	return gs_app_is_installed (app) && runtime != NULL &&
+		gs_app_get_state (runtime) != AS_APP_STATE_UNKNOWN &&
 		!gs_app_is_installed (runtime);
 }
 
@@ -2576,6 +2577,43 @@ gs_flatpak_refine_appstream (GsFlatpak *self, GsApp *app, GError **error)
 	return TRUE;
 }
 
+static void
+gs_flatpak_refine_proxy_app (GsFlatpak	*self,
+			     GsApp	*app)
+{
+	GPtrArray *proxied_apps = gs_app_get_related (app);
+	g_autoptr(GsAppList) real_related_apps = NULL;
+
+	if (proxied_apps->len == 0)
+		return;
+
+	real_related_apps = gs_app_list_new ();
+
+	/* get a list of the real apps (not eventual wildcard ones) */
+	for (guint i = 0; i < proxied_apps->len; ++i) {
+		GsApp *proxied_app = g_ptr_array_index (proxied_apps, i);
+		GsApp *app_cached = proxied_app;
+
+		if (gs_app_has_quirk (proxied_app, GS_APP_QUIRK_IS_WILDCARD) &&
+		    gs_app_get_bundle_kind (proxied_app) == AS_BUNDLE_KIND_FLATPAK) {
+			const gchar *id = gs_app_get_unique_id (proxied_app);
+			app_cached = gs_plugin_cache_lookup (self->plugin, id);
+			if (app_cached == NULL)
+				continue;
+		}
+
+		gs_app_list_add (real_related_apps, app_cached);
+	}
+
+	/* set the cached apps as the related ones instead */
+	gs_app_clear_related (app);
+
+	for (guint i = 0; i < gs_app_list_length (real_related_apps); ++i) {
+		GsApp *related_app = gs_app_list_index (real_related_apps, i);
+		gs_app_add_related (app, related_app);
+	}
+}
+
 gboolean
 gs_flatpak_refine_app (GsFlatpak *self,
 		       GsApp *app,
@@ -2592,6 +2630,11 @@ gs_flatpak_refine_app (GsFlatpak *self,
 				  gs_flatpak_get_id (self),
 				  gs_app_get_unique_id (app));
 	g_assert (ptask != NULL);
+
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY)) {
+		gs_flatpak_refine_proxy_app (self, app);
+		return TRUE;
+	}
 
 	/* always do AppStream properties */
 	if (!gs_flatpak_refine_appstream (self, app, error))
@@ -4068,8 +4111,28 @@ gs_flatpak_update_app (GsFlatpak *self,
 		}
 
 		list = gs_app_list_new ();
-		for (guint i = 0; i < proxied_apps->len; ++i)
-			gs_app_list_add (list, g_ptr_array_index (proxied_apps, i));
+		for (guint i = 0; i < proxied_apps->len; ++i) {
+			g_autoptr(GsAppList) app_related_list = NULL;
+			g_autoptr(GError) local_error = NULL;
+			GsApp *proxied_app = g_ptr_array_index (proxied_apps, i);
+
+			/* Add not only the app but also any eventual related apps to be
+			 * updated; otherwise, the related apps of proxied apps may never
+			 * get updated. */
+			app_related_list = gs_flatpak_get_list_for_update (self, proxied_app,
+									   cancellable,
+									   &local_error);
+			if (app_related_list == NULL) {
+				g_warning ("Error getting the list for updating the proxied "
+					   "app %s: %s; adding only the main app itself.",
+					   gs_app_get_unique_id (proxied_app),
+					   local_error->message);
+				gs_app_list_add (list, proxied_app);
+				continue;
+			}
+
+			gs_app_list_add_list (list, app_related_list);
+		}
 	} else {
 		list = gs_flatpak_get_list_for_update (self, app, cancellable, error);
 		if (list == NULL) {
@@ -4112,7 +4175,7 @@ gs_flatpak_update_app (GsFlatpak *self,
 
 		/* either install or update the ref */
 		ref_display = gs_flatpak_app_get_ref_display (app_tmp);
-		if (!is_proxy_app && !g_hash_table_contains (hash_installed, ref_display)) {
+		if (!g_hash_table_contains (hash_installed, ref_display)) {
 			g_debug ("installing %s", ref_display);
 			xref = flatpak_installation_install (self->installation,
 							     gs_app_get_origin (app_tmp),

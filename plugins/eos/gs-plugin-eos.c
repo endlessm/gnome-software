@@ -108,6 +108,7 @@ struct GsPluginData
 	int applications_changed_id;
 	SoupSession *soup_session;
 	char *personality;
+	char *product_name;
 	char *os_version_id;
 	gboolean eos_arch_is_arm;
 	EosUpdater *updater_proxy;
@@ -239,9 +240,8 @@ get_image_version (void)
 }
 
 static char *
-get_personality (void)
+get_personality (const char *image_version)
 {
-	g_autofree char *image_version = get_image_version ();
 	g_auto(GStrv) tokens = NULL;
 	guint num_tokens = 0;
 	char *personality = NULL;
@@ -254,6 +254,21 @@ get_personality (void)
 	personality = tokens[num_tokens - 1];
 
 	return g_strdup (personality);
+}
+
+static char *
+get_product_name (const char *image_version)
+{
+	char *hyphen_index = NULL;
+
+	if (image_version == NULL)
+		return NULL;
+
+	hyphen_index = strchr (image_version, '-');
+	if (hyphen_index == NULL)
+		return NULL;
+
+	return g_strndup (image_version, hyphen_index - image_version);
 }
 
 static char *
@@ -698,6 +713,7 @@ gs_plugin_setup (GsPlugin *plugin,
 {
 	GApplication *app = g_application_get_default ();
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autofree char *image_version = NULL;
 
 	priv->session_bus = g_application_get_dbus_connection (app);
 
@@ -734,7 +750,9 @@ gs_plugin_setup (GsPlugin *plugin,
 
 	priv->eos_arch_is_arm = g_strcmp0 (flatpak_get_default_arch (), "arm") == 0;
 
-	priv->personality = get_personality ();
+	image_version = get_image_version ();
+	priv->personality = get_personality (image_version);
+	priv->product_name = get_product_name (image_version);
 
 	if (!priv->personality)
 		g_warning ("No system personality could be retrieved!");
@@ -792,6 +810,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->replacement_app_lookup);
 	g_free (priv->personality);
+	g_free (priv->product_name);
 	g_free (priv->os_version_id);
 
 	disable_os_updater (plugin);
@@ -1772,6 +1791,40 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	                            request_data);
 }
 
+static void
+gs_plugin_refine_proxy_app (GsPlugin	*plugin,
+			    GsApp	*app)
+{
+	g_autoptr(GsAppList) related_filtered = gs_app_list_new ();
+	GPtrArray *proxied_apps = gs_app_get_related (app);
+
+	for (guint i = 0; i < proxied_apps->len; ++i) {
+		GsApp *proxied_app = g_ptr_array_index (proxied_apps, i);
+
+		if (gs_app_get_state (proxied_app) == AS_APP_STATE_AVAILABLE ||
+		    gs_app_is_updatable (proxied_app)) {
+			g_debug ("App %s has an update or needs to be installed/updated "
+				 "by the proxy app %s",
+				 gs_app_get_unique_id (proxied_app),
+				 gs_app_get_unique_id (app));
+			gs_app_list_add (related_filtered, proxied_app);
+		}
+	}
+
+	gs_app_clear_related (app);
+
+	for (guint i = 0; i < gs_app_list_length (related_filtered); ++i) {
+		GsApp *related_app = gs_app_list_index (related_filtered, i);
+		gs_app_add_related (app, related_app);
+	}
+
+	gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+
+	/* only let the proxy app show in the updates list if it has anything to update */
+	if (gs_app_list_length (related_filtered) > 0)
+		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+}
+
 gboolean
 gs_plugin_refine (GsPlugin		*plugin,
 		  GsAppList		*list,
@@ -1788,6 +1841,11 @@ gs_plugin_refine (GsPlugin		*plugin,
 	/* Refine each app. */
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
+
+		if (g_str_has_prefix (gs_app_get_id (app), EOS_PROXY_APP_PREFIX)) {
+			gs_plugin_refine_proxy_app (plugin, app);
+			continue;
+		}
 
 		gs_plugin_eos_refine_core_app (app);
 
@@ -2068,31 +2126,59 @@ static void
 process_proxy_updates (GsPlugin *plugin,
 		       GsAppList *list,
 		       GsApp *proxy_app,
+		       gboolean install_missing,
 		       const char **proxied_apps)
 {
-	g_autoptr(GSList) proxied_updates = NULL;
+	g_autoptr(GsAppList) proxied_updates = gs_app_list_new ();
+
+	GsApp *cached_proxy_app = gs_app_list_lookup (list,
+						      gs_app_get_unique_id (proxy_app));
+	if (cached_proxy_app != NULL)
+		gs_app_list_remove (list, cached_proxy_app);
+
+	/* add all the apps if we should install the missing ones; the real sorting for
+	 * whether they're already installed is done in the refine method */
+	if (install_missing) {
+		for (guint i = 0; proxied_apps[i] != NULL; ++i) {
+		        g_autoptr(GsApp) app = gs_app_new (proxied_apps[i]);
+			gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+			gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_FLATPAK);
+
+			gs_app_list_add (proxied_updates, app);
+		}
+	}
 
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
+		GsApp *added_app = NULL;
 		const char *id = gs_app_get_id (app);
 
 		if (!g_strv_contains (proxied_apps, id) ||
 		    gs_app_get_scope (proxy_app) != gs_app_get_scope (app))
 			continue;
 
-		proxied_updates = g_slist_prepend (proxied_updates, app);
+		added_app = gs_app_list_lookup (proxied_updates, gs_app_get_unique_id (app));
+		if (added_app == app)
+			continue;
+
+		gs_app_list_remove (proxied_updates, added_app);
+
+		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+		gs_app_list_add (proxied_updates, app);
 	}
 
-	if (!proxied_updates)
+	if (gs_app_list_length (proxied_updates) == 0)
 		return;
 
-	for (GSList *iter = proxied_updates; iter; iter = g_slist_next (iter)) {
-		GsApp *app = GS_APP (iter->data);
+	for (guint i = 0; i < gs_app_list_length (proxied_updates); ++i) {
+		GsApp *app = gs_app_list_index (proxied_updates, i);
 		gs_app_add_related (proxy_app, app);
+
 		/* remove proxied apps from updates list since they will be
 		 * updated from the proxy app */
 		gs_app_list_remove (list, app);
 	}
+
 	gs_app_list_add (list, proxy_app);
 }
 
@@ -2138,11 +2224,16 @@ add_updates (GsPlugin *plugin,
 					   "com.endlessm.OperatingSystemApp.desktop",
 					   NULL};
 
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	gboolean is_hack_product = g_strcmp0 (priv->product_name, "hack") == 0;
+
 	process_proxy_updates (plugin, list,
 			       framework_proxy_app,
+			       FALSE,
 			       framework_proxied_apps);
 	process_proxy_updates (plugin, list,
 			       hack_proxy_app,
+			       is_hack_product,
 			       hack_proxied_apps);
 
 	return TRUE;
