@@ -1532,6 +1532,11 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 		}
 
 		app = gs_flatpak_create_installed (self, xref, &error_local);
+		if (app == NULL) {
+			g_warning ("failed to add flatpak: %s", error_local->message);
+			continue;
+		}
+
 		/* if we don't have a runtime set yet, then refine the metadata */
 		if (gs_app_get_runtime (app) == NULL &&
 		    !gs_plugin_refine_item_metadata (self,
@@ -1541,10 +1546,6 @@ gs_flatpak_add_updates (GsFlatpak *self, GsAppList *list,
 			g_debug ("Failed to refine state for app %s: %s",
 				 gs_app_get_unique_id (app),
 				 error_local->message);
-			continue;
-		}
-		if (app == NULL) {
-			g_warning ("failed to add flatpak: %s", error_local->message);
 			continue;
 		}
 
