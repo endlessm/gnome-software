@@ -1818,6 +1818,9 @@ gs_plugin_refine_proxy_app (GsPlugin	*plugin,
 		gs_app_add_related (app, related_app);
 	}
 
+	/* mark the state as unknown so 1) we're always allowed to change the state below
+	 * if needed; and 2) the app will not be shown at all (unless the state is changed
+	 * below), thus avoiding eventually showing a proxy app without updates */
 	gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
 
 	/* only let the proxy app show in the updates list if it has anything to update */
