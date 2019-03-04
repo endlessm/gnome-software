@@ -2161,8 +2161,14 @@ process_proxy_updates (GsPlugin *plugin,
 		if (added_app == app)
 			continue;
 
+		/* remove any app matching the updatable one we're about to add as
+		 * this makes sure that we're getting the right app (updatable) in
+		 * the proxy app's related list */
 		gs_app_list_remove (proxied_updates, added_app);
 
+		/* ensure the app we're about to add really is updatable; this
+		 * is mostly a safeguard, since in this plugin's refine of proxy
+		 * apps we remove any apps that are not updatable */
 		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
 		gs_app_list_add (proxied_updates, app);
 	}
