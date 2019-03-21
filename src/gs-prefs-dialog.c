@@ -65,6 +65,13 @@ gs_prefs_dialog_init (GsPrefsDialog *dialog)
 	adw_preferences_row_set_use_markup (ADW_PREFERENCES_ROW (dialog->automatic_updates_row), FALSE);
 	adw_preferences_row_set_use_markup (ADW_PREFERENCES_ROW (dialog->automatic_update_notifications_row), FALSE);
 #endif
+
+	/* If compiled with metered data support, the policy for handling
+	 * automatic updates on metered connections is controlled from
+	 * gnome-control-center. */
+#ifdef HAVE_MOGWAI
+	gtk_widget_hide (GTK_WIDGET (dialog->automatic_updates_row));
+#endif  /* HAVE_MOGWAI */
 }
 
 static void
