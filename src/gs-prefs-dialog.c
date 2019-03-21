@@ -25,6 +25,8 @@ struct _GsPrefsDialog
 	GsPluginLoader		*plugin_loader;
 	GtkWidget		*switch_updates;
 	GtkWidget		*switch_updates_notify;
+
+	GtkWidget		*updates_row;
 };
 
 G_DEFINE_TYPE (GsPrefsDialog, gs_prefs_dialog, ADW_TYPE_PREFERENCES_WINDOW)
@@ -58,6 +60,13 @@ gs_prefs_dialog_init (GsPrefsDialog *dialog)
 			 dialog->switch_updates,
 			 "active",
 			 G_SETTINGS_BIND_DEFAULT);
+
+	/* If compiled with metered data support, the policy for handling
+	 * automatic updates on metered connections is controlled from
+	 * gnome-control-center. */
+#ifdef HAVE_MOGWAI
+	gtk_widget_hide (dialog->updates_row);
+#endif  /* HAVE_MOGWAI */
 }
 
 static void
@@ -71,6 +80,7 @@ gs_prefs_dialog_class_init (GsPrefsDialogClass *klass)
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-prefs-dialog.ui");
 	gtk_widget_class_bind_template_child (widget_class, GsPrefsDialog, switch_updates);
 	gtk_widget_class_bind_template_child (widget_class, GsPrefsDialog, switch_updates_notify);
+	gtk_widget_class_bind_template_child (widget_class, GsPrefsDialog, updates_row);
 }
 
 GtkWidget *
