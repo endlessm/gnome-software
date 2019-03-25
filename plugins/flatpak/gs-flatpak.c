@@ -1665,9 +1665,14 @@ gs_flatpak_add_updates_pending (GsFlatpak *self, GsAppList *list,
 
 		update_priority = get_app_update_priority (app);
 
-		main_app = get_real_app_for_update (self, app, cancellable, error);
-		if (main_app == NULL)
-			return FALSE;
+		main_app = get_real_app_for_update (self, app, cancellable, &error_local);
+		/* do not fail if one of the updates cannot be done (otherwise the update
+		 * list will be empty), just inform the user */
+		if (main_app == NULL) {
+			g_warning ("Failed to get real app when updating %s: %s",
+				   gs_app_get_unique_id (app), error_local->message);
+			continue;
+		}
 
 		/* set the update highest update priority between the main app
 		 * and any important related apps (e.g. if we have a content
