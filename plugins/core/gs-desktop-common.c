@@ -336,7 +336,7 @@ static const GsDesktopData msdata[] = {
 	/* TRANSLATORS: this is the menu spec main category for Endless
 	 * Studios' "learn to code" category */
 	{ "learn-to-code",	map_learn_to_code,		N_("Learn to Code"),
-				"applications-games-symbolic", "#af07af", 65 },
+				"gs-category-learn-to-code-symbolic", "#af07af", 65 },
 	/* TRANSLATORS: this is the menu spec main category for Multimedia */
 	{ "multimedia",		map_multimedia,		N_("Multimedia"),
 				"applications-multimedia-symbolic", "#07afa7", 60 },
