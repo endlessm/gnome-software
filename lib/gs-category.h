@@ -50,5 +50,7 @@ void		 gs_category_add_child		(GsCategory	*category,
 
 guint		 gs_category_get_size		(GsCategory	*category);
 void		 gs_category_increment_size	(GsCategory	*category);
+gboolean	 gs_category_equal		(GsCategory *a,
+						 GsCategory *b);
 
 G_END_DECLS
