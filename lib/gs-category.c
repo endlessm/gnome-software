@@ -512,6 +512,30 @@ gs_category_sort_children (GsCategory *category)
 			  gs_category_sort_children_cb);
 }
 
+/**
+ * gs_category_equal:
+ * @a: a #GsCategory
+ * @b: a #GsCategory
+ *
+ * Returns: %TRUE if @a and @b have the same category id, and %FALSE otherwise.
+ **/
+gboolean
+gs_category_equal (GsCategory *a,
+		   GsCategory *b)
+{
+	const char *a_id, *b_id;
+
+	g_return_val_if_fail (GS_IS_CATEGORY (a), FALSE);
+	g_return_val_if_fail (GS_IS_CATEGORY (b), FALSE);
+
+	if (a == b)
+		return TRUE;
+
+	a_id = gs_category_get_id (a);
+	b_id = gs_category_get_id (b);
+	return g_strcmp0 (a_id, b_id) == 0;
+}
+
 static void
 gs_category_finalize (GObject *object)
 {
