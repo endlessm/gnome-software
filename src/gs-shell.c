@@ -2484,8 +2484,13 @@ side_filter_row_selected (GtkListBox *side_filter,
 			  gpointer data)
 {
 	GsShell *shell = GS_SHELL (data);
-	GsShellMode mode = gs_side_filter_row_get_mode (row);
+	GsShellMode mode;
 	GsCategory *category = NULL;
+
+	if (row == NULL)
+		return;
+
+	mode = gs_side_filter_row_get_mode (row);
 
 	switch (mode) {
 	case GS_SHELL_MODE_OVERVIEW:
