@@ -592,9 +592,10 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 		as_app_set_origin (app, flatpak_remote_get_name (xremote));
 		as_app_add_keyword (app, NULL, "flatpak");
 
-		/* Mark com.endlessm. apps with GnomeSoftware::popular kudo. See discussion on T23152 */
+		/* Mark Endless apps with GnomeSoftware::popular kudo. See discussion on T23152 */
 		if (!as_app_has_kudo (app, "GnomeSoftware::popular") &&
-		     g_str_has_prefix (as_app_get_id (app), "com.endlessm."))
+		    (g_str_has_prefix (as_app_get_id (app), "com.endlessm.") ||
+		     g_str_has_prefix (as_app_get_id (app), "com.endlessnetwork.")))
 			as_app_add_kudo (app, "GnomeSoftware::popular");
 
 		if (collection_id != NULL)

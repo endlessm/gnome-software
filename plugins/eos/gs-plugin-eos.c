@@ -2360,6 +2360,9 @@ gs_plugin_add_popular (GsPlugin *plugin,
 		if (!g_strcmp0 (origin, "eos-apps") &&
 		    g_str_has_prefix (app_id, "com.endlessm."))
 			add = TRUE;
+		/* all com.endlessnetwork. apps */
+		else if (g_str_has_prefix (app_id, "com.endlessnetwork."))
+			add = TRUE;
 
 		if (add)
 			gs_app_list_add (new_list, app);
