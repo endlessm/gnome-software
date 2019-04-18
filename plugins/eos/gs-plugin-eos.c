@@ -2299,6 +2299,7 @@ gs_plugin_add_popular (GsPlugin *plugin,
 	 */
 	const gchar *popular_apps[] = {
 		"com.calibre_ebook.calibre.desktop",
+		"com.endlessm.photos.desktop",
 		"com.google.Chrome.desktop",
 		"com.spotify.Client.desktop",
 		"com.transmissionbt.Transmission",
@@ -2348,7 +2349,19 @@ gs_plugin_add_popular (GsPlugin *plugin,
 	/* get all the popular apps that are Endless' ones */
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 	        GsApp *app = gs_app_list_index (list, i);
-		if (g_str_has_prefix (gs_app_get_id (app), "com.endlessm."))
+		const gchar *app_id = gs_app_get_id (app);
+		const gchar *origin = gs_app_get_origin (app);
+		gboolean add = FALSE;
+
+		if (!app_id || !origin)
+			continue;
+
+		/* com.endlessm. apps from eos-apps */
+		if (!g_strcmp0 (origin, "eos-apps") &&
+		    g_str_has_prefix (app_id, "com.endlessm."))
+			add = TRUE;
+
+		if (add)
 			gs_app_list_add (new_list, app);
 	}
 
