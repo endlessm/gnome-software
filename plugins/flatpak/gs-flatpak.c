@@ -3805,7 +3805,7 @@ gs_flatpak_has_space_to_update (GsFlatpak *self, GsApp *app, GsAppList *list, gb
 		g_warning ("Error getting min-free-space config value of OSTree repo at %s:%s", path, error->message);
 		g_clear_error (&error);
 	}
-	space_required = (space_required * 2) + min_free_space;
+	space_required = space_required + min_free_space;
 	if (!get_installation_dir_free_space (self, &free_space, &error)) {
 		g_warning ("Error getting the free space available for updating %s: %s",
 			   gs_app_get_unique_id (app), error->message);
