@@ -2222,6 +2222,7 @@ add_updates (GsPlugin *plugin,
 					   "com.endlessm.Hackdex_chapter_two.desktop",
 					   "com.endlessm.LightSpeed.desktop",
 					   "com.endlessm.OperatingSystemApp.desktop",
+					   "com.endlessm.Sidetrack.desktop",
 					   NULL};
 
 	GsPluginData *priv = gs_plugin_get_data (plugin);
