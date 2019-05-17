@@ -31,6 +31,7 @@ struct _GsPluginLoaderClass
 	void			(*pending_apps_changed)	(GsPluginLoader	*plugin_loader);
 	void			(*updates_changed)	(GsPluginLoader	*plugin_loader);
 	void			(*reload)		(GsPluginLoader	*plugin_loader);
+	void			(*copy_dests_changed)	(GsPluginLoader	*plugin_loader);
 };
 
 GsPluginLoader	*gs_plugin_loader_new			(void);
@@ -98,5 +99,6 @@ void            gs_plugin_loader_set_max_parallel_ops  (GsPluginLoader *plugin_l
                                                         guint           max_ops);
 
 const gchar	*gs_plugin_loader_get_locale		(GsPluginLoader *plugin_loader);
+GPtrArray	*gs_plugin_loader_dup_copy_dests	(GsPluginLoader *plugin_loader);
 
 G_END_DECLS
