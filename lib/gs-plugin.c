@@ -1652,6 +1652,10 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_app_get_copyable";
 	if (action == GS_PLUGIN_ACTION_COPY)
 		return "gs_plugin_app_copy";
+	if (action == GS_PLUGIN_ACTION_OS_GET_COPYABLE)
+		return "gs_plugin_os_get_copyable";
+	if (action == GS_PLUGIN_ACTION_OS_COPY)
+		return "gs_plugin_os_copy";
 	return NULL;
 }
 
@@ -1752,6 +1756,10 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "get-copyable";
 	if (action == GS_PLUGIN_ACTION_COPY)
 		return "copy";
+	if (action == GS_PLUGIN_ACTION_OS_GET_COPYABLE)
+		return "os-get-copyable";
+	if (action == GS_PLUGIN_ACTION_OS_COPY)
+		return "os-copy";
 	return NULL;
 }
 
@@ -1852,6 +1860,10 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_GET_COPYABLE;
 	if (g_strcmp0 (action, "copy") == 0)
 		return GS_PLUGIN_ACTION_COPY;
+	if (g_strcmp0 (action, "os-get-copyable") == 0)
+		return GS_PLUGIN_ACTION_OS_GET_COPYABLE;
+	if (g_strcmp0 (action, "os-copy") == 0)
+		return GS_PLUGIN_ACTION_OS_COPY;
 	return GS_PLUGIN_ACTION_UNKNOWN;
 }
 
