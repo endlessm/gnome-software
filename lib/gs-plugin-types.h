@@ -228,6 +228,8 @@ typedef enum {
  * @GS_PLUGIN_ACTION_DOWNLOAD:			Download an application
  * @GS_PLUGIN_ACTION_GET_ALTERNATES:		Get the alternates for a specific application
  * @GS_PLUGIN_ACTION_GET_LANGPACKS:		Get appropriate language pack
+ * @GS_PLUGIN_ACTION_GET_COPYABLE:		Get whether the app is copyable to a destination
+ * @GS_PLUGIN_ACTION_COPY:			Copy the app to a destination
  *
  * The plugin action.
  **/
@@ -273,6 +275,8 @@ typedef enum {
 	GS_PLUGIN_ACTION_DOWNLOAD,
 	GS_PLUGIN_ACTION_GET_ALTERNATES,
 	GS_PLUGIN_ACTION_GET_LANGPACKS,
+	GS_PLUGIN_ACTION_GET_COPYABLE,
+	GS_PLUGIN_ACTION_COPY,
 	/*< private >*/
 	GS_PLUGIN_ACTION_LAST
 } GsPluginAction;
