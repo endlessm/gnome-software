@@ -867,36 +867,32 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 }
 
 gboolean
-gs_plugin_refine (GsPlugin		*plugin,
-		  GsAppList		*list,
-		  GsPluginRefineFlags	flags,
-		  GCancellable		*cancellable,
-		  GError		**error)
+gs_plugin_refine_app (GsPlugin *plugin,
+		      GsApp *app,
+		      GsPluginRefineFlags flags,
+		      GCancellable *cancellable,
+		      GError **error)
 {
-	for (guint i = 0; i < gs_app_list_length (list); ++i) {
-		GsApp *app = gs_app_list_index (list, i);
+	gs_plugin_eos_refine_core_app (app);
 
-		gs_plugin_eos_refine_core_app (app);
+	/* if we don't know yet the state of an app then we shouldn't
+	 * do any further operations on it */
+	if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+		return TRUE;
 
-		/* if we don't know yet the state of an app then we shouldn't
-		 * do any further operations on it */
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
-			continue;
+	if (gs_plugin_eos_blacklist_if_needed (plugin, app))
+		return TRUE;
 
-		if (gs_plugin_eos_blacklist_if_needed (plugin, app))
-			continue;
+	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
+		return TRUE;
 
-		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
-			continue;
+	if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
+		return TRUE;
 
-		if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
-			continue;
+	if (gs_plugin_eos_blacklist_app_for_remote_if_needed (plugin, app))
+		return TRUE;
 
-		if (gs_plugin_eos_blacklist_app_for_remote_if_needed (plugin, app))
-			continue;
-
-		gs_plugin_eos_remove_blacklist_from_usb_if_needed (plugin, app);
-	}
+	gs_plugin_eos_remove_blacklist_from_usb_if_needed (plugin, app);
 
 	return TRUE;
 }
