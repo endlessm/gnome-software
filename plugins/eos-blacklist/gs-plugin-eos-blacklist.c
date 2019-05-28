@@ -845,27 +845,6 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	return blacklist_app;
 }
 
-static void
-gs_plugin_eos_refine_core_app (GsApp *app)
-{
-	if (app_is_flatpak (app) ||
-	    (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN))
-		return;
-
-	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE)
-		return;
-
-	/* blacklist the KDE desktop file of the GNOME System Monitor since
-	 * it's a core app but should not be shown */
-	if (g_strcmp0 (gs_app_get_id (app), "gnome-system-monitor-kde.desktop") == 0) {
-		g_debug ("Blacklisting %s because it will show as a duplicate "
-			 "of the real gnome-system-monitor one.",
-			 gs_app_get_unique_id (app));
-		gs_app_add_category (app, "Blacklisted");
-		return;
-	}
-}
-
 gboolean
 gs_plugin_refine_app (GsPlugin *plugin,
 		      GsApp *app,
@@ -873,8 +852,6 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		      GCancellable *cancellable,
 		      GError **error)
 {
-	gs_plugin_eos_refine_core_app (app);
-
 	/* if we don't know yet the state of an app then we shouldn't
 	 * do any further operations on it */
 	if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
