@@ -198,17 +198,6 @@ app_get_flatpak_ref_name (GsApp *app)
 }
 
 static gboolean
-app_is_renamed (GsApp *app)
-{
-	/* Apps renamed by eos-desktop get the desktop attribute of
-	 * X-Endless-CreatedBy assigned to the desktop's name;
-	 * Starting with EOS 3.2 apps can no longer be renamed so
-	 * we keep it for legacy reasons */
-	return g_strcmp0 (gs_app_get_metadata_item (app, "X-Endless-CreatedBy"),
-			  "eos-desktop") == 0;
-}
-
-static gboolean
 gs_plugin_locale_is_compatible (GsPlugin *plugin,
 				const char *locale)
 {
@@ -818,10 +807,6 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	} else if (gs_app_has_quirk (app, AS_APP_QUIRK_COMPULSORY) &&
 		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
 		g_debug ("Blacklisting '%s': app is GNOME Software itself",
-			 gs_app_get_unique_id (app));
-		blacklist_app = TRUE;
-	} else if (app_is_renamed (app)) {
-		g_debug ("Blacklisting '%s': app is renamed",
 			 gs_app_get_unique_id (app));
 		blacklist_app = TRUE;
 	} else if (app_is_banned_for_personality (plugin, app)) {
