@@ -628,13 +628,6 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		NULL
 	};
 
-	/* Legacy apps that have been replaced by other versions in Flathub */
-	static const char *legacy_apps[] = {
-		"com.spotify.Client",
-		"org.videolan.VLC",
-		NULL
-	};
-
 	const char *hostname = NULL;
 	const char *app_name = NULL;
 
@@ -652,13 +645,7 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 
 	/* We need to check for the app's origin, otherwise we'd be
 	 * blacklisting matching apps coming from any repo */
-	if (g_str_has_suffix (hostname, ".endlessm.com")) {
-		if (g_strv_contains (legacy_apps, app_name)) {
-			g_debug ("Blacklisting '%s': it's a legacy app",
-				 gs_app_get_unique_id (app));
-			do_blacklist = TRUE;
-		}
-	} else if (g_strcmp0 (hostname, "sdk.gnome.org") == 0 ||
+	if (g_strcmp0 (hostname, "sdk.gnome.org") == 0 ||
 		   g_strcmp0 (hostname, "flathub.org") == 0 ||
 		   g_str_has_suffix (hostname, ".flathub.org")) {
 
