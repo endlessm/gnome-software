@@ -694,6 +694,12 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const char *app_name = app_get_flatpak_ref_name (app);
 
+	static const char *adult_apps[] = {
+		"com.katawa_shoujo.KatawaShoujo",
+		"com.scoutshonour.dtipbijays",
+		NULL
+	};
+
 	static const char *violent_apps[] = {
 		"com.grangerhub.Tremulous",
 		"com.moddb.TotalChaos",
@@ -727,6 +733,7 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	        (g_strv_contains (google_apps, app_name) ||
 	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia"))) ||
 	       (g_str_has_prefix (priv->personality, "spark") &&
+	        g_strv_contains (adult_apps, app_name) ||
 	        g_strv_contains (violent_apps, app_name));
 }
 
