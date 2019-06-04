@@ -695,6 +695,9 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	const char *app_name = app_get_flatpak_ref_name (app);
 
 	static const char *violent_apps[] = {
+		"com.grangerhub.Tremulous",
+		"com.moddb.TotalChaos",
+		"com.realm667.WolfenDoom_Blade_of_Agony",
 		"io.github.FreeDM",
 		"io.github.Freedoom-Phase-1",
 		"io.github.Freedoom-Phase-2",
