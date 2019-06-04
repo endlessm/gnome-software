@@ -725,7 +725,9 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	        g_strv_contains (violent_apps, app_name)) ||
 	       ((g_strcmp0 (priv->personality, "zh_CN") == 0) &&
 	        (g_strv_contains (google_apps, app_name) ||
-	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia")));
+	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia"))) ||
+	       (g_str_has_prefix (priv->personality, "spark") &&
+	        g_strv_contains (violent_apps, app_name));
 }
 
 static gboolean
