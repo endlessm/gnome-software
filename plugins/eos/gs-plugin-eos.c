@@ -1359,7 +1359,16 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const char *app_name = gs_flatpak_app_get_ref_name (app);
 
+	static const char *adult_apps[] = {
+		"com.katawa_shoujo.KatawaShoujo",
+		"com.scoutshonour.dtipbijays",
+		NULL
+	};
+
 	static const char *violent_apps[] = {
+		"com.grangerhub.Tremulous",
+		"com.moddb.TotalChaos",
+		"com.realm667.WolfenDoom_Blade_of_Agony",
 		"io.github.FreeDM",
 		"io.github.Freedoom-Phase-1",
 		"io.github.Freedoom-Phase-2",
@@ -1387,7 +1396,10 @@ app_is_banned_for_personality (GsPlugin *plugin, GsApp *app)
 	        g_strv_contains (violent_apps, app_name)) ||
 	       ((g_strcmp0 (priv->personality, "zh_CN") == 0) &&
 	        (g_strv_contains (google_apps, app_name) ||
-	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia")));
+	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia"))) ||
+	       (g_str_has_prefix (priv->personality, "spark") &&
+	        (g_strv_contains (adult_apps, app_name) ||
+	         g_strv_contains (violent_apps, app_name)));
 }
 
 static gboolean
