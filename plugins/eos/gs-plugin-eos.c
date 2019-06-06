@@ -1006,7 +1006,6 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		"org.platformio.Ide",
 		"org.snap4arduino.App",
 		"org.squeakland.Etoys",
-		"org.squeakland.Scratch",
 		NULL
 	};
 
