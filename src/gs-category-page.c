@@ -138,6 +138,7 @@ sort_button_clicked (GtkButton *button, gpointer data)
 		gs_category_page_sort_by_type (self, SUBCATEGORY_SORT_TYPE_NAME);
 }
 
+/* TODO unused */
 static GtkWidget *
 make_addon_tile_for_category (GsApp *app, GsCategory *category)
 {
