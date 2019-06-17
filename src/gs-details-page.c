@@ -1177,6 +1177,8 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 	gboolean show_support_box = FALSE;
 	g_autofree gchar *origin = NULL;
 
+	/* TODO: self->app may be NULL here */
+
 	/* change widgets */
 	tmp = gs_app_get_name (self->app);
 	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "application_details_header"));
@@ -2727,12 +2729,12 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
 {
 	self->plugin_status = status;
 
+	if (app == NULL)
+		return;
+
 	/* Various bits of UI state depend on the plugin status, so refresh
 	 * everything. */
 	gs_details_page_refresh_all (self);
-
-	if (app == NULL)
-		return;
 
 	if (status == GS_PLUGIN_STATUS_COPYING) {
 		/* prevent the app from being deleted, etc. while it's being copied */
