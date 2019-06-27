@@ -953,7 +953,7 @@ gs_details_page_refresh_buttons (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_install, TRUE);
 		/* TRANSLATORS: button text in the header when an application
 		 * can be installed */
-		gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install"));
+		gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Download"));
 		break;
 	case AS_APP_STATE_INSTALLING:
 		gtk_widget_set_visible (self->button_install, FALSE);
@@ -970,7 +970,7 @@ gs_details_page_refresh_buttons (GsDetailsPage *self)
 			gtk_widget_set_visible (self->button_install, TRUE);
 			/* TRANSLATORS: button text in the header when firmware
 			 * can be live-installed */
-			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install"));
+			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Download"));
 		} else {
 			gtk_widget_set_visible (self->button_install, FALSE);
 		}
@@ -984,7 +984,7 @@ gs_details_page_refresh_buttons (GsDetailsPage *self)
 			 * be installed.
 			 * The ellipsis indicates that further steps are required,
 			 * e.g. enabling software repositories or the like */
-			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install…"));
+			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Download…"));
 		}
 		break;
 	default:
