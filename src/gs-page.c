@@ -606,7 +606,7 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 						  "%s", message);
 
 	/* TRANSLATORS: this is button text to remove the application */
-	remove_button = gtk_dialog_add_button (GTK_DIALOG (dialog), _("Remove"), GTK_RESPONSE_OK);
+	remove_button = gtk_dialog_add_button (GTK_DIALOG (dialog), _("Uninstall"), GTK_RESPONSE_OK);
 	context = gtk_widget_get_style_context (remove_button);
 	gtk_style_context_add_class (context, "destructive-action");
 
