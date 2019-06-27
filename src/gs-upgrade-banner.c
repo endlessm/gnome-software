@@ -67,7 +67,7 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 				      "computer is restarted."));
 	} else {
 		gtk_button_set_label (GTK_BUTTON (priv->button_upgrades_install),
-				      _("_Install"));
+				      _("Download and _Install"));
 		gtk_label_set_text (GTK_LABEL (priv->label_upgrades_warning),
 				    _("It is recommended that you back up your "
 				      "data and files before upgrading."));

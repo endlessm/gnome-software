@@ -128,7 +128,7 @@ gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 			/* TRANSLATORS: this is a button next to the search results that
 			 * allows the application to be easily installed.
 			 * The ellipsis indicates that further steps are required */
-			gtk_button_set_label (GTK_BUTTON (priv->button), _("Install…"));
+			gtk_button_set_label (GTK_BUTTON (priv->button), _("Download…"));
 		}
 		break;
 	case AS_APP_STATE_QUEUED_FOR_INSTALL:
@@ -142,7 +142,7 @@ gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 		gtk_widget_set_visible (priv->button, TRUE);
 		/* TRANSLATORS: this is a button next to the search results that
 		 * allows the application to be easily installed */
-		gtk_button_set_label (GTK_BUTTON (priv->button), _("Install"));
+		gtk_button_set_label (GTK_BUTTON (priv->button), _("Download"));
 		break;
 	case AS_APP_STATE_UPDATABLE_LIVE:
 		gtk_widget_set_visible (priv->button, TRUE);
