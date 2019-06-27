@@ -153,7 +153,7 @@ gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 		} else {
 			/* TRANSLATORS: this is a button next to the search results that
 			 * allows the application to be easily removed */
-			gtk_button_set_label (GTK_BUTTON (priv->button), _("Remove"));
+			gtk_button_set_label (GTK_BUTTON (priv->button), _("Uninstall"));
 		}
 		break;
 	case AS_APP_STATE_UPDATABLE:
@@ -162,7 +162,7 @@ gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 			gtk_widget_set_visible (priv->button, TRUE);
 		/* TRANSLATORS: this is a button next to the search results that
 		 * allows the application to be easily removed */
-		gtk_button_set_label (GTK_BUTTON (priv->button), _("Remove"));
+		gtk_button_set_label (GTK_BUTTON (priv->button), _("Uninstall"));
 		break;
 	case AS_APP_STATE_INSTALLING:
 		gtk_widget_set_visible (priv->button, TRUE);
@@ -174,7 +174,7 @@ gs_app_row_refresh_button (GsAppRow *app_row, gboolean missing_search_result)
 		gtk_widget_set_visible (priv->button, TRUE);
 		/* TRANSLATORS: this is a button next to the search results that
 		 * shows the status of an application being erased */
-		gtk_button_set_label (GTK_BUTTON (priv->button), _("Removing"));
+		gtk_button_set_label (GTK_BUTTON (priv->button), _("Uninstalling"));
 		break;
 	default:
 		break;
