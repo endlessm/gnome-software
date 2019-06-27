@@ -916,9 +916,20 @@ gs_details_page_refresh_buttons (GsDetailsPage *self)
 	case AS_APP_STATE_AVAILABLE:
 	case AS_APP_STATE_AVAILABLE_LOCAL:
 		gtk_widget_set_visible (self->button_install, TRUE);
-		/* TRANSLATORS: button text in the header when an application
-		 * can be installed */
-		gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Download"));
+
+		/* we need to show more directly to users that apps needs to be downloaded,
+		 * so we're changing the installation button's label to "Download" but
+		 * only if the app is not coming from a removable drive (as in which
+		 * case they don't need to be downloaded, only installed) */
+		if (gs_app_has_category (self->app, "USB")) {
+			/* TRANSLATORS: button text in the header when an application
+			 * can be installed */
+			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install"));
+		} else {
+			/* TRANSLATORS: button text in the header when an application
+			 * can be installed but needs to be downloaded first */
+			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Download"));
+		}
 		break;
 	case AS_APP_STATE_INSTALLING:
 		gtk_widget_set_visible (self->button_install, FALSE);
