@@ -34,7 +34,7 @@ try:
     updates_page = app.child('Updates page')
     search_page = app.child('Search page')
     details_page = app.child('Details page')
-    install_button = details_page.child('Install')
+    install_button = details_page.child('Download')
     remove_button = details_page.child('Uninstall')
 
     search_page_listbox = search_page.child(roleName='list box')
