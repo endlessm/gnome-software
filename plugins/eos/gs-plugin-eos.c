@@ -488,6 +488,71 @@ gs_plugin_eos_refine_popular_app (GsPlugin *plugin,
 	                            request_data);
 }
 
+/*
+ * gs_flatpak_get_services_app_if_needed:
+ * Specific to Endless runtimes, returns a GsApp reference for the
+ * "EknServicesMultiplexer" app that provides system services for apps that
+ * use the SDK, or use the old runtime and appear to be an Endless app.
+ *
+ * Returns NULL if no services app was required or there was an error.
+ * Does not take a GError since any error should be recoverable. However, in
+ * order to make sure the operation was not cancelled, you should check the
+ * status of the GCancellable after calling this.
+ */
+static GsApp *
+gs_flatpak_get_services_app_if_needed (GsPlugin *plugin,
+				       GsApp *app,
+				       GsApp *runtime,
+				       GCancellable *cancellable)
+{
+	const gchar *app_id;
+	const gchar *runtime_id;
+	gboolean needed = FALSE;
+	const gchar *services_id = "com.endlessm.EknServicesMultiplexer";
+	const gchar *services_branch = "stable";
+	g_autofree gchar *description = NULL;
+	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GsApp) services_app = NULL;
+
+	app_id = gs_app_get_id (app);
+	runtime_id = gs_app_get_id (runtime);
+
+	if (g_strcmp0 (runtime_id, "com.endlessm.apps.Platform") == 0)
+		needed = TRUE;
+	else if (g_strcmp0 (runtime_id, "com.endlessm.Platform") == 0 &&
+		 g_str_has_prefix (app_id, "com.endlessm."))
+		needed = TRUE;
+
+	if (!needed)
+		return NULL;
+
+	/* Construct a GsApp for EknServicesMultiplexer */
+	services_app = gs_app_new (services_id);
+	gs_app_set_kind (services_app, AS_APP_KIND_DESKTOP);
+	gs_app_set_branch (services_app, services_branch);
+	gs_app_add_quirk (services_app, GS_APP_QUIRK_IS_WILDCARD);
+
+	return g_steal_pointer (&services_app);
+}
+
+static void
+gs_plugin_eos_refine_ekn_services_for_app (GsPlugin     *plugin,
+                                           GsApp        *app,
+                                           GCancellable *cancellable)
+{
+	GsApp *runtime;
+	g_autoptr(GsApp) services_app = NULL;
+
+	runtime = gs_app_get_runtime (app);
+	if (runtime == NULL)
+		return;
+
+	/* add services flatpak */
+	services_app = gs_flatpak_get_services_app_if_needed (plugin, app, runtime, cancellable);
+	if (services_app != NULL)
+		gs_app_add_related (app, services_app);
+}
+
 gboolean
 gs_plugin_refine (GsPlugin		*plugin,
 		  GsAppList		*list,
@@ -506,6 +571,8 @@ gs_plugin_refine (GsPlugin		*plugin,
 		gs_plugin_eos_update_app_shortcuts_info (plugin, app);
 
 		gs_plugin_eos_refine_popular_app (plugin, app);
+
+		gs_plugin_eos_refine_ekn_services_for_app (plugin, app, cancellable);
 	}
 
 	return TRUE;
