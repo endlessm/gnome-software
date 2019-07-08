@@ -1132,6 +1132,32 @@ gs_appstream_search (GsPlugin *plugin,
 		}
 	}
 
+	/* If the caller has provided the custom "Endless::HasDiscoveryFeedContent"
+	 * search string (which is squashed to lower case by the search machinery),
+	 * add a search for it in the custom metadata dictionary of each component.
+	 *
+	 * FIXME: Technically we should also check ` and text()='true'` in the
+	 * XPath selector, but libxmlb doesn’t support that. So this will return
+	 * all components which specify
+	 *    <custom><value key="Endless::HasDiscoveryFeedContent">false</value></custom>
+	 * too. */
+	if (g_strv_contains (values, "endless::hasdiscoveryfeedcontent")) {
+		g_autoptr(GError) error_query = NULL;
+
+		/* AppStream versions 0.9 and above call it <custom>; older
+		 * versions call it <metadata>, but thankfully the upgrade is
+		 * handled already using gs_plugin_appstream_upgrade_cb(). */
+		g_autoptr(XbQuery) query = xb_query_new (silo, "custom/value[@key='Endless::HasDiscoveryFeedContent']", &error_query);
+		if (query != NULL) {
+			GsAppstreamSearchHelper *helper = g_new0 (GsAppstreamSearchHelper, 1);
+			helper->match_value = AS_APP_SEARCH_MATCH_KEYWORD;
+			helper->query = g_steal_pointer (&query);
+			g_ptr_array_add (array, g_steal_pointer (&helper));
+		} else {
+			g_debug ("ignoring: %s", error_query->message);
+		}
+	}
+
 	/* get all components */
 	components = xb_silo_query (silo, "components/component", 0, &error_local);
 	if (components == NULL) {
