@@ -882,7 +882,7 @@ gs_plugin_add_search (GsPlugin *plugin, gchar **values, GsAppList *list,
 		return TRUE;
 	if (!_check_silo (plugin, cancellable, error))
 		return FALSE;
-	if (!gs_appstream_search (plugin, priv->silo, values, list_tmp,
+	if (!gs_appstream_search (plugin, priv->silo, (const gchar * const *) values, list_tmp,
 				  cancellable, error))
 		return FALSE;
 	_claim_components (plugin, list_tmp);

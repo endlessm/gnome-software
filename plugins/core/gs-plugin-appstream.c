@@ -862,7 +862,7 @@ gs_plugin_add_search (GsPlugin *plugin,
 		return FALSE;
 	return gs_appstream_search (plugin,
 				    priv->silo,
-				    values,
+				    (const gchar * const *) values,
 				    list,
 				    cancellable,
 				    error);
