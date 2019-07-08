@@ -194,10 +194,11 @@ gs_plugin_setup (GsPlugin *plugin,
 		 GError **error)
 {
 	g_autoptr(GError) local_error = NULL;
-	GApplication *app = g_application_get_default ();
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
-	priv->session_bus = g_application_get_dbus_connection (app);
+	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, cancellable, error);
+	if (priv->session_bus == NULL)
+		return FALSE;
 
 	if (!get_applications_with_shortcuts (plugin, &priv->desktop_apps,
 					      cancellable, &local_error))
