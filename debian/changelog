@@ -1,15 +1,122 @@
-gnome-software (3.26.7-0endless2) unstable; urgency=medium
+gnome-software (3.31.90-1) UNRELEASED; urgency=medium
 
-  * Add libeos-parental-controls-0-dev dependency for parental controls
-    (https://phabricator.endlessm.com/T24023)
+  * New upstream release
 
- -- Philip Withnall <withnall@endlessm.com>  Tue, 13 Nov 2018 12:06:00 +0000
+ -- Jeremy Bicha <jbicha@debian.org>  Sun, 24 Feb 2019 21:10:52 -0500
 
-gnome-software (3.26.7-0endless1) unstable; urgency=medium
+gnome-software (3.30.6-5) unstable; urgency=medium
 
-  * New upstream version
+  * Cherry-pick 8 Snap patches via Ubuntu
+    - Support switching channels, add verified developer support, use
+      "wide scope" searching (search all channels), use the new media API,
+      don't show "missing screenshot" placeholder
+  * Bump minimum libsnapd-glib-dev to 1.45
 
- -- Joaquim Rocha <jrocha@endlessm.com>  Fri, 2 Mar 2018 14:16:31 +0100
+ -- Jeremy Bicha <jbicha@debian.org>  Sun, 24 Feb 2019 21:09:02 -0500
+
+gnome-software (3.30.6-4) unstable; urgency=medium
+
+  * Re-enable Flatpak on mipsel
+  * Don't enable snap on ppc64 since snapd never built there
+
+ -- Jeremy Bicha <jbicha@debian.org>  Thu, 10 Jan 2019 17:25:24 -0500
+
+gnome-software (3.30.6-3) unstable; urgency=medium
+
+  * Don't try building Flatpak support on architectures where Flatpak
+    isn't built
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sun, 06 Jan 2019 01:44:44 -0500
+
+gnome-software (3.30.6-2) unstable; urgency=medium
+
+  * Recommend instead of Suggest fwupd (Closes: #916036)
+  * Enable fwupd on all Linux architectures
+  * Drop obsolete Build-Depends on intltool
+  * Add Conflicts: sessioninstaller
+    - since it also provides the PackageKit session interface
+  * Build-Depend on debhelper-compat 12 and drop debian/compat
+  * Bump Standards-Version to 4.3.0
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sat, 05 Jan 2019 17:26:30 -0500
+
+gnome-software (3.30.6-1) unstable; urgency=medium
+
+  * New upstream release
+  * Bump required libappstream-glib-dev to >= 0.7.14
+  * Bump minimum PackageKit to 1.1.11 for autoremove support
+  * Drop obsolete Build-Depends on liboauth-dev and libsqlite3-dev
+  * Update configure flags
+  * Add -Wl,-O1 to our LDFLAGS
+  * Recommend gnome-software-plugin-snap on Ubuntu
+  * Mark universe packages as free on Ubuntu
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 21 Dec 2018 10:16:34 -0500
+
+gnome-software (3.30.5-1) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * New upstream release
+  * Bump minimum libglib2.0-dev to 2.56.0
+  * Enable packagekit autoremove support
+  * Bump minimum libpackagekit-glib2-dev to 1.1.11 for autoremove support
+
+  [ Andrea Azzarone ]
+  * Bump Standards-Version to 4.2.1
+  * Set Rules-Requires-Root to no
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 16 Nov 2018 16:48:13 -0500
+
+gnome-software (3.30.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/control.in: Bump build-dependencies
+  * debian/rules: Rename the options, the "enable" part has been removed
+  * Remove limba plugin, dropped upstream
+
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 05 Oct 2018 11:57:57 +0200
+
+gnome-software (3.28.2-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 14 May 2018 22:01:33 -0400
+
+gnome-software (3.28.1-1) unstable; urgency=medium
+
+  * New upstream release
+  * Bump Standards-Version to 4.1.4
+  * debian/rules: drop obsolete dh_translations workaround
+
+ -- Jeremy Bicha <jbicha@debian.org>  Tue, 10 Apr 2018 19:45:35 -0400
+
+gnome-software (3.28.0-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 16 Mar 2018 17:22:24 -0400
+
+gnome-software (3.27.92-1) unstable; urgency=medium
+
+  * New upstream release candidate
+  * Update gsettings schema names for new release ("sources" renamed to
+    "repos") (Closes: #892456)
+  * Depend on libgtk3-perl for debconf's GNOME backend
+  * Bump minimum libfwupd-dev to 1.0.3
+  * Release to unstable
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sat, 10 Mar 2018 21:13:52 -0500
+
+gnome-software (3.27.90-1) experimental; urgency=medium
+
+  * New upstream development release
+  * Bump dependencies for new version:
+    - libappstream-glib-dev (>= 0.7.3), libfwupd (>= 0.9.8),
+      libgtk-3-dev (>= 3.22.4)
+  * Build-Depend on libgspell-1-dev instead of libgtkspell3-3-dev
+  * debian/docs: Install README.md
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sun, 18 Feb 2018 16:27:18 -0500
 
 gnome-software (3.26.5-1) unstable; urgency=medium
 
