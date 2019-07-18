@@ -43,6 +43,18 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	endif
 endif
 
+# EOS-specific configuration
+GS_CONFIGURE_FLAGS += \
+	-Dexternal_appstream=true \
+	-Dfwupd=false \
+	-Dgudev=false \
+	-Dodrs=true \
+	-Dpackagekit=false \
+	-Dshell_extensions=false \
+	-Dsnap=false \
+	-Dtests=false \
+	-Dwebapps=false \
+
 DISTRO_ID = debian
 FREE_REPOS = \'@DISTRO@-*-main\'
 FREE_URL = https:\/\/www.debian.org\/social_contract\#guidelines
@@ -68,12 +80,6 @@ override_dh_auto_install:
 ifneq (yes,$(shell dpkg-vendor --derives-from Ubuntu && echo yes))
 	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_ubuntu*
 endif
-
-override_dh_installgsettings:
-	sed "s#@FREE_REPOS@#$(FREE_REPOS)#g" debian/gnome-software.gsettings-override.in > debian/gnome-software.gsettings-override
-	sed -i "s/@DISTRO@/$(DISTRO_ID)/g" debian/gnome-software.gsettings-override
-	sed -i "s/@URL@/$(FREE_URL)/g" debian/gnome-software.gsettings-override
-	dh_installgsettings
 
 override_dh_install-arch:
 	# Remove unused files
@@ -103,7 +109,3 @@ ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
 else
 	dh_gencontrol -- -Vplugin:Suggests='gnome-software-plugin-snap [linux-any]'
 endif
-
-override_dh_clean:
-	rm -f debian/gnome-software.gsettings-override
-	dh_clean

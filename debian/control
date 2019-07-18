@@ -16,7 +16,6 @@ Build-Depends: appstream,
                gtk-doc-tools,
                libappstream-glib-dev (>= 0.7.14),
                libflatpak-dev (>= 0.99.3) [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
-               libfwupd-dev (>= 1.0.3) [linux-any],
                libglib2.0-dev (>= 2.56.0),
                libgnome-desktop-3-dev (>= 3.18.0),
                libgoa-1.0-dev,
@@ -24,9 +23,9 @@ Build-Depends: appstream,
                libgtk-3-dev (>= 3.22.4),
                libgudev-1.0-dev [linux-any],
                libjson-glib-dev (>= 1.2.0),
-               libpackagekit-glib2-dev (>= 1.1.11),
+               libmalcontent-0-dev,
+               libmogwai-schedule-client-0-dev,
                libpolkit-gobject-1-dev,
-               libsnapd-glib-dev (>= 1.45) [amd64 arm64 armel armhf i386 ppc64el s390x],
                libsoup2.4-dev (>= 2.52.0),
                libxmlb-dev (>= 0.1.4),
                libxml2-utils,
@@ -47,7 +46,6 @@ Depends: appstream,
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.18),
          libgtk3-perl,
-         packagekit (>= 1.1.11),
          software-properties-gtk,
          ${misc:Depends},
          ${shlibs:Depends}
@@ -99,26 +97,6 @@ Description: Flatpak support for GNOME Software
  appdata format.
  .
  This package contains the Flatpak plugin.
-
-Package: gnome-software-plugin-snap
-Architecture: amd64 arm64 armel armhf i386 ppc64el s390x
-Depends: gnome-software (= ${binary:Version}),
-         snapd [amd64 arm64 armel armhf i386 ppc64el],
-         ${misc:Depends},
-         ${shlibs:Depends}
-Recommends: snapd [s390x]
-Breaks: gnome-software (<< 3.22.3)
-Replaces: gnome-software (<< 3.22.3)
-Description: Snap support for GNOME Software
- Software lets you install and update applications and system extensions.
- .
- Software uses a plugin architecture to separate the frontend from the
- technologies that are used underneath. Currently, a PackageKit plugin provides
- data from a number of traditional packaging systems, such as rpm or apt. An
- appdata plugin provides additional metadata from locally installed data in the
- appdata format.
- .
- This package contains the Snap plugin.
 
 Package: gnome-packagekit-session
 Architecture: all
