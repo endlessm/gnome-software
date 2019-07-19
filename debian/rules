@@ -9,11 +9,9 @@ export DEB_LDFLAGS_MAINT_STRIP := -Wl,-Bsymbolic-functions
 GS_CONFIGURE_FLAGS = \
 	-Dgnome_desktop=true \
 	-Dodrs=true \
-	-Dostree=false \
 	-Dpackagekit=true \
 	-Dpackagekit_autoremove=true \
 	-Drpm_ostree=false \
-	-Dubuntu_reviews=false \
 
 # these are conditionally re-enabled later
 GS_CONFIGURE_FLAGS += \
