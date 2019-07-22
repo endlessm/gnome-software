@@ -1,3 +1,17 @@
+gnome-software (3.32.0-1endless1) UNRELEASED; urgency=medium
+
+  * Drop Debian-specific dependencies (T25367)
+    - libgtk3-perl: Needed for debconf
+    - software-properties-gtk: Debian-specific apt repository configuration tool
+  * Drop fwupd `recommends` line (T25367)
+    - We already dropped the build dependency, so keeping the `recommends` is
+      just confusing.
+  * Drop `apt-config-icons` dependency (T25367)
+    - Our apt repositories don’t support it, and the majority of our apps are
+      packaged in flatpak.
+
+ -- Philip Withnall <withnall@endlessm.com>  Mon, 22 Jul 2019 10:09:00 +0000
+
 gnome-software (3.32.0-1endless0) UNRELEASED; urgency=medium
 
   * Rebase on GNOME 3.32 (T25367)
