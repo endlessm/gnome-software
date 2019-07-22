@@ -157,7 +157,7 @@ update_tile_info (GsBackgroundTile *tile)
 	if (gs_app_is_installed (tile->app)) {
 		/* TRANSLATORS: This is the name and state of an app for the ATK object */
 		name = g_strdup_printf (_("%s (Installed)"), gs_app_get_name (tile->app));
-	} else if (gs_app_get_state (tile->app) == AS_APP_STATE_AVAILABLE) {
+	} else {
 		name = g_strdup (gs_app_get_name (tile->app));
 	}
 
