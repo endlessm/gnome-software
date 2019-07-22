@@ -589,7 +589,7 @@ gs_updates_section_class_init (GsUpdatesSectionClass *klass)
 	signals [SIGNAL_APP_STATE_CHANGED] =
 		g_signal_new ("app-state-changed",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      0, NULL, NULL, NULL,
 			      G_TYPE_NONE, 1, GS_TYPE_APP);
 }
 
