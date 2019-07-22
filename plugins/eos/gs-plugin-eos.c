@@ -971,7 +971,8 @@ process_proxy_updates (GsPlugin *plugin,
 		/* remove any app matching the updatable one we're about to add as
 		 * this makes sure that we're getting the right app (updatable) in
 		 * the proxy app's related list */
-		gs_app_list_remove (proxied_updates, added_app);
+		if (added_app != NULL)
+			gs_app_list_remove (proxied_updates, added_app);
 
 		/* ensure the app we're about to add really is updatable; this
 		 * is mostly a safeguard, since in this plugin's refine of proxy
