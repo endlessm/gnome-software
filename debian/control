@@ -42,20 +42,15 @@ Homepage: https://wiki.gnome.org/Apps/Software
 Package: gnome-software
 Architecture: any
 Depends: appstream,
-         apt-config-icons,
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.18),
-         libgtk3-perl,
-         software-properties-gtk,
          ${misc:Depends},
          ${shlibs:Depends}
 Replaces: gnome-packagekit-session (<< 3.16.0-2~)
 Breaks: gnome-packagekit-session (<< 3.16.0-2~)
 Conflicts: sessioninstaller
 Recommends: ${plugin:Recommends},
-            fwupd [linux-any]
-Suggests: apt-config-icons-hidpi,
-          gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
+Suggests: gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
           ${plugin:Suggests}
 Description: Software Center for GNOME
  Software lets you install and update applications and system extensions.
