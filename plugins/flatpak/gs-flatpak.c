@@ -800,8 +800,9 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 		g_autoptr(GError) local_error = NULL;
 		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote, NULL,
 							   cancellable, &local_error)) {
+			g_autofree gchar *remote_url = flatpak_remote_get_url (remote);
 			g_debug ("Failed to mark apps coming from USB remote at %s: %s",
-				 flatpak_remote_get_url (remote),
+				 remote_url,
 				 local_error->message);
 			continue;
 		}
