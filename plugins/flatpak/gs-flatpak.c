@@ -324,6 +324,22 @@ gs_flatpak_add_flatpak_keyword_cb (XbBuilderFixup *self,
 }
 
 static gboolean
+gs_flatpak_mark_endlessm_apps_popular_cb (XbBuilderFixup *self,
+					   XbBuilderNode *bn,
+					   gpointer user_data,
+					   GError **error)
+{
+	if (g_strcmp0 (xb_builder_node_get_element (bn), "component") == 0) {
+		g_autoptr(XbBuilderNode) id = xb_builder_node_get_child (bn, "id", NULL);
+		if (g_str_has_prefix (xb_builder_node_get_text (id), "com.endlessm.") ||
+		    g_str_has_prefix (xb_builder_node_get_text (id), "com.endlessnetwork.")) {
+			gs_appstream_component_add_kudo (bn, "GnomeSoftware::popular");
+		}
+	}
+	return TRUE;
+}
+
+static gboolean
 gs_flatpak_fix_id_desktop_suffix_cb (XbBuilderFixup *self,
 				     XbBuilderNode *bn,
 				     gpointer user_data,
@@ -515,6 +531,7 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	g_autoptr(XbBuilderFixup) fixup1 = NULL;
 	g_autoptr(XbBuilderFixup) fixup2 = NULL;
 	g_autoptr(XbBuilderFixup) fixup3 = NULL;
+	g_autoptr(XbBuilderFixup) fixup4 = NULL;
 	g_autoptr(XbBuilderNode) info = NULL;
 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
 	g_autofree gchar *remote_url = NULL;
@@ -578,6 +595,13 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 				       xremote, NULL);
 	xb_builder_fixup_set_max_depth (fixup3, 1);
 	xb_builder_source_add_fixup (source, fixup3);
+
+	/* Mark endlessm apps as popular. See discussion on T26507 & T23152 */
+	fixup4 = xb_builder_fixup_new ("MarkEndlessmAppsPopular",
+				       gs_flatpak_mark_endlessm_apps_popular_cb,
+				       self, NULL);
+	xb_builder_fixup_set_max_depth (fixup4, 2);
+	xb_builder_source_add_fixup (source, fixup4);
 
 	/* add metadata */
 	icon_prefix = g_build_filename (appstream_dir_fn, "icons", NULL);

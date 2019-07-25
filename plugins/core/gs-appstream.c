@@ -1403,6 +1403,25 @@ gs_appstream_component_add_keyword (XbBuilderNode *component, const gchar *str)
 }
 
 void
+gs_appstream_component_add_kudo (XbBuilderNode *component, const gchar *str)
+{
+	g_autoptr(XbBuilderNode) kudos = NULL;
+	g_autoptr(XbBuilderNode) kudo = NULL;
+
+	/* create <kudos> if it does not already exist */
+	kudos = xb_builder_node_get_child (component, "kudos", NULL);
+	if (kudos == NULL)
+		kudos = xb_builder_node_insert (component, "kudos", NULL);
+
+	/* create <kudo>str<kudo> if it does not already exist */
+	kudo = xb_builder_node_get_child (kudos, "kudo", str);
+	if (kudo == NULL) {
+		kudo = xb_builder_node_insert (kudos, "kudo", NULL);
+		xb_builder_node_set_text (kudo, str, -1);
+	}
+}
+
+void
 gs_appstream_component_add_provide (XbBuilderNode *component, const gchar *str)
 {
 	g_autoptr(XbBuilderNode) provide = NULL;
