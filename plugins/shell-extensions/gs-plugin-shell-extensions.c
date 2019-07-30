@@ -443,6 +443,11 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	/* find the component using the UUID */
 	if (!_check_silo (plugin, cancellable, error))
 		return FALSE;
+
+	/* find the component using the UUID */
+	if (uuid == NULL)
+		return TRUE;
+
 	xpath = g_strdup_printf ("components/component/custom/"
 				 "value[@key='shell-extensions::uuid'][text()='%s']/../..",
 				 uuid);
