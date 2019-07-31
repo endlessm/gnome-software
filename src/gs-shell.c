@@ -2681,7 +2681,8 @@ side_filter_select_by_mode (GsShell *shell, GsShellMode mode)
 		GsShellMode row_mode = gs_side_filter_row_get_mode (GS_SIDE_FILTER_ROW (row));
 		GsCategory *row_category = gs_side_filter_row_get_category (GS_SIDE_FILTER_ROW (row));
 
-		if (row_mode == mode && gs_category_equal (row_category, category)) {
+		if (row_mode == mode && row_category != NULL && category != NULL &&
+		    gs_category_equal (row_category, category)) {
 			gs_shell_side_filter_set_visible (shell, TRUE);
 			return;
 		}
