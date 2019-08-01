@@ -202,18 +202,6 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkButton" id="button_remove">
-                                <property name="visible">False</property>
-                                <property name="use_underline">True</property>
-                                <property name="label" translatable="yes">_Uninstall</property>
-                                <property name="width_request">105</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">True</property>
-                                <property name="halign">start</property>
-                                <property name="valign">start</property>
-                              </object>
-                            </child>
-                            <child>
                               <object class="GtkSpinner" id="spinner_remove">
                                 <property name="visible">False</property>
                                 <property name="valign">center</property>
@@ -419,6 +407,18 @@
                             <property name="visible">True</property>
                             <property name="margin_bottom">26</property>
                             <property name="spacing">12</property>
+                            <child>
+                              <object class="GtkButton" id="button_remove">
+                                <property name="visible">False</property>
+                                <property name="use_underline">True</property>
+                                <property name="label" translatable="yes">_Uninstall</property>
+                                <property name="width_request">105</property>
+                                <property name="can_focus">True</property>
+                                <property name="receives_default">True</property>
+                                <property name="halign">start</property>
+                                <property name="valign">start</property>
+                              </object>
+                            </child>
                             <child>
                               <object class="GtkButton" id="button_details_website">
                                 <property name="label" translatable="yes">_Website</property>
