@@ -594,9 +594,9 @@ gs_flatpak_get_services_app_if_needed (GsPlugin *plugin,
 
 	/* Construct a GsApp for EknServicesMultiplexer */
 	services_app = gs_app_new (services_id);
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-	gs_app_set_branch (app, services_branch);
-	gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+	gs_app_set_kind (services_app, AS_APP_KIND_DESKTOP);
+	gs_app_set_branch (services_app, services_branch);
+	gs_app_add_quirk (services_app, GS_APP_QUIRK_IS_WILDCARD);
 
 	return g_steal_pointer (&services_app);
 }
