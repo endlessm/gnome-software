@@ -35,6 +35,9 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 
+#define GNOME_DESKTOP_USE_UNSTABLE_API "unstable"
+#include <libgnome-desktop/gnome-languages.h>
+
 #define ENDLESS_ID_PREFIX "com.endlessm."
 
 #define EOS_IMAGE_VERSION_XATTR "user.eos-image-version"
@@ -53,6 +56,7 @@ struct GsPluginData
 	char *personality;
 	char *product_name;
 	gboolean eos_arch_is_arm;
+	FlatpakInstallation *installation;
 };
 
 static char *
@@ -177,6 +181,12 @@ gs_plugin_setup (GsPlugin *plugin,
 			g_warning ("No system product name could be retrieved! %s", local_error->message);
 			g_clear_error (&local_error);
 		}
+
+		priv->installation = flatpak_installation_new_system (cancellable, &local_error);
+		if (local_error != NULL) {
+			g_warning ("No system installation could be retrieved! %s", local_error->message);
+			g_clear_error (&local_error);
+		}
 	}
 
 	return TRUE;
@@ -198,6 +208,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 
 	g_free (priv->personality);
 	g_free (priv->product_name);
+	g_clear_object (&priv->installation);
 }
 
 /* Copy of the implementation of gs_flatpak_app_get_ref_name(). */
@@ -207,19 +218,87 @@ app_get_flatpak_ref_name (GsApp *app)
 	return gs_app_get_metadata_item (app, "flatpak::RefName");
 }
 
+static gchar **
+get_flatpak_default_locales (GsPlugin *plugin)
+{
+	g_auto(GStrv) flatpak_default_locales = NULL;
+	g_autoptr(GError) local_error = NULL;
+
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	if (priv->installation == NULL)
+		return NULL;
+
+	flatpak_default_locales = flatpak_installation_get_default_locales (priv->installation, &local_error);
+	if (local_error != NULL) {
+		g_warning ("No user locales could be retrieved! %s", local_error->message);
+		return NULL;
+	}
+
+	return g_steal_pointer (&flatpak_default_locales);
+}
+
+static gboolean
+assert_valid_locale_match (const char *app_locale,
+                           const char * const *locale_options)
+{
+	int idx;
+	g_autofree char *app_language_code = NULL;
+	g_autofree char *app_territory_code = NULL;
+	g_autofree char *app_modifier = NULL;
+
+	if (!gnome_parse_locale (app_locale, &app_language_code, &app_territory_code, NULL, &app_modifier))
+		return FALSE;
+
+	for (idx = 0; locale_options[idx] != 0; idx++) {
+		g_autofree char *opt_language_code = NULL;
+		g_autofree char *opt_territory_code = NULL;
+		g_autofree char *opt_modifier = NULL;
+
+		if (!gnome_parse_locale (locale_options[idx], &opt_language_code, &opt_territory_code, NULL, &opt_modifier))
+			return FALSE;
+
+		if (g_strcmp0 (app_language_code, opt_language_code) == 0) {
+			/* If the main is a match, try to match territory eg. US or GB */
+			if (app_territory_code != NULL && opt_territory_code != NULL) {
+				if (g_strcmp0 (app_territory_code, opt_territory_code) == 0) {
+					/* If the territory is a match, try to match the modifier eg. latin/cyrillic */
+					if (app_modifier != NULL && opt_modifier != NULL) {
+						if (g_strcmp0 (app_modifier, opt_modifier) == 0)
+							return TRUE;
+					} else {
+						/* If the [modifier] of the app_locale or from the locale options
+						 * is not defined, this is a desireable app */
+						return TRUE;
+					}
+				}
+			} else {
+				/* If the [territory] of the app_locale or from the locale options
+				 * is not defined, this is a desireable app */
+				return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
+
 static gboolean
 gs_plugin_locale_is_compatible (GsPlugin *plugin,
-				const char *locale)
+                                const char *app_locale)
 {
-	g_auto(GStrv) locale_variants;
+	g_auto(GStrv) plugin_locale_variants = NULL;
+	g_auto(GStrv) flatpak_locales = NULL;
 	const char *plugin_locale = gs_plugin_get_locale (plugin);
-	int idx;
 
-	locale_variants = g_get_locale_variants (plugin_locale);
-	for (idx = 0; locale_variants[idx] != NULL; idx++) {
-		if (g_strcmp0 (locale_variants[idx], locale) == 0)
+	/* Check if a variant of a locale is compatible */
+	plugin_locale_variants = g_get_locale_variants (plugin_locale);
+	if (plugin_locale_variants != NULL && assert_valid_locale_match (app_locale, (const char * const *) plugin_locale_variants))
+		return TRUE;
+
+	/* check if the app's locale is compatible with the languages key on the ostree repo file */
+	flatpak_locales = get_flatpak_default_locales (plugin);
+	if (flatpak_locales != NULL && assert_valid_locale_match (app_locale, (const char * const *) flatpak_locales))
 			return TRUE;
-	}
 
 	return FALSE;
 }
