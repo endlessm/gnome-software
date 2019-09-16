@@ -485,7 +485,7 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 			continue;
 		}
 
-		gs_app_add_category (app, "USB");
+		gs_app_add_category (app, "usb");
 
 		/* add a keyword so users can search for "usb" */
 		/* TODO as_app_add_keyword (as_app, NULL, "usb"); */
@@ -3098,7 +3098,7 @@ gs_flatpak_mount_removed (GVolumeMonitor *volume_monitor,
 		should_reload = TRUE;
 		for (guint i = 0; i < apps->len; ++i) {
 			GsApp *app = g_ptr_array_index (apps, i);
-			gs_app_remove_category (app, "USB");
+			gs_app_remove_category (app, "usb");
 		}
 		g_hash_table_iter_remove (&iter);
 	}
