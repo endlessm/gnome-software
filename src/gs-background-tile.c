@@ -125,7 +125,7 @@ update_tile_status (GsBackgroundTile *tile)
 		return;
 	}
 
-	if (gs_app_has_category (app, "USB"))
+	if (gs_app_has_category (app, "usb"))
 		gtk_stack_set_visible_child (status_stack,
 					     tile->available_in_usb_icon);
 	else

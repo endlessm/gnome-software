@@ -292,7 +292,7 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 		return;
 
 	if (cached_app && !gs_app_is_installed (cached_app) &&
-	    !gs_app_has_category (cached_app, "USB")) {
+	    !gs_app_has_category (cached_app, "usb")) {
 		const char *app_id = gs_app_get_unique_id (app);
 		const char *cached_app_id = gs_app_get_unique_id (cached_app);
 
@@ -331,7 +331,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	last_token = tokens[num_tokens - 1];
 
 	if (!gs_plugin_locale_is_compatible (plugin, last_token) &&
-	    !gs_app_has_category (app, "USB")) {
+	    !gs_app_has_category (app, "usb")) {
 		if (gs_app_is_installed (app))
 			return FALSE;
 
@@ -351,7 +351,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	/* skip if the cached app is already our best */
 	if (cached_app &&
 	    gs_plugin_app_is_locale_best_match (plugin, cached_app) &&
-	    !gs_app_has_category (cached_app, "USB")) {
+	    !gs_app_has_category (cached_app, "usb")) {
 		if (!gs_app_is_installed (app)) {
 			g_debug ("Blacklisting '%s': cached app '%s' is best "
 				 "match", gs_app_get_unique_id (app),
@@ -710,7 +710,7 @@ static void
 gs_plugin_eos_remove_blacklist_from_usb_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	if (!gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE) ||
-	    !gs_app_has_category (app, "USB"))
+	    !gs_app_has_category (app, "usb"))
 		return;
 
 	g_debug ("Removing blacklisting from '%s': app is from USB", gs_app_get_unique_id (app));
