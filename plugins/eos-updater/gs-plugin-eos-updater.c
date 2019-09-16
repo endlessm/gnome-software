@@ -625,8 +625,8 @@ gs_plugin_destroy (GsPlugin *plugin)
 
 /* Called in a #GTask worker thread, but it can run without holding
  * `priv->mutex` since it doesn’t need to synchronise on state. */
-gboolean
-gs_plugin_refresh (GsPlugin *plugin,
+static gboolean
+gs_plugin_eos_updater_refresh (GsPlugin *plugin,
 		   guint cache_age,
 		   GCancellable *cancellable,
 		   GError **error)
@@ -987,8 +987,17 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 
 		repo_dir = g_file_get_child (file, ".ostree");
 		if (g_file_query_exists (repo_dir, NULL))
-			return gs_plugin_refresh (plugin, 0, cancellable, error);
+			return gs_plugin_eos_updater_refresh (plugin, 0, cancellable, error);
 	}
 
 	return TRUE;
+}
+
+gboolean
+gs_plugin_refresh (GsPlugin *plugin,
+		   guint cache_age,
+		   GCancellable *cancellable,
+		   GError **error)
+{
+  return gs_plugin_eos_updater_refresh (plugin, cache_age, cancellable, error);
 }
