@@ -72,6 +72,8 @@ gs_app_tile_set_app (GsAppTile *self, GsApp *app)
 				  G_CALLBACK (gs_app_tile_state_changed_cb), self);
 		g_signal_connect (app, "notify::key-colors",
 				  G_CALLBACK (gs_app_tile_state_changed_cb), self);
+		g_signal_connect (app, "notify::pending-action",
+				  G_CALLBACK (gs_app_tile_state_changed_cb), self);
 		klass->refresh (self);
 	}
 }
