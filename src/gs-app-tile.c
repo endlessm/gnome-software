@@ -46,6 +46,14 @@ gs_app_tile_state_changed_cb (GsApp *app, GParamSpec *pspec, GsAppTile *self)
 	priv->app_state_changed_idle_id = g_idle_add (gs_app_tile_state_changed_idle_cb, self);
 }
 
+static void
+gs_app_tile_metadata_changed_cb (GsApp *app, const gchar *key, GsAppTile *self)
+{
+	GsAppTilePrivate *priv = gs_app_tile_get_instance_private (self);
+	g_clear_handle_id (&priv->app_state_changed_idle_id, g_source_remove);
+	priv->app_state_changed_idle_id = g_idle_add (gs_app_tile_state_changed_idle_cb, self);
+}
+
 void
 gs_app_tile_set_app (GsAppTile *self, GsApp *app)
 {
@@ -59,8 +67,10 @@ gs_app_tile_set_app (GsAppTile *self, GsApp *app)
 	g_clear_handle_id (&priv->app_state_changed_idle_id, g_source_remove);
 
 	/* disconnect old app */
-	if (priv->app != NULL)
+	if (priv->app != NULL) {
 		g_signal_handlers_disconnect_by_func (priv->app, gs_app_tile_state_changed_cb, self);
+		g_signal_handlers_disconnect_by_func (priv->app, gs_app_tile_metadata_changed_cb, self);
+	}
 	g_set_object (&priv->app, app);
 
 	/* optional refresh */
@@ -75,6 +85,8 @@ gs_app_tile_set_app (GsAppTile *self, GsApp *app)
 				  G_CALLBACK (gs_app_tile_state_changed_cb), self);
 		g_signal_connect (app, "notify::pending-action",
 				  G_CALLBACK (gs_app_tile_state_changed_cb), self);
+		g_signal_connect (app, "metadata-changed::GnomeSoftware::BackgroundTile-css",
+				  G_CALLBACK (gs_app_tile_metadata_changed_cb), self);
 		klass->refresh (self);
 	}
 }
@@ -84,8 +96,10 @@ gs_app_tile_finalize (GObject *object)
 {
 	GsAppTile *self = GS_APP_TILE (object);
 	GsAppTilePrivate *priv = gs_app_tile_get_instance_private (self);
-	if (priv->app != NULL)
+	if (priv->app != NULL) {
 		g_signal_handlers_disconnect_by_func (priv->app, gs_app_tile_state_changed_cb, self);
+		g_signal_handlers_disconnect_by_func (priv->app, gs_app_tile_metadata_changed_cb, self);
+	}
 	g_clear_handle_id (&priv->app_state_changed_idle_id, g_source_remove);
 	g_clear_object (&priv->app);
 
