@@ -24,6 +24,7 @@
 #include "gs-flatpak.h"
 #include "gs-flatpak-transaction.h"
 #include "gs-flatpak-utils.h"
+#include "gs-metered.h"
 
 struct GsPluginData {
 	GPtrArray		*flatpaks; /* of GsFlatpak */
@@ -58,6 +59,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	permission = gs_utils_get_permission (action_id, NULL, &error_local);
 	if (permission == NULL) {
 		g_debug ("no permission for %s: %s", action_id, error_local->message);
+		g_clear_error (&error_local);
 	} else {
 		priv->has_system_helper = g_permission_get_allowed (permission) ||
 					  g_permission_get_can_acquire (permission);
@@ -373,12 +375,13 @@ gs_plugin_flatpak_find_app_by_ref (GsPlugin *plugin, const gchar *ref,
 				   GCancellable *cancellable, GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GError) error_local = NULL;
 
 	g_debug ("finding ref %s", ref);
 	for (guint i = 0; i < priv->flatpaks->len; i++) {
 		GsFlatpak *flatpak_tmp = g_ptr_array_index (priv->flatpaks, i);
 		g_autoptr(GsApp) app = NULL;
+		g_autoptr(GError) error_local = NULL;
+
 		app = gs_flatpak_ref_to_app (flatpak_tmp, ref, cancellable, &error_local);
 		if (app == NULL) {
 			g_debug ("%s", error_local->message);
@@ -409,8 +412,13 @@ _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 	FlatpakInstallation *installation;
 	g_autoptr(FlatpakTransaction) transaction = NULL;
 
-	/* create transaction */
 	installation = gs_flatpak_get_installation (flatpak);
+
+	/* Let flatpak know if it is a background operation */
+	if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE))
+		flatpak_installation_set_no_interaction (installation, TRUE);
+
+	/* create transaction */
 	transaction = gs_flatpak_transaction_new (installation, cancellable, error);
 	if (transaction == NULL) {
 		g_prefix_error (error, "failed to build transaction: ");
@@ -445,6 +453,16 @@ gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 	}
 	if (flatpak == NULL)
 		return TRUE;
+
+	if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
+		g_autoptr(GError) error_local = NULL;
+
+		if (!gs_metered_block_app_list_on_download_scheduler (list_tmp, cancellable, &error_local)) {
+			g_warning ("Failed to block on download scheduler: %s",
+				   error_local->message);
+			g_clear_error (&error_local);
+		}
+	}
 
 	/* build and run non-deployed transaction */
 	transaction = _build_transaction (plugin, flatpak, cancellable, error);
@@ -574,6 +592,19 @@ gs_plugin_app_install (GsPlugin *plugin,
 	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
 		return gs_flatpak_app_install_source (flatpak, app, cancellable, error);
 
+	if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
+		g_autoptr(GError) error_local = NULL;
+
+		/* FIXME: Add additional details here, especially the download
+		 * size bounds (using `size-minimum` and `size-maximum`, both
+		 * type `t`). */
+		if (!gs_metered_block_app_on_download_scheduler (app, cancellable, &error_local)) {
+			g_warning ("Failed to block on download scheduler: %s",
+				   error_local->message);
+			g_clear_error (&error_local);
+		}
+	}
+
 	/* build */
 	transaction = _build_transaction (plugin, flatpak, cancellable, error);
 	if (transaction == NULL) {
@@ -620,7 +651,6 @@ gs_plugin_app_install (GsPlugin *plugin,
 		}
 		if (!flatpak_transaction_add_install_bundle (transaction, file,
 							     NULL, error)) {
-			g_autofree gchar *fn = g_file_get_path (file);
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
@@ -660,25 +690,14 @@ gs_plugin_app_install (GsPlugin *plugin,
 	return TRUE;
 }
 
-gboolean
-gs_plugin_update (GsPlugin *plugin,
-                  GsAppList *list,
-                  GCancellable *cancellable,
-                  GError **error)
+static gboolean
+gs_plugin_flatpak_update (GsPlugin *plugin,
+			  GsFlatpak *flatpak,
+			  GsAppList *list_tmp,
+			  GCancellable *cancellable,
+			  GError **error)
 {
-	GsFlatpak *flatpak;
 	g_autoptr(FlatpakTransaction) transaction = NULL;
-	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
-
-	/* not supported */
-	for (guint i = 0; i < gs_app_list_length (list); i++) {
-		GsApp *app = gs_app_list_index (list, i);
-		flatpak = gs_plugin_flatpak_get_handler (plugin, app);
-		if (flatpak != NULL)
-			gs_app_list_add (list_tmp, app);
-	}
-	if (flatpak == NULL)
-		return TRUE;
 
 	/* build and run transaction */
 	transaction = _build_transaction (plugin, flatpak, cancellable, error);
@@ -730,6 +749,46 @@ gs_plugin_update (GsPlugin *plugin,
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
+	}
+	return TRUE;
+}
+
+gboolean
+gs_plugin_update (GsPlugin *plugin,
+                  GsAppList *list,
+                  GCancellable *cancellable,
+                  GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GHashTable) applist_by_flatpaks = NULL;
+
+	/* list of apps to be handled by each flatpak installation */
+	applist_by_flatpaks = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+						     NULL, (GDestroyNotify) g_object_unref);
+	for (guint i = 0; i < priv->flatpaks->len; i++) {
+		g_hash_table_insert (applist_by_flatpaks,
+				     g_ptr_array_index (priv->flatpaks, i),
+				     gs_app_list_new ());
+	}
+
+	/* put each app into the correct per-GsFlatpak list */
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		GsFlatpak *flatpak = gs_plugin_flatpak_get_handler (plugin, app);
+		if (flatpak != NULL) {
+			GsAppList *list_tmp = g_hash_table_lookup (applist_by_flatpaks, flatpak);
+			gs_app_list_add (list_tmp, app);
+		}
+	}
+
+	/* build and run transaction for each flatpak installation */
+	for (guint j = 0; j < priv->flatpaks->len; j++) {
+		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, j);
+		GsAppList *list_tmp = GS_APP_LIST (g_hash_table_lookup (applist_by_flatpaks, flatpak));
+		if (gs_app_list_length (list_tmp) == 0)
+			continue;
+		if (!gs_plugin_flatpak_update (plugin, flatpak, list_tmp, cancellable, error))
+			return FALSE;
 	}
 	return TRUE;
 }
@@ -839,7 +898,6 @@ gs_plugin_flatpak_file_to_app_ref (GsPlugin *plugin,
 	g_autofree gchar *ref = NULL;
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsApp) app_tmp = NULL;
-	g_autoptr(GsAppList) list_tmp = NULL;
 	g_autoptr(GsFlatpak) flatpak_tmp = NULL;
 
 	/* only use the temporary GsFlatpak to avoid the auth dialog */
@@ -937,7 +995,7 @@ gs_plugin_add_search (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	for (guint i = 0; i < priv->flatpaks->len; i++) {
 		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
-		if (!gs_flatpak_search (flatpak, values, list,
+		if (!gs_flatpak_search (flatpak, (const gchar * const *) values, list,
 					cancellable, error)) {
 			return FALSE;
 		}

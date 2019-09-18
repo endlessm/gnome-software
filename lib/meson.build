@@ -16,7 +16,6 @@ pkconf.set('VERSION', meson.project_version())
 configure_file(
   input : 'gnome-software.pc.in',
   output : 'gnome-software.pc',
-  install: true,
   install_dir: join_paths(get_option('libdir'), 'pkgconfig'),
   configuration : pkconf
 )
@@ -40,14 +39,13 @@ install_headers([
     'gnome-software.h',
     'gs-app.h',
     'gs-app-list.h',
-    'gs-auth.h',
     'gs-category.h',
+    'gs-metered.h',
     'gs-os-release.h',
     'gs-plugin.h',
     'gs-plugin-event.h',
     'gs-plugin-types.h',
     'gs-plugin-vfuncs.h',
-    'gs-price.h',
     'gs-utils.h'
   ],
   subdir : 'gnome-software'
@@ -65,6 +63,10 @@ librarydeps = [
   valgrind,
 ]
 
+if get_option('mogwai')
+  librarydeps += mogwai_schedule_client
+endif
+
 if get_option('polkit')
   librarydeps += polkit
 endif
@@ -74,18 +76,17 @@ libgnomesoftware = static_library(
   sources : [
     'gs-app.c',
     'gs-app-list.c',
-    'gs-auth.c',
     'gs-category.c',
     'gs-debug.c',
     'gs-ioprio.c',
     'gs-ioprio.h',
+    'gs-metered.c',
     'gs-os-release.c',
     'gs-plugin.c',
     'gs-plugin-event.c',
     'gs-plugin-job.c',
     'gs-plugin-loader.c',
     'gs-plugin-loader-sync.c',
-    'gs-price.c',
     'gs-test.c',
     'gs-utils.c',
   ],

@@ -1,5 +1,5 @@
 data/appdata/org.gnome.Software.appdata.xml.in
-data/org.gnome.software.external-appstream.policy.in
+data/org.gnome.software.external-appstream.policy.in.in
 data/org.gnome.software.gschema.xml
 src/gnome-software-local-file.desktop.in
 src/gnome-software.ui
@@ -12,8 +12,6 @@ src/gs-app-row.c
 src/gs-app-row.ui
 src/gs-app-tile.c
 src/gs-app-tile.ui
-src/gs-auth-dialog.c
-src/gs-auth-dialog.ui
 lib/gs-category.c
 src/gs-category-page.c
 src/gs-category-page.ui
@@ -47,7 +45,6 @@ lib/gs-plugin-loader.c
 src/gs-popular-tile.c
 src/gs-popular-tile.ui
 src/gs-prefs-dialog.ui
-lib/gs-price.c
 src/gs-removal-dialog.c
 src/gs-removal-dialog.ui
 src/gs-repos-dialog.c
@@ -82,12 +79,14 @@ src/org.gnome.Software.Editor.desktop.in
 plugins/core/gs-desktop-common.c
 plugins/core/gs-plugin-generic-updates.c
 plugins/core/gs-plugin-rewrite-resource.c
+plugins/eos-updater/gs-plugin-eos-updater.c
 plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in
 plugins/external-appstream/gs-install-appstream.c
 plugins/external-appstream/gs-plugin-external-appstream.c
 plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c
 plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in
 plugins/flatpak/gs-flatpak.c
+plugins/fwupd/gs-fwupd-app.c
 plugins/fwupd/gs-plugin-fwupd.c
 plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in
 plugins/odrs/gs-plugin-odrs.c

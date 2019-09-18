@@ -92,23 +92,70 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkStack" id="stack_featured">
+                          <object class="GtkOverlay" id="overlay">
                             <property name="visible">True</property>
                             <property name="halign">fill</property>
-                            <property name="transition-type">crossfade</property>
+                            <property name="valign">fill</property>
+                            <property name="height-request">150</property>
+                            <child type="overlay">
+                              <object class="GtkStack" id="stack_featured">
+                                <property name="visible">True</property>
+                                <property name="halign">fill</property>
+                                <property name="transition-type">crossfade</property>
+                              </object>
+                            </child>
+                            <child type="overlay">
+                              <object class="GtkButton" id="button_featured_back">
+                                <property name="visible">True</property>
+                                <property name="use_underline">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="halign">start</property>
+                                <property name="valign">center</property>
+                                <child internal-child="accessible">
+                                  <object class="AtkObject" id="button_featured_back_accessible">
+                                    <property name="accessible-name" translatable="yes">Previous</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="osd"/>
+                                  <class name="featured-button-left"/>
+                                </style>
+                                <child>
+                                  <object class="GtkImage" id="back_image">
+                                    <property name="visible">True</property>
+                                    <property name="icon_name">go-previous-symbolic</property>
+                                    <property name="icon_size">1</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child type="overlay">
+                              <object class="GtkButton" id="button_featured_forwards">
+                                <property name="visible">True</property>
+                                <property name="use_underline">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="halign">end</property>
+                                <property name="valign">center</property>
+                                <child internal-child="accessible">
+                                  <object class="AtkObject" id="button_featured_forwards_accessible">
+                                    <property name="accessible-name" translatable="yes">Next</property>
+                                  </object>
+                                </child>
+                                <style>
+                                  <class name="osd"/>
+                                  <class name="featured-button-right"/>
+                                </style>
+                                <child>
+                                  <object class="GtkImage" id="forwards_image">
+                                    <property name="visible">True</property>
+                                    <property name="icon_name">go-next-symbolic</property>
+                                    <property name="icon_size">1</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
-                        <child>
-                          <object class="GtkBox" id="box_featured_switcher">
-                            <property name="visible">False</property>
-                            <property name="halign">center</property>
-                            <property name="homogeneous">True</property>
-                            <property name="orientation">horizontal</property>
-                            <property name="spacing">18</property>
-                            <property name="margin-top">6</property>
-                          </object>
-                        </child>
-
                         <child>
                           <object class="GtkLabel" id="category_heading">
                             <property name="visible">True</property>
@@ -127,7 +174,7 @@
                         <child>
                           <object class="GtkFlowBox" id="flowbox_categories">
                             <property name="visible">True</property>
-                            <property name="margin-bottom">14</property>
+                            <property name="margin-bottom">6</property>
                             <property name="row_spacing">14</property>
                             <property name="column_spacing">14</property>
                             <property name="homogeneous">True</property>
@@ -138,99 +185,13 @@
                             </accessibility>
                           </object>
                         </child>
-                        <child>
-                          <object class="GtkRevealer" id="categories_more">
-                            <property name="visible">True</property>
-                            <property name="transition-type">slide-up</property>
-                            <child>
-                              <object class="GtkFlowBox" id="flowbox_categories2">
-                                <property name="visible">True</property>
-                                <property name="margin-bottom">24</property>
-                                <property name="row_spacing">14</property>
-                                <property name="column_spacing">14</property>
-                                <property name="homogeneous">True</property>
-                                <property name="max_children_per_line">3</property>
-                                <property name="selection_mode">none</property>
-                                <accessibility>
-                                  <relation target="category_heading" type="labelled-by"/>
-                                </accessibility>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkBox" id="categories_expander_box">
-                            <property name="visible">True</property>
-                            <property name="vexpand">False</property>
-                            <property name="orientation">horizontal</property>
-                            <property name="margin_start">24</property>
-                            <property name="margin_end">24</property>
-                            <property name="margin-bottom">12</property>
-                            <child>
-                              <object class="GtkSeparator" id="categories_expander_lsep">
-                                <property name="visible">True</property>
-                                <property name="orientation">horizontal</property>
-                                <property name="hexpand">True</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="categories_expander_button_down">
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="margin-start">9</property>
-                                <property name="margin-end">9</property>
-                                <property name="valign">center</property>
-                                <property name="relief">none</property>
-                                <style>
-                                  <class name="round-button"/>
-                                </style>
-                                <child>
-                                  <object class="GtkImage" id="categories_expander_image_down">
-                                    <property name="visible">True</property>
-                                    <property name="icon_name">pan-down-symbolic</property>
-                                    <property name="icon_size">1</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkButton" id="categories_expander_button_up">
-                                <property name="visible">False</property>
-                                <property name="can_focus">True</property>
-                                <property name="margin-start">9</property>
-                                <property name="margin-end">9</property>
-                                <property name="valign">center</property>
-                                <property name="relief">none</property>
-                                <style>
-                                  <class name="round-button"/>
-                                </style>
-                                <child>
-                                  <object class="GtkImage" id="categories_expander_image_up">
-                                    <property name="visible">True</property>
-                                    <property name="icon_name">pan-up-symbolic</property>
-                                    <property name="icon_size">1</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkSeparator" id="categories_expander_rsep">
-                                <property name="visible">True</property>
-                                <property name="orientation">horizontal</property>
-                                <property name="hexpand">True</property>
-                                <property name="valign">center</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
 
                         <child>
                           <object class="GtkLabel" id="popular_heading">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="label" translatable="yes" comments="Translators: This is a heading for software which has been featured (&apos;picked&apos;) by the distribution.">Editor’s Picks</property>
-                            <property name="margin-top">0</property>
+                            <property name="margin-top">21</property>
                             <property name="margin-bottom">6</property>
                             <accessibility>
                               <relation target="box_popular" type="label-for"/>

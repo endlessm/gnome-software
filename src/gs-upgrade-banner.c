@@ -32,10 +32,10 @@ typedef struct
 G_DEFINE_TYPE_WITH_PRIVATE (GsUpgradeBanner, gs_upgrade_banner, GTK_TYPE_BIN)
 
 enum {
-	SIGNAL_DOWNLOAD_BUTTON_CLICKED,
-	SIGNAL_INSTALL_BUTTON_CLICKED,
-	SIGNAL_HELP_BUTTON_CLICKED,
-	SIGNAL_CANCEL_BUTTON_CLICKED,
+	SIGNAL_DOWNLOAD_CLICKED,
+	SIGNAL_INSTALL_CLICKED,
+	SIGNAL_HELP_CLICKED,
+	SIGNAL_CANCEL_CLICKED,
 	SIGNAL_LAST
 };
 
@@ -57,6 +57,22 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 	name_bold = g_strdup_printf ("<b>%s</b>", gs_app_get_name (priv->app));
 	version_bold = g_strdup_printf ("<b>%s</b>", gs_app_get_version (priv->app));
 
+	/* Show the right button text. Distributions which are based on OSTree
+	 * don’t need a post-reboot installation step. */
+	if (gs_app_has_quirk (priv->app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+		gtk_button_set_label (GTK_BUTTON (priv->button_upgrades_install),
+				      _("_Restart Now"));
+		gtk_label_set_text (GTK_LABEL (priv->label_upgrades_warning),
+				    _("Updates will be applied when the "
+				      "computer is restarted."));
+	} else {
+		gtk_button_set_label (GTK_BUTTON (priv->button_upgrades_install),
+				      _("_Install"));
+		gtk_label_set_text (GTK_LABEL (priv->label_upgrades_warning),
+				    _("It is recommended that you back up your "
+				      "data and files before upgrading."));
+	}
+
 	/* Refresh the title. Normally a distro upgrade state goes from
 	 *
 	 * AVAILABLE (available to download) to
@@ -73,6 +89,16 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 		gtk_label_set_markup (GTK_LABEL (priv->label_upgrades_title), str);
 		gtk_widget_set_visible (priv->label_upgrades_warning, FALSE);
 		gtk_widget_set_visible (priv->button_upgrades_cancel, FALSE);
+		break;
+	case AS_APP_STATE_QUEUED_FOR_INSTALL:
+		/* TRANSLATORS: This is the text displayed while waiting to
+		 * download a distro upgrade. First %s is the distro name and
+		 * the 2nd %s is the version, e.g. "Waiting to Download Fedora 23" */
+		str = g_strdup_printf (_("Waiting to Download %s %s"),
+				       name_bold, version_bold);
+		gtk_label_set_markup (GTK_LABEL (priv->label_upgrades_title), str);
+		gtk_widget_set_visible (priv->label_upgrades_warning, FALSE);
+		gtk_widget_set_visible (priv->button_upgrades_cancel, TRUE);
 		break;
 	case AS_APP_STATE_INSTALLING:
 		/* TRANSLATORS: This is the text displayed while downloading a
@@ -96,10 +122,15 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 		gtk_widget_set_visible (priv->button_upgrades_cancel, FALSE);
 		break;
 	default:
-		g_critical ("Unexpected app state %s",
-			    as_app_state_to_string (gs_app_get_state (priv->app)));
+		g_critical ("Unexpected app state ‘%s’ of app ‘%s’",
+			    as_app_state_to_string (gs_app_get_state (priv->app)),
+			    gs_app_get_unique_id (priv->app));
 		break;
 	}
+
+	/* Hide the upgrade box until the app state is known. */
+	gtk_widget_set_visible (priv->box_upgrades,
+				(gs_app_get_state (priv->app) != AS_APP_STATE_UNKNOWN));
 
 	/* Refresh the summary if we got anything better than the default blurb */
 	if (gs_app_get_summary (priv->app) != NULL)
@@ -112,6 +143,7 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 		gtk_widget_show (priv->button_upgrades_download);
 		gtk_widget_hide (priv->button_upgrades_install);
 		break;
+	case AS_APP_STATE_QUEUED_FOR_INSTALL:
 	case AS_APP_STATE_INSTALLING:
 		gtk_widget_hide (priv->button_upgrades_download);
 		gtk_widget_hide (priv->button_upgrades_install);
@@ -121,7 +153,9 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 		gtk_widget_show (priv->button_upgrades_install);
 		break;
 	default:
-		g_critical ("Unexpected app state");
+		g_critical ("Unexpected app state ‘%s’ of app ‘%s’",
+			    as_app_state_to_string (gs_app_get_state (priv->app)),
+			    gs_app_get_unique_id (priv->app));
 		break;
 	}
 
@@ -168,25 +202,25 @@ app_progress_changed (GsApp *app, GParamSpec *pspec, GsUpgradeBanner *self)
 static void
 download_button_cb (GtkWidget *widget, GsUpgradeBanner *self)
 {
-	g_signal_emit (self, signals[SIGNAL_DOWNLOAD_BUTTON_CLICKED], 0);
+	g_signal_emit (self, signals[SIGNAL_DOWNLOAD_CLICKED], 0);
 }
 
 static void
 install_button_cb (GtkWidget *widget, GsUpgradeBanner *self)
 {
-	g_signal_emit (self, signals[SIGNAL_INSTALL_BUTTON_CLICKED], 0);
+	g_signal_emit (self, signals[SIGNAL_INSTALL_CLICKED], 0);
 }
 
 static void
 learn_more_button_cb (GtkWidget *widget, GsUpgradeBanner *self)
 {
-	g_signal_emit (self, signals[SIGNAL_HELP_BUTTON_CLICKED], 0);
+	g_signal_emit (self, signals[SIGNAL_HELP_CLICKED], 0);
 }
 
 static void
 cancel_button_cb (GtkWidget *widget, GsUpgradeBanner *self)
 {
-	g_signal_emit (self, signals[SIGNAL_CANCEL_BUTTON_CLICKED], 0);
+	g_signal_emit (self, signals[SIGNAL_CANCEL_CLICKED], 0);
 }
 
 void
@@ -274,28 +308,28 @@ gs_upgrade_banner_class_init (GsUpgradeBannerClass *klass)
 
 	widget_class->destroy = gs_upgrade_banner_destroy;
 
-	signals [SIGNAL_DOWNLOAD_BUTTON_CLICKED] =
+	signals [SIGNAL_DOWNLOAD_CLICKED] =
 		g_signal_new ("download-clicked",
 		              G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (GsUpgradeBannerClass, download_clicked),
 		              NULL, NULL, g_cclosure_marshal_VOID__VOID,
 		              G_TYPE_NONE, 0);
 
-	signals [SIGNAL_INSTALL_BUTTON_CLICKED] =
+	signals [SIGNAL_INSTALL_CLICKED] =
 		g_signal_new ("install-clicked",
 		              G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (GsUpgradeBannerClass, install_clicked),
 		              NULL, NULL, g_cclosure_marshal_VOID__VOID,
 		              G_TYPE_NONE, 0);
 
-	signals [SIGNAL_CANCEL_BUTTON_CLICKED] =
+	signals [SIGNAL_CANCEL_CLICKED] =
 		g_signal_new ("cancel-clicked",
 		              G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (GsUpgradeBannerClass, cancel_clicked),
 		              NULL, NULL, g_cclosure_marshal_VOID__VOID,
 		              G_TYPE_NONE, 0);
 
-	signals [SIGNAL_HELP_BUTTON_CLICKED] =
+	signals [SIGNAL_HELP_CLICKED] =
 		g_signal_new ("help-clicked",
 		              G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
 		              G_STRUCT_OFFSET (GsUpgradeBannerClass, help_clicked),

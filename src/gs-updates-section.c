@@ -14,6 +14,7 @@
 #include "gs-app-list-private.h"
 #include "gs-app-row.h"
 #include "gs-page.h"
+#include "gs-common.h"
 #include "gs-progress-button.h"
 #include "gs-update-dialog.h"
 #include "gs-updates-section.h"
@@ -209,7 +210,6 @@ _reboot_failed_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 {
 	GsUpdatesSection *self = GS_UPDATES_SECTION (user_data);
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GsAppList) apps = NULL;
 	GsApp *app = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	g_autoptr(GVariant) retval = NULL;
@@ -315,18 +315,7 @@ _perform_update_cb (GsPluginLoader *plugin_loader, GAsyncResult *res, gpointer u
 	/* when we are not doing an offline update, show a notification
 	 * if any application requires a reboot */
 	} else if (helper->do_reboot_notification) {
-		g_autoptr(GNotification) n = NULL;
-		/* TRANSLATORS: we've just live-updated some apps */
-		n = g_notification_new (_("Updates have been installed"));
-		/* TRANSLATORS: the new apps will not be run until we restart */
-		g_notification_set_body (n, _("A restart is required for them to take effect."));
-		/* TRANSLATORS: button text */
-		g_notification_add_button (n, _("Not Now"), "app.nop");
-		/* TRANSLATORS: button text */
-		g_notification_add_button_with_target (n, _("Restart"), "app.reboot", NULL);
-		g_notification_set_default_action_and_target (n, "app.set-mode", "s", "updates");
-		g_notification_set_priority (n, G_NOTIFICATION_PRIORITY_URGENT);
-		g_application_send_notification (g_application_get_default (), "restart-required", n);
+		gs_utils_reboot_notify (self->list);
 	}
 
 out:
@@ -362,7 +351,6 @@ _download_finished_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 static void
 _button_download_clicked_cb (GtkButton *button, GsUpdatesSection *self)
 {
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GCancellable) cancellable = g_cancellable_new ();
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
@@ -382,7 +370,6 @@ _button_download_clicked_cb (GtkButton *button, GsUpdatesSection *self)
 static void
 _button_update_all_clicked_cb (GtkButton *button, GsUpdatesSection *self)
 {
-	g_autoptr(GError) error = NULL;
 	g_autoptr(GCancellable) cancellable = g_cancellable_new ();
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	GsUpdatesSectionUpdateHelper *helper = g_new0 (GsUpdatesSectionUpdateHelper, 1);
@@ -469,7 +456,6 @@ _build_section_header (GsUpdatesSection *self)
 			  self);
 	gtk_stack_add_named (self->button_stack, self->button_download, "download");
 	gtk_widget_set_visible (self->button_download, TRUE);
-	gtk_widget_set_margin_end (self->button_download, 6);
 
 	/* add update button */
 	self->button_update = gs_progress_button_new ();
@@ -480,7 +466,6 @@ _build_section_header (GsUpdatesSection *self)
 			  self);
 	gtk_stack_add_named (self->button_stack, self->button_update, "update");
 	gtk_widget_set_visible (self->button_update, TRUE);
-	gtk_widget_set_margin_end (self->button_update, 6);
 
 	/* add cancel button */
 	self->button_cancel = gs_progress_button_new ();

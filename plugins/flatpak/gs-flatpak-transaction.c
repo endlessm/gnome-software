@@ -13,7 +13,6 @@
 
 struct _GsFlatpakTransaction {
 	FlatpakTransaction	 parent_instance;
-	FlatpakInstallation	*installation;
 	GHashTable		*refhash;	/* ref:GsApp */
 	GError			*first_operation_error;
 };
@@ -26,13 +25,6 @@ enum {
 static guint signals[LAST_SIGNAL] = { 0 };
 
 G_DEFINE_TYPE (GsFlatpakTransaction, gs_flatpak_transaction, FLATPAK_TYPE_TRANSACTION)
-
-FlatpakInstallation *
-gs_flatpak_transaction_get_inst (FlatpakTransaction *transaction)
-{
-	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
-	return self->installation;
-}
 
 static void
 gs_flatpak_transaction_finalize (GObject *object)
@@ -164,6 +156,12 @@ _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 	guint percent = flatpak_transaction_progress_get_progress (progress);
 	if (flatpak_transaction_progress_get_is_estimating (progress))
 		return;
+	if (gs_app_get_progress (app) != 100 &&
+	    gs_app_get_progress (app) > percent) {
+		g_warning ("ignoring percentage %u%% -> %u%% as going down...",
+			   gs_app_get_progress (app), percent);
+		return;
+	}
 	gs_app_set_progress (app, percent);
 }
 
@@ -233,9 +231,7 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 static void
 _transaction_operation_done (FlatpakTransaction *transaction,
 			     FlatpakTransactionOperation *operation,
-#if FLATPAK_CHECK_VERSION(1,0,4)
 			     const gchar *commit,
-#endif
 			     FlatpakTransactionResult details)
 {
 	/* invalidate */

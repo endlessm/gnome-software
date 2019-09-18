@@ -36,6 +36,7 @@ struct GsPluginData {
 	GsApp		*cached_origin;
 	GSettings	*settings;
 	XbSilo		*silo;
+	GRWLock		 silo_lock;
 };
 
 typedef enum {
@@ -62,6 +63,10 @@ gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
 
+	/* XbSilo needs external locking as we destroy the silo and build a new
+	 * one when something changes */
+	g_rw_lock_init (&priv->silo_lock);
+
 	/* add source */
 	priv->cached_origin = gs_app_new (gs_plugin_get_name (plugin));
 	gs_app_set_kind (priv->cached_origin, AS_APP_KIND_SOURCE);
@@ -87,6 +92,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 		g_object_unref (priv->silo);
 	g_object_unref (priv->cached_origin);
 	g_object_unref (priv->settings);
+	g_rw_lock_clear (&priv->silo_lock);
 }
 
 void
@@ -305,8 +311,14 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	/* get the GNOME Shell version */
 	version = g_dbus_proxy_get_cached_property (priv->proxy,
 						    "ShellVersion");
-	if (version != NULL)
-		priv->shell_version = g_variant_dup_string (version, NULL);
+	if (version == NULL) {
+		g_set_error_literal (error,
+				     GS_PLUGIN_ERROR,
+				     GS_PLUGIN_ERROR_NOT_SUPPORTED,
+				     "unable to get shell version");
+		return FALSE;
+	}
+	priv->shell_version = g_variant_dup_string (version, NULL);
 	return TRUE;
 }
 
@@ -407,6 +419,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	const gchar *uuid;
 	g_autofree gchar *xpath = NULL;
 	g_autoptr(GError) error_local = NULL;
+	g_autoptr(GRWLockReaderLocker) locker = NULL;
 	g_autoptr(XbNode) component = NULL;
 
 	/* repo not enabled */
@@ -440,9 +453,16 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		gs_app_set_size_download (app, GS_APP_SIZE_UNKNOWABLE);
 
 
-	/* find the component using the UUID */
+	/* check silo is valid */
 	if (!_check_silo (plugin, cancellable, error))
 		return FALSE;
+
+	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
+
+	/* find the component using the UUID */
+	if (uuid == NULL)
+		return TRUE;
+
 	xpath = g_strdup_printf ("components/component/custom/"
 				 "value[@key='shell-extensions::uuid'][text()='%s']/../..",
 				 uuid);
@@ -471,6 +491,7 @@ gs_plugin_refine_wildcard (GsPlugin *plugin,
 	g_autofree gchar *xpath = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GPtrArray) components = NULL;
+	g_autoptr(GRWLockReaderLocker) locker = NULL;
 
 	/* repo not enabled */
 	if (!g_settings_get_boolean (priv->settings, "enable-shell-extensions-repo"))
@@ -484,6 +505,8 @@ gs_plugin_refine_wildcard (GsPlugin *plugin,
 	id = gs_app_get_id (app);
 	if (id == NULL)
 		return TRUE;
+
+	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
 
 	/* find all apps */
 	xpath = g_strdup_printf ("components/component/id[text()='%s']/..", id);
@@ -524,7 +547,6 @@ gs_plugin_shell_extensions_parse_version (GsPlugin *plugin,
 	JsonObject *json_ver = NULL;
 	gint64 version;
 	g_autofree gchar *shell_version = NULL;
-	g_autoptr(XbBuilderNode) release = NULL;
 
 	/* look for version, major.minor.micro */
 	if (json_object_has_member (ver_map, priv->shell_version)) {
@@ -654,7 +676,7 @@ gs_plugin_shell_extensions_parse_app (GsPlugin *plugin,
 
 static GInputStream *
 gs_plugin_appstream_load_json_cb (XbBuilderSource *self,
-				  GFile *file,
+				  XbBuilderSourceCtx *ctx,
 				  gpointer user_data,
 				  GCancellable *cancellable,
 				  GError **error)
@@ -665,14 +687,14 @@ gs_plugin_appstream_load_json_cb (XbBuilderSource *self,
 	JsonNode *json_root;
 	JsonObject *json_item;
 	gchar *xml;
-	g_autofree gchar *fn = g_file_get_path (file);
-	g_autoptr(AsApp) app = as_app_new ();
 	g_autoptr(JsonParser) json_parser = NULL;
 	g_autoptr(XbBuilderNode) apps = NULL;
 
 	/* parse the data and find the success */
 	json_parser = json_parser_new ();
-	if (!json_parser_load_from_file (json_parser, fn, error)) {
+	if (!json_parser_load_from_stream (json_parser,
+					   xb_builder_source_ctx_get_stream (ctx),
+					   cancellable, error)) {
 		gs_utils_error_convert_json_glib (error);
 		return NULL;
 	}
@@ -721,9 +743,10 @@ gs_plugin_appstream_load_json_cb (XbBuilderSource *self,
 
 	/* parse each app */
 	for (guint i = 0; i < json_array_get_length (json_extensions_array); i++) {
-		XbBuilderNode *component;
 		JsonNode *json_extension;
 		JsonObject *json_extension_obj;
+		g_autoptr(XbBuilderNode) component = NULL;
+
 		json_extension = json_array_get_element (json_extensions_array, i);
 		json_extension_obj = json_node_get_object (json_extension);
 		component = gs_plugin_shell_extensions_parse_app (plugin,
@@ -735,7 +758,7 @@ gs_plugin_appstream_load_json_cb (XbBuilderSource *self,
 	}
 
 	/* convert back to XML */
-	xml = xb_builder_node_export (apps, XB_NODE_EXPORT_FLAG_NONE, error);
+	xml = xb_builder_node_export (apps, XB_NODE_EXPORT_FLAG_ADD_HEADER, error);
 	if (xml == NULL)
 		return NULL;
 	return g_memory_input_stream_new_from_data (xml, -1, g_free);
@@ -751,6 +774,7 @@ gs_plugin_shell_extensions_refresh (GsPlugin *plugin,
 	g_autofree gchar *fn = NULL;
 	g_autofree gchar *uri = NULL;
 	g_autoptr(GFile) file = NULL;
+	g_autoptr(GRWLockReaderLocker) locker = NULL;
 	g_autoptr(GsApp) app_dl = gs_app_new (gs_plugin_get_name (plugin));
 
 	/* get cache filename */
@@ -783,8 +807,10 @@ gs_plugin_shell_extensions_refresh (GsPlugin *plugin,
 	}
 
 	/* be explicit */
+	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
 	if (priv->silo != NULL)
 		xb_silo_invalidate (priv->silo);
+
 	return TRUE;
 }
 
@@ -797,16 +823,22 @@ _check_silo (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GFile) blobfile = NULL;
 	g_autoptr(GFile) file = NULL;
+	g_autoptr(GRWLockReaderLocker) reader_locker = NULL;
+	g_autoptr(GRWLockWriterLocker) writer_locker = NULL;
 	g_autoptr(XbBuilder) builder = xb_builder_new ();
+	g_autoptr(XbBuilderNode) info = NULL;
 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
 
+	reader_locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
 	/* everything is okay */
 	if (priv->silo != NULL && xb_silo_is_valid (priv->silo)) {
 		g_debug ("silo already valid");
 		return TRUE;
 	}
+	g_clear_pointer (&reader_locker, g_rw_lock_reader_locker_free);
 
 	/* drat! silo needs regenerating */
+	writer_locker = g_rw_lock_writer_locker_new (&priv->silo_lock);
 	g_clear_object (&priv->silo);
 
 	/* verbose profiling */
@@ -816,6 +848,11 @@ _check_silo (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 					      XB_SILO_PROFILE_FLAG_DEBUG);
 	}
 
+	/* add metadata */
+	info = xb_builder_node_insert (NULL, "info", NULL);
+	xb_builder_node_insert_text (info, "scope", "user", NULL);
+	xb_builder_source_set_info (source, info);
+
 	/* add support for JSON files */
 	fn = gs_utils_get_cache_filename ("shell-extensions",
 					  "gnome.json",
@@ -823,10 +860,9 @@ _check_silo (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 					  error);
 	if (fn == NULL)
 		return FALSE;
-	xb_builder_source_add_converter (source,
-					 "application/json",
-					 gs_plugin_appstream_load_json_cb,
-					 plugin, NULL);
+	xb_builder_source_add_adapter (source, "application/json",
+				       gs_plugin_appstream_load_json_cb,
+				       plugin, NULL);
 	file = g_file_new_for_path (fn);
 	if (!xb_builder_source_load_file (source, file,
 					  XB_BUILDER_SOURCE_FLAG_WATCH_FILE,
@@ -879,12 +915,14 @@ gs_plugin_add_search (GsPlugin *plugin, gchar **values, GsAppList *list,
 		      GCancellable *cancellable, GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GRWLockReaderLocker) locker = NULL;
 	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
 	if (!g_settings_get_boolean (priv->settings, "enable-shell-extensions-repo"))
 		return TRUE;
 	if (!_check_silo (plugin, cancellable, error))
 		return FALSE;
-	if (!gs_appstream_search (plugin, priv->silo, values, list_tmp,
+	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
+	if (!gs_appstream_search (plugin, priv->silo, (const gchar * const *) values, list_tmp,
 				  cancellable, error))
 		return FALSE;
 	_claim_components (plugin, list_tmp);
@@ -897,17 +935,14 @@ gs_plugin_add_category_apps (GsPlugin *plugin, GsCategory *category, GsAppList *
 			     GCancellable *cancellable, GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
+	g_autoptr(GRWLockReaderLocker) locker = NULL;
 	if (!g_settings_get_boolean (priv->settings, "enable-shell-extensions-repo"))
 		return TRUE;
 	if (!_check_silo (plugin, cancellable, error))
 		return FALSE;
-	if (!gs_appstream_add_category_apps (plugin, priv->silo, category,
-					     list_tmp, cancellable, error))
-		return FALSE;
-	_claim_components (plugin, list_tmp);
-	gs_app_list_add_list (list, list_tmp);
-	return TRUE;
+	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
+	return gs_appstream_add_category_apps (plugin, priv->silo, category,
+					       list, cancellable, error);
 }
 
 gboolean

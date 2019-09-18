@@ -513,6 +513,8 @@ set_mode_activated (GSimpleAction *action,
 
 	gs_application_present_window (app, NULL);
 
+	gs_shell_reset_state (app->shell);
+
 	mode = g_variant_get_string (parameter, NULL);
 	if (g_strcmp0 (mode, "updates") == 0) {
 		gs_shell_set_mode (app->shell, GS_SHELL_MODE_UPDATES);
@@ -541,7 +543,33 @@ search_activated (GSimpleAction *action,
 	gs_application_present_window (app, NULL);
 
 	search = g_variant_get_string (parameter, NULL);
+	gs_shell_reset_state (app->shell);
 	gs_shell_show_search (app->shell, search);
+}
+
+static void
+_search_launchable_details_cb (GObject *source, GAsyncResult *res, gpointer user_data)
+{
+	GsApp *a;
+	GsApplication *app = GS_APPLICATION (user_data);
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GsAppList) list = NULL;
+
+	list = gs_plugin_loader_job_process_finish (app->plugin_loader, res, &error);
+	if (list == NULL) {
+		g_warning ("failed to find application: %s", error->message);
+		return;
+	}
+	if (gs_app_list_length (list) == 0) {
+		gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
+		gs_shell_show_notification (app->shell,
+					    /* TRANSLATORS: we tried to show an app that did not exist */
+					    _("Sorry! There are no details for that application."));
+		return;
+	}
+	a = gs_app_list_index (list, 0);
+	gs_shell_reset_state (app->shell);
+	gs_shell_show_app (app->shell, a);
 }
 
 static void
@@ -556,15 +584,30 @@ details_activated (GSimpleAction *action,
 	gs_application_present_window (app, NULL);
 
 	g_variant_get (parameter, "(&s&s)", &id, &search);
-	if (search != NULL && search[0] != '\0')
+	g_debug ("trying to activate %s:%s for details", id, search);
+	if (search != NULL && search[0] != '\0') {
+		gs_shell_reset_state (app->shell);
 		gs_shell_show_search_result (app->shell, id, search);
-	else {
-		g_autoptr (GsApp) a = NULL;
-		if (as_utils_unique_id_valid (id))
-			a = gs_plugin_loader_app_create (app->plugin_loader, id);
-		else
-			a = gs_app_new (id);
-		gs_shell_show_app (app->shell, a);
+	} else {
+		g_autoptr(GsPluginJob) plugin_job = NULL;
+		if (as_utils_unique_id_valid (id)) {
+			g_autoptr(GsApp) a = gs_plugin_loader_app_create (app->plugin_loader, id);
+			gs_shell_reset_state (app->shell);
+			gs_shell_show_app (app->shell, a);
+			return;
+		}
+
+		/* find by launchable */
+		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
+						 "search", id,
+						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+						 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+								 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
+						 NULL);
+		gs_plugin_loader_job_process_async (app->plugin_loader, plugin_job,
+						    app->cancellable,
+						    _search_launchable_details_cb,
+						    app);
 	}
 }
 
@@ -585,6 +628,7 @@ details_pkg_activated (GSimpleAction *action,
 	gs_app_add_source (a, name);
 	if (strcmp (plugin, "") != 0)
 		gs_app_set_management_plugin (a, plugin);
+	gs_shell_reset_state (app->shell);
 	gs_shell_show_app (app->shell, a);
 }
 
@@ -605,6 +649,7 @@ details_url_activated (GSimpleAction *action,
 	 * the gs_shell_change_mode() function -- not in the GsAppList */
 	a = gs_app_new (NULL);
 	gs_app_set_metadata (a, "GnomeSoftware::from-url", url);
+	gs_shell_reset_state (app->shell);
 	gs_shell_show_app (app->shell, a);
 }
 
@@ -633,6 +678,7 @@ install_activated (GSimpleAction *action,
 		return;
 	}
 
+	gs_shell_reset_state (app->shell);
 	gs_shell_install (app->shell, a, interaction);
 }
 
@@ -642,11 +688,9 @@ _copy_file_to_cache (GFile *file_src, GError **error)
 	g_autoptr(GFile) file_dest = NULL;
 	g_autofree gchar *cache_dir = NULL;
 	g_autofree gchar *cache_fn = NULL;
-	g_autofree gchar *filename = NULL;
 	g_autofree gchar *basename = NULL;
 
 	/* get destination location */
-	filename = g_file_get_path (file_src);
 	cache_dir = g_dir_make_tmp ("gnome-software-XXXXXX", error);
 	if (cache_dir == NULL)
 		return NULL;
@@ -690,6 +734,7 @@ filename_activated (GSimpleAction *action,
 	} else {
 		file = g_file_new_for_path (filename);
 	}
+	gs_shell_reset_state (app->shell);
 	gs_shell_show_local_file (app->shell, file);
 }
 
@@ -727,6 +772,7 @@ show_offline_updates_error (GSimpleAction *action,
 
 	gs_application_present_window (app, NULL);
 
+	gs_shell_reset_state (app->shell);
 	gs_shell_set_mode (app->shell, GS_SHELL_MODE_UPDATES);
 	gs_update_monitor_show_error (app->update_monitor, app->shell);
 }
@@ -735,6 +781,7 @@ static void
 autoupdate_activated (GSimpleAction *action, GVariant *parameter, gpointer data)
 {
 	GsApplication *app = GS_APPLICATION (data);
+	gs_shell_reset_state (app->shell);
 	gs_shell_set_mode (app->shell, GS_SHELL_MODE_UPDATES);
 	gs_update_monitor_autoupdate (app->update_monitor);
 }
@@ -770,6 +817,7 @@ install_resources_activated (GSimpleAction *action,
 
 	gs_application_present_window (app, startup_id);
 
+	gs_shell_reset_state (app->shell);
 	gs_shell_show_extras_search (app->shell, mode, resources);
 }
 

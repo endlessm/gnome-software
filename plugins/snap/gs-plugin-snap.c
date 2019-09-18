@@ -16,7 +16,6 @@ struct GsPluginData {
 	SnapdAuthData		*auth_data;
 	gchar			*store_name;
 	SnapdSystemConfinement	 system_confinement;
-	GsAuth			*auth;
 
 	GMutex			 store_snaps_lock;
 	GHashTable		*store_snaps;
@@ -40,9 +39,6 @@ get_client (GsPlugin *plugin, GError **error)
 	return g_steal_pointer (&client);
 }
 
-static void
-load_auth (GsPlugin *plugin);
-
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
@@ -61,20 +57,6 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->store_snaps = g_hash_table_new_full (g_str_hash, g_str_equal,
 						   g_free, (GDestroyNotify) g_object_unref);
 
-	priv->auth = gs_auth_new ("snapd", "ubuntusso", &error);
-	if (priv->auth) {
-		gs_auth_set_provider_name (priv->auth, "Snap Store");
-		gs_auth_set_header (priv->auth, _("To continue, you need to use an Ubuntu One account."),
-						_("To continue, you need to use your Ubuntu One account."),
-						_("To continue, you need to use an Ubuntu One account."));
-		gs_plugin_add_auth (plugin, priv->auth);
-		g_signal_connect_object (priv->auth, "changed",
-					 G_CALLBACK (load_auth),
-					 plugin, G_CONNECT_SWAPPED);
-	} else {
-		g_warning ("Failed to instantiate the snapd authentication object: %s", error->message);
-	}
-
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "desktop-categories");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_BETTER_THAN, "packagekit");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_BEFORE, "icons");
@@ -91,6 +73,23 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 {
 	if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_SNAP)
 		gs_app_set_management_plugin (app, "snap");
+
+	if (g_str_has_prefix (gs_app_get_id (app), "io.snapcraft.")) {
+		g_autofree gchar *name_and_id = NULL;
+		gchar *divider, *snap_name;/*, *id;*/
+
+		name_and_id = g_strdup (gs_app_get_id (app) + strlen ("io.snapcraft."));
+		divider = strrchr (name_and_id, '-');
+		if (divider != NULL) {
+			*divider = '\0';
+			snap_name = name_and_id;
+			/*id = divider + 1;*/ /* NOTE: Should probably validate ID */
+
+			gs_app_set_management_plugin (app, "snap");
+			gs_app_set_metadata (app, "snap::name", snap_name);
+			gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_SNAP);
+		}
+	}
 }
 
 static void
@@ -148,60 +147,6 @@ snapd_error_convert (GError **perror)
 		error->code = GS_PLUGIN_ERROR_FAILED;
 	}
 	error->domain = GS_PLUGIN_ERROR;
-}
-
-static void
-load_auth (GsPlugin *plugin)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	GsAuth *auth;
-	GoaObject *goa_object;
-	GoaPasswordBased *password_based;
-	g_autofree gchar *macaroon = NULL;
-	g_autofree gchar *discharges_str = NULL;
-	g_autoptr(GVariant) discharges_var = NULL;
-	g_auto(GStrv) discharges = NULL;
-	g_autoptr(SnapdAuthData) auth_data = NULL;
-	g_autoptr(GError) error = NULL;
-
-	auth = gs_plugin_get_auth_by_id (plugin, "snapd");
-	if (auth == NULL)
-		return;
-
-	g_clear_object (&priv->auth_data);
-	goa_object = gs_auth_peek_goa_object (auth);
-	if (goa_object == NULL)
-		return;
-
-	password_based = goa_object_peek_password_based (goa_object);
-	g_return_if_fail (password_based != NULL);
-
-	goa_password_based_call_get_password_sync (password_based,
-						   "macaroon",
-						   &macaroon,
-						   NULL, &error);
-	if (error != NULL) {
-		g_warning ("Failed to get macaroon: %s", error->message);
-		return;
-	}
-
-	goa_password_based_call_get_password_sync (password_based,
-						   "discharges",
-						   &discharges_str,
-						   NULL, &error);
-	if (error != NULL) {
-		g_warning ("Failed to get discharges %s", error->message);
-		return;
-	}
-
-	if (discharges_str)
-		discharges_var = g_variant_parse (G_VARIANT_TYPE ("as"),
-						  discharges_str,
-						  NULL, NULL, NULL);
-	if (discharges_var)
-		discharges = g_variant_dup_strv (discharges_var, NULL);
-
-	priv->auth_data = snapd_auth_data_new (macaroon, discharges);
 }
 
 gboolean
@@ -370,7 +315,6 @@ gs_plugin_destroy (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_free (priv->store_name);
-	g_clear_object (&priv->auth);
 	g_clear_pointer (&priv->store_snaps, g_hash_table_unref);
 	g_mutex_clear (&priv->store_snaps_lock);
 }
@@ -539,20 +483,35 @@ gs_plugin_add_category_apps (GsPlugin *plugin,
 		g_string_prepend (id, gs_category_get_id (c));
 	}
 
+	/*
+	 * Unused categories:
+	 *
+	 * health-and-fitness
+	 * personalisation
+	 * devices-and-iot
+	 * security
+	 * server-and-cloud
+	 * entertainment
+	 */
+
 	if (strcmp (id->str, "games/featured") == 0)
 		sections = "games";
 	else if (strcmp (id->str, "audio-video/featured") == 0)
-		sections = "music;video";
+		sections = "music-and-audio";
 	else if (strcmp (id->str, "graphics/featured") == 0)
-		sections = "graphics";
+		sections = "photo-and-video;art-and-design";
 	else if (strcmp (id->str, "communication/featured") == 0)
-		sections = "social-networking";
+		sections = "social;news-and-weather";
 	else if (strcmp (id->str, "productivity/featured") == 0)
 		sections = "productivity;finance";
 	else if (strcmp (id->str, "developer-tools/featured") == 0)
-		sections = "developers";
+		sections = "development";
 	else if (strcmp (id->str, "utilities/featured") == 0)
 		sections = "utilities";
+	else if (strcmp (id->str, "education-science/featured") == 0)
+		sections = "education;science";
+	else if (strcmp (id->str, "reference/featured") == 0)
+		sections = "books-and-reference";
 
 	if (sections != NULL) {
 		g_auto(GStrv) tokens = NULL;
@@ -931,6 +890,21 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	snap = local_snap != NULL ? local_snap : store_snap;
 	gs_app_set_version (app, snapd_snap_get_version (snap));
 
+	switch (snapd_snap_get_snap_type (snap)) {
+	case SNAPD_SNAP_TYPE_APP:
+		gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
+		break;
+	case SNAPD_SNAP_TYPE_KERNEL:
+	case SNAPD_SNAP_TYPE_GADGET:
+	case SNAPD_SNAP_TYPE_OS:
+		gs_app_set_kind (app, AS_APP_KIND_RUNTIME);
+		break;
+        default:
+	case SNAPD_SNAP_TYPE_UNKNOWN:
+		gs_app_set_kind (app, AS_APP_KIND_UNKNOWN);
+		break;
+	}
+
 	/* add information specific to installed snaps */
 	if (local_snap != NULL) {
 		SnapdApp *snap_app;
@@ -1027,8 +1001,11 @@ is_graphical (GsPlugin *plugin, GsApp *app, GCancellable *cancellable)
 	if (client == NULL)
 		return FALSE;
 
-	if (!snapd_client_get_interfaces_sync (client, &plugs, NULL, cancellable, &error)) {
-		g_warning ("Failed to check interfaces: %s", error->message);
+	if (!snapd_client_get_connections2_sync (client,
+						 SNAPD_GET_CONNECTIONS_FLAGS_SELECT_ALL, NULL, NULL,
+						 NULL, NULL, &plugs, NULL,
+						 cancellable, &error)) {
+		g_warning ("Failed to get connections: %s", error->message);
 		return FALSE;
 	}
 

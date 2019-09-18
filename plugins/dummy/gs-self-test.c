@@ -408,7 +408,6 @@ static void
 gs_plugins_dummy_search_func (GsPluginLoader *plugin_loader)
 {
 	GsApp *app;
-	g_autofree gchar *menu_path = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
@@ -593,31 +592,6 @@ gs_plugins_dummy_wildcard_func (GsPluginLoader *plugin_loader)
 }
 
 static void
-gs_plugins_dummy_purchase_func (GsPluginLoader *plugin_loader)
-{
-	gboolean ret;
-	g_autoptr(GsApp) app = NULL;
-	g_autoptr(GError) error = NULL;
-	g_autoptr(GsAppList) list = NULL;
-	g_autoptr(GsPluginJob) plugin_job = NULL;
-
-	/* get the updates list */
-	app = gs_app_new ("chiron-paid.desktop");
-	gs_app_set_management_plugin (app, "dummy");
-	gs_app_set_state (app, AS_APP_STATE_PURCHASABLE);
-	gs_app_set_price (app, 100, "USD");
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_PURCHASE,
-					 "app", app,
-					 "price", gs_app_get_price (app),
-					 NULL);
-	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
-	gs_test_flush_main_context ();
-	g_assert_no_error (error);
-	g_assert (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
-}
-
-static void
 plugin_job_action_cb (GObject *source,
 		      GAsyncResult *res,
 		      gpointer user_data)
@@ -774,6 +748,7 @@ main (int argc, char **argv)
 		"<components version=\"0.9\">\n"
 		"  <component type=\"desktop\">\n"
 		"    <id>chiron.desktop</id>\n"
+		"    <name>Chiron</name>\n"
 		"    <pkgname>chiron</pkgname>\n"
 		"  </component>\n"
 		"  <component type=\"desktop\">\n"
@@ -813,9 +788,13 @@ main (int argc, char **argv)
 		"  </component>\n"
 		"  <component type=\"os-upgrade\">\n"
 		"    <id>org.fedoraproject.release-rawhide.upgrade</id>\n"
+		"    <name>Fedora Rawhide</name>\n"
 		"    <summary>Release specific tagline</summary>\n"
 		"    <pkgname>fedora-release</pkgname>\n"
 		"  </component>\n"
+		"  <info>\n"
+		"    <scope>user</scope>\n"
+		"  </info>\n"
 		"</components>\n");
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
 
@@ -882,9 +861,6 @@ main (int argc, char **argv)
 	g_test_add_data_func ("/gnome-software/plugins/dummy/distro-upgrades",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_dummy_distro_upgrades_func);
-	g_test_add_data_func ("/gnome-software/plugins/dummy/purchase",
-			      plugin_loader,
-			      (GTestDataFunc) gs_plugins_dummy_purchase_func);
 	g_test_add_data_func ("/gnome-software/plugins/dummy/metadata-quirks",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_dummy_metadata_quirks);

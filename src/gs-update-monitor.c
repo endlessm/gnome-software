@@ -52,6 +52,21 @@ download_updates_data_free (DownloadUpdatesData *data)
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(DownloadUpdatesData, download_updates_data_free);
 
+typedef struct {
+	GsUpdateMonitor		*monitor;
+	GsApp			*app;
+} LanguagePackData;
+
+static void
+language_pack_data_free (LanguagePackData *data)
+{
+	g_clear_object (&data->monitor);
+	g_clear_object (&data->app);
+	g_slice_free (LanguagePackData, data);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(LanguagePackData, language_pack_data_free);
+
 static gboolean
 reenable_offline_update_notification (gpointer data)
 {
@@ -125,14 +140,14 @@ has_important_updates (GsAppList *apps)
 }
 
 static gboolean
-no_updates_for_a_week (GsUpdateMonitor *monitor)
+check_if_timestamp_more_than_a_week_ago (GsUpdateMonitor *monitor, const gchar *timestamp)
 {
 	GTimeSpan d;
 	gint64 tmp;
 	g_autoptr(GDateTime) last_update = NULL;
 	g_autoptr(GDateTime) now = NULL;
 
-	g_settings_get (monitor->settings, "install-timestamp", "x", &tmp);
+	g_settings_get (monitor->settings, timestamp, "x", &tmp);
 	if (tmp == 0)
 		return TRUE;
 
@@ -145,6 +160,16 @@ no_updates_for_a_week (GsUpdateMonitor *monitor)
 	now = g_date_time_new_now_local ();
 	d = g_date_time_difference (now, last_update);
 	if (d >= 7 * G_TIME_SPAN_DAY)
+		return TRUE;
+
+	return FALSE;
+}
+
+static gboolean
+no_updates_for_a_week (GsUpdateMonitor *monitor)
+{
+	if (check_if_timestamp_more_than_a_week_ago (monitor, "install-timestamp") ||
+	    check_if_timestamp_more_than_a_week_ago (monitor, "online-updates-timestamp"))
 		return TRUE;
 
 	return FALSE;
@@ -367,6 +392,7 @@ get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	guint64 security_timestamp_old = 0;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) apps = NULL;
+	gboolean download_updates;
 
 	/* get result */
 	apps = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
@@ -401,9 +427,19 @@ get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 
 	g_debug ("got %u updates", gs_app_list_length (apps));
 
-	/* download any updates if auto-updates are turned on */
-	if (g_settings_get_boolean (monitor->settings, "download-updates")) {
+#ifdef HAVE_MOGWAI
+	download_updates = TRUE;
+#else
+	download_updates = g_settings_get_boolean (monitor->settings, "download-updates");
+#endif
+
+	if (download_updates) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
+
+		/* download any updates; individual plugins are responsible for deciding
+		 * whether it’s appropriate to unconditionally download the updates, or
+		 * to schedule the download in accordance with the user’s metered data
+		 * preferences */
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_DOWNLOAD,
 						 "list", apps,
 						 NULL);
@@ -652,6 +688,86 @@ typedef enum {
 } UpDeviceLevel;
 
 static void
+install_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(LanguagePackData) language_pack_data = data;
+
+	if (!gs_plugin_loader_job_action_finish (GS_PLUGIN_LOADER (object), res, &error)) {
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+			g_debug ("failed to install language pack: %s", error->message);
+		return;
+	} else {
+		g_debug ("language pack for %s installed",
+			 gs_app_get_name (language_pack_data->app));
+	}
+}
+
+static void
+get_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
+{
+	GsUpdateMonitor *monitor = GS_UPDATE_MONITOR (data);
+	GsApp *app;
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GsAppList) app_list = NULL;
+
+	app_list = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
+	if (app_list == NULL) {
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+			g_debug ("failed to find language pack: %s", error->message);
+		return;
+	}
+
+	/* none found */
+	if (gs_app_list_length (app_list) == 0) {
+		g_debug ("no language pack found");
+		return;
+	}
+
+	/* there should be one langpack for a given locale */
+	app = g_object_ref (gs_app_list_index (app_list, 0));
+	if (!gs_app_is_installed (app)) {
+		g_autoptr(LanguagePackData) language_pack_data = NULL;
+		g_autoptr(GsPluginJob) plugin_job = NULL;
+
+		language_pack_data = g_slice_new0 (LanguagePackData);
+		language_pack_data->monitor = g_object_ref (monitor);
+		language_pack_data->app = g_object_ref (app);
+
+		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
+							 "app", app,
+							 NULL);
+		gs_plugin_loader_job_process_async (monitor->plugin_loader,
+						    plugin_job,
+						    monitor->cancellable,
+						    install_language_pack_cb,
+						    g_steal_pointer (&language_pack_data));
+	}
+}
+
+/*
+ * determines active locale and looks for langpacks
+ * installs located language pack, if not already
+ */
+static void
+check_language_pack (GsUpdateMonitor *monitor) {
+
+	const gchar *locale;
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	locale = gs_plugin_loader_get_locale (monitor->plugin_loader);
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_LANGPACKS,
+					 "search", locale,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					 NULL);
+	gs_plugin_loader_job_process_async (monitor->plugin_loader,
+					    plugin_job,
+					    monitor->cancellable,
+					    get_language_pack_cb,
+					    monitor);
+}
+
+static void
 check_updates (GsUpdateMonitor *monitor)
 {
 	gint64 tmp;
@@ -663,8 +779,15 @@ check_updates (GsUpdateMonitor *monitor)
 	if (!gs_plugin_loader_get_network_available (monitor->plugin_loader))
 		return;
 
+	/* check for language pack */
+	check_language_pack (monitor);
+
+#ifdef HAVE_MOGWAI
+	refresh_on_metered = TRUE;
+#else
 	refresh_on_metered = g_settings_get_boolean (monitor->settings,
 						     "refresh-when-metered");
+#endif
 
 	if (!refresh_on_metered &&
 	    gs_plugin_loader_get_network_metered (monitor->plugin_loader))

@@ -302,6 +302,7 @@ gs_plugin_odrs_parse_reviews (GsPlugin *plugin,
 	JsonNode *json_root;
 	guint i;
 	g_autoptr(JsonParser) json_parser = NULL;
+	g_autoptr(GHashTable) reviewer_ids = NULL;
 	g_autoptr(GPtrArray) reviews = NULL;
 
 	/* nothing */
@@ -338,6 +339,7 @@ gs_plugin_odrs_parse_reviews (GsPlugin *plugin,
 	/* parse each rating */
 	reviews = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	json_reviews = json_node_get_array (json_root);
+	reviewer_ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	for (i = 0; i < json_array_get_length (json_reviews); i++) {
 		JsonNode *json_review;
 		JsonObject *json_item;
@@ -364,6 +366,14 @@ gs_plugin_odrs_parse_reviews (GsPlugin *plugin,
 		/* create review */
 		review = gs_plugin_odrs_parse_review_object (plugin,
 							     json_item);
+
+		/* dedupe each on the user_hash */
+		if (g_hash_table_lookup (reviewer_ids, as_review_get_reviewer_id (review)) != NULL) {
+			g_debug ("duplicate review %s, skipping",
+				 as_review_get_reviewer_id (review));
+			continue;
+		}
+		g_hash_table_add (reviewer_ids, g_strdup (as_review_get_reviewer_id (review)));
 		g_ptr_array_add (reviews, g_object_ref (review));
 	}
 	return g_steal_pointer (&reviews);
@@ -537,14 +547,20 @@ static JsonNode *
 gs_plugin_odrs_get_compat_ids (GsApp *app)
 {
 	GPtrArray *provides = gs_app_get_provides (app);
+	g_autoptr(GHashTable) ids = NULL;
 	g_autoptr(JsonArray) json_array = json_array_new ();
 	g_autoptr(JsonNode) json_node = json_node_new (JSON_NODE_ARRAY);
+
+	ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	for (guint i = 0; i < provides->len; i++) {
 		AsProvide *provide = g_ptr_array_index (provides, i);
 		if (as_provide_get_kind (provide) != AS_PROVIDE_KIND_ID)
 			continue;
 		if (as_provide_get_value (provide) == NULL)
 			continue;
+		if (g_hash_table_lookup (ids, as_provide_get_value (provide)) != NULL)
+			continue;
+		g_hash_table_add (ids, g_strdup (as_provide_get_value (provide)));
 		json_array_add_string_element (json_array, as_provide_get_value (provide));
 	}
 	if (json_array_get_length (json_array) == 0)

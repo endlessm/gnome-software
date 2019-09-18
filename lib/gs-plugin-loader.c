@@ -34,8 +34,8 @@ typedef struct
 	GPtrArray		*locations;
 	gchar			*locale;
 	gchar			*language;
+	gboolean		 plugin_dir_dirty;
 	SoupSession		*soup_session;
-	GPtrArray		*auth_array;
 	GPtrArray		*file_monitors;
 	GsPluginStatus		 global_status_last;
 
@@ -121,18 +121,9 @@ typedef gboolean	 (*GsPluginActionFunc)		(GsPlugin	*plugin,
 							 GsApp		*app,
 							 GCancellable	*cancellable,
 							 GError		**error);
-typedef gboolean	 (*GsPluginPurchaseFunc)	(GsPlugin	*plugin,
-							 GsApp		*app,
-							 GsPrice	*price,
-							 GCancellable	*cancellable,
-							 GError		**error);
 typedef gboolean	 (*GsPluginReviewFunc)		(GsPlugin	*plugin,
 							 GsApp		*app,
 							 AsReview	*review,
-							 GCancellable	*cancellable,
-							 GError		**error);
-typedef gboolean	 (*GsPluginAuthFunc)		(GsPlugin	*plugin,
-							 GsAuth		*auth,
 							 GCancellable	*cancellable,
 							 GError		**error);
 typedef gboolean	 (*GsPluginRefineFunc)		(GsPlugin	*plugin,
@@ -171,6 +162,12 @@ typedef gboolean	 (*GsPluginUpdateFunc)		(GsPlugin	*plugin,
 							 GError		**error);
 typedef void		 (*GsPluginAdoptAppFunc)	(GsPlugin	*plugin,
 							 GsApp		*app);
+typedef gboolean	 (*GsPluginGetLangPacksFunc)	(GsPlugin	*plugin,
+							 GsAppList	*list,
+							 const gchar    *locale,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
 
 /* async helper */
 typedef struct {
@@ -246,6 +243,7 @@ gs_plugin_loader_helper_free (GsPluginLoaderHelper *helper)
 	}
 
 	if (helper->cancellable_id > 0) {
+		g_debug ("Disconnecting cancellable %p", helper->cancellable_caller);
 		g_cancellable_disconnect (helper->cancellable_caller,
 					  helper->cancellable_id);
 	}
@@ -370,10 +368,6 @@ gs_plugin_loader_is_error_fatal (const GError *err)
 	if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_REQUIRED))
 		return TRUE;
 	if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID))
-		return TRUE;
-	if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_PURCHASE_NOT_SETUP))
-		return TRUE;
-	if (g_error_matches (err, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_PURCHASE_DECLINED))
 		return TRUE;
 	return FALSE;
 }
@@ -601,14 +595,6 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 			ret = plugin_func (plugin, app, cancellable, &error_local);
 		}
 		break;
-	case GS_PLUGIN_ACTION_PURCHASE:
-		{
-			GsPluginPurchaseFunc plugin_func = func;
-			ret = plugin_func (plugin, app,
-					   gs_plugin_job_get_price (helper->plugin_job),
-					   cancellable, &error_local);
-		}
-		break;
 	case GS_PLUGIN_ACTION_REVIEW_SUBMIT:
 	case GS_PLUGIN_ACTION_REVIEW_UPVOTE:
 	case GS_PLUGIN_ACTION_REVIEW_DOWNVOTE:
@@ -706,6 +692,14 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 					   cancellable, &error_local);
 		}
 		break;
+	case GS_PLUGIN_ACTION_GET_LANGPACKS:
+		{
+			GsPluginGetLangPacksFunc plugin_func = func;
+			ret = plugin_func (plugin, list,
+					   gs_plugin_job_get_search (helper->plugin_job),
+					   cancellable, &error_local);
+		}
+		break;
 	default:
 		g_critical ("no handler for %s", helper->function_name);
 		break;
@@ -776,6 +770,12 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 }
 
 static gboolean
+gs_plugin_loader_app_is_non_wildcard (GsApp *app, gpointer user_data)
+{
+	return !gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+}
+
+static gboolean
 gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 				    GsAppList *list,
 				    GsPluginRefineFlags refine_flags,
@@ -815,13 +815,11 @@ gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 		}
 		gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_FINISHED);
 	}
-	return TRUE;
-}
 
-static gboolean
-gs_plugin_loader_app_is_non_wildcard (GsApp *app, gpointer user_data)
-{
-	return !gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+
+	/* filter any MATCH_ANY_PREFIX apps left in the list */
+	gs_app_list_filter (list, gs_plugin_loader_app_is_non_wildcard, NULL);
+	return TRUE;
 }
 
 static gboolean
@@ -975,9 +973,6 @@ gs_plugin_loader_run_refine (GsPluginLoaderHelper *helper,
 	ret = gs_plugin_loader_run_refine_internal (helper2, list, cancellable, error);
 	if (!ret)
 		goto out;
-
-	/* filter any MATCH_ANY_PREFIX apps left in the list */
-	gs_app_list_filter (list, gs_plugin_loader_app_is_non_wildcard, NULL);
 
 	/* remove any addons that have the same source as the parent app */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
@@ -1145,7 +1140,6 @@ gs_plugin_loader_app_is_valid_installed (GsApp *app, gpointer user_data)
 	switch (gs_app_get_state (app)) {
 	case AS_APP_STATE_INSTALLING:
 	case AS_APP_STATE_REMOVING:
-	case AS_APP_STATE_PURCHASING:
 		return TRUE;
 		break;
 	default:
@@ -1225,6 +1219,14 @@ gs_plugin_loader_app_is_valid (GsApp *app, gpointer user_data)
 		return FALSE;
 	}
 
+	/* don't show apps with hide-from-search quirk, unless they are already installed */
+	if (!gs_app_is_installed (app) &&
+	    gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_FROM_SEARCH)) {
+		g_debug ("app invalid as hide-from-search quirk set %s",
+		         gs_plugin_loader_get_app_str (app));
+		return FALSE;
+	}
+
 	/* don't show sources */
 	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE) {
 		g_debug ("app invalid as source %s",
@@ -1243,9 +1245,9 @@ gs_plugin_loader_app_is_valid (GsApp *app, gpointer user_data)
 	if (!gs_plugin_job_has_refine_flags (helper->plugin_job,
 						 GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES) &&
 	    (gs_app_get_kind (app) == AS_APP_KIND_GENERIC)) {
-//		g_debug ("app invalid as only a %s: %s",
-//			 as_app_kind_to_string (gs_app_get_kind (app)),
-//			 gs_plugin_loader_get_app_str (app));
+		g_debug ("app invalid as only a %s: %s",
+			 as_app_kind_to_string (gs_app_get_kind (app)),
+			 gs_plugin_loader_get_app_str (app));
 		return FALSE;
 	}
 
@@ -2082,7 +2084,6 @@ gs_plugin_loader_open_plugin (GsPluginLoader *plugin_loader,
 			  G_CALLBACK (gs_plugin_loader_allow_updates_cb),
 			  plugin_loader);
 	gs_plugin_set_soup_session (plugin, priv->soup_session);
-	gs_plugin_set_auth_array (plugin, priv->auth_array);
 	gs_plugin_set_locale (plugin, priv->locale);
 	gs_plugin_set_language (plugin, priv->language);
 	gs_plugin_set_scale (plugin, gs_plugin_loader_get_scale (plugin_loader));
@@ -2111,29 +2112,6 @@ gs_plugin_loader_get_scale (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	return priv->scale;
-}
-
-GsAuth *
-gs_plugin_loader_get_auth_by_id (GsPluginLoader *plugin_loader,
-				 const gchar *auth_id)
-{
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	guint i;
-
-	/* match on ID */
-	for (i = 0; i < priv->auth_array->len; i++) {
-		GsAuth *auth = g_ptr_array_index (priv->auth_array, i);
-		if (g_strcmp0 (gs_auth_get_auth_id (auth), auth_id) == 0)
-			return auth;
-	}
-	return NULL;
-}
-
-GPtrArray *
-gs_plugin_loader_get_auths (GsPluginLoader *plugin_loader)
-{
-	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	return priv->auth_array;
 }
 
 void
@@ -2168,9 +2146,14 @@ gs_plugin_loader_plugin_dir_changed_cb (GFileMonitor *monitor,
 					GFileMonitorEvent event_type,
 					GsPluginLoader *plugin_loader)
 {
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsPluginEvent) event = gs_plugin_event_new ();
 	g_autoptr(GError) error = NULL;
+
+	/* already triggered */
+	if (priv->plugin_dir_dirty)
+		return;
 
 	/* add app */
 	gs_plugin_event_set_action (event, GS_PLUGIN_ACTION_SETUP);
@@ -2186,6 +2169,7 @@ gs_plugin_loader_plugin_dir_changed_cb (GFileMonitor *monitor,
 			     "A restart is required");
 	gs_plugin_event_set_error (event, error);
 	gs_plugin_loader_add_event (plugin_loader, event);
+	priv->plugin_dir_dirty = TRUE;
 }
 
 void
@@ -2610,7 +2594,6 @@ gs_plugin_loader_dispose (GObject *object)
 	g_clear_object (&priv->network_monitor);
 	g_clear_object (&priv->soup_session);
 	g_clear_object (&priv->settings);
-	g_clear_pointer (&priv->auth_array, g_ptr_array_unref);
 	g_clear_pointer (&priv->pending_apps, g_ptr_array_unref);
 
 	G_OBJECT_CLASS (gs_plugin_loader_parent_class)->dispose (object);
@@ -2734,7 +2717,6 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 						   get_max_parallel_ops (),
 						   FALSE,
 						   NULL);
-	priv->auth_array = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->file_monitors = g_ptr_array_new_with_free_func ((GFreeFunc) g_object_unref);
 	priv->locations = g_ptr_array_new_with_free_func (g_free);
 	priv->settings = g_settings_new ("org.gnome.software");
@@ -2855,14 +2837,15 @@ gs_plugin_loader_network_changed_cb (GNetworkMonitor *monitor,
 				     GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	gboolean metered = g_network_monitor_get_network_metered (priv->network_monitor);
 
 	g_debug ("network status change: %s [%s]",
 		 available ? "online" : "offline",
-		 g_network_monitor_get_network_metered (priv->network_monitor) ? "metered" : "unmetered");
+		 metered ? "metered" : "unmetered");
 
 	g_object_notify (G_OBJECT (plugin_loader), "network-available");
 
-	if (available) {
+	if (available && !metered) {
 		g_autoptr(GsAppList) queue = NULL;
 		g_mutex_lock (&priv->pending_apps_mutex);
 		queue = gs_app_list_new ();
@@ -2989,6 +2972,8 @@ gs_plugin_loader_generic_update (GsPluginLoader *plugin_loader,
 		helper->anything_ran = TRUE;
 		gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_FINISHED);
 	}
+
+	gs_utils_set_online_updates_timestamp (priv->settings);
 	return TRUE;
 }
 
@@ -3054,6 +3039,9 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 			return;
 		}
 	}
+
+	if (action == GS_PLUGIN_ACTION_UPGRADE_TRIGGER)
+		gs_utils_set_online_updates_timestamp (priv->settings);
 
 	/* remove from pending list */
 	if (add_to_pending_array)
@@ -3338,6 +3326,7 @@ static void
 gs_plugin_loader_cancelled_cb (GCancellable *cancellable, GsPluginLoaderHelper *helper)
 {
 	/* just proxy this forward */
+	g_debug ("Cancelling job with cancellable %p", helper->cancellable);
 	g_cancellable_cancel (helper->cancellable);
 }
 
@@ -3558,6 +3547,7 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 
 	/* jobs always have a valid cancellable, so proxy the caller */
 	helper->cancellable = g_object_ref (cancellable_job);
+	g_debug ("Chaining cancellation from %p to %p", cancellable, cancellable_job);
 	if (cancellable != NULL) {
 		helper->cancellable_caller = g_object_ref (cancellable);
 		helper->cancellable_id =
@@ -3699,4 +3689,11 @@ gs_plugin_loader_set_max_parallel_ops (GsPluginLoader *plugin_loader,
 	if (!g_thread_pool_set_max_threads (priv->queued_ops_pool, max_ops, &error))
 		g_warning ("Failed to set the maximum number of ops in parallel: %s",
 			   error->message);
+}
+
+const gchar *
+gs_plugin_loader_get_locale (GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	return priv->locale;
 }

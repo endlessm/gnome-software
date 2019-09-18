@@ -1,3 +1,135 @@
+Version 3.34.0
+~~~~~~~~~~~~~~
+Released: 2019-09-09
+
+This is a stable release with the following changes:
+ * Add a link to the privacy policy in the review dialog
+ * Add and improve many overview banners
+ * Add support for download scheduling using Mogwai
+ * Allow installing locale data automatically
+ * Allow snaps to be shown by AppStream ID
+ * Don't apply drop shadow on stock symbolic icons
+ * Don't install queued apps when the network changes and is metered
+ * Fix the 'localised in my language' kudo
+ * Hide addons that are not available in repos
+ * Localize ESRB content rating strings
+ * Never show the installation progress bar going backwards
+ * Notify the user when an application can escape the sandbox
+ * Refactor screenshots and hide those unavailable when offline
+ * Select the rating systems selected based by territory
+ * Use smaller default size for main window when required
+
+This release also adds and updates existing translations.
+
+Version 3.32.4
+~~~~~~~~~~~~~~
+Released: 2019-07-11
+
+This is a stable release with the following changes:
+ * Fix an issue that led to some packages with multiple appdata files not
+   correctly showing up on the updates page
+ * Fix various problems with flatpak branch handling that were causing issues
+   with freedesktop.org runtime updates
+ * Fix flatpak update versions to correctly show up
+ * Various other minor bug fixes
+
+Version 3.32.3
+~~~~~~~~~~~~~~
+Released: 2019-05-24
+
+This is a stable release with the following changes:
+ * Add missing XbSilo locking, hopefully fixing a large number of reported
+   crashes
+ * Fix a regression that caused the fonts category to go missing
+ * Show a placeholder on the details page when we don't have the actual icon
+ * Plug a large memory leak
+ * Use nicer arrows for version numbers on the updates page
+ * Fix an issue that led to screenshots not being correctly scaled on hidpi
+ * flatpak: Fix several double-uses of GErrors
+ * flatpak: Handle failure of a libflatpak function updating permissions
+ * rpm-ostree: Implement what-provides decompose
+
+Version 3.32.2
+~~~~~~~~~~~~~~
+Released: 2019-05-07
+
+This is a stable release with the following changes:
+ * Avoid showing a review more than once
+ * Correctly update progress bar when downloading packagekit distro upgrades
+ * Fix a crash when closing the updates dialog before the content has loaded
+ * Fix CTRL+F not working right in certains conditions
+ * Set 022 umask to make sure flatpak system helper process can read the files
+   we've written
+ * rpm-ostree: Implement getting the repo list, and enabling and disabling
+   repos
+ * rpm-ostree: Implement provides search
+ * rpm-ostree: Make layered apps not discoverable in the UI
+ * Various other minor bug fixes
+
+This release also updates translations.
+
+Version 3.32.1
+~~~~~~~~~~~~~~
+Released: 2019-04-15
+
+This is a stable release with the following changes:
+ * Add drop shadows to app icons
+ * Various fixes to initial loading screen
+ * Show a generic icon instead of empty space if we failed to load the app icon
+ * Update featured banners for Maps and Blender
+ * Update featured app IDs
+ * Fix a crash due to missing locking
+ * Fix missing back button under certain conditions
+ * Fix loading AppSteam data from .yml.gz files
+ * Fix an issue that caused flatpak repo to not be correctly shown when it
+   matched an existing packagekit repo name
+ * Hide the fwupd Vendor repo in the repos dialog
+
+This release also updates translations.
+
+Version 3.32.0
+~~~~~~~~~~~~~~
+Released: 2019-03-11
+
+This is the first stable release for GNOME 3.32. Notable changes compared to
+3.30 include:
+ * Appstream parsing is completely rewritten and now uses the new libxmlb
+   library, instead of appstream-glib
+ * Improved handling for apps that are available from multiple sources, e.g. as
+   a flatpak from Flathub, as a flatpak from Fedora, and as an RPM package
+ * New source selection drop down on the details pages
+ * Flatpak apps now list the permissions they need on the details pages, and
+   also show new permissions when updating
+ * The flatpak backend received a large number of bug fixes
+ * The rpm-ostree backend has grown many new features and bug fixes, including
+   support for installing layered packages and doing distro upgrades
+ * Numerous fixes for error reporting, including making error messages more
+   useful and avoiding showing network errors from background operations
+ * The items in the app menu were all moved to the window menu
+ * New redesigned icon
+
+Version 3.31.92
+~~~~~~~~~~~~~~~
+Released: 2019-03-05
+
+This is an unstable release in the 3.31 development series, marking the end of
+the development cycle. Next release will be 3.32.0!
+ * Add two missing description strings for flatpak permissions
+ * Only show permissions for flatpak apps and not for e.g. fonts
+ * Fix flatpak permissions to correctly show up for available apps
+ * Hide various details page items that don't make sense when showing
+   .flatpakrepo files
+ * Fix an issue that caused descriptions to sometimes not get correctly loaded
+ * Sort the items in the Source drop down
+ * Don't show error notifications for background download and refresh errors
+ * Fix an issue that could cause an explosion of "A restart is required"
+   notifications
+ * Various flatpak plugin fixes to make it correctly match the data when
+   multiple flatpak repos are available
+ * Fix the rpm-ostree plugin to correctly convert remote dbus errors
+
+This release also updates translations.
+
 Version 3.31.90
 ~~~~~~~~~~~~~~~
 Released: 2019-02-24
@@ -348,7 +480,7 @@ This is an unstable release in the 3.27 development series, with the following
 improvements:
  * Redesigned category view
  * Better notifications for completed distro upgrades
- * Number of test suite fixes to pave way for continous integration tests
+ * Number of test suite fixes to pave way for continuous integration tests
  * Improved support for running on low res displays
  * Various fixes to internal state handling
  * Allow linking to specified proprietary licenses

@@ -74,6 +74,9 @@
                                 <property name="halign">start</property>
                                 <property name="valign">start</property>
                                 <property name="pixel_size">96</property>
+                                <style>
+                                  <class name="icon-dropshadow"/>
+                                </style>
                               </object>
                             </child>
                             <child>
@@ -259,18 +262,21 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLinkButton" id="button_details_add_shortcut">
+                              <object class="GtkButton" id="button_details_add_shortcut">
                                 <property name="visible">False</property>
                                 <property name="can_focus">True</property>
                                 <property name="use_underline">True</property>
                                 <property name="label" translatable="yes" comments="Translators: A label for a button to add a shortcut to the selected application.">_Add shortcut</property>
+                                <style>
+                                  <class name="suggested-action"/>
+                                </style>
                               </object>
                               <packing>
                                 <property name="pack-type">end</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkLinkButton" id="button_details_remove_shortcut">
+                              <object class="GtkButton" id="button_details_remove_shortcut">
                                 <property name="visible">False</property>
                                 <property name="can_focus">True</property>
                                 <property name="use_underline">True</property>
@@ -583,6 +589,7 @@
                                 <property name="row_spacing">9</property>
                                 <property name="column_spacing">24</property>
                                 <property name="hexpand">True</property>
+                                <property name="valign">start</property>
                                 <child>
                                   <object class="GtkLabel" id="label_details_version_title">
                                     <property name="visible">True</property>
@@ -886,9 +893,10 @@
                                         <property name="label">Yorba</property>
                                         <property name="wrap">True</property>
                                         <property name="selectable">True</property>
-                                        <property name="max_width_chars">10</property>
+                                        <property name="max_width_chars">100</property>
                                         <property name="xalign">0</property>
                                         <property name="yalign">0.5</property>
+                                        <property name="hexpand">False</property>
                                       </object>
                                     </child>
                                     <child>

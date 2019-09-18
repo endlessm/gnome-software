@@ -21,7 +21,6 @@ gnome_software_sources = [
   'gs-application.c',
   'gs-app-row.c',
   'gs-app-tile.c',
-  'gs-auth-dialog.c',
   'gs-category-page.c',
   'gs-category-tile.c',
   'gs-common.c',
@@ -78,7 +77,8 @@ gnome_software_dependencies = [
   gtk,
   json_glib,
   libm,
-  libsoup
+  libsoup,
+  libxmlb,
 ]
 
 if get_option('packagekit')
@@ -106,6 +106,10 @@ endif
 
 if get_option('gspell')
   gnome_software_dependencies += [gspell]
+endif
+
+if get_option('mogwai')
+  gnome_software_dependencies += [mogwai_schedule_client]
 endif
 
 executable(
@@ -182,7 +186,6 @@ cdata.set('bindir', join_paths(get_option('prefix'),
 configure_file(
   input : 'org.gnome.Software.service.in',
   output : 'org.gnome.Software.service',
-  install: true,
   install_dir: join_paths(get_option('datadir'), 'dbus-1/services'),
   configuration : cdata
 )
@@ -191,7 +194,6 @@ configure_file(
 configure_file(
   input : 'gnome-software-service.desktop.in',
   output : 'gnome-software-service.desktop',
-  install: true,
   install_dir: join_paths(get_option('sysconfdir'), 'xdg/autostart'),
   configuration : cdata
 )
@@ -272,7 +274,6 @@ if get_option('packagekit')
   configure_file(
     input : 'org.freedesktop.PackageKit.service.in',
     output : 'org.freedesktop.PackageKit.service',
-    install: true,
     install_dir: join_paths(get_option('datadir'), 'dbus-1', 'services'),
     configuration : cdata
   )

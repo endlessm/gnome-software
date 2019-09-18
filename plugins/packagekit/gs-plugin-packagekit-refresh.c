@@ -11,6 +11,7 @@
 #include <packagekit-glib2/packagekit.h>
 #include <gnome-software.h>
 
+#include "gs-metered.h"
 #include "gs-packagekit-helper.h"
 #include "packagekit-common.h"
 
@@ -117,7 +118,7 @@ gs_plugin_download (GsPlugin *plugin,
 		GsAppList *related = gs_app_get_related (app);
 
 		/* add this app */
-		if (!gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
+		if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY))
 			if (g_strcmp0 (gs_app_get_management_plugin (app), "packagekit") == 0) {
 				gs_app_list_add (list_tmp, app);
 			continue;
@@ -130,10 +131,21 @@ gs_plugin_download (GsPlugin *plugin,
 				gs_app_list_add (list_tmp, app_tmp);
 		}
 	}
-	if (gs_app_list_length (list_tmp) > 0)
-		return _download_only (plugin, list_tmp, cancellable, error);
 
-	return TRUE;
+	if (gs_app_list_length (list_tmp) == 0)
+		return TRUE;
+
+	if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
+		g_autoptr(GError) error_local = NULL;
+
+		if (!gs_metered_block_app_list_on_download_scheduler (list_tmp, cancellable, &error_local)) {
+			g_warning ("Failed to block on download scheduler: %s",
+				   error_local->message);
+			g_clear_error (&error_local);
+		}
+	}
+
+	return _download_only (plugin, list_tmp, cancellable, error);
 }
 
 gboolean
@@ -148,7 +160,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 	g_autoptr(PkResults) results = NULL;
 
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
-	gs_packagekit_helper_add_app (helper, app_dl);
+	gs_packagekit_helper_set_progress_app (helper, app_dl);
 
 	g_mutex_lock (&priv->task_mutex);
 	/* cache age of 1 is user-initiated */

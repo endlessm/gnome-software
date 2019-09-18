@@ -15,7 +15,6 @@ static void
 gs_plugins_modalias_func (GsPluginLoader *plugin_loader)
 {
 	GsApp *app;
-	g_autofree gchar *menu_path = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
@@ -69,6 +68,9 @@ main (int argc, char **argv)
 		"      <modalias>pci:*</modalias>\n"
 		"    </provides>\n"
 		"  </component>\n"
+		"  <info>\n"
+		"    <scope>system</scope>\n"
+		"  </info>\n"
 		"</components>\n");
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
 	g_setenv ("GS_SELF_TEST_CACHEDIR", tmp_root, TRUE);

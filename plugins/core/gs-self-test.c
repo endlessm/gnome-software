@@ -18,7 +18,6 @@ static void
 gs_plugins_core_search_repo_name_func (GsPluginLoader *plugin_loader)
 {
 	GsApp *app;
-	g_autofree gchar *menu_path = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsApp) app_tmp = NULL;
 	g_autoptr(GsAppList) list = NULL;
@@ -225,9 +224,13 @@ main (int argc, char **argv)
 		"  </component>\n"
 		"  <component type=\"os-upgrade\">\n"
 		"    <id>org.fedoraproject.Fedora-25</id>\n"
+		"    <name>Fedora</name>\n"
 		"    <summary>Fedora Workstation</summary>\n"
 		"    <pkgname>fedora-release</pkgname>\n"
 		"  </component>\n"
+		"  <info>\n"
+		"    <scope>user</scope>\n"
+		"  </info>\n"
 		"</components>\n";
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
 

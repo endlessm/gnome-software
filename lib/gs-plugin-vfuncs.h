@@ -24,7 +24,6 @@
 #include "gs-app.h"
 #include "gs-app-list.h"
 #include "gs-category.h"
-#include "gs-price.h"
 
 G_BEGIN_DECLS
 
@@ -547,27 +546,6 @@ gboolean	 gs_plugin_update_cancel		(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
- * gs_plugin_app_purchase:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @price: a #GsPrice
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Purchase the application.
- *
- * NOTE: Once the action is complete, the plugin must set the new state of @app
- * to %AS_APP_STATE_AVAILABLE.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_app_purchase			(GsPlugin	*plugin,
-							 GsApp		*app,
-							 GsPrice	*price,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
  * gs_plugin_app_install:
  * @plugin: a #GsPlugin
  * @app: a #GsApp
@@ -686,6 +664,11 @@ gboolean	 gs_plugin_update_app			(GsPlugin	*plugin,
  * Downloads the application and any dependencies ready to be installed or
  * updated.
  *
+ * Plugins are expected to schedule downloads using the system download
+ * scheduler if appropriate (if the download is not guaranteed to be under a few
+ * hundred kilobytes, for example), so that the user’s metered data preferences
+ * are honoured.
+ *
  * Plugins are expected to send progress notifications to the UI using
  * gs_app_set_progress() using the passed in @app.
  *
@@ -713,6 +696,11 @@ gboolean	 gs_plugin_download_app			(GsPlugin	*plugin,
  * @error: a #GError, or %NULL
  *
  * Downloads a list of applications ready to be installed or updated.
+ *
+ * Plugins are expected to schedule downloads using the system download
+ * scheduler if appropriate (if the download is not guaranteed to be under a few
+ * hundred kilobytes, for example), so that the user’s metered data preferences
+ * are honoured.
  *
  * Returns: %TRUE for success or if not relevant
  **/
@@ -907,7 +895,7 @@ gboolean	 gs_plugin_refresh			(GsPlugin	*plugin,
  * list. If no plugins can handle the file, the list will be empty.
  *
  * For example, the PackageKit plugin can turn a .rpm file into a application
- * of kind %AS_APP_KIND_UNKNOWN but that in some cases it will be futher refined
+ * of kind %AS_APP_KIND_UNKNOWN but that in some cases it will be further refined
  * into a %AS_APP_KIND_DESKTOP (with all the extra metadata) by the appstream
  * plugin.
  *
@@ -958,6 +946,24 @@ gboolean	 gs_plugin_url_to_app			(GsPlugin	*plugin,
  **/
 gboolean	 gs_plugin_update			(GsPlugin	*plugin,
 							 GsAppList	*apps,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+/**
+ * gs_plugin_add_langpacks:
+ * @plugin: a #GsPlugin
+ * @list: a #GsAppList
+ * @locale: a #LANGUAGE_CODE or #LOCALE, e.g. "ja" or "ja_JP"
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Returns a list of language packs, as per input language code or locale.
+ *
+ * Returns: %TRUE for success or if not relevant
+ **/
+gboolean	 gs_plugin_add_langpacks		(GsPlugin	*plugin,
+							 GsAppList	*list,
+							 const gchar    *locale,
 							 GCancellable	*cancellable,
 							 GError		**error);
 

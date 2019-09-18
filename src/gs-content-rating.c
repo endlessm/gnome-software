@@ -8,8 +8,8 @@
 #include "config.h"
 
 #include <glib/gi18n.h>
+#include <glib/gprintf.h>
 #include <string.h>
-
 #include "gs-content-rating.h"
 
 const gchar *
@@ -358,172 +358,183 @@ gs_content_rating_key_value_to_str (const gchar *id, AsContentRatingValue value)
 	return NULL;
 }
 
+static char *
+get_esrb_string (gchar *source, gchar *translate)
+{
+	if (g_strcmp0 (source, translate) == 0)
+		return g_strdup (source);
+	/* TRANSLATORS: This is the formatting of English and localized name
+ 	   of the rating e.g. "Adults Only (solo adultos)" */
+	return g_strdup_printf (_("%s (%s)"), source, translate);
+}
+
 /* data obtained from https://en.wikipedia.org/wiki/Video_game_rating_system */
-const gchar *
+gchar *
 gs_utils_content_rating_age_to_str (GsContentRatingSystem system, guint age)
 {
 	if (system == GS_CONTENT_RATING_SYSTEM_INCAA) {
 		if (age >= 18)
-			return "+18";
+			return g_strdup ("+18");
 		if (age >= 13)
-			return "+13";
-		return "ATP";
+			return g_strdup ("+13");
+		return g_strdup ("ATP");
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_ACB) {
 		if (age >= 18)
-			return "R18+";
+			return g_strdup ("R18+");
 		if (age >= 15)
-			return "MA15+";
-		return "PG";
+			return g_strdup ("MA15+");
+		return g_strdup ("PG");
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_DJCTQ) {
 		if (age >= 18)
-			return "18";
+			return g_strdup ("18");
 		if (age >= 16)
-			return "16";
+			return g_strdup ("16");
 		if (age >= 14)
-			return "14";
+			return g_strdup ("14");
 		if (age >= 12)
-			return "12";
+			return g_strdup ("12");
 		if (age >= 10)
-			return "10";
-		return "L";
+			return g_strdup ("10");
+		return g_strdup ("L");
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_GSRR) {
 		if (age >= 18)
-			return "限制";
+			return g_strdup ("限制");
 		if (age >= 15)
-			return "輔15";
+			return g_strdup ("輔15");
 		if (age >= 12)
-			return "輔12";
+			return g_strdup ("輔12");
 		if (age >= 6)
-			return "保護";
-		return "普通";
+			return g_strdup ("保護");
+		return g_strdup ("普通");
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_PEGI) {
 		if (age >= 18)
-			return "18";
+			return g_strdup ("18");
 		if (age >= 16)
-			return "16";
+			return g_strdup ("16");
 		if (age >= 12)
-			return "12";
+			return g_strdup ("12");
 		if (age >= 7)
-			return "7";
+			return g_strdup ("7");
 		if (age >= 3)
-			return "3";
+			return g_strdup ("3");
 		return NULL;
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_KAVI) {
 		if (age >= 18)
-			return "18+";
+			return g_strdup ("18+");
 		if (age >= 16)
-			return "16+";
+			return g_strdup ("16+");
 		if (age >= 12)
-			return "12+";
+			return g_strdup ("12+");
 		if (age >= 7)
-			return "7+";
+			return g_strdup ("7+");
 		if (age >= 3)
-			return "3+";
+			return g_strdup ("3+");
 		return NULL;
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_USK) {
 		if (age >= 18)
-			return "18";
+			return g_strdup ("18");
 		if (age >= 16)
-			return "16";
+			return g_strdup ("16");
 		if (age >= 12)
-			return "12";
+			return g_strdup ("12");
 		if (age >= 6)
-			return "6";
-		return "0";
+			return g_strdup ("6");
+		return g_strdup ("0");
 	}
 	/* Reference: http://www.esra.org.ir/ */
 	if (system == GS_CONTENT_RATING_SYSTEM_ESRA) {
 		if (age >= 18)
-			return "+18";
+			return g_strdup ("+18");
 		if (age >= 15)
-			return "+15";
+			return g_strdup ("+15");
 		if (age >= 12)
-			return "+12";
+			return g_strdup ("+12");
 		if (age >= 7)
-			return "+7";
+			return g_strdup ("+7");
 		if (age >= 3)
-			return "+3";
+			return g_strdup ("+3");
 		return NULL;
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_CERO) {
 		if (age >= 18)
-			return "Z";
+			return g_strdup ("Z");
 		if (age >= 17)
-			return "D";
+			return g_strdup ("D");
 		if (age >= 15)
-			return "C";
+			return g_strdup ("C");
 		if (age >= 12)
-			return "B";
-		return "A";
+			return g_strdup ("B");
+		return g_strdup ("A");
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_OFLCNZ) {
 		if (age >= 18)
-			return "R18";
+			return g_strdup ("R18");
 		if (age >= 16)
-			return "R16";
+			return g_strdup ("R16");
 		if (age >= 15)
-			return "R15";
+			return g_strdup ("R15");
 		if (age >= 13)
-			return "R13";
-		return "G";
+			return g_strdup ("R13");
+		return g_strdup ("G");
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_RUSSIA) {
 		if (age >= 18)
-			return "18+";
+			return g_strdup ("18+");
 		if (age >= 16)
-			return "16+";
+			return g_strdup ("16+");
 		if (age >= 12)
-			return "12+";
+			return g_strdup ("12+");
 		if (age >= 6)
-			return "6+";
-		return "0+";
+			return g_strdup ("6+");
+		return g_strdup ("0+");
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_MDA) {
 		if (age >= 18)
-			return "M18";
+			return g_strdup ("M18");
 		if (age >= 16)
-			return "ADV";
-		return "General";
+			return g_strdup ("ADV");
+		return get_esrb_string ("General", _("General"));
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_GRAC) {
 		if (age >= 18)
-			return "18";
+			return g_strdup ("18");
 		if (age >= 15)
-			return "15";
+			return g_strdup ("15");
 		if (age >= 12)
-			return "12";
-		return "ALL";
+			return g_strdup ("12");
+		return get_esrb_string ("ALL", _("ALL"));
 	}
 	if (system == GS_CONTENT_RATING_SYSTEM_ESRB) {
 		if (age >= 18)
-			return "Adults Only";
+			return get_esrb_string ("Adults Only", _("Adults Only"));
 		if (age >= 17)
-			return "Mature";
+			return get_esrb_string ("Mature", _("Mature"));
 		if (age >= 13)
-			return "Teen";
+			return get_esrb_string ("Teen", _("Teen"));
 		if (age >= 10)
-			return "Everyone 10+";
+			return get_esrb_string ("Everyone 10+", _("Everyone 10+"));
 		if (age >= 6)
-			return "Everyone";
-		return "Early Childhood";
+			return get_esrb_string ("Everyone", _("Everyone"));
+
+		return get_esrb_string ("Early Childhood", _("Early Childhood"));
 	}
 	/* IARC = everything else */
 	if (age >= 18)
-		return "18+";
+		return g_strdup ("18+");
 	if (age >= 16)
-		return "16+";
+		return g_strdup ("16+");
 	if (age >= 12)
-		return "12+";
+		return g_strdup ("12+");
 	if (age >= 7)
-		return "7+";
+		return g_strdup ("7+");
 	if (age >= 3)
-		return "3+";
+		return g_strdup ("3+");
 	return NULL;
 }
 
@@ -608,125 +619,119 @@ GsContentRatingSystem
 gs_utils_content_rating_system_from_locale (const gchar *locale)
 {
 	g_autofree gchar *locale_copy = g_strdup (locale);
-	const gchar *language, *territory;
+	const gchar *territory;
 
 	/* Default to IARC for locales which can’t be parsed. */
-	if (!parse_locale (locale_copy, &language, &territory, NULL, NULL))
+	if (!parse_locale (locale_copy, NULL, &territory, NULL, NULL))
 		return GS_CONTENT_RATING_SYSTEM_IARC;
 
 	/* Argentina */
-	if (g_strcmp0 (language, "ar") == 0)
+	if (g_strcmp0 (territory, "AR") == 0)
 		return GS_CONTENT_RATING_SYSTEM_INCAA;
 
 	/* Australia */
-	if (g_strcmp0 (language, "au") == 0)
+	if (g_strcmp0 (territory, "AU") == 0)
 		return GS_CONTENT_RATING_SYSTEM_ACB;
 
 	/* Brazil */
-	if (g_strcmp0 (language, "pt") == 0 &&
-	    g_strcmp0 (territory, "BR") == 0)
+	if (g_strcmp0 (territory, "BR") == 0)
 		return GS_CONTENT_RATING_SYSTEM_DJCTQ;
 
 	/* Taiwan */
-	if (g_strcmp0 (language, "zh") == 0 &&
-	    g_strcmp0 (territory, "TW") == 0)
+	if (g_strcmp0 (territory, "TW") == 0)
 		return GS_CONTENT_RATING_SYSTEM_GSRR;
 
 	/* Europe (but not Finland or Germany), India, Israel,
 	 * Pakistan, Quebec, South Africa */
-	if ((g_strcmp0 (language, "en") == 0 &&
-	     g_strcmp0 (territory, "GB") == 0) ||
-	    g_strcmp0 (language, "gb") == 0 ||
-	    g_strcmp0 (language, "al") == 0 ||
-	    g_strcmp0 (language, "ad") == 0 ||
-	    g_strcmp0 (language, "am") == 0 ||
-	    g_strcmp0 (language, "at") == 0 ||
-	    g_strcmp0 (language, "az") == 0 ||
-	    g_strcmp0 (language, "by") == 0 ||
-	    g_strcmp0 (language, "be") == 0 ||
-	    g_strcmp0 (language, "ba") == 0 ||
-	    g_strcmp0 (language, "bg") == 0 ||
-	    g_strcmp0 (language, "hr") == 0 ||
-	    g_strcmp0 (language, "cy") == 0 ||
-	    g_strcmp0 (language, "cz") == 0 ||
-	    g_strcmp0 (language, "dk") == 0 ||
-	    g_strcmp0 (language, "ee") == 0 ||
-	    g_strcmp0 (language, "fr") == 0 ||
-	    g_strcmp0 (language, "ge") == 0 ||
-	    g_strcmp0 (language, "gr") == 0 ||
-	    g_strcmp0 (language, "hu") == 0 ||
-	    g_strcmp0 (language, "is") == 0 ||
-	    g_strcmp0 (language, "it") == 0 ||
-	    g_strcmp0 (language, "kz") == 0 ||
-	    g_strcmp0 (language, "xk") == 0 ||
-	    g_strcmp0 (language, "lv") == 0 ||
-	    g_strcmp0 (language, "fl") == 0 ||
-	    g_strcmp0 (language, "lu") == 0 ||
-	    g_strcmp0 (language, "lt") == 0 ||
-	    g_strcmp0 (language, "mk") == 0 ||
-	    g_strcmp0 (language, "mt") == 0 ||
-	    g_strcmp0 (language, "md") == 0 ||
-	    g_strcmp0 (language, "mc") == 0 ||
-	    g_strcmp0 (language, "me") == 0 ||
-	    g_strcmp0 (language, "nl") == 0 ||
-	    g_strcmp0 (language, "no") == 0 ||
-	    g_strcmp0 (language, "pl") == 0 ||
-	    g_strcmp0 (language, "pt") == 0 ||
-	    g_strcmp0 (language, "ro") == 0 ||
-	    g_strcmp0 (language, "sm") == 0 ||
-	    g_strcmp0 (language, "rs") == 0 ||
-	    g_strcmp0 (language, "sk") == 0 ||
-	    g_strcmp0 (language, "si") == 0 ||
-	    g_strcmp0 (language, "es") == 0 ||
-	    g_strcmp0 (language, "se") == 0 ||
-	    g_strcmp0 (language, "ch") == 0 ||
-	    g_strcmp0 (language, "tr") == 0 ||
-	    g_strcmp0 (language, "ua") == 0 ||
-	    g_strcmp0 (language, "va") == 0 ||
-	    g_strcmp0 (language, "in") == 0 ||
-	    g_strcmp0 (language, "il") == 0 ||
-	    g_strcmp0 (language, "pk") == 0 ||
-	    g_strcmp0 (language, "za") == 0)
+	if ((g_strcmp0 (territory, "GB") == 0) ||
+	    g_strcmp0 (territory, "AL") == 0 ||
+	    g_strcmp0 (territory, "AD") == 0 ||
+	    g_strcmp0 (territory, "AM") == 0 ||
+	    g_strcmp0 (territory, "AT") == 0 ||
+	    g_strcmp0 (territory, "AZ") == 0 ||
+	    g_strcmp0 (territory, "BY") == 0 ||
+	    g_strcmp0 (territory, "BE") == 0 ||
+	    g_strcmp0 (territory, "BA") == 0 ||
+	    g_strcmp0 (territory, "BG") == 0 ||
+	    g_strcmp0 (territory, "HR") == 0 ||
+	    g_strcmp0 (territory, "CY") == 0 ||
+	    g_strcmp0 (territory, "CZ") == 0 ||
+	    g_strcmp0 (territory, "DK") == 0 ||
+	    g_strcmp0 (territory, "EE") == 0 ||
+	    g_strcmp0 (territory, "FR") == 0 ||
+	    g_strcmp0 (territory, "GE") == 0 ||
+	    g_strcmp0 (territory, "GR") == 0 ||
+	    g_strcmp0 (territory, "HU") == 0 ||
+	    g_strcmp0 (territory, "IS") == 0 ||
+	    g_strcmp0 (territory, "IT") == 0 ||
+	    g_strcmp0 (territory, "LZ") == 0 ||
+	    g_strcmp0 (territory, "XK") == 0 ||
+	    g_strcmp0 (territory, "LV") == 0 ||
+	    g_strcmp0 (territory, "FL") == 0 ||
+	    g_strcmp0 (territory, "LU") == 0 ||
+	    g_strcmp0 (territory, "LT") == 0 ||
+	    g_strcmp0 (territory, "MK") == 0 ||
+	    g_strcmp0 (territory, "MT") == 0 ||
+	    g_strcmp0 (territory, "MD") == 0 ||
+	    g_strcmp0 (territory, "MC") == 0 ||
+	    g_strcmp0 (territory, "ME") == 0 ||
+	    g_strcmp0 (territory, "NL") == 0 ||
+	    g_strcmp0 (territory, "NO") == 0 ||
+	    g_strcmp0 (territory, "PL") == 0 ||
+	    g_strcmp0 (territory, "PT") == 0 ||
+	    g_strcmp0 (territory, "RO") == 0 ||
+	    g_strcmp0 (territory, "SM") == 0 ||
+	    g_strcmp0 (territory, "RS") == 0 ||
+	    g_strcmp0 (territory, "SK") == 0 ||
+	    g_strcmp0 (territory, "SI") == 0 ||
+	    g_strcmp0 (territory, "ES") == 0 ||
+	    g_strcmp0 (territory, "SE") == 0 ||
+	    g_strcmp0 (territory, "CH") == 0 ||
+	    g_strcmp0 (territory, "TR") == 0 ||
+	    g_strcmp0 (territory, "UA") == 0 ||
+	    g_strcmp0 (territory, "VA") == 0 ||
+	    g_strcmp0 (territory, "IN") == 0 ||
+	    g_strcmp0 (territory, "IL") == 0 ||
+	    g_strcmp0 (territory, "PK") == 0 ||
+	    g_strcmp0 (territory, "ZA") == 0)
 		return GS_CONTENT_RATING_SYSTEM_PEGI;
 
 	/* Finland */
-	if (g_strcmp0 (language, "fi") == 0)
+	if (g_strcmp0 (territory, "FI") == 0)
 		return GS_CONTENT_RATING_SYSTEM_KAVI;
 
 	/* Germany */
-	if (g_strcmp0 (language, "de") == 0)
+	if (g_strcmp0 (territory, "DE") == 0)
 		return GS_CONTENT_RATING_SYSTEM_USK;
 
 	/* Iran */
-	if (g_strcmp0 (language, "ir") == 0)
+	if (g_strcmp0 (territory, "IR") == 0)
 		return GS_CONTENT_RATING_SYSTEM_ESRA;
 
 	/* Japan */
-	if (g_strcmp0 (language, "jp") == 0)
+	if (g_strcmp0 (territory, "JP") == 0)
 		return GS_CONTENT_RATING_SYSTEM_CERO;
 
 	/* New Zealand */
-	if (g_strcmp0 (language, "nz") == 0)
+	if (g_strcmp0 (territory, "NZ") == 0)
 		return GS_CONTENT_RATING_SYSTEM_OFLCNZ;
 
 	/* Russia: Content rating law */
-	if (g_strcmp0 (language, "ru") == 0)
+	if (g_strcmp0 (territory, "RU") == 0)
 		return GS_CONTENT_RATING_SYSTEM_RUSSIA;
 
 	/* Singapore */
-	if (g_strcmp0 (language, "sg") == 0)
+	if (g_strcmp0 (territory, "SQ") == 0)
 		return GS_CONTENT_RATING_SYSTEM_MDA;
 
 	/* South Korea */
-	if (g_strcmp0 (language, "kr") == 0)
+	if (g_strcmp0 (territory, "KR") == 0)
 		return GS_CONTENT_RATING_SYSTEM_GRAC;
 
 	/* USA, Canada, Mexico */
-	if ((g_strcmp0 (language, "en") == 0 &&
-	     g_strcmp0 (territory, "US") == 0) ||
-	    g_strcmp0 (language, "us") == 0 ||
-	    g_strcmp0 (language, "ca") == 0 ||
-	    g_strcmp0 (language, "mx") == 0)
+	if ((g_strcmp0 (territory, "US") == 0) ||
+	    g_strcmp0 (territory, "CA") == 0 ||
+	    g_strcmp0 (territory, "MX") == 0)
 		return GS_CONTENT_RATING_SYSTEM_ESRB;
 
 	/* everything else is IARC */

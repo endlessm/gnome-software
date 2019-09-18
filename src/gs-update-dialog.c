@@ -90,8 +90,8 @@ static struct {
         const char *subtitle;
 } permission_display_data[] = {
   { GS_APP_PERMISSIONS_NETWORK, N_("Network"), N_("Can communicate over the network") },
-  { GS_APP_PERMISSIONS_SYSTEM_BUS, N_("System Services"), N_("...") },
-  { GS_APP_PERMISSIONS_SESSION_BUS, N_("Session Services"), N_("...") },
+  { GS_APP_PERMISSIONS_SYSTEM_BUS, N_("System Services"), N_("Can access D-Bus services on the system bus") },
+  { GS_APP_PERMISSIONS_SESSION_BUS, N_("Session Services"), N_("Can access D-Bus services on the session bus") },
   { GS_APP_PERMISSIONS_DEVICES, N_("Devices"), N_("Can access system device files") },
   { GS_APP_PERMISSIONS_HOME_FULL, N_("Home folder"), N_("Can view, edit and create files") },
   { GS_APP_PERMISSIONS_HOME_READ, N_("Home folder"), N_("Can view files") },
@@ -101,6 +101,7 @@ static struct {
   { GS_APP_PERMISSIONS_DOWNLOADS_READ, N_("Downloads folder"), N_("Can view files") },
   { GS_APP_PERMISSIONS_SETTINGS, N_("Settings"), N_("Can view and change any settings") },
   { GS_APP_PERMISSIONS_X11, N_("Legacy display system"), N_("Uses an old, insecure display system") },
+  { GS_APP_PERMISSIONS_ESCAPE_SANDBOX, N_("Sandbox escape"), N_("Can escape the sandbox and circumvent any other restrictions") },
 };
 
 static void
@@ -245,19 +246,21 @@ get_installed_updates_cb (GsPluginLoader *plugin_loader,
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GError) error = NULL;
 
-	gs_stop_spinner (GTK_SPINNER (dialog->spinner));
-
 	/* get the results */
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
-	if (list == NULL) {
-		if (g_error_matches (error,
-				    GS_PLUGIN_ERROR,
-				    GS_PLUGIN_ERROR_CANCELLED)) {
-			/* This should only ever happen while the dialog is being closed */
-			g_debug ("get installed updates cancelled");
-			return;
-		}
 
+	/* if we're in teardown, short-circuit and return immediately without
+	 * dereferencing priv variables */
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+	    dialog->spinner == NULL) {
+		g_debug ("get installed updates cancelled");
+		return;
+	}
+
+	gs_stop_spinner (GTK_SPINNER (dialog->spinner));
+
+	/* error */
+	if (list == NULL) {
 		g_warning ("failed to get installed updates: %s", error->message);
 		gtk_stack_set_visible_child_name (GTK_STACK (dialog->stack), "empty");
 		return;
@@ -353,7 +356,7 @@ format_version_update (GsApp *app)
 	/* have both */
 	if (version_current != NULL && version_update != NULL &&
 	    g_strcmp0 (version_current, version_update) != 0) {
-		return g_strdup_printf ("%s ▶ %s",
+		return g_strdup_printf ("%s → %s",
 					version_current,
 					version_update);
 	}

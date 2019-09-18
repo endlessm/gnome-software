@@ -112,7 +112,6 @@ typedef struct
 	GFile			*local_file;
 	AsContentRating		*content_rating;
 	GdkPixbuf		*pixbuf;
-	GsPrice			*price;
 	GCancellable		*cancellable;
 	GsPluginAction		 pending_action;
 	GsAppPermissions         permissions;
@@ -133,6 +132,7 @@ enum {
 	PROP_INSTALL_DATE,
 	PROP_QUIRK,
 	PROP_PENDING_ACTION,
+	PROP_KEY_COLORS,
 	PROP_LAST
 };
 
@@ -235,6 +235,16 @@ _as_app_quirk_flag_to_string (GsAppQuirk quirk)
 		return "is-proxy";
 	if (quirk == GS_APP_QUIRK_REMOVABLE_HARDWARE)
 		return "removable-hardware";
+	if (quirk == GS_APP_QUIRK_DEVELOPER_VERIFIED)
+		return "developer-verified";
+	if (quirk == GS_APP_QUIRK_PARENTAL_FILTER)
+		return "parental-filter";
+	if (quirk == GS_APP_QUIRK_NEW_PERMISSIONS)
+		return "new-permissions";
+	if (quirk == GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE)
+		return "parental-not-launchable";
+	if (quirk == GS_APP_QUIRK_HIDE_FROM_SEARCH)
+		return "hide-from-search";
 	return NULL;
 }
 
@@ -267,7 +277,7 @@ gs_app_get_unique_id_unlocked (GsApp *app)
  * @app1: a #GsApp
  * @app2: a #GsApp
  *
- * Compares two applications using thier priority.
+ * Compares two applications using their priority.
  *
  * Use `gs_plugin_add_rule(plugin,GS_PLUGIN_RULE_BETTER_THAN,"plugin-name")`
  * to set the application priority values.
@@ -577,10 +587,6 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_size (str, "size-installed", priv->size_installed);
 	if (priv->size_download != 0)
 		gs_app_kv_size (str, "size-download", gs_app_get_size_download (app));
-	if (priv->price != NULL)
-		gs_app_kv_printf (str, "price", "%s %.2f",
-				  gs_price_get_currency (priv->price),
-				  gs_price_get_amount (priv->price));
 	for (i = 0; i < gs_app_list_length (priv->related); i++) {
 		GsApp *app_tmp = gs_app_list_index (priv->related, i);
 		const gchar *id = gs_app_get_unique_id (app_tmp);
@@ -904,8 +910,7 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 		    state == AS_APP_STATE_AVAILABLE_LOCAL ||
 		    state == AS_APP_STATE_UPDATABLE ||
 		    state == AS_APP_STATE_UPDATABLE_LIVE ||
-		    state == AS_APP_STATE_UNAVAILABLE ||
-		    state == AS_APP_STATE_PURCHASABLE)
+		    state == AS_APP_STATE_UNAVAILABLE)
 			state_change_ok = TRUE;
 		break;
 	case AS_APP_STATE_INSTALLED:
@@ -943,15 +948,14 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 		/* removing has to go into an stable state */
 		if (state == AS_APP_STATE_UNKNOWN ||
 		    state == AS_APP_STATE_AVAILABLE ||
-		    state == AS_APP_STATE_PURCHASABLE ||
 		    state == AS_APP_STATE_INSTALLED)
 			state_change_ok = TRUE;
 		break;
 	case AS_APP_STATE_UPDATABLE:
 		/* updatable has to go into an action state */
 		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_AVAILABLE ||
-		    state == AS_APP_STATE_REMOVING)
+		    state == AS_APP_STATE_REMOVING ||
+		    state == AS_APP_STATE_INSTALLING)
 			state_change_ok = TRUE;
 		break;
 	case AS_APP_STATE_UPDATABLE_LIVE:
@@ -971,19 +975,6 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 		/* local has to go into an action state */
 		if (state == AS_APP_STATE_UNKNOWN ||
 		    state == AS_APP_STATE_INSTALLING)
-			state_change_ok = TRUE;
-		break;
-	case AS_APP_STATE_PURCHASABLE:
-		/* local has to go into an action state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_PURCHASING)
-			state_change_ok = TRUE;
-		break;
-	case AS_APP_STATE_PURCHASING:
-		/* purchasing has to go into an stable state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_AVAILABLE ||
-		    state == AS_APP_STATE_PURCHASABLE)
 			state_change_ok = TRUE;
 		break;
 	default:
@@ -1012,7 +1003,6 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 	case AS_APP_STATE_INSTALLING:
 	case AS_APP_STATE_REMOVING:
 	case AS_APP_STATE_QUEUED_FOR_INSTALL:
-	case AS_APP_STATE_PURCHASING:
 		/* transient, so ignore */
 		break;
 	default:
@@ -1315,7 +1305,7 @@ gs_app_set_name (GsApp *app, GsAppQuality quality, const gchar *name)
 	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* only save this if the data is sufficiently high quality */
-	if (quality <= priv->name_quality)
+	if (quality < priv->name_quality)
 		return;
 	priv->name_quality = quality;
 	if (_g_set_str (&priv->name, name))
@@ -1691,6 +1681,33 @@ gs_app_add_icon (GsApp *app, AsIcon *icon)
 }
 
 /**
+ * gs_app_get_use_drop_shadow:
+ * @app: a #GsApp
+ *
+ * Uses a heuristic to work out if the application  pixbuf should have a drop
+ * shadow applied.
+ *
+ * Returns: %TRUE if a drop shadow should be applied
+ *
+ * Since: 3.34
+ **/
+gboolean
+gs_app_get_use_drop_shadow (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	AsIcon *ic;
+
+	/* guess */
+	if (priv->icons->len == 0)
+		return TRUE;
+
+	/* stock, and symbolic */
+	ic = g_ptr_array_index (priv->icons, 0);
+	return as_icon_get_kind (ic) != AS_ICON_KIND_STOCK ||
+		!g_str_has_suffix (as_icon_get_name (ic), "-symbolic");
+}
+
+/**
  * gs_app_get_agreement:
  * @app: a #GsApp
  *
@@ -1859,46 +1876,6 @@ gs_app_set_pixbuf (GsApp *app, GdkPixbuf *pixbuf)
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->pixbuf, pixbuf);
-}
-
-/**
- * gs_app_get_price:
- * @app: a #GsApp
- *
- * Gets the price required to purchase the application.
- *
- * Returns: (transfer none): a #GsPrice, or %NULL
- *
- * Since: 3.26
- **/
-GsPrice *
-gs_app_get_price (GsApp *app)
-{
-	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	return priv->price;
-}
-
-/**
- * gs_app_set_price:
- * @app: a #GsApp
- * @amount: the amount of this price, e.g. 0.99
- * @currency: an ISO 4217 currency code, e.g. "USD"
- *
- * Sets a price required to purchase the application.
- *
- * Since: 3.26
- **/
-void
-gs_app_set_price (GsApp *app, gdouble amount, const gchar *currency)
-{
-	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = NULL;
-	g_return_if_fail (GS_IS_APP (app));
-	locker = g_mutex_locker_new (&priv->mutex);
-	if (priv->price != NULL)
-		g_object_unref (priv->price);
-	priv->price = gs_price_new (amount, currency);
 }
 
 typedef enum {
@@ -2110,7 +2087,7 @@ gs_app_set_summary (GsApp *app, GsAppQuality quality, const gchar *summary)
 	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* only save this if the data is sufficiently high quality */
-	if (quality <= priv->summary_quality)
+	if (quality < priv->summary_quality)
 		return;
 	priv->summary_quality = quality;
 	if (_g_set_str (&priv->summary, summary))
@@ -2155,7 +2132,7 @@ gs_app_set_description (GsApp *app, GsAppQuality quality, const gchar *descripti
 	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* only save this if the data is sufficiently high quality */
-	if (quality <= priv->description_quality)
+	if (quality < priv->description_quality)
 		return;
 	priv->description_quality = quality;
 	_g_set_str (&priv->description, description);
@@ -2176,7 +2153,9 @@ const gchar *
 gs_app_get_url (GsApp *app, AsUrlKind kind)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
 	return g_hash_table_lookup (priv->urls, as_url_kind_to_string (kind));
 }
 
@@ -2955,8 +2934,10 @@ void
 gs_app_add_review (GsApp *app, AsReview *review)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (AS_IS_REVIEW (review));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_ptr_array_add (priv->reviews, g_object_ref (review));
 }
 
@@ -2973,7 +2954,9 @@ void
 gs_app_remove_review (GsApp *app, AsReview *review)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_ptr_array_remove (priv->reviews, review);
 }
 
@@ -3008,8 +2991,10 @@ void
 gs_app_add_provide (GsApp *app, AsProvide *provide)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (AS_IS_PROVIDE (provide));
+	locker = g_mutex_locker_new (&priv->mutex);
 	g_ptr_array_add (priv->provides, g_object_ref (provide));
 }
 
@@ -3623,7 +3608,8 @@ gs_app_set_key_colors (GsApp *app, GPtrArray *key_colors)
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_colors != NULL);
 	locker = g_mutex_locker_new (&priv->mutex);
-	_g_set_ptr_array (&priv->key_colors, key_colors);
+	if (_g_set_ptr_array (&priv->key_colors, key_colors))
+		gs_app_queue_notify (app, "key-colors");
 }
 
 /**
@@ -3642,6 +3628,7 @@ gs_app_add_key_color (GsApp *app, GdkRGBA *key_color)
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_color != NULL);
 	g_ptr_array_add (priv->key_colors, gdk_rgba_copy (key_color));
+	gs_app_queue_notify (app, "key-colors");
 }
 
 /**
@@ -4063,6 +4050,9 @@ gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *
 	case PROP_QUIRK:
 		g_value_set_uint64 (value, priv->quirk);
 		break;
+	case PROP_KEY_COLORS:
+		g_value_set_boxed (value, priv->key_colors);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -4117,6 +4107,9 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 		break;
 	case PROP_QUIRK:
 		priv->quirk = g_value_get_uint64 (value);
+		break;
+	case PROP_KEY_COLORS:
+		gs_app_set_key_colors (app, g_value_get_boxed (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4186,8 +4179,6 @@ gs_app_finalize (GObject *object)
 		g_object_unref (priv->content_rating);
 	if (priv->pixbuf != NULL)
 		g_object_unref (priv->pixbuf);
-	if (priv->price != NULL)
-		g_object_unref (priv->price);
 
 	G_OBJECT_CLASS (gs_app_parent_class)->finalize (object);
 }
@@ -4305,8 +4296,15 @@ gs_app_class_init (GsAppClass *klass)
 	 */
 	pspec = g_param_spec_uint64 ("pending-action", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READABLE | G_PARAM_PRIVATE);
+				     G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_PENDING_ACTION, pspec);
+
+	/**
+	* GsApp:key-colors:
+	*/
+	pspec = g_param_spec_boxed ("key-colors", NULL, NULL,
+				    G_TYPE_PTR_ARRAY, G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_KEY_COLORS, pspec);
 }
 
 static void
@@ -4497,6 +4495,9 @@ gs_app_get_packaging_format (GsApp *app)
 	/* fall back to bundle kind */
 	bundle_kind = gs_app_get_bundle_kind (app);
 	switch (bundle_kind) {
+	case AS_BUNDLE_KIND_UNKNOWN:
+		bundle_kind_ui = NULL;
+		break;
 	case AS_BUNDLE_KIND_LIMBA:
 		bundle_kind_ui = "Limba";
 		break;
@@ -4520,7 +4521,6 @@ gs_app_get_packaging_format (GsApp *app)
 		bundle_kind_ui = as_bundle_kind_to_string (bundle_kind);
 	}
 
-	g_assert (bundle_kind_ui != NULL);
 	return g_strdup (bundle_kind_ui);
 }
 
@@ -4540,10 +4540,10 @@ gs_app_subsume_metadata (GsApp *app, GsApp *donor)
 	g_autoptr(GList) keys = g_hash_table_get_keys (priv->metadata);
 	for (GList *l = keys; l != NULL; l = l->next) {
 		const gchar *key = l->data;
-		const gchar *value = gs_app_get_metadata_item (donor, key);
-		if (gs_app_get_metadata_item (app, key) != NULL)
+		GVariant *tmp = gs_app_get_metadata_variant (donor, key);
+		if (gs_app_get_metadata_variant (app, key) != NULL)
 			continue;
-		gs_app_set_metadata (app, key, value);
+		gs_app_set_metadata_variant (app, key, tmp);
 	}
 }
 

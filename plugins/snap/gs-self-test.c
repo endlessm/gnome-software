@@ -74,38 +74,40 @@ make_snap (const gchar *name, SnapdSnapStatus status)
 	gchar *common_ids[] = { NULL };
 	g_autoptr(GDateTime) install_date = NULL;
 	g_autoptr(GPtrArray) apps = NULL;
-	g_autoptr(GPtrArray) screenshots = NULL;
-	SnapdScreenshot *screenshot;
+	g_autoptr(GPtrArray) media = NULL;
+	SnapdMedia *m;
 
 	install_date = g_date_time_new_utc (2017, 1, 2, 11, 23, 58);
 
 	apps = g_ptr_array_new_with_free_func (g_object_unref);
 
-	screenshots = g_ptr_array_new_with_free_func (g_object_unref);
-	screenshot = g_object_new (SNAPD_TYPE_SCREENSHOT,
-				   "url", "http://example.com/screenshot1.jpg",
-				   "width", 640,
-				   "height", 480,
-				   NULL);
-	g_ptr_array_add (screenshots, screenshot);
-	screenshot = g_object_new (SNAPD_TYPE_SCREENSHOT,
-				   "url", "http://example.com/screenshot2.jpg",
-				   "width", 1024,
-				   "height", 768,
-				   NULL);
-	g_ptr_array_add (screenshots, screenshot);
+	media = g_ptr_array_new_with_free_func (g_object_unref);
+	m = g_object_new (SNAPD_TYPE_MEDIA,
+			  "type", "screenshot",
+			  "url", "http://example.com/screenshot1.jpg",
+			  "width", 640,
+			  "height", 480,
+			  NULL);
+	g_ptr_array_add (media, m);
+	m = g_object_new (SNAPD_TYPE_MEDIA,
+			  "type", "screenshot",
+			  "url", "http://example.com/screenshot2.jpg",
+			  "width", 1024,
+			  "height", 768,
+			  NULL);
+	g_ptr_array_add (media, m);
 
 	return g_object_new (SNAPD_TYPE_SNAP,
 			     "apps", status == SNAPD_SNAP_STATUS_INSTALLED ? apps : NULL,
 			     "common-ids", common_ids,
 			     "description", "DESCRIPTION",
 			     "download-size", status == SNAPD_SNAP_STATUS_AVAILABLE ? 500 : 0,
-			     "icon", "/icon",
+			     "icon", status == SNAPD_SNAP_STATUS_AVAILABLE ? NULL : "/icon",
 			     "id", name,
 			     "install-date", status == SNAPD_SNAP_STATUS_INSTALLED ? install_date : NULL,
 			     "installed-size", status == SNAPD_SNAP_STATUS_INSTALLED ? 1000 : 0,
+			     "media", status == SNAPD_SNAP_STATUS_AVAILABLE ? media : NULL,
 			     "name", name,
-			     "screenshots", status == SNAPD_SNAP_STATUS_AVAILABLE ? screenshots : NULL,
 			     "status", status,
 			     "snap-type", SNAPD_SNAP_TYPE_APP,
 			     "summary", "SUMMARY",
@@ -165,9 +167,10 @@ snapd_client_get_icon_sync (SnapdClient *client,
 }
 
 gboolean
-snapd_client_get_interfaces_sync (SnapdClient *client,
-				  GPtrArray **plugs, GPtrArray **slots,
-				  GCancellable *cancellable, GError **error)
+snapd_client_get_connections_sync (SnapdClient *client,
+				   GPtrArray **established, GPtrArray **undesired,
+				   GPtrArray **plugs, GPtrArray **slots,
+				   GCancellable *cancellable, GError **error)
 {
 	if (plugs)
 		*plugs = g_ptr_array_new_with_free_func (g_object_unref);
@@ -198,8 +201,24 @@ snapd_client_install2_sync (SnapdClient *client,
 			    SnapdProgressCallback progress_callback, gpointer progress_callback_data,
 			    GCancellable *cancellable, GError **error)
 {
+	g_autoptr(SnapdChange) change = NULL;
+	g_autoptr(GPtrArray) tasks = NULL;
+	SnapdTask *task;
+
 	g_assert_cmpstr (name, ==, "snap");
 	g_assert (channel == NULL);
+
+	tasks = g_ptr_array_new_with_free_func (g_object_unref);
+	task = g_object_new (SNAPD_TYPE_TASK,
+			     "progress-done", 0,
+			     "progress-total", 1,
+			     NULL);
+	g_ptr_array_add (tasks, task);
+	change = g_object_new (SNAPD_TYPE_CHANGE,
+			       "tasks", tasks,
+			       NULL);
+	progress_callback (client, change, NULL, progress_callback_data);
+
 	snap_installed = TRUE;
 	return TRUE;
 }
@@ -210,7 +229,24 @@ snapd_client_remove_sync (SnapdClient *client,
 			  SnapdProgressCallback progress_callback, gpointer progress_callback_data,
 			  GCancellable *cancellable, GError **error)
 {
+	g_autoptr(SnapdChange) change = NULL;
+	g_autoptr(GPtrArray) tasks = NULL;
+	SnapdTask *task;
+
 	g_assert_cmpstr (name, ==, "snap");
+
+	tasks = g_ptr_array_new_with_free_func (g_object_unref);
+	task = g_object_new (SNAPD_TYPE_TASK,
+			     "progress-done", 0,
+			     "progress-total", 1,
+			     NULL);
+	g_ptr_array_add (tasks, task);
+	change = g_object_new (SNAPD_TYPE_CHANGE,
+			       "tasks", tasks,
+			       NULL);
+	progress_callback (client, change, NULL, progress_callback_data);
+
+	snap_installed = FALSE;
 	return TRUE;
 }
 
@@ -235,7 +271,7 @@ gs_plugins_snap_test_func (GsPluginLoader *plugin_loader)
 
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
 					 "search", "snap",
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON | GS_PLUGIN_REFINE_FLAGS_REQUIRE_SCREENSHOTS,
 					 NULL);
 	apps = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
@@ -264,8 +300,7 @@ gs_plugins_snap_test_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (as_image_get_width (image), ==, 1024);
 	g_assert_cmpint (as_image_get_height (image), ==, 768);
 	pixbuf = gs_app_get_pixbuf (app);
-	g_assert_cmpint (gdk_pixbuf_get_width (pixbuf), ==, 1);
-	g_assert_cmpint (gdk_pixbuf_get_height (pixbuf), ==, 1);
+	g_assert_null (pixbuf);
 	g_assert_cmpint (gs_app_get_size_installed (app), ==, 0);
 	g_assert_cmpint (gs_app_get_size_download (app), ==, 500);
 	g_assert_cmpint (gs_app_get_install_date (app), ==, 0);
@@ -273,6 +308,7 @@ gs_plugins_snap_test_func (GsPluginLoader *plugin_loader)
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
 					 NULL);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
@@ -281,6 +317,10 @@ gs_plugins_snap_test_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
 	g_assert_cmpint (gs_app_get_size_installed (app), ==, 1000);
 	g_assert_cmpint (gs_app_get_install_date (app), ==, g_date_time_to_unix (g_date_time_new_utc (2017, 1, 2, 11, 23, 58)));
+
+	pixbuf = gs_app_get_pixbuf (app);
+	g_assert_cmpint (gdk_pixbuf_get_width (pixbuf), ==, 64);
+	g_assert_cmpint (gdk_pixbuf_get_height (pixbuf), ==, 64);
 
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,

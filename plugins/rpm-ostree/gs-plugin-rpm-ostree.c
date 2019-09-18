@@ -93,6 +93,42 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_mutex_clear (&priv->mutex);
 }
 
+static void
+gs_rpmostree_error_convert (GError **perror)
+{
+	GError *error = perror != NULL ? *perror : NULL;
+
+	/* not set */
+	if (error == NULL)
+		return;
+
+	/* parse remote RPM_OSTREED_ERROR */
+	if (g_dbus_error_is_remote_error (error)) {
+		g_autofree gchar *remote_error = g_dbus_error_get_remote_error (error);
+
+		g_dbus_error_strip_remote_error (error);
+
+		if (g_strcmp0 (remote_error, "org.projectatomic.rpmostreed.Error.NotAuthorized") == 0) {
+			error->code = GS_PLUGIN_ERROR_NO_SECURITY;
+		} else if (g_str_has_prefix (remote_error, "org.projectatomic.rpmostreed.Error")) {
+			error->code = GS_PLUGIN_ERROR_FAILED;
+		} else {
+			g_warning ("can't reliably fixup remote error %s", remote_error);
+			error->code = GS_PLUGIN_ERROR_FAILED;
+		}
+		error->domain = GS_PLUGIN_ERROR;
+		return;
+	}
+
+	/* this are allowed for low-level errors */
+	if (gs_utils_error_convert_gio (perror))
+		return;
+
+	/* this are allowed for low-level errors */
+	if (gs_utils_error_convert_gdbus (perror))
+		return;
+}
+
 gboolean
 gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 {
@@ -108,7 +144,7 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 		                                                                   cancellable,
 		                                                                   error);
 		if (priv->sysroot_proxy == NULL) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 	}
@@ -124,7 +160,7 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 		                                            &os_object_path,
 		                                            cancellable,
 		                                            error)) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 
@@ -135,7 +171,7 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 		                                                         cancellable,
 		                                                         error);
 		if (priv->os_proxy == NULL) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 	}
@@ -148,7 +184,7 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	                                                     g_variant_builder_end (options_builder),
 	                                                     cancellable,
 	                                                     error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -162,12 +198,12 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 
 		priv->ot_sysroot = ostree_sysroot_new (sysroot_file);
 		if (!ostree_sysroot_load (priv->ot_sysroot, cancellable, error)) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 
 		if (!ostree_sysroot_get_repo (priv->ot_sysroot, &priv->ot_repo, cancellable, error)) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 	}
@@ -587,7 +623,7 @@ ensure_rpmostree_dnf_context (GsPlugin *plugin, GCancellable *cancellable, GErro
 	                                           &transaction_address,
 	                                           cancellable,
 	                                           error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -596,17 +632,17 @@ ensure_rpmostree_dnf_context (GsPlugin *plugin, GCancellable *cancellable, GErro
 	                                                 tp,
 	                                                 cancellable,
 	                                                 error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
 	if (!dnf_context_setup (context, cancellable, error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
 	if (!dnf_context_setup_sack_with_flags (context, state, DNF_CONTEXT_SETUP_SACK_FLAG_SKIP_RPMDB, error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -648,7 +684,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 		                                        NULL /* fd list out */,
 		                                        cancellable,
 		                                        error)) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 
@@ -657,7 +693,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 		                                                 tp,
 		                                                 cancellable,
 		                                                 error)) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 	}
@@ -678,7 +714,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 		                                                         &transaction_address,
 		                                                         cancellable,
 		                                                         error)) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 
@@ -687,7 +723,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 		                                                 tp,
 		                                                 cancellable,
 		                                                 error)) {
-			gs_utils_error_convert_gio (error);
+			gs_rpmostree_error_convert (error);
 			return FALSE;
 		}
 	}
@@ -713,7 +749,7 @@ gs_plugin_add_updates (GsPlugin *plugin,
 
 	/* ensure D-Bus properties are updated before reading them */
 	if (!gs_rpmostree_sysroot_call_reload_sync (priv->sysroot_proxy, cancellable, error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -850,7 +886,7 @@ trigger_rpmostree_update (GsPlugin *plugin,
 	                                        NULL /* fd list out */,
 	                                        cancellable,
 	                                        error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -859,7 +895,7 @@ trigger_rpmostree_update (GsPlugin *plugin,
 	                                                 tp,
 	                                                 cancellable,
 	                                                 error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -892,6 +928,60 @@ gs_plugin_update_app (GsPlugin *plugin,
 	return TRUE;
 }
 
+static gboolean
+gs_plugin_repo_enable (GsPlugin *plugin,
+                       GsApp *app,
+                       gboolean enable,
+                       GCancellable *cancellable,
+                       GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autofree gchar *transaction_address = NULL;
+	g_autoptr(GVariantBuilder) options_builder = NULL;
+	g_autoptr(TransactionProgress) tp = NULL;
+
+	if (enable)
+		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	else
+		gs_app_set_state (app, AS_APP_STATE_REMOVING);
+
+	options_builder = g_variant_builder_new (G_VARIANT_TYPE ("a{ss}"));
+	g_variant_builder_add (options_builder, "{ss}", "enabled", enable ? "1" : "0");
+	if (!gs_rpmostree_os_call_modify_yum_repo_sync (priv->os_proxy,
+	                                                gs_app_get_id (app),
+	                                                g_variant_builder_end (options_builder),
+	                                                &transaction_address,
+	                                                cancellable,
+	                                                error)) {
+		gs_rpmostree_error_convert (error);
+		gs_app_set_state_recover (app);
+		gs_utils_error_add_origin_id (error, app);
+		return FALSE;
+	}
+
+	tp = transaction_progress_new ();
+	tp->app = g_object_ref (app);
+	if (!gs_rpmostree_transaction_get_response_sync (priv->sysroot_proxy,
+	                                                 transaction_address,
+	                                                 tp,
+	                                                 cancellable,
+	                                                 error)) {
+		gs_rpmostree_error_convert (error);
+		gs_app_set_state_recover (app);
+		gs_utils_error_add_origin_id (error, app);
+		return FALSE;
+	}
+
+
+	/* state is known */
+	if (enable)
+		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	else
+		gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+
+	return TRUE;
+}
+
 gboolean
 gs_plugin_app_install (GsPlugin *plugin,
                        GsApp *app,
@@ -908,6 +998,10 @@ gs_plugin_app_install (GsPlugin *plugin,
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
+
+	/* enable repo */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
+		return gs_plugin_repo_enable (plugin, app, TRUE, cancellable, error);
 
 	switch (gs_app_get_state (app)) {
 	case AS_APP_STATE_AVAILABLE:
@@ -961,7 +1055,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 	                                  &transaction_address,
 	                                  cancellable,
 	                                  error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
@@ -971,7 +1065,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 	                                                 tp,
 	                                                 cancellable,
 	                                                 error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
@@ -1005,6 +1099,10 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
+	/* disable repo */
+	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
+		return gs_plugin_repo_enable (plugin, app, FALSE, cancellable, error);
+
 	gs_app_set_state (app, AS_APP_STATE_REMOVING);
 	tp->app = g_object_ref (app);
 
@@ -1025,7 +1123,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	                                  &transaction_address,
 	                                  cancellable,
 	                                  error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
@@ -1035,7 +1133,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	                                                 tp,
 	                                                 cancellable,
 	                                                 error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
@@ -1063,6 +1161,21 @@ find_package_by_name (DnfSack     *sack,
 	return g_object_ref (pkgs->pdata[pkgs->len-1]);
 }
 
+static GPtrArray *
+find_packages_by_provides (DnfSack *sack,
+                           gchar **search)
+{
+	g_autoptr(GPtrArray) pkgs = NULL;
+	hy_autoquery HyQuery query = hy_query_create (sack);
+
+	hy_query_filter_provides_in (query, search);
+	hy_query_filter_latest_per_arch (query, TRUE);
+
+	pkgs = hy_query_run (query);
+
+	return g_steal_pointer (&pkgs);
+}
+
 static gboolean
 resolve_installed_packages_app (GsPlugin *plugin,
                                 GPtrArray *pkglist,
@@ -1083,6 +1196,8 @@ resolve_installed_packages_app (GsPlugin *plugin,
 				/* can't remove packages that are part of the base system */
 				gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
 			}
+			if (gs_app_get_origin (app) == NULL)
+				gs_app_set_origin (app, "rpm-ostree");
 			return TRUE /* found */;
 		}
 	}
@@ -1110,6 +1225,23 @@ resolve_available_packages_app (GsPlugin *plugin,
 		if (gs_app_get_origin (app) == NULL) {
 			const gchar *reponame = dnf_package_get_reponame (pkg);
 			gs_app_set_origin (app, reponame);
+		}
+
+		/* set more metadata for packages that don't have appstream data */
+		gs_app_set_name (app, GS_APP_QUALITY_LOWEST, dnf_package_get_name (pkg));
+		gs_app_set_summary (app, GS_APP_QUALITY_LOWEST, dnf_package_get_summary (pkg));
+
+		/* set hide-from-search quirk for available apps we don't want to show */
+		if (!gs_app_is_installed (app)) {
+			switch (gs_app_get_kind (app)) {
+			case AS_APP_KIND_DESKTOP:
+			case AS_APP_KIND_WEB_APP:
+			case AS_APP_KIND_CONSOLE:
+				gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_FROM_SEARCH);
+				break;
+			default:
+				break;
+			}
 		}
 
 		return TRUE /* found */;
@@ -1192,7 +1324,7 @@ gs_plugin_refine (GsPlugin *plugin,
 
 	/* ensure D-Bus properties are updated before reading them */
 	if (!gs_rpmostree_sysroot_call_reload_sync (priv->sysroot_proxy, cancellable, error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -1206,7 +1338,7 @@ gs_plugin_refine (GsPlugin *plugin,
 
 	pkglist = rpm_ostree_db_query_all (priv->ot_repo, checksum, cancellable, error);
 	if (pkglist == NULL) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		return FALSE;
 	}
 
@@ -1298,7 +1430,7 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 	                                       NULL /* fd list out */,
 	                                       cancellable,
 	                                       error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
@@ -1308,7 +1440,7 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 	                                                 tp,
 	                                                 cancellable,
 	                                                 error)) {
-		gs_utils_error_convert_gio (error);
+		gs_rpmostree_error_convert (error);
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
@@ -1359,7 +1491,7 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 		       GError **error)
 {
 	gboolean ret = FALSE;
-	FD_t rpmfd;
+	FD_t rpmfd = NULL;
 	int r;
 	guint64 epoch;
 	guint64 size;
@@ -1456,7 +1588,122 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 	ret = TRUE;
 
 out:
-	if (rpmfd)
+	if (rpmfd != NULL)
 		(void) Fclose (rpmfd);
 	return ret;
+}
+
+static gchar **
+what_provides_decompose (gchar **values)
+{
+	GPtrArray *array = g_ptr_array_new ();
+
+	/* iter on each provide string, and wrap it with the Fedora prefix */
+	for (guint i = 0; values[i] != NULL; i++) {
+		g_ptr_array_add (array, g_strdup (values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("gstreamer0.10(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("gstreamer1(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("font(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("mimehandler(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("postscriptdriver(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("plasma4(%s)", values[i]));
+		g_ptr_array_add (array, g_strdup_printf ("plasma5(%s)", values[i]));
+	}
+	g_ptr_array_add (array, NULL);
+	return (gchar **) g_ptr_array_free (array, FALSE);
+}
+
+gboolean
+gs_plugin_add_search_what_provides (GsPlugin *plugin,
+                                    gchar **search,
+                                    GsAppList *list,
+                                    GCancellable *cancellable,
+                                    GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_autoptr(GPtrArray) pkglist = NULL;
+	g_auto(GStrv) provides = NULL;
+
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (priv->dnf_context == NULL)
+		return TRUE;
+
+	provides = what_provides_decompose (search);
+	pkglist = find_packages_by_provides (dnf_context_get_sack (priv->dnf_context), provides);
+	for (guint i = 0; i < pkglist->len; i++) {
+		DnfPackage *pkg = g_ptr_array_index (pkglist, i);
+		g_autoptr(GsApp) app = NULL;
+
+		app = gs_plugin_cache_lookup (plugin, dnf_package_get_nevra (pkg));
+		if (app != NULL) {
+			gs_app_list_add (list, app);
+			continue;
+		}
+
+		/* create new app */
+		app = gs_app_new (NULL);
+		gs_app_set_metadata (app, "GnomeSoftware::Creator", gs_plugin_get_name (plugin));
+		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+		gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
+		app_set_rpm_ostree_packaging_format (app);
+		gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
+		gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+		gs_app_add_source (app, dnf_package_get_name (pkg));
+
+		gs_plugin_cache_add (plugin, dnf_package_get_nevra (pkg), app);
+		gs_app_list_add (list, app);
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_add_sources (GsPlugin *plugin,
+		       GsAppList *list,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GMutexLocker) locker = NULL;
+	GPtrArray *repos;
+
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (priv->dnf_context == NULL)
+		return TRUE;
+
+	repos = dnf_context_get_repos (priv->dnf_context);
+	if (repos == NULL)
+		return TRUE;
+
+	for (guint i = 0; i < repos->len; i++) {
+		DnfRepo *repo = g_ptr_array_index (repos, i);
+		g_autofree gchar *description = NULL;
+		g_autoptr(GsApp) app = NULL;
+		gboolean enabled;
+
+		/* hide these from the user */
+		if (dnf_repo_is_devel (repo) || dnf_repo_is_source (repo))
+			continue;
+
+		app = gs_app_new (dnf_repo_get_id (repo));
+		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+		gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
+		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
+
+		enabled = (dnf_repo_get_enabled (repo) & DNF_REPO_ENABLED_PACKAGES) > 0;
+		gs_app_set_state (app, enabled ? AS_APP_STATE_INSTALLED : AS_APP_STATE_AVAILABLE);
+
+		description = dnf_repo_get_description (repo);
+		gs_app_set_name (app, GS_APP_QUALITY_LOWEST, description);
+		gs_app_set_summary (app, GS_APP_QUALITY_LOWEST, description);
+
+		gs_app_list_add (list, app);
+	}
+
+	return TRUE;
 }

@@ -26,6 +26,10 @@ gs_appstream_create_app (GsPlugin *plugin, XbSilo *silo, XbNode *component, GErr
 				      error))
 		return NULL;
 
+	/* never add wildcard apps to the plugin cache */
+	if (gs_app_has_quirk (app_new, GS_APP_QUIRK_IS_WILDCARD))
+		return g_steal_pointer (&app_new);
+
 	/* look for existing object */
 	app = gs_plugin_cache_lookup (plugin, gs_app_get_unique_id (app_new));
 	if (app != NULL)
@@ -473,6 +477,11 @@ gs_appstream_refine_app_updates (GsPlugin *plugin,
 		if (g_hash_table_lookup (installed, version) != NULL)
 			continue;
 
+		/* limit this to three versions backwards if there has never
+		 * been a detected installed version */
+		if (g_hash_table_size (installed) == 0 && i >= 3)
+			break;
+
 		/* use the 'worst' urgency, e.g. critical over enhancement */
 		urgency_tmp = as_urgency_kind_from_string (xb_node_get_attr (release, "urgency"));
 		if (urgency_tmp > urgency_best)
@@ -550,6 +559,20 @@ _gs_utils_locale_has_translations (const gchar *locale)
 		return FALSE;
 	return TRUE;
 }
+
+static gchar *
+_gs_utils_get_language_from_locale (const gchar *locale)
+{
+	gchar *separator;
+
+	separator = strpbrk (locale, "._");
+
+	if (separator == NULL)
+		return NULL;
+
+	return g_strndup (locale, separator - locale);
+}
+
 
 static gboolean
 gs_appstream_origin_valid (const gchar *origin)
@@ -641,10 +664,8 @@ gs_appstream_refine_app (GsPlugin *plugin,
 			 GError **error)
 {
 	const gchar *tmp;
-	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GPtrArray) bundles = NULL;
 	g_autoptr(GPtrArray) launchables = NULL;
-	g_autoptr(GPtrArray) pkgnames = NULL;
 	g_autoptr(XbNode) req = NULL;
 
 	/* is compatible */
@@ -704,10 +725,15 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		gs_app_set_id (app, tmp);
 
 	/* set source */
-	tmp = xb_node_query_text (component, "info/filename", NULL);
+	tmp = xb_node_query_text (component, "../info/filename", NULL);
 	if (tmp != NULL && gs_app_get_metadata_item (app, "appstream::source-file") == NULL) {
 		gs_app_set_metadata (app, "appstream::source-file", tmp);
 	}
+
+	/* set scope */
+	tmp = xb_node_query_text (component, "../info/scope", NULL);
+	if (tmp != NULL)
+		gs_app_set_scope (app, as_app_scope_from_string (tmp));
 
 	/* set content rating */
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING) {
@@ -717,8 +743,13 @@ gs_appstream_refine_app (GsPlugin *plugin,
 
 	/* set name */
 	tmp = xb_node_query_text (component, "name", NULL);
-	if (tmp != NULL)
+	if (tmp != NULL) {
 		gs_app_set_name (app, GS_APP_QUALITY_HIGHEST, tmp);
+	} else {
+		/* this is a heuristic, but works even with old-style AppStream
+		 * files without the merge attribute */
+		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+	}
 
 	/* set summary */
 	tmp = xb_node_query_text (component, "summary", NULL);
@@ -823,19 +854,6 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	if (!gs_appstream_copy_metadata (app, component, error))
 		return FALSE;
 
-	/* add package names */
-	pkgnames = xb_node_query (component, "pkgname", 0, NULL);
-	if (pkgnames != NULL && gs_app_get_sources(app)->len == 0) {
-		for (guint i = 0; i < pkgnames->len; i++) {
-			XbNode *pkgname = g_ptr_array_index (pkgnames, i);
-			tmp = xb_node_get_text (pkgname);
-			if (tmp != NULL && tmp[0] != '\0')
-				gs_app_add_source (app, tmp);
-		}
-		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-		gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
-	}
-
 	/* add bundles */
 	bundles = xb_node_query (component, "bundle", 0, NULL);
 	if (bundles != NULL && gs_app_get_sources(app)->len == 0) {
@@ -844,6 +862,37 @@ gs_appstream_refine_app (GsPlugin *plugin,
 			const gchar *kind = xb_node_get_attr (bundle, "type");
 			gs_app_add_source (app, xb_node_get_text (bundle));
 			gs_app_set_bundle_kind (app, as_bundle_kind_from_string (kind));
+
+			/* get the type/name/arch/branch */
+			if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_FLATPAK) {
+				g_auto(GStrv) split = g_strsplit (xb_node_get_text (bundle), "/", -1);
+				if (g_strv_length (split) != 4) {
+					g_set_error (error,
+						     GS_PLUGIN_ERROR,
+						     GS_PLUGIN_ERROR_NOT_SUPPORTED,
+						     "invalid ID %s for a flatpak ref",
+						     xb_node_get_text (bundle));
+					return FALSE;
+				}
+
+				/* we only need the branch for the unique ID */
+				gs_app_set_branch (app, split[3]);
+			}
+		}
+	}
+
+	/* add legacy package names */
+	if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_UNKNOWN) {
+		g_autoptr(GPtrArray) pkgnames = NULL;
+		pkgnames = xb_node_query (component, "pkgname", 0, NULL);
+		if (pkgnames != NULL && gs_app_get_sources(app)->len == 0) {
+			for (guint i = 0; i < pkgnames->len; i++) {
+				XbNode *pkgname = g_ptr_array_index (pkgnames, i);
+				tmp = xb_node_get_text (pkgname);
+				if (tmp != NULL && tmp[0] != '\0')
+					gs_app_add_source (app, tmp);
+			}
+			gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 		}
 	}
 
@@ -881,9 +930,18 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		if (!_gs_utils_locale_has_translations (tmp)) {
 			gs_app_add_kudo (app, GS_APP_KUDO_MY_LANGUAGE);
 		} else {
-			g_autofree gchar *xpath = NULL;
-			xpath = g_strdup_printf ("languages/lang[text()='%s'][@percentage>50]", tmp);
-			if (xb_node_query_text (component, xpath, NULL) != NULL)
+
+			g_autoptr(GString) xpath = g_string_new (NULL);
+			g_autofree gchar *language;
+
+			xb_string_append_union (xpath, "languages/lang[text()='%s'][@percentage>50]", tmp);
+
+			language = _gs_utils_get_language_from_locale (tmp);
+			if (language != NULL) {
+				xb_string_append_union (xpath, "languages/lang[text()='%s'][@percentage>50]", language);
+			}
+
+			if (xb_node_query_text (component, xpath->str, NULL) != NULL)
 				gs_app_add_kudo (app, GS_APP_KUDO_MY_LANGUAGE);
 		}
 
@@ -902,7 +960,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		/* add a kudo to featured and popular apps */
 		if (xb_node_query_text (component, "kudos/kudo[text()='GnomeSoftware::popular']", NULL) != NULL)
 			gs_app_add_kudo (app, GS_APP_KUDO_FEATURED_RECOMMENDED);
-		if (xb_node_query_text (component, "categories/category[text()='featured']", NULL) != NULL)
+		if (xb_node_query_text (component, "categories/category[text()='Featured']", NULL) != NULL)
 			gs_app_add_kudo (app, GS_APP_KUDO_FEATURED_RECOMMENDED);
 
 		/* add new-style kudos */
@@ -988,7 +1046,7 @@ gs_appstream_silo_search_component2 (GPtrArray *array, XbNode *component, const 
 }
 
 static guint16
-gs_appstream_silo_search_component (GPtrArray *array, XbNode *component, gchar **search)
+gs_appstream_silo_search_component (GPtrArray *array, XbNode *component, const gchar * const *search)
 {
 	guint16 matches_sum = 0;
 
@@ -1005,7 +1063,7 @@ gs_appstream_silo_search_component (GPtrArray *array, XbNode *component, gchar *
 gboolean
 gs_appstream_search (GsPlugin *plugin,
 		     XbSilo *silo,
-		     gchar **values,
+		     const gchar * const *values,
 		     GsAppList *list,
 		     GCancellable *cancellable,
 		     GError **error)
@@ -1014,7 +1072,7 @@ gs_appstream_search (GsPlugin *plugin,
 	g_autoptr(GPtrArray) array = g_ptr_array_new_with_free_func ((GDestroyNotify) gs_appstream_search_helper_free);
 	g_autoptr(GPtrArray) components = NULL;
 	g_autoptr(GTimer) timer = g_timer_new ();
-	struct {
+	const struct {
 		AsAppSearchMatch	 match_value;
 		const gchar		*xpath;
 	} queries[] = {
@@ -1024,6 +1082,7 @@ gs_appstream_search (GsPlugin *plugin,
 		{ AS_APP_SEARCH_MATCH_NAME,	"name[text()~=stem(?)]" },
 		{ AS_APP_SEARCH_MATCH_KEYWORD,	"keywords/keyword[text()~=stem(?)]" },
 		{ AS_APP_SEARCH_MATCH_ID,	"id[text()~=stem(?)]" },
+		{ AS_APP_SEARCH_MATCH_ID,	"launchable[text()~=stem(?)]" },
 		{ AS_APP_SEARCH_MATCH_ORIGIN,	"../components[@origin~=stem(?)]" },
 		{ AS_APP_SEARCH_MATCH_NONE,	NULL }
 	};
@@ -1059,6 +1118,11 @@ gs_appstream_search (GsPlugin *plugin,
 			g_autoptr(GsApp) app = gs_appstream_create_app (plugin, silo, component, error);
 			if (app == NULL)
 				return FALSE;
+			if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
+				g_debug ("not returning wildcard %s",
+					 gs_app_get_unique_id (app));
+				continue;
+			}
 			g_debug ("add %s", gs_app_get_unique_id (app));
 			gs_app_set_match_value (app, match_value);
 			gs_app_list_add (list, app);
@@ -1115,11 +1179,11 @@ gs_appstream_add_category_apps (GsPlugin *plugin,
 		for (guint i = 0; i < components->len; i++) {
 			XbNode *component = g_ptr_array_index (components, i);
 			g_autoptr(GsApp) app = NULL;
-
-			/* add all the data we can */
-			app = gs_appstream_create_app (plugin, silo, component, error);
-			if (app == NULL)
-				return FALSE;
+			const gchar *id = xb_node_query_text (component, "id", NULL);
+			if (id == NULL)
+				continue;
+			app = gs_app_new (id);
+			gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
 			gs_app_list_add (list, app);
 		}
 
@@ -1136,13 +1200,19 @@ gs_appstream_count_component_for_groups (GsPlugin *plugin, XbSilo *silo, const g
 	g_autoptr(GPtrArray) array = NULL;
 	g_autoptr(GError) error_local = NULL;
 
-	if (g_strv_length (split) != 2)
+	if (g_strv_length (split) == 1) { /* "all" group for a parent category */
+		xpath = g_strdup_printf ("components/component/categories/"
+					 "category[text()='%s']/../..",
+					 split[0]);
+	} else if (g_strv_length (split) == 2) {
+		xpath = g_strdup_printf ("components/component/categories/"
+					 "category[text()='%s']/../"
+					 "category[text()='%s']/../..",
+					 split[0], split[1]);
+	} else {
 		return 0;
+	}
 
-	xpath = g_strdup_printf ("components/component/categories/"
-				 "category[text()='%s']/../"
-				 "category[text()='%s']/../..",
-				 split[0], split[1]);
 	array = xb_silo_query (silo, xpath, limit, &error_local);
 	if (array == NULL) {
 		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
@@ -1159,19 +1229,16 @@ gs_appstream_count_component_for_groups (GsPlugin *plugin, XbSilo *silo, const g
  * applications available in each category */
 gboolean
 gs_appstream_add_categories (GsPlugin *plugin,
-				  XbSilo *silo,
-				  GPtrArray *list,
-				  GCancellable *cancellable,
-				  GError **error)
+			     XbSilo *silo,
+			     GPtrArray *list,
+			     GCancellable *cancellable,
+			     GError **error)
 {
 	for (guint j = 0; j < list->len; j++) {
 		GsCategory *parent = GS_CATEGORY (g_ptr_array_index (list, j));
 		GPtrArray *children = gs_category_get_children (parent);
-		g_autofree gchar *xpath = NULL;
-		g_autoptr(GError) error_local = NULL;
-		g_autoptr(GPtrArray) array = NULL;
 
-		for (guint i = 1; i < children->len; i++) { /* 1 to ignore all */
+		for (guint i = 0; i < children->len; i++) {
 			GsCategory *cat = g_ptr_array_index (children, i);
 			GPtrArray *groups = gs_category_get_desktop_groups (cat);
 			for (guint k = 0; k < groups->len; k++) {
@@ -1179,7 +1246,11 @@ gs_appstream_add_categories (GsPlugin *plugin,
 				guint cnt = gs_appstream_count_component_for_groups (plugin, silo, group);
 				for (guint l = 0; l < cnt; l++) {
 					gs_category_increment_size (parent);
-					gs_category_increment_size (cat);
+					if (children->len > 1) {
+						/* Parent category has multiple groups, so increment
+						 * each group's size too */
+						gs_category_increment_size (cat);
+					}
 				}
 			}
 		}

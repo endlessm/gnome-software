@@ -66,8 +66,7 @@ typedef guint64 GsPluginFlags;
  * @GS_PLUGIN_ERROR_RESTART_REQUIRED:		A restart is required
  * @GS_PLUGIN_ERROR_AC_POWER_REQUIRED:		AC power is required
  * @GS_PLUGIN_ERROR_TIMED_OUT:			The job timed out
- * @GS_PLUGIN_ERROR_PURCHASE_NOT_SETUP:		Purchase support not setup
- * @GS_PLUGIN_ERROR_PURCHASE_DECLINED:		Purchase was declined
+ * @GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW:	The system battery level is too low
  *
  * The failure error types.
  **/
@@ -88,8 +87,7 @@ typedef enum {
 	GS_PLUGIN_ERROR_RESTART_REQUIRED,
 	GS_PLUGIN_ERROR_AC_POWER_REQUIRED,
 	GS_PLUGIN_ERROR_TIMED_OUT,
-	GS_PLUGIN_ERROR_PURCHASE_NOT_SETUP,
-	GS_PLUGIN_ERROR_PURCHASE_DECLINED,
+	GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW,
 	/*< private >*/
 	GS_PLUGIN_ERROR_LAST
 } GsPluginError;
@@ -221,14 +219,14 @@ typedef enum {
  * @GS_PLUGIN_ACTION_REFINE:			Refine the application
  * @GS_PLUGIN_ACTION_REFRESH:			Refresh all the sources
  * @GS_PLUGIN_ACTION_FILE_TO_APP:		Convert the file to an application
- * @GS_PLUGIN_ACTION_URL_TO_APP:		Convert the file to an application
+ * @GS_PLUGIN_ACTION_URL_TO_APP:		Convert the URI to an application
  * @GS_PLUGIN_ACTION_GET_RECENT:		Get the apps recently released
  * @GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL:    Get the list of historical updates
  * @GS_PLUGIN_ACTION_INITIALIZE:		Initialize the plugin
  * @GS_PLUGIN_ACTION_DESTROY:			Destroy the plugin
- * @GS_PLUGIN_ACTION_PURCHASE:			Purchase an app
  * @GS_PLUGIN_ACTION_DOWNLOAD:			Download an application
  * @GS_PLUGIN_ACTION_GET_ALTERNATES:		Get the alternates for a specific application
+ * @GS_PLUGIN_ACTION_GET_LANGPACKS:		Get appropriate language pack
  *
  * The plugin action.
  **/
@@ -271,9 +269,9 @@ typedef enum {
 	GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL,
 	GS_PLUGIN_ACTION_INITIALIZE,
 	GS_PLUGIN_ACTION_DESTROY,
-	GS_PLUGIN_ACTION_PURCHASE,
 	GS_PLUGIN_ACTION_DOWNLOAD,
 	GS_PLUGIN_ACTION_GET_ALTERNATES,
+	GS_PLUGIN_ACTION_GET_LANGPACKS,
 	/*< private >*/
 	GS_PLUGIN_ACTION_LAST
 } GsPluginAction;

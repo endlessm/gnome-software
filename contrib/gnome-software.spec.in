@@ -47,7 +47,7 @@ BuildRequires: libgudev1-devel
 BuildRequires: valgrind-devel
 BuildRequires: liboauth-devel
 %if 0%{?fedora}
-BuildRequires: snapd-glib-devel >= 1.42
+BuildRequires: snapd-glib-devel >= 1.49
 %endif
 
 Requires: appstream-data
@@ -97,7 +97,6 @@ Editor for designing banners for GNOME Software.
 %package snap
 Summary: Support for Ubuntu Snap packages
 Requires: %{name}%{?_isa} = %{version}-%{release}
-Requires: snapd-login-service
 Supplements: (gnome-software%{?_isa} and snapd%{?_isa})
 
 %description snap
@@ -150,7 +149,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_mandir}/man1/gnome-software.1.gz
 %{_datadir}/icons/hicolor/*/apps/org.gnome.Software.svg
 %{_datadir}/icons/hicolor/symbolic/apps/org.gnome.Software-symbolic.svg
-%{_datadir}/icons/hicolor/symbolic/status/software-installed-symbolic.svg
+%{_datadir}/icons/hicolor/scalable/status/software-installed-symbolic.svg
 %{_datadir}/gnome-software/featured-*.svg
 %{_datadir}/gnome-software/featured-*.jpg
 %{_datadir}/metainfo/org.gnome.Software.appdata.xml
@@ -165,6 +164,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_dpkg.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_dummy.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_epiphany.so
+%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fedora_langpacks.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fedora-pkgdb-collections.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_flatpak.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fwupd.so

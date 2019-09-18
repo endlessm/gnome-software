@@ -43,6 +43,7 @@ typedef struct
 	gboolean	 colorful;
 	gboolean	 show_folders;
 	gboolean	 show_buttons;
+	gboolean	 show_rating;
 	gboolean	 show_source;
 	gboolean	 show_update;
 	gboolean	 show_installed_size;
@@ -94,9 +95,9 @@ gs_app_row_get_description (GsAppRow *app_row)
 
 	/* try all these things in order */
 	if (tmp == NULL || (tmp != NULL && tmp[0] == '\0'))
-		tmp = gs_app_get_description (priv->app);
-	if (tmp == NULL || (tmp != NULL && tmp[0] == '\0'))
 		tmp = gs_app_get_summary (priv->app);
+	if (tmp == NULL || (tmp != NULL && tmp[0] == '\0'))
+		tmp = gs_app_get_description (priv->app);
 	if (tmp == NULL || (tmp != NULL && tmp[0] == '\0'))
 		tmp = gs_app_get_name (priv->app);
 	if (tmp == NULL)
@@ -361,7 +362,7 @@ gs_app_row_refresh (GsAppRow *app_row)
 		gtk_widget_hide (priv->star);
 	} else {
 		gtk_widget_hide (priv->version_box);
-		if (missing_search_result || gs_app_get_rating (priv->app) <= 0) {
+		if (missing_search_result || gs_app_get_rating (priv->app) <= 0 || !priv->show_rating) {
 			gtk_widget_hide (priv->star);
 		} else {
 			gtk_widget_show (priv->star);
@@ -390,15 +391,25 @@ gs_app_row_refresh (GsAppRow *app_row)
 	}
 
 	/* pixbuf */
-	if (gs_app_get_pixbuf (priv->app) != NULL)
+	if (gs_app_get_pixbuf (priv->app) == NULL) {
+		gtk_image_set_from_icon_name (GTK_IMAGE (priv->image),
+					      "application-x-executable",
+					      GTK_ICON_SIZE_DIALOG);
+	} else {
 		gs_image_set_from_pixbuf (GTK_IMAGE (priv->image),
 					  gs_app_get_pixbuf (priv->app));
+	}
 
 	context = gtk_widget_get_style_context (priv->image);
 	if (missing_search_result)
 		gtk_style_context_add_class (context, "dimmer-label");
 	else
 		gtk_style_context_remove_class (context, "dimmer-label");
+
+	if (gs_app_get_use_drop_shadow (priv->app))
+		gtk_style_context_add_class (context, "icon-dropshadow");
+	else
+		gtk_style_context_remove_class (context, "icon-dropshadow");
 
 	/* pending label */
 	switch (gs_app_get_state (priv->app)) {
@@ -748,6 +759,15 @@ gs_app_row_set_show_buttons (GsAppRow *app_row, gboolean show_buttons)
 	GsAppRowPrivate *priv = gs_app_row_get_instance_private (app_row);
 
 	priv->show_buttons = show_buttons;
+	gs_app_row_refresh (app_row);
+}
+
+void
+gs_app_row_set_show_rating (GsAppRow *app_row, gboolean show_rating)
+{
+	GsAppRowPrivate *priv = gs_app_row_get_instance_private (app_row);
+
+	priv->show_rating = show_rating;
 	gs_app_row_refresh (app_row);
 }
 

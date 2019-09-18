@@ -19,8 +19,8 @@ typedef struct
 	GtkWidget	*comment_label;
 	GtkWidget	*details_revealer;
 	GtkWidget	*status_label;
-	GtkWidget	*url_title_label;
-	GtkWidget	*url_value_label;
+	GtkWidget	*url_box;
+	GtkWidget	*url_label;
 	guint		 refresh_idle_id;
 } GsRepoRowPrivate;
 
@@ -56,9 +56,8 @@ gs_repo_row_set_url (GsRepoRow *row, const gchar *url)
 {
 	GsRepoRowPrivate *priv = gs_repo_row_get_instance_private (row);
 
-	gtk_label_set_text (GTK_LABEL (priv->url_value_label), url);
-	gtk_widget_set_visible (priv->url_value_label, url != NULL);
-	gtk_widget_set_visible (priv->url_title_label, url != NULL);
+	gtk_label_set_text (GTK_LABEL (priv->url_label), url);
+	gtk_widget_set_visible (priv->url_box, url != NULL);
 }
 
 static gboolean
@@ -69,6 +68,7 @@ repo_supports_removal (GsApp *repo)
 	/* can't remove a repo, only enable/disable existing ones */
 	if (g_strcmp0 (management_plugin, "fwupd") == 0 ||
 	    g_strcmp0 (management_plugin, "packagekit") == 0 ||
+	    g_strcmp0 (management_plugin, "rpm-ostree") == 0 ||
 	    g_strcmp0 (management_plugin, "shell-extensions") == 0)
 		return FALSE;
 
@@ -279,8 +279,8 @@ gs_repo_row_class_init (GsRepoRowClass *klass)
 	gtk_widget_class_bind_template_child_private (widget_class, GsRepoRow, comment_label);
 	gtk_widget_class_bind_template_child_private (widget_class, GsRepoRow, details_revealer);
 	gtk_widget_class_bind_template_child_private (widget_class, GsRepoRow, status_label);
-	gtk_widget_class_bind_template_child_private (widget_class, GsRepoRow, url_title_label);
-	gtk_widget_class_bind_template_child_private (widget_class, GsRepoRow, url_value_label);
+	gtk_widget_class_bind_template_child_private (widget_class, GsRepoRow, url_box);
+	gtk_widget_class_bind_template_child_private (widget_class, GsRepoRow, url_label);
 }
 
 GtkWidget *

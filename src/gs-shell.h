@@ -54,6 +54,7 @@ void		 gs_shell_change_mode		(GsShell	*shell,
 						 GsShellMode	 mode,
 						 gpointer	 data,
 						 gboolean	 scroll_up);
+void		 gs_shell_reset_state		(GsShell	*shell);
 void		 gs_shell_set_mode		(GsShell	*shell,
 						 GsShellMode	 mode);
 void		 gs_shell_modal_dialog_present	(GsShell	*shell,
@@ -87,5 +88,7 @@ void		 gs_shell_setup			(GsShell	*shell,
 						 GCancellable	*cancellable);
 gboolean	 gs_shell_is_active		(GsShell	*shell);
 GtkWindow	*gs_shell_get_window		(GsShell	*shell);
+void		 gs_shell_show_notification	(GsShell	*shell,
+						 const gchar	*title);
 
 G_END_DECLS

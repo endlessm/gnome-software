@@ -41,9 +41,6 @@
 #include "gs-utils.h"
 #include "gs-plugin.h"
 
-#define LOW_RESOLUTION_WIDTH  800
-#define LOW_RESOLUTION_HEIGHT 600
-
 #define MB_IN_BYTES (1024 * 1024)
 
 /**
@@ -1084,29 +1081,6 @@ gs_utils_append_key_value (GString *str, gsize align_len,
 	g_string_append (str, "\n");
 }
 
-/**
- * gs_utils_is_low_resolution:
- * @toplevel: widget on monitor to check
- *
- * Retrieves whether the primary monitor has a low resolution.
- *
- * Returns: %TRUE if the monitor has low resolution
- **/
-gboolean
-gs_utils_is_low_resolution (GtkWidget *toplevel)
-{
-	GdkRectangle geometry;
-	GdkDisplay *display;
-	GdkMonitor *monitor;
-
-	display = gtk_widget_get_display (toplevel);
-	monitor = gdk_display_get_monitor_at_window (display, gtk_widget_get_window (toplevel));
-
-	gdk_monitor_get_geometry (monitor, &geometry);
-
-	return geometry.width < LOW_RESOLUTION_WIDTH || geometry.height < LOW_RESOLUTION_HEIGHT;
-}
-
 guint
 gs_utils_get_memory_total (void)
 {
@@ -1185,3 +1159,23 @@ gs_utils_parse_evr (const gchar *evr,
 	g_assert (*out_release != NULL);
 	return TRUE;
 }
+
+/**
+ * gs_utils_set_online_updates_timestamp:
+ *
+ * Sets the value of online-updates-timestamp to current epoch. "online-updates-timestamp" represents
+ * the last time the system was online and got any updates.
+ *
+ **/
+void
+gs_utils_set_online_updates_timestamp (GSettings *settings)
+{
+	g_autoptr(GDateTime) now = NULL;
+
+	g_return_if_fail (settings != NULL);
+
+	now = g_date_time_new_now_local ();
+	g_settings_set (settings, "online-updates-timestamp", "x", g_date_time_to_unix (now));
+}
+
+/* vim: set noexpandtab: */

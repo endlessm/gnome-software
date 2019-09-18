@@ -13,8 +13,6 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <appstream-glib.h>
 
-#include "gs-price.h"
-
 G_BEGIN_DECLS
 
 #define GS_TYPE_APP (gs_app_get_type ())
@@ -85,6 +83,7 @@ typedef enum {
  * @GS_APP_QUIRK_PARENTAL_FILTER:	The app has been filtered by parental controls, and should be hidden
  * @GS_APP_QUIRK_NEW_PERMISSIONS:	The update requires new permissions
  * @GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE:	The app cannot be run by the current user due to parental controls, and should not be launchable
+ * @GS_APP_QUIRK_HIDE_FROM_SEARCH:	The app should not be shown in search results
  *
  * The application attributes.
  **/
@@ -103,8 +102,9 @@ typedef enum {
 	GS_APP_QUIRK_REMOVABLE_HARDWARE	= 1 << 10,	/* Since: 3.32 */
 	GS_APP_QUIRK_DEVELOPER_VERIFIED	= 1 << 11,	/* Since: 3.32 */
 	GS_APP_QUIRK_PARENTAL_FILTER	= 1 << 12,	/* Since: 3.32 */
-	GS_APP_QUIRK_NEW_PERMISSIONS    = 1 << 13,	/* Since: 3.32 */
+	GS_APP_QUIRK_NEW_PERMISSIONS	= 1 << 13,	/* Since: 3.32 */
 	GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE	= 1 << 14,	/* Since: 3.32 */
+	GS_APP_QUIRK_HIDE_FROM_SEARCH	= 1 << 15,	/* Since: 3.32 */
 	/*< private >*/
 	GS_APP_QUIRK_LAST
 } GsAppQuirk;
@@ -132,8 +132,8 @@ typedef enum {
 } GsAppQuality;
 
 typedef enum {
-	GS_APP_PERMISSIONS_NONE 		= 0,
-	GS_APP_PERMISSIONS_UNKNOWN		= 1 << 0,
+	GS_APP_PERMISSIONS_UNKNOWN 		= 0,
+	GS_APP_PERMISSIONS_NONE			= 1 << 0,
 	GS_APP_PERMISSIONS_NETWORK 		= 1 << 1,
 	GS_APP_PERMISSIONS_SYSTEM_BUS   	= 1 << 2,
 	GS_APP_PERMISSIONS_SESSION_BUS		= 1 << 3,
@@ -146,6 +146,7 @@ typedef enum {
 	GS_APP_PERMISSIONS_DOWNLOADS_READ	= 1 << 10,
 	GS_APP_PERMISSIONS_SETTINGS		= 1 << 11,
 	GS_APP_PERMISSIONS_X11			= 1 << 12,
+	GS_APP_PERMISSIONS_ESCAPE_SANDBOX	= 1 << 13,
 	/*< private >*/
 	GS_APP_PERMISSIONS_LAST
 } GsAppPermissions;
@@ -279,13 +280,10 @@ void		 gs_app_set_management_plugin	(GsApp		*app,
 GdkPixbuf	*gs_app_get_pixbuf		(GsApp		*app);
 void		 gs_app_set_pixbuf		(GsApp		*app,
 						 GdkPixbuf	*pixbuf);
-GsPrice		*gs_app_get_price		(GsApp		*app);
-void		 gs_app_set_price		(GsApp		*app,
-						 gdouble	 amount,
-						 const gchar	*currency);
 GPtrArray	*gs_app_get_icons		(GsApp		*app);
 void		 gs_app_add_icon		(GsApp		*app,
 						 AsIcon		*icon);
+gboolean	 gs_app_get_use_drop_shadow	(GsApp		*app);
 GFile		*gs_app_get_local_file		(GsApp		*app);
 void		 gs_app_set_local_file		(GsApp		*app,
 						 GFile		*local_file);

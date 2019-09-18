@@ -74,7 +74,6 @@ gboolean	 gs_utils_error_convert_gdbus	(GError		**perror);
 gboolean	 gs_utils_error_convert_gdk_pixbuf(GError	**perror);
 gboolean	 gs_utils_error_convert_json_glib (GError	**perror);
 gboolean	 gs_utils_error_convert_appstream (GError	**perror);
-gboolean	 gs_utils_is_low_resolution	  (GtkWidget     *toplevel);
 
 gchar		*gs_utils_get_url_scheme	(const gchar	*url);
 gchar		*gs_utils_get_url_path		(const gchar	*url);
@@ -88,5 +87,6 @@ gboolean	 gs_utils_parse_evr		(const gchar	 *evr,
 						 gchar		**out_epoch,
 						 gchar		**out_version,
 						 gchar		**out_release);
+void		 gs_utils_set_online_updates_timestamp (GSettings *settings);
 
 G_END_DECLS

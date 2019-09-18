@@ -1,8 +1,8 @@
 project('gnome-software', 'c',
-  version : '3.31.90',
+  version : '3.34.0',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
-  meson_version : '>=0.40.0'
+  meson_version : '>=0.46.0'
 )
 
 conf = configuration_data()
@@ -18,7 +18,7 @@ conf.set_quoted('GS_PLUGIN_API_VERSION', gs_plugin_api_version)
 # install docs
 install_data('README.md', install_dir : 'share/doc/gnome-software')
 
-# get suported warning flags
+# get supported warning flags
 test_args = [
   '-fstack-protector-strong',
   '-Waggregate-return',
@@ -80,7 +80,7 @@ test_link_args = [
   '-Wl,-z,now',
 ]
 foreach arg: test_link_args
-  if cc.has_argument(arg)
+  if cc.has_link_argument(arg)
     global_link_args += arg
   endif
 endforeach
@@ -98,7 +98,7 @@ conf.set('HAVE_LINUX_UNISTD_H', cc.has_header('linux/unistd.h'))
 
 appstream_glib = dependency('appstream-glib', version : '>= 0.7.14')
 gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.32.0')
-libxmlb = dependency('xmlb', version : '>= 0.1.4', fallback : ['libxmlb', 'libxmlb_dep'])
+libxmlb = dependency('xmlb', version : '>= 0.1.7', fallback : ['libxmlb', 'libxmlb_dep'])
 gio_unix = dependency('gio-unix-2.0', version : '>= 2.56.0')
 gmodule = dependency('gmodule-2.0')
 goa = dependency('goa-1.0')
@@ -106,6 +106,11 @@ gtk = dependency('gtk+-3.0', version : '>= 3.22.4')
 json_glib = dependency('json-glib-1.0', version : '>= 1.2.0')
 libm = cc.find_library('m', required: false)
 libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')
+
+if get_option('mogwai')
+  mogwai_schedule_client = dependency('mogwai-schedule-client-0', version : '>= 0.2.0')
+  conf.set('HAVE_MOGWAI', 1)
+endif
 
 if get_option('valgrind')
   message(meson.version())
@@ -149,19 +154,23 @@ if get_option('packagekit')
   endif
 endif
 
+if get_option('eos_updater')
+  ostree = dependency('ostree-1')
+endif
+
 if get_option('fwupd')
   fwupd = dependency('fwupd', version : '>= 1.0.3')
 endif
 
 if get_option('flatpak')
-  flatpak = dependency('flatpak', version : '>= 0.99.3')
+  flatpak = dependency('flatpak', version : '>= 1.0.4')
 endif
 
 if get_option('rpm_ostree')
   libdnf = dependency('libdnf')
   ostree = dependency('ostree-1')
   rpm = dependency('rpm')
-  rpm_ostree = dependency('rpm-ostree-1', version : '>= 2018.4')
+  rpm_ostree = dependency('rpm-ostree-1', version : '>= 2019.3')
 endif
 
 if get_option('gudev')
@@ -169,7 +178,7 @@ if get_option('gudev')
 endif
 
 if get_option('snap')
-  snap = dependency('snapd-glib', version : '>= 1.45')
+  snap = dependency('snapd-glib', version : '>= 1.49')
 endif
 
 gnome = import('gnome')

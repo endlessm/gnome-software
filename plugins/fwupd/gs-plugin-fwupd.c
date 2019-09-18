@@ -18,6 +18,7 @@
 #include <gnome-software.h>
 
 #include "gs-fwupd-app.h"
+#include "gs-metered.h"
 
 /*
  * SECTION:
@@ -50,6 +51,10 @@ gs_plugin_fwupd_error_convert (GError **perror)
 	if (gs_utils_error_convert_gio (perror))
 		return;
 
+	/* this are allowed for low-level errors */
+	if (gs_utils_error_convert_gdbus (perror))
+		return;
+
 	/* custom to this plugin */
 	if (error->domain == FWUPD_ERROR) {
 		switch (error->code) {
@@ -67,6 +72,11 @@ gs_plugin_fwupd_error_convert (GError **perror)
 		case FWUPD_ERROR_AC_POWER_REQUIRED:
 			error->code = GS_PLUGIN_ERROR_AC_POWER_REQUIRED;
 			break;
+#if FWUPD_CHECK_VERSION(1,2,10)
+		case FWUPD_ERROR_BATTERY_LEVEL_TOO_LOW:
+			error->code = GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW;
+			break;
+#endif
 		default:
 			error->code = GS_PLUGIN_ERROR_FAILED;
 			break;
@@ -797,8 +807,10 @@ gs_plugin_fwupd_install (GsPlugin *plugin,
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
+
+	/* delete the file from the cache */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-	return TRUE;
+	return g_file_delete (local_file, cancellable, error);
 }
 
 static gboolean
@@ -894,6 +906,17 @@ gs_plugin_download_app (GsPlugin *plugin,
 	filename = g_file_get_path (local_file);
 	if (!g_file_query_exists (local_file, cancellable)) {
 		const gchar *uri = gs_fwupd_app_get_update_uri (app);
+
+		if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
+			g_autoptr(GError) error_local = NULL;
+
+			if (!gs_metered_block_app_on_download_scheduler (app, cancellable, &error_local)) {
+				g_warning ("Failed to block on download scheduler: %s",
+					   error_local->message);
+				g_clear_error (&error_local);
+			}
+		}
+
 		if (!gs_plugin_download_file (plugin, app, uri, filename,
 					      cancellable, error))
 			return FALSE;
@@ -980,9 +1003,9 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 		/* create each app */
 		app = gs_plugin_fwupd_new_app_from_device (plugin, dev);
 
-		/* we have no update view for local files */
+		/* we *might* have no update view for local files */
 		gs_app_set_version (app, gs_app_get_update_version (app));
-		gs_app_set_description (app, GS_APP_QUALITY_NORMAL,
+		gs_app_set_description (app, GS_APP_QUALITY_LOWEST,
 					gs_app_get_update_details (app));
 		gs_app_list_add (list, app);
 	}
@@ -1008,7 +1031,7 @@ gs_plugin_add_sources (GsPlugin *plugin,
 		g_autoptr(GsApp) app = NULL;
 
 		/* ignore these, they're built in */
-		if (fwupd_remote_get_kind (remote) == FWUPD_REMOTE_KIND_LOCAL)
+		if (fwupd_remote_get_kind (remote) != FWUPD_REMOTE_KIND_DOWNLOAD)
 			continue;
 
 		/* create something that we can use to enable/disable */

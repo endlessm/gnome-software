@@ -418,9 +418,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 
 	/* progress should be set to zero right before installing */
-	g_assert_cmpint (gs_app_get_progress (app), ==, 0);
-
 	gs_test_flush_main_context ();
+	g_assert_cmpint (gs_app_get_progress (app), ==, 0);
 	g_assert_no_error (error);
 	g_assert (ret);
 	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
@@ -1020,7 +1019,6 @@ gs_plugins_flatpak_ref_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsAppList) search2 = NULL;
 	g_autoptr(GsAppList) sources = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
-	g_autoptr(GString) str = g_string_new (NULL);
 
 	/* drop all caches */
 	g_unlink ("/var/tmp/self-test/flatpak-user/components.xmlb");
@@ -1338,7 +1336,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
 	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
-	g_assert_cmpint (gs_app_get_progress (app), ==, 0);
 
 	/* switch to the new repo */
 	g_assert (unlink ("/var/tmp/self-test/repo") == 0);

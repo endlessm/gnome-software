@@ -886,7 +886,7 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 						 GTK_MESSAGE_ERROR,
 						 GTK_BUTTONS_CANCEL,
 						 /* TRANSLATORS: this is to explain that downloading updates may cost money */
-						 _("Charges may apply"));
+						 _("Charges May Apply"));
 		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
 							  /* TRANSLATORS: we need network
 							   * to do the updates check */
@@ -894,7 +894,7 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 		gtk_dialog_add_button (GTK_DIALOG (dialog),
 				       /* TRANSLATORS: this is a link to the
 					* control-center network panel */
-				       _("Check Anyway"),
+				       _("Check _Anyway"),
 				       GTK_RESPONSE_ACCEPT);
 		g_signal_connect (dialog, "response",
 				  G_CALLBACK (gs_updates_page_refresh_confirm_cb),
@@ -958,7 +958,6 @@ upgrade_download_finished_cb (GObject *source,
 {
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GsPageHelper) helper = (GsPageHelper *) user_data;
 
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
 		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
@@ -988,6 +987,7 @@ gs_updates_page_upgrade_download_cb (GsUpgradeBanner *upgrade_banner,
 	if (self->cancellable_upgrade_download != NULL)
 		g_object_unref (self->cancellable_upgrade_download);
 	self->cancellable_upgrade_download = g_cancellable_new ();
+	g_debug ("Starting upgrade download with cancellable %p", self->cancellable_upgrade_download);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD,
 					 "interactive", TRUE,
 					 "app", app,
@@ -1165,7 +1165,6 @@ gs_updates_page_upgrade_help_cb (GsUpgradeBanner *upgrade_banner,
 {
 	GsApp *app;
 	const gchar *uri;
-	g_autoptr(GError) error = NULL;
 
 	app = gs_upgrade_banner_get_app (upgrade_banner);
 	if (app == NULL) {
@@ -1201,7 +1200,6 @@ gs_shell_update_are_updates_in_progress (GsUpdatesPage *self)
 		switch (gs_app_get_state (app)) {
 		case AS_APP_STATE_INSTALLING:
 		case AS_APP_STATE_REMOVING:
-		case AS_APP_STATE_PURCHASING:
 			return TRUE;
 			break;
 		default:
@@ -1270,6 +1268,7 @@ static void
 gs_updates_page_upgrade_cancel_cb (GsUpgradeBanner *upgrade_banner,
                                    GsUpdatesPage *self)
 {
+	g_debug ("Cancelling upgrade download with %p", self->cancellable_upgrade_download);
 	g_cancellable_cancel (self->cancellable_upgrade_download);
 }
 
