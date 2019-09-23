@@ -485,7 +485,7 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 			continue;
 		}
 
-		gs_app_add_category (app, "USB");
+		gs_app_add_category (app, "usb");
 
 		/* add a keyword so users can search for "usb" */
 		/* TODO as_app_add_keyword (as_app, NULL, "usb"); */
@@ -3098,7 +3098,7 @@ gs_flatpak_mount_removed (GVolumeMonitor *volume_monitor,
 		should_reload = TRUE;
 		for (guint i = 0; i < apps->len; ++i) {
 			GsApp *app = g_ptr_array_index (apps, i);
-			gs_app_remove_category (app, "USB");
+			gs_app_remove_category (app, "usb");
 		}
 		g_hash_table_iter_remove (&iter);
 	}
@@ -3329,11 +3329,37 @@ gs_flatpak_add_category_apps (GsFlatpak *self,
 			      GCancellable *cancellable,
 			      GError **error)
 {
-	g_autoptr(GRWLockReaderLocker) locker = NULL;
-	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	return gs_appstream_add_category_apps (self->plugin, self->silo,
+	GsCategory *parent_category;
+
+	{
+	  g_autoptr(GRWLockReaderLocker) locker = NULL;
+	  locker = g_rw_lock_reader_locker_new (&self->silo_lock);
+	  if (!gs_appstream_add_category_apps (self->plugin, self->silo,
 					       category, list,
-					       cancellable, error);
+					       cancellable, error))
+		  return FALSE;
+	}
+
+	/* If the parent category is "usb", add apps found on USB drives */
+	parent_category = gs_category_get_parent (category);
+	if (parent_category != NULL) {
+		const char *cat_id = gs_category_get_id (parent_category);
+		if (g_strcmp0 (cat_id, "usb") == 0) {
+			GHashTableIter iter;
+			gpointer value;
+
+			g_hash_table_iter_init (&iter, self->usb_remotes);
+			while (g_hash_table_iter_next (&iter, NULL, &value)) {
+				GPtrArray *apps = value;
+				for (guint i = 0; i < apps->len; ++i) {
+					GsApp *app = g_ptr_array_index (apps, i);
+					gs_app_list_add (list, app);
+				}
+			}
+		}
+	}
+
+	return TRUE;
 }
 
 gboolean
@@ -3342,14 +3368,36 @@ gs_flatpak_add_categories (GsFlatpak *self,
 			   GCancellable *cancellable,
 			   GError **error)
 {
-	g_autoptr(GRWLockReaderLocker) locker = NULL;
-
 	if (!gs_flatpak_rescan_appstream_store (self, cancellable, error))
 		return FALSE;
 
-	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	return gs_appstream_add_categories (self->plugin, self->silo,
-					    list, cancellable, error);
+	{
+	  g_autoptr(GRWLockReaderLocker) locker = NULL;
+	  locker = g_rw_lock_reader_locker_new (&self->silo_lock);
+	  if (!gs_appstream_add_categories (self->plugin, self->silo,
+					    list, cancellable, error))
+		  return FALSE;
+	}
+
+	/* Calculate the number of apps in the special "usb" category */
+	for (guint j = 0; j < list->len; j++) {
+		GsCategory *cat = GS_CATEGORY (g_ptr_array_index (list, j));
+		const char *cat_id = gs_category_get_id (cat);
+
+		if (g_strcmp0 (cat_id, "usb") == 0) {
+			GHashTableIter iter;
+			gpointer value;
+
+			g_hash_table_iter_init (&iter, self->usb_remotes);
+			while (g_hash_table_iter_next (&iter, NULL, &value)) {
+				GPtrArray *apps = value;
+				for (guint i = 0; i < apps->len; ++i)
+					gs_category_increment_size (cat);
+			}
+		}
+	}
+
+    return TRUE;
 }
 
 gboolean

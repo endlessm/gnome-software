@@ -915,7 +915,7 @@ gs_details_page_refresh_buttons (GsDetailsPage *self)
 		 * so we're changing the installation button's label to "Download" but
 		 * only if the app is not coming from a removable drive (as in which
 		 * case they don't need to be downloaded, only installed) */
-		if (gs_app_has_category (self->app, "USB")) {
+		if (gs_app_has_category (self->app, "usb")) {
 			/* TRANSLATORS: button text in the header when an application
 			 * can be installed */
 			gtk_button_set_label (GTK_BUTTON (self->button_install), _("_Install"));

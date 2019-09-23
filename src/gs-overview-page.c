@@ -314,6 +314,10 @@ gs_overview_page_get_categories_cb (GObject *source_object,
 
 			has_category = TRUE;
 			gs_shell_side_filter_add_category (priv->shell, cat);
+
+			g_hash_table_insert (priv->category_hash,
+								 g_strdup (gs_category_get_id (cat)),
+								 g_object_ref (cat));
 		}
 	} else {
 		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
