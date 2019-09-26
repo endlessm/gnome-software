@@ -803,10 +803,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	/* set description */
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION) {
 		g_autofree gchar *description = NULL;
-		g_autoptr(XbNode) n = NULL;
-		n = xb_node_query_first (component, "description", NULL);
-		if (n == NULL)
-			n = xb_node_query_first (component, "summary", NULL);
+		g_autoptr(XbNode) n = xb_node_query_first (component, "description", NULL);
 		if (n != NULL)
 			description = gs_appstream_format_description (n, NULL);
 		if (description != NULL)
