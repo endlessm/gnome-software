@@ -389,6 +389,14 @@ app_is_flatpak (GsApp *app)
 	return gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_FLATPAK;
 }
 
+void
+gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
+{
+	if (app_is_flatpak (app))
+		return;
+
+	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+}
 
 static void
 gs_plugin_eos_refine_core_app (GsApp *app)
