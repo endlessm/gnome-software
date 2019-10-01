@@ -437,6 +437,41 @@ _ref_to_app (FlatpakTransaction *transaction, const gchar *ref, GsPlugin *plugin
 	return gs_plugin_flatpak_find_app_by_ref (plugin, ref, NULL, NULL);
 }
 
+/*
+ * Returns: (transfer full) (element-type GsFlatpak GsAppList):
+ *  a map from GsFlatpak to non-empty lists of apps from @list associated
+ *  with that installation.
+ */
+static GHashTable *
+_flatpak_group_apps_by_installation (GsPlugin *plugin,
+                                              GsAppList *list)
+{
+	g_autoptr(GHashTable) applist_by_flatpaks = NULL;
+
+	/* list of apps to be handled by each flatpak installation */
+	applist_by_flatpaks = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+						     (GDestroyNotify) g_object_unref,
+						     (GDestroyNotify) g_object_unref);
+
+	/* put each app into the correct per-GsFlatpak list */
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		GsFlatpak *flatpak = gs_plugin_flatpak_get_handler (plugin, app);
+		if (flatpak != NULL) {
+			GsAppList *list_tmp = g_hash_table_lookup (applist_by_flatpaks, flatpak);
+			if (list_tmp == NULL) {
+				list_tmp = gs_app_list_new ();
+				g_hash_table_insert (applist_by_flatpaks,
+						     g_object_ref (flatpak),
+						     list_tmp);
+			}
+			gs_app_list_add (list_tmp, app);
+		}
+	}
+
+	return g_steal_pointer (&applist_by_flatpaks);
+}
+
 static FlatpakTransaction *
 _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 		    GCancellable *cancellable, GError **error)
@@ -568,67 +603,77 @@ gboolean
 gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 		    GCancellable *cancellable, GError **error)
 {
-	GsFlatpak *flatpak = NULL;
-	g_autoptr(FlatpakTransaction) transaction = NULL;
-	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
-	gboolean is_auto_update;
+	gboolean is_auto_update = !gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE);
+	g_autoptr(GHashTable) applist_by_flatpaks = NULL;
+	GHashTableIter iter;
+	gpointer key, value;
 
-	/* not supported */
-	for (guint i = 0; i < gs_app_list_length (list); i++) {
-		GsApp *app = gs_app_list_index (list, i);
-		flatpak = gs_plugin_flatpak_get_handler (plugin, app);
-		if (flatpak != NULL)
-			gs_app_list_add (list_tmp, app);
-	}
-	if (gs_app_list_length (list_tmp) == 0)
-		return TRUE;
+	/* build and run transaction for each flatpak installation */
+	applist_by_flatpaks = _flatpak_group_apps_by_installation (plugin, list);
+	g_hash_table_iter_init (&iter, applist_by_flatpaks);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		GsFlatpak *flatpak = GS_FLATPAK (key);
+		GsAppList *list_tmp = GS_APP_LIST (value);
+		g_autoptr(FlatpakTransaction) transaction = NULL;
 
-	if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
-		g_autoptr(GError) error_local = NULL;
+		g_assert (GS_IS_FLATPAK (flatpak));
+		g_assert (list_tmp != NULL);
+		g_assert (gs_app_list_length (list_tmp) > 0);
 
-		if (!gs_metered_block_app_list_on_download_scheduler (list_tmp, cancellable, &error_local)) {
-			g_warning ("Failed to block on download scheduler: %s",
-				   error_local->message);
-			g_clear_error (&error_local);
+		if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
+			g_autoptr(GError) error_local = NULL;
+
+			if (!gs_metered_block_app_list_on_download_scheduler (list_tmp, cancellable, &error_local)) {
+				g_warning ("Failed to block on download scheduler: %s",
+					   error_local->message);
+				g_clear_error (&error_local);
+			}
 		}
-	}
 
-	/* Is there enough disk space to download? */
-	is_auto_update = !gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE);
-	if (!gs_flatpak_has_space_to_update (flatpak, list_tmp, is_auto_update)) {
-		g_debug ("Skipping %s: not enough space on disk",
-			 (is_auto_update ? "automatic update" : "update"));
-		if (is_auto_update) {
-			/* Do not return an error because we don't want to see a banner
-			 * showing up out of the blue for possibly multiple update failures */
-			return TRUE;
+		/* Is there enough disk space to download updates in this
+		 * installation?
+		 */
+		if (!gs_flatpak_has_space_to_update (flatpak, list_tmp, is_auto_update)) {
+			g_debug ("Skipping %s for %s: not enough space on disk",
+				 (is_auto_update ? "automatic update" : "update"),
+				 gs_flatpak_get_id (flatpak));
+			if (is_auto_update) {
+				/* If we're performing automatic updates in the
+				 * background, don't return an error: we don't
+				 * want an error banner showing up out of the
+				 * blue. Continue to the next installation (if
+				 * any).
+				 */
+				continue;
+			}
+			g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
+				     _("You don’t have enough space to update these apps. Please remove apps or documents to create more space."));
+			return FALSE;
 		}
-		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
-			     _("You don’t have enough space to update these apps. Please remove apps or documents to create more space."));
-		return FALSE;
-	}
 
-	/* build and run non-deployed transaction */
-	transaction = _build_transaction (plugin, flatpak, cancellable, error);
-	if (transaction == NULL) {
-		gs_flatpak_error_convert (error);
-		return FALSE;
-	}
-	flatpak_transaction_set_no_deploy (transaction, TRUE);
-	for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
-		GsApp *app = gs_app_list_index (list_tmp, i);
-		g_autofree gchar *ref = NULL;
-
-		ref = gs_flatpak_app_get_ref_display (app);
-		if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error)) {
+		/* build and run non-deployed transaction */
+		transaction = _build_transaction (plugin, flatpak, cancellable, error);
+		if (transaction == NULL) {
+			gs_flatpak_error_convert (error);
+			return FALSE;
+		}
+		flatpak_transaction_set_no_deploy (transaction, TRUE);
+		for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
+			GsApp *app = gs_app_list_index (list_tmp, i);
+			g_autofree gchar *ref = NULL;
+	
+			ref = gs_flatpak_app_get_ref_display (app);
+			if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error)) {
+				gs_flatpak_error_convert (error);
+				return FALSE;
+			}
+		}
+		if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
 	}
-	if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
-		gs_flatpak_error_convert (error);
-		return FALSE;
-	}
+
 	return TRUE;
 }
 
@@ -879,14 +924,20 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 	g_autoptr(FlatpakTransaction) transaction = NULL;
 	gboolean is_auto_update;
 
-	/* Is there enough disk space to download? */
+	/* Is there enough disk space to download updates in this
+	 * installation?
+	 */
 	is_auto_update = !gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE);
 	if (!gs_flatpak_has_space_to_update (flatpak, list_tmp, is_auto_update)) {
-		g_debug ("Skipping %s: not enough space on disk",
-			 (is_auto_update ? "automatic update" : "update"));
+		g_debug ("Skipping %s for %s: not enough space on disk",
+			 (is_auto_update ? "automatic update" : "update"),
+			 gs_flatpak_get_id (flatpak));
 		if (is_auto_update) {
-			/* Do not return an error because we don't want to see a banner
-			 * showing up out of the blue for possibly multiple update failures */
+			/* If we're performing automatic updates in the
+			 * background, don't return an error: we don't want an
+			 * error banner showing up out of the blue. Continue to
+			 * the next installation (if any).
+			 */
 			return TRUE;
 		}
 		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
@@ -954,34 +1005,21 @@ gs_plugin_update (GsPlugin *plugin,
                   GCancellable *cancellable,
                   GError **error)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GHashTable) applist_by_flatpaks = NULL;
-
-	/* list of apps to be handled by each flatpak installation */
-	applist_by_flatpaks = g_hash_table_new_full (g_direct_hash, g_direct_equal,
-						     NULL, (GDestroyNotify) g_object_unref);
-	for (guint i = 0; i < priv->flatpaks->len; i++) {
-		g_hash_table_insert (applist_by_flatpaks,
-				     g_ptr_array_index (priv->flatpaks, i),
-				     gs_app_list_new ());
-	}
-
-	/* put each app into the correct per-GsFlatpak list */
-	for (guint i = 0; i < gs_app_list_length (list); i++) {
-		GsApp *app = gs_app_list_index (list, i);
-		GsFlatpak *flatpak = gs_plugin_flatpak_get_handler (plugin, app);
-		if (flatpak != NULL) {
-			GsAppList *list_tmp = g_hash_table_lookup (applist_by_flatpaks, flatpak);
-			gs_app_list_add (list_tmp, app);
-		}
-	}
+	GHashTableIter iter;
+	gpointer key, value;
 
 	/* build and run transaction for each flatpak installation */
-	for (guint j = 0; j < priv->flatpaks->len; j++) {
-		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, j);
-		GsAppList *list_tmp = GS_APP_LIST (g_hash_table_lookup (applist_by_flatpaks, flatpak));
-		if (gs_app_list_length (list_tmp) == 0)
-			continue;
+	applist_by_flatpaks = _flatpak_group_apps_by_installation (plugin, list);
+	g_hash_table_iter_init (&iter, applist_by_flatpaks);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		GsFlatpak *flatpak = GS_FLATPAK (key);
+		GsAppList *list_tmp = GS_APP_LIST (value);
+
+		g_assert (GS_IS_FLATPAK (flatpak));
+		g_assert (list_tmp != NULL);
+		g_assert (gs_app_list_length (list_tmp) > 0);
+
 		if (!gs_plugin_flatpak_update (plugin, flatpak, list_tmp, cancellable, error))
 			return FALSE;
 	}
