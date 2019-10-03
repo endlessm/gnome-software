@@ -146,8 +146,7 @@ if get_option('tests')
       gtk,
       json_glib,
       libm,
-      libsoup,
-      libxmlb,
+      libsoup
     ],
     link_with : [
       libgnomesoftware
