@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-04 14:12+0100\n"
+"POT-Creation-Date: 2019-10-04 14:28+0100\n"
 "PO-Revision-Date: 2019-06-09 21:01+0800\n"
 "Last-Translator: Cheng-Chia Tseng <pswo10680@gmail.com>\n"
 "Language-Team: Chinese (Taiwan) <chinese-l10n@googlegroups.com>\n"
@@ -15,8 +15,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2.3\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.2.3\n"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:7
 msgid "GNOME Software"
@@ -276,7 +276,7 @@ msgstr "啟用 GNOME Shell 擴充套件庫"
 
 #: data/org.gnome.software.gschema.xml:148
 msgid "Sorts the apps shown in the overview in alphabetical order"
-msgstr ""
+msgstr "按照英文字母順序對概覽中顯示的應用程式進行排序"
 
 #: data/org.gnome.software.gschema.xml:155
 msgid "A string storing the gnome-online-account id used to login"
@@ -505,7 +505,7 @@ msgstr "顯示版本號碼"
 
 #: src/gs-application.c:343
 msgid "translator-credits"
-msgstr "Cheng-Chia Tseng <pswo10680@gmail.com>, 2013, 2015, 2018, 2019."
+msgstr "Cheng-Chia Tseng <pswo10680@gmail.com>, 2013, 2015, 2018."
 
 #. TRANSLATORS: this is the title of the about window, e.g.
 #. * 'About Software' or 'About Application Installer' where the %s is
@@ -566,9 +566,8 @@ msgstr "更新"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:157 src/gs-app-row.c:166 src/gs-page.c:546
-#, fuzzy
 msgid "Uninstall"
-msgstr "安裝"
+msgstr "解除安裝"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
@@ -597,16 +596,15 @@ msgstr "%s（已安裝）"
 
 #: src/gs-background-tile.ui:71
 msgid "Scheduled update"
-msgstr ""
+msgstr "排定的更新"
 
 #: src/gs-background-tile.ui:85
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "可用於 USB 硬碟"
 
 #: src/gs-background-tile.ui:99
-#, fuzzy
 msgid "Requires download"
-msgstr "必須重新啟動"
+msgstr "需要下載"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1268,7 +1266,7 @@ msgstr "描繪或涉及史實上的褻瀆"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:325
 msgid "Depictions of modern-day human desecration"
-msgstr "描繪當代人體褻瀆"
+msgstr "描繪褻瀆當代人體"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:328
@@ -1298,7 +1296,7 @@ msgstr "圖像式褻瀆人體的描繪"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:343
 msgid "No references to slavery"
-msgstr "沒有涉及奴隸行為"
+msgstr "沒有涉及奴隸"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:346
@@ -1439,13 +1437,13 @@ msgstr ""
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:407
 msgid "Pending installation…"
-msgstr "安裝待決…"
+msgstr "正在等候安裝……"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
 #: src/gs-details-page.c:414
 msgid "Pending update…"
-msgstr "更新待決…"
+msgstr "更新處理中..."
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:770
@@ -1489,9 +1487,8 @@ msgstr "啟動(_L)"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1034 src/gs-details-page.ui:405
-#, fuzzy
 msgid "_Uninstall"
-msgstr "安裝(_I)"
+msgstr "_解除安裝"
 
 #: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1677,13 +1674,12 @@ msgstr "細節頁面"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:163
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_添加至桌面"
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:174
-#, fuzzy
 msgid "_Remove from Desktop"
-msgstr "從資料夾中移除(_R)"
+msgstr "從桌面移除(_R)"
 
 #: src/gs-details-page.ui:218
 msgid "Downloading"
@@ -3615,14 +3611,12 @@ msgid "Looking for new updates…"
 msgstr "尋找新的更新中…"
 
 #: src/gs-updates-page.c:313
-#, fuzzy
 msgid "automatic updates on"
-msgstr "應用程式更新"
+msgstr "自動更新開啟"
 
 #: src/gs-updates-page.c:316
-#, fuzzy
 msgid "automatic updates off"
-msgstr "應用程式更新"
+msgstr "自動更新關閉"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:399
@@ -3771,13 +3765,12 @@ msgid "Device Firmware"
 msgstr "裝置韌體"
 
 #: src/gs-upgrade-banner.c:64
-#, fuzzy
 msgid "_Restart Now"
-msgstr "立刻重新啟動"
+msgstr "馬上重新啟動"
 
 #: src/gs-upgrade-banner.c:66
 msgid "Updates will be applied when the computer is restarted."
-msgstr ""
+msgstr "更新將於電腦重新啟動後生效。"
 
 #: src/gs-upgrade-banner.c:70
 #, fuzzy
@@ -3832,11 +3825,11 @@ msgstr "了解更多(_L)"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "應用中心"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "更多應用程式"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -3888,31 +3881,26 @@ msgid "Music Players"
 msgstr "音樂播放器"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3D 圖形"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "攝影"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "掃描"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "向量圖形"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "檢視器"
@@ -4099,7 +4087,6 @@ msgid "Fonts"
 msgstr "字型"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "聊天"
@@ -4135,7 +4122,6 @@ msgid "Hardware Drivers"
 msgstr "硬體驅動程式"
 
 #: plugins/core/gs-desktop-common.c:231
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "文字編輯器"
@@ -4151,16 +4137,14 @@ msgid "News"
 msgstr "新聞"
 
 #: plugins/core/gs-desktop-common.c:241
-#, fuzzy
 msgctxt "Menu of Settings"
 msgid "Settings"
-msgstr "設定值"
+msgstr "設定"
 
 #: plugins/core/gs-desktop-common.c:250
-#, fuzzy
 msgctxt "Menu of System"
 msgid "System"
-msgstr "系統層級"
+msgstr "系統"
 
 #: plugins/core/gs-desktop-common.c:263 plugins/core/gs-desktop-common.c:307
 msgctxt "Menu of Reference"
@@ -4173,7 +4157,6 @@ msgid "Featured"
 msgstr "特選"
 
 #: plugins/core/gs-desktop-common.c:269
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Art"
 msgstr "藝術"
@@ -4189,10 +4172,9 @@ msgid "Comics"
 msgstr "漫畫"
 
 #: plugins/core/gs-desktop-common.c:278
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Feed"
-msgstr "消息來源"
+msgstr "摘要"
 
 #: plugins/core/gs-desktop-common.c:281
 msgctxt "Menu of Reference"
@@ -4215,10 +4197,9 @@ msgid "Lifestyle"
 msgstr "生活風格"
 
 #: plugins/core/gs-desktop-common.c:293
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "News"
-msgstr "新聞"
+msgstr "消息"
 
 #: plugins/core/gs-desktop-common.c:296
 msgctxt "Menu of Reference"
@@ -4232,9 +4213,8 @@ msgstr "運動"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: plugins/core/gs-desktop-common.c:317
-#, fuzzy
 msgid "Learning"
-msgstr "掃描"
+msgstr "教學"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: plugins/core/gs-desktop-common.c:320
@@ -4251,18 +4231,17 @@ msgstr "了解更多(_L)"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:327
 msgid "Multimedia"
-msgstr ""
+msgstr "多媒體"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:330
 msgid "Work"
-msgstr ""
+msgstr "工作"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: plugins/core/gs-desktop-common.c:333
-#, fuzzy
 msgid "Reference & News"
-msgstr "參考"
+msgstr "參考資料與最新消息"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: plugins/core/gs-desktop-common.c:336
@@ -4272,13 +4251,12 @@ msgstr "公用程式"
 #. TRANSLATORS: this is the menu spec main category for updates on a USB stick
 #: plugins/core/gs-desktop-common.c:339
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:344
-#, fuzzy
 msgid "Dev Tools"
 msgstr "開發者工具"
 
@@ -4300,20 +4278,19 @@ msgid "Downloading featured images…"
 msgstr "下載特選影像中…"
 
 #: plugins/eos/gs-plugin-eos.c:861
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "選擇應用程式："
+msgstr "無法啟動本應用程序。"
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:1009
 msgid "Endless Platform"
-msgstr ""
+msgstr "Endless 平台"
 
 #. TRANSLATORS: this is the summary of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:1011
-#, fuzzy
 msgid "Framework for applications"
-msgstr "搜尋用程式"
+msgstr "應用程式的架構"
 
 #. TRANSLATORS: this is the name of the Endless Hack Platform app
 #: plugins/eos/gs-plugin-eos.c:1016

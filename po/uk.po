@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-04 14:12+0100\n"
+"POT-Creation-Date: 2019-10-04 14:28+0100\n"
 "PO-Revision-Date: 2017-03-15 17:09+0300\n"
 "Last-Translator: Daniel Korostil <ted.korostiled@gmail.com>\n"
 "Language-Team: linux.org.ua\n"
@@ -1743,6 +1743,7 @@ msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Користувачі пов'язані з такою ліцензією:"
 msgstr[1] "Користувачі пов'язані з такими ліцензіями:"
 msgstr[2] "Користувачі пов'язані з такими ліцензіями:"
+msgstr[3] "Користувачі пов'язані з такими ліцензіями:"
 
 #: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
 msgid "More information"
@@ -2137,6 +2138,7 @@ msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Доступні шрифти для скрипту %s"
 msgstr[1] "Доступні шрифти для скриптів %s"
 msgstr[2] "Доступні шрифти для скриптів %s"
+msgstr[3] "Доступні шрифти для скриптів %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2147,6 +2149,7 @@ msgid_plural "Available software for %s"
 msgstr[0] "Доступна програма для %s"
 msgstr[1] "Доступні програми для %s"
 msgstr[2] "Доступні програми для %s"
+msgstr[3] "Доступні програми для %s"
 
 #: src/gs-extras-page.c:212
 msgid "Unable to Find Requested Software"
@@ -2293,6 +2296,7 @@ msgid_plural ""
 msgstr[0] "На жаль, заданий %s неможливо знайти. Дивіться докладніше %s."
 msgstr[1] "На жаль, задані %s неможливо знайти. Дивіться докладніше %s."
 msgstr[2] "На жаль, задані %s неможливо знайти. Дивіться докладніше %s."
+msgstr[3] "На жаль, задані %s неможливо знайти. Дивіться докладніше %s."
 
 #: src/gs-extras-page.c:525 src/gs-extras-page.c:581 src/gs-extras-page.c:620
 msgid "Failed to find any search results"
@@ -2608,6 +2612,7 @@ msgid_plural "%u applications installed"
 msgstr[0] "%u програму встановлено"
 msgstr[1] "%u програми встановлено"
 msgstr[2] "%u програм встановлено"
+msgstr[3] "%u програм встановлено"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2618,6 +2623,7 @@ msgid_plural "%u add-ons installed"
 msgstr[0] "%u додаток установлено"
 msgstr[1] "%u додатки встановлено"
 msgstr[2] "%u додатків установлено"
+msgstr[3] "%u додатків установлено"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2629,6 +2635,7 @@ msgid_plural "%u applications"
 msgstr[0] "%u програма"
 msgstr[1] "%u програми"
 msgstr[2] "%u програм"
+msgstr[3] "%u програм"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2640,6 +2647,7 @@ msgid_plural "%u add-ons"
 msgstr[0] "%u додаток"
 msgstr[1] "%u додатки"
 msgstr[2] "%u додатків"
+msgstr[3] "%u додатків"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2652,6 +2660,7 @@ msgid_plural "%s and %s installed"
 msgstr[0] "%s і %s встановлено"
 msgstr[1] "%s і %s встановлено"
 msgstr[2] "%s і %s встановлено"
+msgstr[3] "%s і %s встановлено"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2965,9 +2974,8 @@ msgid "Search page"
 msgstr "Сторінка пошуку"
 
 #: src/gs-search-page.ui:54
-#, fuzzy
 msgid "No Application Found"
-msgstr "Не знайдено даних про програму"
+msgstr "Не знайдено жодної програми"
 
 #. TRANSLATORS: this is part of the in-app notification,
 #. * where the %s is the truncated hostname, e.g.
@@ -3662,6 +3670,7 @@ msgid_plural "Software Updates Installed"
 msgstr[0] "Оновлення встановлено"
 msgstr[1] "Оновлення встановлено"
 msgstr[2] "Оновлення встановлено"
+msgstr[3] "Оновлення встановлено"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1006
@@ -3670,6 +3679,7 @@ msgid_plural "Important OS updates have been installed."
 msgstr[0] "Важливе оновлення системи встановлено."
 msgstr[1] "Важливі оновлення системи встановлено."
 msgstr[2] "Важливі оновлення системи встановлено."
+msgstr[3] "Важливі оновлення системи встановлено."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -3906,9 +3916,8 @@ msgid "_Check Anyway"
 msgstr "_Однаково перевіряти"
 
 #: src/gs-updates-page.ui:306
-#, fuzzy
 msgid "Go online to check for updates"
-msgstr "Перевірити на оновлення"
+msgstr "Увійти в мережу, щоб перевірити на оновлення"
 
 #: src/gs-updates-page.ui:317
 msgid "_Network Settings"
@@ -4488,7 +4497,6 @@ msgstr ""
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:344
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Засоби розробляння"
 
@@ -4949,15 +4957,12 @@ msgstr ""
 #~ msgid "_Add shortcut"
 #~ msgstr "_Додати скорочення"
 
-#~| msgid "Remove Source"
 #~ msgid "Re_move shortcut"
 #~ msgstr "В_илучити скорочення"
 
-#~| msgid "Enable Third-Party Software Source?"
 #~ msgid "Enable Proprietary Software Sources?"
 #~ msgstr "Увімкнути джерела для закритих програм?"
 
-#~| msgid "_Install"
 #~ msgid "_Install All"
 #~ msgstr "_Встановити все"
 
@@ -4994,136 +4999,91 @@ msgstr ""
 #~ msgid "Removal of %s failed."
 #~ msgstr "Не вдалося вилучити %s."
 
-#~| msgid ""
-#~| "Internet access was required but wasn’t available. Please make sure that "
-#~| "you have internet access and try again."
 #~ msgid "Please make sure that you have internet access and try again."
 #~ msgstr "Переконайтесь, що у вас є доступ до інтернету і спробуйте ще раз."
 
-#~| msgid ""
-#~| "There wasn’t enough disk space. Please free up some space and try again."
 #~ msgid "Please free up some space and try again."
 #~ msgstr "Звільніть простір на диску иґта пробуйте ще."
 
 #~ msgid "If the problem persists, contact your software provider."
 #~ msgstr "Якщо проблема залишається, зв'яжіться з постачальником програм."
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating violence-cartoon"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating violence-fantasy"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating violence-realistic"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating violence-bloodshed"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating violence-sexual"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating drugs-alcohol"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating drugs-narcotics"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating sex-nudity"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating sex-themes"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating language-profanity"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating language-humor"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating language-discrimination"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating money-advertising"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating money-gambling"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating money-purchasing"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating social-chat"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating social-audio"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating social-contacts"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating social-info"
 #~ msgid "None"
 #~ msgstr "Немає"
 
-#~| msgctxt "menu category"
-#~| msgid "None"
 #~ msgctxt "content rating social-location"
 #~ msgid "None"
 #~ msgstr "Немає"
@@ -5131,40 +5091,30 @@ msgstr ""
 #~ msgid "_Quit"
 #~ msgstr "Ви_йти"
 
-#~| msgid "All"
 #~ msgctxt "Menu of Education"
 #~ msgid "All"
 #~ msgstr "Усе"
 
-#~| msgid "Featured"
 #~ msgctxt "Menu of Education"
 #~ msgid "Featured"
 #~ msgstr "Особливе"
 
-#~| msgid "All"
 #~ msgctxt "Menu of Science"
 #~ msgid "All"
 #~ msgstr "Усе"
 
-#~| msgid "Featured"
 #~ msgctxt "Menu of Science"
 #~ msgid "Featured"
 #~ msgstr "Особливе"
 
-#~| msgctxt "Menu subcategory of Education"
-#~| msgid "Astronomy"
 #~ msgctxt "Menu of Science"
 #~ msgid "Astronomy"
 #~ msgstr "Астрономія"
 
-#~| msgctxt "Menu subcategory of Education"
-#~| msgid "Chemistry"
 #~ msgctxt "Menu of Science"
 #~ msgid "Chemistry"
 #~ msgstr "Хімія"
 
-#~| msgctxt "Menu subcategory of Education"
-#~| msgid "Math"
 #~ msgctxt "Menu of Science"
 #~ msgid "Math"
 #~ msgstr "Математика"
@@ -5810,22 +5760,18 @@ msgstr ""
 #~ msgid "Spirituality"
 #~ msgstr "Духовність"
 
-#~| msgid "Fonts"
 #~ msgctxt "Menu subcategory of Addons"
 #~ msgid "Fonts"
 #~ msgstr "Шрифти"
 
-#~| msgid "Codecs"
 #~ msgctxt "Menu subcategory of Addons"
 #~ msgid "Codecs"
 #~ msgstr "Кодеки"
 
-#~| msgid "Input Sources"
 #~ msgctxt "Menu subcategory of Addons"
 #~ msgid "Input Sources"
 #~ msgstr "Джерела введення"
 
-#~| msgid "Language Packs"
 #~ msgctxt "Menu subcategory of Addons"
 #~ msgid "Language Packs"
 #~ msgstr "Мовні пакети"

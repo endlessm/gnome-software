@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-04 14:12+0100\n"
+"POT-Creation-Date: 2019-10-04 14:28+0100\n"
 "PO-Revision-Date: 2019-08-30 00:07+0200\n"
 "Last-Translator: Christian Kirbach <christian.kirbach@gmail.com>\n"
 "Language-Team: Deutsch <gnome-de@gnome.org>\n"
@@ -565,7 +565,7 @@ msgstr "Versionsnummer anzeigen"
 msgid "translator-credits"
 msgstr ""
 "Eduard Gotwig <gotwig@ubuntu.com>, 2013\n"
-"Christian Kirbach <christian.kirbach@gmail.com>, 2013, 2019\n"
+"Christian Kirbach <christian.kirbach@gmail.com>, 2013\n"
 "Benjamin Steinwender <b@stbe.at>, 2014\n"
 "Paul Seyfert <pseyfert@mathphys.fsk.uni-heidelberg.de>, 2015, 2017\n"
 "Bernd Homuth <dev@hmt.im>, 2015, 2016, 2019\n"
@@ -632,9 +632,8 @@ msgstr "Aktualisieren"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:157 src/gs-app-row.c:166 src/gs-page.c:546
-#, fuzzy
 msgid "Uninstall"
-msgstr "Installieren"
+msgstr "Deinstallieren"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
@@ -1580,9 +1579,8 @@ msgstr "_Starten"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1034 src/gs-details-page.ui:405
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Installieren"
+msgstr "_Deinstallieren"
 
 #: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1735,7 +1733,8 @@ msgid "Copied to USB"
 msgstr ""
 
 # Gemeinfrei versteht kein Mensch
-# Schon möglich, aber es wird im nächsten String per Wikipedia-Link erklärt -mb
+# Schon möglich, aber es wird im nächsten String per Wikipedia-Link erklärt
+# -mb
 #. TRANSLATORS: see the wikipedia page
 #: src/gs-details-page.c:2546
 msgid "Public domain"
@@ -1776,13 +1775,12 @@ msgstr "Seite mit Details"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:163
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_Zur Arbeitsfläche hinzufügen"
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:174
-#, fuzzy
 msgid "_Remove from Desktop"
-msgstr "Von Ordner _entfernen"
+msgstr "_Von der Arbeitsfläche entfernen"
 
 #: src/gs-details-page.ui:218
 msgid "Downloading"
@@ -2772,7 +2770,8 @@ msgstr "Finde ich furchtbar"
 msgid "Don’t like it"
 msgstr "Mag ich nicht"
 
-# Sagt in den Kommentaren "fairly good". Das bedeutet sowas wie "ziemlich gut". Ja, das ist anders als "it's OK", aber ich gehe nach dem Kommentar
+# Sagt in den Kommentaren "fairly good". Das bedeutet sowas wie "ziemlich
+# gut". Ja, das ist anders als "it's OK", aber ich gehe nach dem Kommentar
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A fairly-good application
 #: src/gs-review-dialog.c:89
@@ -3756,7 +3755,8 @@ msgstr ""
 "Internetzugang war erforderlich, aber nicht verfügbar. Bitte stellen Sie "
 "sicher, dass ein Internetzugang vorhanden ist und versuchen Sie es erneut."
 
-# Sollte dann nicht auch gleich auf eine fehlerhafte Signatur hingewiesen werden?
+# Sollte dann nicht auch gleich auf eine fehlerhafte Signatur hingewiesen
+# werden?
 #. TRANSLATORS: if the package is not signed correctly
 #: src/gs-update-monitor.c:1088
 msgid ""
@@ -4070,11 +4070,11 @@ msgstr "Mehr er_fahren"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "App-Center"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "Weitere Programme"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -4087,7 +4087,8 @@ msgid "org.gnome.Software"
 msgstr "org.gnome.Software"
 
 # Was steckt hinter diesem String? -fh
-# Das sind Suchbegriffe, anhand denen der Benutzer das Programm finden kann. -mb
+# Das sind Suchbegriffe, anhand denen der Benutzer das Programm finden kann.
+# -mb
 #. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.desktop.in:13
 msgid ""
@@ -4127,31 +4128,26 @@ msgid "Music Players"
 msgstr "Musikwiedergabe"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3D-Grafik"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotografie"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Scannen"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Vektorgrafiken"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Betrachter"
@@ -4323,13 +4319,11 @@ msgid "Word Processor"
 msgstr "Textverarbeitung"
 
 #: plugins/core/gs-desktop-common.c:193
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "All"
 msgstr "Alle"
 
 #: plugins/core/gs-desktop-common.c:199
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Featured"
 msgstr "Vorgestellt"
@@ -4340,7 +4334,6 @@ msgid "Fonts"
 msgstr "Schriftarten"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Unterhaltung"
@@ -4376,7 +4369,6 @@ msgid "Hardware Drivers"
 msgstr "Gerätetreiber"
 
 #: plugins/core/gs-desktop-common.c:231
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Texteditoren"
@@ -4475,9 +4467,8 @@ msgstr "Sport"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: plugins/core/gs-desktop-common.c:317
-#, fuzzy
 msgid "Learning"
-msgstr "Scannen"
+msgstr "Lernen"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: plugins/core/gs-desktop-common.c:320
@@ -4494,18 +4485,17 @@ msgstr "Mehr er_fahren"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:327
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimedia"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:330
 msgid "Work"
-msgstr ""
+msgstr "Arbeiten"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: plugins/core/gs-desktop-common.c:333
-#, fuzzy
 msgid "Reference & News"
-msgstr "Referenz"
+msgstr "Nachschlagewerke & Nachrichten"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: plugins/core/gs-desktop-common.c:336
@@ -4521,7 +4511,6 @@ msgstr ""
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:344
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Entwicklungswerkzeuge"
 
@@ -4543,15 +4532,14 @@ msgid "Downloading featured images…"
 msgstr "Vorgestellte Bilder werden heruntergeladen …"
 
 #: plugins/eos/gs-plugin-eos.c:861
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Wählen Sie eine Anwendung:"
+msgstr "Das Programm konnte nicht gestartet werden."
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:1009
-#, fuzzy
 msgid "Endless Platform"
-msgstr "Endless OS"
+msgstr "Endless-Plattform"
 
 #. TRANSLATORS: this is the summary of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:1011

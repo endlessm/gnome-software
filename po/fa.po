@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-04 14:12+0100\n"
+"POT-Creation-Date: 2019-10-04 14:28+0100\n"
 "PO-Revision-Date: 2017-09-30 02:00+0330\n"
 "Last-Translator: Arash Mousavi <mousavi.arash@gmail.com>\n"
 "Language-Team: \n"
@@ -1720,6 +1720,7 @@ msgstr "نرم‌افزار آزاد"
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "کاربران ملزم به پذیرفتن گواهینامه‌های مقابل هستند:"
+msgstr[1] "کاربران ملزم به پذیرفتن گواهینامه‌های مقابل هستند:"
 
 #: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
 msgid "More information"
@@ -2101,6 +2102,7 @@ msgstr "، "
 msgid "Available fonts for the %s script"
 msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "قلم‌های موجود برای کدنوشته‌های %s"
+msgstr[1] "قلم‌های موجود برای کدنوشته‌های %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2109,6 +2111,7 @@ msgstr[0] "قلم‌های موجود برای کدنوشته‌های %s"
 msgid "Available software for %s"
 msgid_plural "Available software for %s"
 msgstr[0] "نرم‌افزارهای موجود برای %s"
+msgstr[1] "نرم‌افزارهای موجود برای %s"
 
 #: src/gs-extras-page.c:212
 msgid "Unable to Find Requested Software"
@@ -2255,6 +2258,9 @@ msgid_plural ""
 "Unfortunately, the %s you were searching for could not be found. Please see "
 "%s for more information."
 msgstr[0] ""
+"متاسفانه، %s که جست‌وجو می‌کردید پیدا نشد. برای اطلاعات بیشتر %s را مشاهده "
+"کنید."
+msgstr[1] ""
 "متاسفانه، %s که جست‌وجو می‌کردید پیدا نشد. برای اطلاعات بیشتر %s را مشاهده "
 "کنید."
 
@@ -2567,6 +2573,7 @@ msgstr "_ادامه"
 msgid "%u application installed"
 msgid_plural "%u applications installed"
 msgstr[0] "%Iu برنامه نصب شد"
+msgstr[1] "%Iu برنامه نصب شد"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2575,6 +2582,7 @@ msgstr[0] "%Iu برنامه نصب شد"
 msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
 msgstr[0] "%Iu افزودنی نصب شد"
+msgstr[1] "%Iu افزودنی نصب شد"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2584,6 +2592,7 @@ msgstr[0] "%Iu افزودنی نصب شد"
 msgid "%u application"
 msgid_plural "%u applications"
 msgstr[0] "%Iu برنامه"
+msgstr[1] "%Iu برنامه"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2593,6 +2602,7 @@ msgstr[0] "%Iu برنامه"
 msgid "%u add-on"
 msgid_plural "%u add-ons"
 msgstr[0] "%Iu افزودنی"
+msgstr[1] "%Iu افزودنی"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2603,6 +2613,7 @@ msgstr[0] "%Iu افزودنی"
 msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
 msgstr[0] "%s و %s نصب شدند"
+msgstr[1] "%s و %s نصب شدند"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2911,6 +2922,7 @@ msgstr "نما"
 msgid "%u more match"
 msgid_plural "%u more matches"
 msgstr[0] "%Iu مورد منطبق بیشتر"
+msgstr[1] "%Iu مورد منطبق بیشتر"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -3604,12 +3616,14 @@ msgstr "به برنامه‌ها خوش‌آمدید"
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "بروزرسانی‌های نرم‌افزاری نصب شد"
+msgstr[1] "بروزرسانی‌های نرم‌افزاری نصب شد"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1006
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "بروزرسانی‌های مهم سیستم‌عامل نصب شد."
+msgstr[1] "بروزرسانی‌های مهم سیستم‌عامل نصب شد."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -4013,31 +4027,26 @@ msgid "Music Players"
 msgstr "پخش‌کننده‌های موسیقی"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "گرافیک سه‌بعدی"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "عکس‌برداری"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "پایش"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "گرافیک وکتور"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "نمایشگرها"
@@ -4224,7 +4233,6 @@ msgid "Fonts"
 msgstr "قلم‌ها"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "گپ"
@@ -4260,7 +4268,6 @@ msgid "Hardware Drivers"
 msgstr "راه‌اندازهای سخت‌افزاری"
 
 #: plugins/core/gs-desktop-common.c:231
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "ویرایشگرهای متن"
@@ -4401,7 +4408,6 @@ msgstr ""
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:344
-#, fuzzy
 msgid "Dev Tools"
 msgstr "ابزارهای توسعه"
 
@@ -4901,12 +4907,10 @@ msgstr ""
 #~ msgstr "ارتباطات و اخبار"
 
 #, fuzzy
-#~| msgid "Setting up updates…"
 #~ msgid "Getting runtime source…"
 #~ msgstr "در حال برپاسازی بروزرسانی‌ها…"
 
 #, fuzzy
-#~| msgid "Downloading new updates…"
 #~ msgid "Downloading firmware update…"
 #~ msgstr "بارگیری بروزرسانی‌های جدید…"
 

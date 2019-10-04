@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-04 14:12+0100\n"
+"POT-Creation-Date: 2019-10-04 14:28+0100\n"
 "PO-Revision-Date: 2018-03-17 15:33+0100\n"
 "Last-Translator: Dušan Kazik <prescott66@gmail.com>\n"
 "Language-Team: slovenčina <>\n"
@@ -1777,6 +1777,7 @@ msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Používatelia sú viazaní týmito licenciami:"
 msgstr[1] "Používatelia sú viazaní touto licenciou:"
 msgstr[2] "Používatelia sú viazaní týmito licenciami:"
+msgstr[3] "Používatelia sú viazaní týmito licenciami:"
 
 # DK:cmd desc
 #: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
@@ -2172,6 +2173,7 @@ msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Dostupné písma pre skripty jazyka %s"
 msgstr[1] "Dostupné písma pre skript jazyka %s"
 msgstr[2] "Dostupné písma pre skripty jazyka %s"
+msgstr[3] "Dostupné písma pre skripty jazyka %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2182,6 +2184,7 @@ msgid_plural "Available software for %s"
 msgstr[0] "Dostupný softvér pre kodeky %s"
 msgstr[1] "Dostupný softvér pre kodek %s"
 msgstr[2] "Dostupný softvér pre kodeky %s"
+msgstr[3] "Dostupný softvér pre kodeky %s"
 
 #: src/gs-extras-page.c:212
 msgid "Unable to Find Requested Software"
@@ -2334,6 +2337,9 @@ msgstr[1] ""
 "Bohužiaľ, nepodarilo sa nájsť kodek %s, ktorý ste hľadali. Prosím, pre viac "
 "informácií navštívte %s."
 msgstr[2] ""
+"Bohužiaľ, nepodarilo sa nájsť kodeky %s, ktoré ste hľadali. Prosím, pre viac "
+"informácií navštívte %s."
+msgstr[3] ""
 "Bohužiaľ, nepodarilo sa nájsť kodeky %s, ktoré ste hľadali. Prosím, pre viac "
 "informácií navštívte %s."
 
@@ -2663,6 +2669,7 @@ msgid_plural "%u applications installed"
 msgstr[0] "Bolo nainštalovaných %u aplikácií"
 msgstr[1] "Bola nainštalovaná %u aplikácia"
 msgstr[2] "Boli nainštalované %u aplikácie"
+msgstr[3] "Boli nainštalované %u aplikácie"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2673,6 +2680,7 @@ msgid_plural "%u add-ons installed"
 msgstr[0] "Bolo nainštalovaných %u doplnkov"
 msgstr[1] "Bol nainštalovaný %u doplnok"
 msgstr[2] "Boli nainštalované %u doplnky"
+msgstr[3] "Boli nainštalované %u doplnky"
 
 # cmdline description
 #. TRANSLATORS: This string is used to construct the 'X applications
@@ -2685,6 +2693,7 @@ msgid_plural "%u applications"
 msgstr[0] "%u aplikácií"
 msgstr[1] "%u aplikácia"
 msgstr[2] "%u aplikácie"
+msgstr[3] "%u aplikácie"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2696,6 +2705,7 @@ msgid_plural "%u add-ons"
 msgstr[0] "%u doplnkov"
 msgstr[1] "%u doplnok"
 msgstr[2] "%u doplnky"
+msgstr[3] "%u doplnky"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2708,6 +2718,7 @@ msgid_plural "%s and %s installed"
 msgstr[0] "%s a %s"
 msgstr[1] "%s a %s"
 msgstr[2] "%s a %s "
+msgstr[3] "%s a %s "
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -3016,6 +3027,7 @@ msgid_plural "%u more matches"
 msgstr[0] "%u ďalších výsledkov"
 msgstr[1] "%u ďalší výsledok"
 msgstr[2] "%u ďalšie výsledky"
+msgstr[3] "%u ďalšie výsledky"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -3758,6 +3770,7 @@ msgid_plural "Software Updates Installed"
 msgstr[0] "Aktualizácie softvéru boli nainštalované"
 msgstr[1] "Aktualizácia softvéru bola nainštalovaná"
 msgstr[2] "Aktualizácie softvéru boli nainštalované"
+msgstr[3] "Aktualizácie softvéru boli nainštalované"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1006
@@ -3766,6 +3779,7 @@ msgid_plural "Important OS updates have been installed."
 msgstr[0] "Dôležité aktualizácie operačného systému boli nainštalované."
 msgstr[1] "Dôležitá aktualizácia operačného systému bola nainštalovaná."
 msgstr[2] "Dôležité aktualizácie operačného systému boli nainštalované."
+msgstr[3] "Dôležité aktualizácie operačného systému boli nainštalované."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -4172,31 +4186,26 @@ msgid "Music Players"
 msgstr "Prehrávače hudby"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3D grafika"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotografia"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Skenovanie"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Vektorová grafika"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Prehliadače"
@@ -4394,7 +4403,6 @@ msgid "Fonts"
 msgstr "Písma"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Rozhovor"
@@ -4431,7 +4439,6 @@ msgid "Hardware Drivers"
 msgstr "Ovládače hardvéru"
 
 #: plugins/core/gs-desktop-common.c:231
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Textové editory"
@@ -4577,7 +4584,6 @@ msgstr ""
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:344
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Nástroje pre vývojárov"
 
