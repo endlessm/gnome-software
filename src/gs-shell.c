@@ -819,6 +819,11 @@ on_overview_categories_loaded (GsOverviewPage *page, gpointer user_data)
 					      user_data);
 	if (!gs_overview_page_set_category (page, data->category_id))
 		gs_shell_change_mode (data->shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
+	else {
+		GsShellPrivate *priv = gs_shell_get_instance_private (data->shell);
+		GsPage *usb_category_page = GS_PAGE (g_hash_table_lookup (priv->pages, "category"));
+		gs_page_reload (usb_category_page);
+	}
 }
 
 static void
