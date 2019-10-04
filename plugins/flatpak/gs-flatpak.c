@@ -577,6 +577,10 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 			continue;
 		}
 
+		/* Don't show runtimes, locale extensions, etc. */
+		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
+			continue;
+
 		gs_app_add_category (app, "usb");
 
 		/* add a keyword so users can search for "usb" */
