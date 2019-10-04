@@ -153,6 +153,11 @@ gs_category_page_get_apps_cb (GObject *source_object,
 
 	g_signal_handler_unblock (self->sort_rating_button, self->sort_rating_handler_id);
 	g_signal_handler_unblock (self->sort_name_button, self->sort_name_handler_id);
+
+	if (g_strcmp0 (gs_category_get_id (self->category), "usb") == 0) {
+		gtk_widget_set_visible (self->no_apps_box, gs_category_get_size (self->subcategory) == 0);
+		gtk_widget_set_visible (self->scrolledwindow_category, gs_category_get_size (self->subcategory) != 0);
+	}
 }
 
 static gboolean
