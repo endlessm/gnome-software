@@ -1,22 +1,21 @@
-# Belarusian translations for gnome-software package.
-# Copyright (C) 2019 THE gnome-software'S COPYRIGHT HOLDER
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-software package.
-# Automatically generated, 2019.
-#
+# 
+# Translators:
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-04 14:28+0100\n"
-"PO-Revision-Date: 2019-10-04 14:08+0100\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
-"Language: be\n"
+"PO-Revision-Date: 2019-10-04 13:31+0000\n"
+"Last-Translator: Will Thompson <wjt@endlessm.com>\n"
+"Language-Team: Belarusian (http://www.transifex.com/endless-os/gnome-software/language/be/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Language: be\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:7
 msgid "GNOME Software"
@@ -141,8 +140,8 @@ msgstr ""
 
 #: data/org.gnome.software.gschema.xml:43
 msgid ""
-"When non-free applications are installed a warning dialog can be shown. This "
-"controls if that dialog is suppressed."
+"When non-free applications are installed a warning dialog can be shown. This"
+" controls if that dialog is suppressed."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:47
@@ -180,8 +179,8 @@ msgstr ""
 #: data/org.gnome.software.gschema.xml:73
 msgid ""
 "Choosing a larger value will mean less round-trips to the remote server but "
-"updates to the screenshots may take longer to show to the user. A value of 0 "
-"means to never check the server if the image already exists in the cache."
+"updates to the screenshots may take longer to show to the user. A value of 0"
+" means to never check the server if the image already exists in the cache."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:82
@@ -197,20 +196,24 @@ msgid "Reviews with karma less than this number will not be shown."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:91
-msgid "A list of official repositories that should not be considered 3rd party"
+msgid ""
+"A list of official repositories that should not be considered 3rd party"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:95
-msgid "A list of official repositories that should be considered free software"
+msgid ""
+"A list of official repositories that should be considered free software"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:99
 msgid ""
-"The licence URL to use when an application should be considered free software"
+"The licence URL to use when an application should be considered free "
+"software"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:103
-msgid "Install bundled applications for all users on the system where possible"
+msgid ""
+"Install bundled applications for all users on the system where possible"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:107
@@ -237,7 +240,9 @@ msgstr ""
 msgid "Show the installed size for apps in the list of installed applications"
 msgstr ""
 
-#. Translators: Replace the link with a version in your language, e.g. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include ''.
+#. Translators: Replace the link with a version in your language, e.g.
+#. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include
+#. ''.
 #: data/org.gnome.software.gschema.xml:131
 msgid "'https://en.wikipedia.org/wiki/Proprietary_software'"
 msgstr ""
@@ -276,7 +281,8 @@ msgstr ""
 msgid "Install selected software on the system"
 msgstr ""
 
-#. Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+#. Translators: Do NOT translate or transliterate this text (this is an icon
+#. file name)!
 #: src/gnome-software-local-file.desktop.in:10
 msgid "system-software-install"
 msgstr ""
@@ -310,12 +316,14 @@ msgstr ""
 msgid "_Explore"
 msgstr ""
 
-#. Translators: A label for a button to show only software which is already installed.
+#. Translators: A label for a button to show only software which is already
+#. installed.
 #: src/gnome-software.ui:123
 msgid "_Installed"
 msgstr ""
 
-#. Translators: A label for a button to show only updates which are available to install.
+#. Translators: A label for a button to show only updates which are available
+#. to install.
 #: src/gnome-software.ui:163
 msgid "_Updates"
 msgstr ""
@@ -324,14 +332,16 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#. Translators: This is a label in the header bar, followed by a drop down to choose between different source repos
+#. Translators: This is a label in the header bar, followed by a drop down to
+#. choose between different source repos
 #. TRANSLATORS: this refers to where the app came from
 #: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:843
 msgid "Source"
 msgstr ""
 
 #. button in the info bar
-#: src/gnome-software.ui:383 src/gs-repos-dialog.ui:5 src/gs-repos-dialog.ui:18
+#: src/gnome-software.ui:383 src/gs-repos-dialog.ui:5
+#: src/gs-repos-dialog.ui:18
 msgid "Software Repositories"
 msgstr ""
 
@@ -525,7 +535,8 @@ msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
-#: src/gs-app-row.c:139 src/gs-category-page.ui:92 src/gs-updates-section.c:492
+#: src/gs-app-row.c:139 src/gs-category-page.ui:92
+#: src/gs-updates-section.c:492
 msgid "Cancel"
 msgstr ""
 
@@ -636,11 +647,12 @@ msgstr ""
 
 #: src/gs-category-page.ui:223
 msgid ""
-"Extensions are used at your own risk. If you have any system problems, it is "
-"recommended to disable them."
+"Extensions are used at your own risk. If you have any system problems, it is"
+" recommended to disable them."
 msgstr ""
 
-#. TRANSLATORS: This is a label for the category filter drop down, which all together can read e.g. 'Show Vector Graphics'.
+#. TRANSLATORS: This is a label for the category filter drop down, which all
+#. together can read e.g. 'Show Vector Graphics'.
 #: src/gs-category-page.ui:243
 msgid "Show"
 msgstr ""
@@ -649,7 +661,8 @@ msgstr ""
 msgid "Subcategories filter menu"
 msgstr ""
 
-#. TRANSLATORS: This is a label for the category sort drop down, which all together can read e.g. 'Sort Top Rated'.
+#. TRANSLATORS: This is a label for the category sort drop down, which all
+#. together can read e.g. 'Sort Top Rated'.
 #: src/gs-category-page.ui:291
 msgid "Sort"
 msgstr ""
@@ -725,12 +738,12 @@ msgstr ""
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
 #. * 2. Software repository name, e.g. fedora-optional
-#.
 #: src/gs-common.c:241
 #, c-format
 msgid ""
 "%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">free and open source software</a>, and is provided by “%s”."
+"source_software\">free and open source software</a>, and is provided by "
+"“%s”."
 msgstr ""
 
 #. TRANSLATORS: the replacements are as follows:
@@ -790,6 +803,7 @@ msgid_plural "Updates have been installed"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:624
@@ -798,6 +812,7 @@ msgid_plural "A restart is required for them to take effect."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:631 src/gs-update-monitor.c:119
@@ -1331,12 +1346,14 @@ msgstr ""
 msgid "Early Childhood"
 msgstr ""
 
-#. TRANSLATORS: this is a what we use in notifications if the app's name is unknown
+#. TRANSLATORS: this is a what we use in notifications if the app's name is
+#. unknown
 #: src/gs-dbus-helper.c:281
 msgid "An application"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional MIME types.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. MIME types.
 #: src/gs-dbus-helper.c:287
 #, c-format
 msgid "%s is requesting additional file format support."
@@ -1347,7 +1364,8 @@ msgstr ""
 msgid "Additional MIME Types Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional fonts.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. fonts.
 #: src/gs-dbus-helper.c:293
 #, c-format
 msgid "%s is requesting additional fonts."
@@ -1358,7 +1376,8 @@ msgstr ""
 msgid "Additional Fonts Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional codecs.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. codecs.
 #: src/gs-dbus-helper.c:299
 #, c-format
 msgid "%s is requesting additional multimedia codecs."
@@ -1369,7 +1388,8 @@ msgstr ""
 msgid "Additional Multimedia Codecs Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional printer drivers.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. printer drivers.
 #: src/gs-dbus-helper.c:305
 #, c-format
 msgid "%s is requesting additional printer drivers."
@@ -1380,7 +1400,8 @@ msgstr ""
 msgid "Additional Printer Drivers Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app wants to install additional packages.
+#. TRANSLATORS: this is a notification displayed when an app wants to install
+#. additional packages.
 #: src/gs-dbus-helper.c:311
 #, c-format
 msgid "%s is requesting additional packages."
@@ -1594,7 +1615,8 @@ msgstr ""
 
 #. This refers to the license of the application
 #. TRANSLATORS: this is when a user doesn't specify a name
-#: src/gs-details-page.c:1375 src/gs-details-page.ui:963 src/gs-review-row.c:57
+#: src/gs-details-page.c:1375 src/gs-details-page.ui:963
+#: src/gs-review-row.c:57
 msgid "Unknown"
 msgstr ""
 
@@ -1641,6 +1663,7 @@ msgid_plural "Users are bound by the following licenses:"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
 msgid "More information"
@@ -1650,12 +1673,14 @@ msgstr ""
 msgid "Details page"
 msgstr ""
 
-#. Translators: A label for a button to add a shortcut to the selected application.
+#. Translators: A label for a button to add a shortcut to the selected
+#. application.
 #: src/gs-details-page.ui:163
 msgid "_Add to Desktop"
 msgstr ""
 
-#. Translators: A label for a button to remove a shortcut to the selected application.
+#. Translators: A label for a button to remove a shortcut to the selected
+#. application.
 #: src/gs-details-page.ui:174
 msgid "_Remove from Desktop"
 msgstr ""
@@ -1698,7 +1723,8 @@ msgid ""
 "replaced."
 msgstr ""
 
-#. Translators: a repository file used for installing software has been discovered.
+#. Translators: a repository file used for installing software has been
+#. discovered.
 #: src/gs-details-page.ui:391
 msgid "Software Repository Identified"
 msgstr ""
@@ -1797,12 +1823,14 @@ msgstr ""
 msgid "Selected add-ons will be installed with the application."
 msgstr ""
 
-#. Translators: Header of the section with other users' opinions about the app.
+#. Translators: Header of the section with other users' opinions about the
+#. app.
 #: src/gs-details-page.ui:1051
 msgid "Reviews"
 msgstr ""
 
-#. Translators: Button opening a dialog where the users can write and publish their opinions about the apps.
+#. Translators: Button opening a dialog where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-details-page.ui:1069
 msgid "_Write a Review"
 msgstr ""
@@ -1814,8 +1842,8 @@ msgstr ""
 
 #: src/gs-details-page.ui:1218
 msgid ""
-"This means that the software can be freely run, copied, distributed, studied "
-"and modified."
+"This means that the software can be freely run, copied, distributed, studied"
+" and modified."
 msgstr ""
 
 #: src/gs-details-page.ui:1258
@@ -1920,7 +1948,8 @@ msgstr ""
 msgid "Use verbose logging"
 msgstr ""
 
-#. TRANSLATORS: program name, an application to add and remove software repositories
+#. TRANSLATORS: program name, an application to add and remove software
+#. repositories
 #: src/gs-editor.c:1293
 msgid "GNOME Software Banner Designer"
 msgstr ""
@@ -1945,7 +1974,8 @@ msgstr ""
 msgid "Editor’s Pick"
 msgstr ""
 
-#. This check button controls whether the application’s banner appears in the “Featured” category
+#. This check button controls whether the application’s banner appears in the
+#. “Featured” category
 #: src/gs-editor.ui:287
 msgid "Category Featured"
 msgstr ""
@@ -2002,6 +2032,7 @@ msgid_plural "Available fonts for the %s scripts"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2012,6 +2043,7 @@ msgid_plural "Available software for %s"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-extras-page.c:212
 msgid "Unable to Find Requested Software"
@@ -2040,8 +2072,8 @@ msgstr ""
 #: src/gs-extras-page.c:332 src/gs-extras-page.c:343 src/gs-extras-page.c:354
 #, c-format
 msgid ""
-"Information about %s, as well as options for how to get missing applications "
-"might be found %s."
+"Information about %s, as well as options for how to get missing applications"
+" might be found %s."
 msgstr ""
 
 #. TRANSLATORS: this is when we know about an application or
@@ -2136,7 +2168,8 @@ msgstr ""
 msgid "this website"
 msgstr ""
 
-#. TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "this website"
+#. TRANSLATORS: no codecs were found. First %s will be replaced by actual
+#. codec name(s), second %s is a link titled "this website"
 #: src/gs-extras-page.c:457
 #, c-format
 msgid ""
@@ -2148,6 +2181,7 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-extras-page.c:525 src/gs-extras-page.c:581 src/gs-extras-page.c:620
 msgid "Failed to find any search results"
@@ -2172,8 +2206,8 @@ msgstr ""
 
 #: src/gs-first-run-dialog.ui:53
 msgid ""
-"Software lets you install all the software you need, all from one place. See "
-"our recommendations, browse the categories, or search for the applications "
+"Software lets you install all the software you need, all from one place. See"
+" our recommendations, browse the categories, or search for the applications "
 "you want."
 msgstr ""
 
@@ -2289,12 +2323,14 @@ msgstr ""
 msgid "URL"
 msgstr ""
 
-#. Translators: The packaging format of the app being installed, e.g. 'RPM' or 'Flatpak'
+#. Translators: The packaging format of the app being installed, e.g. 'RPM' or
+#. 'Flatpak'
 #: src/gs-origin-popover-row.ui:64
 msgid "Format"
 msgstr ""
 
-#. Translators: The installation location for flatpaks, e.g. 'user' or 'system'
+#. Translators: The installation location for flatpaks, e.g. 'user' or
+#. 'system'
 #: src/gs-origin-popover-row.ui:93
 msgid "Installation"
 msgstr ""
@@ -2352,12 +2388,14 @@ msgstr ""
 msgid "Categories"
 msgstr ""
 
-#. Translators: This is a heading for software which has been featured ('picked') by the distribution.
+#. Translators: This is a heading for software which has been featured
+#. ('picked') by the distribution.
 #: src/gs-overview-page.ui:198
 msgid "Editor’s Picks"
 msgstr ""
 
-#. Translators: This is a heading for software which has been recently released upstream.
+#. Translators: This is a heading for software which has been recently
+#. released upstream.
 #: src/gs-overview-page.ui:230
 msgid "Recent Releases"
 msgstr ""
@@ -2447,6 +2485,7 @@ msgid_plural "%u applications installed"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2457,6 +2496,7 @@ msgid_plural "%u add-ons installed"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2468,6 +2508,7 @@ msgid_plural "%u applications"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2479,6 +2520,7 @@ msgid_plural "%u add-ons"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2491,6 +2533,7 @@ msgid_plural "%s and %s installed"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2509,8 +2552,8 @@ msgstr ""
 #. TRANSLATORS: longer dialog text
 #: src/gs-repos-dialog.c:308
 msgid ""
-"Software that has been installed from this repository will no longer receive "
-"updates, including security fixes."
+"Software that has been installed from this repository will no longer receive"
+" updates, including security fixes."
 msgstr ""
 
 #. TRANSLATORS: this is button text to remove the repo
@@ -2529,7 +2572,8 @@ msgstr ""
 msgid "the operating system"
 msgstr ""
 
-#. TRANSLATORS: This is the description text displayed in the Software Repositories dialog.
+#. TRANSLATORS: This is the description text displayed in the Software
+#. Repositories dialog.
 #. %s gets replaced by the name of the actual distro, e.g. Fedora.
 #: src/gs-repos-dialog.c:801 src/gs-repos-dialog.c:837
 #, c-format
@@ -2649,7 +2693,8 @@ msgstr ""
 msgid "The description is too long"
 msgstr ""
 
-#. Translators: Title of the dialog box where the users can write and publish their opinions about the apps.
+#. Translators: Title of the dialog box where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-review-dialog.ui:10
 msgid "Post Review"
 msgstr ""
@@ -2681,8 +2726,8 @@ msgstr ""
 
 #: src/gs-review-dialog.ui:186
 msgid ""
-"Find what data is sent in our <a href=\"https://odrs.gnome.org/privacy"
-"\">privacy policy</a>."
+"Find what data is sent in our <a "
+"href=\"https://odrs.gnome.org/privacy\">privacy policy</a>."
 msgstr ""
 
 #. Translators: A label for the total number of reviews.
@@ -2715,7 +2760,8 @@ msgstr ""
 msgid "Report"
 msgstr ""
 
-#. Translators: Users can express their opinions about other users' opinions about the apps.
+#. Translators: Users can express their opinions about other users' opinions
+#. about the apps.
 #: src/gs-review-row.ui:105
 msgid "Was this review useful to you?"
 msgstr ""
@@ -2788,6 +2834,7 @@ msgid_plural "%u more matches"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -2832,7 +2879,8 @@ msgstr ""
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1008
 msgid ""
-"Unable to download updates: internet access was required but wasn’t available"
+"Unable to download updates: internet access was required but wasn’t "
+"available"
 msgstr ""
 
 #. TRANSLATORS: failure text for the in-app notification,
@@ -3380,6 +3428,7 @@ msgid_plural "%u Applications Updated — Restart Required"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:234
@@ -3389,6 +3438,7 @@ msgid_plural "%u Applications Updated"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:245
@@ -3415,6 +3465,7 @@ msgid_plural "%u applications require a restart."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:274
@@ -3478,6 +3529,7 @@ msgid_plural "Software Updates Installed"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1006
@@ -3486,6 +3538,7 @@ msgid_plural "Important OS updates have been installed."
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -3517,8 +3570,8 @@ msgstr ""
 #. * something with no network available
 #: src/gs-update-monitor.c:1082
 msgid ""
-"Internet access was required but wasn’t available. Please make sure that you "
-"have internet access and try again."
+"Internet access was required but wasn’t available. Please make sure that you"
+" have internet access and try again."
 msgstr ""
 
 #. TRANSLATORS: if the package is not signed correctly
@@ -3691,7 +3744,8 @@ msgstr ""
 msgid "Updates page"
 msgstr ""
 
-#. TRANSLATORS: This means all software (plural) installed on this system is up to date.
+#. TRANSLATORS: This means all software (plural) installed on this system is
+#. up to date.
 #: src/gs-updates-page.ui:210
 msgid "Software is up to date"
 msgstr ""
@@ -3824,24 +3878,26 @@ msgstr ""
 msgid "Add, remove or update software on this computer"
 msgstr ""
 
-#. Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+#. Translators: Do NOT translate or transliterate this text (this is an icon
+#. file name)!
 #: src/org.gnome.Software.desktop.in:7
 #: src/org.gnome.Software.Editor.desktop.in:6
 msgid "org.gnome.Software"
 msgstr ""
 
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#. Translators: Search terms to find this application. Do NOT translate or
+#. localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.desktop.in:13
 msgid ""
-"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;"
-"Software;App;Store;"
+"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;"
 msgstr ""
 
 #: src/org.gnome.Software.Editor.desktop.in:4
 msgid "Design the featured banners for GNOME Software"
 msgstr ""
 
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#. Translators: Search terms to find this application. Do NOT translate or
+#. localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.Editor.desktop.in:13
 msgid "AppStream;Software;App;"
 msgstr ""
