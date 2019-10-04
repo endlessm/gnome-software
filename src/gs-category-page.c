@@ -238,6 +238,11 @@ gs_category_page_get_apps_cb (GObject *source_object,
 	/* ensure the filter will show the apps, not the placeholders */
 	self->num_placeholders_to_show = -1;
 	gtk_flow_box_invalidate_filter (GTK_FLOW_BOX (self->category_detail_box));
+
+	if (g_strcmp0 (gs_category_get_id (self->category), "usb") == 0) {
+		gtk_widget_set_visible (self->no_apps_box, gs_category_get_size (self->subcategory) == 0);
+		gtk_widget_set_visible (self->scrolledwindow_category, gs_category_get_size (self->subcategory) != 0);
+	}
 }
 
 static gboolean
