@@ -952,6 +952,10 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 		return FALSE;
 	}
 
+	/* Update action on auto updates is essentially a deploy operation. */
+	if (is_auto_update)
+		flatpak_transaction_set_no_pull (transaction, TRUE);
+
 	for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
 		GsApp *app = gs_app_list_index (list_tmp, i);
 		g_autofree gchar *ref = NULL;
