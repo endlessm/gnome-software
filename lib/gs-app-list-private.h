@@ -42,19 +42,16 @@ typedef enum {
  * @GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED:	Prefer installed applications
  * @GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES:	Filter using the provides ID
  *
- * Flags to use when filtering. The priority of eash #GsApp is used to choose
+ * Flags to use when filtering. The priority of each #GsApp is used to choose
  * which application object to keep.
  **/
-typedef enum {
-	GS_APP_LIST_FILTER_FLAG_NONE		= 0,
-	GS_APP_LIST_FILTER_FLAG_KEY_ID		= 1 << 0,
-	GS_APP_LIST_FILTER_FLAG_KEY_SOURCE	= 1 << 1,
-	GS_APP_LIST_FILTER_FLAG_KEY_VERSION	= 1 << 2,
-	GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED= 1 << 3,
-	GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES	= 1 << 4,
-	/*< private >*/
-	GS_APP_LIST_FILTER_FLAG_LAST
-} GsAppListFilterFlags;
+#define GS_APP_LIST_FILTER_FLAG_NONE             ((guint64) 0)
+#define GS_APP_LIST_FILTER_FLAG_KEY_ID           ((guint64) 1 << 0)
+#define GS_APP_LIST_FILTER_FLAG_KEY_SOURCE       ((guint64) 1 << 1)
+#define GS_APP_LIST_FILTER_FLAG_KEY_VERSION      ((guint64) 1 << 2)
+#define GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED ((guint64) 1 << 3)
+#define GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES  ((guint64) 1 << 4)
+typedef guint64 GsAppListFilterFlags;
 
 GsAppList	*gs_app_list_copy		(GsAppList	*list);
 guint		 gs_app_list_get_size_peak	(GsAppList	*list);
