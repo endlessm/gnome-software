@@ -1192,11 +1192,20 @@ gs_appstream_add_category_apps (GsPlugin *plugin,
 						"components/component/categories/"
 						"category[text()='%s']/../..",
 						split[0]);
+			xb_string_append_union (xpath,
+						"component/categories/"
+						"category[text()='%s']/../../description/..",
+						split[0]);
 		} else if (g_strv_length (split) == 2) {
 			xb_string_append_union (xpath,
 						"components/component/categories/"
 						"category[text()='%s']/../"
 						"category[text()='%s']/../..",
+						split[0], split[1]);
+			xb_string_append_union (xpath,
+						"component/categories/"
+						"category[text()='%s']/../"
+						"category[text()='%s']/../../description/..",
 						split[0], split[1]);
 		}
 		components = xb_silo_query (silo, xpath->str, 0, &error_local);
