@@ -1182,22 +1182,24 @@ gs_appstream_add_category_apps (GsPlugin *plugin,
 	}
 	for (guint j = 0; j < desktop_groups->len; j++) {
 		const gchar *desktop_group = g_ptr_array_index (desktop_groups, j);
-		g_autofree gchar *xpath = NULL;
+		g_autoptr(GString) xpath = g_string_new (NULL);
 		g_auto(GStrv) split = g_strsplit (desktop_group, "::", -1);
 		g_autoptr(GPtrArray) components = NULL;
 
 		/* generate query */
 		if (g_strv_length (split) == 1) {
-			xpath = g_strdup_printf ("components/component/categories/"
-						 "category[text()='%s']/../..",
-						 split[0]);
+			xb_string_append_union (xpath,
+						"components/component/categories/"
+						"category[text()='%s']/../..",
+						split[0]);
 		} else if (g_strv_length (split) == 2) {
-			xpath = g_strdup_printf ("components/component/categories/"
-						 "category[text()='%s']/../"
-						 "category[text()='%s']/../..",
-						 split[0], split[1]);
+			xb_string_append_union (xpath,
+						"components/component/categories/"
+						"category[text()='%s']/../"
+						"category[text()='%s']/../..",
+						split[0], split[1]);
 		}
-		components = xb_silo_query (silo, xpath, 0, &error_local);
+		components = xb_silo_query (silo, xpath->str, 0, &error_local);
 		if (components == NULL) {
 			if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
 				return TRUE;
