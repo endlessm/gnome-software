@@ -856,7 +856,7 @@ gs_plugin_refine_wildcard (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const gchar *id;
-	g_autofree gchar *xpath = NULL;
+	g_autoptr(GString) xpath = g_string_new (NULL);
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GRWLockReaderLocker) locker = NULL;
 	g_autoptr(GPtrArray) components = NULL;
@@ -873,8 +873,10 @@ gs_plugin_refine_wildcard (GsPlugin *plugin,
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
 
 	/* find all app with package names when matching any prefixes */
-	xpath = g_strdup_printf ("components/component/id[text()='%s']/../pkgname/..", id);
-	components = xb_silo_query (priv->silo, xpath, 0, &error_local);
+	xb_string_append_union (xpath, "components/component/id[text()='%s']/../pkgname/..", id);
+	/* Also query appdata */
+	xb_string_append_union (xpath, "component/id[text()='%s']/..", id);
+	components = xb_silo_query (priv->silo, xpath->str, 0, &error_local);
 	if (components == NULL) {
 		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
 			return TRUE;
