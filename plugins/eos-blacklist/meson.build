@@ -13,6 +13,7 @@ shared_module(
   dependencies : [
     plugin_libs,
     flatpak,
+    gnome_desktop,
   ],
   link_with : [
     libgnomesoftware,
