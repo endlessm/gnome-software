@@ -462,7 +462,6 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		"org.mozilla.Firefox",
 		"org.platformio.Ide",
 		"org.snap4arduino.App",
-		"org.squeakland.Etoys",
 		NULL
 	};
 
