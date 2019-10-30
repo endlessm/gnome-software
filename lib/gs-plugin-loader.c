@@ -1466,13 +1466,16 @@ gs_plugin_loader_job_process_finish (GsPluginLoader *plugin_loader,
 				     GAsyncResult *res,
 				     GError **error)
 {
+	GsAppList *list = NULL;
+
 	g_return_val_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader), NULL);
 	g_return_val_if_fail (G_IS_TASK (res), NULL);
 	g_return_val_if_fail (g_task_is_valid (res, plugin_loader), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
+	list = g_task_propagate_pointer (G_TASK (res), error);
 	gs_utils_error_convert_gio (error);
-	return g_task_propagate_pointer (G_TASK (res), error);
+	return list;
 }
 
 /**
@@ -1639,13 +1642,16 @@ gs_plugin_loader_job_get_categories_finish (GsPluginLoader *plugin_loader,
 					   GAsyncResult *res,
 					   GError **error)
 {
+	GPtrArray *array;
+
 	g_return_val_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader), NULL);
 	g_return_val_if_fail (G_IS_TASK (res), NULL);
 	g_return_val_if_fail (g_task_is_valid (res, plugin_loader), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
+	array = g_task_propagate_pointer (G_TASK (res), error);
 	gs_utils_error_convert_gio (error);
-	return g_task_propagate_pointer (G_TASK (res), error);
+	return array;
 }
 
 
