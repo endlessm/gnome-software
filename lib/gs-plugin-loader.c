@@ -3617,6 +3617,10 @@ gs_plugin_loader_job_timeout_cb (gpointer user_data)
 		return G_SOURCE_REMOVE;
 	}
 
+	g_debug ("was cancelling job as it took too long, not anymore");
+	helper->timeout_id = 0;
+	return G_SOURCE_REMOVE;
+
 	/* call the cancellable */
 	g_debug ("cancelling job %s as it took longer than %u seconds",
 		 helper->function_name,
