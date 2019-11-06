@@ -57,6 +57,7 @@ struct GsPluginData
 	char *product_name;
 	gboolean eos_arch_is_arm;
 	FlatpakInstallation *installation;
+	char **flatpak_default_locales;
 };
 
 static char *
@@ -187,6 +188,14 @@ gs_plugin_setup (GsPlugin *plugin,
 			g_warning ("No system installation could be retrieved! %s", local_error->message);
 			g_clear_error (&local_error);
 		}
+
+		if (priv->installation) {
+			priv->flatpak_default_locales = flatpak_installation_get_default_locales (priv->installation, &local_error);
+			if (local_error != NULL) {
+				g_warning ("No user locales could be retrieved! %s", local_error->message);
+				g_clear_error (&local_error);
+			}
+		}
 	}
 
 	return TRUE;
@@ -209,6 +218,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_free (priv->personality);
 	g_free (priv->product_name);
 	g_clear_object (&priv->installation);
+	g_strfreev (priv->flatpak_default_locales);
 }
 
 /* Copy of the implementation of gs_flatpak_app_get_ref_name(). */
@@ -216,25 +226,6 @@ static const gchar *
 app_get_flatpak_ref_name (GsApp *app)
 {
 	return gs_app_get_metadata_item (app, "flatpak::RefName");
-}
-
-static gchar **
-get_flatpak_default_locales (GsPlugin *plugin)
-{
-	g_auto(GStrv) flatpak_default_locales = NULL;
-	g_autoptr(GError) local_error = NULL;
-
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	if (priv->installation == NULL)
-		return NULL;
-
-	flatpak_default_locales = flatpak_installation_get_default_locales (priv->installation, &local_error);
-	if (local_error != NULL) {
-		g_warning ("No user locales could be retrieved! %s", local_error->message);
-		return NULL;
-	}
-
-	return g_steal_pointer (&flatpak_default_locales);
 }
 
 static gboolean
@@ -286,8 +277,8 @@ static gboolean
 gs_plugin_locale_is_compatible (GsPlugin *plugin,
                                 const char *app_locale)
 {
+	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_auto(GStrv) plugin_locale_variants = NULL;
-	g_auto(GStrv) flatpak_locales = NULL;
 	const char *plugin_locale = gs_plugin_get_locale (plugin);
 
 	/* Check if a variant of a locale is compatible */
@@ -296,9 +287,9 @@ gs_plugin_locale_is_compatible (GsPlugin *plugin,
 		return TRUE;
 
 	/* check if the app's locale is compatible with the languages key on the ostree repo file */
-	flatpak_locales = get_flatpak_default_locales (plugin);
-	if (flatpak_locales != NULL && assert_valid_locale_match (app_locale, (const char * const *) flatpak_locales))
-			return TRUE;
+	if (priv->flatpak_default_locales != NULL &&
+		assert_valid_locale_match (app_locale, (const char * const *) priv->flatpak_default_locales))
+		return TRUE;
 
 	return FALSE;
 }
