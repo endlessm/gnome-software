@@ -963,6 +963,49 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 /* Called in a #GTask worker thread, but it can run without holding
  * `priv->mutex` since it doesn’t need to synchronise on state. */
 gboolean
+gs_plugin_app_upgrade_trigger (GsPlugin *plugin,
+                               GsApp *app,
+                               GCancellable *cancellable,
+                               GError **error)
+{
+	g_autoptr(GDBusConnection) session_bus = NULL;
+	g_autoptr(GVariant) reply = NULL;
+
+	/* only process this app if was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (app),
+		       gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, cancellable, error);
+	if (session_bus == NULL) {
+		gs_eos_updater_error_convert (error);
+		return FALSE;
+	}
+
+	/* Blocks until user responds to interactive confirmation */
+	reply = g_dbus_connection_call_sync (session_bus,
+					    "org.gnome.SessionManager",
+					    "/org/gnome/SessionManager",
+					    "org.gnome.SessionManager",
+					    "Reboot",
+					    NULL,
+					    NULL,
+					    /* In the unlikely event of being on a non-GNOME desktop, don't try to launch gnome-session */
+					    G_DBUS_CALL_FLAGS_NO_AUTO_START,
+					    G_MAXINT,
+					    cancellable,
+					    error);
+	if (reply == NULL) {
+		gs_eos_updater_error_convert (error);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/* Called in a #GTask worker thread, but it can run without holding
+ * `priv->mutex` since it doesn’t need to synchronise on state. */
+gboolean
 gs_plugin_file_to_app (GsPlugin *plugin,
 		       GsAppList *list,
 		       GFile *file,
