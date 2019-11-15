@@ -75,7 +75,7 @@ gs_side_filter_row_set_category (GsSideFilterRow *row, GsCategory *cat)
 		g_autofree gchar *css = NULL;
 		g_autofree gchar *color = gdk_rgba_to_string (tmp);
 		css = g_strdup_printf ("background-color: %s", color);
-		gs_utils_widget_set_css (GTK_WIDGET (row->leftborder), css);
+		gs_utils_widget_set_css (GTK_WIDGET (row->leftborder), "side-filter-row-custom", css);
 	}
 
 	gs_side_filter_row_set_mode (row, GS_SHELL_MODE_CATEGORY);
