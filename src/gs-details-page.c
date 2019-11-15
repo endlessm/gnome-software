@@ -1757,7 +1757,7 @@ gs_details_page_content_rating_set_css (GtkWidget *widget, guint age)
 	}
 	g_string_append_printf (css, "color: %s;\n", color_fg);
 	g_string_append_printf (css, "background-color: %s;\n", color_bg);
-	gs_utils_widget_set_css (widget, css->str);
+	gs_utils_widget_set_css (widget, "content-rating-custom", css->str);
 }
 
 static void
@@ -2126,9 +2126,10 @@ origin_popover_list_sort_func (GtkListBoxRow *a,
 {
 	GsApp *a1 = gs_origin_popover_row_get_app (GS_ORIGIN_POPOVER_ROW (a));
 	GsApp *a2 = gs_origin_popover_row_get_app (GS_ORIGIN_POPOVER_ROW (b));
+	g_autofree gchar *a1_origin = gs_app_get_origin_ui (a1);
+	g_autofree gchar *a2_origin = gs_app_get_origin_ui (a2);
 
-	return g_strcmp0 (gs_app_get_origin_ui (a1),
-			  gs_app_get_origin_ui (a2));
+	return g_strcmp0 (a1_origin, a2_origin);
 }
 
 static void

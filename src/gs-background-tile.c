@@ -92,7 +92,7 @@ update_tile_colors_bg (GsBackgroundTile *tile)
 	gradients_str = g_strjoinv (",", gradients);
 	css = g_strconcat ("background: ", gradients_str, ";", NULL);
 
-	gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), css);
+	gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), "background-tile-custom", css);
 }
 
 static void
@@ -102,7 +102,7 @@ update_tile_background (GsBackgroundTile *tile)
 	const gchar *css = gs_app_get_metadata_item (app, "GnomeSoftware::BackgroundTile-css");
 
 	if (css != NULL)
-		gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), css);
+		gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), "background-tile-custom", css);
 	else
 		update_tile_colors_bg (tile);
 }
