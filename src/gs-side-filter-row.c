@@ -73,9 +73,11 @@ gs_side_filter_row_set_category (GsSideFilterRow *row, GsCategory *cat)
 	if (key_colors->len > 0) {
 		GdkRGBA *tmp = g_ptr_array_index (key_colors, 0);
 		g_autofree gchar *css = NULL;
+		g_autofree gchar *class_name = NULL;
 		g_autofree gchar *color = gdk_rgba_to_string (tmp);
 		css = g_strdup_printf ("background-color: %s", color);
-		gs_utils_widget_set_css (GTK_WIDGET (row->leftborder), "side-filter-row-custom", css);
+		class_name = g_strdup_printf ("side-filter-row-custom-%p", row);
+		gs_utils_widget_set_css (GTK_WIDGET (row->leftborder), class_name, css);
 	}
 
 	gs_side_filter_row_set_mode (row, GS_SHELL_MODE_CATEGORY);
