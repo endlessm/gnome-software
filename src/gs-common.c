@@ -371,11 +371,13 @@ gs_utils_widget_set_css_internal (GtkWidget *widget,
 }
 
 void
-gs_utils_widget_set_css (GtkWidget *widget, const gchar *class_name, const gchar *css)
+gs_utils_widget_set_css (GtkWidget *widget, const gchar *css)
 {
+	g_autofree gchar *class_name = NULL;
 	g_autoptr(GString) str = NULL;
 
 	/* remove custom class if NULL */
+	class_name = g_strdup_printf ("themed-widget_%p", widget);
 	if (css == NULL) {
 		GtkStyleContext *context = gtk_widget_get_style_context (widget);
 		gtk_style_context_remove_class (context, class_name);
