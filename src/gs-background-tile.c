@@ -51,7 +51,7 @@ struct _GsBackgroundTile
 G_DEFINE_TYPE (GsBackgroundTile, gs_background_tile, GS_TYPE_APP_TILE)
 
 static void
-update_tile_colors_bg (GsBackgroundTile *tile)
+update_tile_colors_bg (GsBackgroundTile *tile, const gchar *class_name)
 {
 	GsApp *app = gs_app_tile_get_app (GS_APP_TILE (tile));
 	const guint num_colors = 4;
@@ -92,7 +92,7 @@ update_tile_colors_bg (GsBackgroundTile *tile)
 	gradients_str = g_strjoinv (",", gradients);
 	css = g_strconcat ("background: ", gradients_str, ";", NULL);
 
-	gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), "background-tile-custom", css);
+	gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), class_name, css);
 }
 
 static void
@@ -100,11 +100,14 @@ update_tile_background (GsBackgroundTile *tile)
 {
 	GsApp *app = gs_app_tile_get_app (GS_APP_TILE (tile));
 	const gchar *css = gs_app_get_metadata_item (app, "GnomeSoftware::BackgroundTile-css");
+	g_autofree gchar *class_name = NULL;
+
+	class_name = g_strdup_printf("background-tile-custom-%p", tile);
 
 	if (css != NULL)
-		gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), "background-tile-custom", css);
+		gs_utils_widget_set_css (GTK_WIDGET (tile->image_box), class_name, css);
 	else
-		update_tile_colors_bg (tile);
+		update_tile_colors_bg (tile, class_name);
 }
 
 static void
