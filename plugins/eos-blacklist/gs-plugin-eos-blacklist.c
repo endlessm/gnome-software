@@ -449,7 +449,6 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		"com.stencyl.Game",
 		"org.learningequality.KALite",
 		"org.mozilla.Firefox",
-		"org.platformio.Ide",
 		"org.snap4arduino.App",
 		NULL
 	};
