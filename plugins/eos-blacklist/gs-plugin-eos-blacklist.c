@@ -445,7 +445,6 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 
 	static const char *duplicated_apps[] = {
 		"com.google.Chrome",
-		"com.sparklinlabs.Superpowers",
 		"com.stencyl.Game",
 		"org.learningequality.KALite",
 		"org.mozilla.Firefox",
