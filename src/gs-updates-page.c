@@ -445,7 +445,6 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		break;
 	}
 	gtk_widget_set_sensitive (self->button_refresh,
-				  gs_plugin_loader_get_network_available (self->plugin_loader) &&
 				  !gs_shell_update_are_updates_in_progress (self));
 
 	/* stack */
@@ -494,7 +493,7 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		}
 
 		/* no network connection */
-		gtk_stack_set_visible_child_name (GTK_STACK (self->stack_updates), "offline");
+		gtk_stack_set_visible_child_name (GTK_STACK (self->stack_updates), "uptodate");
 		break;
 	default:
 		g_assert_not_reached ();
@@ -932,14 +931,10 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 		return;
 	}
 
-	/* check we have a "free" network connection */
-	if (gs_plugin_loader_get_network_available (self->plugin_loader) &&
-	    !gs_plugin_loader_get_network_metered (self->plugin_loader)) {
+	/* check we have a "free" network connection or are offline */
+	if (!gs_plugin_loader_get_network_metered (self->plugin_loader)) {
 		gs_updates_page_get_new_updates (self);
-
-	/* expensive network connection */
-	} else if (gs_plugin_loader_get_network_available (self->plugin_loader) &&
-	           gs_plugin_loader_get_network_metered (self->plugin_loader)) {
+	} else { /* expensive network connection */
 		if (self->has_agreed_to_mobile_data) {
 			gs_updates_page_get_new_updates (self);
 			return;
@@ -966,29 +961,6 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 				  self);
 		gs_shell_modal_dialog_present (self->shell, GTK_DIALOG (dialog));
 
-	/* no network connection */
-	} else {
-		dialog = gtk_message_dialog_new (gs_shell_get_window (self->shell),
-						 GTK_DIALOG_MODAL |
-						 GTK_DIALOG_USE_HEADER_BAR |
-						 GTK_DIALOG_DESTROY_WITH_PARENT,
-						 GTK_MESSAGE_ERROR,
-						 GTK_BUTTONS_CANCEL,
-						 /* TRANSLATORS: can't do updates check */
-						 _("No Network"));
-		gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
-							  /* TRANSLATORS: we need network
-							   * to do the updates check */
-							  _("Internet access is required to check for updates."));
-		gtk_dialog_add_button (GTK_DIALOG (dialog),
-				       /* TRANSLATORS: this is a link to the
-					* control-center network panel */
-				       _("Network Settings"),
-				       GTK_RESPONSE_REJECT);
-		g_signal_connect (dialog, "response",
-				  G_CALLBACK (gs_updates_page_refresh_confirm_cb),
-				  self);
-		gs_shell_modal_dialog_present (self->shell, GTK_DIALOG (dialog));
 	}
 }
 

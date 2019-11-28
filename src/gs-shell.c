@@ -986,6 +986,9 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 
 	switch (error->code) {
 	case GS_PLUGIN_ERROR_DOWNLOAD_FAILED:
+		/* ignore network errors when checking for updates offline */
+		if (!gs_plugin_loader_get_network_available (priv->plugin_loader))
+			break;
 		if (origin != NULL) {
 			str_origin = gs_shell_get_title_from_origin (origin);
 			if (gs_app_get_bundle_kind (origin) == AS_BUNDLE_KIND_CABINET) {
