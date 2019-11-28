@@ -773,9 +773,8 @@ check_updates (GsUpdateMonitor *monitor)
 	g_autoptr(GDateTime) last_refreshed = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
-	/* never check for updates when offline */
 	if (!gs_plugin_loader_get_network_available (monitor->plugin_loader))
-		return;
+		g_debug ("Checking for offline updates");
 
 	/* check for language pack */
 	check_language_pack (monitor);
