@@ -101,9 +101,8 @@ override_dh_missing:
 override_dh_makeshlibs:
 	dh_makeshlibs -Xlibgs_plugin
 
-# DISABLED
 override_dh_auto_test:
-	dh_auto_test -- --no-suite=fedora-langpacks
+	dh_auto_test -- --no-suite='fedora-langpacks' --no-suite='flatpak'
 
 override_dh_gencontrol:
 ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
