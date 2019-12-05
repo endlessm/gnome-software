@@ -44,15 +44,16 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 endif
 
 # EOS-specific configuration
-GS_CONFIGURE_FLAGS += \
+GS_CONFIGURE_FLAGS = \
 	-Dexternal_appstream=true \
 	-Dfwupd=false \
 	-Dgudev=false \
 	-Dodrs=true \
 	-Dpackagekit=false \
+	-Dflatpak=true \
 	-Dshell_extensions=false \
 	-Dsnap=false \
-	-Dtests=false \
+	-Dtests=true \
 	-Dwebapps=false \
 
 DISTRO_ID = debian
