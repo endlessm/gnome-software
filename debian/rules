@@ -103,7 +103,7 @@ override_dh_makeshlibs:
 
 # DISABLED
 override_dh_auto_test:
-	dh_auto_test -- --no-suite fedora-langpacks
+	dh_auto_test -- --no-suite=fedora-langpacks
 
 override_dh_gencontrol:
 ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
