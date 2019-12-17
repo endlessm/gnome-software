@@ -932,7 +932,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		} else {
 
 			g_autoptr(GString) xpath = g_string_new (NULL);
-			g_autofree gchar *language;
+			g_autofree gchar *language = NULL;
 
 			xb_string_append_union (xpath, "languages/lang[text()='%s'][@percentage>50]", tmp);
 
@@ -1343,6 +1343,10 @@ gs_appstream_add_alternates (GsPlugin *plugin,
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GPtrArray) ids = NULL;
 	g_autoptr(GString) xpath = g_string_new (NULL);
+
+	/* probably a package we know nothing about */
+	if (gs_app_get_id (app) == NULL)
+		return TRUE;
 
 	/* actual ID */
 	xb_string_append_union (xpath, "components/component/id[text()='%s']",

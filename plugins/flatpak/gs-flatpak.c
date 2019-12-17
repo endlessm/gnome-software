@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2016 Joaquim Rocha <jrocha@endlessm.com>
  * Copyright (C) 2016-2018 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
+ * Copyright (C) 2016-2019 Kalev Lember <klember@redhat.com>
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
@@ -27,6 +27,8 @@ struct _GsFlatpak {
 	GObject			 parent_instance;
 	GsFlatpakFlags		 flags;
 	FlatpakInstallation	*installation;
+	GPtrArray		*installed_refs;  /* must be entirely replaced rather than updated internally */
+	GMutex			 installed_refs_mutex;
 	GHashTable		*broken_remotes;
 	GMutex			 broken_remotes_mutex;
 	GFileMonitor		*monitor;
@@ -136,7 +138,7 @@ perms_from_metadata (GKeyFile *keyfile)
 		permissions |= GS_APP_PERMISSIONS_FILESYSTEM_FULL;
 	else if (strv != NULL && g_strv_contains ((const gchar * const *)strv, "host:ro"))
 		permissions |= GS_APP_PERMISSIONS_FILESYSTEM_READ;
-	if (strv != NULL && (g_strv_contains ((const gchar * const *)strv, "xdg-dowwnload") ||
+	if (strv != NULL && (g_strv_contains ((const gchar * const *)strv, "xdg-download") ||
 	                     g_strv_contains ((const gchar * const *)strv, "xdg-download:rw")))
 		permissions |= GS_APP_PERMISSIONS_DOWNLOADS_FULL;
 	else if (strv != NULL && g_strv_contains ((const gchar * const *)strv, "xdg-download:ro"))
@@ -294,6 +296,7 @@ gs_plugin_flatpak_changed_cb (GFileMonitor *monitor,
 			      GsFlatpak *self)
 {
 	g_autoptr(GError) error = NULL;
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	/* manually drop the cache */
 	if (!flatpak_installation_drop_caches (self->installation,
@@ -301,6 +304,10 @@ gs_plugin_flatpak_changed_cb (GFileMonitor *monitor,
 		g_warning ("failed to drop cache: %s", error->message);
 		return;
 	}
+
+	/* drop the installed refs cache */
+	locker = g_mutex_locker_new (&self->installed_refs_mutex);
+	g_clear_pointer (&self->installed_refs, g_ptr_array_unref);
 }
 
 static gboolean
@@ -1221,27 +1228,15 @@ gs_flatpak_ref_to_app (GsFlatpak *self, const gchar *ref,
 	return NULL;
 }
 
-gboolean
-gs_flatpak_app_install_source (GsFlatpak *self, GsApp *app,
-			       GCancellable *cancellable,
-			       GError **error)
+static FlatpakRemote *
+gs_flatpak_create_new_remote (GsFlatpak *self,
+                              GsApp *app,
+                              GCancellable *cancellable,
+                              GError **error)
 {
 	const gchar *gpg_key;
 	const gchar *branch;
 	g_autoptr(FlatpakRemote) xremote = NULL;
-
-	/* does the remote already exist and is disabled */
-	xremote = flatpak_installation_get_remote_by_name (self->installation,
-							   gs_app_get_id (app),
-							   cancellable, NULL);
-	if (xremote != NULL) {
-		g_set_error (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_FAILED,
-			     "flatpak source %s already exists",
-			     flatpak_remote_get_name (xremote));
-		return FALSE;
-	}
 
 	/* create a new remote */
 	xremote = flatpak_remote_new (gs_app_get_id (app));
@@ -1268,6 +1263,28 @@ gs_flatpak_app_install_source (GsFlatpak *self, GsApp *app,
 	branch = gs_app_get_branch (app);
 	if (branch != NULL)
 		flatpak_remote_set_default_branch (xremote, branch);
+
+	return g_steal_pointer (&xremote);
+}
+
+gboolean
+gs_flatpak_app_install_source (GsFlatpak *self, GsApp *app,
+			       GCancellable *cancellable,
+			       GError **error)
+{
+	g_autoptr(FlatpakRemote) xremote = NULL;
+
+	xremote = flatpak_installation_get_remote_by_name (self->installation,
+							   gs_app_get_id (app),
+							   cancellable, NULL);
+	if (xremote != NULL) {
+		/* if the remote already exists, just enable it */
+		g_debug ("enabling existing remote %s", flatpak_remote_get_name (xremote));
+		flatpak_remote_set_disabled (xremote, FALSE);
+	} else {
+		/* create a new remote */
+		xremote = gs_flatpak_create_new_remote (self, app, cancellable, error);
+	}
 
 	/* install it */
 	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
@@ -1476,6 +1493,11 @@ gs_flatpak_refresh (GsFlatpak *self,
 		return FALSE;
 	}
 
+	/* drop the installed refs cache */
+	g_mutex_lock (&self->installed_refs_mutex);
+	g_clear_pointer (&self->installed_refs, g_ptr_array_unref);
+	g_mutex_unlock (&self->installed_refs_mutex);
+
 	/* manually do this in case we created the first appstream file */
 	g_rw_lock_reader_lock (&self->silo_lock);
 	if (self->silo != NULL)
@@ -1679,7 +1701,7 @@ gs_flatpak_refine_app_state_unlocked (GsFlatpak *self,
                                       GError **error)
 {
 	g_autoptr(FlatpakInstalledRef) ref = NULL;
-	g_autoptr(GPtrArray) refs = NULL;
+	g_autoptr(GPtrArray) installed_refs = NULL;
 
 	/* already found */
 	if (gs_app_get_state (app) != AS_APP_STATE_UNKNOWN)
@@ -1690,14 +1712,24 @@ gs_flatpak_refine_app_state_unlocked (GsFlatpak *self,
 		return FALSE;
 
 	/* find the app using the origin and the ID */
-	refs = flatpak_installation_list_installed_refs (self->installation,
-							 cancellable, error);
-	if (refs == NULL) {
-		gs_flatpak_error_convert (error);
-		return FALSE;
+	g_mutex_lock (&self->installed_refs_mutex);
+
+	if (self->installed_refs == NULL) {
+		self->installed_refs = flatpak_installation_list_installed_refs (self->installation,
+								 cancellable, error);
+
+		if (self->installed_refs == NULL) {
+			g_mutex_unlock (&self->installed_refs_mutex);
+			gs_flatpak_error_convert (error);
+			return FALSE;
+		}
 	}
-	for (guint i = 0; i < refs->len; i++) {
-		FlatpakInstalledRef *ref_tmp = g_ptr_array_index (refs, i);
+
+	installed_refs = g_ptr_array_ref (self->installed_refs);
+	g_mutex_unlock (&self->installed_refs_mutex);
+
+	for (guint i = 0; i < installed_refs->len; i++) {
+		FlatpakInstalledRef *ref_tmp = g_ptr_array_index (installed_refs, i);
 		const gchar *origin = flatpak_installed_ref_get_origin (ref_tmp);
 		const gchar *name = flatpak_ref_get_name (FLATPAK_REF (ref_tmp));
 		const gchar *arch = flatpak_ref_get_arch (FLATPAK_REF (ref_tmp));
@@ -2937,6 +2969,8 @@ gs_flatpak_finalize (GObject *object)
 
 	g_free (self->id);
 	g_object_unref (self->installation);
+	g_clear_pointer (&self->installed_refs, g_ptr_array_unref);
+	g_mutex_clear (&self->installed_refs_mutex);
 	g_object_unref (self->plugin);
 	g_hash_table_unref (self->broken_remotes);
 	g_mutex_clear (&self->broken_remotes_mutex);
@@ -2959,6 +2993,8 @@ gs_flatpak_init (GsFlatpak *self)
 	 * one when something changes */
 	g_rw_lock_init (&self->silo_lock);
 
+	g_mutex_init (&self->installed_refs_mutex);
+	self->installed_refs = NULL;
 	g_mutex_init (&self->broken_remotes_mutex);
 	self->broken_remotes = g_hash_table_new_full (g_str_hash, g_str_equal,
 						      g_free, NULL);

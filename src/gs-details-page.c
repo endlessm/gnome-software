@@ -200,6 +200,11 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 	if (gs_app_get_kind (self->app) != AS_APP_KIND_DESKTOP)
 		return;
 
+	/* Leave the button hidden if the app can’t be launched by the current
+	 * user. */
+	if (gs_app_has_quirk (self->app, GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE))
+		return;
+
 	/* only consider the shortcut button if the app is installed */
 	switch (gs_app_get_state (self->app)) {
 	case AS_APP_STATE_INSTALLED:
@@ -2007,9 +2012,10 @@ origin_popover_list_sort_func (GtkListBoxRow *a,
 {
 	GsApp *a1 = gs_origin_popover_row_get_app (GS_ORIGIN_POPOVER_ROW (a));
 	GsApp *a2 = gs_origin_popover_row_get_app (GS_ORIGIN_POPOVER_ROW (b));
+	g_autofree gchar *a1_origin = gs_app_get_origin_ui (a1);
+	g_autofree gchar *a2_origin = gs_app_get_origin_ui (a2);
 
-	return g_strcmp0 (gs_app_get_origin_ui (a1),
-			  gs_app_get_origin_ui (a2));
+	return g_strcmp0 (a1_origin, a2_origin);
 }
 
 static void

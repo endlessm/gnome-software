@@ -1,5 +1,5 @@
 project('gnome-software', 'c',
-  version : '3.34.0',
+  version : '3.34.2',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
   meson_version : '>=0.46.0'
@@ -103,6 +103,7 @@ gio_unix = dependency('gio-unix-2.0', version : '>= 2.56.0')
 gmodule = dependency('gmodule-2.0')
 goa = dependency('goa-1.0')
 gtk = dependency('gtk+-3.0', version : '>= 3.22.4')
+glib = dependency('glib-2.0', version : '>= 2.55.0')
 json_glib = dependency('json-glib-1.0', version : '>= 1.2.0')
 libm = cc.find_library('m', required: false)
 libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')

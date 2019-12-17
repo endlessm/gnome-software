@@ -1402,13 +1402,37 @@ gs_plugin_loader_job_process_finish (GsPluginLoader *plugin_loader,
 				     GAsyncResult *res,
 				     GError **error)
 {
+	GTask *task;
+	GsAppList *list = NULL;
+
 	g_return_val_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader), NULL);
 	g_return_val_if_fail (G_IS_TASK (res), NULL);
 	g_return_val_if_fail (g_task_is_valid (res, plugin_loader), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
+	task = G_TASK (res);
+
+	/* Return cancelled if the task was cancelled and there is no other error set.
+	 *
+	 * This is needed because we set the task `check_cancellable` to FALSE,
+	 * to be able to catch other errors such as timeout, but that means
+	 * g_task_propagate_pointer() will ignore if the task was cancelled and only
+	 * check if there was an error (i.e. g_task_return_*error*).
+	 *
+	 * We only do this if there is no error already set in the task (e.g.
+	 * timeout) because in that case we want to return the existing error.
+	 */
+	if (!g_task_had_error (task)) {
+		GCancellable *cancellable = g_task_get_cancellable (task);
+
+		if (g_cancellable_set_error_if_cancelled (cancellable, error)) {
+			gs_utils_error_convert_gio (error);
+			return NULL;
+		}
+	}
+	list = g_task_propagate_pointer (task, error);
 	gs_utils_error_convert_gio (error);
-	return g_task_propagate_pointer (G_TASK (res), error);
+	return list;
 }
 
 /**
@@ -1575,13 +1599,16 @@ gs_plugin_loader_job_get_categories_finish (GsPluginLoader *plugin_loader,
 					   GAsyncResult *res,
 					   GError **error)
 {
+	GPtrArray *array;
+
 	g_return_val_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader), NULL);
 	g_return_val_if_fail (G_IS_TASK (res), NULL);
 	g_return_val_if_fail (g_task_is_valid (res, plugin_loader), NULL);
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
+	array = g_task_propagate_pointer (G_TASK (res), error);
 	gs_utils_error_convert_gio (error);
-	return g_task_propagate_pointer (G_TASK (res), error);
+	return array;
 }
 
 /******************************************************************************/
@@ -3644,11 +3671,21 @@ gs_plugin_loader_app_create (GsPluginLoader *plugin_loader, const gchar *unique_
 		return NULL;
 	}
 
+	/* return the matching GsApp */
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app_tmp = gs_app_list_index (list, i);
+		if (g_strcmp0 (unique_id, gs_app_get_unique_id (app_tmp)) == 0)
+			return g_object_ref (app_tmp);
+	}
+
 	/* return the first returned app that's not a wildcard */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app_tmp = gs_app_list_index (list, i);
-		if (!gs_app_has_quirk (app_tmp, GS_APP_QUIRK_IS_WILDCARD))
+		if (!gs_app_has_quirk (app_tmp, GS_APP_QUIRK_IS_WILDCARD)) {
+			g_debug ("returning imperfect match: %s != %s",
+				 unique_id, gs_app_get_unique_id (app_tmp));
 			return g_object_ref (app_tmp);
+		}
 	}
 
 	/* does not exist */
