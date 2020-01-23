@@ -42,6 +42,8 @@ struct _GsFlatpak {
 	guint			 changed_id;
 	GVolumeMonitor		*volume_monitor;
 	guint			 mount_removed_handler_id;
+	GHashTable		*app_silos;
+	GMutex			 app_silos_mutex;
 };
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
@@ -401,10 +403,10 @@ gs_flatpak_set_origin_cb (XbBuilderFixup *self,
 			  gpointer user_data,
 			  GError **error)
 {
-	FlatpakRemote *xremote = FLATPAK_REMOTE (user_data);
+	const char *remote_name = (char *)user_data;
 	if (g_strcmp0 (xb_builder_node_get_element (bn), "components") == 0) {
 		xb_builder_node_set_attr (bn, "origin",
-					  flatpak_remote_get_name (xremote));
+					  remote_name);
 	}
 	return TRUE;
 }
@@ -489,7 +491,8 @@ gs_flatpak_get_xremote_main_ref (GsFlatpak *self, FlatpakRemote *xremote, GError
 #endif
 
 static void
-fixup_flatpak_appstream_xml (XbBuilderSource *source)
+fixup_flatpak_appstream_xml (XbBuilderSource *source,
+		             const char *origin)
 {
 	g_autoptr(XbBuilderFixup) fixup1 = NULL;
 	g_autoptr(XbBuilderFixup) fixup2 = NULL;
@@ -515,6 +518,17 @@ fixup_flatpak_appstream_xml (XbBuilderSource *source)
 				       NULL, NULL);
 	xb_builder_fixup_set_max_depth (fixup3, 2);
 	xb_builder_source_add_fixup (source, fixup3);
+
+	if (origin != NULL) {
+		g_autoptr(XbBuilderFixup) fixup4 = NULL;
+
+		/* override the *AppStream* origin */
+		fixup4 = xb_builder_fixup_new ("SetOrigin",
+					       gs_flatpak_set_origin_cb,
+					       g_strdup (origin), g_free);
+		xb_builder_fixup_set_max_depth (fixup4, 1);
+		xb_builder_source_add_fixup (source, fixup4);
+	}
 }
 
 static gboolean
@@ -593,7 +607,6 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 	g_autoptr(GFile) appstream_dir = NULL;
 	g_autoptr(GFile) file_xml = NULL;
 	g_autoptr(GSettings) settings = NULL;
-	g_autoptr(XbBuilderFixup) origin_fixup = NULL;
 	g_autoptr(XbBuilderNode) info = NULL;
 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
 	g_autofree gchar *remote_url = NULL;
@@ -637,16 +650,7 @@ gs_flatpak_add_apps_from_xremote (GsFlatpak *self,
 					  error))
 		return FALSE;
 
-	fixup_flatpak_appstream_xml (source);
-
-	/* override the *AppStream* origin */
-    /* TODO: Make this fixup work for bundles so it can go in
-     * fixup_flatpak_appstream_xml() */
-	origin_fixup = xb_builder_fixup_new ("SetOrigin",
-				       gs_flatpak_set_origin_cb,
-				       xremote, NULL);
-	xb_builder_fixup_set_max_depth (origin_fixup, 1);
-	xb_builder_source_add_fixup (source, origin_fixup);
+	fixup_flatpak_appstream_xml (source, flatpak_remote_get_name (xremote));
 
 	/* add metadata */
 	icon_prefix = g_build_filename (appstream_dir_fn, "icons", NULL);
@@ -2684,6 +2688,7 @@ gs_flatpak_refine_appstream_release (XbNode *component, GsApp *app)
 static gboolean
 gs_flatpak_refine_appstream_from_bytes (GsFlatpak *self,
 					GsApp *app,
+					const char *origin, /* (nullable) */
 					GBytes *appstream_gz,
 					GsPluginRefineFlags flags,
 					GCancellable *cancellable,
@@ -2743,7 +2748,7 @@ gs_flatpak_refine_appstream_from_bytes (GsFlatpak *self,
 	xb_builder_fixup_set_max_depth (bundle_fixup, 2);
 	xb_builder_source_add_fixup (source, bundle_fixup);
 
-	fixup_flatpak_appstream_xml (source);
+	fixup_flatpak_appstream_xml (source, origin);
 
 	xb_builder_import_source (builder, source);
 	silo = xb_builder_compile (builder,
@@ -2790,6 +2795,15 @@ gs_flatpak_refine_appstream_from_bytes (GsFlatpak *self,
 
 	/* use the default release as the version number */
 	gs_flatpak_refine_appstream_release (component_node, app);
+
+	/* save the silo so it can be used for searches */
+	{
+		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&self->app_silos_mutex);
+		g_hash_table_replace (self->app_silos,
+				      gs_flatpak_app_get_ref_display (app),
+				      g_steal_pointer (&silo));
+	}
+
 	return TRUE;
 }
 
@@ -2841,7 +2855,12 @@ gs_flatpak_refine_appstream (GsFlatpak *self,
 			return TRUE;
 
 		g_debug ("using installed appdata for %s", gs_flatpak_app_get_ref_name (app));
-		return gs_flatpak_refine_appstream_from_bytes (self, app, appstream_gz, flags, cancellable, error);
+		return gs_flatpak_refine_appstream_from_bytes (self,
+				                               app,
+							       flatpak_installed_ref_get_origin (installed_ref),
+							       appstream_gz,
+							       flags,
+							       cancellable, error);
 	}
 
 	if (!gs_appstream_refine_app (self->plugin, app, silo, component, flags, error))
@@ -3162,7 +3181,7 @@ gs_flatpak_file_to_app_bundle (GsFlatpak *self,
 	/* load AppStream */
 	appstream_gz = flatpak_bundle_ref_get_appstream (xref_bundle);
 	if (appstream_gz != NULL) {
-		if (!gs_flatpak_refine_appstream_from_bytes (self, app, appstream_gz,
+		if (!gs_flatpak_refine_appstream_from_bytes (self, app, NULL, appstream_gz,
 							     GS_PLUGIN_REFINE_FLAGS_DEFAULT,
 							     cancellable, error))
 			return NULL;
@@ -3450,6 +3469,10 @@ gs_flatpak_search (GsFlatpak *self,
 {
 	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
 	g_autoptr(GRWLockReaderLocker) locker = NULL;
+	g_autoptr(GMutexLocker) app_silo_locker = NULL;
+	g_autoptr(GPtrArray) silos_to_remove = g_ptr_array_new ();
+	GHashTableIter iter;
+	gpointer key, value;
 
 	if (!gs_flatpak_rescan_appstream_store (self, cancellable, error))
 		return FALSE;
@@ -3461,6 +3484,49 @@ gs_flatpak_search (GsFlatpak *self,
 
 	gs_flatpak_claim_app_list (self, list_tmp);
 	gs_app_list_add_list (list, list_tmp);
+
+	/* Also search silos from installed apps which were missing from self->silo */
+	app_silo_locker = g_mutex_locker_new (&self->app_silos_mutex);
+	g_hash_table_iter_init (&iter, self->app_silos);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		g_autoptr(XbSilo) app_silo = g_object_ref (value);
+		g_autoptr(GsAppList) app_list_tmp = gs_app_list_new ();
+		const char *app_ref = (char *)key;
+		g_autoptr(FlatpakInstalledRef) installed_ref = NULL;
+		g_auto(GStrv) split = NULL;
+		FlatpakRefKind kind;
+
+		/* Ignore any silos of apps that have since been removed.
+		 * FIXME: can we use self->installed_refs here? */
+		split = g_strsplit (app_ref, "/", -1);
+		g_assert (g_strv_length (split) == 4);
+		if (g_strcmp0 (split[0], "app") == 0)
+			kind = FLATPAK_REF_KIND_APP;
+		else
+			kind = FLATPAK_REF_KIND_RUNTIME;
+		installed_ref = flatpak_installation_get_installed_ref (self->installation,
+									kind,
+									split[1],
+									split[2],
+									split[3],
+									NULL, NULL);
+		if (installed_ref == NULL) {
+			g_ptr_array_add (silos_to_remove, app_ref);
+			continue;
+		}
+
+		if (!gs_appstream_search (self->plugin, app_silo, values, app_list_tmp,
+					  cancellable, error))
+			return FALSE;
+
+		gs_flatpak_claim_app_list (self, app_list_tmp);
+		gs_app_list_add_list (list, app_list_tmp);
+	}
+
+	for (guint i = 0; i < silos_to_remove->len; i++) {
+		const char *silo = g_ptr_array_index (silos_to_remove, i);
+		g_hash_table_remove (self->app_silos, silo);
+	}
 
 	return TRUE;
 }
@@ -3694,6 +3760,8 @@ gs_flatpak_finalize (GObject *object)
 	g_rw_lock_clear (&self->silo_lock);
 	g_object_unref (self->volume_monitor);
 	g_hash_table_unref (self->usb_remotes);
+	g_hash_table_unref (self->app_silos);
+	g_mutex_clear (&self->app_silos_mutex);
 
 	G_OBJECT_CLASS (gs_flatpak_parent_class)->finalize (object);
 }
@@ -3725,6 +3793,8 @@ gs_flatpak_init (GsFlatpak *self)
 							   "mount-removed",
 							   G_CALLBACK (gs_flatpak_mount_removed),
 							   self);
+	self->app_silos = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+	g_mutex_init (&self->app_silos_mutex);
 }
 
 GsFlatpak *
