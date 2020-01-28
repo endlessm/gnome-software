@@ -728,6 +728,14 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
+
+	/* If the app is still in REMOVING it's probably because it was installed
+	 * from a .flatpak bundle and is therefore no longer available (unless the
+	 * bundle is still around).
+	 */
+	if (gs_app_get_state (app) == AS_APP_STATE_REMOVING)
+		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+
 	return TRUE;
 }
 
