@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-05 22:05+0000\n"
-"PO-Revision-Date: 2019-11-05 22:06+0000\n"
+"POT-Creation-Date: 2020-01-03 13:17+0000\n"
+"PO-Revision-Date: 2020-01-03 13:41+0000\n"
 "Last-Translator: Will Thompson <wjt@endlessm.com>\n"
 "Language-Team: Korean (http://www.transifex.com/endless-os/gnome-software/language/ko/)\n"
 "MIME-Version: 1.0\n"
@@ -330,7 +330,7 @@ msgstr "검색"
 #. Translators: This is a label in the header bar, followed by a drop down to
 #. choose between different source repos
 #. TRANSLATORS: this refers to where the app came from
-#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:843
+#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:847
 msgid "Source"
 msgstr "공급원"
 
@@ -401,7 +401,7 @@ msgid "Folder Name"
 msgstr "폴더 이름"
 
 #: src/gs-app-folder-dialog.c:307 src/gs-app-folder-dialog.ui:16
-#: src/gs-details-page.ui:247 src/gs-editor.c:729 src/gs-editor.c:762
+#: src/gs-details-page.ui:251 src/gs-editor.c:729 src/gs-editor.c:762
 #: src/gs-installed-page.c:657 src/gs-removal-dialog.ui:32
 #: src/gs-review-dialog.ui:22 src/gs-upgrade-banner.ui:112
 msgid "_Cancel"
@@ -636,7 +636,7 @@ msgstr ""
 
 #. TRANSLATORS: A label for a button to show the settings for
 #. the selected shell extension.
-#: src/gs-category-page.ui:205 src/gs-details-page.c:1004
+#: src/gs-category-page.ui:205 src/gs-details-page.c:1006
 msgid "Extension Settings"
 msgstr "추가 기능 설정"
 
@@ -711,7 +711,7 @@ msgid "Application is ready to be used."
 msgstr "프로그램을 사용할 준비를 마쳤습니다."
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:159 src/gs-common.c:633
+#: src/gs-common.c:159 src/gs-common.c:638
 msgid "Restart"
 msgstr "다시 시작"
 
@@ -783,150 +783,155 @@ msgstr "활성화 및 설치"
 #. TRANSLATORS: these are show_detailed_error messages from the
 #. * package manager no mortal is supposed to understand,
 #. * but google might know what they mean
-#: src/gs-common.c:435
+#: src/gs-common.c:440
 msgid "Detailed errors from the package manager follow:"
 msgstr "패키지 관리자의 자세한 오류 정보는 다음과 같습니다:"
 
-#: src/gs-common.c:454 src/gs-details-page.ui:440
+#: src/gs-common.c:459 src/gs-details-page.ui:444
 msgid "Details"
 msgstr "자세히 보기"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-common.c:619
+#: src/gs-common.c:624
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
 msgstr[0] "업데이트를 설치했습니다"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-common.c:624
+#: src/gs-common.c:629
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
 msgstr[0] "제대로 동작하게 하려면 다시 시작해야합니다."
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:631 src/gs-update-monitor.c:119
+#: src/gs-common.c:636 src/gs-update-monitor.c:119
 msgid "Not Now"
 msgstr "아직 하지 않음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:62
+#: src/gs-content-rating.c:59
 msgid "No cartoon violence"
 msgstr "만화 수준 폭력 내용 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:65
+#: src/gs-content-rating.c:61
 msgid "Cartoon characters in unsafe situations"
 msgstr "안전하지 않은 상황의 만화 주인공 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:68
+#: src/gs-content-rating.c:63
 msgid "Cartoon characters in aggressive conflict"
 msgstr "적극적 폭력 상황의 만화 주인공 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:71
+#: src/gs-content-rating.c:65
 msgid "Graphic violence involving cartoon characters"
 msgstr "만화 주인공의 그래픽 폭력"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:74
+#: src/gs-content-rating.c:70
 msgid "No fantasy violence"
 msgstr "판타지 폭력 내용 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:77
+#: src/gs-content-rating.c:72
 msgid "Characters in unsafe situations easily distinguishable from reality"
 msgstr "실제와 구분할 수 있는 안전하지 않은 상황의 등장 인물 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:80
+#: src/gs-content-rating.c:74
 msgid "Characters in aggressive conflict easily distinguishable from reality"
 msgstr "실제와 구분할 수 있는 적극적 폭력 상황의 등장 인물 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:83
+#: src/gs-content-rating.c:76
 msgid "Graphic violence easily distinguishable from reality"
 msgstr "실제와 구분할 수 있는 그래픽 폭력"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:86
+#: src/gs-content-rating.c:81
 msgid "No realistic violence"
 msgstr "폭력 재현 내용 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:89
+#: src/gs-content-rating.c:83
 msgid "Mildly realistic characters in unsafe situations"
 msgstr "실제와 비슷하게 안전하지 않은 상황의 등장 인물 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:92
+#: src/gs-content-rating.c:85
 msgid "Depictions of realistic characters in aggressive conflict"
 msgstr "실제에 가깝게 적극적 폭력 상황의 등장 인물 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:95
+#: src/gs-content-rating.c:87
 msgid "Graphic violence involving realistic characters"
 msgstr "실제에 가까운 적극적 그래픽 폭력"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:98
+#: src/gs-content-rating.c:92
 msgid "No bloodshed"
 msgstr "유혈 장면 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:101
+#: src/gs-content-rating.c:94
 msgid "Unrealistic bloodshed"
 msgstr "비현실적 혈흔"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:104
+#: src/gs-content-rating.c:96
 msgid "Realistic bloodshed"
 msgstr "현실적 혈흔"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:107
+#: src/gs-content-rating.c:98
 msgid "Depictions of bloodshed and the mutilation of body parts"
 msgstr "혈흔 묘사 및 사지 절단"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:110
+#: src/gs-content-rating.c:103
 msgid "No sexual violence"
 msgstr "성폭력 내용 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:113
+#: src/gs-content-rating.c:105
 msgid "Rape or other violent sexual behavior"
 msgstr "강간/기타 금지 성 행위"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:116
+#: src/gs-content-rating.c:112
 msgid "No references to alcohol"
 msgstr "알콜 음료 언급 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:119
+#: src/gs-content-rating.c:114
 msgid "References to alcoholic beverages"
 msgstr "알콜 음료 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:122
+#: src/gs-content-rating.c:116
 msgid "Use of alcoholic beverages"
 msgstr "알콜 음료 활용"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:125
+#: src/gs-content-rating.c:122
 msgid "No references to illicit drugs"
 msgstr "불법 약물 언급 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:128
+#: src/gs-content-rating.c:124
 msgid "References to illicit drugs"
 msgstr "불법 약물 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:131
+#: src/gs-content-rating.c:126
 msgid "Use of illicit drugs"
 msgstr "불법 약물 활용"
+
+#. TRANSLATORS: content rating description
+#: src/gs-content-rating.c:132
+msgid "No references to tobacco products"
+msgstr ""
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:134
@@ -934,17 +939,17 @@ msgid "References to tobacco products"
 msgstr "담배 상품 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:137
+#: src/gs-content-rating.c:136
 msgid "Use of tobacco products"
 msgstr "담배 상품 활용"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:140
+#: src/gs-content-rating.c:142
 msgid "No nudity of any sort"
 msgstr "나체 표현 내용 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:143
+#: src/gs-content-rating.c:144
 msgid "Brief artistic nudity"
 msgstr "대략적인 예술 전라 표현"
 
@@ -954,17 +959,17 @@ msgid "Prolonged nudity"
 msgstr "지속적인 전라 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:149
+#: src/gs-content-rating.c:152
 msgid "No references to or depictions of sexual nature"
 msgstr "성적 표현 언급 또는 묘사 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:152
+#: src/gs-content-rating.c:154
 msgid "Provocative references or depictions"
 msgstr "도발적 표현 언급 또는 묘사"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:155
+#: src/gs-content-rating.c:156
 msgid "Sexual references or depictions"
 msgstr "성적 표현 언급 또는 묘사"
 
@@ -974,12 +979,12 @@ msgid "Graphic sexual behavior"
 msgstr "그래픽 성 행위"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:161
+#: src/gs-content-rating.c:163
 msgid "No profanity of any kind"
 msgstr "비속어 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:164
+#: src/gs-content-rating.c:165
 msgid "Mild or infrequent use of profanity"
 msgstr "온화하거나 드문 모독 표현"
 
@@ -989,12 +994,12 @@ msgid "Moderate use of profanity"
 msgstr "어중간한 모독 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:170
+#: src/gs-content-rating.c:169
 msgid "Strong or frequent use of profanity"
 msgstr "강렬하거나 빈번한 모독 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:173
+#: src/gs-content-rating.c:174
 msgid "No inappropriate humor"
 msgstr "부적절한 유머 없음"
 
@@ -1004,12 +1009,12 @@ msgid "Slapstick humor"
 msgstr "슬랩스틱 유머"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:179
+#: src/gs-content-rating.c:178
 msgid "Vulgar or bathroom humor"
 msgstr "3류/화장실 유머"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:182
+#: src/gs-content-rating.c:180
 msgid "Mature or sexual humor"
 msgstr "성인/성 유머"
 
@@ -1019,103 +1024,102 @@ msgid "No discriminatory language of any kind"
 msgstr "차별 문구 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:188
+#: src/gs-content-rating.c:187
 msgid "Negativity towards a specific group of people"
 msgstr "특정 인물 집단에 대한 부정"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:191
+#: src/gs-content-rating.c:189
 msgid "Discrimination designed to cause emotional harm"
 msgstr "감정적 해를 끼치도록 의도한 차별"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:194
+#: src/gs-content-rating.c:191
 msgid "Explicit discrimination based on gender, sexuality, race or religion"
 msgstr "성, 인종, 종교에 기반한 적나라한 차별"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:197
+#: src/gs-content-rating.c:196
 msgid "No advertising of any kind"
 msgstr "광고 내용 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:200
+#: src/gs-content-rating.c:198
 msgid "Product placement"
 msgstr "제품 배치"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:203
+#: src/gs-content-rating.c:200
 msgid "Explicit references to specific brands or trademarked products"
 msgstr "특정 브랜드 및 상표 등록 제품을 명백하게 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:206
+#: src/gs-content-rating.c:202
 msgid "Users are encouraged to purchase specific real-world items"
 msgstr "특정 실물 구매를 장려"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:209
+#: src/gs-content-rating.c:207
 msgid "No gambling of any kind"
 msgstr "도박 내용 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:212
+#: src/gs-content-rating.c:209
 msgid "Gambling on random events using tokens or credits"
 msgstr "토큰 또는 크레딧을 활용한 임의 이벤트 도박"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:215
+#: src/gs-content-rating.c:211
 msgid "Gambling using “play” money"
 msgstr "“게임” 머니 활용 도박"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:218
+#: src/gs-content-rating.c:213
 msgid "Gambling using real money"
 msgstr "현금 활용 도박"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:221
+#: src/gs-content-rating.c:218
 msgid "No ability to spend money"
 msgstr "현금 소비 기능 없음"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:224
+#: src/gs-content-rating.c:220
 msgid "Users are encouraged to donate real money"
 msgstr "현금 기부 장려"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:227
+#: src/gs-content-rating.c:223
 msgid "Ability to spend real money in-app"
 msgstr "앱 내 현금 소비성"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:230
+#: src/gs-content-rating.c:228
 msgid "No way to chat with other users"
 msgstr "다른 사용자와의 문장 대화 기능 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:233
+#: src/gs-content-rating.c:230
 msgid "User-to-user interactions without chat functionality"
 msgstr "문장 대화 없는 사용자간 교류"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:236
+#: src/gs-content-rating.c:232
 msgid "Moderated chat functionality between users"
 msgstr "사용자간 중재 문장 대화 기능"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:239
+#: src/gs-content-rating.c:234
 msgid "Uncontrolled chat functionality between users"
 msgstr "사용자간 비통제 문장 대화 기능"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:242
+#: src/gs-content-rating.c:239
 msgid "No way to talk with other users"
 msgstr "다른 사용자와의 음성 대화 기능 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:245
+#: src/gs-content-rating.c:241
 msgid "Uncontrolled audio or video chat functionality between users"
 msgstr "사용자간 비통제 영상/음성 대화 기능"
 
@@ -1125,24 +1129,22 @@ msgid "No sharing of social network usernames or email addresses"
 msgstr "소셜 네트워크 사용자 이름 또는 전자메일 주소를 공유하지 않음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:251
+#: src/gs-content-rating.c:250
 msgid "Sharing social network usernames or email addresses"
 msgstr "소셜 네트워크 사용자 이름 또는 전자메일 주소를 공유함"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:254
+#: src/gs-content-rating.c:257
 msgid "No sharing of user information with third parties"
 msgstr "사용자 정보를 제 3자와 공유하지 않음"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:257
+#: src/gs-content-rating.c:259
 msgid "Checking for the latest application version"
 msgstr "프로그램 최신 버전 확인"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:260
+#: src/gs-content-rating.c:261
 msgid "Sharing diagnostic data that does not let others identify the user"
 msgstr "사용자를 식별할 수 없는 진단 데이터 공유"
 
@@ -1152,67 +1154,67 @@ msgid "Sharing information that lets others identify the user"
 msgstr "사용자 상호 식별 가능한 정보 공유"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:266
+#: src/gs-content-rating.c:268
 msgid "No sharing of physical location with other users"
 msgstr "실제 위치를 다른 사용자에게 공유하지 않음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:269
+#: src/gs-content-rating.c:270
 msgid "Sharing physical location with other users"
 msgstr "실제 위치를 다른 사용자에게 공유함"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:274
+#: src/gs-content-rating.c:279
 msgid "No references to homosexuality"
 msgstr "동성애 언급 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:277
+#: src/gs-content-rating.c:281
 msgid "Indirect references to homosexuality"
 msgstr "동성애 간접 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:280
+#: src/gs-content-rating.c:283
 msgid "Kissing between people of the same gender"
 msgstr "동성간의 키스"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:283
+#: src/gs-content-rating.c:285
 msgid "Graphic sexual behavior between people of the same gender"
 msgstr "동성간의 성적 행동 화면 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:286
+#: src/gs-content-rating.c:290
 msgid "No references to prostitution"
 msgstr "매춘 언급 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:289
+#: src/gs-content-rating.c:292
 msgid "Indirect references to prostitution"
 msgstr "매춘 간접 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:292
+#: src/gs-content-rating.c:294
 msgid "Direct references to prostitution"
 msgstr "매춘 직접 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:295
+#: src/gs-content-rating.c:296
 msgid "Graphic depictions of the act of prostitution"
 msgstr "매춘 행위 화면 묘사"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:298
+#: src/gs-content-rating.c:301
 msgid "No references to adultery"
 msgstr "간통 언급 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:301
+#: src/gs-content-rating.c:303
 msgid "Indirect references to adultery"
 msgstr "간통 간접 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:304
+#: src/gs-content-rating.c:305
 msgid "Direct references to adultery"
 msgstr "간통 직접 언급"
 
@@ -1222,32 +1224,32 @@ msgid "Graphic depictions of the act of adultery"
 msgstr "간통 행위 화면 묘사"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:310
+#: src/gs-content-rating.c:312
 msgid "No sexualized characters"
 msgstr "성적 대상화 주인공 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:313
+#: src/gs-content-rating.c:315
 msgid "Scantily clad human characters"
 msgstr "반라 인간상"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:316
+#: src/gs-content-rating.c:317
 msgid "Overtly sexualized human characters"
 msgstr "명백히 성적 매력을 부여한 인간상"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:319
+#: src/gs-content-rating.c:322
 msgid "No references to desecration"
 msgstr "신성 모독 언급 없음"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:322
+#: src/gs-content-rating.c:324
 msgid "Depictions of or references to historical desecration"
 msgstr "역사적 신성 모독 표현 또는 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:325
+#: src/gs-content-rating.c:326
 msgid "Depictions of modern-day human desecration"
 msgstr "현대식 인간 모독 표현"
 
@@ -1257,12 +1259,12 @@ msgid "Graphic depictions of modern-day desecration"
 msgstr "현대식 모독 화면 묘사"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:331
+#: src/gs-content-rating.c:333
 msgid "No visible dead human remains"
 msgstr "명확하지 않은 죽은 인간 시신 묘사"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:334
+#: src/gs-content-rating.c:335
 msgid "Visible dead human remains"
 msgstr "명확한 죽은 인간 시신 묘사"
 
@@ -1272,12 +1274,12 @@ msgid "Dead human remains that are exposed to the elements"
 msgstr "실외에 노출된 죽은 인간 시신 묘사"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:340
+#: src/gs-content-rating.c:339
 msgid "Graphic depictions of desecration of human bodies"
 msgstr "인간 신체 모독 화면 묘사"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:343
+#: src/gs-content-rating.c:344
 msgid "No references to slavery"
 msgstr "노예제도 언급 없음"
 
@@ -1287,51 +1289,51 @@ msgid "Depictions of or references to historical slavery"
 msgstr "역사적 노예 모독 표현 또는 언급"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:349
+#: src/gs-content-rating.c:348
 msgid "Depictions of modern-day slavery"
 msgstr "현대식 노예제도 표현"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:352
+#: src/gs-content-rating.c:350
 msgid "Graphic depictions of modern-day slavery"
 msgstr "현대식 노예제도 화면 묘사"
 
 #. TRANSLATORS: This is the formatting of English and localized name
 #. of the rating e.g. "Adults Only (solo adultos)"
-#: src/gs-content-rating.c:368
+#: src/gs-content-rating.c:406
 #, c-format
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
-#: src/gs-content-rating.c:502
+#: src/gs-content-rating.c:540
 msgid "General"
 msgstr "일반"
 
-#: src/gs-content-rating.c:511
+#: src/gs-content-rating.c:549
 msgid "ALL"
 msgstr "모두"
 
-#: src/gs-content-rating.c:515
+#: src/gs-content-rating.c:553
 msgid "Adults Only"
 msgstr "성인 전용"
 
-#: src/gs-content-rating.c:517
+#: src/gs-content-rating.c:555
 msgid "Mature"
 msgstr "성인용"
 
-#: src/gs-content-rating.c:519
+#: src/gs-content-rating.c:557
 msgid "Teen"
 msgstr "10대"
 
-#: src/gs-content-rating.c:521
+#: src/gs-content-rating.c:559
 msgid "Everyone 10+"
 msgstr "10세이상 전연령용"
 
-#: src/gs-content-rating.c:523
+#: src/gs-content-rating.c:561
 msgid "Everyone"
 msgstr "전연령용"
 
-#: src/gs-content-rating.c:525
+#: src/gs-content-rating.c:563
 msgid "Early Childhood"
 msgstr "영유아용"
 
@@ -1406,7 +1408,7 @@ msgstr "추가 패키지가 필요함"
 msgid "Find in Software"
 msgstr "소프트웨어에서 찾기"
 
-#: src/gs-details-page.c:276 src/gs-details-page.ui:256
+#: src/gs-details-page.c:276 src/gs-details-page.ui:260
 msgid "Copy to US_B"
 msgstr ""
 
@@ -1435,7 +1437,7 @@ msgid "Pending update…"
 msgstr "업데이트 대기 중…"
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:770
+#: src/gs-details-page.c:772
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
@@ -1445,7 +1447,7 @@ msgstr "이 프로그램은 인터넷에 연결되어 있을 때만 사용할 �
 #. * can be installed
 #. TRANSLATORS: this is a button in the software repositories
 #. dialog for installing a repo
-#: src/gs-details-page.c:921 src/gs-third-party-repo-row.c:83
+#: src/gs-details-page.c:923 src/gs-third-party-repo-row.c:83
 msgid "_Install"
 msgstr "설치(_I)"
 
@@ -1453,7 +1455,7 @@ msgstr "설치(_I)"
 #. * can be installed but needs to be downloaded first
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:925 src/gs-details-page.c:943
+#: src/gs-details-page.c:927 src/gs-details-page.c:945
 #: src/gs-details-page.ui:181 src/gs-updates-section.c:471
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
@@ -1463,195 +1465,195 @@ msgstr "다운로드(_D)"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
-#: src/gs-details-page.c:957
+#: src/gs-details-page.c:959
 msgid "_Download…"
 msgstr ""
 
 #. TRANSLATORS: A label for a button to execute the selected
 #. application.
-#: src/gs-details-page.c:1009
+#: src/gs-details-page.c:1011
 msgid "_Launch"
 msgstr "실행(_L)"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:1034 src/gs-details-page.ui:405
+#: src/gs-details-page.c:1036 src/gs-details-page.ui:409
 msgid "_Uninstall"
 msgstr ""
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Network"
 msgstr "네트워크"
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Can communicate over the network"
 msgstr "네트워크 통신할 수 있습니다"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "System Services"
 msgstr "시스템 서비스"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "Can access D-Bus services on the system bus"
 msgstr "시스템 버스에서 D-Bus 서비스에 접근할 수 있습니다"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Session Services"
 msgstr "세션 서비스"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Can access D-Bus services on the session bus"
 msgstr "세션 버스에서 D-Bus 서비스에 접근할 수 있습니다"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Devices"
 msgstr "장치"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Can access system device files"
 msgstr "시스템 장치 파일에 접근할 수 있습니다"
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1071
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
 #: src/gs-update-dialog.c:96 src/gs-update-dialog.c:97
 msgid "Home folder"
 msgstr "내 폴더"
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1072
-#: src/gs-details-page.c:1074 src/gs-update-dialog.c:96
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1074
+#: src/gs-details-page.c:1076 src/gs-update-dialog.c:96
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:100
 msgid "Can view, edit and create files"
 msgstr "파일 내용을 보고 편집하고 만들 수 있습니다"
 
-#: src/gs-details-page.c:1071 src/gs-details-page.c:1073
-#: src/gs-details-page.c:1075 src/gs-update-dialog.c:97
+#: src/gs-details-page.c:1073 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1077 src/gs-update-dialog.c:97
 #: src/gs-update-dialog.c:99 src/gs-update-dialog.c:101
 msgid "Can view files"
 msgstr "파일 내용을 볼 수 있습니다"
 
-#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
+#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:99
 msgid "File system"
 msgstr "파일 시스템"
 
-#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1076 src/gs-details-page.c:1077
 #: src/gs-update-dialog.c:100 src/gs-update-dialog.c:101
 msgid "Downloads folder"
 msgstr "다운로드 폴더"
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Settings"
 msgstr "설정"
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Can view and change any settings"
 msgstr "임의 설정을 보고 바꿀 수 있습니다"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Legacy display system"
 msgstr "이전 디스플레이 시스템"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Uses an old, insecure display system"
 msgstr "오래된, 안전하지 않은 디스플레이 시스템을 사용합니다"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Sandbox escape"
 msgstr "샌드박스 외부 동작"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Can escape the sandbox and circumvent any other restrictions"
 msgstr "샌드박스를 벗어나서 제한 요소를 회피할 수 있습니다"
 
-#: src/gs-details-page.c:1093
+#: src/gs-details-page.c:1095
 msgid "This application is fully sandboxed."
 msgstr "이 프로그램은 온전히 샌드박스에서 실행합니다."
 
-#: src/gs-details-page.c:1101
+#: src/gs-details-page.c:1103
 msgid ""
 "Unable to determine which parts of the system this application accesses. "
 "This is typical for older applications."
 msgstr "이 프로그램에서 시스템의 어떤 부분에 접근하는지 확인할 수 없습니다. 오래된 프로그램에선 일반적입니다."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:1250
+#: src/gs-details-page.c:1252
 msgctxt "version"
 msgid "Unknown"
 msgstr "알 수 없음"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:1263
+#: src/gs-details-page.c:1265
 msgctxt "updated"
 msgid "Never"
 msgstr "안 함"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1316
+#: src/gs-details-page.c:1318
 msgctxt "origin"
 msgid "Unknown"
 msgstr "알 수 없음"
 
-#: src/gs-details-page.c:1369
+#: src/gs-details-page.c:1371
 msgid "Low"
 msgstr "하"
 
-#: src/gs-details-page.c:1371
+#: src/gs-details-page.c:1373
 msgid "Medium"
 msgstr "중"
 
-#: src/gs-details-page.c:1373
+#: src/gs-details-page.c:1375
 msgid "High"
 msgstr "상"
 
 #. This refers to the license of the application
 #. TRANSLATORS: this is when a user doesn't specify a name
-#: src/gs-details-page.c:1375 src/gs-details-page.ui:963
+#: src/gs-details-page.c:1377 src/gs-details-page.ui:967
 #: src/gs-review-row.c:57
 msgid "Unknown"
 msgstr "알 수 없음"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1719
+#: src/gs-details-page.c:1721
 msgid "You need internet access to write a review"
 msgstr "평가를 작성하려면 인터넷 연결이 필요합니다"
 
-#: src/gs-details-page.c:1927 src/gs-details-page.c:1943
+#: src/gs-details-page.c:1929 src/gs-details-page.c:1945
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "“%s”을(를) 찾을 수 없습니다."
 
-#: src/gs-details-page.c:2414
+#: src/gs-details-page.c:2417
 msgid "Copied to USB"
 msgstr ""
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2546
+#: src/gs-details-page.c:2563
 msgid "Public domain"
 msgstr "퍼블릭 도메인"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://de.wikipedia.org/wiki/Gemeinfreiheit
-#: src/gs-details-page.c:2549
+#: src/gs-details-page.c:2566
 msgid "https://en.wikipedia.org/wiki/Public_domain"
 msgstr "https://ko.wikipedia.org/wiki/%ED%8D%BC%EB%B8%94%EB%A6%AD_%EB%8F%84%EB%A9%94%EC%9D%B8"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://www.gnu.org/philosophy/free-sw.de
-#: src/gs-details-page.c:2556
+#: src/gs-details-page.c:2573
 msgid "https://www.gnu.org/philosophy/free-sw"
 msgstr "https://www.gnu.org/philosophy/free-sw"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2566 src/gs-details-page.ui:1207
+#: src/gs-details-page.c:2583 src/gs-details-page.ui:1211
 msgid "Free Software"
 msgstr "자유 소프트웨어"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2623
+#: src/gs-details-page.c:2640
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "사용자는 다음 라이선스를 따릅니다:"
 
-#: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
+#: src/gs-details-page.c:2667 src/gs-details-page.ui:1283
 msgid "More information"
 msgstr "자세한 정보"
 
@@ -1671,39 +1673,39 @@ msgstr ""
 msgid "_Remove from Desktop"
 msgstr ""
 
-#: src/gs-details-page.ui:218
+#: src/gs-details-page.ui:221
 msgid "Downloading"
 msgstr "다운로드 중"
 
-#: src/gs-details-page.ui:268
+#: src/gs-details-page.ui:272
 msgid "_Update"
 msgstr "업데이트(_U)"
 
-#: src/gs-details-page.ui:347
+#: src/gs-details-page.ui:351
 msgid "No screenshot provided"
 msgstr "스크린샷이 없습니다"
 
-#: src/gs-details-page.ui:367
+#: src/gs-details-page.ui:371
 msgid "Software Repository Included"
 msgstr "포함된 프로그램 저장소"
 
-#: src/gs-details-page.ui:368
+#: src/gs-details-page.ui:372
 msgid ""
 "This application includes a software repository which provides updates, as "
 "well as access to other software."
 msgstr "이 프로그램에는 다른 프로그램처럼 접근하여 업데이트를 제공하는 프로그램 저장소가 있습니다."
 
-#: src/gs-details-page.ui:375
+#: src/gs-details-page.ui:379
 msgid "No Software Repository Included"
 msgstr "포함된 프로그램 저장소 없음"
 
-#: src/gs-details-page.ui:376
+#: src/gs-details-page.ui:380
 msgid ""
 "This application does not include a software repository. It will not be "
 "updated with new versions."
 msgstr "이 프로그램에는 프로그램 저장소가 없습니다. 새 버전으로 업데이트하지 않겠습니다."
 
-#: src/gs-details-page.ui:384
+#: src/gs-details-page.ui:388
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1711,151 +1713,151 @@ msgstr "이 프로그램은 이미 배포판에서 제공하며 다른 프로그
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: src/gs-details-page.ui:391
+#: src/gs-details-page.ui:395
 msgid "Software Repository Identified"
 msgstr "식별된 프로그램 저장소"
 
-#: src/gs-details-page.ui:392
+#: src/gs-details-page.ui:396
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
 msgstr "이 프로그램 저장소을 추가하면 추가 프로그램과 업그레이드에 접근할 수 있습니다."
 
-#: src/gs-details-page.ui:393
+#: src/gs-details-page.ui:397
 msgid "Only use software repositories that you trust."
 msgstr "신뢰하는 프로그램 저장소만 사용합니다."
 
-#: src/gs-details-page.ui:415
+#: src/gs-details-page.ui:419
 msgid "_Website"
 msgstr "웹사이트(_W)"
 
-#: src/gs-details-page.ui:424
+#: src/gs-details-page.ui:428
 msgid "_Donate"
 msgstr "기부(_D)"
 
-#: src/gs-details-page.ui:534
+#: src/gs-details-page.ui:538
 msgid "Localized in your Language"
 msgstr "사용 언어 환경에 맞춰 지역화함"
 
-#: src/gs-details-page.ui:545
+#: src/gs-details-page.ui:549
 msgid "Documentation"
 msgstr "문서"
 
-#: src/gs-details-page.ui:556
+#: src/gs-details-page.ui:560
 msgid "Release Activity"
 msgstr "출시 활동"
 
-#: src/gs-details-page.ui:567
+#: src/gs-details-page.ui:571
 msgid "System Integration"
 msgstr "시스템 통합"
 
-#: src/gs-details-page.ui:578
+#: src/gs-details-page.ui:582
 msgid "Sandboxed"
 msgstr "샌드박싱 처리"
 
-#: src/gs-details-page.ui:598
+#: src/gs-details-page.ui:602
 msgid "Version"
 msgstr "버전"
 
-#: src/gs-details-page.ui:634
+#: src/gs-details-page.ui:638
 msgid "Age Rating"
 msgstr "연령별 등급"
 
-#: src/gs-details-page.ui:672 src/gs-details-page.ui:1365
+#: src/gs-details-page.ui:676 src/gs-details-page.ui:1369
 msgid "Permissions"
 msgstr "권한"
 
-#: src/gs-details-page.ui:710
+#: src/gs-details-page.ui:714
 msgid "Updated"
 msgstr "업데이트함"
 
-#: src/gs-details-page.ui:744
+#: src/gs-details-page.ui:748
 msgid "Category"
 msgstr "분류"
 
-#: src/gs-details-page.ui:781
+#: src/gs-details-page.ui:785
 msgid "Installed Size"
 msgstr "설치 용량"
 
-#: src/gs-details-page.ui:812
+#: src/gs-details-page.ui:816
 msgid "Download Size"
 msgstr "다운로드 용량"
 
-#: src/gs-details-page.ui:874
+#: src/gs-details-page.ui:878
 msgid "Developer"
 msgstr "개발자"
 
-#: src/gs-details-page.ui:920
+#: src/gs-details-page.ui:924
 msgid "License"
 msgstr "라이선스"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:939
+#: src/gs-details-page.ui:943
 msgid "Free"
 msgstr "자유"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:951
+#: src/gs-details-page.ui:955
 msgid "Proprietary"
 msgstr "상업용"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#: src/gs-details-page.ui:1001 src/gs-installed-page.c:499
+#: src/gs-details-page.ui:1005 src/gs-installed-page.c:499
 msgid "Add-ons"
 msgstr "추가 프로그램"
 
-#: src/gs-details-page.ui:1013
+#: src/gs-details-page.ui:1017
 msgid "Selected add-ons will be installed with the application."
 msgstr "선택한 추가 기능을 프로그램과 함께 설치합니다."
 
 #. Translators: Header of the section with other users' opinions about the
 #. app.
-#: src/gs-details-page.ui:1051
+#: src/gs-details-page.ui:1055
 msgid "Reviews"
 msgstr "평가"
 
 #. Translators: Button opening a dialog where the users can write and publish
 #. their opinions about the apps.
-#: src/gs-details-page.ui:1069
+#: src/gs-details-page.ui:1073
 msgid "_Write a Review"
 msgstr "평가 작성(_W)"
 
 #. Translators: Button to return more application-submitted reviews.
-#: src/gs-details-page.ui:1090
+#: src/gs-details-page.ui:1094
 msgid "_Show More"
 msgstr "더 보기(_S)"
 
-#: src/gs-details-page.ui:1218
+#: src/gs-details-page.ui:1222
 msgid ""
 "This means that the software can be freely run, copied, distributed, studied"
 " and modified."
 msgstr "프로그램을 자유롭게 실행, 복제, 배포, 연구, 수정이 가능함을 의미합니다."
 
-#: src/gs-details-page.ui:1258
+#: src/gs-details-page.ui:1262
 msgid "Proprietary Software"
 msgstr "상업용 프로그램"
 
-#: src/gs-details-page.ui:1269
+#: src/gs-details-page.ui:1273
 msgid ""
 "This means that the software is owned by an individual or a company. There "
 "are often restrictions on its use and its source code cannot usually be "
 "accessed."
 msgstr "이 프로그램을 개인 또는 회사에서 소유함을 의미합니다. 사용에 종종 제한이 있으며, 소스 코드에 일반적으로 접근할 수 없습니다."
 
-#: src/gs-details-page.ui:1301
+#: src/gs-details-page.ui:1305
 msgid "Unknown Software License"
 msgstr "알 수 없는 프로그램 라이선스"
 
-#: src/gs-details-page.ui:1312
+#: src/gs-details-page.ui:1316
 msgid "The license terms of this software are unknown."
 msgstr "이 프로그램의 라이선스 조항을 알 수 없습니다."
 
-#: src/gs-details-page.ui:1332
+#: src/gs-details-page.ui:1336
 msgid "The application was rated this way because it features:"
 msgstr "프로그램에 다음 기능이 있어 이 방식으로 등급을 매겼습니다:"
 
-#: src/gs-details-page.ui:1346
+#: src/gs-details-page.ui:1350
 msgid "No details were available for this rating."
 msgstr "이 등급에 대한 세부 정보가 없습니다."
 
@@ -4355,7 +4357,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak은 리눅스 데스크톱 프로그램용 프레임워크입니다"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:972
+#: plugins/flatpak/gs-flatpak.c:979
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "%s flatpak 메타데이터 가져오는 중…"

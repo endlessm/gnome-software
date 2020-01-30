@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-05 22:05+0000\n"
-"PO-Revision-Date: 2019-11-05 22:06+0000\n"
+"POT-Creation-Date: 2020-01-03 13:17+0000\n"
+"PO-Revision-Date: 2020-01-03 13:41+0000\n"
 "Last-Translator: Will Thompson <wjt@endlessm.com>\n"
 "Language-Team: Swedish (http://www.transifex.com/endless-os/gnome-software/language/sv/)\n"
 "MIME-Version: 1.0\n"
@@ -332,7 +332,7 @@ msgstr "Sök"
 #. Translators: This is a label in the header bar, followed by a drop down to
 #. choose between different source repos
 #. TRANSLATORS: this refers to where the app came from
-#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:843
+#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:847
 msgid "Source"
 msgstr "Källa"
 
@@ -403,7 +403,7 @@ msgid "Folder Name"
 msgstr "Mappnamn"
 
 #: src/gs-app-folder-dialog.c:307 src/gs-app-folder-dialog.ui:16
-#: src/gs-details-page.ui:247 src/gs-editor.c:729 src/gs-editor.c:762
+#: src/gs-details-page.ui:251 src/gs-editor.c:729 src/gs-editor.c:762
 #: src/gs-installed-page.c:657 src/gs-removal-dialog.ui:32
 #: src/gs-review-dialog.ui:22 src/gs-upgrade-banner.ui:112
 msgid "_Cancel"
@@ -638,7 +638,7 @@ msgstr ""
 
 #. TRANSLATORS: A label for a button to show the settings for
 #. the selected shell extension.
-#: src/gs-category-page.ui:205 src/gs-details-page.c:1004
+#: src/gs-category-page.ui:205 src/gs-details-page.c:1006
 msgid "Extension Settings"
 msgstr "Tilläggsinställningar"
 
@@ -713,7 +713,7 @@ msgid "Application is ready to be used."
 msgstr "Programmet är redo att användas."
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:159 src/gs-common.c:633
+#: src/gs-common.c:159 src/gs-common.c:638
 msgid "Restart"
 msgstr "Starta om"
 
@@ -785,152 +785,157 @@ msgstr "Aktivera och installera"
 #. TRANSLATORS: these are show_detailed_error messages from the
 #. * package manager no mortal is supposed to understand,
 #. * but google might know what they mean
-#: src/gs-common.c:435
+#: src/gs-common.c:440
 msgid "Detailed errors from the package manager follow:"
 msgstr "Detaljerat felmeddelande från pakethanteraren lyder:"
 
-#: src/gs-common.c:454 src/gs-details-page.ui:440
+#: src/gs-common.c:459 src/gs-details-page.ui:444
 msgid "Details"
 msgstr "Detaljer"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-common.c:619
+#: src/gs-common.c:624
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
 msgstr[0] "En uppdatering har installerats"
 msgstr[1] "Uppdateringar har installerats"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-common.c:624
+#: src/gs-common.c:629
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
 msgstr[0] "En omstart krävs för att den ska börja gälla."
 msgstr[1] "En omstart krävs för att de ska börja gälla."
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:631 src/gs-update-monitor.c:119
+#: src/gs-common.c:636 src/gs-update-monitor.c:119
 msgid "Not Now"
 msgstr "Inte nu"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:62
+#: src/gs-content-rating.c:59
 msgid "No cartoon violence"
 msgstr "Inget tecknat våld"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:65
+#: src/gs-content-rating.c:61
 msgid "Cartoon characters in unsafe situations"
 msgstr "Tecknade figurer i farliga situationer"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:68
+#: src/gs-content-rating.c:63
 msgid "Cartoon characters in aggressive conflict"
 msgstr "Tecknade figurer i aggressiv konflikt"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:71
+#: src/gs-content-rating.c:65
 msgid "Graphic violence involving cartoon characters"
 msgstr "Våldsskildring som involverar tecknade figurer"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:74
+#: src/gs-content-rating.c:70
 msgid "No fantasy violence"
 msgstr "Inget orealistiskt våld"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:77
+#: src/gs-content-rating.c:72
 msgid "Characters in unsafe situations easily distinguishable from reality"
 msgstr "Figurer i farliga situationer lätt åtskiljbara från verkligheten"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:80
+#: src/gs-content-rating.c:74
 msgid "Characters in aggressive conflict easily distinguishable from reality"
 msgstr "Figurer i aggressiv konflikt lätt åtskiljbar från verkligheten"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:83
+#: src/gs-content-rating.c:76
 msgid "Graphic violence easily distinguishable from reality"
 msgstr "Våldsskildring lätt åtskiljbar från verkligheten"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:86
+#: src/gs-content-rating.c:81
 msgid "No realistic violence"
 msgstr "Inget realistiskt våld"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:89
+#: src/gs-content-rating.c:83
 msgid "Mildly realistic characters in unsafe situations"
 msgstr "Någorlunda realistiska figurer i farliga situationer"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:92
+#: src/gs-content-rating.c:85
 msgid "Depictions of realistic characters in aggressive conflict"
 msgstr "Skildringar av realistiska figurer i aggressiv konflikt"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:95
+#: src/gs-content-rating.c:87
 msgid "Graphic violence involving realistic characters"
 msgstr "Våldsskildring som involverar realistiska figurer"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:98
+#: src/gs-content-rating.c:92
 msgid "No bloodshed"
 msgstr "Ingen blodsutgjutelse"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:101
+#: src/gs-content-rating.c:94
 msgid "Unrealistic bloodshed"
 msgstr "Orealistisk blodsutgjutelse"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:104
+#: src/gs-content-rating.c:96
 msgid "Realistic bloodshed"
 msgstr "Realistisk blodsutgjutelse"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:107
+#: src/gs-content-rating.c:98
 msgid "Depictions of bloodshed and the mutilation of body parts"
 msgstr "Skildringar av blodsutgjutelse och lemlästning"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:110
+#: src/gs-content-rating.c:103
 msgid "No sexual violence"
 msgstr "Inget sexuellt våld"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:113
+#: src/gs-content-rating.c:105
 msgid "Rape or other violent sexual behavior"
 msgstr "Våldtäkt eller annat våldsamt sexuellt beteende"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:116
+#: src/gs-content-rating.c:112
 msgid "No references to alcohol"
 msgstr "Inga referenser till alkohol"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:119
+#: src/gs-content-rating.c:114
 msgid "References to alcoholic beverages"
 msgstr "Referenser till alkoholhaltiga drycker"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:122
+#: src/gs-content-rating.c:116
 msgid "Use of alcoholic beverages"
 msgstr "Användning av alkoholhaltiga drycker"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:125
+#: src/gs-content-rating.c:122
 msgid "No references to illicit drugs"
 msgstr "Inga referenser till illegala droger"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:128
+#: src/gs-content-rating.c:124
 msgid "References to illicit drugs"
 msgstr "Referenser till illegala droger"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:131
+#: src/gs-content-rating.c:126
 msgid "Use of illicit drugs"
 msgstr "Användning av illegala droger"
+
+#. TRANSLATORS: content rating description
+#: src/gs-content-rating.c:132
+msgid "No references to tobacco products"
+msgstr ""
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:134
@@ -938,17 +943,17 @@ msgid "References to tobacco products"
 msgstr "Referenser till tobaksprodukter"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:137
+#: src/gs-content-rating.c:136
 msgid "Use of tobacco products"
 msgstr "Användning av tobaksprodukter"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:140
+#: src/gs-content-rating.c:142
 msgid "No nudity of any sort"
 msgstr "Inga sorters nakenhet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:143
+#: src/gs-content-rating.c:144
 msgid "Brief artistic nudity"
 msgstr "Kortvarig konstnärlig nakenhet"
 
@@ -958,17 +963,17 @@ msgid "Prolonged nudity"
 msgstr "Långvarig nakenhet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:149
+#: src/gs-content-rating.c:152
 msgid "No references to or depictions of sexual nature"
 msgstr "Inga sexuella referenser eller skildringar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:152
+#: src/gs-content-rating.c:154
 msgid "Provocative references or depictions"
 msgstr "Provokativa referenser eller skildringar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:155
+#: src/gs-content-rating.c:156
 msgid "Sexual references or depictions"
 msgstr "Sexuella referenser eller skildringar"
 
@@ -978,12 +983,12 @@ msgid "Graphic sexual behavior"
 msgstr "Skildring av sexuellt beteende"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:161
+#: src/gs-content-rating.c:163
 msgid "No profanity of any kind"
 msgstr "Inga sorters svordomar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:164
+#: src/gs-content-rating.c:165
 msgid "Mild or infrequent use of profanity"
 msgstr "Milda eller tillfälligt förekommande svordomar"
 
@@ -993,12 +998,12 @@ msgid "Moderate use of profanity"
 msgstr "Måttlig användning av svordomar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:170
+#: src/gs-content-rating.c:169
 msgid "Strong or frequent use of profanity"
 msgstr "Grova eller ofta förekommande svordomar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:173
+#: src/gs-content-rating.c:174
 msgid "No inappropriate humor"
 msgstr "Ingen olämplig humor"
 
@@ -1008,12 +1013,12 @@ msgid "Slapstick humor"
 msgstr "Slapstickhumor"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:179
+#: src/gs-content-rating.c:178
 msgid "Vulgar or bathroom humor"
 msgstr "Vulgär humor eller badrumshumor"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:182
+#: src/gs-content-rating.c:180
 msgid "Mature or sexual humor"
 msgstr "Mogen eller sexuell humor"
 
@@ -1023,103 +1028,102 @@ msgid "No discriminatory language of any kind"
 msgstr "Inget diskriminerande språkbruk"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:188
+#: src/gs-content-rating.c:187
 msgid "Negativity towards a specific group of people"
 msgstr "Negativ inställning mot en specifik folkgrupp"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:191
+#: src/gs-content-rating.c:189
 msgid "Discrimination designed to cause emotional harm"
 msgstr "Diskriminering avsedd att orsaka emotionell smärta"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:194
+#: src/gs-content-rating.c:191
 msgid "Explicit discrimination based on gender, sexuality, race or religion"
 msgstr "Explicit diskriminering baserad på kön, sexuell läggning, ras eller religion"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:197
+#: src/gs-content-rating.c:196
 msgid "No advertising of any kind"
 msgstr "Inga sorters annonser"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:200
+#: src/gs-content-rating.c:198
 msgid "Product placement"
 msgstr "Produktplacering"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:203
+#: src/gs-content-rating.c:200
 msgid "Explicit references to specific brands or trademarked products"
 msgstr "Explicita referenser till specifika varumärken eller varumärkesskyddade produkter"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:206
+#: src/gs-content-rating.c:202
 msgid "Users are encouraged to purchase specific real-world items"
 msgstr "Användare uppmanas att köpa specifika föremål i verkliga världen"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:209
+#: src/gs-content-rating.c:207
 msgid "No gambling of any kind"
 msgstr "Inget spelande"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:212
+#: src/gs-content-rating.c:209
 msgid "Gambling on random events using tokens or credits"
 msgstr "Spel på slumpbaserade händelser med marker eller poäng"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:215
+#: src/gs-content-rating.c:211
 msgid "Gambling using “play” money"
 msgstr "Spel med låtsaspengar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:218
+#: src/gs-content-rating.c:213
 msgid "Gambling using real money"
 msgstr "Spel med riktiga pengar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:221
+#: src/gs-content-rating.c:218
 msgid "No ability to spend money"
 msgstr "Ingen möjlighet att spendera pengar"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:224
+#: src/gs-content-rating.c:220
 msgid "Users are encouraged to donate real money"
 msgstr "Användare uppmanas att skänka riktiga pengar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:227
+#: src/gs-content-rating.c:223
 msgid "Ability to spend real money in-app"
 msgstr "Möjlighet att spendera riktiga pengar i programmet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:230
+#: src/gs-content-rating.c:228
 msgid "No way to chat with other users"
 msgstr "Inget sätt att chatta med andra användare"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:233
+#: src/gs-content-rating.c:230
 msgid "User-to-user interactions without chat functionality"
 msgstr "Interaktion mellan användare utan chattfunktion"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:236
+#: src/gs-content-rating.c:232
 msgid "Moderated chat functionality between users"
 msgstr "Modererad chattfunktion mellan användare"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:239
+#: src/gs-content-rating.c:234
 msgid "Uncontrolled chat functionality between users"
 msgstr "Okontrollerad chattfunktion mellan användare"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:242
+#: src/gs-content-rating.c:239
 msgid "No way to talk with other users"
 msgstr "Inget sätt att prata med andra användare"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:245
+#: src/gs-content-rating.c:241
 msgid "Uncontrolled audio or video chat functionality between users"
 msgstr "Okontrollerad ljud- eller videochattfunktion mellan användare"
 
@@ -1129,24 +1133,22 @@ msgid "No sharing of social network usernames or email addresses"
 msgstr "Ingen delning av e-postadresser eller användarnamn på sociala nätverk"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:251
+#: src/gs-content-rating.c:250
 msgid "Sharing social network usernames or email addresses"
 msgstr "Delning av e-postadresser eller användarnamn på sociala nätverk"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:254
+#: src/gs-content-rating.c:257
 msgid "No sharing of user information with third parties"
 msgstr "Ingen delning av användarinformation med tredje part"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:257
+#: src/gs-content-rating.c:259
 msgid "Checking for the latest application version"
 msgstr "Söker efter den senaste programversionen"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:260
+#: src/gs-content-rating.c:261
 msgid "Sharing diagnostic data that does not let others identify the user"
 msgstr "Delning av diagnostiska data som inte låter andra identifiera användaren"
 
@@ -1156,67 +1158,67 @@ msgid "Sharing information that lets others identify the user"
 msgstr "Delning av information som låter andra identifiera användaren"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:266
+#: src/gs-content-rating.c:268
 msgid "No sharing of physical location with other users"
 msgstr "Ingen delning av fysisk plats med andra användare"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:269
+#: src/gs-content-rating.c:270
 msgid "Sharing physical location with other users"
 msgstr "Delning av fysisk plats med andra användare"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:274
+#: src/gs-content-rating.c:279
 msgid "No references to homosexuality"
 msgstr "Inga referenser till homosexualitet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:277
+#: src/gs-content-rating.c:281
 msgid "Indirect references to homosexuality"
 msgstr "Indirekta referenser till homosexualitet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:280
+#: src/gs-content-rating.c:283
 msgid "Kissing between people of the same gender"
 msgstr "Kyssande mellan personer av samma kön"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:283
+#: src/gs-content-rating.c:285
 msgid "Graphic sexual behavior between people of the same gender"
 msgstr "Skildring av sexuellt beteende mellan personer av samma kön"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:286
+#: src/gs-content-rating.c:290
 msgid "No references to prostitution"
 msgstr "Inga referenser till prostitution"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:289
+#: src/gs-content-rating.c:292
 msgid "Indirect references to prostitution"
 msgstr "Indirekta referenser till prostitution"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:292
+#: src/gs-content-rating.c:294
 msgid "Direct references to prostitution"
 msgstr "Direkta referenser till prostitution"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:295
+#: src/gs-content-rating.c:296
 msgid "Graphic depictions of the act of prostitution"
 msgstr "Skildringar av prostitution"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:298
+#: src/gs-content-rating.c:301
 msgid "No references to adultery"
 msgstr "Inga referenser till otrohet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:301
+#: src/gs-content-rating.c:303
 msgid "Indirect references to adultery"
 msgstr "Indirekta referenser till otrohet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:304
+#: src/gs-content-rating.c:305
 msgid "Direct references to adultery"
 msgstr "Direkta referenser till otrohet"
 
@@ -1226,32 +1228,32 @@ msgid "Graphic depictions of the act of adultery"
 msgstr "Skildringar av otrohet"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:310
+#: src/gs-content-rating.c:312
 msgid "No sexualized characters"
 msgstr "Inga sexualiserade figurer"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:313
+#: src/gs-content-rating.c:315
 msgid "Scantily clad human characters"
 msgstr "Lättklädda mänskliga figurer"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:316
+#: src/gs-content-rating.c:317
 msgid "Overtly sexualized human characters"
 msgstr "Öppet sexualiserade mänskliga figurer"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:319
+#: src/gs-content-rating.c:322
 msgid "No references to desecration"
 msgstr "Inga referenser till skändning"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:322
+#: src/gs-content-rating.c:324
 msgid "Depictions of or references to historical desecration"
 msgstr "Skildringar av eller referenser till historisk skändning"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:325
+#: src/gs-content-rating.c:326
 msgid "Depictions of modern-day human desecration"
 msgstr "Skildringar av nutida skändning av människor"
 
@@ -1261,12 +1263,12 @@ msgid "Graphic depictions of modern-day desecration"
 msgstr "Realistiska skildringar av nutida skändning"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:331
+#: src/gs-content-rating.c:333
 msgid "No visible dead human remains"
 msgstr "Inga synliga kvarlevor av människor"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:334
+#: src/gs-content-rating.c:335
 msgid "Visible dead human remains"
 msgstr "Synliga kvarlevor av människor"
 
@@ -1276,12 +1278,12 @@ msgid "Dead human remains that are exposed to the elements"
 msgstr "Kvarlevor av döda människor som utsatts för väder och vind"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:340
+#: src/gs-content-rating.c:339
 msgid "Graphic depictions of desecration of human bodies"
 msgstr "Realistiska skildringar av skändning av mänskliga kroppar"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:343
+#: src/gs-content-rating.c:344
 msgid "No references to slavery"
 msgstr "Inga referenser till slaveri"
 
@@ -1291,51 +1293,51 @@ msgid "Depictions of or references to historical slavery"
 msgstr "Skildringar av eller referenser till historiskt slaveri"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:349
+#: src/gs-content-rating.c:348
 msgid "Depictions of modern-day slavery"
 msgstr "Skildringar av nutida slaveri"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:352
+#: src/gs-content-rating.c:350
 msgid "Graphic depictions of modern-day slavery"
 msgstr "Grafiska skildringar av nutida slaveri"
 
 #. TRANSLATORS: This is the formatting of English and localized name
 #. of the rating e.g. "Adults Only (solo adultos)"
-#: src/gs-content-rating.c:368
+#: src/gs-content-rating.c:406
 #, c-format
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
-#: src/gs-content-rating.c:502
+#: src/gs-content-rating.c:540
 msgid "General"
 msgstr "Allmänt"
 
-#: src/gs-content-rating.c:511
+#: src/gs-content-rating.c:549
 msgid "ALL"
 msgstr "ALLA"
 
-#: src/gs-content-rating.c:515
+#: src/gs-content-rating.c:553
 msgid "Adults Only"
 msgstr "Endast för vuxna"
 
-#: src/gs-content-rating.c:517
+#: src/gs-content-rating.c:555
 msgid "Mature"
 msgstr "Mogen"
 
-#: src/gs-content-rating.c:519
+#: src/gs-content-rating.c:557
 msgid "Teen"
 msgstr "Tonåring"
 
-#: src/gs-content-rating.c:521
+#: src/gs-content-rating.c:559
 msgid "Everyone 10+"
 msgstr "Alla över 10 år"
 
-#: src/gs-content-rating.c:523
+#: src/gs-content-rating.c:561
 msgid "Everyone"
 msgstr "Alla"
 
-#: src/gs-content-rating.c:525
+#: src/gs-content-rating.c:563
 msgid "Early Childhood"
 msgstr "Tidig barndom"
 
@@ -1410,7 +1412,7 @@ msgstr "Ytterligare paket krävs"
 msgid "Find in Software"
 msgstr "Sök i Programvara"
 
-#: src/gs-details-page.c:276 src/gs-details-page.ui:256
+#: src/gs-details-page.c:276 src/gs-details-page.ui:260
 msgid "Copy to US_B"
 msgstr ""
 
@@ -1439,7 +1441,7 @@ msgid "Pending update…"
 msgstr "Väntar på att uppdateras…"
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:770
+#: src/gs-details-page.c:772
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
@@ -1449,7 +1451,7 @@ msgstr "Detta program kan endast användas när det finns en fungerande internet
 #. * can be installed
 #. TRANSLATORS: this is a button in the software repositories
 #. dialog for installing a repo
-#: src/gs-details-page.c:921 src/gs-third-party-repo-row.c:83
+#: src/gs-details-page.c:923 src/gs-third-party-repo-row.c:83
 msgid "_Install"
 msgstr "_Installera"
 
@@ -1457,7 +1459,7 @@ msgstr "_Installera"
 #. * can be installed but needs to be downloaded first
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:925 src/gs-details-page.c:943
+#: src/gs-details-page.c:927 src/gs-details-page.c:945
 #: src/gs-details-page.ui:181 src/gs-updates-section.c:471
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
@@ -1467,196 +1469,196 @@ msgstr "_Hämta"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
-#: src/gs-details-page.c:957
+#: src/gs-details-page.c:959
 msgid "_Download…"
 msgstr ""
 
 #. TRANSLATORS: A label for a button to execute the selected
 #. application.
-#: src/gs-details-page.c:1009
+#: src/gs-details-page.c:1011
 msgid "_Launch"
 msgstr "_Starta"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:1034 src/gs-details-page.ui:405
+#: src/gs-details-page.c:1036 src/gs-details-page.ui:409
 msgid "_Uninstall"
 msgstr ""
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Network"
 msgstr "Nätverk"
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Can communicate over the network"
 msgstr "Kan kommunicera över nätverket"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "System Services"
 msgstr "Systemtjänster"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "Can access D-Bus services on the system bus"
 msgstr "Kan komma åt D-Bus-tjänster på systembussen"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Session Services"
 msgstr "Sessionstjänster"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Can access D-Bus services on the session bus"
 msgstr "Kan komma åt D-Bus-tjänster på sessionsbussen"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Devices"
 msgstr "Enheter"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Can access system device files"
 msgstr "Kan komma åt systemets enhetsfiler"
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1071
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
 #: src/gs-update-dialog.c:96 src/gs-update-dialog.c:97
 msgid "Home folder"
 msgstr "Hemmapp"
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1072
-#: src/gs-details-page.c:1074 src/gs-update-dialog.c:96
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1074
+#: src/gs-details-page.c:1076 src/gs-update-dialog.c:96
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:100
 msgid "Can view, edit and create files"
 msgstr "Kan visa, redigera och skapa filer"
 
-#: src/gs-details-page.c:1071 src/gs-details-page.c:1073
-#: src/gs-details-page.c:1075 src/gs-update-dialog.c:97
+#: src/gs-details-page.c:1073 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1077 src/gs-update-dialog.c:97
 #: src/gs-update-dialog.c:99 src/gs-update-dialog.c:101
 msgid "Can view files"
 msgstr "Kan visa filer"
 
-#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
+#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:99
 msgid "File system"
 msgstr "Filsystem"
 
-#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1076 src/gs-details-page.c:1077
 #: src/gs-update-dialog.c:100 src/gs-update-dialog.c:101
 msgid "Downloads folder"
 msgstr "Hämtningsmapp"
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Settings"
 msgstr "Inställningar"
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Can view and change any settings"
 msgstr "Kan visa och ändra alla inställningar"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Legacy display system"
 msgstr "Gammalt fönstersystem"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Uses an old, insecure display system"
 msgstr "Använder ett gammalt, osäkert fönstersystem"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Sandbox escape"
 msgstr "Flykt från sandlåda"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Can escape the sandbox and circumvent any other restrictions"
 msgstr "Kan undkomma sandlådan och gå runt alla andra begränsningar"
 
-#: src/gs-details-page.c:1093
+#: src/gs-details-page.c:1095
 msgid "This application is fully sandboxed."
 msgstr "Detta program körs fullständigt i sandlåda."
 
-#: src/gs-details-page.c:1101
+#: src/gs-details-page.c:1103
 msgid ""
 "Unable to determine which parts of the system this application accesses. "
 "This is typical for older applications."
 msgstr "Kan inte avgöra vilka delar av systemet som detta program har åtkomst till. Detta är typiskt för äldre program."
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:1250
+#: src/gs-details-page.c:1252
 msgctxt "version"
 msgid "Unknown"
 msgstr "Okänd"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:1263
+#: src/gs-details-page.c:1265
 msgctxt "updated"
 msgid "Never"
 msgstr "Aldrig"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1316
+#: src/gs-details-page.c:1318
 msgctxt "origin"
 msgid "Unknown"
 msgstr "Okänd"
 
-#: src/gs-details-page.c:1369
+#: src/gs-details-page.c:1371
 msgid "Low"
 msgstr "Låg"
 
-#: src/gs-details-page.c:1371
+#: src/gs-details-page.c:1373
 msgid "Medium"
 msgstr "Medel"
 
-#: src/gs-details-page.c:1373
+#: src/gs-details-page.c:1375
 msgid "High"
 msgstr "Hög"
 
 #. This refers to the license of the application
 #. TRANSLATORS: this is when a user doesn't specify a name
-#: src/gs-details-page.c:1375 src/gs-details-page.ui:963
+#: src/gs-details-page.c:1377 src/gs-details-page.ui:967
 #: src/gs-review-row.c:57
 msgid "Unknown"
 msgstr "Okänd"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1719
+#: src/gs-details-page.c:1721
 msgid "You need internet access to write a review"
 msgstr "Du behöver vara ansluten till internet för att skriva ett omdöme"
 
-#: src/gs-details-page.c:1927 src/gs-details-page.c:1943
+#: src/gs-details-page.c:1929 src/gs-details-page.c:1945
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "Kunde inte hitta ”%s”"
 
-#: src/gs-details-page.c:2414
+#: src/gs-details-page.c:2417
 msgid "Copied to USB"
 msgstr ""
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2546
+#: src/gs-details-page.c:2563
 msgid "Public domain"
 msgstr "Allmän egendom"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://de.wikipedia.org/wiki/Gemeinfreiheit
-#: src/gs-details-page.c:2549
+#: src/gs-details-page.c:2566
 msgid "https://en.wikipedia.org/wiki/Public_domain"
 msgstr "https://sv.wikipedia.org/wiki/Public_domain"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://www.gnu.org/philosophy/free-sw.de
-#: src/gs-details-page.c:2556
+#: src/gs-details-page.c:2573
 msgid "https://www.gnu.org/philosophy/free-sw"
 msgstr "https://www.gnu.org/philosophy/free-sw.sv"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2566 src/gs-details-page.ui:1207
+#: src/gs-details-page.c:2583 src/gs-details-page.ui:1211
 msgid "Free Software"
 msgstr "Fri programvara"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2623
+#: src/gs-details-page.c:2640
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Användare är bundna till följande licens:"
 msgstr[1] "Användare är bundna till följande licenser:"
 
-#: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
+#: src/gs-details-page.c:2667 src/gs-details-page.ui:1283
 msgid "More information"
 msgstr "Mer information"
 
@@ -1676,39 +1678,39 @@ msgstr ""
 msgid "_Remove from Desktop"
 msgstr ""
 
-#: src/gs-details-page.ui:218
+#: src/gs-details-page.ui:221
 msgid "Downloading"
 msgstr "Hämtar"
 
-#: src/gs-details-page.ui:268
+#: src/gs-details-page.ui:272
 msgid "_Update"
 msgstr "_Uppdatera"
 
-#: src/gs-details-page.ui:347
+#: src/gs-details-page.ui:351
 msgid "No screenshot provided"
 msgstr "Ingen skärmbild tillhandahållen"
 
-#: src/gs-details-page.ui:367
+#: src/gs-details-page.ui:371
 msgid "Software Repository Included"
 msgstr "Programförråd inkluderat"
 
-#: src/gs-details-page.ui:368
+#: src/gs-details-page.ui:372
 msgid ""
 "This application includes a software repository which provides updates, as "
 "well as access to other software."
 msgstr "Programmet inkluderar ett programförråd som tillhandahåller uppdateringar och tillgång till annan programvara."
 
-#: src/gs-details-page.ui:375
+#: src/gs-details-page.ui:379
 msgid "No Software Repository Included"
 msgstr "Inget programförråd inkluderad"
 
-#: src/gs-details-page.ui:376
+#: src/gs-details-page.ui:380
 msgid ""
 "This application does not include a software repository. It will not be "
 "updated with new versions."
 msgstr "Programmet inkluderar inget programförråd. Det kommer inte att uppdateras med nya versioner."
 
-#: src/gs-details-page.ui:384
+#: src/gs-details-page.ui:388
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1716,151 +1718,151 @@ msgstr "Denna programvara tillhandahålls redan av din distribution och bör int
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: src/gs-details-page.ui:391
+#: src/gs-details-page.ui:395
 msgid "Software Repository Identified"
 msgstr "Programförråd identifierat"
 
-#: src/gs-details-page.ui:392
+#: src/gs-details-page.ui:396
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
 msgstr "Att lägga till denna programförråd ger dig tillgång till ytterligare programvara och uppgraderingar."
 
-#: src/gs-details-page.ui:393
+#: src/gs-details-page.ui:397
 msgid "Only use software repositories that you trust."
 msgstr "Använd endast programförråd som du litar på."
 
-#: src/gs-details-page.ui:415
+#: src/gs-details-page.ui:419
 msgid "_Website"
 msgstr "_Webbplats"
 
-#: src/gs-details-page.ui:424
+#: src/gs-details-page.ui:428
 msgid "_Donate"
 msgstr "_Donera"
 
-#: src/gs-details-page.ui:534
+#: src/gs-details-page.ui:538
 msgid "Localized in your Language"
 msgstr "Lokalanpassad enligt ditt språk"
 
-#: src/gs-details-page.ui:545
+#: src/gs-details-page.ui:549
 msgid "Documentation"
 msgstr "Dokumentation"
 
-#: src/gs-details-page.ui:556
+#: src/gs-details-page.ui:560
 msgid "Release Activity"
 msgstr "Publiceringsaktivitet"
 
-#: src/gs-details-page.ui:567
+#: src/gs-details-page.ui:571
 msgid "System Integration"
 msgstr "Systemintegration"
 
-#: src/gs-details-page.ui:578
+#: src/gs-details-page.ui:582
 msgid "Sandboxed"
 msgstr "I sandlåda"
 
-#: src/gs-details-page.ui:598
+#: src/gs-details-page.ui:602
 msgid "Version"
 msgstr "Version"
 
-#: src/gs-details-page.ui:634
+#: src/gs-details-page.ui:638
 msgid "Age Rating"
 msgstr "Åldersklassificering"
 
-#: src/gs-details-page.ui:672 src/gs-details-page.ui:1365
+#: src/gs-details-page.ui:676 src/gs-details-page.ui:1369
 msgid "Permissions"
 msgstr "Behörighet"
 
-#: src/gs-details-page.ui:710
+#: src/gs-details-page.ui:714
 msgid "Updated"
 msgstr "Uppdaterad"
 
-#: src/gs-details-page.ui:744
+#: src/gs-details-page.ui:748
 msgid "Category"
 msgstr "Kategori"
 
-#: src/gs-details-page.ui:781
+#: src/gs-details-page.ui:785
 msgid "Installed Size"
 msgstr "Installerad storlek"
 
-#: src/gs-details-page.ui:812
+#: src/gs-details-page.ui:816
 msgid "Download Size"
 msgstr "Hämtningsstorlek"
 
-#: src/gs-details-page.ui:874
+#: src/gs-details-page.ui:878
 msgid "Developer"
 msgstr "Utvecklare"
 
-#: src/gs-details-page.ui:920
+#: src/gs-details-page.ui:924
 msgid "License"
 msgstr "Licens"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:939
+#: src/gs-details-page.ui:943
 msgid "Free"
 msgstr "Fri"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:951
+#: src/gs-details-page.ui:955
 msgid "Proprietary"
 msgstr "Proprietär"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#: src/gs-details-page.ui:1001 src/gs-installed-page.c:499
+#: src/gs-details-page.ui:1005 src/gs-installed-page.c:499
 msgid "Add-ons"
 msgstr "Tillägg"
 
-#: src/gs-details-page.ui:1013
+#: src/gs-details-page.ui:1017
 msgid "Selected add-ons will be installed with the application."
 msgstr "Valda tillägg kommer att installeras med programmet."
 
 #. Translators: Header of the section with other users' opinions about the
 #. app.
-#: src/gs-details-page.ui:1051
+#: src/gs-details-page.ui:1055
 msgid "Reviews"
 msgstr "Omdömen"
 
 #. Translators: Button opening a dialog where the users can write and publish
 #. their opinions about the apps.
-#: src/gs-details-page.ui:1069
+#: src/gs-details-page.ui:1073
 msgid "_Write a Review"
 msgstr "_Skriv ett omdöme"
 
 #. Translators: Button to return more application-submitted reviews.
-#: src/gs-details-page.ui:1090
+#: src/gs-details-page.ui:1094
 msgid "_Show More"
 msgstr "_Visa mer"
 
-#: src/gs-details-page.ui:1218
+#: src/gs-details-page.ui:1222
 msgid ""
 "This means that the software can be freely run, copied, distributed, studied"
 " and modified."
 msgstr "Detta betyder att programvaran fritt kan köras, kopieras, distribueras, studeras och ändras."
 
-#: src/gs-details-page.ui:1258
+#: src/gs-details-page.ui:1262
 msgid "Proprietary Software"
 msgstr "Proprietär programvara"
 
-#: src/gs-details-page.ui:1269
+#: src/gs-details-page.ui:1273
 msgid ""
 "This means that the software is owned by an individual or a company. There "
 "are often restrictions on its use and its source code cannot usually be "
 "accessed."
 msgstr "Detta innebär att programvaran ägs av en individ eller ett företag. Det finns ofta restriktioner på dess användning och dess källkod är vanligtvis inte åtkomlig."
 
-#: src/gs-details-page.ui:1301
+#: src/gs-details-page.ui:1305
 msgid "Unknown Software License"
 msgstr "Okänd programvarulicens"
 
-#: src/gs-details-page.ui:1312
+#: src/gs-details-page.ui:1316
 msgid "The license terms of this software are unknown."
 msgstr "Licensvillkoren för denna programvara är okända."
 
-#: src/gs-details-page.ui:1332
+#: src/gs-details-page.ui:1336
 msgid "The application was rated this way because it features:"
 msgstr "Programmet fick denna klassificering eftersom det innehåller:"
 
-#: src/gs-details-page.ui:1346
+#: src/gs-details-page.ui:1350
 msgid "No details were available for this rating."
 msgstr "Inga detaljer fanns tillgängliga för denna klassificering."
 
@@ -4374,7 +4376,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak är ett ramverk för skrivbordsprogram på Linux"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:972
+#: plugins/flatpak/gs-flatpak.c:979
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "Hämtar flatpak-metadata för %s…"

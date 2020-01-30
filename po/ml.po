@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-05 22:05+0000\n"
-"PO-Revision-Date: 2019-11-05 22:06+0000\n"
+"POT-Creation-Date: 2020-01-03 13:17+0000\n"
+"PO-Revision-Date: 2020-01-03 13:41+0000\n"
 "Last-Translator: Will Thompson <wjt@endlessm.com>\n"
 "Language-Team: Malayalam (http://www.transifex.com/endless-os/gnome-software/language/ml/)\n"
 "MIME-Version: 1.0\n"
@@ -331,7 +331,7 @@ msgstr "തിരയുക"
 #. Translators: This is a label in the header bar, followed by a drop down to
 #. choose between different source repos
 #. TRANSLATORS: this refers to where the app came from
-#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:843
+#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:847
 msgid "Source"
 msgstr "ഉറവിടം"
 
@@ -402,7 +402,7 @@ msgid "Folder Name"
 msgstr "ഫോൾഡർ നാമം"
 
 #: src/gs-app-folder-dialog.c:307 src/gs-app-folder-dialog.ui:16
-#: src/gs-details-page.ui:247 src/gs-editor.c:729 src/gs-editor.c:762
+#: src/gs-details-page.ui:251 src/gs-editor.c:729 src/gs-editor.c:762
 #: src/gs-installed-page.c:657 src/gs-removal-dialog.ui:32
 #: src/gs-review-dialog.ui:22 src/gs-upgrade-banner.ui:112
 msgid "_Cancel"
@@ -637,7 +637,7 @@ msgstr ""
 
 #. TRANSLATORS: A label for a button to show the settings for
 #. the selected shell extension.
-#: src/gs-category-page.ui:205 src/gs-details-page.c:1004
+#: src/gs-category-page.ui:205 src/gs-details-page.c:1006
 msgid "Extension Settings"
 msgstr "വിപുലീകരണ ക്രമീകരണങ്ങൾ"
 
@@ -712,7 +712,7 @@ msgid "Application is ready to be used."
 msgstr "ആപ്ലിക്കേഷൻ ഉപയോഗിക്കാൻ തയാറാണ്."
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:159 src/gs-common.c:633
+#: src/gs-common.c:159 src/gs-common.c:638
 msgid "Restart"
 msgstr "പുനരാരംഭിക്കുക"
 
@@ -784,152 +784,157 @@ msgstr "പ്രാപ്തമാക്കി ഇൻസ്റ്റാൾ ച�
 #. TRANSLATORS: these are show_detailed_error messages from the
 #. * package manager no mortal is supposed to understand,
 #. * but google might know what they mean
-#: src/gs-common.c:435
+#: src/gs-common.c:440
 msgid "Detailed errors from the package manager follow:"
 msgstr "പാക്കേജ് കാര്യസ്ഥനിൽ നിന്നുള്ള വിശദമായ പിശകുകൾ:"
 
-#: src/gs-common.c:454 src/gs-details-page.ui:440
+#: src/gs-common.c:459 src/gs-details-page.ui:444
 msgid "Details"
 msgstr "വിശദാംശങ്ങൾ"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-common.c:619
+#: src/gs-common.c:624
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
 msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-common.c:624
+#: src/gs-common.c:629
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
 msgstr[0] ""
 msgstr[1] ""
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:631 src/gs-update-monitor.c:119
+#: src/gs-common.c:636 src/gs-update-monitor.c:119
 msgid "Not Now"
 msgstr "ഇപ്പോൾ വേണ്ട"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:62
+#: src/gs-content-rating.c:59
 msgid "No cartoon violence"
 msgstr "കാർട്ടൂൺ അക്രമം പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:65
+#: src/gs-content-rating.c:61
 msgid "Cartoon characters in unsafe situations"
 msgstr "സുരക്ഷിതമല്ലാത്ത സാഹചര്യങ്ങളിലെ കാർട്ടൂൺ പ്രതീകങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:68
+#: src/gs-content-rating.c:63
 msgid "Cartoon characters in aggressive conflict"
 msgstr "ആക്രമണ സംഘർഷത്താലുള്ള കാർട്ടൂൺ പ്രതീകങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:71
+#: src/gs-content-rating.c:65
 msgid "Graphic violence involving cartoon characters"
 msgstr "കാർട്ടൂൺ പ്രതീകങ്ങൾ ഉൾപ്പെടുന്ന വിവരണരൂപേണയുള്ള അക്രമം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:74
+#: src/gs-content-rating.c:70
 msgid "No fantasy violence"
 msgstr "കാൽപനിക അക്രമം പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:77
+#: src/gs-content-rating.c:72
 msgid "Characters in unsafe situations easily distinguishable from reality"
 msgstr "സുരക്ഷിതമല്ലാത്ത സാഹചര്യങ്ങളിൽ പ്രതീകങ്ങൾ യാഥാർഥ്യത്തിൽ നിന്ന് എളുപ്പത്തിൽ വേർതിരിച്ചറിയാൻ കഴിയുന്നതാണ്"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:80
+#: src/gs-content-rating.c:74
 msgid "Characters in aggressive conflict easily distinguishable from reality"
 msgstr "ആക്രമണകാരികളായ പ്രതീകങ്ങൾ യാഥാർഥ്യത്തിൽ നിന്ന് എളുപ്പത്തിൽ വേർതിരിച്ചറിയാൻ കഴിയുന്നതാണ്"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:83
+#: src/gs-content-rating.c:76
 msgid "Graphic violence easily distinguishable from reality"
 msgstr "യാഥാർത്ഥ്യത്തെ തിരിച്ചറിയാൻ വിവരണരൂപേണയുള്ള അതിക്രമം എളുപ്പത്തിൽ വേർതിരിച്ചറിയാൻ കഴിയും"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:86
+#: src/gs-content-rating.c:81
 msgid "No realistic violence"
 msgstr "യാഥാർഥ്യമായ അക്രമം പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:89
+#: src/gs-content-rating.c:83
 msgid "Mildly realistic characters in unsafe situations"
 msgstr "സുരക്ഷിതമല്ലാത്ത സാഹചര്യങ്ങളിലെ യാഥാസ്ഥിതിക സൗമ്യ പ്രതീകങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:92
+#: src/gs-content-rating.c:85
 msgid "Depictions of realistic characters in aggressive conflict"
 msgstr "ആക്രമണാത്മക സംഘർഷത്തിൽ യാഥാസ്ഥിതിക കഥാപാത്രങ്ങളുടെ ചിത്രീകരണം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:95
+#: src/gs-content-rating.c:87
 msgid "Graphic violence involving realistic characters"
 msgstr "യഥാർത്ഥ പ്രതീകങ്ങൾ ഉൾപ്പെടുന്ന വിവരണരൂപേണയുള്ള അക്രമം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:98
+#: src/gs-content-rating.c:92
 msgid "No bloodshed"
 msgstr "രക്തച്ചൊരിച്ചില്‍ പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:101
+#: src/gs-content-rating.c:94
 msgid "Unrealistic bloodshed"
 msgstr "അയാഥാര്‍ത്ഥ്യമായ രക്തച്ചൊരിച്ചില്‍"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:104
+#: src/gs-content-rating.c:96
 msgid "Realistic bloodshed"
 msgstr "യഥാർത്ഥ രക്തച്ചൊരിച്ചിൽ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:107
+#: src/gs-content-rating.c:98
 msgid "Depictions of bloodshed and the mutilation of body parts"
 msgstr "രക്തച്ചൊരിച്ചിലെ പ്രതിബന്ധം, ശരീര ഭാഗങ്ങളുടെ അവയവഛേദം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:110
+#: src/gs-content-rating.c:103
 msgid "No sexual violence"
 msgstr "ലൈംഗിക അതിക്രമം പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:113
+#: src/gs-content-rating.c:105
 msgid "Rape or other violent sexual behavior"
 msgstr "ബലാത്സംഗം അല്ലെങ്കിൽ മറ്റ് അക്രമാസക്തമായ ലൈംഗിക പെരുമാറ്റം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:116
+#: src/gs-content-rating.c:112
 msgid "No references to alcohol"
 msgstr "മദ്യത്തെ പറ്റി പരാമർശിച്ചിട്ടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:119
+#: src/gs-content-rating.c:114
 msgid "References to alcoholic beverages"
 msgstr "ലഹരിപാനീയങ്ങൾക്കുള്ള പരാമർശങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:122
+#: src/gs-content-rating.c:116
 msgid "Use of alcoholic beverages"
 msgstr "ലഹരിപാനീയങ്ങളുടെ ഉപയോഗം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:125
+#: src/gs-content-rating.c:122
 msgid "No references to illicit drugs"
 msgstr "നിയമവിരുദ്ധമായ ലഹരിമരുന്നുകളെ പറ്റിയുള്ള പരാമർശങ്ങളൊന്നുമില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:128
+#: src/gs-content-rating.c:124
 msgid "References to illicit drugs"
 msgstr "നിയമവിരുദ്ധമായ ലഹരിമരുന്നുകളെ പറ്റിയുള്ള പരാമർശം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:131
+#: src/gs-content-rating.c:126
 msgid "Use of illicit drugs"
 msgstr "അനധികൃത മരുന്നുകളുടെ ഉപയോഗം"
+
+#. TRANSLATORS: content rating description
+#: src/gs-content-rating.c:132
+msgid "No references to tobacco products"
+msgstr ""
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:134
@@ -937,17 +942,17 @@ msgid "References to tobacco products"
 msgstr "പുകയില ഉത്പന്നങ്ങൾക്കുള്ള പരാമർശങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:137
+#: src/gs-content-rating.c:136
 msgid "Use of tobacco products"
 msgstr "പുകയില ഉൽപന്നങ്ങളുടെ ഉപയോഗം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:140
+#: src/gs-content-rating.c:142
 msgid "No nudity of any sort"
 msgstr "ഏത് തരത്തിലുള്ള നഗ്നതയും പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:143
+#: src/gs-content-rating.c:144
 msgid "Brief artistic nudity"
 msgstr "ലഘു കലാപരമായ നഗ്നത"
 
@@ -957,17 +962,17 @@ msgid "Prolonged nudity"
 msgstr "നീണ്ട നഗ്നത"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:149
+#: src/gs-content-rating.c:152
 msgid "No references to or depictions of sexual nature"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:152
+#: src/gs-content-rating.c:154
 msgid "Provocative references or depictions"
 msgstr "പ്രകോപനപരമായ പരാമർശങ്ങൾ അല്ലെങ്കിൽ ചിത്രീകരണങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:155
+#: src/gs-content-rating.c:156
 msgid "Sexual references or depictions"
 msgstr "ലൈംഗിക പരാമർശങ്ങൾ അല്ലെങ്കിൽ ചിത്രീകരണങ്ങൾ"
 
@@ -977,12 +982,12 @@ msgid "Graphic sexual behavior"
 msgstr "വിവരണരൂപേണയുള്ള ലൈംഗിക പെരുമാറ്റം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:161
+#: src/gs-content-rating.c:163
 msgid "No profanity of any kind"
 msgstr "ഒരു തരത്തിലുള്ള അശ്ലീലവും ഇല്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:164
+#: src/gs-content-rating.c:165
 msgid "Mild or infrequent use of profanity"
 msgstr "ചെറുതോ അപൂര്‍വ്വമായതോ അശ്ലീലങ്ങളുടെ ഉപയോഗം"
 
@@ -992,12 +997,12 @@ msgid "Moderate use of profanity"
 msgstr "അശ്ലീലത്തിൻറെ മിതമായ ഉപയോഗം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:170
+#: src/gs-content-rating.c:169
 msgid "Strong or frequent use of profanity"
 msgstr "വൃത്തികെട്ട അല്ലെങ്കിൽ പതിവായി ഉപയോഗിക്കുന്ന അശ്ലീലം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:173
+#: src/gs-content-rating.c:174
 msgid "No inappropriate humor"
 msgstr "അനുചിതമായ ഹാസ്യം പാടില്ല"
 
@@ -1007,12 +1012,12 @@ msgid "Slapstick humor"
 msgstr "തരം താണ ഹാസ്യം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:179
+#: src/gs-content-rating.c:178
 msgid "Vulgar or bathroom humor"
 msgstr "അസഭ്യമായ അല്ലെങ്കിൽ ബാത്ത്റൂം ഹാസ്യം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:182
+#: src/gs-content-rating.c:180
 msgid "Mature or sexual humor"
 msgstr "പക്വമായ അല്ലെങ്കിൽ ലൈംഗിക ഹാസ്യം"
 
@@ -1022,103 +1027,102 @@ msgid "No discriminatory language of any kind"
 msgstr "ഏതെങ്കിലും തരത്തിലുള്ള വിവേചന ഭാഷയില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:188
+#: src/gs-content-rating.c:187
 msgid "Negativity towards a specific group of people"
 msgstr "ഒരു പ്രത്യേക കൂട്ടത്തോടുള്ള അവഗണന"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:191
+#: src/gs-content-rating.c:189
 msgid "Discrimination designed to cause emotional harm"
 msgstr "വൈകാരികമായ ദോഷം ഉണ്ടാക്കുന്നതിന് രൂപകൽപ്പന ചെയ്തിരിക്കുന്ന വിവേചനങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:194
+#: src/gs-content-rating.c:191
 msgid "Explicit discrimination based on gender, sexuality, race or religion"
 msgstr "ലിംഗഭേദം, ലൈംഗികത, വർഗം അല്ലെങ്കിൽ മതം എന്നിവയെ അടിസ്ഥാനമാക്കിയുള്ള വിവേചനം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:197
+#: src/gs-content-rating.c:196
 msgid "No advertising of any kind"
 msgstr "ഒരു തരത്തിലുള്ള പരസ്യവും പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:200
+#: src/gs-content-rating.c:198
 msgid "Product placement"
 msgstr "ഉൽപന്നനിയമനം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:203
+#: src/gs-content-rating.c:200
 msgid "Explicit references to specific brands or trademarked products"
 msgstr "നിർദ്ദിഷ്ട ബ്രാൻഡുകൾ അല്ലെങ്കിൽ വ്യാപാരമുദ്ര ഉല്പന്നങ്ങൾക്ക് വ്യക്തമായ പരാമർശങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:206
+#: src/gs-content-rating.c:202
 msgid "Users are encouraged to purchase specific real-world items"
 msgstr "ഉപയോക്താക്കൾക്ക് നിർദ്ദിഷ്ട യഥാർത്ഥ ഇനങ്ങൾ വാങ്ങാൻ പ്രോത്സാഹിപ്പിക്കുന്നു"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:209
+#: src/gs-content-rating.c:207
 msgid "No gambling of any kind"
 msgstr "ഒരു തരത്തിലുള്ള ചൂതാട്ടവുമില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:212
+#: src/gs-content-rating.c:209
 msgid "Gambling on random events using tokens or credits"
 msgstr "അടയാളങ്ങൾ അല്ലെങ്കിൽ വായ്‌പ്പ ഉപയോഗിച്ചുള്ള ആകസ്‌മികമായ ഇനങ്ങളിലെ ചൂതാട്ടം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:215
+#: src/gs-content-rating.c:211
 msgid "Gambling using “play” money"
 msgstr "യഥാർത്ഥമല്ലാത്ത പണം ഉപയോഗിച്ച് ചൂതാട്ടം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:218
+#: src/gs-content-rating.c:213
 msgid "Gambling using real money"
 msgstr "യഥാർത്ഥ പണം ഉപയോഗിച്ച് ചൂതാട്ടം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:221
+#: src/gs-content-rating.c:218
 msgid "No ability to spend money"
 msgstr "പണം ചെലവഴിക്കാൻ ശേഷിയില്ല"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:224
+#: src/gs-content-rating.c:220
 msgid "Users are encouraged to donate real money"
 msgstr "യഥാർത്ഥ പണം സംഭാവന ചെയ്യാൻ ഉപയോക്താക്കളെ പ്രോത്സാഹിപ്പിക്കുന്നു"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:227
+#: src/gs-content-rating.c:223
 msgid "Ability to spend real money in-app"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:230
+#: src/gs-content-rating.c:228
 msgid "No way to chat with other users"
 msgstr "മറ്റ് ഉപയോക്താക്കളുമായി ചാറ്റ് ചെയ്യുന്നതിനുള്ള മാർഗമില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:233
+#: src/gs-content-rating.c:230
 msgid "User-to-user interactions without chat functionality"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:236
+#: src/gs-content-rating.c:232
 msgid "Moderated chat functionality between users"
 msgstr "ഉപയോക്താക്കൾക്കിടയിലുള്ള മിതമായ സംഭാഷണ പ്രവർത്തനം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:239
+#: src/gs-content-rating.c:234
 msgid "Uncontrolled chat functionality between users"
 msgstr "ഉപയോക്താക്കൾക്കിടയിൽ നിയന്ത്രിക്കാത്ത സംഭാഷണ പ്രവർത്തനം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:242
+#: src/gs-content-rating.c:239
 msgid "No way to talk with other users"
 msgstr "മറ്റ് ഉപയോക്താക്കളുമായി സംസാരിക്കാൻ യാതൊരു വഴിയുമില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:245
+#: src/gs-content-rating.c:241
 msgid "Uncontrolled audio or video chat functionality between users"
 msgstr "ഉപയോക്താക്കളെ തമ്മിൽ നിയന്ത്രിക്കാത്ത ഓഡിയോ അല്ലെങ്കിൽ വീഡിയോ ചാറ്റ് പ്രവർത്തനം"
 
@@ -1128,24 +1132,22 @@ msgid "No sharing of social network usernames or email addresses"
 msgstr "സാമൂഹിക ശൃംഖലകളിലെ ഉപയോക്തൃനാമങ്ങൾ അല്ലെങ്കിൽ ഇമെയിൽ വിലാസങ്ങൾ പങ്കിടരുത്"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:251
+#: src/gs-content-rating.c:250
 msgid "Sharing social network usernames or email addresses"
 msgstr "സാമൂഹിക ശൃംഖലകളിലെ ഉപയോക്തൃനാമങ്ങൾ അല്ലെങ്കിൽ ഇമെയിൽ വിലാസങ്ങൾ പങ്കിടുന്നു"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:254
+#: src/gs-content-rating.c:257
 msgid "No sharing of user information with third parties"
 msgstr ""
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:257
+#: src/gs-content-rating.c:259
 msgid "Checking for the latest application version"
 msgstr "ഏറ്റവും പുതിയ അപ്ലിക്കേഷൻ പതിപ്പിനായി പരിശോധിക്കുന്നു"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:260
+#: src/gs-content-rating.c:261
 msgid "Sharing diagnostic data that does not let others identify the user"
 msgstr "മറ്റുള്ളവർക്ക് തിരിച്ചറിയാത്ത രീതിയിൽ ഡയഗണോസ്റ്റിക് വിവരം  പങ്കുവെയ്ക്കുന്നു"
 
@@ -1155,67 +1157,67 @@ msgid "Sharing information that lets others identify the user"
 msgstr "മറ്റുള്ളവരെ തിരിച്ചറിയാൻ അനുവദിക്കുന്ന വിവരങ്ങൾ പങ്കുവെക്കൽ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:266
+#: src/gs-content-rating.c:268
 msgid "No sharing of physical location with other users"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:269
+#: src/gs-content-rating.c:270
 msgid "Sharing physical location with other users"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:274
+#: src/gs-content-rating.c:279
 msgid "No references to homosexuality"
 msgstr "സ്വവർഗാനുരാഗത്തെക്കുറിച്ച് പരാമർശങ്ങളില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:277
+#: src/gs-content-rating.c:281
 msgid "Indirect references to homosexuality"
 msgstr "സ്വവർഗ്ഗരതിയെക്കുറിച്ചുള്ള പരോക്ഷ പരാമർശങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:280
+#: src/gs-content-rating.c:283
 msgid "Kissing between people of the same gender"
 msgstr "ഒരേ ലിംഗത്തിലുള്ള ആളുകൾ തമ്മിലുള്ള ചുംബനം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:283
+#: src/gs-content-rating.c:285
 msgid "Graphic sexual behavior between people of the same gender"
 msgstr "ഒരേ ലിംഗത്തിലുള്ള ആളുകൾ തമ്മിലുള്ള വിവരണരൂപേനയുള്ള ലൈംഗിക പെരുമാറ്റം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:286
+#: src/gs-content-rating.c:290
 msgid "No references to prostitution"
 msgstr "വേശ്യാവൃത്തിയെ പറ്റി പരാമർശങ്ങളൊന്നുമില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:289
+#: src/gs-content-rating.c:292
 msgid "Indirect references to prostitution"
 msgstr "വേശ്യാവൃത്തിക്ക് പരോക്ഷ സൂചനകൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:292
+#: src/gs-content-rating.c:294
 msgid "Direct references to prostitution"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:295
+#: src/gs-content-rating.c:296
 msgid "Graphic depictions of the act of prostitution"
 msgstr "വേശ്യാവൃത്തിയെ പറ്റിയുള്ള വിവരണരൂപേനയുള്ള ചിത്രീകരണം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:298
+#: src/gs-content-rating.c:301
 msgid "No references to adultery"
 msgstr "വ്യഭിചാരത്തെ പറ്റി പരാമർശങ്ങളില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:301
+#: src/gs-content-rating.c:303
 msgid "Indirect references to adultery"
 msgstr "വ്യഭിചാരത്തെക്കുറിച്ച് പരോക്ഷ സൂചനകൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:304
+#: src/gs-content-rating.c:305
 msgid "Direct references to adultery"
 msgstr ""
 
@@ -1225,32 +1227,32 @@ msgid "Graphic depictions of the act of adultery"
 msgstr "വ്യഭിചാരത്തെ പറ്റിയുള്ള വിവരണരൂപേനയുള്ള ചിത്രീകരണം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:310
+#: src/gs-content-rating.c:312
 msgid "No sexualized characters"
 msgstr "ലൈംഗികതയുള്ള പ്രതീകങ്ങൾ പാടില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:313
+#: src/gs-content-rating.c:315
 msgid "Scantily clad human characters"
 msgstr "നാമമാത്രമായ വസ്ത്രമുള്ള മനുഷ്യ പ്രതീകങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:316
+#: src/gs-content-rating.c:317
 msgid "Overtly sexualized human characters"
 msgstr "അതിലൈംഗികതയുള്ള മനുഷ്യ പ്രതീകങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:319
+#: src/gs-content-rating.c:322
 msgid "No references to desecration"
 msgstr "ഹീനതയെ പറ്റിയുള്ള പരാമർശങ്ങളൊന്നുമില്ല"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:322
+#: src/gs-content-rating.c:324
 msgid "Depictions of or references to historical desecration"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:325
+#: src/gs-content-rating.c:326
 msgid "Depictions of modern-day human desecration"
 msgstr "ആധുനിക മനുഷ്യഹീനതയെ പറ്റിയുള്ള ചിത്രീകരണം"
 
@@ -1260,12 +1262,12 @@ msgid "Graphic depictions of modern-day desecration"
 msgstr "ആധുനിക ദിനാചരണത്തിൻ്റെ വിവരണരൂപേനയുള്ള ചിത്രീകരണം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:331
+#: src/gs-content-rating.c:333
 msgid "No visible dead human remains"
 msgstr "മരിച്ചവരുടെ മൃതദേഹങ്ങൾ കാണാതിരിക്കൽ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:334
+#: src/gs-content-rating.c:335
 msgid "Visible dead human remains"
 msgstr "മരിച്ചവരുടെ അവശിഷ്ടങ്ങൾ"
 
@@ -1275,12 +1277,12 @@ msgid "Dead human remains that are exposed to the elements"
 msgstr "അംഗഭംഗം സംഭവിച്ച മനുഷ്യ മൃതദേഹങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:340
+#: src/gs-content-rating.c:339
 msgid "Graphic depictions of desecration of human bodies"
 msgstr "മനുഷ്യ ശരീരം നശിപ്പിക്കുന്നതിൻ്റെ വിവരണരൂപേനയുള്ള ചിത്രീകരണം"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:343
+#: src/gs-content-rating.c:344
 msgid "No references to slavery"
 msgstr "അടിമത്തെ പറ്റി പരാമർശമില്ല"
 
@@ -1290,51 +1292,51 @@ msgid "Depictions of or references to historical slavery"
 msgstr ""
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:349
+#: src/gs-content-rating.c:348
 msgid "Depictions of modern-day slavery"
 msgstr "ആധുനിക കാലഘട്ടത്തിലെ  അടിമത്തത്തെ പറ്റിയുള്ള പരാമർശങ്ങൾ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:352
+#: src/gs-content-rating.c:350
 msgid "Graphic depictions of modern-day slavery"
 msgstr "ആധുനിക കാലഘട്ടത്തിലെ  അടിമത്തത്തിൻ്റെ വിവരണരൂപേനയുള്ള ചിത്രീകരണം"
 
 #. TRANSLATORS: This is the formatting of English and localized name
 #. of the rating e.g. "Adults Only (solo adultos)"
-#: src/gs-content-rating.c:368
+#: src/gs-content-rating.c:406
 #, c-format
 msgid "%s (%s)"
 msgstr ""
 
-#: src/gs-content-rating.c:502
+#: src/gs-content-rating.c:540
 msgid "General"
 msgstr ""
 
-#: src/gs-content-rating.c:511
+#: src/gs-content-rating.c:549
 msgid "ALL"
 msgstr ""
 
-#: src/gs-content-rating.c:515
+#: src/gs-content-rating.c:553
 msgid "Adults Only"
 msgstr ""
 
-#: src/gs-content-rating.c:517
+#: src/gs-content-rating.c:555
 msgid "Mature"
 msgstr ""
 
-#: src/gs-content-rating.c:519
+#: src/gs-content-rating.c:557
 msgid "Teen"
 msgstr ""
 
-#: src/gs-content-rating.c:521
+#: src/gs-content-rating.c:559
 msgid "Everyone 10+"
 msgstr ""
 
-#: src/gs-content-rating.c:523
+#: src/gs-content-rating.c:561
 msgid "Everyone"
 msgstr ""
 
-#: src/gs-content-rating.c:525
+#: src/gs-content-rating.c:563
 msgid "Early Childhood"
 msgstr ""
 
@@ -1409,7 +1411,7 @@ msgstr "കൂടുതൽ പാക്കേജുകൾ ആവശ്യമു�
 msgid "Find in Software"
 msgstr "സോഫ്റ്റ്‌വെയറിൽ കണ്ടെത്തുക"
 
-#: src/gs-details-page.c:276 src/gs-details-page.ui:256
+#: src/gs-details-page.c:276 src/gs-details-page.ui:260
 msgid "Copy to US_B"
 msgstr ""
 
@@ -1438,7 +1440,7 @@ msgid "Pending update…"
 msgstr "പുതുക്കലുകൾ ശേഷിക്കുന്നു…"
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:770
+#: src/gs-details-page.c:772
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
@@ -1448,7 +1450,7 @@ msgstr "സജീവ ഇൻറർനെറ്റ് കണക്ഷൻ ലഭ്
 #. * can be installed
 #. TRANSLATORS: this is a button in the software repositories
 #. dialog for installing a repo
-#: src/gs-details-page.c:921 src/gs-third-party-repo-row.c:83
+#: src/gs-details-page.c:923 src/gs-third-party-repo-row.c:83
 msgid "_Install"
 msgstr "ഇൻസ്റ്റാൾ(_I)"
 
@@ -1456,7 +1458,7 @@ msgstr "ഇൻസ്റ്റാൾ(_I)"
 #. * can be installed but needs to be downloaded first
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:925 src/gs-details-page.c:943
+#: src/gs-details-page.c:927 src/gs-details-page.c:945
 #: src/gs-details-page.ui:181 src/gs-updates-section.c:471
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
@@ -1466,196 +1468,196 @@ msgstr "ഡൗൺലോഡ് ചെയ്യുക(_D)"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
-#: src/gs-details-page.c:957
+#: src/gs-details-page.c:959
 msgid "_Download…"
 msgstr ""
 
 #. TRANSLATORS: A label for a button to execute the selected
 #. application.
-#: src/gs-details-page.c:1009
+#: src/gs-details-page.c:1011
 msgid "_Launch"
 msgstr "തുടങ്ങുക(_L)"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:1034 src/gs-details-page.ui:405
+#: src/gs-details-page.c:1036 src/gs-details-page.ui:409
 msgid "_Uninstall"
 msgstr ""
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Network"
 msgstr ""
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Can communicate over the network"
 msgstr ""
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "System Services"
 msgstr ""
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "Can access D-Bus services on the system bus"
 msgstr ""
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Session Services"
 msgstr ""
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Can access D-Bus services on the session bus"
 msgstr ""
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Devices"
 msgstr ""
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Can access system device files"
 msgstr ""
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1071
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
 #: src/gs-update-dialog.c:96 src/gs-update-dialog.c:97
 msgid "Home folder"
 msgstr ""
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1072
-#: src/gs-details-page.c:1074 src/gs-update-dialog.c:96
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1074
+#: src/gs-details-page.c:1076 src/gs-update-dialog.c:96
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:100
 msgid "Can view, edit and create files"
 msgstr ""
 
-#: src/gs-details-page.c:1071 src/gs-details-page.c:1073
-#: src/gs-details-page.c:1075 src/gs-update-dialog.c:97
+#: src/gs-details-page.c:1073 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1077 src/gs-update-dialog.c:97
 #: src/gs-update-dialog.c:99 src/gs-update-dialog.c:101
 msgid "Can view files"
 msgstr ""
 
-#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
+#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:99
 msgid "File system"
 msgstr ""
 
-#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1076 src/gs-details-page.c:1077
 #: src/gs-update-dialog.c:100 src/gs-update-dialog.c:101
 msgid "Downloads folder"
 msgstr ""
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Settings"
 msgstr ""
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Can view and change any settings"
 msgstr ""
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Legacy display system"
 msgstr ""
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Uses an old, insecure display system"
 msgstr ""
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Sandbox escape"
 msgstr ""
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Can escape the sandbox and circumvent any other restrictions"
 msgstr ""
 
-#: src/gs-details-page.c:1093
+#: src/gs-details-page.c:1095
 msgid "This application is fully sandboxed."
 msgstr ""
 
-#: src/gs-details-page.c:1101
+#: src/gs-details-page.c:1103
 msgid ""
 "Unable to determine which parts of the system this application accesses. "
 "This is typical for older applications."
 msgstr ""
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:1250
+#: src/gs-details-page.c:1252
 msgctxt "version"
 msgid "Unknown"
 msgstr "അജ്ഞാതം"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:1263
+#: src/gs-details-page.c:1265
 msgctxt "updated"
 msgid "Never"
 msgstr "ഒരിക്കലുമില്ല"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1316
+#: src/gs-details-page.c:1318
 msgctxt "origin"
 msgid "Unknown"
 msgstr "അജ്ഞാതം"
 
-#: src/gs-details-page.c:1369
+#: src/gs-details-page.c:1371
 msgid "Low"
 msgstr ""
 
-#: src/gs-details-page.c:1371
+#: src/gs-details-page.c:1373
 msgid "Medium"
 msgstr ""
 
-#: src/gs-details-page.c:1373
+#: src/gs-details-page.c:1375
 msgid "High"
 msgstr ""
 
 #. This refers to the license of the application
 #. TRANSLATORS: this is when a user doesn't specify a name
-#: src/gs-details-page.c:1375 src/gs-details-page.ui:963
+#: src/gs-details-page.c:1377 src/gs-details-page.ui:967
 #: src/gs-review-row.c:57
 msgid "Unknown"
 msgstr "അജ്ഞാതം"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1719
+#: src/gs-details-page.c:1721
 msgid "You need internet access to write a review"
 msgstr "ഒരു അവലോകനം എഴുതാൻ നിങ്ങൾക്ക് ഇന്റർനെറ്റ് ലഭ്യത ആവശ്യമാണ്"
 
-#: src/gs-details-page.c:1927 src/gs-details-page.c:1943
+#: src/gs-details-page.c:1929 src/gs-details-page.c:1945
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "\"%s\" കണ്ടെത്താൻ കഴിയുന്നില്ല"
 
-#: src/gs-details-page.c:2414
+#: src/gs-details-page.c:2417
 msgid "Copied to USB"
 msgstr ""
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2546
+#: src/gs-details-page.c:2563
 msgid "Public domain"
 msgstr "പൊതുസഞ്ചയം"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://de.wikipedia.org/wiki/Gemeinfreiheit
-#: src/gs-details-page.c:2549
+#: src/gs-details-page.c:2566
 msgid "https://en.wikipedia.org/wiki/Public_domain"
 msgstr "https://ml.wikipedia.org/wiki/പൊതുസഞ്ചയം"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://www.gnu.org/philosophy/free-sw.de
-#: src/gs-details-page.c:2556
+#: src/gs-details-page.c:2573
 msgid "https://www.gnu.org/philosophy/free-sw"
 msgstr "https://www.gnu.org/philosophy/free-sw.html"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2566 src/gs-details-page.ui:1207
+#: src/gs-details-page.c:2583 src/gs-details-page.ui:1211
 msgid "Free Software"
 msgstr "സ്വതന്ത്ര സോഫ്റ്റ്‌വെയർ"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2623
+#: src/gs-details-page.c:2640
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "ഉപയോക്താക്കൾക്ക് ഇനിപ്പറയുന്ന ലൈസൻസിനാൽ നിയന്ത്രിക്കപ്പെട്ടിരിക്കുന്നു:"
 msgstr[1] "ഉപയോക്താക്കൾക്ക് ഇനിപ്പറയുന്ന ലൈസൻസുകളാൽ നിയന്ത്രിക്കപ്പെട്ടിരിക്കുന്നു:"
 
-#: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
+#: src/gs-details-page.c:2667 src/gs-details-page.ui:1283
 msgid "More information"
 msgstr "കൂടുതൽ വിവരങ്ങൾ"
 
@@ -1675,39 +1677,39 @@ msgstr ""
 msgid "_Remove from Desktop"
 msgstr ""
 
-#: src/gs-details-page.ui:218
+#: src/gs-details-page.ui:221
 msgid "Downloading"
 msgstr ""
 
-#: src/gs-details-page.ui:268
+#: src/gs-details-page.ui:272
 msgid "_Update"
 msgstr "പുതുക്കൽ(_U)"
 
-#: src/gs-details-page.ui:347
+#: src/gs-details-page.ui:351
 msgid "No screenshot provided"
 msgstr "സ്ക്രീൻഷോട്ട് നൽകിയിട്ടില്ല"
 
-#: src/gs-details-page.ui:367
+#: src/gs-details-page.ui:371
 msgid "Software Repository Included"
 msgstr "സോഫ്റ്റ്‌വെയർ റിപ്പോസിറ്ററി അടങ്ങിയിരിക്കുന്നു"
 
-#: src/gs-details-page.ui:368
+#: src/gs-details-page.ui:372
 msgid ""
 "This application includes a software repository which provides updates, as "
 "well as access to other software."
 msgstr "ഈ ആപ്ലിക്കേഷൻ പുതുക്കലുകൾ നൽകുന്ന ഒരു സോഫ്റ്റ്‌വെയർ റിപ്പോസിറ്ററിയും മറ്റ് സോഫ്റ്റ്‌വെയറിലേയ്ക്കുള്ള പ്രവേശനവും ഉൾപ്പെടുത്തുന്നു."
 
-#: src/gs-details-page.ui:375
+#: src/gs-details-page.ui:379
 msgid "No Software Repository Included"
 msgstr "സോഫ്റ്റ്‌വെയർ റിപ്പോസിറ്ററി അടങ്ങിയിട്ടില്ല"
 
-#: src/gs-details-page.ui:376
+#: src/gs-details-page.ui:380
 msgid ""
 "This application does not include a software repository. It will not be "
 "updated with new versions."
 msgstr "ഈ ആപ്ലിക്കേഷനിൽ സോഫ്റ്റ്‌വെയർ റിപോസിറ്ററി ഉൾപ്പെടുന്നില്ല. പുതിയ പതിപ്പുകൾ ഉപയോഗിച്ച് ഇത് പുതുക്കുവാനും പറ്റില്ല."
 
-#: src/gs-details-page.ui:384
+#: src/gs-details-page.ui:388
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1715,151 +1717,151 @@ msgstr "ഈ സോഫ്റ്റ്‌വെയർ ഇതിനകം നിങ
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: src/gs-details-page.ui:391
+#: src/gs-details-page.ui:395
 msgid "Software Repository Identified"
 msgstr "സോഫ്റ്റ്‌വെയർ റിപ്പോസിറ്ററി തിരിച്ചറിയപ്പെട്ടു"
 
-#: src/gs-details-page.ui:392
+#: src/gs-details-page.ui:396
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
 msgstr "ഈ സോഫ്റ്റ്‌വെയർ റിപ്പോസിറ്ററി ചേർക്കുന്നത് നിങ്ങൾക്ക് കൂടുതൽ സോഫ്റ്റ്‌വെയറുകളിലേക്കും നവീകരണങ്ങളിലേക്കും പ്രവേശനം നൽകും."
 
-#: src/gs-details-page.ui:393
+#: src/gs-details-page.ui:397
 msgid "Only use software repositories that you trust."
 msgstr "നിങ്ങൾ വിശ്വാസമുള്ള സോഫ്റ്റ്‌വെയർ റിപ്പോസിറ്ററികൾ മാത്രം ഉപയോഗിക്കുക."
 
-#: src/gs-details-page.ui:415
+#: src/gs-details-page.ui:419
 msgid "_Website"
 msgstr "വെബ്സൈറ്റ്(_W)"
 
-#: src/gs-details-page.ui:424
+#: src/gs-details-page.ui:428
 msgid "_Donate"
 msgstr "സംഭാവനചെയ്യുക(_D)"
 
-#: src/gs-details-page.ui:534
+#: src/gs-details-page.ui:538
 msgid "Localized in your Language"
 msgstr "നിങ്ങളുടെ ഭാഷയിൽ പ്രാദേശികവത്കരിക്കുക"
 
-#: src/gs-details-page.ui:545
+#: src/gs-details-page.ui:549
 msgid "Documentation"
 msgstr "ആധാരമാക്കുക"
 
-#: src/gs-details-page.ui:556
+#: src/gs-details-page.ui:560
 msgid "Release Activity"
 msgstr "പ്രസിദ്ധീകരണ പ്രവർത്തനം"
 
-#: src/gs-details-page.ui:567
+#: src/gs-details-page.ui:571
 msgid "System Integration"
 msgstr "സിസ്റ്റം ഏകീകരണം"
 
-#: src/gs-details-page.ui:578
+#: src/gs-details-page.ui:582
 msgid "Sandboxed"
 msgstr "സാൻഡ് ബോക്സ്"
 
-#: src/gs-details-page.ui:598
+#: src/gs-details-page.ui:602
 msgid "Version"
 msgstr "പതിപ്പ്"
 
-#: src/gs-details-page.ui:634
+#: src/gs-details-page.ui:638
 msgid "Age Rating"
 msgstr "പ്രായനിർണയം"
 
-#: src/gs-details-page.ui:672 src/gs-details-page.ui:1365
+#: src/gs-details-page.ui:676 src/gs-details-page.ui:1369
 msgid "Permissions"
 msgstr ""
 
-#: src/gs-details-page.ui:710
+#: src/gs-details-page.ui:714
 msgid "Updated"
 msgstr "പുതുക്കിയത്"
 
-#: src/gs-details-page.ui:744
+#: src/gs-details-page.ui:748
 msgid "Category"
 msgstr "വിഭാഗം"
 
-#: src/gs-details-page.ui:781
+#: src/gs-details-page.ui:785
 msgid "Installed Size"
 msgstr "ഇൻസ്റ്റാൾ ചെയ്ത വലുപ്പം"
 
-#: src/gs-details-page.ui:812
+#: src/gs-details-page.ui:816
 msgid "Download Size"
 msgstr "ഡൗൺലോഡ് വലിപ്പം"
 
-#: src/gs-details-page.ui:874
+#: src/gs-details-page.ui:878
 msgid "Developer"
 msgstr "ഡെവലപ്പർ"
 
-#: src/gs-details-page.ui:920
+#: src/gs-details-page.ui:924
 msgid "License"
 msgstr "ലൈസൻസ്"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:939
+#: src/gs-details-page.ui:943
 msgid "Free"
 msgstr "സ്വതന്ത്രമായ"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:951
+#: src/gs-details-page.ui:955
 msgid "Proprietary"
 msgstr "കുത്തക"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#: src/gs-details-page.ui:1001 src/gs-installed-page.c:499
+#: src/gs-details-page.ui:1005 src/gs-installed-page.c:499
 msgid "Add-ons"
 msgstr "ആഡ്-ഓണുകൾ"
 
-#: src/gs-details-page.ui:1013
+#: src/gs-details-page.ui:1017
 msgid "Selected add-ons will be installed with the application."
 msgstr "തിരഞ്ഞെടുത്ത ആഡ്-ഓണുകൾ അപ്ലിക്കേഷൻ ഉപയോഗിച്ച് ഇൻസ്റ്റാൾ ചെയ്യപ്പെടും."
 
 #. Translators: Header of the section with other users' opinions about the
 #. app.
-#: src/gs-details-page.ui:1051
+#: src/gs-details-page.ui:1055
 msgid "Reviews"
 msgstr "അവലോകനങ്ങൾ"
 
 #. Translators: Button opening a dialog where the users can write and publish
 #. their opinions about the apps.
-#: src/gs-details-page.ui:1069
+#: src/gs-details-page.ui:1073
 msgid "_Write a Review"
 msgstr "ഒരു അവലോകനം എഴുതുക(_W)"
 
 #. Translators: Button to return more application-submitted reviews.
-#: src/gs-details-page.ui:1090
+#: src/gs-details-page.ui:1094
 msgid "_Show More"
 msgstr "കൂടുതൽ കാണിക്കുക(_S)"
 
-#: src/gs-details-page.ui:1218
+#: src/gs-details-page.ui:1222
 msgid ""
 "This means that the software can be freely run, copied, distributed, studied"
 " and modified."
 msgstr "സോഫ്റ്റ്‌വെയർ സ്വതന്ത്രമായി പ്രവർത്തിപ്പിക്കാനും പകർത്താനും വിതരണം ചെയ്യാനും പഠിക്കാനും പരിഷ്കരിക്കാനും കഴിയുമെന്നാണ് ഇതിനർത്ഥം."
 
-#: src/gs-details-page.ui:1258
+#: src/gs-details-page.ui:1262
 msgid "Proprietary Software"
 msgstr "കുത്തക സോഫ്റ്റ്‌വെയർ"
 
-#: src/gs-details-page.ui:1269
+#: src/gs-details-page.ui:1273
 msgid ""
 "This means that the software is owned by an individual or a company. There "
 "are often restrictions on its use and its source code cannot usually be "
 "accessed."
 msgstr "ഇതിനർത്ഥം സോഫ്റ്റ്‌വെയർ ഒരു വ്യക്തിയുടെയോ അല്ലെങ്കിൽ കമ്പനിയുടെയോ ഉടമസ്ഥതയിൽ ആണെന്നാണ്. ഇതിന്റെ ഉപയോഗത്തിൽ പലപ്പോഴും നിയന്ത്രണങ്ങൾ ഉണ്ട്, ഇതിൻറെ സോഴ്സ്  കോഡ് സാധാരണയായി ആക്സസ് ചെയ്യാൻ കഴിയില്ല."
 
-#: src/gs-details-page.ui:1301
+#: src/gs-details-page.ui:1305
 msgid "Unknown Software License"
 msgstr "അജ്ഞാത സോഫ്റ്റ്‌വെയർ ലൈസൻസ്"
 
-#: src/gs-details-page.ui:1312
+#: src/gs-details-page.ui:1316
 msgid "The license terms of this software are unknown."
 msgstr "ഈ സോഫ്റ്റ്‌വെയറിന്റെ ലൈസൻസ് നിബന്ധനകൾ അജ്ഞാതമാണ്."
 
-#: src/gs-details-page.ui:1332
+#: src/gs-details-page.ui:1336
 msgid "The application was rated this way because it features:"
 msgstr "ഈ സവിശേഷത ഉള്ളതിനാൽ ഈ അപ്ലിക്കേഷൻ മൂല്യനിർണയം ചെയ്തു:"
 
-#: src/gs-details-page.ui:1346
+#: src/gs-details-page.ui:1350
 msgid "No details were available for this rating."
 msgstr "ഈ നിർണയത്തെ സംബന്ധിച്ച വിശദാംശങ്ങൾ ലഭ്യമല്ല."
 
@@ -4373,7 +4375,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "ലിനക്സിൽ പണിയിട പ്രയോഗങ്ങൾക്കു വേണ്ടിയുള്ള ഒരു ചട്ടക്കൂടാണ് ഫ്ളാറ്റ്പാക്ക്"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:972
+#: plugins/flatpak/gs-flatpak.c:979
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "%s എന്നതിനായി ഫ്ളാറ്റ്പാക്ക് മെറ്റാഡാറ്റ സ്വീകരിക്കുന്നു…"

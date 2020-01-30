@@ -5,13 +5,13 @@
 # Translators:
 # 25c299dc371da5bff014f86901f492aa, 2016-2018
 # Roddy Shuler <roddy@stanfordalumni.org>, 2016-2017
-# Will Thompson <wjt@endlessm.com>, 2019
+# Will Thompson <wjt@endlessm.com>, 2019-2020
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-05 22:05+0000\n"
-"PO-Revision-Date: 2019-11-05 22:06+0000\n"
+"POT-Creation-Date: 2020-01-03 13:17+0000\n"
+"PO-Revision-Date: 2020-01-30 15:28+0000\n"
 "Last-Translator: Will Thompson <wjt@endlessm.com>\n"
 "Language-Team: Hindi (http://www.transifex.com/endless-os/gnome-software/language/hi/)\n"
 "MIME-Version: 1.0\n"
@@ -332,7 +332,7 @@ msgstr "खोजें"
 #. Translators: This is a label in the header bar, followed by a drop down to
 #. choose between different source repos
 #. TRANSLATORS: this refers to where the app came from
-#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:843
+#: src/gnome-software.ui:276 src/gs-app-row.c:298 src/gs-details-page.ui:847
 msgid "Source"
 msgstr "स्रोत"
 
@@ -403,7 +403,7 @@ msgid "Folder Name"
 msgstr "फ़ोल्डर का नाम"
 
 #: src/gs-app-folder-dialog.c:307 src/gs-app-folder-dialog.ui:16
-#: src/gs-details-page.ui:247 src/gs-editor.c:729 src/gs-editor.c:762
+#: src/gs-details-page.ui:251 src/gs-editor.c:729 src/gs-editor.c:762
 #: src/gs-installed-page.c:657 src/gs-removal-dialog.ui:32
 #: src/gs-review-dialog.ui:22 src/gs-upgrade-banner.ui:112
 msgid "_Cancel"
@@ -638,7 +638,7 @@ msgstr "USB पर कोई एप्लिकेशन उपलब्ध न�
 
 #. TRANSLATORS: A label for a button to show the settings for
 #. the selected shell extension.
-#: src/gs-category-page.ui:205 src/gs-details-page.c:1004
+#: src/gs-category-page.ui:205 src/gs-details-page.c:1006
 msgid "Extension Settings"
 msgstr "विस्तारित सेटिंग"
 
@@ -713,7 +713,7 @@ msgid "Application is ready to be used."
 msgstr "ऐप्लिकेशन उपयोग के लिए तैयार है."
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:159 src/gs-common.c:633
+#: src/gs-common.c:159 src/gs-common.c:638
 msgid "Restart"
 msgstr "पुनः प्रारंभ करें"
 
@@ -785,152 +785,157 @@ msgstr "सक्षम करें और स्थापित करें"
 #. TRANSLATORS: these are show_detailed_error messages from the
 #. * package manager no mortal is supposed to understand,
 #. * but google might know what they mean
-#: src/gs-common.c:435
+#: src/gs-common.c:440
 msgid "Detailed errors from the package manager follow:"
 msgstr "पैकेज प्रबंधक की विस्तृत त्रुटियाँ निम्न का अनुसरण करती हैं:"
 
-#: src/gs-common.c:454 src/gs-details-page.ui:440
+#: src/gs-common.c:459 src/gs-details-page.ui:444
 msgid "Details"
 msgstr "विवरण"
 
 #. TRANSLATORS: we've just live-updated some apps
-#: src/gs-common.c:619
+#: src/gs-common.c:624
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
 msgstr[0] "एक अपडेट इंस्टॉल किया गया है"
 msgstr[1] "अपडेट्स इंस्टॉल किये गये हैं"
 
 #. TRANSLATORS: the new apps will not be run until we restart
-#: src/gs-common.c:624
+#: src/gs-common.c:629
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
 msgstr[0] "इसके प्रभावी होने के लिए रिस्टार्ट करना आवश्यक है।"
 msgstr[1] "इनके प्रभावी होने के लिए रिस्टार्ट करना आवश्यक है।"
 
 #. TRANSLATORS: button text
-#: src/gs-common.c:631 src/gs-update-monitor.c:119
+#: src/gs-common.c:636 src/gs-update-monitor.c:119
 msgid "Not Now"
 msgstr "अभी नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:62
+#: src/gs-content-rating.c:59
 msgid "No cartoon violence"
 msgstr "कोई कार्टून हिंसा नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:65
+#: src/gs-content-rating.c:61
 msgid "Cartoon characters in unsafe situations"
 msgstr "असुरक्षित परिस्थितियों में कार्टून कैरेक्टर"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:68
+#: src/gs-content-rating.c:63
 msgid "Cartoon characters in aggressive conflict"
 msgstr "आक्रामक विरोध में कार्टून कैरेक्टर"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:71
+#: src/gs-content-rating.c:65
 msgid "Graphic violence involving cartoon characters"
 msgstr "कार्टून कैरेक्टर में शामिल ग्राफ़िक हिंसा"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:74
+#: src/gs-content-rating.c:70
 msgid "No fantasy violence"
 msgstr "कोई काल्पनिक हिंसा नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:77
+#: src/gs-content-rating.c:72
 msgid "Characters in unsafe situations easily distinguishable from reality"
 msgstr "असुरक्षित परिस्थितियों वाले कैरेक्टर को रिएलिटी से आसानी से अलग होने योग्य है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:80
+#: src/gs-content-rating.c:74
 msgid "Characters in aggressive conflict easily distinguishable from reality"
 msgstr "आक्रामक विरोध वाले कैरेक्टर को रिएलिटी से आसानी से अलग होने योग्य है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:83
+#: src/gs-content-rating.c:76
 msgid "Graphic violence easily distinguishable from reality"
 msgstr "ग्राफ़िक हिंसा रिएलिटी से आसानी से अलग होने योग्य है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:86
+#: src/gs-content-rating.c:81
 msgid "No realistic violence"
 msgstr "कोई यथार्थवादी हिंसा नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:89
+#: src/gs-content-rating.c:83
 msgid "Mildly realistic characters in unsafe situations"
 msgstr "असुरक्षित परिस्थितियों में थोड़े यथार्थवादी चरित्र"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:92
+#: src/gs-content-rating.c:85
 msgid "Depictions of realistic characters in aggressive conflict"
 msgstr "आक्रामक विरोध में वास्तविक कैरेक्टर का विवरण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:95
+#: src/gs-content-rating.c:87
 msgid "Graphic violence involving realistic characters"
 msgstr "ग्राफ़िक हिंसा वाले वास्तविक कैरेक्टर"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:98
+#: src/gs-content-rating.c:92
 msgid "No bloodshed"
 msgstr "कोई रक्तपात नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:101
+#: src/gs-content-rating.c:94
 msgid "Unrealistic bloodshed"
 msgstr "अवास्तविक रक्तपात"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:104
+#: src/gs-content-rating.c:96
 msgid "Realistic bloodshed"
 msgstr "वास्तविक रक्तपात"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:107
+#: src/gs-content-rating.c:98
 msgid "Depictions of bloodshed and the mutilation of body parts"
 msgstr "रक्तपात और शरीर के अंगों में विकृति का विवरण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:110
+#: src/gs-content-rating.c:103
 msgid "No sexual violence"
 msgstr "कोई यौन हिंसा नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:113
+#: src/gs-content-rating.c:105
 msgid "Rape or other violent sexual behavior"
 msgstr "बलात्कार या अन्य हिंसात्मक लैंगिक व्यवहार"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:116
+#: src/gs-content-rating.c:112
 msgid "No references to alcohol"
 msgstr "एल्कोहल के कोई संदर्भ नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:119
+#: src/gs-content-rating.c:114
 msgid "References to alcoholic beverages"
 msgstr "एल्कोहल वाले पेय पदार्थों का संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:122
+#: src/gs-content-rating.c:116
 msgid "Use of alcoholic beverages"
 msgstr "एल्कोहल वाले पेयपदार्थों का उपयोग"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:125
+#: src/gs-content-rating.c:122
 msgid "No references to illicit drugs"
 msgstr "अवैध नशीली दवाओं के कोई संदर्भ नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:128
+#: src/gs-content-rating.c:124
 msgid "References to illicit drugs"
 msgstr "अवैध ड्रग का संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:131
+#: src/gs-content-rating.c:126
 msgid "Use of illicit drugs"
 msgstr "अवैध ड्रग का उपयोग"
+
+#. TRANSLATORS: content rating description
+#: src/gs-content-rating.c:132
+msgid "No references to tobacco products"
+msgstr ""
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:134
@@ -938,17 +943,17 @@ msgid "References to tobacco products"
 msgstr "तंबाकू के उत्पादों का संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:137
+#: src/gs-content-rating.c:136
 msgid "Use of tobacco products"
 msgstr "तंबाकू के उत्पादों का उपयोग"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:140
+#: src/gs-content-rating.c:142
 msgid "No nudity of any sort"
 msgstr "किसी प्रकार की कोई नग्नता नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:143
+#: src/gs-content-rating.c:144
 msgid "Brief artistic nudity"
 msgstr "संक्षिप्त कलात्मक नग्नता"
 
@@ -958,17 +963,17 @@ msgid "Prolonged nudity"
 msgstr "लंबे समय तक नग्नता"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:149
+#: src/gs-content-rating.c:152
 msgid "No references to or depictions of sexual nature"
 msgstr "कोई संदर्भ नहीं या यौन प्रकृति के चित्रण का कोई संदर्भ नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:152
+#: src/gs-content-rating.c:154
 msgid "Provocative references or depictions"
 msgstr "उत्तेजक संदर्भ या विवरण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:155
+#: src/gs-content-rating.c:156
 msgid "Sexual references or depictions"
 msgstr "लैंगिक संदर्भ या विवरण"
 
@@ -978,12 +983,12 @@ msgid "Graphic sexual behavior"
 msgstr "ग्राफ़िक लैंगिक व्यवहार"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:161
+#: src/gs-content-rating.c:163
 msgid "No profanity of any kind"
 msgstr "किसी प्रकार की कोई गाली नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:164
+#: src/gs-content-rating.c:165
 msgid "Mild or infrequent use of profanity"
 msgstr "गलत आचरण का माइल्ड या कभी कभी उपयोग"
 
@@ -993,12 +998,12 @@ msgid "Moderate use of profanity"
 msgstr "गलत आचरण का मॉडरेट उपयोग"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:170
+#: src/gs-content-rating.c:169
 msgid "Strong or frequent use of profanity"
 msgstr "गलत आचरण का अधिक या बार-बार उपयोग"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:173
+#: src/gs-content-rating.c:174
 msgid "No inappropriate humor"
 msgstr "कोई अनुचित हास्य नहीं"
 
@@ -1008,12 +1013,12 @@ msgid "Slapstick humor"
 msgstr "हँसी मज़ाक"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:179
+#: src/gs-content-rating.c:178
 msgid "Vulgar or bathroom humor"
 msgstr "अश्लील या बाथरुम संबंधी हास्य"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:182
+#: src/gs-content-rating.c:180
 msgid "Mature or sexual humor"
 msgstr "वयस्क या लिंग संबंधी हास्य"
 
@@ -1023,103 +1028,102 @@ msgid "No discriminatory language of any kind"
 msgstr "किसी प्रकार की कोई भेदभावपूर्ण भाषा नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:188
+#: src/gs-content-rating.c:187
 msgid "Negativity towards a specific group of people"
 msgstr "लोगों के किसी विशेष समूह के लिए नकारात्मकता"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:191
+#: src/gs-content-rating.c:189
 msgid "Discrimination designed to cause emotional harm"
 msgstr "भावनात्मक नुकसान पहुँचाने के लिए निर्मित भेदभाव"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:194
+#: src/gs-content-rating.c:191
 msgid "Explicit discrimination based on gender, sexuality, race or religion"
 msgstr "लिंग, लिंग संबंध, जाति या धर्म के आधार पर  सुस्पष्ट भेदभाव"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:197
+#: src/gs-content-rating.c:196
 msgid "No advertising of any kind"
 msgstr "किसी प्रकार का कोई विज्ञापन नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:200
+#: src/gs-content-rating.c:198
 msgid "Product placement"
 msgstr "उत्पाद का प्रतिस्थापन"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:203
+#: src/gs-content-rating.c:200
 msgid "Explicit references to specific brands or trademarked products"
 msgstr "विशेष ब्रांड या ट्रेडमार्क उत्पादों के लिए सुस्पष्ट संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:206
+#: src/gs-content-rating.c:202
 msgid "Users are encouraged to purchase specific real-world items"
 msgstr "उपयोगकर्ताओं को वास्तविक दुनिया के विशिष्ट आइटम को खरीदने के लिए प्रोत्साहित किया जाता है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:209
+#: src/gs-content-rating.c:207
 msgid "No gambling of any kind"
 msgstr "किसी प्रकार का कोई जुआ नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:212
+#: src/gs-content-rating.c:209
 msgid "Gambling on random events using tokens or credits"
 msgstr "टोकन या क्रेडिट का उपयोग करके जुआं या निरुदेश्य ईवेंट"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:215
+#: src/gs-content-rating.c:211
 msgid "Gambling using “play” money"
 msgstr "\"प्ले\" धन का उपयोग करके जुआ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:218
+#: src/gs-content-rating.c:213
 msgid "Gambling using real money"
 msgstr "वास्तविक धन का उपयोग जुआ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:221
+#: src/gs-content-rating.c:218
 msgid "No ability to spend money"
 msgstr "धन व्यय करने की कोई क्षमता नहीं"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:224
+#: src/gs-content-rating.c:220
 msgid "Users are encouraged to donate real money"
 msgstr "उपयोगकर्ताओं को वास्तविक धन दान करने के लिए प्रोत्साहित किया जाता है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:227
+#: src/gs-content-rating.c:223
 msgid "Ability to spend real money in-app"
 msgstr "ऐप में वास्तविक पैसे खर्च करने की क्षमता"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:230
+#: src/gs-content-rating.c:228
 msgid "No way to chat with other users"
 msgstr "अन्य उपयोगकर्ताओं के साथ चैट करने का कोई तरीका नहीं है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:233
+#: src/gs-content-rating.c:230
 msgid "User-to-user interactions without chat functionality"
 msgstr "चैट कार्यक्षमता के बिना उपयोगकर्ता-से-उपयोगकर्ता सहभागिता"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:236
+#: src/gs-content-rating.c:232
 msgid "Moderated chat functionality between users"
 msgstr "उपयोगकर्ताओं के बीच नियंत्रित चैट कार्यात्मकता"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:239
+#: src/gs-content-rating.c:234
 msgid "Uncontrolled chat functionality between users"
 msgstr "उपयोगकर्ताओं के बीच अनियंत्रित चैट कार्यात्मकता"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:242
+#: src/gs-content-rating.c:239
 msgid "No way to talk with other users"
 msgstr "अन्य उपयोगकर्ताओं से बात करने का कोई तरीका नहीं है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:245
+#: src/gs-content-rating.c:241
 msgid "Uncontrolled audio or video chat functionality between users"
 msgstr "उपयोगकर्ताओं के बीच अनियंत्रित ऑडियो और वीडियो चैट कार्यात्मकता"
 
@@ -1129,24 +1133,22 @@ msgid "No sharing of social network usernames or email addresses"
 msgstr "सामाजिक नेटवर्क उपयोगकर्ता नामों या ईमेल पतों का कोई साझाकरण नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:251
+#: src/gs-content-rating.c:250
 msgid "Sharing social network usernames or email addresses"
 msgstr "सामाजिक नेटवर्क उपयोगकर्ता नाम या ईमेल पतों का साझाकरण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:254
+#: src/gs-content-rating.c:257
 msgid "No sharing of user information with third parties"
 msgstr "तीसरे पक्ष के साथ उपयोगकर्ता जानकारी का कोई साझाकरण नहीं"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:257
+#: src/gs-content-rating.c:259
 msgid "Checking for the latest application version"
 msgstr "एप्लिकेशन के नवीनतम संस्करण के लिए जाँच कर रहे हैं"
 
-#. v1.1
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:260
+#: src/gs-content-rating.c:261
 msgid "Sharing diagnostic data that does not let others identify the user"
 msgstr "डायग्नोस्टिक डेटा शेयर करना जिससे अन्य लोगों को उपयोगकर्ता की पहचान नहीं होती"
 
@@ -1156,67 +1158,67 @@ msgid "Sharing information that lets others identify the user"
 msgstr "ऐसी जानकारी शेयर करना जिससे अन्य उपयोगकर्ता को पहचान सकें"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:266
+#: src/gs-content-rating.c:268
 msgid "No sharing of physical location with other users"
 msgstr "अन्य उपयोगकर्ताओं के साथ भौतिक स्थान को साझा नहीं करें "
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:269
+#: src/gs-content-rating.c:270
 msgid "Sharing physical location with other users"
 msgstr "अन्य उपयोगकर्ताओं के साथ वास्तविक स्थान साझा करना"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:274
+#: src/gs-content-rating.c:279
 msgid "No references to homosexuality"
 msgstr "समलैंगिकता का कोई संदर्भ नहीं है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:277
+#: src/gs-content-rating.c:281
 msgid "Indirect references to homosexuality"
 msgstr "समलैंगिकता का परोक्ष संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:280
+#: src/gs-content-rating.c:283
 msgid "Kissing between people of the same gender"
 msgstr "एक ही लिंग के लोगों के बीच चुंबन"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:283
+#: src/gs-content-rating.c:285
 msgid "Graphic sexual behavior between people of the same gender"
 msgstr "समान लिंग के लोगों के बीच ग्राफ़िक यौन व्यवहार"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:286
+#: src/gs-content-rating.c:290
 msgid "No references to prostitution"
 msgstr "वेश्यावृत्ति का कोई संदर्भ नहीं है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:289
+#: src/gs-content-rating.c:292
 msgid "Indirect references to prostitution"
 msgstr "वेश्यावृत्ति के अप्रत्यक्ष संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:292
+#: src/gs-content-rating.c:294
 msgid "Direct references to prostitution"
 msgstr "वेश्यावृत्ति के प्रत्यक्ष संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:295
+#: src/gs-content-rating.c:296
 msgid "Graphic depictions of the act of prostitution"
 msgstr "वेश्यावृत्ति के कार्यों का ग्राफ़िक चित्रण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:298
+#: src/gs-content-rating.c:301
 msgid "No references to adultery"
 msgstr "व्यभिचार का कोई संदर्भ नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:301
+#: src/gs-content-rating.c:303
 msgid "Indirect references to adultery"
 msgstr "व्यभिचार के अप्रत्यक्ष संदर्भ"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:304
+#: src/gs-content-rating.c:305
 msgid "Direct references to adultery"
 msgstr "व्यभिचार का प्रत्यक्ष संदर्भ"
 
@@ -1226,32 +1228,32 @@ msgid "Graphic depictions of the act of adultery"
 msgstr "व्यभिचार अधिनियम के ग्राफिक चित्रण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:310
+#: src/gs-content-rating.c:312
 msgid "No sexualized characters"
 msgstr "कोई यौन पात्र नहीं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:313
+#: src/gs-content-rating.c:315
 msgid "Scantily clad human characters"
 msgstr "अपर्याप्त रूप से मानवीय चरित्रों को ढक लेते हैं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:316
+#: src/gs-content-rating.c:317
 msgid "Overtly sexualized human characters"
 msgstr "अत्यधिक कामुक मानव चरित्र"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:319
+#: src/gs-content-rating.c:322
 msgid "No references to desecration"
 msgstr "असमानता का कोई संदर्भ नहीं है"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:322
+#: src/gs-content-rating.c:324
 msgid "Depictions of or references to historical desecration"
 msgstr "ऐतिहासिक असमानताओं के संदर्भ या वर्णन"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:325
+#: src/gs-content-rating.c:326
 msgid "Depictions of modern-day human desecration"
 msgstr "आधुनिक-मानव की निराशा का चित्रण"
 
@@ -1261,12 +1263,12 @@ msgid "Graphic depictions of modern-day desecration"
 msgstr "आधुनिक समय की असमानताओं के ग्राफिक चित्रण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:331
+#: src/gs-content-rating.c:333
 msgid "No visible dead human remains"
 msgstr "मृत मानव के प्रत्यक्ष अवशेष नहीं हैं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:334
+#: src/gs-content-rating.c:335
 msgid "Visible dead human remains"
 msgstr "दर्शनीय मृत मानव अवशेष"
 
@@ -1276,12 +1278,12 @@ msgid "Dead human remains that are exposed to the elements"
 msgstr "मृत मानव अवशेष जोकि तत्वों के संपर्क में हैं"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:340
+#: src/gs-content-rating.c:339
 msgid "Graphic depictions of desecration of human bodies"
 msgstr "मानव शरीर की अपवित्रता का ग्राफिक चित्रण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:343
+#: src/gs-content-rating.c:344
 msgid "No references to slavery"
 msgstr "गुलामी का कोई संदर्भ नहीं"
 
@@ -1291,51 +1293,51 @@ msgid "Depictions of or references to historical slavery"
 msgstr "ऐतिहासिक गुलामी के संदर्भ या वर्णन"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:349
+#: src/gs-content-rating.c:348
 msgid "Depictions of modern-day slavery"
 msgstr "आधुनिक-काल की दासता का चित्रण"
 
 #. TRANSLATORS: content rating description
-#: src/gs-content-rating.c:352
+#: src/gs-content-rating.c:350
 msgid "Graphic depictions of modern-day slavery"
 msgstr "आधुनिक काल की दासता का ग्राफिक चित्रण"
 
 #. TRANSLATORS: This is the formatting of English and localized name
 #. of the rating e.g. "Adults Only (solo adultos)"
-#: src/gs-content-rating.c:368
+#: src/gs-content-rating.c:406
 #, c-format
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
-#: src/gs-content-rating.c:502
+#: src/gs-content-rating.c:540
 msgid "General"
 msgstr "सामान्य"
 
-#: src/gs-content-rating.c:511
+#: src/gs-content-rating.c:549
 msgid "ALL"
 msgstr "सभी"
 
-#: src/gs-content-rating.c:515
+#: src/gs-content-rating.c:553
 msgid "Adults Only"
 msgstr "केवल वयस्क"
 
-#: src/gs-content-rating.c:517
+#: src/gs-content-rating.c:555
 msgid "Mature"
 msgstr "परिपक्व"
 
-#: src/gs-content-rating.c:519
+#: src/gs-content-rating.c:557
 msgid "Teen"
 msgstr "टीन"
 
-#: src/gs-content-rating.c:521
+#: src/gs-content-rating.c:559
 msgid "Everyone 10+"
 msgstr "प्रत्येक 10+"
 
-#: src/gs-content-rating.c:523
+#: src/gs-content-rating.c:561
 msgid "Everyone"
 msgstr "प्रत्येक व्यक्ति"
 
-#: src/gs-content-rating.c:525
+#: src/gs-content-rating.c:563
 msgid "Early Childhood"
 msgstr "बचपन"
 
@@ -1410,7 +1412,7 @@ msgstr "अतिरिक्त पैकेज आवश्यक"
 msgid "Find in Software"
 msgstr "सॉफ़्टवेयर में खोजें"
 
-#: src/gs-details-page.c:276 src/gs-details-page.ui:256
+#: src/gs-details-page.c:276 src/gs-details-page.ui:260
 msgid "Copy to US_B"
 msgstr "US_B में कॉपी करें"
 
@@ -1439,7 +1441,7 @@ msgid "Pending update…"
 msgstr "अपडेट लंबित है..."
 
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:770
+#: src/gs-details-page.c:772
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
@@ -1449,7 +1451,7 @@ msgstr "इस एप्लिकेशन का उपयोग केवल �
 #. * can be installed
 #. TRANSLATORS: this is a button in the software repositories
 #. dialog for installing a repo
-#: src/gs-details-page.c:921 src/gs-third-party-repo-row.c:83
+#: src/gs-details-page.c:923 src/gs-third-party-repo-row.c:83
 msgid "_Install"
 msgstr "_स्थापित करें"
 
@@ -1457,7 +1459,7 @@ msgstr "_स्थापित करें"
 #. * can be installed but needs to be downloaded first
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:925 src/gs-details-page.c:943
+#: src/gs-details-page.c:927 src/gs-details-page.c:945
 #: src/gs-details-page.ui:181 src/gs-updates-section.c:471
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
@@ -1467,196 +1469,196 @@ msgstr "_डाउनलोड करें"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
-#: src/gs-details-page.c:957
+#: src/gs-details-page.c:959
 msgid "_Download…"
 msgstr "_डाउनलोड..."
 
 #. TRANSLATORS: A label for a button to execute the selected
 #. application.
-#: src/gs-details-page.c:1009
+#: src/gs-details-page.c:1011
 msgid "_Launch"
 msgstr "_लॉन्च करें"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:1034 src/gs-details-page.ui:405
+#: src/gs-details-page.c:1036 src/gs-details-page.ui:409
 msgid "_Uninstall"
 msgstr "_स्थापना रद्द करें"
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Network"
 msgstr "नेटवर्क"
 
-#: src/gs-details-page.c:1066 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1068 src/gs-update-dialog.c:92
 msgid "Can communicate over the network"
 msgstr "नेटवर्क के द्वारा संपर्क कर सकते हैं"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "System Services"
 msgstr "सिस्टम सेवाएँ"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1069 src/gs-update-dialog.c:93
 msgid "Can access D-Bus services on the system bus"
 msgstr "सिस्टम बस में डी-बस सेवाओं का उपयोग कर सकता है"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Session Services"
 msgstr "सेशन सेवाएँ"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1070 src/gs-update-dialog.c:94
 msgid "Can access D-Bus services on the session bus"
 msgstr "सेशन बस में D-बस सेवाओं का उपयोग कर सकते हैं"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Devices"
 msgstr "डिवाइस"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1071 src/gs-update-dialog.c:95
 msgid "Can access system device files"
 msgstr "सिस्टम डिवाइस फ़ाइलों को एक्सेस कर सकते हैं"
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1071
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
 #: src/gs-update-dialog.c:96 src/gs-update-dialog.c:97
 msgid "Home folder"
 msgstr "होम फोल्डर"
 
-#: src/gs-details-page.c:1070 src/gs-details-page.c:1072
-#: src/gs-details-page.c:1074 src/gs-update-dialog.c:96
+#: src/gs-details-page.c:1072 src/gs-details-page.c:1074
+#: src/gs-details-page.c:1076 src/gs-update-dialog.c:96
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:100
 msgid "Can view, edit and create files"
 msgstr "फ़ाइलें देख सकते हैं, संपादित कर सकते हैं और बना सकते हैं"
 
-#: src/gs-details-page.c:1071 src/gs-details-page.c:1073
-#: src/gs-details-page.c:1075 src/gs-update-dialog.c:97
+#: src/gs-details-page.c:1073 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1077 src/gs-update-dialog.c:97
 #: src/gs-update-dialog.c:99 src/gs-update-dialog.c:101
 msgid "Can view files"
 msgstr "फाइलें देख सकते हैं"
 
-#: src/gs-details-page.c:1072 src/gs-details-page.c:1073
+#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:99
 msgid "File system"
 msgstr "फ़ाइल सिस्टम"
 
-#: src/gs-details-page.c:1074 src/gs-details-page.c:1075
+#: src/gs-details-page.c:1076 src/gs-details-page.c:1077
 #: src/gs-update-dialog.c:100 src/gs-update-dialog.c:101
 msgid "Downloads folder"
 msgstr "डाउनलोड फ़ोल्डर"
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Settings"
 msgstr "सेटिंग"
 
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1078 src/gs-update-dialog.c:102
 msgid "Can view and change any settings"
 msgstr "किसी भी सेटिंग को देख और बदल सकते हैं"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Legacy display system"
 msgstr "विरासत प्रदर्शन प्रणाली"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1079 src/gs-update-dialog.c:103
 msgid "Uses an old, insecure display system"
 msgstr "एक पुराने, असुरक्षित डिस्प्ले सिस्टम का उपयोग करता है"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Sandbox escape"
 msgstr " सैंडबॉक्स इस्केप"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1080 src/gs-update-dialog.c:104
 msgid "Can escape the sandbox and circumvent any other restrictions"
 msgstr "सैंडबॉक्स से बच सकते हैं और किसी अन्य प्रतिबंधों को नाकाम कर सकते हैं"
 
-#: src/gs-details-page.c:1093
+#: src/gs-details-page.c:1095
 msgid "This application is fully sandboxed."
 msgstr "यह एप्लिकेशन पूरी तरह से सैंडबॉक्स है।"
 
-#: src/gs-details-page.c:1101
+#: src/gs-details-page.c:1103
 msgid ""
 "Unable to determine which parts of the system this application accesses. "
 "This is typical for older applications."
 msgstr "यह निर्धारित करने में असमर्थ हैं कि यह एप्लीकेशन सिस्टम के किन हिस्सों को एक्सेस करता है। साधारणतः पुराने एप्लीकेशन में ऐसा होता है।"
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:1250
+#: src/gs-details-page.c:1252
 msgctxt "version"
 msgid "Unknown"
 msgstr "अज्ञात"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:1263
+#: src/gs-details-page.c:1265
 msgctxt "updated"
 msgid "Never"
 msgstr "कभी नहीं"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1316
+#: src/gs-details-page.c:1318
 msgctxt "origin"
 msgid "Unknown"
 msgstr "अज्ञात"
 
-#: src/gs-details-page.c:1369
+#: src/gs-details-page.c:1371
 msgid "Low"
 msgstr "कम"
 
-#: src/gs-details-page.c:1371
+#: src/gs-details-page.c:1373
 msgid "Medium"
 msgstr "मध्यम"
 
-#: src/gs-details-page.c:1373
+#: src/gs-details-page.c:1375
 msgid "High"
 msgstr "उच्च"
 
 #. This refers to the license of the application
 #. TRANSLATORS: this is when a user doesn't specify a name
-#: src/gs-details-page.c:1375 src/gs-details-page.ui:963
+#: src/gs-details-page.c:1377 src/gs-details-page.ui:967
 #: src/gs-review-row.c:57
 msgid "Unknown"
 msgstr "अज्ञात"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1719
+#: src/gs-details-page.c:1721
 msgid "You need internet access to write a review"
 msgstr "समीक्षा लिखने के लिए आपको इंटरनेट पहुँच की आवश्यकता है"
 
-#: src/gs-details-page.c:1927 src/gs-details-page.c:1943
+#: src/gs-details-page.c:1929 src/gs-details-page.c:1945
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "“%s” को ढूँढ़ने में असमर्थ"
 
-#: src/gs-details-page.c:2414
+#: src/gs-details-page.c:2417
 msgid "Copied to USB"
 msgstr "USB में कॉपी किया गया"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2546
+#: src/gs-details-page.c:2563
 msgid "Public domain"
 msgstr "सार्वजनिक डोमेन"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://de.wikipedia.org/wiki/Gemeinfreiheit
-#: src/gs-details-page.c:2549
+#: src/gs-details-page.c:2566
 msgid "https://en.wikipedia.org/wiki/Public_domain"
 msgstr "https://en.wikipedia.org/wiki/Public_domain"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://www.gnu.org/philosophy/free-sw.de
-#: src/gs-details-page.c:2556
+#: src/gs-details-page.c:2573
 msgid "https://www.gnu.org/philosophy/free-sw"
 msgstr "https://www.gnu.org/philosophy/free-sw"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2566 src/gs-details-page.ui:1207
+#: src/gs-details-page.c:2583 src/gs-details-page.ui:1211
 msgid "Free Software"
 msgstr "निशुल्क सॉफ़्टवेयर"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2623
+#: src/gs-details-page.c:2640
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "उपयोगकर्ता निम्न लाइसेंस द्वारा बँधे हुए हैं:"
 msgstr[1] "उपयोगकर्ता निम्न लाइसेंसों द्वारा बँधे हुए हैं:"
 
-#: src/gs-details-page.c:2650 src/gs-details-page.ui:1279
+#: src/gs-details-page.c:2667 src/gs-details-page.ui:1283
 msgid "More information"
 msgstr "अधिक जानकारी"
 
@@ -1676,39 +1678,39 @@ msgstr "_डेस्कटॉप पर जोड़ें"
 msgid "_Remove from Desktop"
 msgstr "_डेस्कटॉप से निकालें"
 
-#: src/gs-details-page.ui:218
+#: src/gs-details-page.ui:221
 msgid "Downloading"
 msgstr " डाउनलोड कर रहा है"
 
-#: src/gs-details-page.ui:268
+#: src/gs-details-page.ui:272
 msgid "_Update"
 msgstr "_अपडेट करें"
 
-#: src/gs-details-page.ui:347
+#: src/gs-details-page.ui:351
 msgid "No screenshot provided"
 msgstr "कोई स्क्रीनशॉट प्रदान नहीं किया गया"
 
-#: src/gs-details-page.ui:367
+#: src/gs-details-page.ui:371
 msgid "Software Repository Included"
 msgstr "सॉफ़्टवेयर रिपोज़िटरी शामिल किया गया है"
 
-#: src/gs-details-page.ui:368
+#: src/gs-details-page.ui:372
 msgid ""
 "This application includes a software repository which provides updates, as "
 "well as access to other software."
 msgstr "इस एप्लिकेशन में अपडेट प्रदान करने के साथ-साथ अन्य सॉफ़्टवेयर को एक्सेस करने के लिए एक सॉफ़्टवेयर रिपॉजिटरी भी शामिल है।"
 
-#: src/gs-details-page.ui:375
+#: src/gs-details-page.ui:379
 msgid "No Software Repository Included"
 msgstr "कोई सॉफ्टवेयर रिपॉजिटरी शामिल नहीं है"
 
-#: src/gs-details-page.ui:376
+#: src/gs-details-page.ui:380
 msgid ""
 "This application does not include a software repository. It will not be "
 "updated with new versions."
 msgstr "इस एप्लिकेशन में एक सॉफ़्टवेयर रिपॉजिटरी शामिल नहीं है। इसे नए संस्करणों के साथ अपडेट नहीं किया जाएगा।"
 
-#: src/gs-details-page.ui:384
+#: src/gs-details-page.ui:388
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
@@ -1716,151 +1718,151 @@ msgstr "यह सॉफ़्टवेयर आपके वितरण द�
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
-#: src/gs-details-page.ui:391
+#: src/gs-details-page.ui:395
 msgid "Software Repository Identified"
 msgstr "सॉफ़्टवेयर रिपोज़िटरी की पहचान हो गई है"
 
-#: src/gs-details-page.ui:392
+#: src/gs-details-page.ui:396
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
 msgstr "इस सॉफ़्टवेयर रिपॉज़िटरी को शामिल करने से आप अतिरिक्त सॉफ़्टवेयर और अपग्रेड को एक्सेस कर पाएँगे।"
 
-#: src/gs-details-page.ui:393
+#: src/gs-details-page.ui:397
 msgid "Only use software repositories that you trust."
 msgstr "केवल उन सॉफ्टवेयर रिपॉजिटरी का उपयोग करें जिन पर आपको भरोसा है।"
 
-#: src/gs-details-page.ui:415
+#: src/gs-details-page.ui:419
 msgid "_Website"
 msgstr "_वेबसाइट"
 
-#: src/gs-details-page.ui:424
+#: src/gs-details-page.ui:428
 msgid "_Donate"
 msgstr "_दान करें"
 
-#: src/gs-details-page.ui:534
+#: src/gs-details-page.ui:538
 msgid "Localized in your Language"
 msgstr "आपकी भाषा में स्थानीयकृत किया गया"
 
-#: src/gs-details-page.ui:545
+#: src/gs-details-page.ui:549
 msgid "Documentation"
 msgstr "दस्तावेज़ीकरण"
 
-#: src/gs-details-page.ui:556
+#: src/gs-details-page.ui:560
 msgid "Release Activity"
 msgstr "गतिविधि रिलीज़ करें"
 
-#: src/gs-details-page.ui:567
+#: src/gs-details-page.ui:571
 msgid "System Integration"
 msgstr "सिस्टम एकीकरण"
 
-#: src/gs-details-page.ui:578
+#: src/gs-details-page.ui:582
 msgid "Sandboxed"
 msgstr "सैंडबॉक्स्ड"
 
-#: src/gs-details-page.ui:598
+#: src/gs-details-page.ui:602
 msgid "Version"
 msgstr "संस्करण"
 
-#: src/gs-details-page.ui:634
+#: src/gs-details-page.ui:638
 msgid "Age Rating"
 msgstr "समयावधि की रेटिंग"
 
-#: src/gs-details-page.ui:672 src/gs-details-page.ui:1365
+#: src/gs-details-page.ui:676 src/gs-details-page.ui:1369
 msgid "Permissions"
 msgstr "अनुमतियाँ"
 
-#: src/gs-details-page.ui:710
+#: src/gs-details-page.ui:714
 msgid "Updated"
 msgstr "अपडेट किया गया"
 
-#: src/gs-details-page.ui:744
+#: src/gs-details-page.ui:748
 msgid "Category"
 msgstr "श्रेणी"
 
-#: src/gs-details-page.ui:781
+#: src/gs-details-page.ui:785
 msgid "Installed Size"
 msgstr "स्थापित किया गया आकार"
 
-#: src/gs-details-page.ui:812
+#: src/gs-details-page.ui:816
 msgid "Download Size"
 msgstr "डाउनलोड आकार"
 
-#: src/gs-details-page.ui:874
+#: src/gs-details-page.ui:878
 msgid "Developer"
 msgstr "डेवलपर"
 
-#: src/gs-details-page.ui:920
+#: src/gs-details-page.ui:924
 msgid "License"
 msgstr "लाइसेंस"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:939
+#: src/gs-details-page.ui:943
 msgid "Free"
 msgstr "निःशुल्क"
 
 #. This refers to the license of the application
-#: src/gs-details-page.ui:951
+#: src/gs-details-page.ui:955
 msgid "Proprietary"
 msgstr "स्वामित्व संबंधी"
 
 #. TRANSLATORS: This is the header dividing the normal
 #. * applications and the addons
-#: src/gs-details-page.ui:1001 src/gs-installed-page.c:499
+#: src/gs-details-page.ui:1005 src/gs-installed-page.c:499
 msgid "Add-ons"
 msgstr "एड-ऑन"
 
-#: src/gs-details-page.ui:1013
+#: src/gs-details-page.ui:1017
 msgid "Selected add-ons will be installed with the application."
 msgstr "चुने गए एड-ऑन एप्लिकेशन के साथ स्थापित किए जाएँगे."
 
 #. Translators: Header of the section with other users' opinions about the
 #. app.
-#: src/gs-details-page.ui:1051
+#: src/gs-details-page.ui:1055
 msgid "Reviews"
 msgstr "समीक्षाएँ"
 
 #. Translators: Button opening a dialog where the users can write and publish
 #. their opinions about the apps.
-#: src/gs-details-page.ui:1069
+#: src/gs-details-page.ui:1073
 msgid "_Write a Review"
 msgstr "_समीक्षा लिखें"
 
 #. Translators: Button to return more application-submitted reviews.
-#: src/gs-details-page.ui:1090
+#: src/gs-details-page.ui:1094
 msgid "_Show More"
 msgstr "_अधिक दिखाएँ"
 
-#: src/gs-details-page.ui:1218
+#: src/gs-details-page.ui:1222
 msgid ""
 "This means that the software can be freely run, copied, distributed, studied"
 " and modified."
 msgstr "इसका अर्थ है कि सॉफ़्टवेयर को बिना रोक-टोक चलाया जा सकता है, इसकी प्रतिलिपि बनाई जा सकती है, वितरित किया जा सकता है, पढ़ा और संशोधित किया जा सकता है."
 
-#: src/gs-details-page.ui:1258
+#: src/gs-details-page.ui:1262
 msgid "Proprietary Software"
 msgstr "स्वामित्व संबंधी सॉफ़्टवेयर"
 
-#: src/gs-details-page.ui:1269
+#: src/gs-details-page.ui:1273
 msgid ""
 "This means that the software is owned by an individual or a company. There "
 "are often restrictions on its use and its source code cannot usually be "
 "accessed."
 msgstr "इसका अर्थ है कि सॉफ़्टवेयर का स्वामित्व किसी व्यक्ति या कंपनी के पास है. इसके उपयोग के संबंध में प्रायः प्रतिबंध होता है और आमतौर पर इसके स्रोत कोड तक पहुँचा नहीं जा सकता."
 
-#: src/gs-details-page.ui:1301
+#: src/gs-details-page.ui:1305
 msgid "Unknown Software License"
 msgstr "अज्ञात सॉफ़्टवेयर लाइसेंस"
 
-#: src/gs-details-page.ui:1312
+#: src/gs-details-page.ui:1316
 msgid "The license terms of this software are unknown."
 msgstr "इस सॉफ़्टवेयर की लाइसेंस संबंधी शर्तें अज्ञात हैं."
 
-#: src/gs-details-page.ui:1332
+#: src/gs-details-page.ui:1336
 msgid "The application was rated this way because it features:"
 msgstr "ऐप्लिकेशन को इस तरह से रेट किया गया क्योंकि इसकी ये विशेषताएँ हैं:"
 
-#: src/gs-details-page.ui:1346
+#: src/gs-details-page.ui:1350
 msgid "No details were available for this rating."
 msgstr "इस रेटिंग के लिए कोई विवरण उपलब्ध नहीं था."
 
@@ -2409,7 +2411,7 @@ msgstr "क्या आप वाकई %s रिपॉजिटरी को �
 msgid ""
 "All applications from %s will be removed, and you will have to re-install "
 "the repository to use them again."
-msgstr "%S से सभी एप्लिकेशन हटा दिए जाएँगे और आपको फिर से उनका उपयोग करने के लिए रिपोज़िटरी को फिर से इनस्टॉल करना होगा।"
+msgstr "%s से सभी एप्लिकेशन हटा दिए जाएँगे और आपको फिर से उनका उपयोग करने के लिए रिपोज़िटरी को फिर से इनस्टॉल करना होगा।"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is an
 #. * application summary, e.g. 'GNOME Clocks'
@@ -3413,7 +3415,7 @@ msgstr[1] "%u एप्लीकेशन अपडेट किए गए"
 #: src/gs-update-monitor.c:245
 #, c-format
 msgid "%s has been updated."
-msgstr "% अपडेट हो गया है।"
+msgstr "%s अपडेट हो गया है।"
 
 #. TRANSLATORS: the app needs restarting
 #: src/gs-update-monitor.c:248
@@ -4374,7 +4376,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak, Linux पर डेस्कटॉप ऐप्लिकेशन्स के लिए एक फ़्रेमवर्क है"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:972
+#: plugins/flatpak/gs-flatpak.c:979
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "%s के लिए flatpak मेटाडेटा प्राप्त कर रहा है…"
