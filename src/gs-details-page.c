@@ -43,7 +43,6 @@ struct _GsDetailsPage
 	GsPage			 parent_instance;
 
 	GsPluginLoader		*plugin_loader;
-	GsPluginStatus		 plugin_status;
 	GtkBuilder		*builder;
 	GCancellable		*cancellable;
 	GCancellable		*app_cancellable;
@@ -216,7 +215,7 @@ gs_details_page_update_shortcut_button (GsDetailsPage *self)
 	/* leave the button hidden if there's a pending action or we're copying
 	 * the app because the progress bar or spinner will be visible */
 	if (gs_app_get_pending_action (self->app) != GS_PLUGIN_ACTION_UNKNOWN ||
-	    self->plugin_status == GS_PLUGIN_STATUS_COPYING)
+	    gs_plugin_loader_app_copying (self->plugin_loader, self->app))
 		return;
 
 	/* only consider the shortcut button if the app is installed */
@@ -271,7 +270,7 @@ gs_details_page_update_copy_button (GsDetailsPage *self)
 	gtk_widget_set_sensitive (self->button_copy, FALSE);
 	gtk_widget_set_visible (self->button_copy, FALSE);
 
-	if (self->plugin_status == GS_PLUGIN_STATUS_COPYING)
+	if (gs_plugin_loader_app_copying (self->plugin_loader, self->app))
 		return;
 
 	copy_dest = get_removable_destination (self);
@@ -281,6 +280,10 @@ gs_details_page_update_copy_button (GsDetailsPage *self)
 			gtk_widget_set_sensitive (self->button_copy, TRUE);
 		} else {
 			gtk_button_set_label (GTK_BUTTON (self->button_copy), _("Insert USB to Copy To"));
+			gtk_widget_set_sensitive (self->button_copy, FALSE);
+		}
+		if (!gs_plugin_loader_copy_queue_empty (self->plugin_loader))  {
+			gtk_button_set_label (GTK_BUTTON (self->button_copy), _("Pending Copy"));
 			gtk_widget_set_sensitive (self->button_copy, FALSE);
 		}
 		gtk_widget_set_visible (self->button_copy, TRUE);
@@ -322,7 +325,7 @@ app_has_pending_action (GsApp *app)
 static gboolean
 plugin_has_pending_action (GsDetailsPage *self)
 {
-	return (self->plugin_status == GS_PLUGIN_STATUS_COPYING) ||
+	return (gs_plugin_loader_app_copying (self->plugin_loader, self->app)) ||
 		app_has_pending_action (self->app);
 }
 
@@ -393,7 +396,7 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 		gtk_widget_set_visible (self->label_progress_status, TRUE);
 		gtk_label_set_label (GTK_LABEL (self->label_progress_status),
 				     _("Installing"));
-	} else if (self->plugin_status == GS_PLUGIN_STATUS_COPYING) {
+	} else if (gs_plugin_loader_app_copying (self->plugin_loader, self->app)) {
 		gtk_widget_set_visible (self->label_progress_status, TRUE);
 		gtk_label_set_label (GTK_LABEL (self->label_progress_status),
 				     _("Copying"));
@@ -449,7 +452,7 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 
 	/* spinner */
 	if (state == AS_APP_STATE_REMOVING ||
-	    self->plugin_status == GS_PLUGIN_STATUS_COPYING) {
+	    gs_plugin_loader_app_copying (self->plugin_loader, self->app)) {
 		if (!gtk_widget_get_visible (self->spinner_remove)) {
 			gtk_spinner_start (GTK_SPINNER (self->spinner_remove));
 			gtk_widget_set_visible (self->spinner_remove, TRUE);
@@ -2421,6 +2424,9 @@ gs_details_page_app_copied (GsPage *page, GsApp *app, const GError *error)
 {
 	GsDetailsPage *self = GS_DETAILS_PAGE (page);
 
+	if(self->app != app)
+		return;
+
 	if (error == NULL) {
 		gtk_button_set_label (GTK_BUTTON (self->button_copy), _("Copied to USB"));
 		gtk_widget_set_sensitive (self->button_copy, FALSE);
@@ -2703,9 +2709,7 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
                                           GsPluginStatus status,
                                           GsDetailsPage *self)
 {
-	self->plugin_status = status;
-
-	if (app == NULL || app != self->app)
+	if (app == NULL)
 		return;
 
 	/* Various bits of UI state depend on the plugin status, so refresh
@@ -2740,9 +2744,6 @@ gs_details_page_setup (GsPage *page,
 	self->plugin_loader = g_object_ref (plugin_loader);
 	self->builder = g_object_ref (builder);
 	self->cancellable = g_object_ref (cancellable);
-
-	self->plugin_status = GS_PLUGIN_STATUS_FINISHED;
-
 	self->copy_dests = NULL;
 	g_signal_connect (plugin_loader, "notify::copy-dests",
 			  G_CALLBACK (gs_details_page_copy_dests_notify_cb),
