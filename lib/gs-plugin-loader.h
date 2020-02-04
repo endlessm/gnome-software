@@ -109,4 +109,7 @@ void            gs_plugin_loader_set_max_parallel_ops  (GsPluginLoader *plugin_l
 const gchar	*gs_plugin_loader_get_locale		(GsPluginLoader *plugin_loader);
 GPtrArray	*gs_plugin_loader_dup_copy_dests	(GsPluginLoader *plugin_loader);
 
+gboolean	 gs_plugin_loader_app_copying 		(GsPluginLoader *plugin_loader,
+		                                         GsApp		*app);
+gboolean	 gs_plugin_loader_copy_queue_empty 	(GsPluginLoader *plugin_loader);
 G_END_DECLS
