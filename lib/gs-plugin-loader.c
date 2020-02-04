@@ -45,6 +45,7 @@ typedef struct
 	SoupSession		*soup_session;
 	GPtrArray		*file_monitors;
 	GsPluginStatus		 global_status_last;
+	GHashTable		*global_plugin_statuses;
 
 	GMutex			 pending_apps_mutex;
 	GsAppList		*pending_apps;
@@ -2339,6 +2340,7 @@ gs_plugin_loader_status_changed_cb (GsPlugin *plugin,
 		}
 		return;
 	}
+	g_hash_table_insert (priv->global_plugin_statuses, g_strdup (gs_app_get_id (app)), GUINT_TO_POINTER (status));
 
 	/* a specific app */
 	g_debug ("emitting %s(%s)",
@@ -3254,6 +3256,7 @@ gs_plugin_loader_finalize (GObject *object)
 	g_ptr_array_unref (priv->file_monitors);
 	g_hash_table_unref (priv->events_by_id);
 	g_hash_table_unref (priv->disallow_updates);
+	g_hash_table_unref (priv->global_plugin_statuses);
 
 	g_mutex_clear (&priv->pending_apps_mutex);
 	g_mutex_clear (&priv->events_by_id_mutex);
@@ -3432,6 +3435,7 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	for (i = 0; projects[i] != NULL; i++)
 		g_debug ("compatible-project: %s", projects[i]);
 	priv->compatible_projects = projects;
+	priv->global_plugin_statuses = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 }
 
 /**
@@ -4430,4 +4434,31 @@ gs_plugin_loader_get_locale (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	return priv->locale;
+}
+
+gboolean
+gs_plugin_loader_app_copying (GsPluginLoader *plugin_loader, GsApp *app)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	if (app == NULL || gs_app_get_id (app) == NULL) {
+		return FALSE;
+	}
+	return GPOINTER_TO_UINT (g_hash_table_lookup (priv->global_plugin_statuses,
+				gs_app_get_id (app))) == GS_PLUGIN_STATUS_COPYING;
+}
+
+gboolean
+gs_plugin_loader_copy_queue_empty (GsPluginLoader *plugin_loader)
+{
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
+	GHashTableIter iter;
+	gpointer value;
+
+	g_hash_table_iter_init (&iter, priv->global_plugin_statuses);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		if (GPOINTER_TO_UINT (value) == GS_PLUGIN_STATUS_COPYING)
+			return FALSE;
+	}
+
+	return TRUE;
 }
