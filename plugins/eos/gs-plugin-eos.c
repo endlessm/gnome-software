@@ -993,9 +993,9 @@ add_updates (GsPlugin *plugin,
 
 	const char *framework_proxied_apps[] = {"com.endlessm.Platform",
 						"com.endlessm.apps.Platform",
-						"com.endlessm.EknServicesMultiplexer.desktop",
-						"com.endlessm.quote_of_the_day.en.desktop",
-						"com.endlessm.word_of_the_day.en.desktop",
+						"com.endlessm.EknServicesMultiplexer",
+						"com.endlessm.quote_of_the_day.en",
+						"com.endlessm.word_of_the_day.en",
 						NULL};
 
 	GsPluginData *priv = gs_plugin_get_data (plugin);
