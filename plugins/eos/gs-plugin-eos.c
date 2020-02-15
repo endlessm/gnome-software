@@ -64,8 +64,6 @@ struct GsPluginData
 	GHashTable *replacement_app_lookup;
 	int applications_changed_id;
 	SoupSession *soup_session;
-
-	char *product_name;
 };
 
 static gboolean
@@ -189,21 +187,6 @@ get_image_version (void)
 	return image_version;
 }
 
-static char *
-get_product_name (const char *image_version)
-{
-	char *hyphen_index = NULL;
-
-	if (image_version == NULL)
-		return NULL;
-
-	hyphen_index = strchr (image_version, '-');
-	if (hyphen_index == NULL)
-		return NULL;
-
-	return g_strndup (image_version, hyphen_index - image_version);
-}
-
 static void
 read_icon_replacement_overrides (GHashTable *replacement_app_lookup)
 {
@@ -283,7 +266,6 @@ gs_plugin_setup (GsPlugin *plugin,
 							      g_free, g_free);
 
 	image_version = get_image_version ();
-	priv->product_name = get_product_name (image_version);
 
 	/* Synchronous, but this guarantees that the lookup table will be
 	 * there when we call ReplaceApplication later on */
@@ -319,7 +301,6 @@ gs_plugin_destroy (GsPlugin *plugin)
 
 	g_hash_table_destroy (priv->desktop_apps);
 	g_hash_table_destroy (priv->replacement_app_lookup);
-	g_free (priv->product_name);
 }
 
 /* Copy of the implementation of gs_flatpak_app_get_ref_name(). */
