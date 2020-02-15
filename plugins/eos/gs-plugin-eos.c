@@ -1009,13 +1009,6 @@ add_updates (GsPlugin *plugin,
 						_("Endless Platform"),
 						/* TRANSLATORS: this is the summary of the Endless Platform app */
 						_("Framework for applications"));
-	g_autoptr(GsApp) hack_proxy_app =
-		gs_plugin_eos_create_proxy_app (plugin,
-						EOS_PROXY_APP_PREFIX ".EOSHackUpdatesProxy",
-						/* TRANSLATORS: this is the name of the Endless Hack Platform app */
-						_("Endless Hack Platform"),
-						/* TRANSLATORS: this is the summary of the Endless Hack Platform app */
-						_("Endless Hack system components"));
 
 	const char *framework_proxied_apps[] = {"com.endlessm.Platform",
 						"com.endlessm.apps.Platform",
@@ -1024,32 +1017,13 @@ add_updates (GsPlugin *plugin,
 						"com.endlessm.quote_of_the_day.en.desktop",
 						"com.endlessm.word_of_the_day.en.desktop",
 						NULL};
-	const char *hack_proxied_apps[] = {"com.endlessm.Clubhouse.desktop",
-					   "com.endlessm.Fizzics.desktop",
-					   "com.endlessm.GameStateService.desktop",
-					   "com.endlessm.HackAccountService.desktop",
-					   "com.endlessm.HackComponents.desktop",
-					   "com.endlessm.HackSoundServer.desktop",
-					   "com.endlessm.HackToolbox.desktop",
-					   "com.endlessm.HackUnlock.desktop",
-					   "com.endlessm.Hackdex_chapter_one.desktop",
-					   "com.endlessm.Hackdex_chapter_two.desktop",
-					   "com.endlessm.LightSpeed.desktop",
-					   "com.endlessm.OperatingSystemApp.desktop",
-					   "com.endlessm.Sidetrack.desktop",
-					   NULL};
 
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	gboolean is_hack_product = g_strcmp0 (priv->product_name, "hack") == 0;
 
 	process_proxy_updates (plugin, list,
 			       framework_proxy_app,
 			       FALSE,
 			       framework_proxied_apps);
-	process_proxy_updates (plugin, list,
-			       hack_proxy_app,
-			       is_hack_product,
-			       hack_proxied_apps);
 
 	return TRUE;
 }
