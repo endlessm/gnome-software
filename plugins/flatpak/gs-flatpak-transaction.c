@@ -14,6 +14,7 @@
 struct _GsFlatpakTransaction {
 	FlatpakTransaction	 parent_instance;
 	GHashTable		*refhash;	/* ref:GsApp */
+	GHashTable		*apps_proxies;	/* GsApp:GsApp */
 	GError			*first_operation_error;
 	gboolean		 no_deploy;
 };
@@ -40,6 +41,7 @@ gs_flatpak_transaction_finalize (GObject *object)
 
 	g_assert (self != NULL);
 	g_hash_table_unref (self->refhash);
+	g_hash_table_unref (self->apps_proxies);
 	if (self->first_operation_error != NULL)
 		g_error_free (self->first_operation_error);
 
@@ -170,6 +172,43 @@ gs_flatpak_transaction_add_app (FlatpakTransaction *transaction, GsApp *app)
 	gs_flatpak_transaction_add_app_internal (self, app);
 	if (gs_app_get_runtime (app) != NULL)
 		gs_flatpak_transaction_add_app_internal (self, gs_app_get_runtime (app));
+}
+
+static void
+_set_proxy_for_app (FlatpakTransaction *transaction, GsApp *app, GsApp *proxy)
+{
+	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
+	g_hash_table_insert (self->apps_proxies, g_object_ref (app), g_object_ref (proxy));
+}
+
+gboolean
+gs_flatpak_transaction_add_update (FlatpakTransaction *transaction, GsApp *app, GError **error)
+{
+	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
+	gboolean is_proxy_app = gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY);
+	g_autofree gchar *ref = NULL;
+
+	if (is_proxy_app) {
+		GsAppList *proxied_apps;
+
+		proxied_apps = gs_app_get_related (app);
+		for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
+			GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
+
+			_set_proxy_for_app (transaction, proxied_app, app);
+			if (!gs_flatpak_transaction_add_update (transaction, proxied_app, error))
+				return FALSE;
+		}
+		return TRUE;
+	}
+
+	ref = gs_flatpak_app_get_ref_display (app);
+	if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error))
+		return FALSE;
+
+	/* Add the update applist for easier lookup */
+	gs_flatpak_transaction_add_app (transaction, app);
+	return TRUE;
 }
 
 static GsApp *
@@ -402,10 +441,35 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 		gs_app_set_update_version (app, NULL);
 		/* force getting the new runtime */
 		gs_app_remove_kudo (app, GS_APP_KUDO_SANDBOXED);
-		if (self->no_deploy) /* autoupdate in progress? */
+		if (self->no_deploy) { /* autoupdate in progress? */
 			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-		else
+		} else {
+			GsApp *proxy_app;
+
 			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+
+			proxy_app = g_hash_table_lookup (self->apps_proxies, app);
+			if (proxy_app) {
+				GsAppList *proxied_apps;
+				gboolean proxied_apps_installed = TRUE;
+
+				proxied_apps = gs_app_get_related (proxy_app);
+				for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
+					GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
+
+					if (gs_app_get_state (proxied_app) != AS_APP_STATE_INSTALLED) {
+						proxied_apps_installed = FALSE;
+						break;
+					}
+				}
+
+				/* All proxied apps are installed, also set proxy app to installed
+				 * so it gets removed from updates list */
+				if (proxied_apps_installed)
+					gs_app_set_state (proxy_app, AS_APP_STATE_INSTALLED);
+			}
+
+		}
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UNINSTALL:
 		/* we don't actually know if this app is re-installable */
@@ -549,6 +613,9 @@ gs_flatpak_transaction_init (GsFlatpakTransaction *self)
 {
 	self->refhash = g_hash_table_new_full (g_str_hash, g_str_equal,
 					       g_free, (GDestroyNotify) g_object_unref);
+	self->apps_proxies = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+						    (GDestroyNotify) g_object_unref,
+						    (GDestroyNotify) g_object_unref);
 }
 
 FlatpakTransaction *
