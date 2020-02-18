@@ -914,7 +914,6 @@ static void
 process_proxy_updates (GsPlugin *plugin,
 		       GsAppList *list,
 		       GsApp *proxy_app,
-		       gboolean install_missing,
 		       const char **proxied_apps)
 {
 	g_autoptr(GsAppList) proxied_updates = gs_app_list_new ();
@@ -923,18 +922,6 @@ process_proxy_updates (GsPlugin *plugin,
 						      gs_app_get_unique_id (proxy_app));
 	if (cached_proxy_app != NULL)
 		gs_app_list_remove (list, cached_proxy_app);
-
-	/* add all the apps if we should install the missing ones; the real sorting for
-	 * whether they're already installed is done in the refine method */
-	if (install_missing) {
-		for (guint i = 0; proxied_apps[i] != NULL; ++i) {
-		        g_autoptr(GsApp) app = gs_app_new (proxied_apps[i]);
-			gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
-			gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_FLATPAK);
-
-			gs_app_list_add (proxied_updates, app);
-		}
-	}
 
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
@@ -1002,7 +989,6 @@ add_updates (GsPlugin *plugin,
 
 	process_proxy_updates (plugin, list,
 			       framework_proxy_app,
-			       FALSE,
 			       framework_proxied_apps);
 
 	return TRUE;
