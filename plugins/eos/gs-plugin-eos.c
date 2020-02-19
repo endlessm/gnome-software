@@ -35,7 +35,6 @@
 
 #define ENDLESS_ID_PREFIX "com.endlessm."
 #define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
-#define METADATA_REPLACED_BY_DESKTOP_FILE "EndlessOS::replaced-by-desktop-file"
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
 
 /*
