@@ -38,10 +38,6 @@
 #define METADATA_REPLACED_BY_DESKTOP_FILE "EndlessOS::replaced-by-desktop-file"
 #define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
 
-#define EOS_IMAGE_VERSION_XATTR "user.eos-image-version"
-#define EOS_IMAGE_VERSION_PATH "/sysroot"
-#define EOS_IMAGE_VERSION_ALT_PATH "/"
-
 /*
  * SECTION:
  * Plugin to improve GNOME Software integration in the EOS desktop.
@@ -149,44 +145,6 @@ on_desktop_apps_changed (GDBusConnection *connection,
 	}
 }
 
-static char *
-get_image_version_for_path (const char *path)
-{
-	ssize_t xattr_size = 0;
-	char *image_version = NULL;
-
-	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR, NULL, 0);
-
-	if (xattr_size == -1)
-		return NULL;
-
-	image_version = g_malloc0 (xattr_size + 1);
-
-	xattr_size = getxattr (path, EOS_IMAGE_VERSION_XATTR,
-			       image_version, xattr_size);
-
-	/* this check is just in case the xattr has changed in between the
-	 * size checks */
-	if (xattr_size == -1) {
-		g_warning ("Error when getting the 'eos-image-version' from %s",
-			   path);
-		return NULL;
-	}
-
-	return image_version;
-}
-
-static char *
-get_image_version (void)
-{
-	char *image_version = get_image_version_for_path (EOS_IMAGE_VERSION_PATH);
-
-	if (!image_version)
-		image_version = get_image_version_for_path (EOS_IMAGE_VERSION_ALT_PATH);
-
-	return image_version;
-}
-
 static void
 read_icon_replacement_overrides (GHashTable *replacement_app_lookup)
 {
@@ -239,7 +197,6 @@ gs_plugin_setup (GsPlugin *plugin,
 {
 	g_autoptr(GError) local_error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autofree char *image_version = NULL;
 
 	priv->session_bus = g_bus_get_sync (G_BUS_TYPE_SESSION, cancellable, error);
 	if (priv->session_bus == NULL)
@@ -264,8 +221,6 @@ gs_plugin_setup (GsPlugin *plugin,
 
 	priv->replacement_app_lookup = g_hash_table_new_full (g_str_hash, g_str_equal,
 							      g_free, g_free);
-
-	image_version = get_image_version ();
 
 	/* Synchronous, but this guarantees that the lookup table will be
 	 * there when we call ReplaceApplication later on */
