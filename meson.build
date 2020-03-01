@@ -1,8 +1,8 @@
 project('gnome-software', 'c',
-  version : '3.34.2',
+  version : '3.35.91',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
-  meson_version : '>=0.46.0'
+  meson_version : '>=0.47.0'
 )
 
 conf = configuration_data()
@@ -34,6 +34,7 @@ test_args = [
   '-Wformat-signedness',
   '-Wignored-qualifiers',
   '-Wimplicit-function-declaration',
+  '-Werror=implicit-function-declaration',
   '-Winit-self',
   '-Winline',
   '-Wmissing-declarations',
@@ -43,6 +44,7 @@ test_args = [
   '-Wmissing-parameter-type',
   '-Wmissing-prototypes',
   '-Wnested-externs',
+  '-Werror=nested-externs',
   '-Wno-discarded-qualifiers',
   '-Wno-missing-field-initializers',
   '-Wno-strict-aliasing',
@@ -165,6 +167,11 @@ endif
 
 if get_option('flatpak')
   flatpak = dependency('flatpak', version : '>= 1.0.4')
+  ostree = dependency('ostree-1')
+endif
+
+if get_option('malcontent')
+  malcontent = dependency('malcontent-0', version: '>= 0.3.0')
 endif
 
 if get_option('rpm_ostree')
@@ -179,7 +186,7 @@ if get_option('gudev')
 endif
 
 if get_option('snap')
-  snap = dependency('snapd-glib', version : '>= 1.49')
+  snap = dependency('snapd-glib', version : '>= 1.50')
 endif
 
 gnome = import('gnome')

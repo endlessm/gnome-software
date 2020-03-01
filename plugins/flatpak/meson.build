@@ -1,10 +1,9 @@
-subdir('tests')
-
 cargs = ['-DG_LOG_DOMAIN="GsPluginFlatpak"']
 deps = [
   plugin_libs,
   flatpak,
   libxmlb,
+  ostree,
 ]
 
 if get_option('mogwai')
@@ -45,6 +44,8 @@ i18n.merge_file(
 )
 
 if get_option('tests')
+  subdir('tests')
+
   cargs += ['-DLOCALPLUGINDIR="' + meson.current_build_dir() + '"']
   cargs += ['-DLOCALPLUGINDIR_CORE="' + meson.current_build_dir() + '/../core"']
   cargs += ['-DTESTDATADIR="' + join_paths(meson.current_build_dir(), 'tests') + '"']
@@ -65,5 +66,5 @@ if get_option('tests')
     ],
     c_args : cargs,
   )
-  test('gs-self-test-flatpak', e, env: test_env, timeout : 120)
+  test('gs-self-test-flatpak', e, suite: ['plugins', 'flatpak'], env: test_env, timeout : 120)
 endif

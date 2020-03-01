@@ -5,8 +5,6 @@ src/gnome-software-local-file.desktop.in
 src/gnome-software.ui
 lib/gs-app.c
 src/gs-app-addon-row.c
-src/gs-app-folder-dialog.c
-src/gs-app-folder-dialog.ui
 src/gs-application.c
 src/gs-app-row.c
 src/gs-app-row.ui
@@ -21,8 +19,6 @@ src/gs-content-rating.c
 src/gs-dbus-helper.c
 src/gs-details-page.c
 src/gs-details-page.ui
-src/gs-editor.c
-src/gs-editor.ui
 src/gs-extras-page.c
 src/gs-extras-page.ui
 src/gs-feature-tile.c
@@ -35,6 +31,7 @@ src/gs-installed-page.ui
 src/gs-loading-page.c
 src/gs-loading-page.ui
 src/gs-main.c
+src/gs-metered-data-dialog.ui
 src/gs-moderate-page.ui
 src/gs-origin-popover-row.c
 src/gs-origin-popover-row.ui
@@ -75,12 +72,10 @@ src/gs-updates-section.c
 src/gs-upgrade-banner.c
 src/gs-upgrade-banner.ui
 src/org.gnome.Software.desktop.in
-src/org.gnome.Software.Editor.desktop.in
 plugins/core/gs-desktop-common.c
 plugins/core/gs-plugin-generic-updates.c
 plugins/core/gs-plugin-rewrite-resource.c
 plugins/eos-updater/gs-plugin-eos-updater.c
-plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in
 plugins/external-appstream/gs-install-appstream.c
 plugins/external-appstream/gs-plugin-external-appstream.c
 plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c
@@ -91,6 +86,5 @@ plugins/fwupd/gs-plugin-fwupd.c
 plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in
 plugins/odrs/gs-plugin-odrs.c
 plugins/odrs/org.gnome.Software.Plugin.Odrs.metainfo.xml.in
-plugins/shell-extensions/gs-plugin-shell-extensions.c
 plugins/snap/gs-plugin-snap.c
 plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in

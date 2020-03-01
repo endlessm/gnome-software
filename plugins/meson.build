@@ -11,7 +11,6 @@ plugin_libs = [
 subdir('core')
 subdir('dpkg')
 subdir('dummy')
-subdir('epiphany')
 subdir('fedora-langpacks')
 subdir('fedora-pkgdb-collections')
 
@@ -27,6 +26,9 @@ endif
 if get_option('gudev')
   subdir('modalias')
 endif
+if get_option('malcontent')
+  subdir('malcontent')
+endif
 if get_option('odrs')
   subdir('odrs')
 endif
@@ -36,9 +38,6 @@ endif
 subdir('repos')
 if get_option('rpm_ostree')
   subdir('rpm-ostree')
-endif
-if get_option('shell_extensions')
-  subdir('shell-extensions')
 endif
 if get_option('snap')
   subdir('snap')

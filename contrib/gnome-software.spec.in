@@ -50,9 +50,6 @@ BuildRequires: libgudev1-devel
 BuildRequires: valgrind-devel
 
 Requires: appstream-data
-%if 0%{?fedora}
-Requires: epiphany-runtime
-%endif
 Requires: flatpak%{?_isa} >= %{flatpak_version}
 Requires: flatpak-libs%{?_isa} >= %{flatpak_version}
 Requires: fwupd%{?_isa} >= %{fwupd_version}
@@ -73,6 +70,7 @@ Requires: libxmlb%{?_isa} >= %{libxmlb_version}
 Recommends: PackageKit%{?_isa} >= %{packagekit_version}
 
 Obsoletes: gnome-software-snap < 3.33.1
+Obsoletes: gnome-software-editor < 3.35.1
 
 # this is not a library version
 %define gs_plugin_version               13
@@ -88,13 +86,6 @@ Requires: %{name}%{?_isa} = %{version}-%{release}
 %description devel
 These development files are for building gnome-software plugins outside
 the source tree. Most users do not need this subpackage installed.
-
-%package editor
-Summary: Banner designer for GNOME Software
-Requires: %{name}%{?_isa} = %{version}-%{release}
-
-%description editor
-Editor for designing banners for GNOME Software.
 
 %package rpm-ostree
 Summary: rpm-ostree backend for gnome-software
@@ -157,7 +148,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_datadir}/gnome-software/featured-*.svg
 %{_datadir}/gnome-software/featured-*.jpg
 %{_datadir}/metainfo/org.gnome.Software.appdata.xml
-%{_datadir}/metainfo/org.gnome.Software.Plugin.Epiphany.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Flatpak.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Fwupd.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Odrs.metainfo.xml
@@ -166,14 +156,12 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_desktop-categories.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_desktop-menu-path.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_dummy.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_epiphany.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fedora-langpacks.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fedora-pkgdb-collections.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_flatpak.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fwupd.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_generic-updates.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_hardcoded-blacklist.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_hardcoded-featured.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_hardcoded-popular.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_icons.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_key-colors-metadata.so
@@ -195,7 +183,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_provenance.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_repos.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_rewrite-resource.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_shell-extensions.so
 %{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_systemd-updates.so
 %{_sysconfdir}/xdg/autostart/gnome-software-service.desktop
 %{_datadir}/app-info/xmls/org.gnome.Software.Featured.xml
@@ -215,11 +202,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %dir %{_includedir}/gnome-software
 %{_includedir}/gnome-software/*.h
 %{_datadir}/gtk-doc/html/gnome-software
-
-%files editor
-%{_bindir}/gnome-software-editor
-%{_datadir}/applications/org.gnome.Software.Editor.desktop
-%{_mandir}/man1/gnome-software-editor.1*
 
 %changelog
 * #LONGDATE# Richard Hughes <richard@hughsie.com> #VERSION#-0.#BUILD##ALPHATAG#

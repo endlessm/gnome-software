@@ -17,6 +17,7 @@
 #include "gs-summary-tile.h"
 #include "gs-popular-tile.h"
 #include "gs-category-page.h"
+#include "gs-utils.h"
 
 typedef enum {
 	SUBCATEGORY_SORT_TYPE_RATING,
@@ -37,8 +38,6 @@ struct _GsCategoryPage
 	guint		sort_name_handler_id;
 	SubcategorySortType sort_type;
 
-	GtkWidget	*infobar_category_shell_extensions;
-	GtkWidget	*button_category_shell_extensions;
 	GtkWidget	*category_detail_box;
 	GtkWidget	*scrolledwindow_category;
 	GtkWidget	*subcats_filter_label;
@@ -182,8 +181,6 @@ gs_category_page_sort_flow_box_sort_func (GtkFlowBoxChild *child1,
 	GsApp *app1 = gs_app_tile_get_app (GS_APP_TILE (gtk_bin_get_child (GTK_BIN (child1))));
 	GsApp *app2 = gs_app_tile_get_app (GS_APP_TILE (gtk_bin_get_child (GTK_BIN (child2))));
 	SubcategorySortType sort_type;
-	g_autofree gchar *casefolded_name1 = NULL;
-	g_autofree gchar *casefolded_name2 = NULL;
 
 	if (!GS_IS_APP (app1) || !GS_IS_APP (app2))
 		return 0;
@@ -199,11 +196,7 @@ gs_category_page_sort_flow_box_sort_func (GtkFlowBoxChild *child1,
 			return 1;
 	}
 
-	if (gs_app_get_name (app1) != NULL)
-		casefolded_name1 = g_utf8_casefold (gs_app_get_name (app1), -1);
-	if (gs_app_get_name (app2) != NULL)
-		casefolded_name2 = g_utf8_casefold (gs_app_get_name (app2), -1);
-	return g_strcmp0 (casefolded_name1, casefolded_name2);
+	return gs_utils_sort_strcmp (gs_app_get_name (app1), gs_app_get_name (app2));
 }
 
 static void
@@ -327,12 +320,6 @@ gs_category_page_reload (GsPage *page)
 		gtk_widget_set_visible (self->subcats_sort_label, TRUE);
 		gtk_widget_set_visible (self->subcats_sort_button, TRUE);
 	}
-
-	/* show the shell extensions header */
-	if (g_strcmp0 (gs_category_get_id (self->subcategory), "shell-extensions") == 0)
-		gtk_widget_set_visible (self->infobar_category_shell_extensions, TRUE);
-	else
-		gtk_widget_set_visible (self->infobar_category_shell_extensions, FALSE);
 
 	if (self->sort_rating_handler_id > 0) {
 		g_signal_handler_disconnect (self->sort_rating_button,
@@ -537,18 +524,6 @@ gs_category_page_dispose (GObject *object)
 	G_OBJECT_CLASS (gs_category_page_parent_class)->dispose (object);
 }
 
-static void
-button_shell_extensions_cb (GtkButton *button, GsCategoryPage *self)
-{
-	gboolean ret;
-	g_autoptr(GError) error = NULL;
-	const gchar *argv[] = { "gnome-shell-extension-prefs", NULL };
-	ret = g_spawn_async (NULL, (gchar **) argv, NULL, G_SPAWN_SEARCH_PATH,
-			     NULL, NULL, NULL, &error);
-	if (!ret)
-		g_warning ("failed to exec %s: %s", argv[0], error->message);
-}
-
 static gboolean
 gs_category_page_setup (GsPage *page,
                         GsShell *shell,
@@ -570,9 +545,6 @@ gs_category_page_setup (GsPage *page,
 
 	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_category));
 	gtk_container_set_focus_vadjustment (GTK_CONTAINER (self->category_detail_box), adj);
-
-	g_signal_connect (self->button_category_shell_extensions, "clicked",
-			  G_CALLBACK (button_shell_extensions_cb), self);
 	return TRUE;
 }
 
@@ -591,8 +563,6 @@ gs_category_page_class_init (GsCategoryPageClass *klass)
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-category-page.ui");
 
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, category_detail_box);
-	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, infobar_category_shell_extensions);
-	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, button_category_shell_extensions);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, scrolledwindow_category);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_filter_label);
 	gtk_widget_class_bind_template_child (widget_class, GsCategoryPage, subcats_filter_button_label);

@@ -46,39 +46,66 @@
    Validate with `appstream-util validate *.appdata.xml`
   -->
   <releases>
-    <release date="2019-11-25" version="3.34.2">
+    <release date="2020-02-19" version="3.35.91">
       <description>
         <p>
-          This is a stable release with the following changes:
+          This is an unstable stable release with the following changes:
         </p>
         <ul>
+          <li>Add an info bar about automatic updates</li>
+          <li>Avoid rpm-ostree downgrade error when doing distro upgrade</li>
+          <li>Click on stars to open review dialog in the details view</li>
+          <li>Fix loading of icons from AppStream YAML</li>
+          <li>Fix weird font sizes in the batter</li>
+          <li>Hide any in-app notifications when closing the main window</li>
+          <li>Integrate better with snapd</li>
+          <li>Only ignore flatpak estimated progress if >10%</li>
+          <li>Remove color stripes on categories in the Explore page</li>
+          <li>Remove support for Shell extensions</li>
+          <li>Remove webapp support</li>
+          <li>Reset star rating when loading an unrated app</li>
+          <li>Sort applications using locale based algorithms</li>
+          <li>Stop snaps from being automatically updated</li>
+        </ul>
+        <p>This release also adds and updates existing translations.</p>
+      </description>
+    </release>
+    <release date="2019-11-25" version="3.35.2">
+      <description>
+        <p>
+          This is an unstable stable release with the following changes:
+        </p>
+        <ul>
+          <li>Add missing OARS content rating descriptions</li>
+          <li>Add new plugin for restricting access to apps</li>
+          <li>Avoid a UI crash when switching modes</li>
+          <li>Build libmalcontent dependency on Fedora CI</li>
+          <li>Correctly distinguish empty content ratings from missing ones</li>
+          <li>Correctly set the application state if autoupdate is in progress</li>
           <li>Do not show a crazy error when installing packages</li>
           <li>Do not show non-applications in the installed panel</li>
           <li>Download Flatpak updates in the correct installation</li>
-          <li>Fix a potential threading crash when using flatpak</li>
-          <li>Fix a small memory leaks</li>
+          <li>Expose snap channels as app alternates</li>
+          <li>Fix a crash on 32-bit systems</li>
+          <li>Fix langpacks autoinstall on Fedora SilverBlue</li>
+          <li>Fix manual detach when updating removable device firmware</li>
+          <li>Fix third party repo enabling not working</li>
+          <li>Hide add/remove shortcut buttons for parentally filtered apps</li>
+          <li>Improve some front page banners</li>
+          <li>Invalidate caches when adding or removing remotes</li>
+          <li>Make flatpak more thread-safe to fix some crashes</li>
+          <li>Match the exact ID when refining a wildcard</li>
+          <li>Only set the app row's buttons as destructive when they remove an app</li>
+          <li>Remove hardcoded-featured plugin</li>
+          <li>Remove the app folder functionality as this is now built-in to the shell</li>
+          <li>Remove the banner editor as this is now an app on it's own</li>
+          <li>Rework age ratings handling to avoid hard-coded list</li>
           <li>Set the shell extension origin correctly in all cases</li>
-          <li>Speed up flatpak loading in some situations</li>
+          <li>Show the channel for snaps</li>
+          <li>Speed up the flatpak plugin in some situations</li>
+          <li>Use plugin API to launch apps from install notification.</li>
         </ul>
-        <p>This release also updates existing translations.</p>
-      </description>
-    </release>
-    <release date="2019-10-07" version="3.34.1">
-      <description>
-        <p>
-          This is a stable release with the following changes:
-        </p>
-        <ul>
-          <li>Fix firmware updates where the device needed a manual detach</li>
-          <li>Fix installing webapps</li>
-          <li>Fix signal blocking for search</li>
-          <li>Fix third party repo enabling</li>
-          <li>Hide the shortcut buttons for parentally filtered apps</li>
-          <li>Make disabled flatpak remote enabling work</li>
-          <li>Show snap channels as app alternates</li>
-          <li>Show the correct application when clicking from the GNOME Shell menu</li>
-        </ul>
-        <p>This release also updates existing translations.</p>
+        <p>This release also adds and updates existing translations.</p>
       </description>
     </release>
     <release date="2019-09-09" version="3.34.0">

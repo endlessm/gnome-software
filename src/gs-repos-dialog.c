@@ -16,6 +16,7 @@
 #include "gs-os-release.h"
 #include "gs-repo-row.h"
 #include "gs-third-party-repo-row.h"
+#include "gs-utils.h"
 #include <glib/gi18n.h>
 
 struct _GsReposDialog
@@ -135,8 +136,7 @@ repo_supports_removal (GsApp *repo)
 	/* can't remove a repo, only enable/disable existing ones */
 	if (g_strcmp0 (management_plugin, "fwupd") == 0 ||
 	    g_strcmp0 (management_plugin, "packagekit") == 0 ||
-	    g_strcmp0 (management_plugin, "rpm-ostree") == 0 ||
-	    g_strcmp0 (management_plugin, "shell-extensions") == 0)
+	    g_strcmp0 (management_plugin, "rpm-ostree") == 0)
 		return FALSE;
 
 	return TRUE;
@@ -287,6 +287,8 @@ remove_confirm_repo (GsReposDialog *dialog, GsApp *repo)
 	GtkWidget *confirm_dialog;
 	g_autofree gchar *message = NULL;
 	g_autofree gchar *title = NULL;
+	GtkWidget *button;
+	GtkStyleContext *context;
 
 	remove_data = g_slice_new0 (InstallRemoveData);
 	remove_data->action = GS_PLUGIN_ACTION_REMOVE;
@@ -320,11 +322,14 @@ remove_confirm_repo (GsReposDialog *dialog, GsApp *repo)
 
 	if (repo_supports_removal (repo)) {
 		/* TRANSLATORS: this is button text to remove the repo */
-		gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("Remove"), GTK_RESPONSE_OK);
+		button = gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("Remove"), GTK_RESPONSE_OK);
 	} else {
 		/* TRANSLATORS: this is button text to remove the repo */
-		gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("Disable"), GTK_RESPONSE_OK);
+		button = gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("Disable"), GTK_RESPONSE_OK);
 	}
+
+	context = gtk_widget_get_style_context (button);
+	gtk_style_context_add_class (context, "destructive-action");
 
 	/* handle this async */
 	g_signal_connect (confirm_dialog, "response",
@@ -682,7 +687,7 @@ get_row_sort_key (GtkListBoxRow *row)
 		app = gs_repo_row_get_repo (GS_REPO_ROW (row));
 	}
 
-	sort_key = g_utf8_casefold (gs_app_get_name (app), -1);
+	sort_key = gs_utils_sort_key (gs_app_get_name (app));
 	return g_strdup_printf ("%u:%s", sort_order, sort_key);
 }
 

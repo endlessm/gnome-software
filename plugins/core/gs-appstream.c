@@ -30,6 +30,15 @@ gs_appstream_create_app (GsPlugin *plugin, XbSilo *silo, XbNode *component, GErr
 	if (gs_app_has_quirk (app_new, GS_APP_QUIRK_IS_WILDCARD))
 		return g_steal_pointer (&app_new);
 
+	/* no longer supported */
+	if (gs_app_get_kind (app_new) == AS_APP_KIND_SHELL_EXTENSION) {
+		g_set_error (error,
+			     GS_PLUGIN_ERROR,
+			     GS_PLUGIN_ERROR_NOT_SUPPORTED,
+			     "shell extensions no longer supported");
+		return NULL;
+	}
+
 	/* look for existing object */
 	app = gs_plugin_cache_lookup (plugin, gs_app_get_unique_id (app_new));
 	if (app != NULL)
@@ -121,7 +130,7 @@ gs_appstream_build_icon_prefix (XbNode *component)
 	/* check format */
 	path = g_strsplit (tmp, "/", -1);
 	npath = g_strv_length (path);
-	if (npath < 3 || g_strcmp0 (path[npath-2], "xmls") != 0)
+	if (npath < 3 || !(g_strcmp0 (path[npath-2], "xmls") == 0 || g_strcmp0 (path[npath-2], "yaml") == 0))
 		return NULL;
 
 	/* fix the new path */
@@ -542,7 +551,7 @@ gs_appstream_refine_app_updates (GsPlugin *plugin,
 
 /**
  * _gs_utils_locale_has_translations:
- * @locale: A locale, e.g. "en_GB"
+ * @locale: A locale, e.g. `en_GB` or `uz_UZ.utf8@cyrillic`
  *
  * Looks up if the locale is likely to have translations.
  *
@@ -551,28 +560,22 @@ gs_appstream_refine_app_updates (GsPlugin *plugin,
 static gboolean
 _gs_utils_locale_has_translations (const gchar *locale)
 {
-	if (g_strcmp0 (locale, "C") == 0)
+	g_autofree gchar *locale_copy = g_strdup (locale);
+	gchar *separator;
+
+	/* Strip off the codeset and modifier, if present. */
+	separator = strpbrk (locale_copy, ".@");
+	if (separator != NULL)
+		*separator = '\0';
+
+	if (g_strcmp0 (locale_copy, "C") == 0)
 		return FALSE;
-	if (g_strcmp0 (locale, "en") == 0)
+	if (g_strcmp0 (locale_copy, "en") == 0)
 		return FALSE;
-	if (g_strcmp0 (locale, "en_US") == 0)
+	if (g_strcmp0 (locale_copy, "en_US") == 0)
 		return FALSE;
 	return TRUE;
 }
-
-static gchar *
-_gs_utils_get_language_from_locale (const gchar *locale)
-{
-	gchar *separator;
-
-	separator = strpbrk (locale, "._");
-
-	if (separator == NULL)
-		return NULL;
-
-	return g_strndup (locale, separator - locale);
-}
-
 
 static gboolean
 gs_appstream_origin_valid (const gchar *origin)
@@ -601,30 +604,43 @@ gs_appstream_refine_app_content_rating (GsPlugin *plugin,
 	g_autoptr(AsContentRating) cr = as_content_rating_new ();
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GPtrArray) content_attributes = NULL;
+	const gchar *content_rating_kind = NULL;
 
 	/* get kind */
-	as_content_rating_set_kind (cr, xb_node_get_attr (content_rating, "type"));
+	content_rating_kind = xb_node_get_attr (content_rating, "type");
+	/* we only really expect/support OARS 1.0 and 1.1 */
+	if (content_rating_kind == NULL ||
+	    (g_strcmp0 (content_rating_kind, "oars-1.0") != 0 &&
+	     g_strcmp0 (content_rating_kind, "oars-1.1") != 0)) {
+		return TRUE;
+	}
 
-	/* get attributes */
+	as_content_rating_set_kind (cr, content_rating_kind);
+
+	/* get attributes; no attributes being found (i.e.
+	 * `<content_rating type="*"/>`) is OK: it means that all attributes have
+	 * value `none`, as per the
+	 * [OARS semantics](https://github.com/hughsie/oars/blob/master/specification/oars-1.1.md) */
 	content_attributes = xb_node_query (content_rating, "content_attribute", 0, &error_local);
-	if (content_attributes == NULL) {
-		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
-			return TRUE;
-		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT))
-			return TRUE;
+	if (content_attributes == NULL &&
+	    g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
+		g_clear_error (&error_local);
+	} else if (content_attributes == NULL &&
+		 g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT)) {
+		return TRUE;
+	} else if (content_attributes == NULL) {
 		g_propagate_error (error, g_steal_pointer (&error_local));
 		return FALSE;
 	}
-	for (guint i = 0; i < content_attributes->len; i++) {
+
+	for (guint i = 0; content_attributes != NULL && i < content_attributes->len; i++) {
 		XbNode *content_attribute = g_ptr_array_index (content_attributes, i);
 		as_content_rating_add_attribute (cr,
 						 xb_node_get_attr (content_attribute, "id"),
 						 as_content_rating_value_from_string (xb_node_get_text (content_attribute)));
 	}
 
-	/* we only really expect OARS 1.0 and 1.1 */
-	if (g_str_has_prefix (as_content_rating_get_kind (cr), "oars-1."))
-		gs_app_set_content_rating (app, cr);
+	gs_app_set_content_rating (app, cr);
 	return TRUE;
 }
 
@@ -719,6 +735,14 @@ gs_appstream_refine_app (GsPlugin *plugin,
 			gs_app_remove_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	}
 
+	tmp = gs_app_get_metadata_item (app, "GnomeSoftware::quirks::hide-everywhere");
+	if (tmp != NULL) {
+		if (g_strcmp0 (tmp, "true") == 0)
+			gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
+		else if (g_strcmp0 (tmp, "false") == 0)
+			gs_app_remove_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
+	}
+
 	/* set id */
 	tmp = xb_node_query_text (component, "id", NULL);
 	if (tmp != NULL && gs_app_get_id (app) == NULL)
@@ -736,7 +760,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		gs_app_set_scope (app, as_app_scope_from_string (tmp));
 
 	/* set content rating */
-	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING) {
+	if (TRUE) {
 		if (!gs_appstream_refine_app_content_ratings (plugin, app, component, error))
 			return FALSE;
 	}
@@ -823,6 +847,16 @@ gs_appstream_refine_app (GsPlugin *plugin,
 			for (guint i = 0; i < categories->len; i++) {
 				XbNode *category = g_ptr_array_index (categories, i);
 				gs_app_add_category (app, xb_node_get_text (category));
+
+				/* Special case: We used to use the `Blacklisted`
+				 * category to hide apps from their .desktop
+				 * file or appdata. We now use a quirk for that.
+				 * This special case can be removed when all
+				 * appstream files no longer use the `Blacklisted`
+				 * category (including external-appstream files
+				 * put together by distributions). */
+				if (g_strcmp0 (xb_node_get_text (category), "Blacklisted") == 0)
+					gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
 			}
 		}
 	}
@@ -932,14 +966,11 @@ gs_appstream_refine_app (GsPlugin *plugin,
 		} else {
 
 			g_autoptr(GString) xpath = g_string_new (NULL);
-			g_autofree gchar *language = NULL;
+			g_auto(GStrv) variants = g_get_locale_variants (tmp);
 
-			xb_string_append_union (xpath, "languages/lang[text()='%s'][@percentage>50]", tmp);
-
-			language = _gs_utils_get_language_from_locale (tmp);
-			if (language != NULL) {
-				xb_string_append_union (xpath, "languages/lang[text()='%s'][@percentage>50]", language);
-			}
+			/* @variants includes @tmp */
+			for (gsize i = 0; variants[i] != NULL; i++)
+				xb_string_append_union (xpath, "languages/lang[text()='%s'][@percentage>50]", variants[i]);
 
 			if (xb_node_query_text (component, xpath->str, NULL) != NULL)
 				gs_app_add_kudo (app, GS_APP_KUDO_MY_LANGUAGE);
@@ -1513,11 +1544,6 @@ gs_appstream_component_add_extra_info (GsPlugin *plugin, XbBuilderNode *componen
 	case AS_APP_KIND_FONT:
 		gs_appstream_component_add_category (component, "Addon");
 		gs_appstream_component_add_category (component, "Font");
-		break;
-	case AS_APP_KIND_SHELL_EXTENSION:
-		gs_appstream_component_add_category (component, "Addon");
-		gs_appstream_component_add_category (component, "ShellExtension");
-		gs_appstream_component_add_icon (component, "application-x-addon-symbolic");
 		break;
 	case AS_APP_KIND_DRIVER:
 		gs_appstream_component_add_category (component, "Addon");

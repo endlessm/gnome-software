@@ -7,6 +7,7 @@ install_data([
   'featured-dropbox.png',
   'featured-FeedReader.svg',
   'featured-foliate.svg',
+  'featured-foliate-bg.jpg',
   'featured-fondo-bg.jpg',
   'featured-gimp.png',
   'featured-gnome-sudoku.png',
@@ -14,8 +15,8 @@ install_data([
   'featured-inkscape.svg',
   'featured-kdenlive-bg.jpg',
   'featured-klavaro-bg.jpg',
-  'featured-maps.svg',
-  'featured-maps-bg.png',
+  'featured-maps-bg.svg',
+  'featured-maps-overlay.svg',
   'featured-marker-bg.jpg',
   'featured-mypaint.svg',
   'featured-pdf-slicer.svg',
@@ -33,6 +34,8 @@ install_data([
   install_dir : 'share/gnome-software'
 )
 
-install_data('org.gnome.Software.Featured.xml',
-  install_dir : 'share/app-info/xmls'
-)
+if get_option('default_featured_apps')
+  install_data('org.gnome.Software.Featured.xml',
+    install_dir : 'share/app-info/xmls'
+  )
+endif

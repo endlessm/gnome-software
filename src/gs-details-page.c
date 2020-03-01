@@ -15,6 +15,7 @@
 
 #include "gs-common.h"
 #include "gs-content-rating.h"
+#include "gs-utils.h"
 
 #include "gs-details-page.h"
 #include "gs-app-addon-row.h"
@@ -98,6 +99,8 @@ struct _GsDetailsPage
 	GtkWidget		*button_details_license_unknown;
 	GtkWidget		*label_details_license_title;
 	GtkWidget		*box_details_license_value;
+	GtkWidget		*label_details_channel_title;
+	GtkWidget		*label_details_channel_value;
 	GtkWidget		*label_details_origin_title;
 	GtkWidget		*label_details_origin_value;
 	GtkWidget		*label_details_size_installed_title;
@@ -146,6 +149,7 @@ struct _GsDetailsPage
 	GtkWidget		*label_details_rating_title;
 	GtkWidget		*popover_permissions;
 	GtkWidget		*box_permissions_details;
+	GtkWidget		*star_eventbox;
 };
 
 G_DEFINE_TYPE (GsDetailsPage, gs_details_page, GS_TYPE_PAGE)
@@ -378,8 +382,10 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	/* spinner */
 	switch (state) {
 	case AS_APP_STATE_REMOVING:
-		gtk_spinner_start (GTK_SPINNER (self->spinner_remove));
-		gtk_widget_set_visible (self->spinner_remove, TRUE);
+		if (!gtk_widget_get_visible (self->spinner_remove)) {
+			gtk_spinner_start (GTK_SPINNER (self->spinner_remove));
+			gtk_widget_set_visible (self->spinner_remove, TRUE);
+		}
 		/* align text together with the spinner if we're showing it */
 		gtk_widget_set_halign (self->box_progress2, GTK_ALIGN_START);
 		break;
@@ -917,17 +923,9 @@ gs_details_page_refresh_buttons (GsDetailsPage *self)
 		break;
 	}
 
-	if (gs_app_get_kind (self->app) == AS_APP_KIND_SHELL_EXTENSION) {
-		gtk_button_set_label (GTK_BUTTON (self->button_details_launch),
-		                      /* TRANSLATORS: A label for a button to show the settings for
-		                         the selected shell extension. */
-		                      _("Extension Settings"));
-	} else {
-		gtk_button_set_label (GTK_BUTTON (self->button_details_launch),
-		                      /* TRANSLATORS: A label for a button to execute the selected
-		                         application. */
-		                      _("_Launch"));
-	}
+	gtk_button_set_label (GTK_BUTTON (self->button_details_launch),
+			      /* TRANSLATORS: A label for a button to execute the selected application. */
+			      _("_Launch"));
 
 	/* don't show the launch and shortcut buttons if the app doesn't have a desktop ID */
 	if (gs_app_get_id (self->app) == NULL) {
@@ -1158,6 +1156,16 @@ gs_details_page_refresh_all (GsDetailsPage *self)
 		gtk_widget_set_visible (self->button_details_license_free, FALSE);
 		gtk_widget_set_visible (self->button_details_license_nonfree, TRUE);
 		gtk_widget_set_visible (self->button_details_license_unknown, FALSE);
+	}
+
+	/* set channel for snaps */
+	if (gs_app_get_bundle_kind (self->app) == AS_BUNDLE_KIND_SNAP) {
+		gtk_label_set_label (GTK_LABEL (self->label_details_channel_value), gs_app_get_branch (self->app));
+		gtk_widget_set_visible (self->label_details_channel_title, TRUE);
+		gtk_widget_set_visible (self->label_details_channel_value, TRUE);
+	} else {
+		gtk_widget_set_visible (self->label_details_channel_title, FALSE);
+		gtk_widget_set_visible (self->label_details_channel_value, FALSE);
 	}
 
 	/* set version */
@@ -1403,8 +1411,8 @@ list_sort_func (GtkListBoxRow *a,
 	GsApp *a1 = gs_app_addon_row_get_addon (GS_APP_ADDON_ROW (a));
 	GsApp *a2 = gs_app_addon_row_get_addon (GS_APP_ADDON_ROW (b));
 
-	return g_strcmp0 (gs_app_get_name (a1),
-			  gs_app_get_name (a2));
+	return gs_utils_sort_strcmp (gs_app_get_name (a1),
+				     gs_app_get_name (a2));
 }
 
 static void gs_details_page_addon_selected_cb (GsAppAddonRow *row, GParamSpec *pspec, GsDetailsPage *self);
@@ -1546,10 +1554,10 @@ gs_details_page_refresh_reviews (GsDetailsPage *self)
 
 	/* set the star rating */
 	if (show_reviews) {
-		if (gs_app_get_rating (self->app) >= 0) {
-			gs_star_widget_set_rating (GS_STAR_WIDGET (self->star),
-						   gs_app_get_rating (self->app));
-		}
+		gtk_widget_set_sensitive (self->star, gs_app_get_rating (self->app) >= 0);
+		gs_star_widget_set_rating (GS_STAR_WIDGET (self->star),
+					   gs_app_get_rating (self->app));
+
 		review_ratings = gs_app_get_review_ratings (self->app);
 		if (review_ratings != NULL) {
 			gs_review_histogram_set_ratings (GS_REVIEW_HISTOGRAM (self->histogram),
@@ -1622,9 +1630,11 @@ gs_details_page_refresh_reviews (GsDetailsPage *self)
 	gtk_widget_set_visible (self->button_review, show_review_button);
 	if (gs_plugin_loader_get_network_available (self->plugin_loader)) {
 		gtk_widget_set_sensitive (self->button_review, TRUE);
+		gtk_widget_set_sensitive (self->star_eventbox, TRUE);
 		gtk_widget_set_tooltip_text (self->button_review, NULL);
 	} else {
 		gtk_widget_set_sensitive (self->button_review, FALSE);
+		gtk_widget_set_sensitive (self->star_eventbox, FALSE);
 		gtk_widget_set_tooltip_text (self->button_review,
 					     /* TRANSLATORS: we need a remote server to process */
 					     _("You need internet access to write a review"));
@@ -1668,7 +1678,7 @@ gs_details_page_content_rating_set_css (GtkWidget *widget, guint age)
 	}
 	g_string_append_printf (css, "color: %s;\n", color_fg);
 	g_string_append_printf (css, "background-color: %s;\n", color_bg);
-	gs_utils_widget_set_css (widget, css->str);
+	gs_utils_widget_set_css (widget, "content-rating-custom", css->str);
 }
 
 static void
@@ -2015,7 +2025,7 @@ origin_popover_list_sort_func (GtkListBoxRow *a,
 	g_autofree gchar *a1_origin = gs_app_get_origin_ui (a1);
 	g_autofree gchar *a2_origin = gs_app_get_origin_ui (a2);
 
-	return g_strcmp0 (a1_origin, a2_origin);
+	return gs_utils_sort_strcmp (a1_origin, a2_origin);
 }
 
 static void
@@ -2286,59 +2296,73 @@ gs_details_page_content_rating_button_cb (GtkWidget *widget, GsDetailsPage *self
 	AsContentRating *cr;
 	AsContentRatingValue value_bad = AS_CONTENT_RATING_VALUE_NONE;
 	const gchar *tmp;
-	guint i, j;
+	g_autofree const gchar **ids = NULL;
 	g_autoptr(GString) str = g_string_new (NULL);
-	struct {
-		const gchar *ids[5];	/* ordered inside from worst to best */
-	} id_map[] = {
-		{{"violence-bloodshed",
-		  "violence-realistic",
-		  "violence-fantasy",
-		  "violence-cartoon", NULL }},
-		{{"violence-sexual", NULL }},
-		{{"drugs-alcohol", NULL }},
-		{{"drugs-narcotics", NULL }},
-		{{"sex-nudity", NULL }},
-		{{"sex-themes", NULL }},
-		{{"language-profanity", NULL }},
-		{{"language-humor", NULL }},
-		{{"language-discrimination", NULL }},
-		{{"money-advertising", NULL }},
-		{{"money-gambling", NULL }},
-		{{"money-purchasing", NULL }},
-		{{"social-audio",
-		  "social-chat",
-		  "social-contacts",
-		  "social-info", NULL }},
-		{{"social-location", NULL }},
-		{{ NULL }}
+
+	/* Ordered from worst to best */
+	const gchar *violence_group[] = {
+		"violence-bloodshed",
+		"violence-realistic",
+		"violence-fantasy",
+		"violence-cartoon",
+		NULL
+	};
+	const gchar *social_group[] = {
+		"social-audio",
+		"social-chat",
+		"social-contacts",
+		"social-info",
+		NULL
 	};
 
-	/* get the worst thing */
 	cr = gs_app_get_content_rating (self->app);
 	if (cr == NULL)
 		return;
-	for (j = 0; id_map[j].ids[0] != NULL; j++) {
-		for (i = 0; id_map[j].ids[i] != NULL; i++) {
+
+	ids = gs_content_rating_get_all_rating_ids ();
+
+	/* get the worst thing */
+	for (gsize i = 0; ids[i] != NULL; i++) {
+		AsContentRatingValue value;
+		value = as_content_rating_get_value (cr, ids[i]);
+		if (value > value_bad)
+			value_bad = value;
+	}
+
+	/* get the content rating description for the worst things about the app;
+	 * handle the groups separately*/
+	for (gsize i = 0; ids[i] != NULL; i++) {
+		if (!g_strv_contains (violence_group, ids[i]) &&
+		    !g_strv_contains (social_group, ids[i])) {
 			AsContentRatingValue value;
-			value = as_content_rating_get_value (cr, id_map[j].ids[i]);
-			if (value > value_bad)
-				value_bad = value;
+			value = as_content_rating_get_value (cr, ids[i]);
+			if (value < value_bad)
+				continue;
+			tmp = gs_content_rating_key_value_to_str (ids[i], value);
+			g_string_append_printf (str, "• %s\n", tmp);
 		}
 	}
 
-	/* get the content rating description for the worst things about the app */
-	for (j = 0; id_map[j].ids[0] != NULL; j++) {
-		for (i = 0; id_map[j].ids[i] != NULL; i++) {
-			AsContentRatingValue value;
-			value = as_content_rating_get_value (cr, id_map[j].ids[i]);
-			if (value < value_bad)
-				continue;
-			tmp = gs_content_rating_key_value_to_str (id_map[j].ids[i], value);
-			g_string_append_printf (str, "• %s\n", tmp);
-			break;
-		}
+	for (gsize i = 0; violence_group[i] != NULL; i++) {
+		AsContentRatingValue value;
+		value = as_content_rating_get_value (cr, violence_group[i]);
+		if (value < value_bad)
+			continue;
+		tmp = gs_content_rating_key_value_to_str (violence_group[i], value);
+		g_string_append_printf (str, "• %s\n", tmp);
+		break;
 	}
+
+	for (gsize i = 0; social_group[i] != NULL; i++) {
+		AsContentRatingValue value;
+		value = as_content_rating_get_value (cr, social_group[i]);
+		if (value < value_bad)
+			continue;
+		tmp = gs_content_rating_key_value_to_str (social_group[i], value);
+		g_string_append_printf (str, "• %s\n", tmp);
+		break;
+	}
+
 	if (str->len > 0)
 		g_string_truncate (str, str->len - 1);
 
@@ -2516,6 +2540,12 @@ gs_details_page_network_available_notify_cb (GsPluginLoader *plugin_loader,
 	gs_details_page_refresh_reviews (self);
 }
 
+static void
+gs_details_page_star_pressed_cb(GtkWidget *widget, GdkEventButton *event, GsDetailsPage *self)
+{
+	gs_details_page_write_review_cb(GTK_BUTTON (self->button_review), self);
+}
+
 static gboolean
 gs_details_page_setup (GsPage *page,
                        GsShell *shell,
@@ -2542,6 +2572,9 @@ gs_details_page_setup (GsPage *page,
 						       "gs_plugin_review_submit");
 	g_signal_connect (self->button_review, "clicked",
 			  G_CALLBACK (gs_details_page_write_review_cb),
+			  self);
+	g_signal_connect (self->star_eventbox, "button-press-event",
+			  G_CALLBACK (gs_details_page_star_pressed_cb),
 			  self);
 
 	/* hide some UI when offline */
@@ -2698,6 +2731,8 @@ gs_details_page_class_init (GsDetailsPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, button_details_license_unknown);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_license_title);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_details_license_value);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_channel_title);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_channel_value);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_origin_title);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_origin_value);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_size_download_title);
@@ -2746,6 +2781,7 @@ gs_details_page_class_init (GsDetailsPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, label_details_rating_title);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, popover_permissions);
 	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, box_permissions_details);
+	gtk_widget_class_bind_template_child (widget_class, GsDetailsPage, star_eventbox);
 }
 
 static void

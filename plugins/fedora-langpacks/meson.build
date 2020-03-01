@@ -1,7 +1,7 @@
 cargs = ['-DG_LOG_DOMAIN="GsPluginFedoraLangpacks"']
 
 shared_module(
-  'gs_plugin_fedora_langpacks',
+  'gs_plugin_fedora-langpacks',
   sources : 'gs-plugin-fedora-langpacks.c',
   include_directories : [
     include_directories('../..'),
@@ -36,5 +36,5 @@ if get_option('tests')
     ],
     c_args : cargs,
   )
-  test('gs-self-test-fedora-langpacks', e, env: test_env)
+  test('gs-self-test-fedora-langpacks', e, suite: ['plugins', 'fedora-langpacks'], env: test_env)
 endif

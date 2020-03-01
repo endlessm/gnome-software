@@ -115,6 +115,7 @@ typedef struct
 	GCancellable		*cancellable;
 	GsPluginAction		 pending_action;
 	GsAppPermissions         permissions;
+	gboolean		 is_update_downloaded;
 } GsAppPrivate;
 
 enum {
@@ -133,8 +134,11 @@ enum {
 	PROP_QUIRK,
 	PROP_PENDING_ACTION,
 	PROP_KEY_COLORS,
+	PROP_IS_UPDATE_DOWNLOADED,
 	PROP_LAST
 };
+
+static GParamSpec *obj_props[PROP_LAST] = { NULL, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsApp, gs_app, G_TYPE_OBJECT)
 
@@ -213,39 +217,46 @@ gs_app_kv_printf (GString *str, const gchar *key, const gchar *fmt, ...)
 static const gchar *
 _as_app_quirk_flag_to_string (GsAppQuirk quirk)
 {
-	if (quirk == GS_APP_QUIRK_PROVENANCE)
+	switch (quirk) {
+	case GS_APP_QUIRK_PROVENANCE:
 		return "provenance";
-	if (quirk == GS_APP_QUIRK_COMPULSORY)
+	case GS_APP_QUIRK_COMPULSORY:
 		return "compulsory";
-	if (quirk == GS_APP_QUIRK_HAS_SOURCE)
+	case GS_APP_QUIRK_HAS_SOURCE:
 		return "has-source";
-	if (quirk == GS_APP_QUIRK_IS_WILDCARD)
+	case GS_APP_QUIRK_IS_WILDCARD:
 		return "is-wildcard";
-	if (quirk == GS_APP_QUIRK_NEEDS_REBOOT)
+	case GS_APP_QUIRK_NEEDS_REBOOT:
 		return "needs-reboot";
-	if (quirk == GS_APP_QUIRK_NOT_REVIEWABLE)
+	case GS_APP_QUIRK_NOT_REVIEWABLE:
 		return "not-reviewable";
-	if (quirk == GS_APP_QUIRK_HAS_SHORTCUT)
+	case GS_APP_QUIRK_HAS_SHORTCUT:
 		return "has-shortcut";
-	if (quirk == GS_APP_QUIRK_NOT_LAUNCHABLE)
+	case GS_APP_QUIRK_NOT_LAUNCHABLE:
 		return "not-launchable";
-	if (quirk == GS_APP_QUIRK_NEEDS_USER_ACTION)
+	case GS_APP_QUIRK_NEEDS_USER_ACTION:
 		return "needs-user-action";
-	if (quirk == GS_APP_QUIRK_IS_PROXY)
+	case GS_APP_QUIRK_IS_PROXY:
 		return "is-proxy";
-	if (quirk == GS_APP_QUIRK_REMOVABLE_HARDWARE)
+	case GS_APP_QUIRK_REMOVABLE_HARDWARE:
 		return "removable-hardware";
-	if (quirk == GS_APP_QUIRK_DEVELOPER_VERIFIED)
+	case GS_APP_QUIRK_DEVELOPER_VERIFIED:
 		return "developer-verified";
-	if (quirk == GS_APP_QUIRK_PARENTAL_FILTER)
+	case GS_APP_QUIRK_PARENTAL_FILTER:
 		return "parental-filter";
-	if (quirk == GS_APP_QUIRK_NEW_PERMISSIONS)
+	case GS_APP_QUIRK_NEW_PERMISSIONS:
 		return "new-permissions";
-	if (quirk == GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE)
+	case GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE:
 		return "parental-not-launchable";
-	if (quirk == GS_APP_QUIRK_HIDE_FROM_SEARCH)
+	case GS_APP_QUIRK_HIDE_FROM_SEARCH:
 		return "hide-from-search";
-	return NULL;
+	case GS_APP_QUIRK_HIDE_EVERYWHERE:
+		return "hide-everywhere";
+	case GS_APP_QUIRK_DO_NOT_AUTO_UPDATE:
+		return "do-not-auto-update";
+	default:
+		return NULL;
+	}
 }
 
 /* mutex must be held */
@@ -650,7 +661,7 @@ gs_app_to_string_append (GsApp *app, GString *str)
 
 typedef struct {
 	GsApp *app;
-	gchar *property_name;
+	GParamSpec *pspec;
 } AppNotifyData;
 
 static gboolean
@@ -658,24 +669,22 @@ notify_idle_cb (gpointer data)
 {
 	AppNotifyData *notify_data = data;
 
-	g_object_notify (G_OBJECT (notify_data->app),
-			 notify_data->property_name);
+	g_object_notify_by_pspec (G_OBJECT (notify_data->app), notify_data->pspec);
 
 	g_object_unref (notify_data->app);
-	g_free (notify_data->property_name);
 	g_free (notify_data);
 
 	return G_SOURCE_REMOVE;
 }
 
 static void
-gs_app_queue_notify (GsApp *app, const gchar *property_name)
+gs_app_queue_notify (GsApp *app, GParamSpec *pspec)
 {
 	AppNotifyData *notify_data;
 
 	notify_data = g_new (AppNotifyData, 1);
 	notify_data->app = g_object_ref (app);
-	notify_data->property_name = g_strdup (property_name);
+	notify_data->pspec = pspec;
 
 	g_idle_add (notify_idle_cb, notify_data);
 }
@@ -886,7 +895,7 @@ gs_app_set_state_recover (GsApp *app)
 	gs_app_set_progress (app, 0);
 
 	priv->state = priv->state_recover;
-	gs_app_queue_notify (app, "state");
+	gs_app_queue_notify (app, obj_props[PROP_STATE]);
 }
 
 /* mutex must be held */
@@ -1040,7 +1049,7 @@ gs_app_set_progress (GsApp *app, guint percentage)
 		percentage = 100;
 	}
 	priv->progress = percentage;
-	gs_app_queue_notify (app, "progress");
+	gs_app_queue_notify (app, obj_props[PROP_PROGRESS]);
 }
 
 /**
@@ -1064,7 +1073,7 @@ gs_app_set_allow_cancel (GsApp *app, gboolean allow_cancel)
 	if (priv->allow_cancel == allow_cancel)
 		return;
 	priv->allow_cancel = allow_cancel;
-	gs_app_queue_notify (app, "allow-cancel");
+	gs_app_queue_notify (app, obj_props[PROP_CAN_CANCEL_INSTALLATION]);
 }
 
 static void
@@ -1076,7 +1085,7 @@ gs_app_set_pending_action_internal (GsApp *app,
 		return;
 
 	priv->pending_action = action;
-	gs_app_queue_notify (app, "pending-action");
+	gs_app_queue_notify (app, obj_props[PROP_PENDING_ACTION]);
 }
 
 /**
@@ -1121,7 +1130,7 @@ gs_app_set_state (GsApp *app, AsAppState state)
 			action = GS_PLUGIN_ACTION_INSTALL;
 		gs_app_set_pending_action_internal (app, action);
 
-		gs_app_queue_notify (app, "state");
+		gs_app_queue_notify (app, obj_props[PROP_STATE]);
 	}
 }
 
@@ -1213,7 +1222,7 @@ gs_app_set_kind (GsApp *app, AsAppKind kind)
 	}
 
 	priv->kind = kind;
-	gs_app_queue_notify (app, "kind");
+	gs_app_queue_notify (app, obj_props[PROP_KIND]);
 
 	/* no longer valid */
 	priv->unique_id_valid = FALSE;
@@ -1309,7 +1318,7 @@ gs_app_set_name (GsApp *app, GsAppQuality quality, const gchar *name)
 		return;
 	priv->name_quality = quality;
 	if (_g_set_str (&priv->name, name))
-		g_object_notify (G_OBJECT (app), "name");
+		g_object_notify_by_pspec (G_OBJECT (app), obj_props[PROP_NAME]);
 }
 
 /**
@@ -1970,7 +1979,7 @@ gs_app_ui_versions_populate (GsApp *app)
 		priv->version_ui = gs_app_get_ui_version (priv->version, flags[i]);
 		priv->update_version_ui = gs_app_get_ui_version (priv->update_version, flags[i]);
 		if (g_strcmp0 (priv->version_ui, priv->update_version_ui) != 0) {
-			gs_app_queue_notify (app, "version");
+			gs_app_queue_notify (app, obj_props[PROP_VERSION]);
 			return;
 		}
 		gs_app_ui_versions_invalidate (app);
@@ -2045,7 +2054,7 @@ gs_app_set_version (GsApp *app, const gchar *version)
 
 	if (_g_set_str (&priv->version, version)) {
 		gs_app_ui_versions_invalidate (app);
-		gs_app_queue_notify (app, "version");
+		gs_app_queue_notify (app, obj_props[PROP_VERSION]);
 	}
 }
 
@@ -2091,7 +2100,7 @@ gs_app_set_summary (GsApp *app, GsAppQuality quality, const gchar *summary)
 		return;
 	priv->summary_quality = quality;
 	if (_g_set_str (&priv->summary, summary))
-		g_object_notify (G_OBJECT (app), "summary");
+		g_object_notify_by_pspec (G_OBJECT (app), obj_props[PROP_SUMMARY]);
 }
 
 /**
@@ -2676,7 +2685,7 @@ gs_app_set_update_version (GsApp *app, const gchar *update_version)
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
 	gs_app_set_update_version_internal (app, update_version);
-	gs_app_queue_notify (app, "version");
+	gs_app_queue_notify (app, obj_props[PROP_VERSION]);
 }
 
 /**
@@ -2863,7 +2872,7 @@ gs_app_set_rating (GsApp *app, gint rating)
 	if (rating == priv->rating)
 		return;
 	priv->rating = rating;
-	gs_app_queue_notify (app, "rating");
+	gs_app_queue_notify (app, obj_props[PROP_RATING]);
 }
 
 /**
@@ -3574,6 +3583,42 @@ gs_app_remove_category (GsApp *app, const gchar *category)
 }
 
 /**
+ * gs_app_set_is_update_downloaded:
+ * @app: a #GsApp
+ * @is_update_downloaded: Whether a new update is already downloaded locally
+ *
+ * Sets if the new update is already downloaded for the app.
+ *
+ * Since: 3.36
+ **/
+void
+gs_app_set_is_update_downloaded (GsApp *app, gboolean is_update_downloaded)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_if_fail (GS_IS_APP (app));
+	priv->is_update_downloaded = is_update_downloaded;
+}
+
+/**
+ * gs_app_get_is_update_downloaded:
+ * @app: a #GsApp
+ *
+ * Gets if the new update is already downloaded for the app and
+ * is locally available.
+ *
+ * Returns: (element-type gboolean): Whether a new update for the #GsApp is already downloaded.
+ *
+ * Since: 3.36
+ **/
+gboolean
+gs_app_get_is_update_downloaded (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), FALSE);
+	return priv->is_update_downloaded;
+}
+
+/**
  * gs_app_get_key_colors:
  * @app: a #GsApp
  *
@@ -3609,7 +3654,7 @@ gs_app_set_key_colors (GsApp *app, GPtrArray *key_colors)
 	g_return_if_fail (key_colors != NULL);
 	locker = g_mutex_locker_new (&priv->mutex);
 	if (_g_set_ptr_array (&priv->key_colors, key_colors))
-		gs_app_queue_notify (app, "key-colors");
+		gs_app_queue_notify (app, obj_props[PROP_KEY_COLORS]);
 }
 
 /**
@@ -3628,7 +3673,7 @@ gs_app_add_key_color (GsApp *app, GdkRGBA *key_color)
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_color != NULL);
 	g_ptr_array_add (priv->key_colors, gdk_rgba_copy (key_color));
-	gs_app_queue_notify (app, "key-colors");
+	gs_app_queue_notify (app, obj_props[PROP_KEY_COLORS]);
 }
 
 /**
@@ -3841,7 +3886,7 @@ gs_app_add_quirk (GsApp *app, GsAppQuirk quirk)
 
 	locker = g_mutex_locker_new (&priv->mutex);
 	priv->quirk |= quirk;
-	gs_app_queue_notify (app, "quirk");
+	gs_app_queue_notify (app, obj_props[PROP_QUIRK]);
 }
 
 /**
@@ -3866,7 +3911,7 @@ gs_app_remove_quirk (GsApp *app, GsAppQuirk quirk)
 
 	locker = g_mutex_locker_new (&priv->mutex);
 	priv->quirk &= ~quirk;
-	gs_app_queue_notify (app, "quirk");
+	gs_app_queue_notify (app, obj_props[PROP_QUIRK]);
 }
 
 /**
@@ -4053,6 +4098,9 @@ gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *
 	case PROP_KEY_COLORS:
 		g_value_set_boxed (value, priv->key_colors);
 		break;
+	case PROP_IS_UPDATE_DOWNLOADED:
+		g_value_set_boolean (value, priv->is_update_downloaded);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -4110,6 +4158,9 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 		break;
 	case PROP_KEY_COLORS:
 		gs_app_set_key_colors (app, g_value_get_boxed (value));
+		break;
+	case PROP_IS_UPDATE_DOWNLOADED:
+		gs_app_set_is_update_downloaded (app, g_value_get_boolean (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4186,7 +4237,6 @@ gs_app_finalize (GObject *object)
 static void
 gs_app_class_init (GsAppClass *klass)
 {
-	GParamSpec *pspec;
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	object_class->dispose = gs_app_dispose;
 	object_class->finalize = gs_app_finalize;
@@ -4196,115 +4246,112 @@ gs_app_class_init (GsAppClass *klass)
 	/**
 	 * GsApp:id:
 	 */
-	pspec = g_param_spec_string ("id", NULL, NULL,
+	obj_props[PROP_ID] = g_param_spec_string ("id", NULL, NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_ID, pspec);
 
 	/**
 	 * GsApp:name:
 	 */
-	pspec = g_param_spec_string ("name", NULL, NULL,
+	obj_props[PROP_NAME] = g_param_spec_string ("name", NULL, NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_NAME, pspec);
 
 	/**
 	 * GsApp:version:
 	 */
-	pspec = g_param_spec_string ("version", NULL, NULL,
+	obj_props[PROP_VERSION] = g_param_spec_string ("version", NULL, NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_VERSION, pspec);
 
 	/**
 	 * GsApp:summary:
 	 */
-	pspec = g_param_spec_string ("summary", NULL, NULL,
+	obj_props[PROP_SUMMARY] = g_param_spec_string ("summary", NULL, NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_SUMMARY, pspec);
 
 	/**
 	 * GsApp:description:
 	 */
-	pspec = g_param_spec_string ("description", NULL, NULL,
+	obj_props[PROP_DESCRIPTION] = g_param_spec_string ("description", NULL, NULL,
 				     NULL,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_DESCRIPTION, pspec);
 
 	/**
 	 * GsApp:rating:
 	 */
-	pspec = g_param_spec_int ("rating", NULL, NULL,
+	obj_props[PROP_RATING] = g_param_spec_int ("rating", NULL, NULL,
 				  -1, 100, -1,
 				  G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_RATING, pspec);
 
 	/**
 	 * GsApp:kind:
 	 */
-	pspec = g_param_spec_uint ("kind", NULL, NULL,
+	obj_props[PROP_KIND] = g_param_spec_uint ("kind", NULL, NULL,
 				   AS_APP_KIND_UNKNOWN,
 				   AS_APP_KIND_LAST,
 				   AS_APP_KIND_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_KIND, pspec);
 
 	/**
 	 * GsApp:state:
 	 */
-	pspec = g_param_spec_uint ("state", NULL, NULL,
+	obj_props[PROP_STATE] = g_param_spec_uint ("state", NULL, NULL,
 				   AS_APP_STATE_UNKNOWN,
 				   AS_APP_STATE_LAST,
 				   AS_APP_STATE_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
 	/**
 	 * GsApp:progress:
 	 */
-	pspec = g_param_spec_uint ("progress", NULL, NULL, 0, 100, 0,
+	obj_props[PROP_PROGRESS] = g_param_spec_uint ("progress", NULL, NULL,
+				   0, 100, 0,
 				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_PROGRESS, pspec);
 
 	/**
 	 * GsApp:allow-cancel:
 	 */
-	pspec = g_param_spec_boolean ("allow-cancel", NULL, NULL, TRUE,
+	obj_props[PROP_CAN_CANCEL_INSTALLATION] =
+		g_param_spec_boolean ("allow-cancel", NULL, NULL, TRUE,
 				      G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_CAN_CANCEL_INSTALLATION, pspec);
 
 	/**
 	 * GsApp:install-date:
 	 */
-	pspec = g_param_spec_uint64 ("install-date", NULL, NULL,
+	obj_props[PROP_INSTALL_DATE] = g_param_spec_uint64 ("install-date", NULL, NULL,
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_INSTALL_DATE, pspec);
 
 	/**
 	 * GsApp:quirk:
 	 */
-	pspec = g_param_spec_uint64 ("quirk", NULL, NULL,
+	obj_props[PROP_QUIRK] = g_param_spec_uint64 ("quirk", NULL, NULL,
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
-	g_object_class_install_property (object_class, PROP_QUIRK, pspec);
 
 	/**
 	 * GsApp:pending-action:
 	 */
-	pspec = g_param_spec_uint64 ("pending-action", NULL, NULL,
+	obj_props[PROP_PENDING_ACTION] = g_param_spec_uint64 ("pending-action", NULL, NULL,
 				     0, G_MAXUINT64, 0,
 				     G_PARAM_READABLE);
-	g_object_class_install_property (object_class, PROP_PENDING_ACTION, pspec);
 
 	/**
 	 * GsApp:key-colors:
 	 */
-	pspec = g_param_spec_boxed ("key-colors", NULL, NULL,
+	obj_props[PROP_KEY_COLORS] = g_param_spec_boxed ("key-colors", NULL, NULL,
 				    G_TYPE_PTR_ARRAY, G_PARAM_READWRITE);
-	g_object_class_install_property (object_class, PROP_KEY_COLORS, pspec);
+
+	/**
+	 * GsApp:is-update-downloaded:
+	 */
+	obj_props[PROP_IS_UPDATE_DOWNLOADED] = g_param_spec_boolean ("is-update-downloaded", NULL, NULL,
+					       FALSE,
+					       G_PARAM_READWRITE);
+
+	g_object_class_install_properties (object_class, PROP_LAST, obj_props);
 }
 
 static void

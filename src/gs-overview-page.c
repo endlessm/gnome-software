@@ -45,6 +45,7 @@ typedef struct
 
 	GtkWidget		*infobar_third_party;
 	GtkWidget		*label_third_party;
+	GtkWidget		*overlay;
 	GtkWidget		*stack_featured;
 	GtkWidget		*button_featured_back;
 	GtkWidget		*button_featured_forwards;
@@ -52,7 +53,6 @@ typedef struct
 	GtkWidget		*box_popular;
 	GtkWidget		*box_popular_rotating;
 	GtkWidget		*box_recent;
-	GtkWidget		*featured_heading;
 	GtkWidget		*category_heading;
 	GtkWidget		*flowbox_categories;
 	GtkWidget		*popular_heading;
@@ -455,8 +455,10 @@ gs_overview_page_get_featured_cb (GObject *source_object,
 		priv->featured_rotate_timer_id = 0;
 	}
 
-	gtk_widget_hide (priv->featured_heading);
 	gs_container_remove_all (GTK_CONTAINER (priv->stack_featured));
+	gtk_widget_set_visible (priv->overlay, gs_app_list_length (list) > 0);
+	gtk_widget_set_visible (priv->button_featured_back, gs_app_list_length (list) > 1);
+	gtk_widget_set_visible (priv->button_featured_forwards, gs_app_list_length (list) > 1);
 	if (list == NULL) {
 		g_warning ("failed to get featured apps: %s",
 			   error->message);
@@ -481,7 +483,6 @@ gs_overview_page_get_featured_cb (GObject *source_object,
 				  G_CALLBACK (app_tile_clicked), self);
 		gtk_container_add (GTK_CONTAINER (priv->stack_featured), tile);
 	}
-	gtk_widget_show (priv->featured_heading);
 
 	priv->empty = FALSE;
 	featured_reset_rotate_timer (self);
@@ -533,7 +534,6 @@ gs_overview_page_get_categories_cb (GObject *source_object,
 		tile = gs_category_tile_new (cat);
 		g_signal_connect (tile, "clicked",
 				  G_CALLBACK (category_tile_clicked), self);
-		gs_category_tile_set_colorful (GS_CATEGORY_TILE (tile), TRUE);
 		flowbox = GTK_FLOW_BOX (priv->flowbox_categories);
 		gtk_flow_box_insert (flowbox, tile, -1);
 		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
@@ -1037,6 +1037,7 @@ gs_overview_page_class_init (GsOverviewPageClass *klass)
 
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, infobar_third_party);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, label_third_party);
+	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, overlay);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, stack_featured);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, button_featured_back);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, button_featured_forwards);
@@ -1045,7 +1046,6 @@ gs_overview_page_class_init (GsOverviewPageClass *klass)
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, box_popular_rotating);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, box_recent);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, category_heading);
-	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, featured_heading);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, flowbox_categories);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, popular_heading);
 	gtk_widget_class_bind_template_child_private (widget_class, GsOverviewPage, recent_heading);

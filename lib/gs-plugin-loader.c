@@ -59,6 +59,8 @@ typedef struct
 
 	GNetworkMonitor		*network_monitor;
 	gulong			 network_changed_handler;
+	gulong			 network_available_notify_handler;
+	gulong			 network_metered_notify_handler;
 } GsPluginLoaderPrivate;
 
 static void gs_plugin_loader_monitor_network (GsPluginLoader *plugin_loader);
@@ -80,6 +82,7 @@ enum {
 	PROP_EVENTS,
 	PROP_ALLOW_UPDATES,
 	PROP_NETWORK_AVAILABLE,
+	PROP_NETWORK_METERED,
 	PROP_LAST
 };
 
@@ -274,14 +277,7 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(GsPluginLoaderHelper, gs_plugin_loader_helper_free
 static gint
 gs_plugin_loader_app_sort_name_cb (GsApp *app1, GsApp *app2, gpointer user_data)
 {
-	g_autofree gchar *casefolded_name1 = NULL;
-	g_autofree gchar *casefolded_name2 = NULL;
-
-	if (gs_app_get_name (app1) != NULL)
-		casefolded_name1 = g_utf8_casefold (gs_app_get_name (app1), -1);
-	if (gs_app_get_name (app2) != NULL)
-		casefolded_name2 = g_utf8_casefold (gs_app_get_name (app2), -1);
-	return g_strcmp0 (casefolded_name1, casefolded_name2);
+	return gs_utils_sort_strcmp (gs_app_get_name (app1), gs_app_get_name (app2));
 }
 
 GsPlugin *
@@ -391,7 +387,8 @@ gs_plugin_error_handle_failure (GsPluginLoaderHelper *helper,
 	}
 
 	/* this is only ever informational */
-	if (g_error_matches (error_local, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+	if (g_error_matches (error_local, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+	    g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 		g_debug ("ignoring error cancelled: %s", error_local->message);
 		return TRUE;
 	}
@@ -1204,7 +1201,7 @@ gs_plugin_loader_app_is_valid (GsApp *app, gpointer user_data)
 	}
 
 	/* don't show blacklisted apps */
-	if (gs_app_has_category (app, "Blacklisted")) {
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE)) {
 		g_debug ("app invalid as blacklisted %s",
 			 gs_plugin_loader_get_app_str (app));
 		return FALSE;
@@ -1470,8 +1467,8 @@ gs_plugin_loader_category_sort_cb (gconstpointer a, gconstpointer b)
 		return 1;
 	if (gs_category_get_score (cata) > gs_category_get_score (catb))
 		return -1;
-	return g_strcmp0 (gs_category_get_name (cata),
-			  gs_category_get_name (catb));
+	return gs_utils_sort_strcmp (gs_category_get_name (cata),
+				     gs_category_get_name (catb));
 }
 
 static void
@@ -2572,6 +2569,9 @@ gs_plugin_loader_get_property (GObject *object, guint prop_id,
 	case PROP_NETWORK_AVAILABLE:
 		g_value_set_boolean (value, gs_plugin_loader_get_network_available (plugin_loader));
 		break;
+	case PROP_NETWORK_METERED:
+		g_value_set_boolean (value, gs_plugin_loader_get_network_metered (plugin_loader));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -2611,6 +2611,16 @@ gs_plugin_loader_dispose (GObject *object)
 		g_signal_handler_disconnect (priv->network_monitor,
 					     priv->network_changed_handler);
 		priv->network_changed_handler = 0;
+	}
+	if (priv->network_available_notify_handler != 0) {
+		g_signal_handler_disconnect (priv->network_monitor,
+					     priv->network_available_notify_handler);
+		priv->network_available_notify_handler = 0;
+	}
+	if (priv->network_metered_notify_handler != 0) {
+		g_signal_handler_disconnect (priv->network_monitor,
+					     priv->network_metered_notify_handler);
+		priv->network_metered_notify_handler = 0;
 	}
 	if (priv->queued_ops_pool != NULL) {
 		/* stop accepting more requests and wait until any currently
@@ -2671,6 +2681,11 @@ gs_plugin_loader_class_init (GsPluginLoaderClass *klass)
 				      FALSE,
 				      G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_NETWORK_AVAILABLE, pspec);
+
+	pspec = g_param_spec_boolean ("network-metered", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READABLE);
+	g_object_class_install_property (object_class, PROP_NETWORK_METERED, pspec);
 
 	signals [SIGNAL_STATUS_CHANGED] =
 		g_signal_new ("status-changed",
@@ -2759,30 +2774,27 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 							    SOUP_SESSION_TIMEOUT, 10,
 							    NULL);
 
-	/* get the locale without the various UTF-8 suffixes */
+	/* get the locale */
 	tmp = g_getenv ("GS_SELF_TEST_LOCALE");
 	if (tmp != NULL) {
 		g_debug ("using self test locale of %s", tmp);
 		priv->locale = g_strdup (tmp);
 	} else {
 		priv->locale = g_strdup (setlocale (LC_MESSAGES, NULL));
-		match = g_strstr_len (priv->locale, -1, ".UTF-8");
-		if (match != NULL)
-			*match = '\0';
-		match = g_strstr_len (priv->locale, -1, ".utf8");
-		if (match != NULL)
-			*match = '\0';
 	}
 
 	/* the settings key sets the initial override */
 	priv->disallow_updates = g_hash_table_new (g_direct_hash, g_direct_equal);
 	gs_plugin_loader_allow_updates_recheck (plugin_loader);
 
-	/* get the language from the locale */
+	/* get the language from the locale (i.e. strip the territory, codeset
+	 * and modifier) */
 	priv->language = g_strdup (priv->locale);
-	match = g_strrstr (priv->language, "_");
+	match = strpbrk (priv->language, "._@");
 	if (match != NULL)
 		*match = '\0';
+
+	g_debug ("Using locale = %s, language = %s", priv->locale, priv->language);
 
 	g_mutex_init (&priv->pending_apps_mutex);
 	g_mutex_init (&priv->events_by_id_mutex);
@@ -2871,6 +2883,7 @@ gs_plugin_loader_network_changed_cb (GNetworkMonitor *monitor,
 		 metered ? "metered" : "unmetered");
 
 	g_object_notify (G_OBJECT (plugin_loader), "network-available");
+	g_object_notify (G_OBJECT (plugin_loader), "network-metered");
 
 	if (available && !metered) {
 		g_autoptr(GsAppList) queue = NULL;
@@ -2897,6 +2910,28 @@ gs_plugin_loader_network_changed_cb (GNetworkMonitor *monitor,
 }
 
 static void
+gs_plugin_loader_network_available_notify_cb (GObject    *obj,
+					      GParamSpec *pspec,
+					      gpointer    user_data)
+{
+	GNetworkMonitor *monitor = G_NETWORK_MONITOR (obj);
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (user_data);
+
+	gs_plugin_loader_network_changed_cb (monitor, g_network_monitor_get_network_available (monitor), plugin_loader);
+}
+
+static void
+gs_plugin_loader_network_metered_notify_cb (GObject    *obj,
+					    GParamSpec *pspec,
+					    gpointer    user_data)
+{
+	GNetworkMonitor *monitor = G_NETWORK_MONITOR (obj);
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (user_data);
+
+	gs_plugin_loader_network_changed_cb (monitor, g_network_monitor_get_network_available (monitor), plugin_loader);
+}
+
+static void
 gs_plugin_loader_monitor_network (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
@@ -2910,6 +2945,12 @@ gs_plugin_loader_monitor_network (GsPluginLoader *plugin_loader)
 	priv->network_changed_handler =
 		g_signal_connect (priv->network_monitor, "network-changed",
 				  G_CALLBACK (gs_plugin_loader_network_changed_cb), plugin_loader);
+	priv->network_available_notify_handler =
+		g_signal_connect (priv->network_monitor, "notify::network-available",
+				  G_CALLBACK (gs_plugin_loader_network_available_notify_cb), plugin_loader);
+	priv->network_metered_notify_handler =
+		g_signal_connect (priv->network_monitor, "notify::network-metered",
+				  G_CALLBACK (gs_plugin_loader_network_metered_notify_cb), plugin_loader);
 
 	gs_plugin_loader_network_changed_cb (priv->network_monitor,
 			    g_network_monitor_get_network_available (priv->network_monitor),

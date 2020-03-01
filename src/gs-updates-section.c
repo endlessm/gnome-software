@@ -18,6 +18,7 @@
 #include "gs-progress-button.h"
 #include "gs-update-dialog.h"
 #include "gs-updates-section.h"
+#include "gs-utils.h"
 
 struct _GsUpdatesSection
 {
@@ -131,6 +132,7 @@ static gchar *
 _get_app_sort_key (GsApp *app)
 {
 	GString *key;
+	g_autofree gchar *sort_name = NULL;
 
 	key = g_string_sized_new (64);
 
@@ -169,7 +171,9 @@ _get_app_sort_key (GsApp *app)
 	}
 
 	/* finally, sort by short name */
-	g_string_append (key, gs_app_get_name (app));
+	sort_name = gs_utils_sort_key (gs_app_get_name (app));
+	g_string_append (key, sort_name);
+
 	return g_string_free (key, FALSE);
 }
 
@@ -489,9 +493,9 @@ _list_header_func (GtkListBoxRow *row, GtkListBoxRow *before, gpointer user_data
 
 	/* section changed */
 	if (before == NULL) {
-		GtkWidget *parent;
-		if ((parent = gtk_widget_get_parent (GTK_WIDGET (self->section_header))) != NULL)
-			gtk_container_remove (GTK_CONTAINER (parent), GTK_WIDGET (self->section_header));
+		if (gtk_list_box_row_get_header (row) != self->section_header) {
+			gtk_widget_unparent (self->section_header);
+		}
 		header = self->section_header;
 	} else {
 		header = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);

@@ -164,36 +164,37 @@ gs_plugin_refresh (GsPlugin *plugin,
 		   GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autofree gchar *fn = NULL;
+	g_autofree gchar *cache_filename = NULL;
 	g_autofree gchar *uri = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GsApp) app_dl = gs_app_new (gs_plugin_get_name (plugin));
 
 	/* check cache age */
-	fn = gs_utils_get_cache_filename ("odrs",
-					  "ratings.json",
-					  GS_UTILS_CACHE_FLAG_WRITEABLE,
-					  error);
-	if (fn == NULL)
+	cache_filename = gs_utils_get_cache_filename ("odrs",
+						      "ratings.json",
+						      GS_UTILS_CACHE_FLAG_WRITEABLE,
+						      error);
+	if (cache_filename == NULL)
 		return FALSE;
 	if (cache_age > 0) {
 		guint tmp;
 		g_autoptr(GFile) file = NULL;
-		file = g_file_new_for_path (fn);
+		file = g_file_new_for_path (cache_filename);
 		tmp = gs_utils_get_file_age (file);
 		if (tmp < cache_age) {
 			g_debug ("%s is only %u seconds old, so ignoring refresh",
-				 fn, tmp);
-			return gs_plugin_odrs_load_ratings (plugin, fn, error);
+				 cache_filename, tmp);
+			return gs_plugin_odrs_load_ratings (plugin, cache_filename, error);
 		}
 	}
 
 	/* download the complete file */
 	uri = g_strdup_printf ("%s/ratings", priv->review_server);
+	g_debug ("Updating ODRS cache from %s to %s", uri, cache_filename);
 	gs_app_set_summary_missing (app_dl,
 				    /* TRANSLATORS: status text when downloading */
 				    _("Downloading application ratings…"));
-	if (!gs_plugin_download_file (plugin, app_dl, uri, fn, cancellable, &error_local)) {
+	if (!gs_plugin_download_file (plugin, app_dl, uri, cache_filename, cancellable, &error_local)) {
 		g_autoptr(GsPluginEvent) event = gs_plugin_event_new ();
 
 		gs_plugin_event_set_error (event, error_local);
@@ -208,7 +209,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 		/* don't fail updates if the ratings server is unavailable */
 		return TRUE;
 	}
-	return gs_plugin_odrs_load_ratings (plugin, fn, error);
+	return gs_plugin_odrs_load_ratings (plugin, cache_filename, error);
 }
 
 void
@@ -457,25 +458,25 @@ gs_plugin_odrs_json_post (SoupSession *session,
 	g_autoptr(SoupMessage) msg = NULL;
 
 	/* create the GET data */
-	g_debug ("odrs sending: %s", data);
+	g_debug ("Sending ODRS request to %s: %s", uri, data);
 	msg = soup_message_new (SOUP_METHOD_POST, uri);
 	soup_message_set_request (msg, "application/json; charset=utf-8",
 				  SOUP_MEMORY_COPY, data, strlen (data));
 
 	/* set sync request */
 	status_code = soup_session_send_message (session, msg);
+	g_debug ("ODRS server returned status %u: %s", status_code, msg->response_body->data);
 	if (status_code != SOUP_STATUS_OK) {
-		g_warning ("Failed to set rating on odrs: %s",
+		g_warning ("Failed to set rating on ODRS: %s",
 			   soup_status_get_phrase (status_code));
 		g_set_error (error,
                              GS_PLUGIN_ERROR,
                              GS_PLUGIN_ERROR_FAILED,
-                             "Failed to set submit review to ODRS: %s", soup_status_get_phrase (status_code));
+                             "Failed to submit review to ODRS: %s", soup_status_get_phrase (status_code));
 		return FALSE;
 	}
 
 	/* process returned JSON */
-	g_debug ("odrs returned: %s", msg->response_body->data);
 	return gs_plugin_odrs_parse_success (msg->response_body->data,
 					     msg->response_body->length,
 					     error);
@@ -647,6 +648,8 @@ gs_plugin_odrs_fetch_for_app (GsPlugin *plugin, GsApp *app, GError **error)
 	if (data == NULL)
 		return NULL;
 	uri = g_strdup_printf ("%s/fetch", priv->review_server);
+	g_debug ("Updating ODRS cache for %s from %s to %s; request %s", gs_app_get_id (app),
+		 uri, cachefn, data);
 	msg = soup_message_new (SOUP_METHOD_POST, uri);
 	soup_message_set_request (msg, "application/json; charset=utf-8",
 				  SOUP_MEMORY_COPY, data, strlen (data));
@@ -820,6 +823,7 @@ gs_plugin_review_submit (GsPlugin *plugin,
 	g_autoptr(JsonNode) json_root = NULL;
 
 	/* save as we don't re-request the review from the server */
+	as_review_add_flags (review, AS_REVIEW_FLAG_SELF);
 	as_review_set_reviewer_name (review, g_get_real_name ());
 	as_review_add_metadata (review, "app_id", gs_app_get_id (app));
 	as_review_add_metadata (review, "user_skey",

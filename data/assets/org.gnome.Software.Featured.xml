@@ -3,13 +3,13 @@
   <component>
     <id>inkscape.desktop</id>
     <custom>
-      <value key="GnomeSoftware::FeatureTile-css">border-color: #ccc;
+      <value key="GnomeSoftware::FeatureTile-css">border-color: #aaa;
 text-shadow: none;
-color: #606060;
+color: #333;
 background:
+ linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(200,200,200,0.9)),
  url('file://@datadir@/gnome-software/featured-inkscape.svg')
- 20% / 60% auto no-repeat,
- linear-gradient(to bottom, #ffffff, #e2e2e2);
+ left 40% / 80% auto no-repeat;
 </value>
     </custom>
   </component>
@@ -17,8 +17,12 @@ background:
     <id>mypaint.desktop</id>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border-color: #888;
-color: #000;
-text-shadow: none;
+color: #333;
+text-shadow: 0 1px 12px rgba(255,255,255,0.05),
+      0 -1px rgba(255,255,255,0.05),
+      1px 0 rgba(255,255,255,0.1),
+      0 1px rgba(255,255,255,0.3),
+      -1px 0 rgba(255,255,255,0.1);
 background:
  url('file://@datadir@/gnome-software/featured-mypaint.svg')
  left 90% / 300px auto no-repeat,
@@ -31,14 +35,14 @@ box-shadow: none;
     <id>org.gnome.Maps.desktop</id>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border-color: #deddda;
-text-shadow: 0 1px 1px rgba(255,255,255,0.5);
-color: #000000;
+text-shadow: none;
+color: #613583;
 box-shadow: none;
 background: #f6f5f4,
- url('file://@datadir@/gnome-software/featured-maps.svg')
- 30% -5px / 230px auto no-repeat,
- url('file://@datadir@/gnome-software/featured-maps-bg.png')
- bottom center / cover no-repeat;
+ url('file://@datadir@/gnome-software/featured-maps-overlay.svg')
+ 16px 16px / 20% auto no-repeat,
+ url('file://@datadir@/gnome-software/featured-maps-bg.svg')
+ center / cover no-repeat;
 </value>
     </custom>
   </component>
@@ -46,14 +50,15 @@ background: #f6f5f4,
     <id>org.gnome.Polari.desktop</id>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border-color: #4e9a06;
-color: #53f1aa;
+color: #fff;
 text-shadow: 0 1px #317e54, 
 -1px 0 #317e54;
 box-shadow: none;
 outline: none;
 background:
+ linear-gradient(to bottom, rgba(105,108,116,0.3)),
  url('file://@datadir@/gnome-software/featured-polari.svg')
- left 65% / 70% auto no-repeat, #43a570;
+ center / 90% auto no-repeat, #43a570;
 </value>
     </custom>
   </component>
@@ -66,7 +71,7 @@ color: #ffffff;
 box-shadow: none;
 background:
  url('file://@datadir@/gnome-software/featured-transmission.svg')
- 10% 40% / 427px auto no-repeat, -gtk-gradient (radial,
+ -20% center / 40% auto no-repeat, -gtk-gradient (radial,
  center bottom, 0, center center, 0.8,
  from(#ffa348), to(#e66100));
 </value>
@@ -80,7 +85,11 @@ background: #f7632a,
  url('file://@datadir@/gnome-software/featured-podcasts.svg')
  10% 20% / 50% auto no-repeat;
 color: #fff;
-text-shadow: none;</value>
+text-shadow: 0 1px 12px rgba(0,0,0,0.05),
+      0 -1px rgba(0,0,0,0.05),
+      1px 0 rgba(0,0,0,0.1),
+      0 1px rgba(0,0,0,0.3),
+      -1px 0 rgba(0,0,0,0.1);</value>
     </custom>
   </component>
   <component>
@@ -91,9 +100,13 @@ text-shadow: none;</value>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border: 1px solid #ed8254;
 background: #fca937 url('file://@datadir@/gnome-software/featured-boxes.svg') 
- 10% 40% / 60% auto no-repeat;
-color: #cd6234;
-text-shadow: 0 1px rgba(255,255,255,0.3);</value>
+ 150% center / 60% auto no-repeat;
+color: #fff;
+text-shadow: 0 1px 12px rgba(0,0,0,0.05),
+      0 -1px rgba(0,0,0,0.05),
+      1px 0 rgba(0,0,0,0.1),
+      0 1px rgba(0,0,0,0.3),
+      -1px 0 rgba(0,0,0,0.1);</value>
     </custom>
   </component>
   <component>
@@ -103,8 +116,11 @@ text-shadow: 0 1px rgba(255,255,255,0.3);</value>
     </categories>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border: 1px solid #00aaaa;
-background: #00cccc url('file://@datadir@/gnome-software/featured-foliate.svg') 
- 10% 40% / 50% auto no-repeat;
+background: #00cccc, 
+ url('file://@datadir@/gnome-software/featured-foliate.svg')
+ 10% 40% / 50% auto no-repeat,
+  url('file://@datadir@/gnome-software/featured-foliate-bg.jpg')
+ center bottom / cover no-repeat;
 color: #004444;
 text-shadow: none;
 </value>
@@ -114,10 +130,8 @@ text-shadow: none;
     <id>org.gnome.SoundRecorder.desktop</id>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border: 1px solid #bbb;
-/* background: #f6f5f4 url('file://@datadir@/gnome-software/featured-sound-recorder.svg') 
- 10% 40% / 50% auto no-repeat; */
 background: #443f51 url('file://@datadir@/gnome-software/featured-sound-recorder.svg') 
- 10% 40% / 50% auto no-repeat;
+ 130% 40% / 50% auto no-repeat;
 color: #fff;
 text-shadow: none;</value>
     </custom>
@@ -126,8 +140,9 @@ text-shadow: none;</value>
     <id>org.kde.kdenlive</id>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border: 1px solid #df321e;
-background: #ffd6ac url('file://@datadir@/gnome-software/featured-kdenlive-bg.jpg')
- left 20% / 60% auto no-repeat;
+background: linear-gradient(to bottom, rgba(255,214,172,0.8), rgba(255,214,172,0.8)),
+            url('file://@datadir@/gnome-software/featured-kdenlive-bg.jpg')
+ center / cover no-repeat;
 color: #df321e;
 box-shadow: none;
 text-shadow: none;</value>
@@ -141,7 +156,7 @@ text-shadow: none;
 color: rgba(255,255,255,0.9);
 background:
  url('file://@datadir@/gnome-software/featured-gimp.png')
- left 50% / 50% auto no-repeat,
+ -20% 50% / 50% auto no-repeat,
  linear-gradient(to bottom, #8ac674, #cbddc3);
 </value>
     </custom>
@@ -176,7 +191,10 @@ background: url('http://people.gnome.org/~jimmac/gnome-software/spotify-logo.svg
     <id>com.slack.Slack</id>
     <custom>
       <value key="GnomeSoftware::FeatureTile-css">border: 1px solid #eee;
-background: url('http://people.gnome.org/~jimmac/gnome-software/slack-logo.svg') 10% 48px / 200px auto no-repeat, url('file://@datadir@/gnome-software/featured-slack-bg.jpg')
+background:
+   url('http://people.gnome.org/~jimmac/gnome-software/slack-logo.svg') 10% 48px / 200px auto no-repeat,
+   linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+   url('file://@datadir@/gnome-software/featured-slack-bg.jpg')
  center / cover no-repeat;
 color: #fff;
 text-shadow: none;</value>
@@ -202,7 +220,7 @@ background: #f5c211
 box-shadow: none;
 background: #2ec27e
  url('file://@datadir@/gnome-software/featured-bitwarden.svg')
- 0 50% / 60% auto no-repeat;
+ 150% 80% / 60% auto no-repeat;
 color: #fff;
 text-shadow: 0 0 2px #26a269;</value>
     </custom>
