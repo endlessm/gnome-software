@@ -15,7 +15,8 @@ Build-Depends: appstream,
                gsettings-desktop-schemas-dev (>= 3.18),
                gtk-doc-tools,
                libappstream-glib-dev (>= 0.7.14),
-               libflatpak-dev (>= 0.99.3) [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
+               libflatpak-dev (>= 1.0.4) [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
+               libfwupd-dev (>= 1.0.3) [linux-any],
                libglib2.0-dev (>= 2.56.0),
                libgnome-desktop-3-dev (>= 3.18.0),
                libgoa-1.0-dev,
@@ -23,18 +24,25 @@ Build-Depends: appstream,
                libgtk-3-dev (>= 3.22.4),
                libgudev-1.0-dev [linux-any],
                libjson-glib-dev (>= 1.2.0),
-               libmalcontent-0-dev,
-               libmogwai-schedule-client-0-dev,
+               libostree-dev [linux-any],
+               libpackagekit-glib2-dev (>= 1.1.11),
                libpolkit-gobject-1-dev,
+               libsnapd-glib-dev (>= 1.54) [amd64 arm64 armel armhf i386 ppc64el s390x],
                libsoup2.4-dev (>= 2.52.0),
-               libxmlb-dev (>= 0.1.7),
                libxml2-utils,
-               meson (>= 0.40),
+               libxmlb-dev (>= 0.1.7),
+               meson (>= 0.47),
                pkg-config,
                valgrind [amd64 arm64 armhf i386 mips mips64 mips64el mipsel powerpc ppc64 ppc64el s390x],
                xsltproc
+Build-Depends-Indep: appstream-glib-doc <!nodoc>,
+                     libgdk-pixbuf2.0-doc <!nodoc>,
+                     libglib2.0-doc <!nodoc>,
+                     libgtk-3-doc <!nodoc>,
+                     libjson-glib-doc <!nodoc>,
+                     libsoup2.4-doc <!nodoc>
 Rules-Requires-Root: no
-Standards-Version: 4.3.0
+Standards-Version: 4.5.0
 Vcs-Browser: https://salsa.debian.org/gnome-team/gnome-software
 Vcs-Git: https://salsa.debian.org/gnome-team/gnome-software.git
 Homepage: https://wiki.gnome.org/Apps/Software
@@ -42,15 +50,18 @@ Homepage: https://wiki.gnome.org/Apps/Software
 Package: gnome-software
 Architecture: any
 Depends: appstream,
+         apt-config-icons,
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.18),
+         libgtk3-perl,
+         packagekit (>= 1.1.11),
+         software-properties-gtk,
          ${misc:Depends},
          ${shlibs:Depends}
-Replaces: gnome-packagekit-session (<< 3.16.0-2~)
-Breaks: gnome-packagekit-session (<< 3.16.0-2~)
 Conflicts: sessioninstaller
-Recommends: ${plugin:Recommends},
-Suggests: gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
+Recommends: fwupd [linux-any], ${plugin:Recommends}
+Suggests: apt-config-icons-hidpi,
+          gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
           ${plugin:Suggests}
 Description: Software Center for GNOME
  Software lets you install and update applications and system extensions.
@@ -77,7 +88,7 @@ Description: Software Center for GNOME (common files)
  This package contains the architecture-independent files.
 
 Package: gnome-software-plugin-flatpak
-Architecture: amd64 arm64 armel armhf i386 mips mips64el ppc64el s390x hppa powerpc powerpcspe ppc64
+Architecture: amd64 arm64 armel armhf hppa i386 mips mips64el powerpc powerpcspe ppc64 ppc64el s390x
 Depends: flatpak,
          gnome-software (= ${binary:Version}),
          ${misc:Depends},
@@ -93,17 +104,25 @@ Description: Flatpak support for GNOME Software
  .
  This package contains the Flatpak plugin.
 
-Package: gnome-packagekit-session
-Architecture: all
-Section: oldlibs
-Depends: gnome-software (>= ${source:Version}),
-         ${misc:Depends}
-Description: Transitional package (gnome-packagekit-session -> gnome-software)
- Transitional dummy package replacing gnome-packagekit-session with
- gnome-software.
+Package: gnome-software-plugin-snap
+Architecture: amd64 arm64 armel armhf i386 ppc64el s390x
+Depends: gnome-software (= ${binary:Version}),
+         snapd [amd64 arm64 armel armhf i386 ppc64el],
+         ${misc:Depends},
+         ${shlibs:Depends}
+Recommends: snapd [s390x]
+Breaks: gnome-software (<< 3.22.3)
+Replaces: gnome-software (<< 3.22.3)
+Description: Snap support for GNOME Software
+ Software lets you install and update applications and system extensions.
  .
- The PackageKit session interface is no separate component anymore, but built
- into GNOME-Software.
+ Software uses a plugin architecture to separate the frontend from the
+ technologies that are used underneath. Currently, a PackageKit plugin provides
+ data from a number of traditional packaging systems, such as rpm or apt. An
+ appdata plugin provides additional metadata from locally installed data in the
+ appdata format.
+ .
+ This package contains the Snap plugin.
 
 Package: gnome-software-dev
 Section: libdevel
@@ -126,6 +145,7 @@ Section: doc
 Architecture: all
 Multi-Arch: foreign
 Depends: ${misc:Depends}
+Build-Profiles: <!nodoc>
 Description: Software Center for GNOME - documentation
  Software lets you install and update applications and system extensions.
  .

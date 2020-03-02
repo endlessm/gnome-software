@@ -1,42 +1,71 @@
-gnome-software (3.34.0-1endless1) UNRELEASED; urgency=medium
-
-  * Rebase on GNOME 3.34 (T27678)
-    - Upstream depends on libxmlb ≥ 0.1.7 now
-
- -- Philip Withnall <withnall@endlessm.com>  Tue, 17 Sep 2019 13:02:00 +0000
-
-gnome-software (3.32.0-1endless1) UNRELEASED; urgency=medium
-
-  * Drop Debian-specific dependencies (T25367)
-    - libgtk3-perl: Needed for debconf
-    - software-properties-gtk: Debian-specific apt repository configuration tool
-  * Drop fwupd `recommends` line (T25367)
-    - We already dropped the build dependency, so keeping the `recommends` is
-      just confusing.
-  * Drop `apt-config-icons` dependency (T25367)
-    - Our apt repositories don’t support it, and the majority of our apps are
-      packaged in flatpak.
-
- -- Philip Withnall <withnall@endlessm.com>  Mon, 22 Jul 2019 10:09:00 +0000
-
-gnome-software (3.32.0-1endless0) UNRELEASED; urgency=medium
-
-  * Rebase on GNOME 3.32 (T25367)
-    - Disable snap support
-    - Disable fwupd support
-    - Disable packagekit support
-    - Enable malcontent and mogwai support
-    - Enable external-appstream support
-    - Delete irrelevant GSettings overrides
-    - Install eos-discovery-feed files
-
- -- Philip Withnall <withnall@endlessm.com>  Thu, 18 Jul 2019 17:30:00 +0000
-
-gnome-software (3.31.90-1) UNRELEASED; urgency=medium
+gnome-software (3.35.91-1) experimental; urgency=medium
 
   * New upstream release
+    - Drop d/p/0001-gs-appstream-Fix-loading-of-icons-from-AppStream-YAM.patch
+      and d/p/snap-Don-t-try-to-get-alternatives-for-non-snaps.patch, applied
+      upstream
+    - debian/control.in: Add libostree-dev to the build-dependencies as it's
+      explicityly required by flatpak plugin now
+    - debian/gnome-software.install: Remove the banner editor, it's now a
+      standalone app
+    - debian/control.in: Bump minimal meson to 0.47
+  * Disable malcontent for now as it's not in the archive yet
+  * debian/control.in: Bump Standards-Version to 4.5.0 (no further changes)
 
- -- Jeremy Bicha <jbicha@debian.org>  Sun, 24 Feb 2019 21:10:52 -0500
+ -- Laurent Bigonville <bigon@debian.org>  Sun, 01 Mar 2020 13:33:18 +0100
+
+gnome-software (3.34.2-2) unstable; urgency=medium
+
+  * Stop overriding libexecdir and move the daemons to /usr/libexec now that
+    this is allowed in the debian policy
+  * d/p/0001-gs-appstream-Fix-loading-of-icons-from-AppStream-YAM.patch:
+    Fix loading of icons from AppStream YAM (Thanks to Robert Ancell)
+  * d/p/snap-Don-t-try-to-get-alternatives-for-non-snaps.patch: Do not try to
+    manage alternative for non-snaps applications (Closes: #947237)
+  * debian/control.in: Add the needed -doc packages to the build-dependencies
+    so the links between the documentation files are properly resolved
+  * debian/control.in: Add Build-Profiles <!nodoc> for the -doc package
+
+ -- Laurent Bigonville <bigon@debian.org>  Sun, 01 Mar 2020 11:39:19 +0100
+
+gnome-software (3.34.2-1) unstable; urgency=medium
+
+  * debian/rules: Use filter instead of findstring to detect the architecture,
+    this will avoid matching partial names like ppc64 and ppc64el
+  * New upstream release
+    - debian/patches/series: Disable d/p/0011-Support-snap-channels.patch patch
+      for now, it doesn't apply cleanly anymore
+  * debian/control.in: Drop gnome-packagekit-session transitional package,
+    this was released with stretch. (Closes: #939207)
+
+ -- Laurent Bigonville <bigon@debian.org>  Tue, 17 Dec 2019 18:17:52 +0100
+
+gnome-software (3.34.0-1) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * New upstream release (3.31.90)
+  * Drop 5 patches applied in new release
+  * Build-Depend on libgoa-1.0-dev & libxmlb-dev
+  * Drop obsolete Build-Depends on libsecret-1-dev
+
+  [ Andreas Henriksson ]
+  * New upstream release (3.34.0)
+  * Bump build-dependencies as per meson.build
+  * Update debian/changelog
+  * Drop d/p/0020-details-page-Don-t-show-missing-screenshot-placehold.patch.
+    Obsoleted by upstream commit abdf04b4f1e44449ea8288ac7e102c0e8cb1d533
+    "Refactor screenshots and hide those unavailable when offline"
+  * Massage d/p/0011-Support-snap-channels.patch to apply
+  * Let quilt refresh d/p/0011-Support-snap-channels.patch
+  * Let quilt refresh
+    d/p/0021-details-Use-custom-icon-for-verified-developers.patch
+
+  [ Laurent Bigonville ]
+  * debian/control.in: Bump libsnapd-glib-dev to 1.54 to avoid a bug in the
+    .pc file not setting the include directory
+  * debian/control.in: Bump Standards-Version to 4.4.1 (no further changes)
+
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 04 Dec 2019 13:55:11 +0100
 
 gnome-software (3.30.6-5) unstable; urgency=medium
 

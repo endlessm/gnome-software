@@ -10,9 +10,6 @@ Subject: [PATCH 21/24] details: Use custom icon for verified developers
  3 files changed, 14 insertions(+), 1 deletion(-)
  create mode 100644 src/developer-verified.svg
 
-diff --git a/src/developer-verified.svg b/src/developer-verified.svg
-new file mode 100644
-index 00000000..57c0f11b
 --- /dev/null
 +++ b/src/developer-verified.svg
 @@ -0,0 +1,12 @@
@@ -29,22 +26,18 @@ index 00000000..57c0f11b
 + </g>
 +</svg>
 \ No newline at end of file
-diff --git a/src/gnome-software.gresource.xml b/src/gnome-software.gresource.xml
-index 2243c400..6ea5278a 100644
 --- a/src/gnome-software.gresource.xml
 +++ b/src/gnome-software.gresource.xml
-@@ -39,5 +39,6 @@
+@@ -37,5 +37,6 @@
    <file preprocess="xml-stripblanks">org.freedesktop.PackageKit.xml</file>
    <file>gtk-style.css</file>
    <file>gtk-style-hc.css</file>
 +  <file>developer-verified.svg</file>
   </gresource>
  </gresources>
-diff --git a/src/gs-details-page.ui b/src/gs-details-page.ui
-index 307ec638..5fcfefd2 100644
 --- a/src/gs-details-page.ui
 +++ b/src/gs-details-page.ui
-@@ -981,7 +981,7 @@
+@@ -948,7 +948,7 @@
                                        <object class="GtkImage" id="image_details_developer_verified">
                                          <property name="visible">True</property>
                                          <property name="pixel_size">16</property>
@@ -53,6 +46,3 @@ index 307ec638..5fcfefd2 100644
                                        </object>
                                      </child>
                                    </object>
--- 
-2.20.1
-
