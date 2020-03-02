@@ -16,7 +16,6 @@ Build-Depends: appstream,
                gtk-doc-tools,
                libappstream-glib-dev (>= 0.7.14),
                libflatpak-dev (>= 1.0.4) [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
-               libfwupd-dev (>= 1.0.3) [linux-any],
                libglib2.0-dev (>= 2.56.0),
                libgnome-desktop-3-dev (>= 3.18.0),
                libgoa-1.0-dev,
@@ -25,9 +24,9 @@ Build-Depends: appstream,
                libgudev-1.0-dev [linux-any],
                libjson-glib-dev (>= 1.2.0),
                libostree-dev [linux-any],
-               libpackagekit-glib2-dev (>= 1.1.11),
+               libmalcontent-0-dev (>= 0.3.0),
+               libmogwai-schedule-client-0-dev,
                libpolkit-gobject-1-dev,
-               libsnapd-glib-dev (>= 1.54) [amd64 arm64 armel armhf i386 ppc64el s390x],
                libsoup2.4-dev (>= 2.52.0),
                libxml2-utils,
                libxmlb-dev (>= 0.1.7),
@@ -50,18 +49,13 @@ Homepage: https://wiki.gnome.org/Apps/Software
 Package: gnome-software
 Architecture: any
 Depends: appstream,
-         apt-config-icons,
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.18),
-         libgtk3-perl,
-         packagekit (>= 1.1.11),
-         software-properties-gtk,
          ${misc:Depends},
          ${shlibs:Depends}
 Conflicts: sessioninstaller
-Recommends: fwupd [linux-any], ${plugin:Recommends}
-Suggests: apt-config-icons-hidpi,
-          gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
+Recommends: ${plugin:Recommends},
+Suggests: gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
           ${plugin:Suggests}
 Description: Software Center for GNOME
  Software lets you install and update applications and system extensions.
@@ -103,26 +97,6 @@ Description: Flatpak support for GNOME Software
  appdata format.
  .
  This package contains the Flatpak plugin.
-
-Package: gnome-software-plugin-snap
-Architecture: amd64 arm64 armel armhf i386 ppc64el s390x
-Depends: gnome-software (= ${binary:Version}),
-         snapd [amd64 arm64 armel armhf i386 ppc64el],
-         ${misc:Depends},
-         ${shlibs:Depends}
-Recommends: snapd [s390x]
-Breaks: gnome-software (<< 3.22.3)
-Replaces: gnome-software (<< 3.22.3)
-Description: Snap support for GNOME Software
- Software lets you install and update applications and system extensions.
- .
- Software uses a plugin architecture to separate the frontend from the
- technologies that are used underneath. Currently, a PackageKit plugin provides
- data from a number of traditional packaging systems, such as rpm or apt. An
- appdata plugin provides additional metadata from locally installed data in the
- appdata format.
- .
- This package contains the Snap plugin.
 
 Package: gnome-software-dev
 Section: libdevel

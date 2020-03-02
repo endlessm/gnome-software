@@ -1,3 +1,24 @@
+gnome-software (3.35.92-0endless1) master; urgency=medium
+
+  * Rebase on GNOME 3.36 (T28771)
+    - Disable snap support
+    - Disable packagekit support
+    - Enable malcontent plugin by default
+    - Enable external-appstream support
+    - Delete irrelevant GSettings overrides
+    - Install eos-discovery-feed files
+  * Drop Debian-specific dependencies (T25367)
+    - libgtk3-perl: Needed for debconf
+    - software-properties-gtk: Debian-specific apt repository configuration tool
+  * Drop fwupd `recommends` line (T25367)
+    - We already dropped the build dependency, so keeping the `recommends` is
+      just confusing.
+  * Drop `apt-config-icons` dependency (T25367)
+    - Our apt repositories don’t support it, and the majority of our apps are
+      packaged in flatpak.
+
+ -- Philip Withnall <withnall@endlessm.com>  Thu, 05 Mar 2020 12:56:00 +0000
+
 gnome-software (3.35.91-1) experimental; urgency=medium
 
   * New upstream release
