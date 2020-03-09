@@ -2709,7 +2709,7 @@ gs_details_page_plugin_status_changed_cb (GsPluginLoader *plugin_loader,
                                           GsPluginStatus status,
                                           GsDetailsPage *self)
 {
-	if (app == NULL)
+	if (app == NULL || self->app == NULL)
 		return;
 
 	/* Various bits of UI state depend on the plugin status, so refresh
