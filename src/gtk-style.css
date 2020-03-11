@@ -235,9 +235,10 @@
 .featured-tile {
 	all: unset;
 	padding: 0;
-	border-radius: 3px;
+	border-radius: 5px; /* match button tiles */
 	border-width: 1px;
 	border-image: none;
+	box-shadow: none;
 	/* box-shadow: inset 0 0 0 1px alpha(@theme_fg_color,0.3), 0 0 1px alpha(black,0.4); */
 }
   .featured-tile:backdrop label {
@@ -332,15 +333,6 @@
 
 .error-label {
 	text-shadow: none;
-}
-
-.folder-label {
-	font-size: smaller;
-        font-weight: bold;
-	background-color: #999999;
-	border-radius: 2px;
-	padding: 2px 8px;
-	color: white;
 }
 
 .version-arrow-label {
@@ -511,24 +503,25 @@ flowboxchild {
 	opacity: 0.5;
 }
 
-.featured-button-left {
-	border-radius: 60px;
-	margin-left: -25px;
-	padding: 10px 5px 10px 20px;
+.featured-button-left,
+.featured-button-right {
+	padding: 2px 5px;
+	margin: 6px;
 }
 
-.featured-button-right {
-	border-radius: 60px;
-	margin-right: -25px;
-	padding: 10px 20px 10px 5px;
+.featured-button-left:not(:hover),
+.featured-button-right:not(:hover) {
+	background: transparent;
+	border:transparent;
+	box-shadow: none;
 }
 
 /* these typographical classes will be provided in gtk eventually */
 .title-1{
   font-weight: 800;
-/*  font-size: 20pt; */
+  font-size: 20pt;
 }
 .caption{
   font-weight: 400;
-/*  font-size: 9pt; */
+  font-size: 10pt;
 }
