@@ -24,6 +24,7 @@
  */
 
 #include <config.h>
+#include <eosmetrics/eosmetrics.h>
 #include <gio/gio.h>
 #include <glib.h>
 #include <glib/gi18n.h>
@@ -31,6 +32,7 @@
 #include <gnome-software.h>
 #include <gs-plugin.h>
 #include <gs-utils.h>
+#include <libmalcontent/malcontent.h>
 #include <math.h>
 #include <ostree.h>
 
@@ -622,6 +624,50 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_mutex_clear (&priv->mutex);
 }
 
+/* Submit a metrics event about whether parental controls are enabled,
+ * which gives us an overview of how many users are using parental
+ * controls.
+ *
+ * See: https://phabricator.endlessm.com/T28741 */
+static void
+report_parental_controls_metric (GCancellable *cancellable)
+{
+	g_autoptr(GDBusConnection) system_bus = NULL;
+	g_autoptr(MctManager) manager = NULL;
+	g_autoptr(MctAppFilter) filter = NULL;
+	g_autoptr(GError) metrics_error = NULL;
+	gboolean parental_controls_enabled = FALSE;
+
+#define GS_PARENTAL_CONTROLS_USAGE_EVENT "c227a817-808c-4fcb-b797-21002d17b69a"
+
+	system_bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, cancellable, &metrics_error);
+	if (metrics_error != NULL) {
+		g_debug ("Failed to determine whether parental controls are enabled: %s", metrics_error->message);
+		return;
+	}
+
+	manager = mct_manager_new (system_bus);
+	filter = mct_manager_get_app_filter (manager,
+					     geteuid (),
+					     MCT_MANAGER_GET_VALUE_FLAGS_NONE,
+					     cancellable,
+					     &metrics_error);
+
+	if (g_error_matches (metrics_error, MCT_MANAGER_ERROR, MCT_MANAGER_ERROR_DISABLED)) {
+		parental_controls_enabled = FALSE;
+		g_clear_error (&metrics_error);
+	} else if (filter != NULL) {
+		parental_controls_enabled = mct_app_filter_is_enabled (filter);
+	} else if (metrics_error != NULL) {
+		g_debug ("Failed to determine whether parental controls are enabled: %s", metrics_error->message);
+		return;
+	}
+
+	emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+					  GS_PARENTAL_CONTROLS_USAGE_EVENT,
+					  g_variant_new_boolean (parental_controls_enabled));
+}
+
 /* Called in a #GTask worker thread, but it can run without holding
  * `priv->mutex` since it doesn’t need to synchronise on state. */
 static gboolean
@@ -648,6 +694,9 @@ gs_plugin_eos_updater_refresh (GsPlugin *plugin,
 		g_debug ("%s: Updater disabled", G_STRFUNC);
 		return TRUE;
 	}
+
+	/* Submit metrics. */
+	report_parental_controls_metric (cancellable);
 
 	/* poll in the error/none/ready states to check if there's an
 	 * update available */

@@ -20,6 +20,8 @@ shared_module(
   c_args : cargs,
   dependencies : [
     plugin_libs,
+    dependency('eosmetrics-0', version: '>= 0.5.0'),
+    dependency('malcontent-0', version: '>= 0.7.0'),
     ostree,
   ],
   link_with : [
