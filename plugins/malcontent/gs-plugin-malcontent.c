@@ -195,20 +195,51 @@ query_app_filter (GsPlugin      *plugin,
 					   error);
 }
 
+static gboolean
+reload_app_filter (GsPlugin      *plugin,
+                   GCancellable  *cancellable,
+                   GError       **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(MctAppFilter) new_app_filter = NULL;
+	g_autoptr(MctAppFilter) old_app_filter = NULL;
+
+	/* Refresh the app filter. This blocks on a D-Bus request. */
+	new_app_filter = query_app_filter (plugin, cancellable, error);
+
+	/* on failure, keep the old app filter around since it might be more
+	 * useful than nothing */
+	if (new_app_filter == NULL)
+		return FALSE;
+
+	{
+		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+		old_app_filter = g_steal_pointer (&priv->app_filter);
+		priv->app_filter = g_steal_pointer (&new_app_filter);
+	}
+
+	return TRUE;
+}
+
 static void
 app_filter_changed_cb (MctManager *manager,
                        guint64     user_id,
                        gpointer    user_data)
 {
 	GsPlugin *plugin = GS_PLUGIN (user_data);
+	g_autoptr(GError) error_local = NULL;
 
-	if (user_id == getuid ()) {
-		/* The user’s app filter has changed, which means that different
-		 * apps could be filtered from before. Reload everything to be
-		 * sure of re-filtering correctly. */
-		g_debug ("Reloading due to app filter changing for user %" G_GUINT64_FORMAT, user_id);
+	if (user_id != getuid ())
+		return;
+
+	/* The user’s app filter has changed, which means that different
+	 * apps could be filtered from before. Reload everything to be
+	 * sure of re-filtering correctly. */
+	g_debug ("Reloading due to app filter changing for user %" G_GUINT64_FORMAT, user_id);
+	if (reload_app_filter (plugin, NULL, &error_local))
 		gs_plugin_reload (plugin);
-	}
+	else
+		g_warning ("Failed to reload changed app filter: %s", error_local->message);
 }
 
 void
@@ -277,25 +308,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 		   GCancellable *cancellable,
 		   GError **error)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(MctAppFilter) new_app_filter = NULL;
-	g_autoptr(MctAppFilter) old_app_filter = NULL;
-
-	/* Refresh the app filter. This blocks on a D-Bus request. */
-	new_app_filter = query_app_filter (plugin, cancellable, error);
-
-	/* on failure, keep the old app filter around since it might be more
-	 * useful than nothing */
-	if (new_app_filter == NULL)
-		return FALSE;
-
-	{
-		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
-		old_app_filter = g_steal_pointer (&priv->app_filter);
-		priv->app_filter = g_steal_pointer (&new_app_filter);
-	}
-
-	return TRUE;
+	return reload_app_filter (plugin, cancellable, error);
 }
 
 void
