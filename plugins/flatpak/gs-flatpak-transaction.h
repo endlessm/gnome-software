@@ -35,5 +35,7 @@ void			 gs_flatpak_transaction_set_no_deploy	(FlatpakTransaction	*transaction,
 #endif
 void			 gs_flatpak_transaction_set_invisible	(FlatpakTransaction	*transaction,
 								 gboolean		 invisible);
+void			 gs_flatpak_transaction_set_abort_early	(FlatpakTransaction	*transaction,
+								 gboolean		 abort_early);
 
 G_END_DECLS

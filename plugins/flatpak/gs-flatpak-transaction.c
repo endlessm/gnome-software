@@ -20,6 +20,7 @@ struct _GsFlatpakTransaction {
 	gboolean		 no_deploy;
 #endif
 	gboolean		 invisible;
+	gboolean		 abort_early;
 };
 
 
@@ -28,6 +29,7 @@ typedef enum {
   PROP_NO_DEPLOY = 1,
 #endif
   PROP_INVISIBLE = 2,
+  PROP_ABORT_EARLY = 3,
 } GsFlatpakTransactionProperty;
 
 enum {
@@ -87,6 +89,21 @@ gs_flatpak_transaction_set_invisible (FlatpakTransaction *transaction, gboolean 
 	self->invisible = invisible;
 
 	g_object_notify (G_OBJECT (self), "invisible");
+}
+
+void
+gs_flatpak_transaction_set_abort_early (FlatpakTransaction *transaction, gboolean abort_early)
+{
+	GsFlatpakTransaction *self;
+
+	g_return_if_fail (GS_IS_FLATPAK_TRANSACTION (transaction));
+
+	self = GS_FLATPAK_TRANSACTION (transaction);
+	if (self->abort_early == abort_early)
+		return;
+	self->abort_early = abort_early;
+
+	g_object_notify (G_OBJECT (self), "abort-early");
 }
 
 /* Sets installed app(s) back to installed state. Flatpak can return apps as updatable
@@ -333,7 +350,7 @@ _transaction_ready (FlatpakTransaction *transaction)
 				gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		}
 	}
-	return TRUE;
+	return !self->abort_early;
 }
 
 static void
@@ -659,6 +676,9 @@ gs_flatpak_transaction_set_property (GObject *object, guint prop_id, const GValu
 	case PROP_INVISIBLE:
 		gs_flatpak_transaction_set_invisible (transaction, g_value_get_boolean (value));
 		break;
+	case PROP_ABORT_EARLY:
+		gs_flatpak_transaction_set_abort_early (transaction, g_value_get_boolean (value));
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
@@ -692,6 +712,11 @@ gs_flatpak_transaction_class_init (GsFlatpakTransactionClass *klass)
 				      "Whether the transaction should affect the state of apps in the UI",
 				      FALSE, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
 	g_object_class_install_property (object_class, PROP_INVISIBLE, pspec);
+
+	pspec = g_param_spec_boolean ("abort-early", NULL,
+				      "Whether the transaction should be aborted in the ready() handler",
+				      FALSE, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
+	g_object_class_install_property (object_class, PROP_ABORT_EARLY, pspec);
 
 	signals[SIGNAL_REF_TO_APP] =
 		g_signal_new ("ref-to-app",
