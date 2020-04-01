@@ -19,14 +19,16 @@ struct _GsFlatpakTransaction {
 #if !FLATPAK_CHECK_VERSION(1,5,1)
 	gboolean		 no_deploy;
 #endif
+	gboolean		 invisible;
 };
 
 
-#if !FLATPAK_CHECK_VERSION(1,5,1)
 typedef enum {
+#if !FLATPAK_CHECK_VERSION(1,5,1)
   PROP_NO_DEPLOY = 1,
-} GsFlatpakTransactionProperty;
 #endif
+  PROP_INVISIBLE = 2,
+} GsFlatpakTransactionProperty;
 
 enum {
 	SIGNAL_REF_TO_APP,
@@ -71,6 +73,21 @@ gs_flatpak_transaction_set_no_deploy (FlatpakTransaction *transaction, gboolean 
 	g_object_notify (G_OBJECT (self), "no-deploy");
 }
 #endif
+
+void
+gs_flatpak_transaction_set_invisible (FlatpakTransaction *transaction, gboolean invisible)
+{
+	GsFlatpakTransaction *self;
+
+	g_return_if_fail (GS_IS_FLATPAK_TRANSACTION (transaction));
+
+	self = GS_FLATPAK_TRANSACTION (transaction);
+	if (self->invisible == invisible)
+		return;
+	self->invisible = invisible;
+
+	g_object_notify (G_OBJECT (self), "invisible");
+}
 
 /* Sets installed app(s) back to installed state. Flatpak can return apps as updatable
  * (for installing a missing runtime); if it is detected that the runtime was missing
@@ -266,16 +283,18 @@ gs_flatpak_transaction_run (FlatpakTransaction *transaction,
 
 	if (!flatpak_transaction_run (transaction, cancellable, &error_local)) {
 		/* whole transaction failed; restore the state for all the apps involved */
-		g_autolist(GObject) ops = flatpak_transaction_get_operations (transaction);
-		for (GList *l = ops; l != NULL; l = l->next) {
-			FlatpakTransactionOperation *op = l->data;
-			const gchar *ref = flatpak_transaction_operation_get_ref (op);
-			g_autoptr(GsApp) app = _ref_to_app (self, ref);
-			if (app == NULL) {
-				g_warning ("failed to find app for %s", ref);
-				continue;
+		if (!self->invisible) {
+			g_autolist(GObject) ops = flatpak_transaction_get_operations (transaction);
+			for (GList *l = ops; l != NULL; l = l->next) {
+				FlatpakTransactionOperation *op = l->data;
+				const gchar *ref = flatpak_transaction_operation_get_ref (op);
+				g_autoptr(GsApp) app = _ref_to_app (self, ref);
+				if (app == NULL) {
+					g_warning ("failed to find app for %s", ref);
+					continue;
+				}
+				gs_app_set_state_recover (app);
 			}
-			gs_app_set_state_recover (app);
 		}
 
 		if (self->first_operation_error != NULL) {
@@ -308,7 +327,8 @@ _transaction_ready (FlatpakTransaction *transaction)
 			_transaction_operation_set_app (op, app);
 			/* if we're updating a component, then mark all the apps
 			 * involved to ensure updating the button state */
-			if (flatpak_transaction_operation_get_operation_type (op) ==
+			if (!self->invisible &&
+			    flatpak_transaction_operation_get_operation_type (op) ==
 					FLATPAK_TRANSACTION_OPERATION_UPDATE)
 				gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		}
@@ -625,30 +645,31 @@ _transaction_add_new_remote (FlatpakTransaction *transaction,
 	return FALSE;
 }
 
-#if !FLATPAK_CHECK_VERSION(1,5,1)
 static void
 gs_flatpak_transaction_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
 {
 	FlatpakTransaction *transaction = FLATPAK_TRANSACTION (object);
 
 	switch ((GsFlatpakTransactionProperty) prop_id) {
+#if !FLATPAK_CHECK_VERSION(1,5,1)
 	case PROP_NO_DEPLOY:
 		gs_flatpak_transaction_set_no_deploy (transaction, g_value_get_boolean (value));
+		break;
+#endif
+	case PROP_INVISIBLE:
+		gs_flatpak_transaction_set_invisible (transaction, g_value_get_boolean (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
 		break;
 	}
 }
-#endif
 
 static void
 gs_flatpak_transaction_class_init (GsFlatpakTransactionClass *klass)
 {
 
-#if !FLATPAK_CHECK_VERSION(1,5,1)
 	GParamSpec *pspec;
-#endif
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	FlatpakTransactionClass *transaction_class = FLATPAK_TRANSACTION_CLASS (klass);
 	object_class->finalize = gs_flatpak_transaction_finalize;
@@ -659,14 +680,18 @@ gs_flatpak_transaction_class_init (GsFlatpakTransactionClass *klass)
 	transaction_class->operation_error = _transaction_operation_error;
 	transaction_class->choose_remote_for_ref = _transaction_choose_remote_for_ref;
 	transaction_class->end_of_lifed = _transaction_end_of_lifed;
-#if !FLATPAK_CHECK_VERSION(1,5,1)
 	object_class->set_property = gs_flatpak_transaction_set_property;
 
+#if !FLATPAK_CHECK_VERSION(1,5,1)
 	pspec = g_param_spec_boolean ("no-deploy", NULL,
 				      "Whether the current transaction will deploy the downloaded objects",
 				      FALSE, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
 	g_object_class_install_property (object_class, PROP_NO_DEPLOY, pspec);
 #endif
+	pspec = g_param_spec_boolean ("invisible", NULL,
+				      "Whether the transaction should affect the state of apps in the UI",
+				      FALSE, G_PARAM_WRITABLE | G_PARAM_CONSTRUCT);
+	g_object_class_install_property (object_class, PROP_INVISIBLE, pspec);
 
 	signals[SIGNAL_REF_TO_APP] =
 		g_signal_new ("ref-to-app",

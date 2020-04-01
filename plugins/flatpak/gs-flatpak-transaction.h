@@ -33,5 +33,7 @@ gboolean		 gs_flatpak_transaction_run		(FlatpakTransaction	*transaction,
 void			 gs_flatpak_transaction_set_no_deploy	(FlatpakTransaction	*transaction,
 								 gboolean		 no_deploy);
 #endif
+void			 gs_flatpak_transaction_set_invisible	(FlatpakTransaction	*transaction,
+								 gboolean		 invisible);
 
 G_END_DECLS
