@@ -23,6 +23,7 @@
 #include "gs-flatpak-app.h"
 #include "gs-flatpak.h"
 #include "gs-flatpak-utils.h"
+#include "gs-flatpak-transaction.h"
 
 struct _GsFlatpak {
 	GObject			 parent_instance;
@@ -1565,6 +1566,137 @@ set_app_update_priority (GsApp *app, UpdatePriority priority)
 	 * let us override it */
 	gs_app_set_metadata_variant (app, APP_METADATA_MOGWAI_UPDATE_PRIORITY, NULL);
 	gs_app_set_metadata_variant (app, APP_METADATA_MOGWAI_UPDATE_PRIORITY, tmp);
+}
+
+/* ref full */
+static GsApp *
+_ref_to_app (FlatpakTransaction *transaction, const gchar *ref, GsFlatpak *self)
+{
+	g_autoptr(GsApp) app = NULL;
+	g_autoptr(GError) error_local = NULL;
+
+	g_return_val_if_fail (GS_IS_FLATPAK_TRANSACTION (transaction), NULL);
+	g_return_val_if_fail (ref != NULL, NULL);
+	g_return_val_if_fail (GS_IS_FLATPAK (self), NULL);
+
+	//TODO we need a cache or something here, gs_flatpak_ref_to_app() is horribly inefficient
+	app = gs_flatpak_ref_to_app (self, ref, NULL, &error_local);
+	if (app == NULL)
+		g_debug ("%s", error_local->message);
+
+	return g_steal_pointer (&app);
+
+}
+
+/* This is a replacement for flatpak_installation_list_installed_refs_for_update()
+ * which is unreliable. See https://gitlab.gnome.org/GNOME/gnome-software/issues/539
+ * We are essentially trying to mimic the behavior of the flatpak update command. */
+static GPtrArray *
+get_installed_refs_for_update (GsFlatpak *self,
+			       GCancellable *cancellable,
+			       GError **error)
+{
+	g_autoptr(GPtrArray) installed_refs = NULL;
+	g_autoptr(GHashTable) txn_ready_refs = NULL;
+	g_autoptr(GPtrArray) installed_refs_for_update = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	g_autoptr(FlatpakTransaction) transaction = NULL;
+	g_autoptr(GError) local_error = NULL;
+
+	g_mutex_lock (&self->installed_refs_mutex);
+
+	if (self->installed_refs == NULL) {
+		self->installed_refs = flatpak_installation_list_installed_refs (self->installation,
+								 cancellable, error);
+
+		if (self->installed_refs == NULL) {
+			g_mutex_unlock (&self->installed_refs_mutex);
+			gs_flatpak_error_convert (error);
+			return NULL;
+		}
+	}
+
+	installed_refs = g_ptr_array_ref (self->installed_refs);
+	g_mutex_unlock (&self->installed_refs_mutex);
+
+	if (installed_refs->len == 0)
+		return g_steal_pointer (&installed_refs_for_update);
+
+	transaction = gs_flatpak_transaction_new (installation, cancellable, error);
+	if (transaction == NULL) {
+		g_prefix_error (error, "failed to build transaction: ");
+		gs_flatpak_error_convert (error);
+		return NULL;
+	}
+
+	/* set it to invisible so it doesn't affect app states */
+	gs_flatpak_transaction_set_invisible (GS_FLATPAK_TRANSACTION (transaction));
+
+	/* set it to abort before executing because we only want the list of updatable apps */
+	gs_flatpak_transaction_set_abort_early (GS_FLATPAK_TRANSACTION (transaction));
+
+	/* connect up signals */
+	g_signal_connect (transaction, "ref-to-app",
+			  G_CALLBACK (_ref_to_app), self);
+
+	/* use system installations as dependency sources for user installations */
+	flatpak_transaction_add_default_dependency_sources (transaction);
+
+	for (guint i = 0; i < installed_refs->len; i++) {
+		FlatpakInstalledRef *ref_tmp = g_ptr_array_index (installed_refs, i);
+		g_autofree char *ref = flatpak_ref_format_ref (FLATPAK_REF (ref_tmp);
+
+		if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, &local_error)) {
+			g_warning ("Unable to update %s: %s", ref, local_error->message);
+			g_clear_error (&local_error);
+		}
+	}
+
+	gs_flatpak_transaction_run (transaction, cancellable, &local_error)
+	if (!g_error_matches (local_error, FLATPAK_ERROR, FLATPAK_ERROR_ABORTED))
+		g_warning ("Transaction to list updates unexpectedly failed: %s", local_error->message);
+	g_clear_error (&local_error);
+
+	txn_ready_refs = gs_flatpak_transaction_get_ready_refs (transaction);
+	/* Check the returned list for any that are not installed, and if they are a runtime or related ref of app X which is installed, ensure X is in the list. */
+	{
+		GHashTableIter iter;
+		gpointer key;
+		g_hash_table_iter_init (&iter, txn_ready_refs);
+		while (g_hash_table_iter_next (&iter, &key, NULL)) {
+			const char *ref = value;
+			g_auto(GStrv) app_tokens = g_strsplit (ref, "/", -1);
+			FlatpakRefKind ref_kind;
+			g_autoptr(GError) local_error = NULL;
+			g_autoptr(FlatpakInstalledRef) installed_ref = NULL;
+
+			if (g_strv_length (app_tokens) != 4) {
+				g_warning ("Ref invalid: %s", ref);
+				continue;
+			}
+
+			if (g_strcmp0 (app_tokens[0], "app") == 0)
+				ref_kind = FLATPAK_REF_KIND_APP;
+			else
+				ref_kind = FLATPAK_REF_KIND_RUNTIME;
+
+			installed_ref = flatpak_installation_get_installed_ref (self->installation,
+										ref_kind,
+										app_tokens[1],
+										app_tokens[2],
+										app_tokens[3],
+										NULL,
+										&local_error);
+			if (local_error == NULL)
+				continue;
+			if (!g_error_matches (local_error, FLATPAK_ERROR, FLATPAK_ERROR_NOT_INSTALLED))
+				g_warning ("Unexpected error getting installed ref for %s: %s", ref, local_error->message)
+			else {
+				//TODO check if ref is a runtime or related ref of something installed
+			}
+		}
+	}
+
+	return g_steal_pointer (&installed_refs_for_update);
 }
 
 gboolean
