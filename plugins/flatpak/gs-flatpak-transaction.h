@@ -37,5 +37,6 @@ void			 gs_flatpak_transaction_set_invisible	(FlatpakTransaction	*transaction,
 								 gboolean		 invisible);
 void			 gs_flatpak_transaction_set_abort_early	(FlatpakTransaction	*transaction,
 								 gboolean		 abort_early);
+GHashTable		*gs_flatpak_transaction_get_ready_refs (FlatpakTransaction	*transaction);
 
 G_END_DECLS

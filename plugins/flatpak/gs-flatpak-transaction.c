@@ -15,6 +15,7 @@ struct _GsFlatpakTransaction {
 	FlatpakTransaction	 parent_instance;
 	GHashTable		*refhash;	/* ref:GsApp */
 	GHashTable		*apps_proxies;	/* GsApp:GsApp */
+	GHashTable		*ready_refs;	/* ref */
 	GError			*first_operation_error;
 #if !FLATPAK_CHECK_VERSION(1,5,1)
 	gboolean		 no_deploy;
@@ -51,6 +52,7 @@ gs_flatpak_transaction_finalize (GObject *object)
 	g_assert (self != NULL);
 	g_hash_table_unref (self->refhash);
 	g_hash_table_unref (self->apps_proxies);
+	g_hash_table_unref (self->ready_refs);
 	if (self->first_operation_error != NULL)
 		g_error_free (self->first_operation_error);
 
@@ -104,6 +106,23 @@ gs_flatpak_transaction_set_abort_early (FlatpakTransaction *transaction, gboolea
 	self->abort_early = abort_early;
 
 	g_object_notify (G_OBJECT (self), "abort-early");
+}
+
+/**
+ * gs_flatpak_transaction_get_ready_refs:
+ * @transaction: A #GsFlatpakTransaction
+ *
+ * Gets the set of refs that would be affected by the transaction, determined
+ * in the ready() callback after dependencies have been resolved.
+ *
+ * This must be called after gs_flatpak_transaction_run().
+ *
+ * Returns: (transfer full) (element-type utf8): A #GHashTable of refs (being used as a set)
+ */
+GHashTable *
+gs_flatpak_transaction_get_ready_refs (FlatpakTransaction *transaction)
+{
+	return g_hash_table_ref (self->ready_refs);
 }
 
 /* Sets installed app(s) back to installed state. Flatpak can return apps as updatable
@@ -339,6 +358,9 @@ _transaction_ready (FlatpakTransaction *transaction)
 	for (GList *l = ops; l != NULL; l = l->next) {
 		FlatpakTransactionOperation *op = l->data;
 		const gchar *ref = flatpak_transaction_operation_get_ref (op);
+
+		g_hash_table_add (self->ready_refs, g_strdup (ref));
+
 		g_autoptr(GsApp) app = _ref_to_app (self, ref);
 		if (app != NULL) {
 			_transaction_operation_set_app (op, app);
@@ -732,6 +754,8 @@ gs_flatpak_transaction_init (GsFlatpakTransaction *self)
 	self->apps_proxies = g_hash_table_new_full (g_direct_hash, g_direct_equal,
 						    (GDestroyNotify) g_object_unref,
 						    (GDestroyNotify) g_object_unref);
+	self->ready_refs = g_hash_table_new_full (g_str_hash, g_str_equal,
+						  g_free, NULL);
 }
 
 FlatpakTransaction *
