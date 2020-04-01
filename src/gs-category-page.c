@@ -25,6 +25,8 @@ typedef enum {
 	SUBCATEGORY_SORT_TYPE_NAME
 } SubcategorySortType;
 
+#define MAX_PLACEHOLDER_TILES 30
+
 struct _GsCategoryPage
 {
 	GsPage		 parent_instance;
@@ -40,6 +42,9 @@ struct _GsCategoryPage
 	guint		sort_rating_handler_id;
 	guint		sort_name_handler_id;
 	SubcategorySortType sort_type;
+	GsAppList	*apps;
+	GsAppList	*all_apps;
+	gint		 num_placeholders_left_to_show;
 
 	GtkWidget	*category_detail_box;
 	GtkWidget	*scrolledwindow_category;
@@ -128,9 +133,7 @@ gs_category_page_get_apps_cb (GObject *source_object,
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
-
-	/* show an empty space for no results */
-	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
+	g_autoptr(GsAppList) added_apps = NULL;
 
 	list = gs_plugin_loader_job_process_finish (plugin_loader,
 						    res,
@@ -141,8 +144,12 @@ gs_category_page_get_apps_cb (GObject *source_object,
 		return;
 	}
 
-	for (i = 0; i < gs_app_list_length (list); i++) {
-		app = gs_app_list_index (list, i);
+	added_apps = gs_app_list_difference (list, self->all_apps);
+	gs_app_list_add_list (self->all_apps, added_apps);
+	g_set_object (&self->apps, list);
+
+	for (i = 0; i < gs_app_list_length (added_apps); i++) {
+		app = gs_app_list_index (added_apps, i);
 		tile = gs_background_tile_new (app);
 		g_signal_connect (tile, "clicked",
 				  G_CALLBACK (app_tile_clicked), self);
@@ -157,6 +164,10 @@ gs_category_page_get_apps_cb (GObject *source_object,
 		gtk_widget_set_visible (self->no_apps_box, gs_category_get_size (self->subcategory) == 0);
 		gtk_widget_set_visible (self->scrolledwindow_category, gs_category_get_size (self->subcategory) != 0);
 	}
+
+	/* Re-filter the list to ensure the apps for this category are shown. */
+	self->num_placeholders_left_to_show = -1;
+	gtk_flow_box_invalidate_filter (GTK_FLOW_BOX (self->category_detail_box));
 }
 
 static gboolean
@@ -189,6 +200,41 @@ gs_category_page_sort_flow_box_sort_func (GtkFlowBoxChild *child1,
 	}
 
 	return gs_utils_sort_strcmp (gs_app_get_name (app1), gs_app_get_name (app2));
+}
+
+static gboolean
+gs_category_page_filter_apps_func (GtkFlowBoxChild *child,
+				   gpointer user_data)
+{
+	GsCategoryPage *self = user_data;
+	GsApp *app = gs_app_tile_get_app (GS_APP_TILE (gtk_bin_get_child (GTK_BIN (child))));
+
+	if (self->subcategory == NULL)
+		return TRUE;
+
+	/* let's show as many placeholders as desired */
+	/* TODO: Maintaining the filter state in `self` only works if we can
+	 * guarantee that `gs_category_page_filter_apps_func()` is only called
+	 * when we explicitly invalidate the filter. Is that true? */
+	if (self->num_placeholders_left_to_show > -1) {
+		/* don't show normal app tiles if we're supposed to show placeholders*/
+		if (app != NULL)
+			return FALSE;
+
+		/* we cannot drop below 0 here, otherwise it will start showing
+		* the regular app tiles */
+		if (self->num_placeholders_left_to_show > 0)
+			--self->num_placeholders_left_to_show;
+		return TRUE;
+	}
+
+	/* Don’t show the tile if it’s a placeholder otherwise. */
+	if (app == NULL)
+		return FALSE;
+
+	/* FIXME: App lists are stored as arrays, which means this is O(N^2) overall
+	 * due to `gs_category_page_filter_apps_func()` being called O(N) times. */
+	return self->apps != NULL && gs_app_list_lookup (self->apps, gs_app_get_unique_id (app));
 }
 
 static void
@@ -395,8 +441,6 @@ static void
 gs_category_page_reload (GsPage *page)
 {
 	GsCategoryPage *self = GS_CATEGORY_PAGE (page);
-	GtkWidget *tile;
-	guint i, count;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	if (self->subcategory == NULL)
@@ -423,17 +467,13 @@ gs_category_page_reload (GsPage *page)
 	g_signal_handler_block (self->sort_rating_button, self->sort_rating_handler_id);
 	g_signal_handler_block (self->sort_name_button, self->sort_name_handler_id);
 
-	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
-
 	/* just ensure the sort button has the correct label */
 	gs_category_page_sort_by_type (self, self->sort_type);
 
-	count = MIN(30, gs_category_get_size (self->subcategory));
-	for (i = 0; i < count; i++) {
-		tile = gs_background_tile_new (NULL);
-		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
-		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
-	}
+	/* ensure the placeholders are shown */
+	self->num_placeholders_left_to_show = MIN (MAX_PLACEHOLDER_TILES,
+						   (gint) gs_category_get_size (self->subcategory));
+	gtk_flow_box_invalidate_filter (GTK_FLOW_BOX (self->category_detail_box));
 
 	gtk_widget_set_visible (self->cancel_os_copy_button, FALSE);
 	gs_category_page_copy_dests_notify_cb (self->plugin_loader, NULL, self);
@@ -497,7 +537,7 @@ gs_category_page_create_filter (GsCategoryPage *self,
 	gboolean featured_category_found = FALSE;
 	gboolean use_header_filter = gs_category_page_should_use_header_filter (category);
 
-	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
+	gtk_flow_box_invalidate_filter (GTK_FLOW_BOX (self->category_detail_box));
 	gs_container_remove_all (GTK_CONTAINER (self->header_filter_box));
 	gs_container_remove_all (GTK_CONTAINER (self->popover_filter_box));
 
@@ -613,6 +653,7 @@ static void
 gs_category_page_init (GsCategoryPage *self)
 {
 	gtk_widget_init_template (GTK_WIDGET (self));
+	self->all_apps = gs_app_list_new ();
 }
 
 static void
@@ -622,6 +663,9 @@ gs_category_page_dispose (GObject *object)
 
 	g_cancellable_cancel (self->cancellable);
 	g_clear_object (&self->cancellable);
+
+	g_clear_object (&self->apps);
+	g_clear_object (&self->all_apps);
 
 	if (self->sort_rating_handler_id > 0) {
 		g_signal_handler_disconnect (self->sort_rating_button,
@@ -664,6 +708,10 @@ gs_category_page_setup (GsPage *page,
 	gtk_flow_box_set_sort_func (GTK_FLOW_BOX (self->category_detail_box),
 				    gs_category_page_sort_flow_box_sort_func,
 				    self, NULL);
+	gtk_flow_box_set_filter_func (GTK_FLOW_BOX (self->category_detail_box),
+				      gs_category_page_filter_apps_func,
+				      page,
+				      NULL);
 
 	self->sort_rating_handler_id = g_signal_connect (self->sort_rating_button,
 							 "clicked",
@@ -687,6 +735,14 @@ gs_category_page_setup (GsPage *page,
 
 	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_category));
 	gtk_container_set_focus_vadjustment (GTK_CONTAINER (self->category_detail_box), adj);
+
+	/* add the placeholder tiles already, to be shown when loading the category view */
+	for (guint i = 0; i < MAX_PLACEHOLDER_TILES; ++i) {
+		GtkWidget *tile = gs_background_tile_new (NULL);
+		gtk_container_add (GTK_CONTAINER (self->category_detail_box), tile);
+		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
+	}
+
 	return TRUE;
 }
 

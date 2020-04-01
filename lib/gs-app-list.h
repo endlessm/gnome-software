@@ -41,5 +41,7 @@ void		 gs_app_list_sort		(GsAppList	*list,
 void		 gs_app_list_filter		(GsAppList	*list,
 						 GsAppListFilterFunc func,
 						 gpointer	 user_data);
+GsAppList	*gs_app_list_difference		(GsAppList	*list_a,
+						 GsAppList	*list_b);
 
 G_END_DECLS

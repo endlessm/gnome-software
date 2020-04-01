@@ -829,6 +829,46 @@ gs_app_list_filter_duplicates (GsAppList *list, GsAppListFilterFlags flags)
 	}
 }
 
+/* TODO Docs, unit tests */
+GsAppList *
+gs_app_list_difference (GsAppList *list_a,
+                        GsAppList *list_b)
+{
+	g_autoptr(GMutexLocker) locker_a = NULL;
+	g_autoptr(GMutexLocker) locker_b = NULL;
+	g_autoptr(GHashTable) list_b_hash = NULL;
+	g_autoptr(GsAppList) diff = NULL;
+
+	g_return_val_if_fail (list_a == NULL || GS_IS_APP_LIST (list_a), NULL);
+	g_return_val_if_fail (list_b == NULL || GS_IS_APP_LIST (list_b), NULL);
+
+	/* Fast paths. */
+	if (list_a == NULL || gs_app_list_length (list_a) == 0)
+		return gs_app_list_new ();
+	else if (list_b == NULL || gs_app_list_length (list_b) == 0)
+		return gs_app_list_copy (list_a);
+
+	/* Slower path. */
+	locker_a = g_mutex_locker_new (&list_a->mutex);
+	locker_b = g_mutex_locker_new (&list_b->mutex);
+
+	list_b_hash = g_hash_table_new_full (g_str_hash, g_str_equal, NULL, NULL);
+	diff = gs_app_list_new ();
+
+	for (gsize i = 0; i < list_b->array->len; i++) {
+		GsApp *app = g_ptr_array_index (list_b->array, i);
+		g_hash_table_add (list_b_hash, gs_app_get_unique_id (app));
+	}
+
+	for (gsize i = 0; i < list_a->array->len; i++) {
+		GsApp *app = g_ptr_array_index (list_a->array, i);
+		if (!g_hash_table_contains (list_b_hash, gs_app_get_unique_id (app)))
+			gs_app_list_add_safe (diff, app, GS_APP_LIST_ADD_FLAG_NONE);
+	}
+
+	return g_steal_pointer (&diff);
+}
+
 /**
  * gs_app_list_copy:
  * @list: A #GsAppList
