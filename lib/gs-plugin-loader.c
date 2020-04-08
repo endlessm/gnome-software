@@ -4265,9 +4265,14 @@ gboolean
 gs_plugin_loader_copy_queue_empty (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	g_autoptr(GList) statuses = g_hash_table_get_values (priv->global_plugin_statuses);
-	if (g_list_find (statuses, GUINT_TO_POINTER (GS_PLUGIN_STATUS_COPYING)) != NULL) {
-		return FALSE;
+	GHashTableIter iter;
+	gpointer value;
+
+	g_hash_table_iter_init (&iter, priv->global_plugin_statuses);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		if (GPOINTER_TO_UINT (value) == GS_PLUGIN_STATUS_COPYING)
+			return FALSE;
 	}
+
 	return TRUE;
 }
