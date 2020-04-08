@@ -891,6 +891,10 @@ refine_app (GsPlugin             *plugin,
 	if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
 		return TRUE;
 
+	/* If it’s already blacklisted, there is little we need to do here. */
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE))
+		return TRUE;
+
 	if (gs_plugin_eos_blacklist_if_needed (plugin, app))
 		return TRUE;
 
