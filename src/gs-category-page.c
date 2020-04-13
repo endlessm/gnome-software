@@ -150,14 +150,8 @@ gs_category_page_get_apps_cb (GObject *source_object,
 		gtk_widget_set_can_focus (gtk_widget_get_parent (tile), FALSE);
 	}
 
-	self->sort_rating_handler_id = g_signal_connect (self->sort_rating_button,
-							 "clicked",
-							 G_CALLBACK (sort_button_clicked),
-							 self);
-	self->sort_name_handler_id = g_signal_connect (self->sort_name_button,
-						       "clicked",
-						       G_CALLBACK (sort_button_clicked),
-						       self);
+	g_signal_handler_unblock (self->sort_rating_button, self->sort_rating_handler_id);
+	g_signal_handler_unblock (self->sort_name_button, self->sort_name_handler_id);
 
 	if (g_strcmp0 (gs_category_get_id (self->category), "usb") == 0) {
 		gtk_widget_set_visible (self->no_apps_box, gs_category_get_size (self->subcategory) == 0);
@@ -426,17 +420,8 @@ gs_category_page_reload (GsPage *page)
 		gtk_widget_set_visible (self->subcats_sort_button, TRUE);
 	}
 
-	if (self->sort_rating_handler_id > 0) {
-		g_signal_handler_disconnect (self->sort_rating_button,
-					     self->sort_rating_handler_id);
-		self->sort_rating_handler_id = 0;
-	}
-
-	if (self->sort_name_handler_id > 0) {
-		g_signal_handler_disconnect (self->sort_name_button,
-					     self->sort_name_handler_id);
-		self->sort_name_handler_id = 0;
-	}
+	g_signal_handler_block (self->sort_rating_button, self->sort_rating_handler_id);
+	g_signal_handler_block (self->sort_name_button, self->sort_name_handler_id);
 
 	gs_container_remove_all (GTK_CONTAINER (self->category_detail_box));
 
@@ -638,6 +623,18 @@ gs_category_page_dispose (GObject *object)
 	g_cancellable_cancel (self->cancellable);
 	g_clear_object (&self->cancellable);
 
+	if (self->sort_rating_handler_id > 0) {
+		g_signal_handler_disconnect (self->sort_rating_button,
+					     self->sort_rating_handler_id);
+		self->sort_rating_handler_id = 0;
+	}
+
+	if (self->sort_name_handler_id > 0) {
+		g_signal_handler_disconnect (self->sort_name_button,
+					     self->sort_name_handler_id);
+		self->sort_name_handler_id = 0;
+	}
+
 	g_signal_handlers_disconnect_by_func (self->plugin_loader, gs_category_page_copy_dests_notify_cb, self);
 	g_clear_pointer (&self->copy_dests, g_ptr_array_unref);
 
@@ -667,6 +664,15 @@ gs_category_page_setup (GsPage *page,
 	gtk_flow_box_set_sort_func (GTK_FLOW_BOX (self->category_detail_box),
 				    gs_category_page_sort_flow_box_sort_func,
 				    self, NULL);
+
+	self->sort_rating_handler_id = g_signal_connect (self->sort_rating_button,
+							 "clicked",
+							 G_CALLBACK (sort_button_clicked),
+							 self);
+	self->sort_name_handler_id = g_signal_connect (self->sort_name_button,
+						       "clicked",
+						       G_CALLBACK (sort_button_clicked),
+						       self);
 
 	self->copying = FALSE;
 	self->copy_dests = NULL;

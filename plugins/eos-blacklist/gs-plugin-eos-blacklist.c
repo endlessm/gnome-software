@@ -879,16 +879,20 @@ gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
 	return blacklist_app;
 }
 
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+static gboolean
+refine_app (GsPlugin             *plugin,
+	    GsApp                *app,
+	    GsPluginRefineFlags   flags,
+	    GCancellable         *cancellable,
+	    GError              **error)
 {
 	/* if we don't know yet the state of an app then we shouldn't
 	 * do any further operations on it */
 	if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+		return TRUE;
+
+	/* If it’s already blacklisted, there is little we need to do here. */
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE))
 		return TRUE;
 
 	if (gs_plugin_eos_blacklist_if_needed (plugin, app))
@@ -904,6 +908,22 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		return TRUE;
 
 	gs_plugin_eos_remove_blacklist_from_usb_if_needed (plugin, app);
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_refine (GsPlugin             *plugin,
+		  GsAppList            *list,
+		  GsPluginRefineFlags   flags,
+		  GCancellable         *cancellable,
+		  GError              **error)
+{
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (!refine_app (plugin, app, flags, cancellable, error))
+			return FALSE;
+	}
 
 	return TRUE;
 }

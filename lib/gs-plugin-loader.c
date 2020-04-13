@@ -858,23 +858,41 @@ gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 			return FALSE;
 		}
 
-		/* use a copy of the list for the loop because a function called
-		 * on the plugin may affect the list which can lead to problems
-		 * (e.g. inserting an app in the list on every call results in
-		 * an infinite loop) */
-		app_list = gs_app_list_copy (list);
-		for (guint j = 0; j < gs_app_list_length (app_list); j++) {
-			GsApp *app = gs_app_list_index (app_list, j);
-			if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
+		if (gs_plugin_get_symbol (plugin, "gs_plugin_refine_app") != NULL ||
+		    gs_plugin_get_symbol (plugin, "gs_plugin_refine_wildcard") != NULL) {
+			/* use a copy of the list for the loop because a function called
+			 * on the plugin may affect the list which can lead to problems
+			 * (e.g. inserting an app in the list on every call results in
+			 * an infinite loop) */
+			app_list = gs_app_list_copy (list);
+
+			if (gs_plugin_get_symbol (plugin, "gs_plugin_refine_app") != NULL) {
 				helper->function_name = "gs_plugin_refine_app";
-			} else {
-				helper->function_name = "gs_plugin_refine_wildcard";
+
+				for (guint j = 0; j < gs_app_list_length (app_list); j++) {
+					GsApp *app = gs_app_list_index (app_list, j);
+					if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD) &&
+					    !gs_plugin_loader_call_vfunc (helper, plugin, app, NULL,
+									  refine_flags, cancellable, error)) {
+						return FALSE;
+					}
+				}
 			}
-			if (!gs_plugin_loader_call_vfunc (helper, plugin, app, NULL,
-							  refine_flags, cancellable, error)) {
-				return FALSE;
+
+			if (gs_plugin_get_symbol (plugin, "gs_plugin_refine_wildcard") != NULL) {
+				helper->function_name = "gs_plugin_refine_wildcard";
+
+				for (guint j = 0; j < gs_app_list_length (app_list); j++) {
+					GsApp *app = gs_app_list_index (app_list, j);
+					if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD) &&
+					    !gs_plugin_loader_call_vfunc (helper, plugin, app, NULL,
+									  refine_flags, cancellable, error)) {
+						return FALSE;
+					}
+				}
 			}
 		}
+
 		gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_FINISHED);
 	}
 
@@ -2084,16 +2102,17 @@ gboolean
 gs_plugin_loader_get_allow_updates (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	g_autoptr(GList) list = NULL;
+	GHashTableIter iter;
+	gpointer value;
 
 	/* nothing */
 	if (g_hash_table_size (priv->disallow_updates) == 0)
 		return TRUE;
 
 	/* list */
-	list = g_hash_table_get_values (priv->disallow_updates);
-	for (GList *l = list; l != NULL; l = l->next) {
-		const gchar *reason = l->data;
+	g_hash_table_iter_init (&iter, priv->disallow_updates);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		const gchar *reason = value;
 		g_debug ("managed updates inhibited by %s", reason);
 	}
 	return FALSE;
@@ -2135,16 +2154,17 @@ gs_plugin_loader_get_events (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	GPtrArray *events = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	g_autoptr(GList) keys = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->events_by_id_mutex);
+	GHashTableIter iter;
+	gpointer key, value;
 
 	/* just add everything */
-	keys = g_hash_table_get_keys (priv->events_by_id);
-	for (GList *l = keys; l != NULL; l = l->next) {
-		const gchar *key = l->data;
-		GsPluginEvent *event = g_hash_table_lookup (priv->events_by_id, key);
+	g_hash_table_iter_init (&iter, priv->events_by_id);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		const gchar *id = key;
+		GsPluginEvent *event = value;
 		if (event == NULL) {
-			g_warning ("failed to get event for '%s'", key);
+			g_warning ("failed to get event for '%s'", id);
 			continue;
 		}
 		g_ptr_array_add (events, g_object_ref (event));
@@ -2165,16 +2185,17 @@ GsPluginEvent *
 gs_plugin_loader_get_event_default (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	g_autoptr(GList) keys = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->events_by_id_mutex);
+	GHashTableIter iter;
+	gpointer key, value;
 
 	/* just add everything */
-	keys = g_hash_table_get_keys (priv->events_by_id);
-	for (GList *l = keys; l != NULL; l = l->next) {
-		const gchar *key = l->data;
-		GsPluginEvent *event = g_hash_table_lookup (priv->events_by_id, key);
+	g_hash_table_iter_init (&iter, priv->events_by_id);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		const gchar *id = key;
+		GsPluginEvent *event = value;
 		if (event == NULL) {
-			g_warning ("failed to get event for '%s'", key);
+			g_warning ("failed to get event for '%s'", id);
 			continue;
 		}
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INVALID))
@@ -2214,30 +2235,30 @@ gs_plugin_loader_allow_updates_cb (GsPlugin *plugin,
 				   GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	gpointer exists;
+	gboolean changed = FALSE;
 
 	/* plugin now allowing gnome-software to show updates panel */
-	exists = g_hash_table_lookup (priv->disallow_updates, plugin);
 	if (allow_updates) {
-		if (exists == NULL)
-			return;
-		g_debug ("plugin %s no longer inhibited managed updates",
-			 gs_plugin_get_name (plugin));
-		g_hash_table_remove (priv->disallow_updates, plugin);
+		if (g_hash_table_remove (priv->disallow_updates, plugin)) {
+			g_debug ("plugin %s no longer inhibited managed updates",
+				 gs_plugin_get_name (plugin));
+			changed = TRUE;
+		}
 
 	/* plugin preventing the updates panel from being shown */
 	} else {
-		if (exists != NULL)
-			return;
-		g_debug ("plugin %s inhibited managed updates",
-			 gs_plugin_get_name (plugin));
-		g_hash_table_insert (priv->disallow_updates,
-				     (gpointer) plugin,
-				     (gpointer) gs_plugin_get_name (plugin));
+		if (g_hash_table_replace (priv->disallow_updates,
+					  (gpointer) plugin,
+					  (gpointer) gs_plugin_get_name (plugin))) {
+			g_debug ("plugin %s inhibited managed updates",
+				 gs_plugin_get_name (plugin));
+			changed = TRUE;
+		}
 	}
 
-	/* something possibly changed, so notify display layer */
-	g_object_notify (G_OBJECT (plugin_loader), "allow-updates");
+	/* notify display layer */
+	if (changed)
+		g_object_notify (G_OBJECT (plugin_loader), "allow-updates");
 }
 
 static void
@@ -3537,6 +3558,7 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	GsPluginRefineFlags filter_flags;
 	GsPluginRefineFlags refine_flags;
 	gboolean add_to_pending_array = FALSE;
+	guint max_results;
 
 	/* these change the pending count on the installed panel */
 	switch (action) {
@@ -3650,7 +3672,8 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 
 	/* refine with enough data so that the sort_func can do what it needs */
 	filter_flags = gs_plugin_job_get_filter_flags (helper->plugin_job);
-	if (filter_flags > 0) {
+	max_results = gs_plugin_job_get_max_results (helper->plugin_job);
+	if (filter_flags > 0 && max_results > 0) {
 		g_autoptr(GsPluginLoaderHelper) helper2 = NULL;
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
@@ -4265,9 +4288,14 @@ gboolean
 gs_plugin_loader_copy_queue_empty (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	g_autoptr(GList) statuses = g_hash_table_get_values (priv->global_plugin_statuses);
-	if (g_list_find (statuses, GUINT_TO_POINTER (GS_PLUGIN_STATUS_COPYING)) != NULL) {
-		return FALSE;
+	GHashTableIter iter;
+	gpointer value;
+
+	g_hash_table_iter_init (&iter, priv->global_plugin_statuses);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		if (GPOINTER_TO_UINT (value) == GS_PLUGIN_STATUS_COPYING)
+			return FALSE;
 	}
+
 	return TRUE;
 }
