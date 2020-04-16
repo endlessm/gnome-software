@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2020-02-17 07:49+0100\n"
 "Last-Translator: Balázs Úr <ur.balazs at fsf dot hu>\n"
 "Language-Team: Hungarian <gnome-hu-list at gnome dot org>\n"
@@ -311,7 +311,7 @@ msgstr "GNOME Shell kiterjesztések tárolójának engedélyezése"
 
 #: data/org.gnome.software.gschema.xml:144
 msgid "Sorts the apps shown in the overview in alphabetical order"
-msgstr ""
+msgstr "Megjeleníti az alkalmazásokat az áttekítési listában betűrendben"
 
 #: data/org.gnome.software.gschema.xml:151
 msgid "A string storing the gnome-online-account id used to login"
@@ -590,9 +590,8 @@ msgstr "Frissítés"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:148 src/gs-app-row.c:157 src/gs-page.c:548
-#, fuzzy
 msgid "Uninstall"
-msgstr "Telepítés"
+msgstr "Eltávolítás"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
@@ -621,16 +620,15 @@ msgstr "%s (telepítve)"
 
 #: src/gs-background-tile.ui:71
 msgid "Scheduled update"
-msgstr ""
+msgstr "Ütemezett frissítés"
 
 #: src/gs-background-tile.ui:85
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "Elérhető egy USB meghajtón"
 
 #: src/gs-background-tile.ui:99
-#, fuzzy
 msgid "Requires download"
-msgstr "Újraindítás szükséges"
+msgstr "Letöltést igényel"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1477,13 +1475,13 @@ msgstr ""
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:414
 msgid "Pending installation…"
-msgstr "Függőben lévő telepítés…"
+msgstr "Függőben lévő telepítés..."
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
 #: src/gs-details-page.c:421
 msgid "Pending update…"
-msgstr "Függőben lévő frissítés…"
+msgstr "Függőben lévő frissítés..."
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:779
@@ -1528,9 +1526,8 @@ msgstr "I_ndítás"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1035 src/gs-details-page.ui:414
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Telepítés"
+msgstr "Eltávolítás"
 
 #: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1720,12 +1717,12 @@ msgstr "Részletek oldal"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:168
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "Hozzá_adás az Asztalhoz"
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:179
 msgid "_Remove from Desktop"
-msgstr ""
+msgstr "Eltávolítás az Asztal_ról"
 
 #: src/gs-details-page.ui:226
 msgid "Downloading"
@@ -3599,14 +3596,12 @@ msgid "Looking for new updates…"
 msgstr "Új frissítések keresése…"
 
 #: src/gs-updates-page.c:313
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Automatikus frissítések"
+msgstr "Automatikus frissítések: be"
 
 #: src/gs-updates-page.c:316
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Automatikus frissítések"
+msgstr "Automatikus frissítések: ki."
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:399
@@ -3763,11 +3758,11 @@ msgstr "Ajánlott az adatainak és fájljainak mentése a frissítés előtt."
 
 #: src/gs-upgrade-banner.c:69
 msgid "_Restart Now"
-msgstr "Újra_indítás most"
+msgstr "_Újraindítás most"
 
 #: src/gs-upgrade-banner.c:71
 msgid "Updates will be applied when the computer is restarted."
-msgstr "A frissítések akkor lesznek alkalmazva, ha a számítógép újraindul."
+msgstr "A frissítések a számítógép újraindítása után lépnek életbe."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -3812,11 +3807,11 @@ msgstr "_További tudnivalók"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "App Center"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "Még több alkalmazás"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -3852,31 +3847,26 @@ msgid "Music Players"
 msgstr "Zenelejátszók"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3D grafika"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fényképészet"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Lapolvasás"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Vektorgrafika"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Megjelenítők"
@@ -4048,13 +4038,11 @@ msgid "Word Processor"
 msgstr "Szövegszerkesztő"
 
 #: plugins/core/gs-desktop-common.c:193
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "All"
-msgstr "Mind"
+msgstr "Összes"
 
 #: plugins/core/gs-desktop-common.c:199
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Featured"
 msgstr "Kiemelt"
@@ -4065,7 +4053,6 @@ msgid "Fonts"
 msgstr "Betűkészletek"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Csevegés"
@@ -4096,7 +4083,6 @@ msgid "Hardware Drivers"
 msgstr "Hardver illesztőprogramok"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Szövegszerkesztők"
@@ -4112,16 +4098,14 @@ msgid "News"
 msgstr "Hírolvasó"
 
 #: plugins/core/gs-desktop-common.c:238
-#, fuzzy
 msgctxt "Menu of Settings"
 msgid "Settings"
 msgstr "Beállítások"
 
 #: plugins/core/gs-desktop-common.c:247
-#, fuzzy
 msgctxt "Menu of System"
 msgid "System"
-msgstr "rendszer"
+msgstr "Rendszer"
 
 #: plugins/core/gs-desktop-common.c:260 plugins/core/gs-desktop-common.c:304
 msgctxt "Menu of Reference"
@@ -4134,7 +4118,6 @@ msgid "Featured"
 msgstr "Kiemelt"
 
 #: plugins/core/gs-desktop-common.c:266
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Art"
 msgstr "Művészet"
@@ -4152,7 +4135,7 @@ msgstr "Képregény"
 #: plugins/core/gs-desktop-common.c:275
 msgctxt "Menu of Reference"
 msgid "Feed"
-msgstr ""
+msgstr "Hírfolyam"
 
 #: plugins/core/gs-desktop-common.c:278
 msgctxt "Menu of Reference"
@@ -4175,10 +4158,9 @@ msgid "Lifestyle"
 msgstr "Életstílus"
 
 #: plugins/core/gs-desktop-common.c:290
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "News"
-msgstr "Hírolvasó"
+msgstr "Hírek"
 
 #: plugins/core/gs-desktop-common.c:293
 msgctxt "Menu of Reference"
@@ -4192,9 +4174,8 @@ msgstr "Sport"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: plugins/core/gs-desktop-common.c:314
-#, fuzzy
 msgid "Learning"
-msgstr "Lapolvasás"
+msgstr "Tanulás"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: plugins/core/gs-desktop-common.c:317
@@ -4211,18 +4192,17 @@ msgstr "_További tudnivalók"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:324
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimédia"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:327
 msgid "Work"
-msgstr ""
+msgstr "Munka"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: plugins/core/gs-desktop-common.c:330
-#, fuzzy
 msgid "Reference & News"
-msgstr "Hivatkozás"
+msgstr "Referencia & Hírek"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: plugins/core/gs-desktop-common.c:333
@@ -4232,13 +4212,12 @@ msgstr "Segédprogramok"
 #. TRANSLATORS: this is the menu spec main category for updates on a USB stick
 #: plugins/core/gs-desktop-common.c:336
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Fejlesztőeszközök"
 
@@ -4260,21 +4239,19 @@ msgid "Downloading featured images…"
 msgstr "Kiemelt képek letöltése…"
 
 #: plugins/eos/gs-plugin-eos.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Válasszon alkalmazást:"
+msgstr "Az alkalmazás indítása nem lehetséges."
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:931
-#, fuzzy
 msgid "Endless Platform"
-msgstr "Endless OS"
+msgstr "Endless Platform"
 
 #. TRANSLATORS: this is the summary of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:933
-#, fuzzy
 msgid "Framework for applications"
-msgstr "Alkalmazások keresése"
+msgstr "Keretrendszerek alkalmazásokhoz"
 
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:563

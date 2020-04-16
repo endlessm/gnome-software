@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2020-02-05 15:10+0300\n"
 "Last-Translator: Emin Tufan Çetin <etcetin@gmail.com>\n"
 "Language-Team: Turkish <gnome-turk@gnome.org>\n"
@@ -302,7 +302,7 @@ msgstr "GNOME Kabuğu eklentileri deposunu etkinleştir"
 
 #: data/org.gnome.software.gschema.xml:144
 msgid "Sorts the apps shown in the overview in alphabetical order"
-msgstr ""
+msgstr "Genel bakışta gösterilen uygulamaları alfabetik sıraya göre sıralar"
 
 #: data/org.gnome.software.gschema.xml:151
 msgid "A string storing the gnome-online-account id used to login"
@@ -551,9 +551,8 @@ msgstr "Web sitesini ziyaret et"
 #. * allows the application to be easily installed.
 #. * The ellipsis indicates that further steps are required
 #: src/gs-app-row.c:123
-#, fuzzy
 msgid "Download…"
-msgstr "_İndir"
+msgstr "İndir..."
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
@@ -564,9 +563,8 @@ msgstr "İptal"
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
 #: src/gs-app-row.c:137
-#, fuzzy
 msgid "Download"
-msgstr "_İndir"
+msgstr "İndir"
 
 #. TRANSLATORS: this is a button in the updates panel
 #. * that allows the app to be easily updated live
@@ -578,16 +576,14 @@ msgstr "Güncelle"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:148 src/gs-app-row.c:157 src/gs-page.c:548
-#, fuzzy
 msgid "Uninstall"
-msgstr "Kur"
+msgstr "Kaldır"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
 #: src/gs-app-row.c:169
-#, fuzzy
 msgid "Uninstalling"
-msgstr "Kuruluyor"
+msgstr "Kaldırılıyor"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -609,16 +605,15 @@ msgstr "%s (Kuruldu)"
 
 #: src/gs-background-tile.ui:71
 msgid "Scheduled update"
-msgstr ""
+msgstr "Planlanmış güncelleme"
 
 #: src/gs-background-tile.ui:85
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "USB sürücüde mevcut"
 
 #: src/gs-background-tile.ui:99
-#, fuzzy
 msgid "Requires download"
-msgstr "Yeniden Başlatma Gerektirir"
+msgstr "İndirme gerektiriyor"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -639,7 +634,7 @@ msgstr "Vitrin"
 
 #: src/gs-category-page.c:342 src/gs-category-page.ui:64
 msgid "Copy OS to USB"
-msgstr ""
+msgstr "İşletim Sistemini USB'ye Kopyala"
 
 #. TRANSLATORS: This is a heading on the categories page. %s gets
 #. replaced by the category name, e.g. 'Graphics & Photography'
@@ -661,7 +656,7 @@ msgstr "Ad"
 
 #: src/gs-category-page.ui:118
 msgid "No apps available on USB"
-msgstr ""
+msgstr "USB'de uygulama yok"
 
 #. TRANSLATORS: This is a label for the category filter drop down, which all together can read e.g. 'Show Vector Graphics'.
 #: src/gs-category-page.ui:198
@@ -815,13 +810,15 @@ msgstr "Ayrıntılar"
 #: src/gs-common.c:624
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
-msgstr[0] "Güncellemeler kuruldu"
+msgstr[0] "Güncelleme yüklendi"
+msgstr[1] "Güncellemeler yüklendi"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:629
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
-msgstr[0] "Bunların etkili olması için yeniden başlatmanız gerekiyor."
+msgstr[0] "Değişikliğin etkili olması için yeniden başlatman gerekiyor."
+msgstr[1] "Değişikliklerin etkili olması için yeniden başlatman gerekiyor."
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:636 src/gs-update-monitor.c:122
@@ -1430,11 +1427,11 @@ msgstr "Yazılımlar’da Bul"
 
 #: src/gs-details-page.c:279 src/gs-details-page.ui:265
 msgid "Copy to US_B"
-msgstr ""
+msgstr "US_B'ye kopyala"
 
 #: src/gs-details-page.c:282
 msgid "Insert USB to Copy To"
-msgstr ""
+msgstr "Kopyalanacak USB'yi takın"
 
 #: src/gs-details-page.c:286
 #, fuzzy
@@ -1447,7 +1444,7 @@ msgstr "Kaldırılıyor…"
 
 #: src/gs-details-page.c:402
 msgid "Copying"
-msgstr ""
+msgstr "Kopyalanıyor"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be installed soon
@@ -1493,9 +1490,8 @@ msgstr "_İndir"
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
 #: src/gs-details-page.c:966
-#, fuzzy
 msgid "_Download…"
-msgstr "_İndir"
+msgstr "_İndir..."
 
 #. TRANSLATORS: A label for a button to execute the selected application.
 #: src/gs-details-page.c:1011
@@ -1504,9 +1500,8 @@ msgstr "_Başlat"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1035 src/gs-details-page.ui:414
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Kur"
+msgstr "_Kaldır"
 
 #: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1653,7 +1648,7 @@ msgstr "“%s” bulunamıyor"
 
 #: src/gs-details-page.c:2425
 msgid "Copied to USB"
-msgstr ""
+msgstr "USB'ye kopyalandı"
 
 #. TRANSLATORS: see the wikipedia page
 #: src/gs-details-page.c:2571
@@ -1681,7 +1676,8 @@ msgstr "Özgür Yazılım"
 #: src/gs-details-page.c:2648
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
-msgstr[0] "Kullanıcılar şu lisanslarla sınırlanmıştır:"
+msgstr[0] "Kullanıcılar aşağıdaki lisansa tabidir:"
+msgstr[1] "Kullanıcılar aşağıdaki lisanslara tabidir:"
 
 #: src/gs-details-page.c:2675 src/gs-details-page.ui:1324
 msgid "More information"
@@ -1694,13 +1690,12 @@ msgstr "Ayrıntılar sayfası"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:168
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "Masaüstüne _Ekle"
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:179
-#, fuzzy
 msgid "_Remove from Desktop"
-msgstr "Klasörden _Kaldır"
+msgstr "Masaüstünden _Kaldır"
 
 #: src/gs-details-page.ui:226
 msgid "Downloading"
@@ -1935,7 +1930,8 @@ msgstr[0] "%s betiği/betikleri için kullanılabilir yazı tipleri"
 #, c-format
 msgid "Available software for %s"
 msgid_plural "Available software for %s"
-msgstr[0] "%s için kullanılabilir yazılım"
+msgstr[0] "%s için mevcut yazılım"
+msgstr[1] "%s için mevcut yazılım"
 
 #: src/gs-extras-page.c:213
 msgid "Unable to Find Requested Software"
@@ -2082,8 +2078,11 @@ msgid_plural ""
 "Unfortunately, the %s you were searching for could not be found. Please see "
 "%s for more information."
 msgstr[0] ""
-"Ne yazık ki aradığınız %s bulunamadı. Daha çok bilgi için lütfen %s’ni "
-"ziyaret edin."
+"Ne yazık ki, aradığınız %s bulunamadı. Lütfen daha fazla bilgi için %s "
+"bakınız."
+msgstr[1] ""
+"Ne yazık ki, aradığınız %s bulunamadı. Lütfen daha fazla bilgi için %s "
+"bakınız."
 
 #: src/gs-extras-page.c:526 src/gs-extras-page.c:582 src/gs-extras-page.c:621
 msgid "Failed to find any search results"
@@ -2383,7 +2382,8 @@ msgstr "_Devam Et"
 #, c-format
 msgid "%u application installed"
 msgid_plural "%u applications installed"
-msgstr[0] "%u uygulama kuruldu"
+msgstr[0] "%u uygulama kurulmuş"
+msgstr[1] "%u uygulama kurulmuş"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2391,7 +2391,8 @@ msgstr[0] "%u uygulama kuruldu"
 #, c-format
 msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
-msgstr[0] "%u eklenti kuruldu"
+msgstr[0] "%u eklenti kurulmuş"
+msgstr[1] "%u eklenti kurulmuş"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2401,6 +2402,7 @@ msgstr[0] "%u eklenti kuruldu"
 msgid "%u application"
 msgid_plural "%u applications"
 msgstr[0] "%u uygulama"
+msgstr[1] "%u uygulama"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2410,6 +2412,7 @@ msgstr[0] "%u uygulama"
 msgid "%u add-on"
 msgid_plural "%u add-ons"
 msgstr[0] "%u eklenti"
+msgstr[1] "%u eklenti"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2420,6 +2423,7 @@ msgstr[0] "%u eklenti"
 msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
 msgstr[0] "%s ve %s kuruldu"
+msgstr[1] "%s ve %s kuruldu"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2726,6 +2730,7 @@ msgstr "Ekran Görüntüsü"
 msgid "%u more match"
 msgid_plural "%u more matches"
 msgstr[0] "%u eşleşme daha"
+msgstr[1] "%u eşleşme daha"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -3322,7 +3327,8 @@ msgstr "Görüntüle"
 #, c-format
 msgid "%u Application Updated — Restart Required"
 msgid_plural "%u Applications Updated — Restart Required"
-msgstr[0] "%u Uygulama Güncellendi — Yeniden Başlatma Gerekiyor"
+msgstr[0] "%u  Uygulama Güncelledi - Yeniden Başlatma Gerekiyor"
+msgstr[1] "%u Uygulama Güncelledi - Yeniden Başlatma Gerekiyor"
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:237
@@ -3330,6 +3336,7 @@ msgstr[0] "%u Uygulama Güncellendi — Yeniden Başlatma Gerekiyor"
 msgid "%u Application Updated"
 msgid_plural "%u Applications Updated"
 msgstr[0] "%u Uygulama Güncellendi"
+msgstr[1] "%u Uygulama Güncellendi"
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:248
@@ -3353,7 +3360,8 @@ msgstr "%s ve %s güncellendi."
 #, c-format
 msgid "%u application requires a restart."
 msgid_plural "%u applications require a restart."
-msgstr[0] "%u uygulama yeniden başlatma gerektiriyor."
+msgstr[0] "%u uygulamanın yeniden başlatılması gerekiyor."
+msgstr[1] "%u uygulamanın yeniden başlatılması gerekiyor."
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:277
@@ -3414,13 +3422,15 @@ msgstr "%s %s’a Hoş Geldiniz!"
 #: src/gs-update-monitor.c:1003
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
-msgstr[0] "Yazılım Güncellemeleri Kuruldu"
+msgstr[0] "Yazılım Güncellemesi Yüklendi"
+msgstr[1] "Yazılım Güncellemeleri Yüklendi"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1007
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
-msgstr[0] "Önemli işletim sistemi güncellemeleri kuruldu."
+msgstr[0] "Önemli işletim sistemi güncelleştirmesi yüklendi."
+msgstr[1] "Önemli işletim sistemi güncelleştirmeleri yüklendi."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -3540,14 +3550,12 @@ msgid "Looking for new updates…"
 msgstr "Yeni güncellemeler aranıyor…"
 
 #: src/gs-updates-page.c:313
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Kendiliğinden Güncellemeler"
+msgstr "otomatik güncellemeler etkin"
 
 #: src/gs-updates-page.c:316
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Kendiliğinden Güncellemeler"
+msgstr "otomatik güncellemeler devre dışı"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:399
@@ -3606,7 +3614,7 @@ msgstr ""
 #. * control-center network panel
 #: src/gs-updates-page.c:962
 msgid "Check _Anyway"
-msgstr "Yine de _Denetle"
+msgstr "_Her zaman kontrol et"
 
 #. TRANSLATORS: can't do updates check
 #: src/gs-updates-page.c:978
@@ -3704,11 +3712,11 @@ msgstr "Yükseltmeden önce verilerinizi ve dosyalarınızı yedeklemeniz öneri
 
 #: src/gs-upgrade-banner.c:69
 msgid "_Restart Now"
-msgstr "Şimdi _Yeniden Başlat"
+msgstr "_Şimdi Yeniden Başlat"
 
 #: src/gs-upgrade-banner.c:71
 msgid "Updates will be applied when the computer is restarted."
-msgstr "Bilgisayar yeniden başlatıldığında güncellemeler uygulanacaktır."
+msgstr "Bilgisayar yeniden başlatıldığında güncellemeler uygulanacak."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -3724,7 +3732,7 @@ msgstr "%s %s Şimdi Kullanılabilir Durumda"
 #: src/gs-upgrade-banner.c:96
 #, c-format
 msgid "Waiting to Download %s %s"
-msgstr "%s %s İndirme İçin Bekliyor"
+msgstr "İndirmek için bekleniyor %s %s"
 
 #. TRANSLATORS: This is the text displayed while downloading a
 #. * distro upgrade. First %s is the distro name and the 2nd %s
@@ -3753,11 +3761,11 @@ msgstr "Daha Çoğunu _Öğren"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Uygulama Merkezi"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "Daha Fazla Uygulama"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -3793,31 +3801,26 @@ msgid "Music Players"
 msgstr "Müzik Oynatıcılar"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3B Grafik"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotoğrafçılık"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Tarama"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Vektör Grafikleri"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Görüntüleyiciler"
@@ -3953,7 +3956,6 @@ msgid "Strategy"
 msgstr "Strateji"
 
 #: plugins/core/gs-desktop-common.c:159
-#, fuzzy
 msgctxt "Menu of Learn to Code"
 msgid "All"
 msgstr "Tümü"
@@ -4004,7 +4006,6 @@ msgid "Fonts"
 msgstr "Yazı Tipleri"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Sohbet"
@@ -4035,7 +4036,6 @@ msgid "Hardware Drivers"
 msgstr "Donanım Sürücüleri"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Metin Düzenleyiciler"
@@ -4051,16 +4051,14 @@ msgid "News"
 msgstr "Haberler"
 
 #: plugins/core/gs-desktop-common.c:238
-#, fuzzy
 msgctxt "Menu of Settings"
 msgid "Settings"
 msgstr "Ayarlar"
 
 #: plugins/core/gs-desktop-common.c:247
-#, fuzzy
 msgctxt "Menu of System"
 msgid "System"
-msgstr "sistem"
+msgstr "Sistem"
 
 #: plugins/core/gs-desktop-common.c:260 plugins/core/gs-desktop-common.c:304
 msgctxt "Menu of Reference"
@@ -4073,7 +4071,6 @@ msgid "Featured"
 msgstr "Vitrin"
 
 #: plugins/core/gs-desktop-common.c:266
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Art"
 msgstr "Sanat"
@@ -4089,10 +4086,9 @@ msgid "Comics"
 msgstr "Çizgi Romanlar"
 
 #: plugins/core/gs-desktop-common.c:275
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Feed"
-msgstr "Özet Akışı"
+msgstr "Akış"
 
 #: plugins/core/gs-desktop-common.c:278
 msgctxt "Menu of Reference"
@@ -4115,7 +4111,6 @@ msgid "Lifestyle"
 msgstr "Yaşam tarzı"
 
 #: plugins/core/gs-desktop-common.c:290
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "News"
 msgstr "Haberler"
@@ -4132,9 +4127,8 @@ msgstr "Spor"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: plugins/core/gs-desktop-common.c:314
-#, fuzzy
 msgid "Learning"
-msgstr "Tarama"
+msgstr "Eğitim"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: plugins/core/gs-desktop-common.c:317
@@ -4144,25 +4138,23 @@ msgstr "Oyunlar"
 #. TRANSLATORS: this is the menu spec main category for Endless
 #. * Studios' "learn to code" category
 #: plugins/core/gs-desktop-common.c:321
-#, fuzzy
 msgid "Learn to Code"
-msgstr "Daha Çoğunu _Öğren"
+msgstr "Kodlama Öğren"
 
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:324
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimedya"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:327
 msgid "Work"
-msgstr ""
+msgstr "İş"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: plugins/core/gs-desktop-common.c:330
-#, fuzzy
 msgid "Reference & News"
-msgstr "Atıf"
+msgstr "Referans & Haber"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: plugins/core/gs-desktop-common.c:333
@@ -4172,13 +4164,12 @@ msgstr "Araçlar"
 #. TRANSLATORS: this is the menu spec main category for updates on a USB stick
 #: plugins/core/gs-desktop-common.c:336
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Geliştirme Araçları"
 
@@ -4200,21 +4191,19 @@ msgid "Downloading featured images…"
 msgstr "Vitrin resimleri indiriliyor…"
 
 #: plugins/eos/gs-plugin-eos.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Bir uygulama seç:"
+msgstr "Bu uygulama başlatılamadı."
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:931
-#, fuzzy
 msgid "Endless Platform"
-msgstr "Endless OS"
+msgstr "Endless Platform"
 
 #. TRANSLATORS: this is the summary of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:933
-#, fuzzy
 msgid "Framework for applications"
-msgstr "Uygulamalarda ara"
+msgstr "Uygulamalar için geliştirme çatısı"
 
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:563
@@ -4224,7 +4213,8 @@ msgstr "Endless OS"
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:566
 msgid "An Endless OS update with new features and fixes."
-msgstr "Yeni özellikler ve düzeltmeler içeren Endless OS güncellemesi."
+msgstr ""
+"Yeni özelliklerler ve sistem düzeltmeleri içeren Endless OS güncellemesi."
 
 #: plugins/eos-updater/gs-plugin-eos-updater.c:874
 msgid "EOS update service could not fetch and apply the update."

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2019-02-16 17:04+0500\n"
 "Last-Translator: Baurzhan Muftakhidinov <baurthefirst@gmail.com>\n"
 "Language-Team: Kazakh <kk_KZ@googlegroups.com>\n"
@@ -1653,6 +1653,7 @@ msgstr "Еркін бағд. қамтама"
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Пайдаланушылар келесі лицензиялармен шектелген:"
+msgstr[1] "Пайдаланушылар келесі лицензиялармен шектелген:"
 
 #: src/gs-details-page.c:2675 src/gs-details-page.ui:1324
 msgid "More information"
@@ -1891,6 +1892,7 @@ msgstr ", "
 msgid "Available fonts for the %s script"
 msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "%s жазуы үшін қолжетерлік қаріптер"
+msgstr[1] "%s жазуы үшін қолжетерлік қаріптер"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -1899,6 +1901,7 @@ msgstr[0] "%s жазуы үшін қолжетерлік қаріптер"
 msgid "Available software for %s"
 msgid_plural "Available software for %s"
 msgstr[0] "%s үшін қолжетерлік БҚ"
+msgstr[1] "%s үшін қолжетерлік БҚ"
 
 #: src/gs-extras-page.c:213
 msgid "Unable to Find Requested Software"
@@ -2045,6 +2048,9 @@ msgid_plural ""
 "Unfortunately, the %s you were searching for could not be found. Please see "
 "%s for more information."
 msgstr[0] ""
+"Өкінішке орай, сіз іздеген %s табу мүмкін емес. Көбірек білу үшін, %s "
+"қараңыз."
+msgstr[1] ""
 "Өкінішке орай, сіз іздеген %s табу мүмкін емес. Көбірек білу үшін, %s "
 "қараңыз."
 
@@ -2345,6 +2351,7 @@ msgstr "Жалға_стыру"
 msgid "%u application installed"
 msgid_plural "%u applications installed"
 msgstr[0] "%u қолданба орнатылды"
+msgstr[1] "%u қолданба орнатылды"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2353,6 +2360,7 @@ msgstr[0] "%u қолданба орнатылды"
 msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
 msgstr[0] "%u қосымша орнатылды"
+msgstr[1] "%u қосымша орнатылды"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2362,6 +2370,7 @@ msgstr[0] "%u қосымша орнатылды"
 msgid "%u application"
 msgid_plural "%u applications"
 msgstr[0] "%u қолданба"
+msgstr[1] "%u қолданба"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2371,6 +2380,7 @@ msgstr[0] "%u қолданба"
 msgid "%u add-on"
 msgid_plural "%u add-ons"
 msgstr[0] "%u қосымша"
+msgstr[1] "%u қосымша"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2381,6 +2391,7 @@ msgstr[0] "%u қосымша"
 msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
 msgstr[0] "%s және %s орнатылды"
+msgstr[1] "%s және %s орнатылды"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2676,6 +2687,7 @@ msgstr "Скриншот"
 msgid "%u more match"
 msgid_plural "%u more matches"
 msgstr[0] "тағы %u сәйкестік"
+msgstr[1] "тағы %u сәйкестік"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -3365,12 +3377,14 @@ msgstr "%s %s ішіне қош келдіңіз!"
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "БҚ жаңартулары орнатылды"
+msgstr[1] "БҚ жаңартулары орнатылды"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1007
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "Маңызды БҚ жаңартулары орнатылды."
+msgstr[1] "Маңызды БҚ жаңартулары орнатылды."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -3746,31 +3760,26 @@ msgid "Music Players"
 msgstr "Музыкалық плеерлер"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3D графикасы"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Фотография"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Сканерлеу"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Векторлық графика"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Қарау қолданбалары"
@@ -3957,7 +3966,6 @@ msgid "Fonts"
 msgstr "Қаріптер"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Чат"
@@ -3988,10 +3996,9 @@ msgid "Hardware Drivers"
 msgstr "Құрылғылық драйверлер"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
-msgstr "Мәтін түзетушілері"
+msgstr "Мәтін түзетушісі"
 
 #: plugins/core/gs-desktop-common.c:231
 msgctxt "Menu of Communication & News"
@@ -4131,7 +4138,6 @@ msgstr ""
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Өндіру саймандары"
 
@@ -4374,7 +4380,6 @@ msgstr "Snap - бұл әмбебап Linux дестесі"
 #~ msgid "Use"
 #~ msgstr "Қолдану"
 
-#~| msgid "_Add to Folder…"
 #~ msgid "Add another…"
 #~ msgstr "Басқасын қосу…"
 
@@ -4568,7 +4573,6 @@ msgstr "Snap - бұл әмбебап Linux дестесі"
 #~ msgid "Sign in…"
 #~ msgstr "Кіру…"
 
-#~| msgid "Sign out from %s"
 #~ msgid "Sign out"
 #~ msgstr "Шығу"
 
@@ -4651,16 +4655,12 @@ msgstr "Snap - бұл әмбебап Linux дестесі"
 #~ msgid "Downloading shell extension metadata…"
 #~ msgstr "Қоршам кеңейтуінің метадеректерін жүктеп алу…"
 
-#~| msgctxt "Menu of Add-ons"
-#~| msgid "Shell Extensions"
 #~ msgid "GNOME Shell Extension"
 #~ msgstr "GNOME Shell кеңейтуі"
 
-#~| msgid "To continue you need to sign in."
 #~ msgid "To continue, you need to use an Ubuntu One account."
 #~ msgstr "Жалғастыру үшін, сізге Ubuntu One тіркелгісін қолдану керек."
 
-#~| msgid "To continue you need to sign in."
 #~ msgid "To continue, you need to use your Ubuntu One account."
 #~ msgstr "Жалғастыру үшін, сізге Ubuntu One тіркелгіңізді қолдану керек."
 

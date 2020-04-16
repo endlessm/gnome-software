@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2020-02-29 22:00+0100\n"
 "Last-Translator: Matej Urbančič <mateju@svn.gnome.org>\n"
 "Language-Team: Slovenščina <gnome-si@googlegroups.com>\n"
@@ -18,8 +18,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || n"
 "%100==4 ? 3 : 0);\n"
-"X-Poedit-SourceCharset: UTF-8\n"
 "X-Generator: Poedit 2.2.4\n"
+"X-Poedit-SourceCharset: UTF-8\n"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:7
 msgid "GNOME Software"
@@ -297,7 +297,7 @@ msgstr "Omogoči skladišče razširitev za lupino GNOME"
 
 #: data/org.gnome.software.gschema.xml:144
 msgid "Sorts the apps shown in the overview in alphabetical order"
-msgstr ""
+msgstr "Sortiraj vidne aplikacije po abecednem redu"
 
 #: data/org.gnome.software.gschema.xml:151
 msgid "A string storing the gnome-online-account id used to login"
@@ -571,9 +571,8 @@ msgstr "Posodobi"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:148 src/gs-app-row.c:157 src/gs-page.c:548
-#, fuzzy
 msgid "Uninstall"
-msgstr "Namesti"
+msgstr "Odstrani"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
@@ -602,16 +601,15 @@ msgstr "%s (nameščeno)"
 
 #: src/gs-background-tile.ui:71
 msgid "Scheduled update"
-msgstr ""
+msgstr "Urnik posodobitev"
 
 #: src/gs-background-tile.ui:85
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "Na voljo v USB ključu"
 
 #: src/gs-background-tile.ui:99
-#, fuzzy
 msgid "Requires download"
-msgstr "Zahteva ponoven zagon"
+msgstr "Potrebuje prenos"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -632,7 +630,7 @@ msgstr "Novosti v ospredju"
 
 #: src/gs-category-page.c:342 src/gs-category-page.ui:64
 msgid "Copy OS to USB"
-msgstr ""
+msgstr "Kopiraj OS na USB"
 
 #. TRANSLATORS: This is a heading on the categories page. %s gets
 #. replaced by the category name, e.g. 'Graphics & Photography'
@@ -654,7 +652,7 @@ msgstr "Ime"
 
 #: src/gs-category-page.ui:118
 msgid "No apps available on USB"
-msgstr ""
+msgstr "Nobena aplikacija ni na voljo USB"
 
 #. TRANSLATORS: This is a label for the category filter drop down, which all together can read e.g. 'Show Vector Graphics'.
 #: src/gs-category-page.ui:198
@@ -1445,19 +1443,19 @@ msgstr "Poteka odstranjevanje …"
 
 #: src/gs-details-page.c:402
 msgid "Copying"
-msgstr ""
+msgstr "Kopiranje"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:414
 msgid "Pending installation…"
-msgstr "Namestitev na čakanju …"
+msgstr "Inštalacija v teku ..."
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
 #: src/gs-details-page.c:421
 msgid "Pending update…"
-msgstr "Poteka nastavljanje posodobitev …"
+msgstr "Posodobitve v teku ..."
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:779
@@ -1501,9 +1499,8 @@ msgstr "_Zaženi"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1035 src/gs-details-page.ui:414
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Namesti"
+msgstr "_Odstranite"
 
 #: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1650,7 +1647,7 @@ msgstr "Ni mogoče najti »%s«"
 
 #: src/gs-details-page.c:2425
 msgid "Copied to USB"
-msgstr ""
+msgstr "Kopirano na USB"
 
 #. TRANSLATORS: see the wikipedia page
 #: src/gs-details-page.c:2571
@@ -1694,13 +1691,12 @@ msgstr "Stran podrobnosti"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:168
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_Dodaj na Namizje "
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:179
-#, fuzzy
 msgid "_Remove from Desktop"
-msgstr "_Odstrani iz mape"
+msgstr "_Odstrani iz Namizja"
 
 #: src/gs-details-page.ui:226
 msgid "Downloading"
@@ -3602,19 +3598,17 @@ msgid "Looking for new updates…"
 msgstr "Preverjanje za nove posodobitve …"
 
 #: src/gs-updates-page.c:313
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Samodejno posodabljanje"
+msgstr "samodejne posodobitve prižgane"
 
 #: src/gs-updates-page.c:316
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Samodejno posodabljanje"
+msgstr "samodejne posodobitve izklopljene"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:399
 msgid "Setting up updates…"
-msgstr "Poteka nastavljanje posodobitev …"
+msgstr "poteka nastavljanje posodobitev …"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:400 src/gs-updates-page.c:407
@@ -3773,7 +3767,7 @@ msgstr "_Ponovno zaženi"
 
 #: src/gs-upgrade-banner.c:71
 msgid "Updates will be applied when the computer is restarted."
-msgstr "Posodobitve bodo uveljavljene ob naslednjem zagonu naprave."
+msgstr "Posodobitve bodo bile upoštevane, ko se bo računalnik ponovno zagnal."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -3818,11 +3812,11 @@ msgstr "_Več podrobnosti"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Center Aplikacij"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "Več aplikacij"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -3858,31 +3852,26 @@ msgid "Music Players"
 msgstr "Predvajalniki glasbe"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3D-grafika"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotografija"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
-msgstr "Preiskovanje"
+msgstr "Optično branje"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Vektorska grafika"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Pregledovalniki"
@@ -4069,7 +4058,6 @@ msgid "Fonts"
 msgstr "Pisave"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Klepet"
@@ -4100,7 +4088,6 @@ msgid "Hardware Drivers"
 msgstr "Gonilniki strojne opreme"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Urejevalniki besedila"
@@ -4116,16 +4103,14 @@ msgid "News"
 msgstr "Novice"
 
 #: plugins/core/gs-desktop-common.c:238
-#, fuzzy
 msgctxt "Menu of Settings"
 msgid "Settings"
 msgstr "Nastavitve"
 
 #: plugins/core/gs-desktop-common.c:247
-#, fuzzy
 msgctxt "Menu of System"
 msgid "System"
-msgstr "sistem"
+msgstr "Sistem"
 
 #: plugins/core/gs-desktop-common.c:260 plugins/core/gs-desktop-common.c:304
 msgctxt "Menu of Reference"
@@ -4138,7 +4123,6 @@ msgid "Featured"
 msgstr "Novosti v ospredju"
 
 #: plugins/core/gs-desktop-common.c:266
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Art"
 msgstr "Umetnost"
@@ -4154,10 +4138,9 @@ msgid "Comics"
 msgstr "Stripi"
 
 #: plugins/core/gs-desktop-common.c:275
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Feed"
-msgstr "Viri"
+msgstr "Feed"
 
 #: plugins/core/gs-desktop-common.c:278
 msgctxt "Menu of Reference"
@@ -4180,7 +4163,6 @@ msgid "Lifestyle"
 msgstr "Življenjski slog"
 
 #: plugins/core/gs-desktop-common.c:290
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "News"
 msgstr "Novice"
@@ -4197,9 +4179,8 @@ msgstr "Šport"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: plugins/core/gs-desktop-common.c:314
-#, fuzzy
 msgid "Learning"
-msgstr "Preiskovanje"
+msgstr "Učenje"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: plugins/core/gs-desktop-common.c:317
@@ -4216,18 +4197,17 @@ msgstr "_Več podrobnosti"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:324
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimedija"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:327
 msgid "Work"
-msgstr ""
+msgstr "Delo"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: plugins/core/gs-desktop-common.c:330
-#, fuzzy
 msgid "Reference & News"
-msgstr "Sklici"
+msgstr "Reference & Novice"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: plugins/core/gs-desktop-common.c:333
@@ -4237,15 +4217,14 @@ msgstr "Pripomočki"
 #. TRANSLATORS: this is the menu spec main category for updates on a USB stick
 #: plugins/core/gs-desktop-common.c:336
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
-msgstr "Razvojna orodja"
+msgstr "Orodja Razvijalcev"
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
@@ -4266,21 +4245,19 @@ msgid "Downloading featured images…"
 msgstr "Poteka prejemanje zaslonskih slik programov …"
 
 #: plugins/eos/gs-plugin-eos.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Izbor programa:"
+msgstr "Ne morem zagnati te aplikacije"
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:931
-#, fuzzy
 msgid "Endless Platform"
-msgstr "Endless OS"
+msgstr "Platforma Brezkonca"
 
 #. TRANSLATORS: this is the summary of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:933
-#, fuzzy
 msgid "Framework for applications"
-msgstr "Poišči program"
+msgstr "Okolje za aplikacije"
 
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:563

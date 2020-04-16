@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2020-02-26 14:25+0100\n"
 "Last-Translator: Marek Černocký <marek@manet.cz>\n"
 "Language-Team: čeština <gnome-cs-list@gnome.org>\n"
@@ -577,9 +577,8 @@ msgstr "Aktualizovat"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:148 src/gs-app-row.c:157 src/gs-page.c:548
-#, fuzzy
 msgid "Uninstall"
-msgstr "Instalovat"
+msgstr "Odinstalovat"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
@@ -608,16 +607,15 @@ msgstr "%s (nainstalováno)"
 
 #: src/gs-background-tile.ui:71
 msgid "Scheduled update"
-msgstr ""
+msgstr "Plánované aktualizace"
 
 #: src/gs-background-tile.ui:85
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "K dispozici na USB disku"
 
 #: src/gs-background-tile.ui:99
-#, fuzzy
 msgid "Requires download"
-msgstr "Vyžaduje restart"
+msgstr "Vyžaduje stažení"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1454,13 +1452,13 @@ msgstr ""
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:414
 msgid "Pending installation…"
-msgstr "Probíhá instalace…"
+msgstr "Instalace čekající na zpracování..."
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
 #: src/gs-details-page.c:421
 msgid "Pending update…"
-msgstr "Probíhá aktualizace…"
+msgstr "Aktualizace čekající na zpracování..."
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:779
@@ -1505,9 +1503,8 @@ msgstr "_Spustit"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1035 src/gs-details-page.ui:414
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Instalovat"
+msgstr "_Odinstalovat"
 
 #: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1625,15 +1622,15 @@ msgstr "neznámý"
 
 #: src/gs-details-page.c:1380
 msgid "Low"
-msgstr "nízké"
+msgstr "Nízké"
 
 #: src/gs-details-page.c:1382
 msgid "Medium"
-msgstr "střední"
+msgstr "Střední"
 
 #: src/gs-details-page.c:1384
 msgid "High"
-msgstr "vysoké"
+msgstr "Vysoké"
 
 #. This refers to the license of the application
 #. TRANSLATORS: this is when a user doesn't specify a name
@@ -1685,6 +1682,7 @@ msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Uživatelé jsou vázáni následující licencí:"
 msgstr[1] "Uživatelé jsou vázáni následujícími licencemi:"
 msgstr[2] "Uživatelé jsou vázáni následujícími licencemi:"
+msgstr[3] "Uživatelé jsou vázáni následujícími licencemi:"
 
 #: src/gs-details-page.c:2675 src/gs-details-page.ui:1324
 msgid "More information"
@@ -1697,12 +1695,12 @@ msgstr "Stránka s podrobnostmi"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:168
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_Přidat na Plochu"
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:179
 msgid "_Remove from Desktop"
-msgstr ""
+msgstr "_Odstanit z Plochy"
 
 #: src/gs-details-page.ui:226
 msgid "Downloading"
@@ -1931,6 +1929,7 @@ msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Dostupné fonty pro písmo %s"
 msgstr[1] "Dostupné fonty pro písma %s"
 msgstr[2] "Dostupné fonty pro písma %s"
+msgstr[3] "Dostupné fonty pro písma %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -1941,6 +1940,7 @@ msgid_plural "Available software for %s"
 msgstr[0] "Dostupný software pro kodek %s"
 msgstr[1] "Dostupný software pro kodeky %s"
 msgstr[2] "Dostupný software pro kodeky %s"
+msgstr[3] "Dostupný software pro kodeky %s"
 
 #: src/gs-extras-page.c:213
 msgid "Unable to Find Requested Software"
@@ -2092,6 +2092,9 @@ msgstr[1] ""
 "Bohužel, ale pro „%s“ nebylo nic nalezeno. Na další informace se prosím "
 "podívejte na %s."
 msgstr[2] ""
+"Bohužel, ale pro „%s“ nebylo nic nalezeno. Na další informace se prosím "
+"podívejte na %s."
+msgstr[3] ""
 "Bohužel, ale pro „%s“ nebylo nic nalezeno. Na další informace se prosím "
 "podívejte na %s."
 
@@ -2404,6 +2407,7 @@ msgid_plural "%u applications installed"
 msgstr[0] "Nainstalována %u aplikace"
 msgstr[1] "Nainstalovány %u aplikace"
 msgstr[2] "Nainstalováno %u aplikací"
+msgstr[3] "Nainstalováno %u aplikací"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2414,6 +2418,7 @@ msgid_plural "%u add-ons installed"
 msgstr[0] "Nainstalován %u doplněk"
 msgstr[1] "Nainstalovány %u doplňky"
 msgstr[2] "Nainstalováno %u doplňků"
+msgstr[3] "Nainstalováno %u doplňků"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2425,6 +2430,7 @@ msgid_plural "%u applications"
 msgstr[0] "%u aplikace"
 msgstr[1] "%u aplikace"
 msgstr[2] "%u aplikací"
+msgstr[3] "%u aplikací"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2436,6 +2442,7 @@ msgid_plural "%u add-ons"
 msgstr[0] "%u doplněk"
 msgstr[1] "%u doplňky"
 msgstr[2] "%u doplňků"
+msgstr[3] "%u doplňků"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2448,6 +2455,7 @@ msgid_plural "%s and %s installed"
 msgstr[0] "%s a %s"
 msgstr[1] "%s a %s"
 msgstr[2] "%s a %s"
+msgstr[3] "%s a %s"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2753,6 +2761,7 @@ msgid_plural "%u more matches"
 msgstr[0] "%u další výsledek hledání"
 msgstr[1] "%u další výsledky hledání"
 msgstr[2] "%u dalších výsledků hledání"
+msgstr[3] "%u dalších výsledků hledání"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -3457,6 +3466,7 @@ msgid_plural "Software Updates Installed"
 msgstr[0] "Aktualizace softwaru nainstalována"
 msgstr[1] "Aktualizace softwaru nainstalovány"
 msgstr[2] "Aktualizace softwaru nainstalovány"
+msgstr[3] "Aktualizace softwaru nainstalovány"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1007
@@ -3465,6 +3475,7 @@ msgid_plural "Important OS updates have been installed."
 msgstr[0] "Důležitá aktualizace OS byla nainstalována."
 msgstr[1] "Důležité aktualizace OS byly nainstalovány."
 msgstr[2] "Důležité aktualizace OS byly nainstalovány."
+msgstr[3] "Důležité aktualizace OS byly nainstalovány."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -3585,14 +3596,12 @@ msgid "Looking for new updates…"
 msgstr "Vyhledávají se nové aktualizace…"
 
 #: src/gs-updates-page.c:313
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Automatické aktualizace"
+msgstr "automatické aktualizace zapnuty"
 
 #: src/gs-updates-page.c:316
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Automatické aktualizace"
+msgstr "automatické aktualizace vypnuty"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:399
@@ -3750,11 +3759,11 @@ msgstr "Doporučuje se zazálohovat si před povýšením svá data a soubory."
 
 #: src/gs-upgrade-banner.c:69
 msgid "_Restart Now"
-msgstr "_Restartovat hned"
+msgstr "_Restartovat nyní"
 
 #: src/gs-upgrade-banner.c:71
 msgid "Updates will be applied when the computer is restarted."
-msgstr "Aktualizace budou použity při restartu počítače."
+msgstr "Aktualizace budou aplikovány při restartování počítače."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -3799,11 +3808,11 @@ msgstr "_Dozvědět se více"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Centrum aplikací"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "Více aplikací"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -3839,31 +3848,26 @@ msgid "Music Players"
 msgstr "Hudební přehrávače"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "Grafika 3D"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotografie"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Skenování"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Vektorová grafika"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Prohlížeče"
@@ -4035,16 +4039,14 @@ msgid "Word Processor"
 msgstr "Textové procesory"
 
 #: plugins/core/gs-desktop-common.c:193
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "All"
 msgstr "Vše"
 
 #: plugins/core/gs-desktop-common.c:199
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Featured"
-msgstr "Významné"
+msgstr "Důležité"
 
 #: plugins/core/gs-desktop-common.c:203
 msgctxt "Menu of Add-ons"
@@ -4052,7 +4054,6 @@ msgid "Fonts"
 msgstr "Fonty"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Pokec"
@@ -4083,7 +4084,6 @@ msgid "Hardware Drivers"
 msgstr "Ovladače hardwaru"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Textové editory"
@@ -4099,16 +4099,14 @@ msgid "News"
 msgstr "Diskuzní skupiny"
 
 #: plugins/core/gs-desktop-common.c:238
-#, fuzzy
 msgctxt "Menu of Settings"
 msgid "Settings"
 msgstr "Nastavení"
 
 #: plugins/core/gs-desktop-common.c:247
-#, fuzzy
 msgctxt "Menu of System"
 msgid "System"
-msgstr "systém"
+msgstr "Systém"
 
 #: plugins/core/gs-desktop-common.c:260 plugins/core/gs-desktop-common.c:304
 msgctxt "Menu of Reference"
@@ -4121,7 +4119,6 @@ msgid "Featured"
 msgstr "Významné"
 
 #: plugins/core/gs-desktop-common.c:266
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Art"
 msgstr "Umění"
@@ -4198,7 +4195,7 @@ msgstr "_Dozvědět se více"
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:324
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimédia"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:327
@@ -4219,13 +4216,12 @@ msgstr "Nástroje"
 #. TRANSLATORS: this is the menu spec main category for updates on a USB stick
 #: plugins/core/gs-desktop-common.c:336
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Vývojářské nástroje"
 
@@ -4247,9 +4243,9 @@ msgid "Downloading featured images…"
 msgstr "Stahují se obrázky k významným aplikacím…"
 
 #: plugins/eos/gs-plugin-eos.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Vyberte aplikaci:"
+msgstr "Aplikaci se nepodařilo spustit."
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:931

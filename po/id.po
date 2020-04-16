@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2020-02-02 12:46+0700\n"
 "Last-Translator: Kukuh Syafaat <kukuhsyafaat@gnome.org>\n"
 "Language-Team: Indonesian <gnome@i15n.org>\n"
@@ -17,8 +17,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.2.4\n"
 "Plural-Forms: nplurals=2; plural= n!=1;\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:7
 msgid "GNOME Software"
@@ -216,10 +216,10 @@ msgid ""
 "updates to the screenshots may take longer to show to the user. A value of 0 "
 "means to never check the server if the image already exists in the cache."
 msgstr ""
-"Memilih nilai yang lebih besar berarti lebih sedikit bolak-balik ke peladen "
-"jauh tapi pemutakhiran ke cuplikan layar mungkin memakan waktu lebih lama "
-"untuk tampil ke pengguna. Nilai 0 berarti jangan pernah memeriksa ke peladen "
-"apakah citra telah ada dalam singgahan."
+"Memilih nilai yang lebih besar berarti lebih sedikit bolak-balik ke server "
+"jarak jauh tapi pembaruan ke cuplikan layar mungkin memakan waktu lebih lama "
+"untuk tampil ke pengguna. Nilai 0 berarti jangan pernah memeriksa ke server "
+"apakah citra telah ada dalam cache."
 
 #: data/org.gnome.software.gschema.xml:82
 msgid "The server to use for application reviews"
@@ -305,6 +305,7 @@ msgstr "Aktifkan repositori ekstensi GNOME Shell"
 #: data/org.gnome.software.gschema.xml:144
 msgid "Sorts the apps shown in the overview in alphabetical order"
 msgstr ""
+"Sortir aplikasi yang ditampilkan di ringkasan berdasarkan urutan abjad."
 
 #: data/org.gnome.software.gschema.xml:151
 msgid "A string storing the gnome-online-account id used to login"
@@ -583,9 +584,8 @@ msgstr "Mutakhiran"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:148 src/gs-app-row.c:157 src/gs-page.c:548
-#, fuzzy
 msgid "Uninstall"
-msgstr "Pasang"
+msgstr "Hapus"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
@@ -614,16 +614,15 @@ msgstr "%s (Terpasang)"
 
 #: src/gs-background-tile.ui:71
 msgid "Scheduled update"
-msgstr ""
+msgstr "Pembaruan terjadwal"
 
 #: src/gs-background-tile.ui:85
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "Tersedia dalam USB drive"
 
 #: src/gs-background-tile.ui:99
-#, fuzzy
 msgid "Requires download"
-msgstr "Perlu Mulai Ulang"
+msgstr "Memerlukan unduhan"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -644,7 +643,7 @@ msgstr "Pilihan"
 
 #: src/gs-category-page.c:342 src/gs-category-page.ui:64
 msgid "Copy OS to USB"
-msgstr ""
+msgstr "Salin OS ke USB"
 
 #. TRANSLATORS: This is a heading on the categories page. %s gets
 #. replaced by the category name, e.g. 'Graphics & Photography'
@@ -666,7 +665,7 @@ msgstr "Nama"
 
 #: src/gs-category-page.ui:118
 msgid "No apps available on USB"
-msgstr ""
+msgstr "Tidak tersedia aplikasi di dalam USB"
 
 #. TRANSLATORS: This is a label for the category filter drop down, which all together can read e.g. 'Show Vector Graphics'.
 #: src/gs-category-page.ui:198
@@ -1437,11 +1436,11 @@ msgstr "Cari dalam Perangkat Lunak"
 
 #: src/gs-details-page.c:279 src/gs-details-page.ui:265
 msgid "Copy to US_B"
-msgstr ""
+msgstr "Salin ke US_B"
 
 #: src/gs-details-page.c:282
 msgid "Insert USB to Copy To"
-msgstr ""
+msgstr "Masukkan USB untuk menyalin ke"
 
 #: src/gs-details-page.c:286
 #, fuzzy
@@ -1454,19 +1453,19 @@ msgstr "Menghapus…"
 
 #: src/gs-details-page.c:402
 msgid "Copying"
-msgstr ""
+msgstr "Penyalinan"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:414
 msgid "Pending installation…"
-msgstr "Pemasangan tertunda…"
+msgstr "Menunda pemasangan…"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
 #: src/gs-details-page.c:421
 msgid "Pending update…"
-msgstr "Pemutakhiran tertunda…"
+msgstr "Menunda pembaruan…"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:779
@@ -1510,9 +1509,8 @@ msgstr "_Luncurkan"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1035 src/gs-details-page.ui:414
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Pasang"
+msgstr "C_opot"
 
 #: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1619,7 +1617,7 @@ msgstr "Tak diketahui"
 #: src/gs-details-page.c:1274
 msgctxt "updated"
 msgid "Never"
-msgstr "Tak Pernah"
+msgstr "Tidak Pernah"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
@@ -1659,7 +1657,7 @@ msgstr "Tak bisa temukan \"%s\""
 
 #: src/gs-details-page.c:2425
 msgid "Copied to USB"
-msgstr ""
+msgstr "Disalin ke USB"
 
 #. TRANSLATORS: see the wikipedia page
 #: src/gs-details-page.c:2571
@@ -1688,7 +1686,6 @@ msgstr "Perangkat Lunak Bebas"
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Pengguna terikat oleh lisensi-lisensi berikut:"
-msgstr[1] "Pengguna terikat oleh lisensi-lisensi berikut:"
 
 #: src/gs-details-page.c:2675 src/gs-details-page.ui:1324
 msgid "More information"
@@ -1701,13 +1698,12 @@ msgstr "Halaman rincian"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:168
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_Tambahkan ke Destop"
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:179
-#, fuzzy
 msgid "_Remove from Desktop"
-msgstr "Hapus da_ri Folder"
+msgstr "_Hapus dari Destop"
 
 #: src/gs-details-page.ui:226
 msgid "Downloading"
@@ -1934,7 +1930,6 @@ msgstr ", "
 msgid "Available fonts for the %s script"
 msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Fonta yang tersedia untuk skrip %s"
-msgstr[1] "Fonta yang tersedia untuk skrip %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -1943,7 +1938,6 @@ msgstr[1] "Fonta yang tersedia untuk skrip %s"
 msgid "Available software for %s"
 msgid_plural "Available software for %s"
 msgstr[0] "Perangkat lunak yang tersedia untuk %s"
-msgstr[1] "Perangkat lunak yang tersedia untuk %s"
 
 #: src/gs-extras-page.c:213
 msgid "Unable to Find Requested Software"
@@ -2090,9 +2084,6 @@ msgid_plural ""
 "Unfortunately, the %s you were searching for could not be found. Please see "
 "%s for more information."
 msgstr[0] ""
-"Sayangnya, %s yang Anda cari tak dapat kami temukan. Kunjungilah %s untuk "
-"informasi lebih lanjut."
-msgstr[1] ""
 "Sayangnya, %s yang Anda cari tak dapat kami temukan. Kunjungilah %s untuk "
 "informasi lebih lanjut."
 
@@ -2407,7 +2398,6 @@ msgstr "_Lanjut"
 msgid "%u application installed"
 msgid_plural "%u applications installed"
 msgstr[0] "%u aplikasi terpasang"
-msgstr[1] "%u aplikasi terpasang"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2415,8 +2405,7 @@ msgstr[1] "%u aplikasi terpasang"
 #, c-format
 msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
-msgstr[0] "%u tambahan terpasang"
-msgstr[1] "%u tambahan terpasang"
+msgstr[0] "%u add-on terpasang"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2426,7 +2415,6 @@ msgstr[1] "%u tambahan terpasang"
 msgid "%u application"
 msgid_plural "%u applications"
 msgstr[0] "%u aplikasi"
-msgstr[1] "%u aplikasi"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2436,7 +2424,6 @@ msgstr[1] "%u aplikasi"
 msgid "%u add-on"
 msgid_plural "%u add-ons"
 msgstr[0] "%u tambahan"
-msgstr[1] "%u tambahan"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2446,8 +2433,7 @@ msgstr[1] "%u tambahan"
 #, c-format
 msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
-msgstr[0] "%s dan %s terpasang"
-msgstr[1] "%s dan %s terpasang"
+msgstr[0] "%s dan %s dipasang"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2756,7 +2742,6 @@ msgstr "Cuplikan layar"
 msgid "%u more match"
 msgid_plural "%u more matches"
 msgstr[0] "%u lagi yang cocok"
-msgstr[1] "%u lagi yang cocok"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -2939,7 +2924,7 @@ msgstr "Tidak bisa memasang %s"
 #: src/gs-shell.c:1476
 #, c-format
 msgid "Unable to update %s from %s as download failed"
-msgstr "Tidak bisa memutakhirkan %s dari %s karena pengunduhan gagal"
+msgstr "Tidak bisa memperbarui %s dari %s karena pengunduhan gagal"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -2985,7 +2970,7 @@ msgstr "Tidak bisa memasang pemutakhiran: ruang diska tidak cukup"
 #: src/gs-shell.c:1525
 #, c-format
 msgid "Unable to update %s: authentication was required"
-msgstr "Tidak bisa memutakhirkan %s: perlu autentikasi"
+msgstr "Tidak bisa memperbarui %s: perlu autentikasi"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1530
@@ -2998,7 +2983,7 @@ msgstr "Tidak bisa memasang pemutakhiran: perlu autentikasi"
 #: src/gs-shell.c:1539
 #, c-format
 msgid "Unable to update %s: authentication was invalid"
-msgstr "Tidak bisa memutakhirkan %s: autentikasi tidak valid"
+msgstr "Tidak bisa memperbarui %s: autentikasi tidak valid"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1544
@@ -3454,15 +3439,13 @@ msgstr "Selamat datang di %s %s!"
 #: src/gs-update-monitor.c:1003
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
-msgstr[0] "Pemutakhiran Perangkat Lunak Terpasang"
-msgstr[1] "Pemutakhiran Perangkat Lunak Terpasang"
+msgstr[0] "Pembaruan Perangkat Lunak Terpasang"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1007
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
-msgstr[0] "Pemutakhiran SO (Sistem Operasi) yang penting telah dipasang."
-msgstr[1] "Pemutakhiran SO (Sistem Operasi) yang penting telah dipasang."
+msgstr[0] "Pembaruan OS yang penting telah dipasang."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -3582,14 +3565,12 @@ msgid "Looking for new updates…"
 msgstr "Mencari pemutakhiran baru…"
 
 #: src/gs-updates-page.c:313
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Pemutakhiran Otomatis"
+msgstr "pembaruan otomatis nyala"
 
 #: src/gs-updates-page.c:316
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Pemutakhiran Otomatis"
+msgstr "pembaruan otomatis mati"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:399
@@ -3747,11 +3728,11 @@ msgstr ""
 
 #: src/gs-upgrade-banner.c:69
 msgid "_Restart Now"
-msgstr "Mulai Ulang Seka_rang"
+msgstr "Nyalakan Ulang Seka_rang"
 
 #: src/gs-upgrade-banner.c:71
 msgid "Updates will be applied when the computer is restarted."
-msgstr "Pemutakhiran akan diterapkan ketika komputer dinyalakan ulang."
+msgstr "Pembaruan akan diterapkan saat komputer dinyalakan ulang."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -3796,11 +3777,11 @@ msgstr "Pelajari _Lebih Jauh"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Pusat Aplikasi"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "Pusat Aplikasi"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -3812,7 +3793,7 @@ msgid ""
 "Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;"
 "Software;App;Store;"
 msgstr ""
-"Pemutakhiran;Peningkatan;Sumber;Repositori;Preferensi;Pasang;Copot;Program;"
+"Pembaruan;Peningkatan;Sumber;Repositori;Preferensi;Pasang;Hapus;Program;"
 "Perangkat Lunak;App;Toko;"
 
 #: plugins/core/gs-desktop-common.c:17
@@ -3836,34 +3817,29 @@ msgid "Music Players"
 msgstr "Pemutar Musik"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "Grafik 3D"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotografi"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
-msgstr "Pemindaian"
+msgstr "Memindai"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
-msgstr "Grafik Vektor"
+msgstr "Grafik Vector"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
-msgstr "Penilik"
+msgstr "Penampil"
 
 #: plugins/core/gs-desktop-common.c:55
 msgctxt "Menu of Developer Tools"
@@ -3996,7 +3972,6 @@ msgid "Strategy"
 msgstr "Strategi"
 
 #: plugins/core/gs-desktop-common.c:159
-#, fuzzy
 msgctxt "Menu of Learn to Code"
 msgid "All"
 msgstr "Semua"
@@ -4032,16 +4007,14 @@ msgid "Word Processor"
 msgstr "Pengolah Kata"
 
 #: plugins/core/gs-desktop-common.c:193
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "All"
 msgstr "Semua"
 
 #: plugins/core/gs-desktop-common.c:199
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Featured"
-msgstr "Pilihan"
+msgstr "Unggulan"
 
 #: plugins/core/gs-desktop-common.c:203
 msgctxt "Menu of Add-ons"
@@ -4049,10 +4022,9 @@ msgid "Fonts"
 msgstr "Fonta"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
-msgstr "Mengobrol"
+msgstr "Chat"
 
 #: plugins/core/gs-desktop-common.c:213
 msgctxt "Menu of Add-ons"
@@ -4080,10 +4052,9 @@ msgid "Hardware Drivers"
 msgstr "Penggerak Perangkat Keras"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
-msgstr "Penyunting Teks"
+msgstr "Editor Teks"
 
 #: plugins/core/gs-desktop-common.c:231
 msgctxt "Menu of Communication & News"
@@ -4096,16 +4067,14 @@ msgid "News"
 msgstr "Berita"
 
 #: plugins/core/gs-desktop-common.c:238
-#, fuzzy
 msgctxt "Menu of Settings"
 msgid "Settings"
 msgstr "Pengaturan"
 
 #: plugins/core/gs-desktop-common.c:247
-#, fuzzy
 msgctxt "Menu of System"
 msgid "System"
-msgstr "sistem"
+msgstr "Sistem"
 
 #: plugins/core/gs-desktop-common.c:260 plugins/core/gs-desktop-common.c:304
 msgctxt "Menu of Reference"
@@ -4118,7 +4087,6 @@ msgid "Featured"
 msgstr "Pilihan"
 
 #: plugins/core/gs-desktop-common.c:266
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Art"
 msgstr "Seni"
@@ -4136,7 +4104,7 @@ msgstr "Komik"
 #: plugins/core/gs-desktop-common.c:275
 msgctxt "Menu of Reference"
 msgid "Feed"
-msgstr ""
+msgstr "Feed"
 
 #: plugins/core/gs-desktop-common.c:278
 msgctxt "Menu of Reference"
@@ -4159,7 +4127,6 @@ msgid "Lifestyle"
 msgstr "Gaya Hidup"
 
 #: plugins/core/gs-desktop-common.c:290
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "News"
 msgstr "Berita"
@@ -4176,9 +4143,8 @@ msgstr "Olah Raga"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: plugins/core/gs-desktop-common.c:314
-#, fuzzy
 msgid "Learning"
-msgstr "Pemindaian"
+msgstr "Belajar"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: plugins/core/gs-desktop-common.c:317
@@ -4188,25 +4154,23 @@ msgstr "Permainan"
 #. TRANSLATORS: this is the menu spec main category for Endless
 #. * Studios' "learn to code" category
 #: plugins/core/gs-desktop-common.c:321
-#, fuzzy
 msgid "Learn to Code"
-msgstr "Pelajari _Lebih Jauh"
+msgstr "Belajar Menulis Kode"
 
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:324
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimedia"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:327
 msgid "Work"
-msgstr ""
+msgstr "Kerja"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: plugins/core/gs-desktop-common.c:330
-#, fuzzy
 msgid "Reference & News"
-msgstr "Rujukan"
+msgstr "Referensi & Berita"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: plugins/core/gs-desktop-common.c:333
@@ -4216,15 +4180,14 @@ msgstr "Utilitas"
 #. TRANSLATORS: this is the menu spec main category for updates on a USB stick
 #: plugins/core/gs-desktop-common.c:336
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
-msgstr "Alat Pengembangan"
+msgstr "Perangkat pengembang"
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
@@ -4244,21 +4207,19 @@ msgid "Downloading featured images…"
 msgstr "Mengunduh gambar pilihan…"
 
 #: plugins/eos/gs-plugin-eos.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Pilih aplikasi:"
+msgstr "Tidak dapat menjalankan aplikasi ini."
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:931
-#, fuzzy
 msgid "Endless Platform"
-msgstr "Endless OS"
+msgstr "Platform Endless"
 
 #. TRANSLATORS: this is the summary of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:933
-#, fuzzy
 msgid "Framework for applications"
-msgstr "Cari aplikasi"
+msgstr "Framework untuk aplikasi"
 
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:563

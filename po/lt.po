@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2020-02-02 19:33+0200\n"
 "Last-Translator: Aurimas Černius <aurisc4@gmail.com>\n"
 "Language-Team: Lietuvių <gnome-lt@lists.akl.lt>\n"
@@ -1674,6 +1674,7 @@ msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Naudotojams taikoma ši licencija:"
 msgstr[1] "Naudotojams taikomos šios licencijos:"
 msgstr[2] "Naudotojams taikomos šios licencijos:"
+msgstr[3] "Naudotojams taikomos šios licencijos:"
 
 #: src/gs-details-page.c:2675 src/gs-details-page.ui:1324
 msgid "More information"
@@ -1922,6 +1923,7 @@ msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Galimi šriftai %s scenarijui"
 msgstr[1] "Galimi šriftai %s scenarijams"
 msgstr[2] "Galimi šriftai %s scenarijų"
+msgstr[3] "Galimi šriftai %s scenarijų"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -1932,6 +1934,7 @@ msgid_plural "Available software for %s"
 msgstr[0] "%s prieinama programinė įranga"
 msgstr[1] "%s prieinama programinė įranga"
 msgstr[2] "%s prieinama programinė įranga"
+msgstr[3] "%s prieinama programinė įranga"
 
 #: src/gs-extras-page.c:213
 msgid "Unable to Find Requested Software"
@@ -2082,6 +2085,8 @@ msgstr[0] ""
 msgstr[1] ""
 "Deja, jūsų ieškomų %s nepavyko rasti. Daugiau informacijos rasite %s."
 msgstr[2] ""
+"Deja, jūsų ieškomų %s nepavyko rasti. Daugiau informacijos rasite %s."
+msgstr[3] ""
 "Deja, jūsų ieškomų %s nepavyko rasti. Daugiau informacijos rasite %s."
 
 #: src/gs-extras-page.c:526 src/gs-extras-page.c:582 src/gs-extras-page.c:621
@@ -2393,6 +2398,7 @@ msgid_plural "%u applications installed"
 msgstr[0] "Įdiegta %u programa"
 msgstr[1] "Įdiegtos %u programos"
 msgstr[2] "Įdiegta %u programų"
+msgstr[3] "Įdiegta %u programų"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2403,6 +2409,7 @@ msgid_plural "%u add-ons installed"
 msgstr[0] "Įdiegtas %u priedas"
 msgstr[1] "Įdiegti %u priedai"
 msgstr[2] "Įdiegta %u priedų"
+msgstr[3] "Įdiegta %u priedų"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2414,6 +2421,7 @@ msgid_plural "%u applications"
 msgstr[0] "%u programa"
 msgstr[1] "%u programos"
 msgstr[2] "%u programų"
+msgstr[3] "%u programų"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2425,6 +2433,7 @@ msgid_plural "%u add-ons"
 msgstr[0] "%u priedas"
 msgstr[1] "%u priedai"
 msgstr[2] "%u priedų"
+msgstr[3] "%u priedų"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2437,6 +2446,7 @@ msgid_plural "%s and %s installed"
 msgstr[0] "Įdiegta: %s ir %s"
 msgstr[1] "Įdiegta: %s ir %s"
 msgstr[2] "Įdiegta: %s ir %s"
+msgstr[3] "Įdiegta: %s ir %s"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2745,6 +2755,7 @@ msgid_plural "%u more matches"
 msgstr[0] "dar %u atitikmuo"
 msgstr[1] "dar %u atitikmenys"
 msgstr[2] "dar %u atitikmenų"
+msgstr[3] "dar %u atitikmenų"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -3446,14 +3457,16 @@ msgid_plural "Software Updates Installed"
 msgstr[0] "Programinės įrangos atnaujinimas įdiegtas"
 msgstr[1] "Programinės įrangos atnaujinimai įdiegti"
 msgstr[2] "Programinės įrangos atnaujinimai įdiegti"
+msgstr[3] "Programinės įrangos atnaujinimai įdiegti"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1007
 msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
-msgstr[0] "Svarbus OS atnaujinimas įdiegtas."
-msgstr[1] "Svarbūs OS atnaujinimai įdiegti."
-msgstr[2] "Svarbūs OS atnaujinimai įdiegti."
+msgstr[0] "Svarbus OS atnaujinimas įdiegtas"
+msgstr[1] "Svarbūs OS atnaujinimai įdiegti"
+msgstr[2] "Svarbūs OS atnaujinimai įdiegti"
+msgstr[3] "Svarbūs OS atnaujinimai įdiegti"
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -3825,31 +3838,26 @@ msgid "Music Players"
 msgstr "Muzikos grotuvai"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "3D grafika"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotografija"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Skenavimas"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Vektorinė grafika"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Žiūryklės"
@@ -4036,7 +4044,6 @@ msgid "Fonts"
 msgstr "Šriftai"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Pokalbiai"
@@ -4067,7 +4074,6 @@ msgid "Hardware Drivers"
 msgstr "Aparatūros tvarkyklės"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Tekstų redaktoriai"
@@ -4210,7 +4216,6 @@ msgstr ""
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
 msgstr "Kūrėjo įrankiai"
 
@@ -4514,7 +4519,6 @@ msgstr "Snap yra universalus Linux paketas"
 #~ "Plėtiniai yra naudojami jūsų pačių rizika. Jeigu susidūrėte su sistemos "
 #~ "problemomis, yra rekomenduojama juos išjungti."
 
-#~| msgid "Failed to load image"
 #~ msgid "Failed to load components"
 #~ msgstr "Nepavyko įkelti komponentų"
 
@@ -4542,7 +4546,6 @@ msgstr "Snap yra universalus Linux paketas"
 #~ msgid "_Open"
 #~ msgstr "_Atverti"
 
-#~| msgid "Open AppStream File"
 #~ msgid "Save AppStream File"
 #~ msgstr "Įrašyti AppStream failą"
 
@@ -4818,14 +4821,12 @@ msgstr "Snap yra universalus Linux paketas"
 #~ msgid "Show profiling information for the service"
 #~ msgstr "Rodyti tarnybos profiliavimo informaciją"
 
-#~| msgid "Application Updates"
 #~ msgid "Applications Updated"
 #~ msgstr "Programos atnaujinimai"
 
 #~ msgid "Includes: ."
 #~ msgstr "Įskaitant: ."
 
-#~| msgid "Restart"
 #~ msgid "Restart Required"
 #~ msgstr "Reikia paleisti iš naujo"
 

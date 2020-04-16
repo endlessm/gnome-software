@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:36+0100\n"
+"POT-Creation-Date: 2020-04-16 16:43+0100\n"
 "PO-Revision-Date: 2020-02-03 12:02+0100\n"
 "Last-Translator: Daniel Mustieles <daniel.mustieles@gmail.com>\n"
 "Language-Team: Spanish - Spain <gnome-es-list@gnome.org>\n"
@@ -312,7 +312,7 @@ msgstr "Activar el repositorio de extensiones de GNOME Shell"
 
 #: data/org.gnome.software.gschema.xml:144
 msgid "Sorts the apps shown in the overview in alphabetical order"
-msgstr ""
+msgstr "Ordena los programas mostrados en el resumen en orden alfabético"
 
 #: data/org.gnome.software.gschema.xml:151
 msgid "A string storing the gnome-online-account id used to login"
@@ -561,9 +561,8 @@ msgstr "Visitar la página web"
 #. * allows the application to be easily installed.
 #. * The ellipsis indicates that further steps are required
 #: src/gs-app-row.c:123
-#, fuzzy
 msgid "Download…"
-msgstr "_Descargar…"
+msgstr "Descargar"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
@@ -574,9 +573,8 @@ msgstr "Cancelar"
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
 #: src/gs-app-row.c:137
-#, fuzzy
 msgid "Download"
-msgstr "_Descargar…"
+msgstr "Descargar"
 
 #. TRANSLATORS: this is a button in the updates panel
 #. * that allows the app to be easily updated live
@@ -588,16 +586,14 @@ msgstr "Actualizar"
 #. * allows the application to be easily removed
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:148 src/gs-app-row.c:157 src/gs-page.c:548
-#, fuzzy
 msgid "Uninstall"
-msgstr "Instalar"
+msgstr "Desinstalar"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
 #: src/gs-app-row.c:169
-#, fuzzy
 msgid "Uninstalling"
-msgstr "Instalando"
+msgstr "Desinstalar"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -619,16 +615,15 @@ msgstr "%s (Instalada)"
 
 #: src/gs-background-tile.ui:71
 msgid "Scheduled update"
-msgstr ""
+msgstr "Actualización planificada"
 
 #: src/gs-background-tile.ui:85
 msgid "Available in a USB drive"
-msgstr ""
+msgstr "Disponible en una unidad USB"
 
 #: src/gs-background-tile.ui:99
-#, fuzzy
 msgid "Requires download"
-msgstr "Requiere reiniciar"
+msgstr "Requiere descarga"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -649,7 +644,7 @@ msgstr "Destacado"
 
 #: src/gs-category-page.c:342 src/gs-category-page.ui:64
 msgid "Copy OS to USB"
-msgstr ""
+msgstr "Copiar el SO al almacenamiento USB"
 
 #. TRANSLATORS: This is a heading on the categories page. %s gets
 #. replaced by the category name, e.g. 'Graphics & Photography'
@@ -671,7 +666,7 @@ msgstr "Nombre"
 
 #: src/gs-category-page.ui:118
 msgid "No apps available on USB"
-msgstr ""
+msgstr "No hay aplicaciones disponibles en el almacenamiento USB"
 
 #. TRANSLATORS: This is a label for the category filter drop down, which all together can read e.g. 'Show Vector Graphics'.
 #: src/gs-category-page.ui:198
@@ -1446,11 +1441,11 @@ msgstr "Buscar en Software"
 
 #: src/gs-details-page.c:279 src/gs-details-page.ui:265
 msgid "Copy to US_B"
-msgstr ""
+msgstr "Copiar a US_B"
 
 #: src/gs-details-page.c:282
 msgid "Insert USB to Copy To"
-msgstr ""
+msgstr "Insertar USB para copiar a"
 
 #: src/gs-details-page.c:286
 #, fuzzy
@@ -1463,13 +1458,13 @@ msgstr "Quitando…"
 
 #: src/gs-details-page.c:402
 msgid "Copying"
-msgstr ""
+msgstr "Copiando"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:414
 msgid "Pending installation…"
-msgstr "Instalación pendiente…"
+msgstr "Pendiente de instalación…"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
@@ -1510,9 +1505,8 @@ msgstr "_Descargar…"
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
 #: src/gs-details-page.c:966
-#, fuzzy
 msgid "_Download…"
-msgstr "_Descargar…"
+msgstr "Descargar"
 
 #. TRANSLATORS: A label for a button to execute the selected application.
 #: src/gs-details-page.c:1011
@@ -1521,9 +1515,8 @@ msgstr "_Lanzar"
 
 #. TRANSLATORS: button text in the header when an application can be erased
 #: src/gs-details-page.c:1035 src/gs-details-page.ui:414
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Instalar"
+msgstr "_Desinstalar"
 
 #: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
 msgid "Network"
@@ -1670,7 +1663,7 @@ msgstr "No se pudo encontrar «%s»"
 
 #: src/gs-details-page.c:2425
 msgid "Copied to USB"
-msgstr ""
+msgstr "Copiado a USB"
 
 #. TRANSLATORS: see the wikipedia page
 #: src/gs-details-page.c:2571
@@ -1712,13 +1705,12 @@ msgstr "Página de detalles"
 #. Translators: A label for a button to add a shortcut to the selected application.
 #: src/gs-details-page.ui:168
 msgid "_Add to Desktop"
-msgstr ""
+msgstr "_Agregar al escritorio"
 
 #. Translators: A label for a button to remove a shortcut to the selected application.
 #: src/gs-details-page.ui:179
-#, fuzzy
 msgid "_Remove from Desktop"
-msgstr "_Quitar de la carpeta"
+msgstr "_Quitar del escritorio"
 
 #: src/gs-details-page.ui:226
 msgid "Downloading"
@@ -3602,14 +3594,12 @@ msgid "Looking for new updates…"
 msgstr "Buscando actualizaciones nuevas"
 
 #: src/gs-updates-page.c:313
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Actualizaciones automáticas"
+msgstr "Actualizaciones automáticas activadas"
 
 #: src/gs-updates-page.c:316
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Actualizaciones automáticas"
+msgstr "Actualizaciones automáticas desactivadas"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:399
@@ -3766,7 +3756,7 @@ msgstr "Se recomienda que respalde sus datos y archivos antes de actualizar."
 
 #: src/gs-upgrade-banner.c:69
 msgid "_Restart Now"
-msgstr "_Reiniciar ahora"
+msgstr "Reiniciar ahora"
 
 #: src/gs-upgrade-banner.c:71
 msgid "Updates will be applied when the computer is restarted."
@@ -3815,11 +3805,11 @@ msgstr "_Aprender más"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Centro de programas"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "More Apps"
-msgstr ""
+msgstr "Más programas"
 
 #: src/org.gnome.Software.desktop.in:5
 msgid "Add, remove or update software on this computer"
@@ -3855,31 +3845,26 @@ msgid "Music Players"
 msgstr "Reproductores de música"
 
 #: plugins/core/gs-desktop-common.c:35
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "3D Graphics"
 msgstr "Gráficos 3D"
 
 #: plugins/core/gs-desktop-common.c:38
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Photography"
 msgstr "Fotografía"
 
 #: plugins/core/gs-desktop-common.c:41
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Scanning"
 msgstr "Escaneado"
 
 #: plugins/core/gs-desktop-common.c:44
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Vector Graphics"
 msgstr "Gráficos vectoriales"
 
 #: plugins/core/gs-desktop-common.c:47
-#, fuzzy
 msgctxt "Menu of Graphics"
 msgid "Viewers"
 msgstr "Visores"
@@ -4015,7 +4000,6 @@ msgid "Strategy"
 msgstr "Estrategia"
 
 #: plugins/core/gs-desktop-common.c:159
-#, fuzzy
 msgctxt "Menu of Learn to Code"
 msgid "All"
 msgstr "Todo"
@@ -4066,7 +4050,6 @@ msgid "Fonts"
 msgstr "Tipografías"
 
 #: plugins/core/gs-desktop-common.c:206
-#, fuzzy
 msgctxt "Menu of Communication"
 msgid "Chat"
 msgstr "Chat"
@@ -4097,7 +4080,6 @@ msgid "Hardware Drivers"
 msgstr "Controladores hardware"
 
 #: plugins/core/gs-desktop-common.c:228
-#, fuzzy
 msgctxt "Menu of Utility"
 msgid "Text Editors"
 msgstr "Editores de texto"
@@ -4113,16 +4095,14 @@ msgid "News"
 msgstr "Noticias"
 
 #: plugins/core/gs-desktop-common.c:238
-#, fuzzy
 msgctxt "Menu of Settings"
 msgid "Settings"
 msgstr "Configuración"
 
 #: plugins/core/gs-desktop-common.c:247
-#, fuzzy
 msgctxt "Menu of System"
 msgid "System"
-msgstr "sistema"
+msgstr "Sistema"
 
 #: plugins/core/gs-desktop-common.c:260 plugins/core/gs-desktop-common.c:304
 msgctxt "Menu of Reference"
@@ -4135,7 +4115,6 @@ msgid "Featured"
 msgstr "Destacado"
 
 #: plugins/core/gs-desktop-common.c:266
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Art"
 msgstr "Arte"
@@ -4151,10 +4130,9 @@ msgid "Comics"
 msgstr "Cómics"
 
 #: plugins/core/gs-desktop-common.c:275
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "Feed"
-msgstr "Proveedor"
+msgstr "Novedades"
 
 #: plugins/core/gs-desktop-common.c:278
 msgctxt "Menu of Reference"
@@ -4177,7 +4155,6 @@ msgid "Lifestyle"
 msgstr "Estilo de vida"
 
 #: plugins/core/gs-desktop-common.c:290
-#, fuzzy
 msgctxt "Menu of Reference"
 msgid "News"
 msgstr "Noticias"
@@ -4194,9 +4171,8 @@ msgstr "Deportes"
 
 #. TRANSLATORS: this is the menu spec main category for Learning
 #: plugins/core/gs-desktop-common.c:314
-#, fuzzy
 msgid "Learning"
-msgstr "Escaneado"
+msgstr "Aprendizaje"
 
 #. TRANSLATORS: this is the menu spec main category for Game
 #: plugins/core/gs-desktop-common.c:317
@@ -4206,25 +4182,23 @@ msgstr "Juegos"
 #. TRANSLATORS: this is the menu spec main category for Endless
 #. * Studios' "learn to code" category
 #: plugins/core/gs-desktop-common.c:321
-#, fuzzy
 msgid "Learn to Code"
-msgstr "_Aprender más"
+msgstr "Aprende a Programar"
 
 #. TRANSLATORS: this is the menu spec main category for Multimedia
 #: plugins/core/gs-desktop-common.c:324
 msgid "Multimedia"
-msgstr ""
+msgstr "Multimedia"
 
 #. TRANSLATORS: this is the menu spec main category for Work
 #: plugins/core/gs-desktop-common.c:327
 msgid "Work"
-msgstr ""
+msgstr "Trabajo"
 
 #. TRANSLATORS: this is the menu spec main category for Reference
 #: plugins/core/gs-desktop-common.c:330
-#, fuzzy
 msgid "Reference & News"
-msgstr "Referencia"
+msgstr "Información y noticias"
 
 #. TRANSLATORS: this is the menu spec main category for Utilities
 #: plugins/core/gs-desktop-common.c:333
@@ -4234,15 +4208,14 @@ msgstr "Utilidades"
 #. TRANSLATORS: this is the menu spec main category for updates on a USB stick
 #: plugins/core/gs-desktop-common.c:336
 msgid "USB"
-msgstr ""
+msgstr "USB"
 
 #. TRANSLATORS: this is the menu spec main category for Dev Tools; it
 #. * should be a relatively short label; as an example, in Portuguese and
 #. * Spanish the direct translation of "Programming" (noun) is used
 #: plugins/core/gs-desktop-common.c:341
-#, fuzzy
 msgid "Dev Tools"
-msgstr "Herramientas de desarrollo"
+msgstr "Programación"
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
@@ -4262,21 +4235,19 @@ msgid "Downloading featured images…"
 msgstr "Descargando imágenes destacadas…"
 
 #: plugins/eos/gs-plugin-eos.c:796
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Elija una aplicación:"
+msgstr "No se pudo iniciar este programa."
 
 #. TRANSLATORS: this is the name of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:931
-#, fuzzy
 msgid "Endless Platform"
-msgstr "Endless OS"
+msgstr "Plataforma Endless"
 
 #. TRANSLATORS: this is the summary of the Endless Platform app
 #: plugins/eos/gs-plugin-eos.c:933
-#, fuzzy
 msgid "Framework for applications"
-msgstr "Buscar aplicaciones"
+msgstr "Infraestructura para programas"
 
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:563
@@ -4790,8 +4761,6 @@ msgstr "Un snap es un paquete universal de Linux"
 #~ msgid "Unable to update %s from %s"
 #~ msgstr "No se puede actualizar %s desde %s"
 
-#~| msgctxt "Menu subcategory of Internet"
-#~| msgid "Remote Access"
 #~ msgid "New System Access"
 #~ msgstr "Nuevo acceso al sistema"
 
@@ -4863,7 +4832,6 @@ msgstr "Un snap es un paquete universal de Linux"
 #~ msgid "The ultimate entertainment platform from Valve"
 #~ msgstr "La última plataforma de entretenimiento de Valve"
 
-#~| msgid "Application Updates"
 #~ msgid "Applications Updated"
 #~ msgstr "Aplicaciones actualizadas"
 
@@ -5180,7 +5148,6 @@ msgstr "Un snap es un paquete universal de Linux"
 #~ msgid "Software sources give you access to additional software."
 #~ msgstr "Las fuentes de software le dan acceso a software adicional."
 
-#~| msgid "Unknown"
 #~ msgid "unknown"
 #~ msgstr "desconocido"
 
@@ -5801,7 +5768,6 @@ msgstr "Un snap es un paquete universal de Linux"
 #~ msgid "If you are uncertain about this, you should obtain legal advice."
 #~ msgstr "Si no está seguro, debería solicitar asesoramiento legal."
 
-#~| msgid "Are you sure you want to remove %s?"
 #~ msgid "Do you want to enable it?"
 #~ msgstr "¿Quiere activarlo?"
 
@@ -5811,7 +5777,6 @@ msgstr "Un snap es un paquete universal de Linux"
 #~ msgid "Picks"
 #~ msgstr "Selección"
 
-#~| msgid "Complicated!"
 #~ msgctxt "license"
 #~ msgid "Complicated!"
 #~ msgstr "Complicada"
@@ -5918,11 +5883,9 @@ msgstr "Un snap es un paquete universal de Linux"
 #~ msgid "Shotwell"
 #~ msgstr "Shotwell"
 
-#~| msgid "Application manager for GNOME"
 #~ msgid "Open source photo management for GNOME"
 #~ msgstr "Aplicación libre de gestión de fotos para GNOME"
 
-#~| msgid "Description"
 #~ msgid "Long description"
 #~ msgstr "Descripción larga"
 
@@ -5961,7 +5924,6 @@ msgstr "Un snap es un paquete universal de Linux"
 #~ msgid "Security"
 #~ msgstr "Seguridad"
 
-#~| msgid "History"
 #~ msgid "View History"
 #~ msgstr "Ver histórico"
 
