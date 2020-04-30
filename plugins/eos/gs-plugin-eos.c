@@ -796,18 +796,20 @@ gs_plugin_launch (GsPlugin *plugin,
 }
 
 static GsApp *
-gs_plugin_eos_create_proxy_app (GsPlugin *plugin,
-				const char *id,
-				const char *name,
-				const char *summary)
+gs_plugin_eos_create_updates_proxy_app (GsPlugin *plugin)
 {
+	const char *id = EOS_PROXY_APP_PREFIX ".EOSUpdatesProxy";
 	GsApp *proxy = gs_app_new (id);
 	g_autoptr(AsIcon) icon;
 
 	gs_app_set_scope (proxy, AS_APP_SCOPE_SYSTEM);
 	gs_app_set_kind (proxy, AS_APP_KIND_RUNTIME);
-	gs_app_set_name (proxy, GS_APP_QUALITY_NORMAL, name);
-	gs_app_set_summary (proxy, GS_APP_QUALITY_NORMAL, summary);
+	/* TRANSLATORS: this is the name of the Endless Platform app */
+	gs_app_set_name (proxy, GS_APP_QUALITY_NORMAL,
+			 _("Endless Platform"));
+	/* TRANSLATORS: this is the summary of the Endless Platform app */
+	gs_app_set_summary (proxy, GS_APP_QUALITY_NORMAL,
+			    _("Framework for applications"));
 	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_add_quirk (proxy, GS_APP_QUIRK_IS_PROXY);
 	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
@@ -820,61 +822,44 @@ gs_plugin_eos_create_proxy_app (GsPlugin *plugin,
 	return proxy;
 }
 
-static void
-process_proxy_updates (GsPlugin *plugin,
-		       GsAppList *list,
-		       GsApp *proxy_app,
-		       const char **proxied_apps)
-{
-	g_autoptr(GSList) proxied_updates = NULL;
-
-	for (guint i = 0; i < gs_app_list_length (list); ++i) {
-		GsApp *app = gs_app_list_index (list, i);
-		const char *id = gs_app_get_id (app);
-
-		if (!g_strv_contains (proxied_apps, id) ||
-		    gs_app_get_scope (proxy_app) != gs_app_get_scope (app))
-			continue;
-
-		proxied_updates = g_slist_prepend (proxied_updates, app);
-	}
-
-	if (!proxied_updates)
-		return;
-
-	for (GSList *iter = proxied_updates; iter; iter = g_slist_next (iter)) {
-		GsApp *app = GS_APP (iter->data);
-		gs_app_add_related (proxy_app, app);
-		/* remove proxied apps from updates list since they will be
-		 * updated from the proxy app */
-		gs_app_list_remove (list, app);
-	}
-	gs_app_list_add (list, proxy_app);
-}
-
 static gboolean
 add_updates (GsPlugin *plugin,
 	     GsAppList *list,
 	     GCancellable *cancellable,
 	     GError **error)
 {
-	g_autoptr(GsApp) framework_proxy_app =
-		gs_plugin_eos_create_proxy_app (plugin,
-						EOS_PROXY_APP_PREFIX ".EOSUpdatesProxy",
-						/* TRANSLATORS: this is the name of the Endless Platform app */
-						_("Endless Platform"),
-						/* TRANSLATORS: this is the summary of the Endless Platform app */
-						_("Framework for applications"));
-	const char *framework_proxied_apps[] = {"com.endlessm.Platform",
-						"com.endlessm.apps.Platform",
-						"com.endlessm.CompanionAppService.desktop",
-						"com.endlessm.EknServicesMultiplexer.desktop",
-						"com.endlessm.quote_of_the_day.en.desktop",
-						"com.endlessm.word_of_the_day.en.desktop",
-						NULL};
-	process_proxy_updates (plugin, list,
-			       framework_proxy_app,
-			       framework_proxied_apps);
+	g_autoptr(GsApp) updates_proxy_app = gs_plugin_eos_create_updates_proxy_app (plugin);
+	g_autoptr(GSList) proxied_updates = NULL;
+	const char *proxied_apps[] = {"com.endlessm.Platform",
+				      "com.endlessm.apps.Platform",
+				      "com.endlessm.CompanionAppService.desktop",
+				      "com.endlessm.EknServicesMultiplexer.desktop",
+				      "com.endlessm.quote_of_the_day.en.desktop",
+				      "com.endlessm.word_of_the_day.en.desktop",
+				      NULL};
+
+	for (guint i = 0; i < gs_app_list_length (list); ++i) {
+		GsApp *app = gs_app_list_index (list, i);
+		const char *id = gs_app_get_id (app);
+
+		if (!g_strv_contains (proxied_apps, id) ||
+		    gs_app_get_scope (updates_proxy_app) != gs_app_get_scope (app))
+			continue;
+
+		proxied_updates = g_slist_prepend (proxied_updates, app);
+	}
+
+	if (!proxied_updates)
+		return TRUE;
+
+	for (GSList *iter = proxied_updates; iter; iter = g_slist_next (iter)) {
+		GsApp *app = GS_APP (iter->data);
+		gs_app_add_related (updates_proxy_app, app);
+		/* remove proxied apps from updates list since they will be
+		 * updated from the proxy app */
+		gs_app_list_remove (list, app);
+	}
+	gs_app_list_add (list, updates_proxy_app);
 
 	return TRUE;
 }
