@@ -30,8 +30,6 @@
 #include <gs-plugin.h>
 #include <gs-utils.h>
 #include <libsoup/soup.h>
-#include <sys/types.h>
-#include <sys/xattr.h>
 
 #define ENDLESS_ID_PREFIX "com.endlessm."
 #define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
@@ -973,16 +971,13 @@ add_updates (GsPlugin *plugin,
 					   "com.endlessm.OperatingSystemApp.desktop",
 					   NULL};
 
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	gboolean is_hack_product = g_strcmp0 (priv->product_name, "hack") == 0;
-
 	process_proxy_updates (plugin, list,
 			       framework_proxy_app,
 			       FALSE,
 			       framework_proxied_apps);
 	process_proxy_updates (plugin, list,
 			       hack_proxy_app,
-			       is_hack_product,
+			       FALSE,
 			       hack_proxied_apps);
 
 	return TRUE;
