@@ -4254,7 +4254,7 @@ gboolean
 gs_plugin_loader_app_copying (GsPluginLoader *plugin_loader, GsApp *app)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	if (app == NULL) {
+	if (app == NULL || gs_app_get_id (app) == NULL) {
 		return FALSE;
 	}
 	return GPOINTER_TO_UINT (g_hash_table_lookup (priv->global_plugin_statuses,
