@@ -242,19 +242,6 @@ _transaction_operation_get_app (FlatpakTransactionOperation *op)
 	return g_object_get_data (G_OBJECT (op), "GsApp");
 }
 
-static void
-_transaction_progress_set_app (FlatpakTransactionProgress *progress, GsApp *app)
-{
-	g_object_set_data_full (G_OBJECT (progress), "GsApp",
-				g_object_ref (app), (GDestroyNotify) g_object_unref);
-}
-
-static GsApp *
-_transaction_progress_get_app (FlatpakTransactionProgress *progress)
-{
-	return g_object_get_data (G_OBJECT (progress), "GsApp");
-}
-
 gboolean
 gs_flatpak_transaction_run (FlatpakTransaction *transaction,
                             GCancellable *cancellable,
@@ -320,10 +307,7 @@ static void
 _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 				  gpointer user_data)
 {
-	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (user_data);
-	GsApp *app = _transaction_progress_get_app (progress);
-	GsApp *proxy_app = NULL;
-
+	GsApp *app = GS_APP (user_data);
 	guint percent = flatpak_transaction_progress_get_progress (progress);
 	if (flatpak_transaction_progress_get_is_estimating (progress)) {
 		/* "Estimating" happens while fetching the metadata, which
@@ -343,38 +327,7 @@ _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 			   gs_app_get_progress (app), percent);
 		return;
 	}
-
 	gs_app_set_progress (app, percent);
-
-	// TODO: Improve heuristics to get progress for proxy app
-	proxy_app = g_hash_table_lookup (self->apps_proxies, app);
-	if (proxy_app) {
-		GsAppList *proxied_apps;
-		guint64 total_expected_size_installed = 0;
-		guint64 total_size_installed = 0;
-
-		proxied_apps = gs_app_get_related (proxy_app);
-		for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
-			GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
-			guint64 proxied_app_size_installed;
-			guint proxied_app_progress;
-
-			proxied_app_size_installed = gs_app_get_size_installed (proxied_app);
-			if (proxied_app_size_installed == 0 ||
-			    proxied_app_size_installed == GS_APP_SIZE_UNKNOWABLE)
-				continue;
-
-			proxied_app_progress = gs_app_get_progress (proxied_app);
-
-			total_expected_size_installed += proxied_app_size_installed;
-			total_size_installed += ((proxied_app_size_installed * proxied_app_progress) / 100);
-		}
-
-		if (total_expected_size_installed != 0) {
-			percent = (total_size_installed * 100) / total_expected_size_installed;
-			gs_app_set_progress (proxy_app, percent);
-		}
-	}
 }
 
 static const gchar *
@@ -410,10 +363,9 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 	}
 
 	/* report progress */
-	_transaction_progress_set_app (progress, app);
 	g_signal_connect_object (progress, "changed",
 				 G_CALLBACK (_transaction_progress_changed_cb),
-				 transaction, 0);
+				 app, 0);
 	flatpak_transaction_progress_set_update_frequency (progress, 100); /* FIXME? */
 
 	/* set app status */
