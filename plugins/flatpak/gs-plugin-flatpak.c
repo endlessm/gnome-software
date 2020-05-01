@@ -274,9 +274,6 @@ gs_plugin_flatpak_get_handler (GsPlugin *plugin, GsApp *app)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const gchar *object_id;
 
-	if (gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY))
-		goto select_by_scope;
-
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
 		       gs_plugin_get_name (plugin)) != 0) {
@@ -293,7 +290,6 @@ gs_plugin_flatpak_get_handler (GsPlugin *plugin, GsApp *app)
 		}
 	}
 
-select_by_scope:
 	/* find a scope that matches */
 	for (guint i = 0; i < priv->flatpaks->len; i++) {
 		GsFlatpak *flatpak = g_ptr_array_index (priv->flatpaks, i);
@@ -684,8 +680,10 @@ gs_plugin_download (GsPlugin *plugin, GsAppList *list,
 #endif
 		for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
 			GsApp *app = gs_app_list_index (list_tmp, i);
+			g_autofree gchar *ref = NULL;
 
-			if (!gs_flatpak_transaction_add_update (transaction, app, error)) {
+			ref = gs_flatpak_app_get_ref_display (app);
+			if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error)) {
 				gs_flatpak_error_convert (error);
 				return FALSE;
 			}
@@ -984,11 +982,16 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 
 	for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
 		GsApp *app = gs_app_list_index (list_tmp, i);
+		g_autofree gchar *ref = NULL;
 
-		if (!gs_flatpak_transaction_add_update (transaction, app, error)) {
+		ref = gs_flatpak_app_get_ref_display (app);
+		if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error)) {
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
+
+		/* Add the update applist for easier lookup */
+		gs_flatpak_transaction_add_app (transaction, app);
 	}
 
 	/* run transaction */
@@ -1022,11 +1025,13 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 	}
 	for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
 		GsApp *app = gs_app_list_index (list_tmp, i);
+		g_autofree gchar *ref = NULL;
 
+		ref = gs_flatpak_app_get_ref_display (app);
 		if (!gs_flatpak_refine_app (flatpak, app,
 					    GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME,
 					    cancellable, error)) {
-			g_prefix_error (error, "failed to run refine for %s: ", gs_app_get_id (app));
+			g_prefix_error (error, "failed to run refine for %s: ", ref);
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
