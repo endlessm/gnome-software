@@ -14,7 +14,6 @@
 struct _GsFlatpakTransaction {
 	FlatpakTransaction	 parent_instance;
 	GHashTable		*refhash;	/* ref:GsApp */
-	GHashTable		*apps_proxies;	/* GsApp:GsApp */
 	GError			*first_operation_error;
 #if !FLATPAK_CHECK_VERSION(1,5,1)
 	gboolean		 no_deploy;
@@ -46,7 +45,6 @@ gs_flatpak_transaction_finalize (GObject *object)
 
 	g_assert (self != NULL);
 	g_hash_table_unref (self->refhash);
-	g_hash_table_unref (self->apps_proxies);
 	if (self->first_operation_error != NULL)
 		g_error_free (self->first_operation_error);
 
@@ -182,43 +180,6 @@ gs_flatpak_transaction_add_app (FlatpakTransaction *transaction, GsApp *app)
 		gs_flatpak_transaction_add_app_internal (self, gs_app_get_runtime (app));
 }
 
-static void
-_set_proxy_for_app (FlatpakTransaction *transaction, GsApp *app, GsApp *proxy)
-{
-	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
-	g_hash_table_insert (self->apps_proxies, g_object_ref (app), g_object_ref (proxy));
-}
-
-gboolean
-gs_flatpak_transaction_add_update (FlatpakTransaction *transaction, GsApp *app, GError **error)
-{
-	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
-	gboolean is_proxy_app = gs_app_has_quirk (app, AS_APP_QUIRK_IS_PROXY);
-	g_autofree gchar *ref = NULL;
-
-	if (is_proxy_app) {
-		GsAppList *proxied_apps;
-
-		proxied_apps = gs_app_get_related (app);
-		for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
-			GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
-
-			_set_proxy_for_app (transaction, proxied_app, app);
-			if (!gs_flatpak_transaction_add_update (transaction, proxied_app, error))
-				return FALSE;
-		}
-		return TRUE;
-	}
-
-	ref = gs_flatpak_app_get_ref_display (app);
-	if (!flatpak_transaction_add_update (transaction, ref, NULL, NULL, error))
-		return FALSE;
-
-	/* Add the update applist for easier lookup */
-	gs_flatpak_transaction_add_app (transaction, app);
-	return TRUE;
-}
-
 static GsApp *
 _ref_to_app (GsFlatpakTransaction *self, const gchar *ref)
 {
@@ -240,19 +201,6 @@ static GsApp *
 _transaction_operation_get_app (FlatpakTransactionOperation *op)
 {
 	return g_object_get_data (G_OBJECT (op), "GsApp");
-}
-
-static void
-_transaction_progress_set_app (FlatpakTransactionProgress *progress, GsApp *app)
-{
-	g_object_set_data_full (G_OBJECT (progress), "GsApp",
-				g_object_ref (app), (GDestroyNotify) g_object_unref);
-}
-
-static GsApp *
-_transaction_progress_get_app (FlatpakTransactionProgress *progress)
-{
-	return g_object_get_data (G_OBJECT (progress), "GsApp");
 }
 
 gboolean
@@ -320,10 +268,7 @@ static void
 _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 				  gpointer user_data)
 {
-	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (user_data);
-	GsApp *app = _transaction_progress_get_app (progress);
-	GsApp *proxy_app = NULL;
-
+	GsApp *app = GS_APP (user_data);
 	guint percent = flatpak_transaction_progress_get_progress (progress);
 	if (flatpak_transaction_progress_get_is_estimating (progress)) {
 		/* "Estimating" happens while fetching the metadata, which
@@ -343,38 +288,7 @@ _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 			   gs_app_get_progress (app), percent);
 		return;
 	}
-
 	gs_app_set_progress (app, percent);
-
-	// TODO: Improve heuristics to get progress for proxy app
-	proxy_app = g_hash_table_lookup (self->apps_proxies, app);
-	if (proxy_app) {
-		GsAppList *proxied_apps;
-		guint64 total_expected_size_installed = 0;
-		guint64 total_size_installed = 0;
-
-		proxied_apps = gs_app_get_related (proxy_app);
-		for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
-			GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
-			guint64 proxied_app_size_installed;
-			guint proxied_app_progress;
-
-			proxied_app_size_installed = gs_app_get_size_installed (proxied_app);
-			if (proxied_app_size_installed == 0 ||
-			    proxied_app_size_installed == GS_APP_SIZE_UNKNOWABLE)
-				continue;
-
-			proxied_app_progress = gs_app_get_progress (proxied_app);
-
-			total_expected_size_installed += proxied_app_size_installed;
-			total_size_installed += ((proxied_app_size_installed * proxied_app_progress) / 100);
-		}
-
-		if (total_expected_size_installed != 0) {
-			percent = (total_size_installed * 100) / total_expected_size_installed;
-			gs_app_set_progress (proxy_app, percent);
-		}
-	}
 }
 
 static const gchar *
@@ -410,10 +324,9 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 	}
 
 	/* report progress */
-	_transaction_progress_set_app (progress, app);
 	g_signal_connect_object (progress, "changed",
 				 G_CALLBACK (_transaction_progress_changed_cb),
-				 transaction, 0);
+				 app, 0);
 	flatpak_transaction_progress_set_update_frequency (progress, 100); /* FIXME? */
 
 	/* set app status */
@@ -447,7 +360,9 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 			     const gchar *commit,
 			     FlatpakTransactionResult details)
 {
+#if !FLATPAK_CHECK_VERSION(1,5,1)
 	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
+#endif
 	GsApp *main_app = NULL;
 
 	/* invalidate */
@@ -499,38 +414,13 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 		gs_app_remove_kudo (app, GS_APP_KUDO_SANDBOXED);
                 /* downloaded, but not yet installed */
 #if !FLATPAK_CHECK_VERSION(1,5,1)
-		if (self->no_deploy) {
+		if (self->no_deploy)
 #else
-		if (flatpak_transaction_get_no_deploy (transaction)) {
+		if (flatpak_transaction_get_no_deploy (transaction))
 #endif
 			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-		} else {
-			GsApp *proxy_app;
-
+		else
 			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-
-			proxy_app = g_hash_table_lookup (self->apps_proxies, app);
-			if (proxy_app) {
-				GsAppList *proxied_apps;
-				gboolean proxied_apps_installed = TRUE;
-
-				proxied_apps = gs_app_get_related (proxy_app);
-				for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
-					GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
-
-					if (gs_app_get_state (proxied_app) != AS_APP_STATE_INSTALLED) {
-						proxied_apps_installed = FALSE;
-						break;
-					}
-				}
-
-				/* All proxied apps are installed, also set proxy app to installed
-				 * so it gets removed from updates list */
-				if (proxied_apps_installed)
-					gs_app_set_state (proxy_app, AS_APP_STATE_INSTALLED);
-			}
-
-		}
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UNINSTALL:
 		/* we don't actually know if this app is re-installable */
@@ -679,9 +569,6 @@ gs_flatpak_transaction_init (GsFlatpakTransaction *self)
 {
 	self->refhash = g_hash_table_new_full (g_str_hash, g_str_equal,
 					       g_free, (GDestroyNotify) g_object_unref);
-	self->apps_proxies = g_hash_table_new_full (g_direct_hash, g_direct_equal,
-						    (GDestroyNotify) g_object_unref,
-						    (GDestroyNotify) g_object_unref);
 }
 
 FlatpakTransaction *

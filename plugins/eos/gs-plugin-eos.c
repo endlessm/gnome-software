@@ -30,12 +30,8 @@
 #include <gs-plugin.h>
 #include <gs-utils.h>
 #include <libsoup/soup.h>
-#include <sys/types.h>
-#include <sys/xattr.h>
 
-#define ENDLESS_ID_PREFIX "com.endlessm."
 #define METADATA_SYS_DESKTOP_FILE "EndlessOS::system-desktop-file"
-#define EOS_PROXY_APP_PREFIX ENDLESS_ID_PREFIX "proxy"
 
 /*
  * SECTION:
@@ -236,10 +232,6 @@ gs_plugin_initialize (GsPlugin *plugin)
 	/* let the flatpak plugin run first so we deal with the apps
 	 * in a more complete/refined state */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "flatpak");
-
-	/* we already deal with apps that need to be proxied, so let's impede
-	 * the other plugin from running */
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "generic-updates");
 }
 
 void
@@ -554,43 +546,6 @@ gs_plugin_eos_refine_ekn_services_for_app (GsPlugin     *plugin,
 		gs_app_add_related (app, services_app);
 }
 
-static void
-gs_plugin_refine_proxy_app (GsPlugin	*plugin,
-			    GsApp	*app)
-{
-	g_autoptr(GsAppList) related_filtered = gs_app_list_new ();
-	GsAppList *proxied_apps = gs_app_get_related (app);
-
-	for (guint i = 0; i < gs_app_list_length (proxied_apps); ++i) {
-		GsApp *proxied_app = gs_app_list_index (proxied_apps, i);
-
-		if (gs_app_get_state (proxied_app) == AS_APP_STATE_AVAILABLE ||
-		    gs_app_is_updatable (proxied_app)) {
-			g_debug ("App %s has an update or needs to be installed/updated "
-				 "by the proxy app %s",
-				 gs_app_get_unique_id (proxied_app),
-				 gs_app_get_unique_id (app));
-			gs_app_list_add (related_filtered, proxied_app);
-		}
-	}
-
-	gs_app_clear_related (app);
-
-	for (guint i = 0; i < gs_app_list_length (related_filtered); ++i) {
-		GsApp *related_app = gs_app_list_index (related_filtered, i);
-		gs_app_add_related (app, related_app);
-	}
-
-	/* mark the state as unknown so 1) we're always allowed to change the state below
-	 * if needed; and 2) the app will not be shown at all (unless the state is changed
-	 * below), thus avoiding eventually showing a proxy app without updates */
-	gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-
-	/* only let the proxy app show in the updates list if it has anything to update */
-	if (gs_app_list_length (related_filtered) > 0)
-		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-}
-
 gboolean
 gs_plugin_refine (GsPlugin		*plugin,
 		  GsAppList		*list,
@@ -600,11 +555,6 @@ gs_plugin_refine (GsPlugin		*plugin,
 {
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
-
-		if (g_str_has_prefix (gs_app_get_id (app), EOS_PROXY_APP_PREFIX)) {
-			gs_plugin_refine_proxy_app (plugin, app);
-			continue;
-		}
 
 		gs_plugin_eos_refine_core_app (app);
 
@@ -837,124 +787,6 @@ gs_plugin_launch (GsPlugin *plugin,
 		return launch_with_sys_desktop_file (app, error);
 
 	return TRUE;
-}
-
-static GsApp *
-gs_plugin_eos_create_proxy_app (GsPlugin *plugin,
-				const char *id,
-				const char *name,
-				const char *summary)
-{
-	GsApp *proxy = gs_app_new (id);
-	g_autoptr(AsIcon) icon;
-
-	gs_app_set_scope (proxy, AS_APP_SCOPE_SYSTEM);
-	gs_app_set_kind (proxy, AS_APP_KIND_RUNTIME);
-	gs_app_set_name (proxy, GS_APP_QUALITY_NORMAL, name);
-	gs_app_set_summary (proxy, GS_APP_QUALITY_NORMAL, summary);
-	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
-	gs_app_add_quirk (proxy, GS_APP_QUIRK_IS_PROXY);
-	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
-
-	icon = as_icon_new ();
-	as_icon_set_kind (icon, AS_ICON_KIND_STOCK);
-	as_icon_set_name (icon, "system-run-symbolic");
-	gs_app_add_icon (proxy, icon);
-
-	return proxy;
-}
-
-static void
-process_proxy_updates (GsPlugin *plugin,
-		       GsAppList *list,
-		       GsApp *proxy_app,
-		       const char **proxied_apps)
-{
-	g_autoptr(GsAppList) proxied_updates = gs_app_list_new ();
-
-	GsApp *cached_proxy_app = gs_app_list_lookup (list,
-						      gs_app_get_unique_id (proxy_app));
-	if (cached_proxy_app != NULL)
-		gs_app_list_remove (list, cached_proxy_app);
-
-	for (guint i = 0; i < gs_app_list_length (list); ++i) {
-		GsApp *app = gs_app_list_index (list, i);
-		GsApp *added_app = NULL;
-		const char *id = gs_app_get_id (app);
-
-		if (!g_strv_contains (proxied_apps, id) ||
-		    gs_app_get_scope (proxy_app) != gs_app_get_scope (app))
-			continue;
-
-		added_app = gs_app_list_lookup (proxied_updates, gs_app_get_unique_id (app));
-		if (added_app == app)
-			continue;
-
-		/* remove any app matching the updatable one we're about to add as
-		 * this makes sure that we're getting the right app (updatable) in
-		 * the proxy app's related list */
-		if (added_app != NULL)
-			gs_app_list_remove (proxied_updates, added_app);
-
-		/* ensure the app we're about to add really is updatable; this
-		 * is mostly a safeguard, since in this plugin's refine of proxy
-		 * apps we remove any apps that are not updatable */
-		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-		gs_app_list_add (proxied_updates, app);
-	}
-
-	if (gs_app_list_length (proxied_updates) == 0)
-		return;
-
-	for (guint i = 0; i < gs_app_list_length (proxied_updates); ++i) {
-		GsApp *app = gs_app_list_index (proxied_updates, i);
-		gs_app_add_related (proxy_app, app);
-
-		/* remove proxied apps from updates list since they will be
-		 * updated from the proxy app */
-		gs_app_list_remove (list, app);
-	}
-
-	gs_app_list_add (list, proxy_app);
-}
-
-static gboolean
-add_updates (GsPlugin *plugin,
-	     GsAppList *list,
-	     GCancellable *cancellable,
-	     GError **error)
-{
-	g_autoptr(GsApp) framework_proxy_app =
-		gs_plugin_eos_create_proxy_app (plugin,
-						EOS_PROXY_APP_PREFIX ".EOSUpdatesProxy",
-						/* TRANSLATORS: this is the name of the Endless Platform app */
-						_("Endless Platform"),
-						/* TRANSLATORS: this is the summary of the Endless Platform app */
-						_("Framework for applications"));
-
-	const char *framework_proxied_apps[] = {"com.endlessm.Platform",
-						"com.endlessm.apps.Platform",
-						"com.endlessm.EknServicesMultiplexer",
-						"com.endlessm.quote_of_the_day.en",
-						"com.endlessm.word_of_the_day.en",
-						NULL};
-
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-
-	process_proxy_updates (plugin, list,
-			       framework_proxy_app,
-			       framework_proxied_apps);
-
-	return TRUE;
-}
-
-gboolean
-gs_plugin_add_updates (GsPlugin *plugin,
-		       GsAppList *list,
-		       GCancellable *cancellable,
-		       GError **error)
-{
-	return add_updates (plugin, list, cancellable, error);
 }
 
 static char *
