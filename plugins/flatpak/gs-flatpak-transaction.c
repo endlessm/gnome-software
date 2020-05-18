@@ -265,7 +265,7 @@ _transaction_ready (FlatpakTransaction *transaction)
 				gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		}
 
-#if FLATPAK_CHECK_VERSION(1, 7, 3)
+#if FLATPAK_CHECK_VERSION(1, 6, 2)
 		/* Debug dump. */
 		{
 			GPtrArray *related_to_ops = flatpak_transaction_operation_get_related_to_ops (op);
@@ -285,7 +285,7 @@ _transaction_ready (FlatpakTransaction *transaction)
 			g_string_append (debug_message, "\n └ (end)");
 			g_debug ("%s", debug_message->str);
 		}
-#endif  /* flatpak ≥ 1.7.3 */
+#endif  /* flatpak ≥ 1.6.2 */
 	}
 	return TRUE;
 }
@@ -308,7 +308,7 @@ progress_data_free (ProgressData *data)
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC (ProgressData, progress_data_free)
 
-#if FLATPAK_CHECK_VERSION(1, 7, 3)
+#if FLATPAK_CHECK_VERSION(1, 6, 2)
 static gboolean
 op_is_related_to_op (FlatpakTransactionOperation *op,
                      FlatpakTransactionOperation *root_op)
@@ -415,9 +415,9 @@ update_progress_for_op (GsFlatpakTransaction        *self,
 			   gs_app_get_unique_id (root_app));
 	}
 }
-#endif  /* flatpak 1.7.3 */
+#endif  /* flatpak 1.6.2 */
 
-#if FLATPAK_CHECK_VERSION(1, 7, 3)
+#if FLATPAK_CHECK_VERSION(1, 6, 2)
 static void
 update_progress_for_op_recurse_up (GsFlatpakTransaction        *self,
 				   FlatpakTransactionProgress  *progress,
@@ -435,7 +435,7 @@ update_progress_for_op_recurse_up (GsFlatpakTransaction        *self,
 		update_progress_for_op_recurse_up (self, progress, ops, root_op, related_to_op);
 	}
 }
-#endif  /* flatpak 1.7.3 */
+#endif  /* flatpak 1.6.2 */
 
 static void
 _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
@@ -443,7 +443,7 @@ _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 {
 	ProgressData *data = user_data;
 	GsApp *app = data->app;
-#if FLATPAK_CHECK_VERSION(1, 7, 3)
+#if FLATPAK_CHECK_VERSION(1, 6, 2)
 	GsFlatpakTransaction *self = data->transaction;
 	g_autolist(FlatpakTransactionOperation) ops = NULL;
 #else
@@ -459,7 +459,7 @@ _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 		return;
 	}
 
-#if FLATPAK_CHECK_VERSION(1, 7, 3)
+#if FLATPAK_CHECK_VERSION(1, 6, 2)
 	/* Update the progress on this app, and then do the same for each
 	 * related parent app up the hierarchy. For example, @data->operation
 	 * could be for a runtime which was added to the transaction because of
@@ -485,7 +485,7 @@ _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 	 */
 	ops = flatpak_transaction_get_operations (FLATPAK_TRANSACTION (self));
 	update_progress_for_op_recurse_up (self, progress, ops, data->operation, data->operation);
-#else  /* if !flatpak 1.7.3 */
+#else  /* if !flatpak 1.6.2 */
 	percent = flatpak_transaction_progress_get_progress (progress);
 
 	if (gs_app_get_progress (app) != 100 &&
@@ -497,7 +497,7 @@ _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 	}
 
 	gs_app_set_progress (app, percent);
-#endif  /* !flatpak 1.7.3 */
+#endif  /* !flatpak 1.6.2 */
 }
 
 static const gchar *
