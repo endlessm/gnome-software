@@ -134,23 +134,27 @@ get_installed_main_app_of_related_ref (FlatpakTransaction          *transaction,
 	const gchar *remote = flatpak_transaction_operation_get_remote (operation);
 	const gchar *op_ref = flatpak_transaction_operation_get_ref (operation);
 	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
-	g_autoptr(GList) keys = NULL;
+	GHashTableIter iter;
+	gpointer key, value;
 
 	if (g_str_has_prefix (op_ref, "app/"))
 		return NULL;
 
-	keys = g_hash_table_get_keys (self->refhash);
-	for (GList *l = keys; l != NULL; l = l->next) {
+	g_hash_table_iter_init (&iter, self->refhash);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		const gchar *ref = key;
+		GsApp *app = value;
 		g_autoptr(GPtrArray) related_refs = NULL;
+
 		related_refs = flatpak_installation_list_installed_related_refs_sync (installation, remote,
-										      l->data, NULL, NULL);
+										      ref, NULL, NULL);
 		if (related_refs == NULL)
 			continue;
 
 		for (guint i = 0; i < related_refs->len; i++) {
 			g_autofree gchar *rref = flatpak_ref_format_ref (g_ptr_array_index (related_refs, i));
 			if (g_strcmp0 (rref, op_ref) == 0) {
-				return g_hash_table_lookup (self->refhash, l->data);
+				return app;
 			}
 		}
 	}
