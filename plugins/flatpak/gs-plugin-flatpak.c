@@ -1157,8 +1157,17 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 		is_update_downloaded &= gs_app_get_is_update_downloaded (app);
 	}
 
-	if (is_update_downloaded)
+	if (is_update_downloaded) {
 		flatpak_transaction_set_no_pull (transaction, TRUE);
+	} else if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
+		g_autoptr(GError) error_local = NULL;
+
+		if (!gs_metered_block_app_list_on_download_scheduler (list_tmp, cancellable, &error_local)) {
+			g_warning ("Failed to block on download scheduler: %s",
+				   error_local->message);
+			g_clear_error (&error_local);
+		}
+	}
 
 	if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
 		for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
