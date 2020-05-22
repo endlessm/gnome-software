@@ -27,7 +27,7 @@
  * be blocking. libmogwai-schedule-client was designed to be asynchronous; so
  * these helpers make it synchronous.
  *
- * Since: 2.34
+ * Since: 3.34
  */
 
 #include "config.h"
@@ -119,7 +119,7 @@ invalidated_cb (MwscScheduleEntry *entry,
  * This function will likely be called from a #GsPluginLoader worker thread.
  *
  * Returns: %TRUE on success, %FALSE otherwise
- * Since: 2.34
+ * Since: 3.34
  */
 gboolean
 gs_metered_block_on_download_scheduler (GVariant      *parameters,
@@ -206,7 +206,7 @@ gs_metered_block_on_download_scheduler (GVariant      *parameters,
  * download parameters from the given @app.
  *
  * Returns: %TRUE on success, %FALSE otherwise
- * Since: 2.34
+ * Since: 3.34
  */
 gboolean
 gs_metered_block_app_on_download_scheduler (GsApp         *app,
@@ -241,7 +241,7 @@ gs_metered_block_app_on_download_scheduler (GsApp         *app,
  * download parameters from the apps in the given @app_list.
  *
  * Returns: %TRUE on success, %FALSE otherwise
- * Since: 2.34
+ * Since: 3.34
  */
 gboolean
 gs_metered_block_app_list_on_download_scheduler (GsAppList     *app_list,
