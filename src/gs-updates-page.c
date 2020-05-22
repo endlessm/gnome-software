@@ -101,6 +101,7 @@ struct _GsUpdatesPage
 
 #ifdef HAVE_MOGWAI
 	MwscScheduler		*scheduler;
+	gboolean		 scheduler_held;
 	gulong			 scheduler_invalidated_handler;
 #endif  /* HAVE_MOGWAI */
 };
@@ -1302,6 +1303,7 @@ scheduler_invalidated_cb (GsUpdatesPage *self)
 	 * until we’re done with it. However, if the scheduler is stopped by
 	 * systemd (`systemctl stop mogwai-scheduled`) this signal will be
 	 * emitted. */
+	self->scheduler_held = FALSE;
 	g_clear_object (&self->scheduler);
 }
 
@@ -1320,11 +1322,15 @@ scheduler_hold_cb (GObject *source_object,
 	MwscScheduler *scheduler = (MwscScheduler *) source_object;
 	GsUpdatesPage *self = data;
 
-	if (!mwsc_scheduler_hold_finish (scheduler, result, &error_local)) {
+	if (mwsc_scheduler_hold_finish (scheduler, result, &error_local)) {
+		self->scheduler_held = TRUE;
+	} else if (!g_error_matches (error_local, G_DBUS_ERROR, G_DBUS_ERROR_FAILED)) {
 		g_warning ("Couldn't hold the Mogwai Scheduler daemon: %s",
 			   error_local->message);
-		return;
+		self->scheduler_held = FALSE;
 	}
+
+	g_clear_error (&error_local);
 
 	self->scheduler_invalidated_handler =
 		g_signal_connect_swapped (scheduler, "invalidated",
@@ -1352,6 +1358,7 @@ scheduler_release_cb (GObject *source_object,
 		g_warning ("Couldn't release the Mogwai Scheduler daemon: %s",
 			   error_local->message);
 
+	self->scheduler_held = FALSE;
 	g_clear_object (&self->scheduler);
 	g_object_unref (self);
 }
@@ -1529,10 +1536,13 @@ gs_updates_page_dispose (GObject *object)
 			g_signal_handler_disconnect (self->scheduler,
 						     self->scheduler_invalidated_handler);
 
-		mwsc_scheduler_release_async (self->scheduler,
-					      NULL,
-					      scheduler_release_cb,
-					      g_object_ref (self));
+		if (self->scheduler_held)
+			mwsc_scheduler_release_async (self->scheduler,
+						      NULL,
+						      scheduler_release_cb,
+						      g_object_ref (self));
+		else
+			g_clear_object (&self->scheduler);
 	}
 #endif  /* HAVE_MOGWAI */
 
