@@ -950,6 +950,8 @@ gs_plugin_download_app (GsPlugin *plugin,
 {
 	GFile *local_file;
 	g_autofree gchar *filename = NULL;
+	gpointer schedule_entry_handle = NULL;
+	g_autoptr(GError) error_local = NULL;
 
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
@@ -971,19 +973,24 @@ gs_plugin_download_app (GsPlugin *plugin,
 	filename = g_file_get_path (local_file);
 	if (!g_file_query_exists (local_file, cancellable)) {
 		const gchar *uri = gs_fwupd_app_get_update_uri (app);
+		gboolean download_success;
+		g_autoptr(GError) error_local = NULL;
 
 		if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE)) {
-			g_autoptr(GError) error_local = NULL;
-
-			if (!gs_metered_block_app_on_download_scheduler (app, cancellable, &error_local)) {
+			if (!gs_metered_block_app_on_download_scheduler (app, &schedule_entry_handle, cancellable, &error_local)) {
 				g_warning ("Failed to block on download scheduler: %s",
 					   error_local->message);
 				g_clear_error (&error_local);
 			}
 		}
 
-		if (!gs_plugin_download_file (plugin, app, uri, filename,
-					      cancellable, error))
+		download_success = gs_plugin_download_file (plugin, app, uri, filename,
+							    cancellable, error);
+
+		if (!gs_metered_remove_from_download_scheduler (schedule_entry_handle, NULL, &error_local))
+			g_warning ("Failed to remove schedule entry: %s", error_local->message);
+
+		if (!download_success);
 			return FALSE;
 	}
 	gs_app_set_size_download (app, 0);
