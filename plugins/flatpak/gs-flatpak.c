@@ -113,7 +113,9 @@ perms_from_metadata (GKeyFile *keyfile)
 		permissions |= GS_APP_PERMISSIONS_SYSTEM_BUS;
 	if (strv != NULL && g_strv_contains ((const gchar * const*)strv, "session-bus"))
 		permissions |= GS_APP_PERMISSIONS_SESSION_BUS;
-	if (strv != NULL && g_strv_contains ((const gchar * const*)strv, "x11"))
+	if (strv != NULL &&
+	    !g_strv_contains ((const gchar * const*)strv, "fallback-x11") &&
+	    g_strv_contains ((const gchar * const*)strv, "x11"))
 		permissions |= GS_APP_PERMISSIONS_X11;
 	g_strfreev (strv);
 
@@ -250,7 +252,7 @@ gs_flatpak_create_app (GsFlatpak *self, const gchar *origin, FlatpakRef *xref)
 		return app_cached;
 
 	/* fallback values */
-	if (gs_app_get_kind (app) == AS_APP_KIND_RUNTIME) {
+	if (gs_flatpak_app_get_ref_kind (app) == FLATPAK_REF_KIND_RUNTIME) {
 		g_autoptr(AsIcon) icon = NULL;
 		gs_app_set_name (app, GS_APP_QUALITY_NORMAL,
 				 flatpak_ref_get_name (FLATPAK_REF (xref)));
@@ -1018,8 +1020,12 @@ gs_flatpak_set_metadata_installed (GsFlatpak *self, GsApp *app,
 		gs_app_set_install_date (app, mtime);
 	}
 
-	/* if it's a runtime, check if the main-app info should be set */
-	if (gs_app_get_kind (app) == AS_APP_KIND_RUNTIME &&
+	/* If it's a runtime, check if the main-app info should be set. Note that
+	 * checking the app for AS_APP_KIND_RUNTIME is not good enough because it
+	 * could be e.g. AS_APP_KIND_LOCALIZATION and still be a runtime from
+	 * Flatpak's perspective.
+	 */
+	if (gs_flatpak_app_get_ref_kind (app) == FLATPAK_REF_KIND_RUNTIME &&
 	    gs_flatpak_app_get_main_app_ref_name (app) == NULL) {
 		g_autoptr(GError) error = NULL;
 		g_autoptr(GKeyFile) metadata_file = NULL;
@@ -1382,7 +1388,7 @@ get_real_app_for_update (GsFlatpak *self,
 	GsApp *main_app = NULL;
 	g_autoptr(GError) error_local = NULL;
 
-	if (gs_app_get_kind (app) == AS_APP_KIND_RUNTIME)
+	if (gs_flatpak_app_get_ref_kind (app) == FLATPAK_REF_KIND_RUNTIME)
 		main_app = get_main_app_of_related (self, app, cancellable, &error_local);
 
 	if (main_app == NULL) {
@@ -2389,7 +2395,6 @@ gs_flatpak_refine_wildcard (GsFlatpak *self, GsApp *app,
 	for (guint i = 0; i < components->len; i++) {
 		XbNode *component = g_ptr_array_index (components, i);
 		g_autoptr(GsApp) new = NULL;
-		g_debug ("found component for wildcard %s", id);
 		new = gs_appstream_create_app (self->plugin, self->silo, component, error);
 		if (new == NULL)
 			return FALSE;

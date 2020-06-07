@@ -48,7 +48,7 @@ gs_color_bin_sort_cb (gconstpointer a, gconstpointer b)
 }
 
 /* convert range of 0..255 to 0..1 */
-static gdouble
+static inline gdouble
 _convert_from_rgb8 (guchar val)
 {
 	return (gdouble) val / 255.f;
@@ -58,7 +58,7 @@ static void
 gs_plugin_key_colors_set_for_pixbuf (GsApp *app, GdkPixbuf *pb, guint number)
 {
 	gint rowstride, n_channels;
-	gint x, y;
+	gint x, y, width, height;
 	guchar *pixels, *p;
 	guint bin_size = 200;
 	guint i;
@@ -68,12 +68,15 @@ gs_plugin_key_colors_set_for_pixbuf (GsApp *app, GdkPixbuf *pb, guint number)
 	n_channels = gdk_pixbuf_get_n_channels (pb);
 	rowstride = gdk_pixbuf_get_rowstride (pb);
 	pixels = gdk_pixbuf_get_pixels (pb);
+	width = gdk_pixbuf_get_width (pb);
+	height = gdk_pixbuf_get_height (pb);
+
 	for (bin_size = 250; bin_size > 0; bin_size -= 2) {
 		g_autoptr(GHashTable) hash = NULL;
 		hash = g_hash_table_new_full (g_direct_hash,  g_direct_equal,
 					      NULL, g_free);
-		for (y = 0; y < gdk_pixbuf_get_height (pb); y++) {
-			for (x = 0; x < gdk_pixbuf_get_width (pb); x++) {
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
 				CdColorRGB8 tmp;
 				GsColorBin *s;
 				gpointer key;

@@ -229,8 +229,7 @@ _get_upgrade_css_background (guint version)
 	if (g_file_test (filename2, G_FILE_TEST_EXISTS))
 		return g_strdup_printf ("url('%s')", filename2);
 
-	/* fall back to solid colour */
-	return g_strdup_printf ("#151E65");
+	return NULL;
 }
 
 static gint
@@ -295,13 +294,16 @@ _create_upgrade_from_info (GsPlugin *plugin, PkgdbItem *item)
 			       item->version);
 	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE, url);
 
-	/* use a fancy background */
+	/* use a fancy background if possible */
 	background = _get_upgrade_css_background (item->version);
-	css = g_strdup_printf ("background: %s;"
-			       "background-position: center;"
-			       "background-size: cover;",
-			       background);
-	gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css", css);
+	if (background != NULL) {
+		css = g_strdup_printf ("background: %s;"
+				       "background-position: top;"
+				       "background-size: cover;"
+				       "color: white; text-shadow: 0 2px 2px rgba(0,0,0,0.5);",
+				       background);
+		gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css", css);
+	}
 
 	/* save in the cache */
 	gs_plugin_cache_add (plugin, cache_key, app);

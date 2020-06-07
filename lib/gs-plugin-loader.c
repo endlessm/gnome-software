@@ -1823,16 +1823,17 @@ gboolean
 gs_plugin_loader_get_allow_updates (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	g_autoptr(GList) list = NULL;
+	GHashTableIter iter;
+	gpointer value;
 
 	/* nothing */
 	if (g_hash_table_size (priv->disallow_updates) == 0)
 		return TRUE;
 
 	/* list */
-	list = g_hash_table_get_values (priv->disallow_updates);
-	for (GList *l = list; l != NULL; l = l->next) {
-		const gchar *reason = l->data;
+	g_hash_table_iter_init (&iter, priv->disallow_updates);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		const gchar *reason = value;
 		g_debug ("managed updates inhibited by %s", reason);
 	}
 	return FALSE;
@@ -1880,16 +1881,17 @@ gs_plugin_loader_get_events (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	GPtrArray *events = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	g_autoptr(GList) keys = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->events_by_id_mutex);
+	GHashTableIter iter;
+	gpointer key, value;
 
 	/* just add everything */
-	keys = g_hash_table_get_keys (priv->events_by_id);
-	for (GList *l = keys; l != NULL; l = l->next) {
-		const gchar *key = l->data;
-		GsPluginEvent *event = g_hash_table_lookup (priv->events_by_id, key);
+	g_hash_table_iter_init (&iter, priv->events_by_id);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		const gchar *id = key;
+		GsPluginEvent *event = value;
 		if (event == NULL) {
-			g_warning ("failed to get event for '%s'", key);
+			g_warning ("failed to get event for '%s'", id);
 			continue;
 		}
 		g_ptr_array_add (events, g_object_ref (event));
@@ -1910,16 +1912,17 @@ GsPluginEvent *
 gs_plugin_loader_get_event_default (GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	g_autoptr(GList) keys = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->events_by_id_mutex);
+	GHashTableIter iter;
+	gpointer key, value;
 
 	/* just add everything */
-	keys = g_hash_table_get_keys (priv->events_by_id);
-	for (GList *l = keys; l != NULL; l = l->next) {
-		const gchar *key = l->data;
-		GsPluginEvent *event = g_hash_table_lookup (priv->events_by_id, key);
+	g_hash_table_iter_init (&iter, priv->events_by_id);
+	while (g_hash_table_iter_next (&iter, &key, &value)) {
+		const gchar *id = key;
+		GsPluginEvent *event = value;
 		if (event == NULL) {
-			g_warning ("failed to get event for '%s'", key);
+			g_warning ("failed to get event for '%s'", id);
 			continue;
 		}
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INVALID))
@@ -1959,30 +1962,30 @@ gs_plugin_loader_allow_updates_cb (GsPlugin *plugin,
 				   GsPluginLoader *plugin_loader)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
-	gpointer exists;
+	gboolean changed = FALSE;
 
 	/* plugin now allowing gnome-software to show updates panel */
-	exists = g_hash_table_lookup (priv->disallow_updates, plugin);
 	if (allow_updates) {
-		if (exists == NULL)
-			return;
-		g_debug ("plugin %s no longer inhibited managed updates",
-			 gs_plugin_get_name (plugin));
-		g_hash_table_remove (priv->disallow_updates, plugin);
+		if (g_hash_table_remove (priv->disallow_updates, plugin)) {
+			g_debug ("plugin %s no longer inhibited managed updates",
+				 gs_plugin_get_name (plugin));
+			changed = TRUE;
+		}
 
 	/* plugin preventing the updates panel from being shown */
 	} else {
-		if (exists != NULL)
-			return;
-		g_debug ("plugin %s inhibited managed updates",
-			 gs_plugin_get_name (plugin));
-		g_hash_table_insert (priv->disallow_updates,
-				     (gpointer) plugin,
-				     (gpointer) gs_plugin_get_name (plugin));
+		if (g_hash_table_replace (priv->disallow_updates,
+					  (gpointer) plugin,
+					  (gpointer) gs_plugin_get_name (plugin))) {
+			g_debug ("plugin %s inhibited managed updates",
+				 gs_plugin_get_name (plugin));
+			changed = TRUE;
+		}
 	}
 
-	/* something possibly changed, so notify display layer */
-	g_object_notify (G_OBJECT (plugin_loader), "allow-updates");
+	/* notify display layer */
+	if (changed)
+		g_object_notify (G_OBJECT (plugin_loader), "allow-updates");
 }
 
 static void
@@ -2738,8 +2741,11 @@ gs_plugin_loader_settings_changed_cb (GSettings *settings,
 static gint
 get_max_parallel_ops (void)
 {
-	/* We're allowing 1 op per GB of memory */
-	return (gint) MAX (round((gdouble) gs_utils_get_memory_total () / 1024), 1.0);
+	guint mem_total = gs_utils_get_memory_total ();
+	if (mem_total == 0)
+		return 8;
+	/* allow 1 op per GB of memory */
+	return (gint) MAX (round((gdouble) mem_total / 1024), 1.0);
 }
 
 static void
