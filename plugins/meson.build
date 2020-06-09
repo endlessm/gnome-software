@@ -11,7 +11,7 @@ plugin_libs = [
 subdir('core')
 subdir('dpkg')
 subdir('dummy')
-subdir('eos-blacklist')
+subdir('eos-blocklist')
 subdir('eos')
 subdir('fedora-langpacks')
 subdir('fedora-pkgdb-collections')

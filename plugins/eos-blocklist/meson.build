@@ -1,8 +1,8 @@
-cargs = ['-DG_LOG_DOMAIN="GsPluginEosBlacklist"']
+cargs = ['-DG_LOG_DOMAIN="GsPluginEosBlocklist"']
 
 shared_module(
-  'gs_plugin_eos-blacklist',
-  sources : 'gs-plugin-eos-blacklist.c',
+  'gs_plugin_eos-blocklist',
+  sources : 'gs-plugin-eos-blocklist.c',
   include_directories : [
     include_directories('../..'),
     include_directories('../../lib'),
