@@ -47,7 +47,7 @@
 /*
  * SECTION:
  *
- * Plugin to blacklist certain apps on Endless OS, depending on the OS’s locale,
+ * Plugin to blocklist certain apps on Endless OS, depending on the OS’s locale,
  * version, or architecture.
  */
 
@@ -357,7 +357,7 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 {
 	GsApp *cached_app = gs_plugin_cache_lookup (plugin, locale_cache_key);
 
-	/* avoid blacklisting the same app that's already cached */
+	/* avoid blocklisting the same app that's already cached */
 	if (is_same_app (cached_app, app))
 		return;
 
@@ -366,7 +366,7 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 		const char *app_id = gs_app_get_unique_id (app);
 		const char *cached_app_id = gs_app_get_unique_id (cached_app);
 
-		g_debug ("Blacklisting '%s': using '%s' due to its locale",
+		g_debug ("Blocklisting '%s': using '%s' due to its locale",
 			 cached_app_id, app_id);
 		gs_app_add_quirk (cached_app, GS_APP_QUIRK_HIDE_EVERYWHERE);
 	}
@@ -375,7 +375,7 @@ gs_plugin_update_locale_cache_app (GsPlugin *plugin,
 }
 
 static gboolean
-gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
+gs_plugin_eos_blocklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	guint endless_prefix_len = strlen (ENDLESS_ID_PREFIX);
 	g_autofree char *locale_cache_key = NULL;
@@ -405,7 +405,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 		if (gs_app_is_installed (app))
 			return FALSE;
 
-		g_debug ("Blacklisting '%s': incompatible with the current "
+		g_debug ("Blocklisting '%s': incompatible with the current "
 			 "locale", gs_app_get_unique_id (app));
 		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
 
@@ -423,7 +423,7 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	    gs_plugin_app_is_locale_best_match (plugin, cached_app) &&
 	    !gs_app_has_category (cached_app, "usb")) {
 		if (!gs_app_is_installed (app)) {
-			g_debug ("Blacklisting '%s': cached app '%s' is best "
+			g_debug ("Blocklisting '%s': cached app '%s' is best "
 				 "match", gs_app_get_unique_id (app),
 				 gs_app_get_unique_id (cached_app));
 			gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
@@ -437,11 +437,11 @@ gs_plugin_eos_blacklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
+gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 						  GsApp *app)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	gboolean do_blacklist = FALSE;
+	gboolean do_blocklist = FALSE;
 
 	static const char *duplicated_apps[] = {
 		"com.google.Chrome",
@@ -475,7 +475,7 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 	};
 
 	/* List of apps that are proven to work on ARM */
-	static const char *arm_whitelist[] = {
+	static const char *arm_allowlist[] = {
 		"cc.arduino.arduinoide",
 		"ch.x29a.playitslowly",
 		"com.abisource.AbiWord",
@@ -737,48 +737,48 @@ gs_plugin_eos_blacklist_app_for_remote_if_needed (GsPlugin *plugin,
 		return FALSE;
 
 	/* We need to check for the app's origin, otherwise we'd be
-	 * blacklisting matching apps coming from any repo */
+	 * blocklisting matching apps coming from any repo */
 	if (g_strcmp0 (hostname, "sdk.gnome.org") == 0 ||
 		   g_strcmp0 (hostname, "flathub.org") == 0 ||
 		   g_str_has_suffix (hostname, ".flathub.org")) {
 
-		/* If the arch is ARM then we simply use a whitelist and
+		/* If the arch is ARM then we simply use a allowlist and
 		 * don't go through all the remaining lists */
 		if (priv->eos_arch_is_arm) {
-			if (g_strv_contains (arm_whitelist, app_name))
+			if (g_strv_contains (arm_allowlist, app_name))
 				return FALSE;
-			g_debug ("Blacklisting '%s': it's not whitelisted for ARM",
+			g_debug ("Blocklisting '%s': it's not allowlisted for ARM",
 				 gs_app_get_unique_id (app));
-			do_blacklist = TRUE;
+			do_blocklist = TRUE;
 		} else if (g_strv_contains (duplicated_apps, app_name)) {
-			g_debug ("Blacklisting '%s': app is in the duplicated list",
+			g_debug ("Blocklisting '%s': app is in the duplicated list",
 				 gs_app_get_unique_id (app));
-			do_blacklist = TRUE;
+			do_blocklist = TRUE;
 		} else if (g_strv_contains (core_apps, app_name)) {
-			g_debug ("Blacklisting '%s': app is in the core apps list",
+			g_debug ("Blocklisting '%s': app is in the core apps list",
 				 gs_app_get_unique_id (app));
-			do_blacklist = TRUE;
+			do_blocklist = TRUE;
 		} else if (g_strv_contains (buggy_apps, app_name)) {
-			g_debug ("Blacklisting '%s': app is in the buggy list",
+			g_debug ("Blocklisting '%s': app is in the buggy list",
 				 gs_app_get_unique_id (app));
-			do_blacklist = TRUE;
+			do_blocklist = TRUE;
 		}
 	}
 
-	if (do_blacklist)
+	if (do_blocklist)
 		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
 
-	return do_blacklist;
+	return do_blocklist;
 }
 
 static void
-gs_plugin_eos_remove_blacklist_from_usb_if_needed (GsPlugin *plugin, GsApp *app)
+gs_plugin_eos_remove_blocklist_from_usb_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	if (!gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE) ||
 	    !gs_app_has_category (app, "usb"))
 		return;
 
-	g_debug ("Removing blacklisting from '%s': app is from USB", gs_app_get_unique_id (app));
+	g_debug ("Removing blocklisting from '%s': app is from USB", gs_app_get_unique_id (app));
 	gs_app_remove_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
 }
 
@@ -833,36 +833,36 @@ app_is_banned_for_product_or_personality (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-gs_plugin_eos_blacklist_if_needed (GsPlugin *plugin, GsApp *app)
+gs_plugin_eos_blocklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
-	gboolean blacklist_app = FALSE;
+	gboolean blocklist_app = FALSE;
 	const char *id = gs_app_get_id (app);
 
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP &&
 	    gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 	    !gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY)) {
-		g_debug ("Blacklisting '%s': it's a compulsory, non-desktop app",
+		g_debug ("Blocklisting '%s': it's a compulsory, non-desktop app",
 			 gs_app_get_unique_id (app));
-		blacklist_app = TRUE;
+		blocklist_app = TRUE;
 	} else if (g_str_has_prefix (id, "eos-link-")) {
-		g_debug ("Blacklisting '%s': app is an eos-link",
+		g_debug ("Blocklisting '%s': app is an eos-link",
 			 gs_app_get_unique_id (app));
-		blacklist_app = TRUE;
+		blocklist_app = TRUE;
 	} else if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
-		g_debug ("Blacklisting '%s': app is GNOME Software itself",
+		g_debug ("Blocklisting '%s': app is GNOME Software itself",
 			 gs_app_get_unique_id (app));
-		blacklist_app = TRUE;
+		blocklist_app = TRUE;
 	} else if (app_is_banned_for_product_or_personality (plugin, app)) {
-		g_debug ("Blacklisting '%s': app is banned for product/personality",
+		g_debug ("Blocklisting '%s': app is banned for product/personality",
 			 gs_app_get_unique_id (app));
-		blacklist_app = TRUE;
+		blocklist_app = TRUE;
 	}
 
-	if (blacklist_app)
+	if (blocklist_app)
 		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
 
-	return blacklist_app;
+	return blocklist_app;
 }
 
 static gboolean
@@ -877,23 +877,23 @@ refine_app (GsPlugin             *plugin,
 	if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
 		return TRUE;
 
-	/* If it’s already blacklisted, there is little we need to do here. */
+	/* If it’s already blocklisted, there is little we need to do here. */
 	if (gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE))
 		return TRUE;
 
-	if (gs_plugin_eos_blacklist_if_needed (plugin, app))
+	if (gs_plugin_eos_blocklist_if_needed (plugin, app))
 		return TRUE;
 
 	if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
 		return TRUE;
 
-	if (gs_plugin_eos_blacklist_kapp_if_needed (plugin, app))
+	if (gs_plugin_eos_blocklist_kapp_if_needed (plugin, app))
 		return TRUE;
 
-	if (gs_plugin_eos_blacklist_app_for_remote_if_needed (plugin, app))
+	if (gs_plugin_eos_blocklist_app_for_remote_if_needed (plugin, app))
 		return TRUE;
 
-	gs_plugin_eos_remove_blacklist_from_usb_if_needed (plugin, app);
+	gs_plugin_eos_remove_blocklist_from_usb_if_needed (plugin, app);
 
 	return TRUE;
 }
@@ -924,7 +924,7 @@ gs_plugin_add_category_apps (GsPlugin *plugin,
 	for (guint i = 0; i < gs_app_list_length (list); ++i) {
 		GsApp *app = gs_app_list_index (list, i);
 
-		gs_plugin_eos_remove_blacklist_from_usb_if_needed (plugin, app);
+		gs_plugin_eos_remove_blocklist_from_usb_if_needed (plugin, app);
 	}
 
 	return TRUE;
