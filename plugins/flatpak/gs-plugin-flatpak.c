@@ -1014,7 +1014,8 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 			return FALSE;
 		}
 
-		/* Add the update applist for easier lookup */
+		/* add to the transaction cache for quick look up -- other unrelated
+		 * refs will be matched using gs_plugin_flatpak_find_app_by_ref() */
 		gs_flatpak_transaction_add_app (transaction, app);
 	}
 
