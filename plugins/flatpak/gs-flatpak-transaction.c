@@ -613,7 +613,7 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 	}
 }
 
-#if FLATPAK_CHECK_VERSION(1, 7, 3)
+#if FLATPAK_CHECK_VERSION(1, 6, 2)
 static gboolean
 later_op_also_related (GList                       *ops,
 		       FlatpakTransactionOperation *current_op,
@@ -689,7 +689,7 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 			     const gchar *commit,
 			     FlatpakTransactionResult details)
 {
-#if !FLATPAK_CHECK_VERSION(1,5,1) || FLATPAK_CHECK_VERSION(1,7,3)
+#if !FLATPAK_CHECK_VERSION(1,5,1) || FLATPAK_CHECK_VERSION(1,6,2)
 	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
 #endif
 	GsApp *main_app = NULL;
@@ -734,7 +734,7 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 	case FLATPAK_TRANSACTION_OPERATION_INSTALL_BUNDLE:
 		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 
-#if FLATPAK_CHECK_VERSION(1,7,3)
+#if FLATPAK_CHECK_VERSION(1,6,2)
 		set_skipped_related_apps_to_installed (self, transaction, operation);
 #endif
 		break;
@@ -755,7 +755,7 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 		else
 			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
 
-#if FLATPAK_CHECK_VERSION(1,7,3)
+#if FLATPAK_CHECK_VERSION(1,6,2)
 		set_skipped_related_apps_to_installed (self, transaction, operation);
 #endif
 		break;

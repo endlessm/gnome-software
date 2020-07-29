@@ -1741,7 +1741,7 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 					    loop);
 	g_main_loop_run (loop);
 	gs_test_flush_main_context ();
-#if !FLATPAK_CHECK_VERSION(1,7,3)
+#if !FLATPAK_CHECK_VERSION(1,6,2)
 	/* Older flatpak versions don't have the API we use to propagate state
 	 * between extension and app
 	 */
