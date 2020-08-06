@@ -23,9 +23,10 @@ def build_flatpak(appid, srcdir, repodir, branch='master', cleanrepodir=True):
     metadata = configparser.ConfigParser()
     metadata.read(metadata_path)
     is_runtime = True if 'Runtime' in metadata.sections() else False
+    is_extension = True if 'ExtensionOf' in metadata.sections() else False
 
     # runtimes have different defaults
-    if is_runtime:
+    if is_runtime and not is_extension:
         prefix = 'usr'
     else:
         prefix = 'files'
@@ -108,17 +109,17 @@ build_flatpak('org.test.Runtime',
               'only-runtime/repo')
 
 # app with an extension
-#copy_repo('only-runtime', 'app-extension')
-#build_flatpak('org.test.Chiron',
-#              'app-extension',
-#              'app-extension/repo',
-#              cleanrepodir=False)
-#build_flatpak('org.test.Chiron.Extension',
-#              'app-extension',
-#              'app-extension/repo',
-#              cleanrepodir=False)
-#copy_repo('app-extension', 'app-extension-update')
-#build_flatpak('org.test.Chiron.Extension',
-#              'app-extension-update',
-#              'app-extension-update/repo',
-#              cleanrepodir=False)
+copy_repo('only-runtime', 'app-extension')
+build_flatpak('org.test.Chiron',
+              'app-extension',
+              'app-extension/repo',
+              cleanrepodir=False)
+build_flatpak('org.test.Chiron.Extension',
+              'app-extension',
+              'app-extension/repo',
+              cleanrepodir=False)
+copy_repo('app-extension', 'app-extension-update')
+build_flatpak('org.test.Chiron.Extension',
+              'app-extension-update',
+              'app-extension-update/repo',
+              cleanrepodir=False)
