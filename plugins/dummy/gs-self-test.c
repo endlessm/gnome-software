@@ -467,6 +467,11 @@ gs_plugins_dummy_hang_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
+	/* Endless patch: we can't test timeouts of plugin jobs because we disable
+	 * them */
+	g_test_skip ("Timeouts disabled; see https://phabricator.endlessm.com/T28481");
+	return;
+
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
 	gs_plugin_loader_setup_again (plugin_loader);
