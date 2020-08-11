@@ -132,6 +132,13 @@ gs_metered_block_on_download_scheduler (GVariant      *parameters,
                                         GCancellable  *cancellable,
                                         GError       **error)
 {
+	/* FIXME: Use a mock service instead of skipping the check here.
+	 * https://phabricator.endlessm.com/T30646 */
+	if (g_getenv ("GS_UNIT_TESTS_SKIP_MOGWAI") != NULL) {
+		g_debug ("%s: Allowed to download (Skipping check in unit tests)", G_STRFUNC);
+		return TRUE;
+	}
+
 #ifdef HAVE_MOGWAI
 	g_autoptr(MwscScheduler) scheduler = NULL;
 	g_autoptr(MwscScheduleEntry) schedule_entry = NULL;
