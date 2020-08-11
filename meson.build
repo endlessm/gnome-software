@@ -236,6 +236,7 @@ test_env = [
   'GSETTINGS_SCHEMA_DIR=@0@/data/'.format(meson.build_root()),
   'GSETTINGS_BACKEND=memory',
   'MALLOC_CHECK_=2',
+  'GS_UNIT_TESTS_SKIP_MOGWAI=1',
 ]
 
 subdir('data')

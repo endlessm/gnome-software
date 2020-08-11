@@ -142,6 +142,13 @@ gs_metered_block_on_download_scheduler (GVariant      *parameters,
 
 	g_return_val_if_fail (schedule_entry_handle_out != NULL, FALSE);
 
+	/* FIXME: Use a mock service instead of skipping the check here.
+	 * https://phabricator.endlessm.com/T30646 */
+	if (g_getenv ("GS_UNIT_TESTS_SKIP_MOGWAI") != NULL) {
+		g_debug ("%s: Allowed to download (Skipping check in unit tests)", G_STRFUNC);
+		return TRUE;
+	}
+
 	/* Set this in case of error. */
 	*schedule_entry_handle_out = NULL;
 
