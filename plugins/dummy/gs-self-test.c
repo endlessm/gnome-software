@@ -691,7 +691,7 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 
 	/* since we have only 1 parallel installation op possible,
 	 * verify the last operations are pending */
-	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_QUEUED_FOR_INSTALL);
 	g_assert_cmpint (gs_app_get_pending_action (app2), ==, GS_PLUGIN_ACTION_INSTALL);
 	g_assert_cmpint (gs_app_get_state (app3), ==, AS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpint (gs_app_get_pending_action (app3), ==, GS_PLUGIN_ACTION_UPDATE);
