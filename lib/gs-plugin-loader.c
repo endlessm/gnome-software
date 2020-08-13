@@ -2024,8 +2024,8 @@ pending_app_state_changed_cb (GsApp *app,
 			      GParamSpec *pspec,
 			      GsPluginLoader *plugin_loader)
 {
-	if (gs_app_get_state (app) != AS_APP_STATE_INSTALLING ||
-	    gs_app_get_state (app) != AS_APP_STATE_QUEUED_FOR_INSTALL)
+	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLING ||
+	    gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL)
 		return;
 
 	remove_app_from_install_queue (plugin_loader, app);
