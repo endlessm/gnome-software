@@ -228,6 +228,10 @@ test_env = [
   'GSETTINGS_SCHEMA_DIR=@0@/data/'.format(meson.build_root()),
   'GSETTINGS_BACKEND=memory',
   'MALLOC_CHECK_=2',
+  'GS_UNIT_TESTS_SKIP_MOGWAI=1',
+  # FIXME: Use a mock service for parental controls
+  # https://phabricator.endlessm.com/T30645
+  'FLATPAK_SKIP_PARENTAL_CONTROLS_NO_SYSTEM_BUS=1',
 ]
 
 subdir('data')

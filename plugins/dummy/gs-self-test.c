@@ -388,7 +388,7 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_assert (!gs_app_has_category (app, "ImageProcessing"));
 	g_assert (gs_app_get_menu_path (app) != NULL);
 	menu_path = g_strjoinv ("->", gs_app_get_menu_path (app));
-	g_assert_cmpstr (menu_path, ==, "Audio & Video->Music Players");
+	g_assert_cmpstr (menu_path, ==, "Multimedia->Music Players");
 
 	/* check addon */
 	addons = gs_app_get_addons (app);
@@ -466,6 +466,11 @@ gs_plugins_dummy_hang_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+
+	/* Endless patch: we can't test timeouts of plugin jobs because we disable
+	 * them */
+	g_test_skip ("Timeouts disabled; see https://phabricator.endlessm.com/T28481");
+	return;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
@@ -686,7 +691,7 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 
 	/* since we have only 1 parallel installation op possible,
 	 * verify the last operations are pending */
-	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_QUEUED_FOR_INSTALL);
 	g_assert_cmpint (gs_app_get_pending_action (app2), ==, GS_PLUGIN_ACTION_INSTALL);
 	g_assert_cmpint (gs_app_get_state (app3), ==, AS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpint (gs_app_get_pending_action (app3), ==, GS_PLUGIN_ACTION_UPDATE);
@@ -732,7 +737,22 @@ main (int argc, char **argv)
 		NULL
 	};
 
-	g_test_init (&argc, &argv, NULL);
+	/* While we use %G_TEST_OPTION_ISOLATE_DIRS to create temporary directories
+	 * for each of the tests, we want to use the system MIME registry, assuming
+	 * that it exists and correctly has shared-mime-info installed. */
+#if GLIB_CHECK_VERSION(2, 60, 0)
+	g_content_type_set_mime_dirs (NULL);
+#endif
+
+	/* Similarly, add the system-wide icon theme path before it’s
+	 * overwritten by %G_TEST_OPTION_ISOLATE_DIRS. */
+	gs_test_expose_icon_theme_paths ();
+
+	g_test_init (&argc, &argv,
+#if GLIB_CHECK_VERSION(2, 60, 0)
+		     G_TEST_OPTION_ISOLATE_DIRS,
+#endif
+		     NULL);
 	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
 	g_setenv ("GS_XMLB_VERBOSE", "1", TRUE);
 
