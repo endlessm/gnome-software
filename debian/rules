@@ -105,9 +105,6 @@ override_dh_missing:
 override_dh_makeshlibs:
 	dh_makeshlibs -Xlibgs_plugin
 
-# DISABLED
-override_dh_auto_test:
-
 override_dh_gencontrol:
 ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
 	dh_gencontrol -- -Vplugin:Recommends='gnome-software-plugin-snap [linux-any]'
