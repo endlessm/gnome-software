@@ -43,7 +43,9 @@ i18n.merge_file(
   install_dir: join_paths(get_option('datadir'), 'metainfo')
 )
 
-if get_option('tests')
+# skip tests on non-x86_64
+# see https://gitlab.gnome.org/GNOME/gnome-software/-/issues/1047
+if get_option('tests') and host_machine.cpu_family() == 'x86_64'
   subdir('tests')
 
   cargs += ['-DLOCALPLUGINDIR="' + meson.current_build_dir() + '"']
