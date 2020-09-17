@@ -29,7 +29,6 @@
 #include "gs-dbus-helper.h"
 #endif
 
-#include "gs-discovery-feed-content-provider.h"
 #include "gs-first-run-dialog.h"
 #include "gs-shell.h"
 #include "gs-update-monitor.h"
@@ -50,7 +49,6 @@ struct _GsApplication {
 	GsDbusHelper	*dbus_helper;
 #endif
 	GsShellSearchProvider *search_provider;
-	GsDiscoveryFeedContentProvider *discovery_feed_content_provider;
 	GSettings       *settings;
 	GSimpleActionGroup	*action_map;
 	guint		 shell_loaded_handler_id;
@@ -188,15 +186,7 @@ gs_application_dbus_register (GApplication    *application,
 {
 	GsApplication *app = GS_APPLICATION (application);
 	app->search_provider = gs_shell_search_provider_new ();
-	app->discovery_feed_content_provider = gs_discovery_feed_content_provider_new ();
-
-	if (!gs_shell_search_provider_register (app->search_provider, connection, error))
-		return FALSE;
-
-	if (!gs_discovery_feed_content_provider_register (app->discovery_feed_content_provider, connection, error))
-		return FALSE;
-
-	return TRUE;
+	return gs_shell_search_provider_register (app->search_provider, connection, error);
 }
 
 static void
@@ -209,11 +199,6 @@ gs_application_dbus_unregister (GApplication    *application,
 	if (app->search_provider != NULL) {
 		gs_shell_search_provider_unregister (app->search_provider);
 		g_clear_object (&app->search_provider);
-	}
-
-	if (app->discovery_feed_content_provider != NULL) {
-		gs_discovery_feed_content_provider_unregister (app->discovery_feed_content_provider);
-		g_clear_object (&app->discovery_feed_content_provider);
 	}
 }
 
@@ -894,7 +879,6 @@ gs_application_setup_search_provider (GsApplication *app)
 {
 	gs_application_initialize_plugins (app);
 	gs_shell_search_provider_setup (app->search_provider, app->plugin_loader);
-	gs_discovery_feed_content_provider_setup (app->discovery_feed_content_provider, app->plugin_loader);
 }
 
 static void
