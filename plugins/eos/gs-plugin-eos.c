@@ -580,13 +580,16 @@ remove_app_from_shell (GsPlugin		*plugin,
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autofree char *desktop_file_id = get_desktop_file_id (app);
+	g_autoptr(GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (desktop_file_id);
+	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	g_dbus_connection_call_sync (priv->session_bus,
 				     "org.gnome.Shell",
 				     "/org/gnome/Shell",
 				     "org.gnome.Shell.AppStore",
 				     "RemoveApplication",
-				     g_variant_new ("(s)", desktop_file_id),
+				     g_variant_new ("(s)", shortcut_id),
 				     NULL,
 				     G_DBUS_CALL_FLAGS_NONE,
 				     -1,
@@ -652,9 +655,12 @@ add_app_to_shell (GsPlugin	*plugin,
 	GError *error = NULL;
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autofree char *desktop_file_id = get_desktop_file_id (app);
+	g_autoptr(GDesktopAppInfo) app_info =
+		gs_utils_get_desktop_app_info (desktop_file_id);
+	const char *shortcut_id = g_app_info_get_id (G_APP_INFO (app_info));
 
 	/* Look up the app in our replacement list to see if we
-	 * can replace an existing shortcut, and if so, do that
+	 * can replace and existing shortcut, and if so, do that
 	 * instead */
 	const char *shortcut_id_to_replace = g_hash_table_lookup (priv->replacement_app_lookup,
 								  desktop_file_id);
@@ -663,12 +669,12 @@ add_app_to_shell (GsPlugin	*plugin,
 	if (shortcut_id_to_replace)
 		shell_replace_app (priv->session_bus,
 				   shortcut_id_to_replace,
-				   desktop_file_id,
+				   shortcut_id,
 				   cancellable,
 				   &error);
 	else
 		shell_add_app_if_not_visible (priv->session_bus,
-					      desktop_file_id,
+					      shortcut_id,
 					      cancellable,
 					      &error);
 
