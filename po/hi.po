@@ -5,14 +5,14 @@
 # Translators:
 # 25c299dc371da5bff014f86901f492aa, 2016-2018
 # Roddy Shuler <roddy@stanfordalumni.org>, 2016-2017
-# Will Thompson <wjt@endlessm.com>, 2019-2020
+# Will Thompson <wjt@endlessos.org>, 2019-2020
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-04-16 16:45+0100\n"
-"PO-Revision-Date: 2020-04-18 08:46+0000\n"
-"Last-Translator: Will Thompson <wjt@endlessm.com>\n"
+"POT-Creation-Date: 2020-09-21 12:34+0000\n"
+"PO-Revision-Date: 2020-09-21 12:34+0000\n"
+"Last-Translator: endlessmobile_build <philip@endlessm.com>\n"
 "Language-Team: Hindi (http://www.transifex.com/endless-os/gnome-software/language/hi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -346,7 +346,7 @@ msgstr "डिस्क का परीक्षण करें"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gnome-software.ui:393 src/gs-updates-page.c:986
+#: src/gnome-software.ui:393 src/gs-updates-page.c:987
 msgid "Network Settings"
 msgstr "नेटवर्क सेटिंग"
 
@@ -370,11 +370,11 @@ msgid "Find Out _More"
 msgstr "_और अधिक जानकारी प्राप्त करें"
 
 #. TRANSLATORS: this is a locally downloaded package
-#: lib/gs-app.c:4598
+#: lib/gs-app.c:4608
 msgid "Local file"
 msgstr "लोकल फ़ाइल"
 
-#: lib/gs-app.c:4650
+#: lib/gs-app.c:4660
 msgid "Package"
 msgstr "पैकेज"
 
@@ -391,7 +391,7 @@ msgstr "स्थापित किया गया"
 #. * shows the status of an application being installed
 #. TRANSLATORS: this is a button in the software repositories dialog
 #. that shows the status of a repo being installed
-#: src/gs-app-addon-row.c:92 src/gs-app-row.c:163 src/gs-details-page.c:398
+#: src/gs-app-addon-row.c:92 src/gs-app-row.c:163 src/gs-details-page.c:418
 #: src/gs-third-party-repo-row.c:99
 msgid "Installing"
 msgstr "स्थापित करना"
@@ -488,7 +488,7 @@ msgstr "अनुवादक-श्रेय"
 #. TRANSLATORS: this is the menu item that opens the about window, e.g.
 #. * 'About Software' or 'About Application Installer' where the %s is
 #. * the application name chosen by the distro
-#: src/gs-application.c:350 src/gs-shell.c:2180
+#: src/gs-application.c:350 src/gs-shell.c:2189
 #, c-format
 msgid "About %s"
 msgstr "%s के बारे में"
@@ -591,17 +591,17 @@ msgid "All"
 msgstr "सभी"
 
 #. TRANSLATORS: this is a subcategory of featured apps
-#: lib/gs-category.c:189 src/gs-shell.c:2754
+#: lib/gs-category.c:189 src/gs-shell.c:2763
 msgid "Featured"
 msgstr "पसंदीदा"
 
-#: src/gs-category-page.c:342 src/gs-category-page.ui:64
+#: src/gs-category-page.c:348 src/gs-category-page.ui:64
 msgid "Copy OS to USB"
 msgstr "OS को USB पर कॉपी करें"
 
 #. TRANSLATORS: This is a heading on the categories page. %s gets
 #. replaced by the category name, e.g. 'Graphics & Photography'
-#: src/gs-category-page.c:574
+#: src/gs-category-page.c:589
 #, c-format
 msgid "Featured %s"
 msgstr "मुख्य %s"
@@ -1385,40 +1385,46 @@ msgstr "अतिरिक्त पैकेज आवश्यक"
 msgid "Find in Software"
 msgstr "सॉफ़्टवेयर में खोजें"
 
-#: src/gs-details-page.c:279 src/gs-details-page.ui:265
+#: src/gs-details-page.c:280 src/gs-details-page.ui:265
 msgid "Copy to US_B"
 msgstr "US_B में कॉपी करें"
 
-#: src/gs-details-page.c:282
+#: src/gs-details-page.c:283
 msgid "Insert USB to Copy To"
 msgstr "में कॉपी करने के लिए USB इन्सर्ट करें"
 
-#: src/gs-details-page.c:286
+#: src/gs-details-page.c:287
 msgid "Pending Copy"
 msgstr "लंबित कॉपी"
 
-#: src/gs-details-page.c:394
+#: src/gs-details-page.c:414
 msgid "Removing…"
 msgstr "निकाल रहा है…"
 
-#: src/gs-details-page.c:402
+#: src/gs-details-page.c:422
 msgid "Copying"
 msgstr "कॉपी कर रहे "
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be installed soon
-#: src/gs-details-page.c:414
+#: src/gs-details-page.c:434
 msgid "Pending installation…"
 msgstr "इंस्टालेशन लंबित है..."
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
-#: src/gs-details-page.c:421
+#: src/gs-details-page.c:441
 msgid "Pending update…"
 msgstr "अपडेट लंबित है..."
 
+#. Translators: This string is shown when preparing to download and install an
+#. app.
+#: src/gs-details-page.c:455
+msgid "Preparing…"
+msgstr ""
+
 #. TRANSLATORS: this is the warning box
-#: src/gs-details-page.c:779
+#: src/gs-details-page.c:812
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
@@ -1428,8 +1434,8 @@ msgstr "इस एप्लिकेशन का उपयोग केवल �
 #. * can be installed
 #. TRANSLATORS: this is a button in the software repositories
 #. dialog for installing a repo
-#: src/gs-details-page.c:930 src/gs-third-party-repo-row.c:83
-#: src/gs-upgrade-banner.c:63
+#: src/gs-details-page.c:963 src/gs-third-party-repo-row.c:83
+#: src/gs-upgrade-banner.c:87
 msgid "_Install"
 msgstr "_स्थापित करें"
 
@@ -1437,7 +1443,7 @@ msgstr "_स्थापित करें"
 #. * can be installed but needs to be downloaded first
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:934 src/gs-details-page.c:952
+#: src/gs-details-page.c:967 src/gs-details-page.c:985
 #: src/gs-details-page.ui:186 src/gs-updates-section.c:475
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
@@ -1447,195 +1453,195 @@ msgstr "_डाउनलोड करें"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
-#: src/gs-details-page.c:966
+#: src/gs-details-page.c:999
 msgid "_Download…"
 msgstr "_डाउनलोड..."
 
 #. TRANSLATORS: A label for a button to execute the selected application.
-#: src/gs-details-page.c:1011
+#: src/gs-details-page.c:1044
 msgid "_Launch"
 msgstr "_लॉन्च करें"
 
 #. TRANSLATORS: button text in the header when an application can be erased
-#: src/gs-details-page.c:1035 src/gs-details-page.ui:414
+#: src/gs-details-page.c:1068 src/gs-details-page.ui:414
 msgid "_Uninstall"
 msgstr "_स्थापना रद्द करें"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1100 src/gs-update-dialog.c:92
 msgid "Network"
 msgstr "नेटवर्क"
 
-#: src/gs-details-page.c:1067 src/gs-update-dialog.c:92
+#: src/gs-details-page.c:1100 src/gs-update-dialog.c:92
 msgid "Can communicate over the network"
 msgstr "नेटवर्क के द्वारा संपर्क कर सकते हैं"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1101 src/gs-update-dialog.c:93
 msgid "System Services"
 msgstr "सिस्टम सेवाएँ"
 
-#: src/gs-details-page.c:1068 src/gs-update-dialog.c:93
+#: src/gs-details-page.c:1101 src/gs-update-dialog.c:93
 msgid "Can access D-Bus services on the system bus"
 msgstr "सिस्टम बस में डी-बस सेवाओं का उपयोग कर सकता है"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1102 src/gs-update-dialog.c:94
 msgid "Session Services"
 msgstr "सेशन सेवाएँ"
 
-#: src/gs-details-page.c:1069 src/gs-update-dialog.c:94
+#: src/gs-details-page.c:1102 src/gs-update-dialog.c:94
 msgid "Can access D-Bus services on the session bus"
 msgstr "सेशन बस में D-बस सेवाओं का उपयोग कर सकते हैं"
 
-#: src/gs-details-page.c:1070 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1103 src/gs-update-dialog.c:95
 msgid "Devices"
 msgstr "डिवाइस"
 
-#: src/gs-details-page.c:1070 src/gs-update-dialog.c:95
+#: src/gs-details-page.c:1103 src/gs-update-dialog.c:95
 msgid "Can access system device files"
 msgstr "सिस्टम डिवाइस फ़ाइलों को एक्सेस कर सकते हैं"
 
-#: src/gs-details-page.c:1071 src/gs-details-page.c:1072
+#: src/gs-details-page.c:1104 src/gs-details-page.c:1105
 #: src/gs-update-dialog.c:96 src/gs-update-dialog.c:97
 msgid "Home folder"
 msgstr "होम फोल्डर"
 
-#: src/gs-details-page.c:1071 src/gs-details-page.c:1073
-#: src/gs-details-page.c:1075 src/gs-update-dialog.c:96
+#: src/gs-details-page.c:1104 src/gs-details-page.c:1106
+#: src/gs-details-page.c:1108 src/gs-update-dialog.c:96
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:100
 msgid "Can view, edit and create files"
 msgstr "फ़ाइलें देख सकते हैं, संपादित कर सकते हैं और बना सकते हैं"
 
-#: src/gs-details-page.c:1072 src/gs-details-page.c:1074
-#: src/gs-details-page.c:1076 src/gs-update-dialog.c:97
+#: src/gs-details-page.c:1105 src/gs-details-page.c:1107
+#: src/gs-details-page.c:1109 src/gs-update-dialog.c:97
 #: src/gs-update-dialog.c:99 src/gs-update-dialog.c:101
 msgid "Can view files"
 msgstr "फाइलें देख सकते हैं"
 
-#: src/gs-details-page.c:1073 src/gs-details-page.c:1074
+#: src/gs-details-page.c:1106 src/gs-details-page.c:1107
 #: src/gs-update-dialog.c:98 src/gs-update-dialog.c:99
 msgid "File system"
 msgstr "फ़ाइल सिस्टम"
 
-#: src/gs-details-page.c:1075 src/gs-details-page.c:1076
+#: src/gs-details-page.c:1108 src/gs-details-page.c:1109
 #: src/gs-update-dialog.c:100 src/gs-update-dialog.c:101
 msgid "Downloads folder"
 msgstr "डाउनलोड फ़ोल्डर"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1110 src/gs-update-dialog.c:102
 msgid "Settings"
 msgstr "सेटिंग"
 
-#: src/gs-details-page.c:1077 src/gs-update-dialog.c:102
+#: src/gs-details-page.c:1110 src/gs-update-dialog.c:102
 msgid "Can view and change any settings"
 msgstr "किसी भी सेटिंग को देख और बदल सकते हैं"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1111 src/gs-update-dialog.c:103
 msgid "Legacy display system"
 msgstr "विरासत प्रदर्शन प्रणाली"
 
-#: src/gs-details-page.c:1078 src/gs-update-dialog.c:103
+#: src/gs-details-page.c:1111 src/gs-update-dialog.c:103
 msgid "Uses an old, insecure display system"
 msgstr "एक पुराने, असुरक्षित डिस्प्ले सिस्टम का उपयोग करता है"
 
-#: src/gs-details-page.c:1079 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1112 src/gs-update-dialog.c:104
 msgid "Sandbox escape"
 msgstr " सैंडबॉक्स इस्केप"
 
-#: src/gs-details-page.c:1079 src/gs-update-dialog.c:104
+#: src/gs-details-page.c:1112 src/gs-update-dialog.c:104
 msgid "Can escape the sandbox and circumvent any other restrictions"
 msgstr "सैंडबॉक्स से बच सकते हैं और किसी अन्य प्रतिबंधों को नाकाम कर सकते हैं"
 
-#: src/gs-details-page.c:1094
+#: src/gs-details-page.c:1127
 msgid "This application is fully sandboxed."
 msgstr "यह एप्लिकेशन पूरी तरह से सैंडबॉक्स है।"
 
-#: src/gs-details-page.c:1102
+#: src/gs-details-page.c:1135
 msgid ""
 "Unable to determine which parts of the system this application accesses. "
 "This is typical for older applications."
 msgstr "यह निर्धारित करने में असमर्थ हैं कि यह एप्लीकेशन सिस्टम के किन हिस्सों को एक्सेस करता है। साधारणतः पुराने एप्लीकेशन में ऐसा होता है।"
 
 #. TRANSLATORS: this is where the version is not known
-#: src/gs-details-page.c:1261
+#: src/gs-details-page.c:1294
 msgctxt "version"
 msgid "Unknown"
 msgstr "अज्ञात"
 
 #. TRANSLATORS: this is where the updated date is not known
-#: src/gs-details-page.c:1274
+#: src/gs-details-page.c:1307
 msgctxt "updated"
 msgid "Never"
 msgstr "कभी नहीं"
 
 #. TRANSLATORS: this is where we don't know the origin of the
 #. * application
-#: src/gs-details-page.c:1327
+#: src/gs-details-page.c:1360
 msgctxt "origin"
 msgid "Unknown"
 msgstr "अज्ञात"
 
-#: src/gs-details-page.c:1380
+#: src/gs-details-page.c:1413
 msgid "Low"
 msgstr "कम"
 
-#: src/gs-details-page.c:1382
+#: src/gs-details-page.c:1415
 msgid "Medium"
 msgstr "मध्यम"
 
-#: src/gs-details-page.c:1384
+#: src/gs-details-page.c:1417
 msgid "High"
 msgstr "उच्च"
 
 #. This refers to the license of the application
 #. TRANSLATORS: this is when a user doesn't specify a name
-#: src/gs-details-page.c:1386 src/gs-details-page.ui:1008
+#: src/gs-details-page.c:1419 src/gs-details-page.ui:1008
 #: src/gs-review-row.c:57
 msgid "Unknown"
 msgstr "अज्ञात"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1726
+#: src/gs-details-page.c:1759
 msgid "You need internet access to write a review"
 msgstr "समीक्षा लिखने के लिए आपको इंटरनेट पहुँच की आवश्यकता है"
 
-#: src/gs-details-page.c:1934 src/gs-details-page.c:1950
+#: src/gs-details-page.c:1967 src/gs-details-page.c:1983
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "“%s” को ढूँढ़ने में असमर्थ"
 
-#: src/gs-details-page.c:2425
+#: src/gs-details-page.c:2458
 msgid "Copied to USB"
 msgstr "USB में कॉपी किया गया"
 
 #. TRANSLATORS: see the wikipedia page
-#: src/gs-details-page.c:2571
+#: src/gs-details-page.c:2604
 msgid "Public domain"
 msgstr "सार्वजनिक डोमेन"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://de.wikipedia.org/wiki/Gemeinfreiheit
-#: src/gs-details-page.c:2574
+#: src/gs-details-page.c:2607
 msgid "https://en.wikipedia.org/wiki/Public_domain"
 msgstr "https://en.wikipedia.org/wiki/Public_domain"
 
 #. TRANSLATORS: Replace the link with a version in your language,
 #. * e.g. https://www.gnu.org/philosophy/free-sw.de
-#: src/gs-details-page.c:2581
+#: src/gs-details-page.c:2614
 msgid "https://www.gnu.org/philosophy/free-sw"
 msgstr "https://www.gnu.org/philosophy/free-sw"
 
 #. TRANSLATORS: see GNU page
-#: src/gs-details-page.c:2591 src/gs-details-page.ui:1252
+#: src/gs-details-page.c:2624 src/gs-details-page.ui:1252
 msgid "Free Software"
 msgstr "निशुल्क सॉफ़्टवेयर"
 
 #. TRANSLATORS: for the free software popover
-#: src/gs-details-page.c:2648
+#: src/gs-details-page.c:2681
 msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "उपयोगकर्ता निम्न लाइसेंस द्वारा बँधे हुए हैं:"
 msgstr[1] "उपयोगकर्ता निम्न लाइसेंसों द्वारा बँधे हुए हैं:"
 
-#: src/gs-details-page.c:2675 src/gs-details-page.ui:1324
+#: src/gs-details-page.c:2708 src/gs-details-page.ui:1324
 msgid "More information"
 msgstr "अधिक जानकारी"
 
@@ -2082,7 +2088,7 @@ msgstr "अज्ञात"
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
 #: src/gs-history-dialog.c:110 src/gs-review-row.c:64
-#: src/gs-updates-page.c:271
+#: src/gs-updates-page.c:272
 msgid "%e %B %Y"
 msgstr "%e %B %Y"
 
@@ -2662,33 +2668,33 @@ msgstr "कोई एप्लिकेशन नहीं मिला"
 #. TRANSLATORS: this is part of the in-app notification,
 #. * where the %s is a multi-word localised app name
 #. * e.g. 'Getting things GNOME!"
-#: src/gs-shell.c:1166 src/gs-shell.c:1171 src/gs-shell.c:1186
-#: src/gs-shell.c:1190
+#: src/gs-shell.c:1175 src/gs-shell.c:1180 src/gs-shell.c:1195
+#: src/gs-shell.c:1199
 #, c-format
 msgid "“%s”"
 msgstr "“%s”"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:1237
+#: src/gs-shell.c:1246
 #, c-format
 msgid "Unable to download firmware updates from %s"
 msgstr "%s से फ़र्मवेयर अपडेट डाउनलोड करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:1243
+#: src/gs-shell.c:1252
 #, c-format
 msgid "Unable to download updates from %s"
 msgstr "%s से अपडेट डाउनलोड करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1250 src/gs-shell.c:1295
+#: src/gs-shell.c:1259 src/gs-shell.c:1304
 msgid "Unable to download updates"
 msgstr "अपडेट डाउनलोड करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1256
+#: src/gs-shell.c:1265
 msgid ""
 "Unable to download updates: internet access was required but wasn’t "
 "available"
@@ -2696,48 +2702,48 @@ msgstr "अपडेट डाउनलोड करने में असम�
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:1265
+#: src/gs-shell.c:1274
 #, c-format
 msgid "Unable to download updates from %s: not enough disk space"
 msgstr "%s से अपडेट डाउनलोड करने में असमर्थ: पर्याप्त डिस्क स्थान नहीं"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1270
+#: src/gs-shell.c:1279
 msgid "Unable to download updates: not enough disk space"
 msgstr "अपडेट डाउनलोड करने में असमर्थ: पर्याप्त डिस्क स्थान नहीं"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1277
+#: src/gs-shell.c:1286
 msgid "Unable to download updates: authentication was required"
 msgstr "अपडेट डाउनलोड करने में असमर्थ: प्रमाणीकरण आवश्यक था"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1282
+#: src/gs-shell.c:1291
 msgid "Unable to download updates: authentication was invalid"
 msgstr "अपडेट डाउनलोड करने में असमर्थ: प्रमाणीकरण अमान्य था"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1287
+#: src/gs-shell.c:1296
 msgid ""
 "Unable to download updates: you do not have permission to install software"
 msgstr "अपडेट डाउनलोड करने में असमर्थ: आपके पास सॉफ़्टवेयर को स्थापित करने की अनुमति नहीं है"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1298
+#: src/gs-shell.c:1307
 msgid "Unable to get list of updates"
 msgstr "अपडेट की सूची प्राप्त करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the application name (e.g. "GIMP") and
 #. * the second %s is the origin, e.g. "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1341
+#: src/gs-shell.c:1350
 #, c-format
 msgid "Unable to install %s as download failed from %s"
 msgstr "%s से डाउनलोड विफल होने के कारण %s स्थापित करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1347
+#: src/gs-shell.c:1356
 #, c-format
 msgid "Unable to install %s as download failed"
 msgstr "डाउनलोड विफल होने के कारण %s स्थापित करने में असमर्थ"
@@ -2746,72 +2752,72 @@ msgstr "डाउनलोड विफल होने के कारण %s �
 #. * where the first %s is the application name (e.g. "GIMP")
 #. * and the second %s is the name of the runtime, e.g.
 #. * "GNOME SDK [flatpak.gnome.org]"
-#: src/gs-shell.c:1360
+#: src/gs-shell.c:1369
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
 msgstr "%s रनटाइम उपलब्ध नहीं होने के कारण %s स्थापित करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1366
+#: src/gs-shell.c:1375
 #, c-format
 msgid "Unable to install %s as not supported"
 msgstr "समर्थित नहीं होने के कारण %s स्थापित करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1373
+#: src/gs-shell.c:1382
 msgid "Unable to install: internet access was required but wasn’t available"
 msgstr "स्थापित करने में असमर्थ: इंटरनेट पहुँच की आवश्यकता थी लेकिन वह उपलब्ध नहीं थी"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1379
+#: src/gs-shell.c:1388
 msgid "Unable to install: the application has an invalid format"
 msgstr "स्थापित करने में असमर्थ: ऐप्लिकेशन का स्वरूप अमान्य था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1384
+#: src/gs-shell.c:1393
 #, c-format
 msgid "Unable to install %s: not enough disk space"
 msgstr "%s स्थापित करने में असमर्थ: पर्याप्त डिस्क स्थान नहीं"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1391
+#: src/gs-shell.c:1400
 #, c-format
 msgid "Unable to install %s: authentication was required"
 msgstr "%s स्थापित करने में असमर्थ: प्रमाणीकरण आवश्यक था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1398
+#: src/gs-shell.c:1407
 #, c-format
 msgid "Unable to install %s: authentication was invalid"
 msgstr "%s स्थापित करने में असमर्थ: प्रमाणीकरण अमान्य था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1405
+#: src/gs-shell.c:1414
 #, c-format
 msgid "Unable to install %s: you do not have permission to install software"
 msgstr "%s स्थापित करने में असमर्थ: आपके पास सॉफ़्टवेयर को स्थापित करने की अनुमति नहीं है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1413
+#: src/gs-shell.c:1422
 #, c-format
 msgid "Unable to install %s: AC power is required"
 msgstr "%s स्थापित करने में असमर्थ: AC बिजली आवश्यक है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1420
+#: src/gs-shell.c:1429
 #, c-format
 msgid "Unable to install %s: The battery level is too low"
 msgstr "%s को इनस्टॉल करने में असमर्थ हैं: बैटरी पॉवर बहुत कम है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1429
+#: src/gs-shell.c:1438
 #, c-format
 msgid "Unable to install %s"
 msgstr "%s को स्थापित करने में असमर्थ"
@@ -2820,14 +2826,14 @@ msgstr "%s को स्थापित करने में असमर्�
 #. * where the first %s is the app name (e.g. "GIMP") and
 #. * the second %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1476
+#: src/gs-shell.c:1485
 #, c-format
 msgid "Unable to update %s from %s as download failed"
 msgstr "डाउनलोड के विफल होने से %s से %s अपडेट करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1483
+#: src/gs-shell.c:1492
 #, c-format
 msgid "Unable to update %s as download failed"
 msgstr "डाउनलोड विफल होने के कारण %s को अपडेट करने में असमर्थ"
@@ -2835,70 +2841,70 @@ msgstr "डाउनलोड विफल होने के कारण %s �
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1490
+#: src/gs-shell.c:1499
 #, c-format
 msgid "Unable to install updates from %s as download failed"
 msgstr "डाउनलोड विफल होने के कारण %s से अपडेट इनस्टॉल करने में असमर्थ हैं"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1494
+#: src/gs-shell.c:1503
 #, c-format
 msgid "Unable to install updates as download failed"
 msgstr "डाउनलोड विफल होने पर अपडेट इंस्टॉल करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1500
+#: src/gs-shell.c:1509
 msgid "Unable to update: internet access was required but wasn’t available"
 msgstr "अपडेट करने में असमर्थ: इंटरनेट पहुँच की आवश्यकता थी लेकिन वह उपलब्ध नहीं थी"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1510
+#: src/gs-shell.c:1519
 #, c-format
 msgid "Unable to update %s: not enough disk space"
 msgstr "%s को अपडेट करने में असमर्थ: पर्याप्त डिस्क स्थान नहीं"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1515
+#: src/gs-shell.c:1524
 #, c-format
 msgid "Unable to install updates: not enough disk space"
 msgstr "अपडेट्स इंस्टॉल करने में असमर्थ: पर्याप्त डिस्क स्थान नहीं"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1525
+#: src/gs-shell.c:1534
 #, c-format
 msgid "Unable to update %s: authentication was required"
 msgstr "%s को अपडेट करने में असमर्थ: प्रमाणीकरण आवश्यक था"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1530
+#: src/gs-shell.c:1539
 #, c-format
 msgid "Unable to install updates: authentication was required"
 msgstr "अपडेट इंस्टॉल करने में असमर्थ: प्रमाणीकरण की आवश्यकता थी"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1539
+#: src/gs-shell.c:1548
 #, c-format
 msgid "Unable to update %s: authentication was invalid"
 msgstr "%s को अपडेट करने में असमर्थ: प्रमाणीकरण अमान्य था"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1544
+#: src/gs-shell.c:1553
 #, c-format
 msgid "Unable to install updates: authentication was invalid"
 msgstr "अपडेट इनस्टॉल करने में असमर्थ: प्रमाणीकरण अमान्य था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1553
+#: src/gs-shell.c:1562
 #, c-format
 msgid "Unable to update %s: you do not have permission to update software"
 msgstr "%s को अपडेट करने में असमर्थ: आपके पास सॉफ़्टवेयर को अपडेट करने की अनुमति नहीं है"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1559
+#: src/gs-shell.c:1568
 #, c-format
 msgid ""
 "Unable to install updates: you do not have permission to update software"
@@ -2906,41 +2912,41 @@ msgstr "अपडेट इंस्टाल करने में असम�
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1569
+#: src/gs-shell.c:1578
 #, c-format
 msgid "Unable to update %s: AC power is required"
 msgstr "%s अपडेट करने में असमर्थ: AC बिजली आवश्यक है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1575
+#: src/gs-shell.c:1584
 #, c-format
 msgid "Unable to install updates: AC power is required"
 msgstr "अपडेट करने में असमर्थ हैं: AC पॉवर की आवश्यकता है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1584
+#: src/gs-shell.c:1593
 #, c-format
 msgid "Unable to update %s: The battery level is too low"
 msgstr "%s अपडेट करने में असमर्थ: बैटरी स्तर बहुत कम है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1590
+#: src/gs-shell.c:1599
 #, c-format
 msgid "Unable to install updates: The battery level is too low"
 msgstr "अपडेट इंस्टाल करने में असमर्थ: बैटरी लेवल बहुत कम है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1601
+#: src/gs-shell.c:1610
 #, c-format
 msgid "Unable to update %s"
 msgstr "%s को अपडेट करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1604
+#: src/gs-shell.c:1613
 #, c-format
 msgid "Unable to install updates"
 msgstr "अपडेट इनस्टॉल करने में असमर्थ हैं"
@@ -2948,21 +2954,21 @@ msgstr "अपडेट इनस्टॉल करने में असम�
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the distro name (e.g. "Fedora 25") and
 #. * the second %s is the origin, e.g. "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1647
+#: src/gs-shell.c:1656
 #, c-format
 msgid "Unable to upgrade to %s from %s"
 msgstr "%s से %s पर नवीनीकृत करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the app name (e.g. "GIMP")
-#: src/gs-shell.c:1652
+#: src/gs-shell.c:1661
 #, c-format
 msgid "Unable to upgrade to %s as download failed"
 msgstr "डाउनलोड विफल होने के कारण %s में नवीनीकृत करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1661
+#: src/gs-shell.c:1670
 #, c-format
 msgid ""
 "Unable to upgrade to %s: internet access was required but wasn’t available"
@@ -2970,91 +2976,91 @@ msgstr "%s अपग्रेड करने में असमर्थ: इ�
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1670
+#: src/gs-shell.c:1679
 #, c-format
 msgid "Unable to upgrade to %s: not enough disk space"
 msgstr "%s में नवीनीकृत करने में असमर्थ: पर्याप्त डिस्क स्थान नहीं"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1678
+#: src/gs-shell.c:1687
 #, c-format
 msgid "Unable to upgrade to %s: authentication was required"
 msgstr "%s में नवीनीकृत करने में असमर्थ: प्रमाणीकरण आवश्यक था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1685
+#: src/gs-shell.c:1694
 #, c-format
 msgid "Unable to upgrade to %s: authentication was invalid"
 msgstr "%s में नवीनीकृत करने में असमर्थ: प्रमाणीकरण अमान्य था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1692
+#: src/gs-shell.c:1701
 #, c-format
 msgid "Unable to upgrade to %s: you do not have permission to upgrade"
 msgstr "%s में नवीनीकृत करने में असमर्थ: आपके पास नवीनीकरण की अनुमति नहीं है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1699
+#: src/gs-shell.c:1708
 #, c-format
 msgid "Unable to upgrade to %s: AC power is required"
 msgstr "%s पर अपग्रेड करने में असमर्थ: AC बिजली आवश्यक है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1706
+#: src/gs-shell.c:1715
 #, c-format
 msgid "Unable to upgrade to %s: The battery level is too low"
 msgstr "%s पर अपग्रेड करने में असमर्थ हैं: बैटरी पॉवर बहुत कम है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1715
+#: src/gs-shell.c:1724
 #, c-format
 msgid "Unable to upgrade to %s"
 msgstr "%s में नवीनीकृत करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1753
+#: src/gs-shell.c:1762
 #, c-format
 msgid "Unable to remove %s: authentication was required"
 msgstr "%s को निकालने में असमर्थ: प्रमाणीकरण आवश्यक था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1759
+#: src/gs-shell.c:1768
 #, c-format
 msgid "Unable to remove %s: authentication was invalid"
 msgstr "%s को निकालने में असमर्थ: प्रमाणीकरण अमान्य था"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1765
+#: src/gs-shell.c:1774
 #, c-format
 msgid "Unable to remove %s: you do not have permission to remove software"
 msgstr "%s को निकालने में असमर्थ: आपके पास सॉफ़्टवेयर को निकालने की अनुमति नहीं है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1772
+#: src/gs-shell.c:1781
 #, c-format
 msgid "Unable to remove %s: AC power is required"
 msgstr "%s हटाने में असमर्थ: सॉफ्टवेयर"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1779
+#: src/gs-shell.c:1788
 #, c-format
 msgid "Unable to remove %s: The battery level is too low"
 msgstr "%s हटाने में असमर्थ: बैटरी स्तर बहुत कम है"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1791
+#: src/gs-shell.c:1800
 #, c-format
 msgid "Unable to remove %s"
 msgstr "%s को निकालने में असमर्थ"
@@ -3063,70 +3069,70 @@ msgstr "%s को निकालने में असमर्थ"
 #. * where the first %s is the application name (e.g. "GIMP")
 #. * and the second %s is the name of the runtime, e.g.
 #. * "GNOME SDK [flatpak.gnome.org]"
-#: src/gs-shell.c:1834
+#: src/gs-shell.c:1843
 #, c-format
 msgid "Unable to launch %s: %s is not installed"
 msgstr "%s को लॉन्च करने में असमर्थ: %s स्थापित नहीं है"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1841 src/gs-shell.c:1892 src/gs-shell.c:1933
-#: src/gs-shell.c:1981
+#: src/gs-shell.c:1850 src/gs-shell.c:1901 src/gs-shell.c:1942
+#: src/gs-shell.c:1990
 msgid "Not enough disk space — free up some space and try again"
 msgstr "पर्याप्त डिस्क स्थान नहीं — कृपया कुछ स्थान रिक्त करें और पुनः प्रयास करें"
 
 #. TRANSLATORS: we failed to get a proper error code
-#: src/gs-shell.c:1852 src/gs-shell.c:1903 src/gs-shell.c:1944
-#: src/gs-shell.c:2015
+#: src/gs-shell.c:1861 src/gs-shell.c:1912 src/gs-shell.c:1953
+#: src/gs-shell.c:2024
 msgid "Sorry, something went wrong"
 msgstr "क्षमा करें, कुछ गलत हुआ"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1884
+#: src/gs-shell.c:1893
 msgid "Failed to install file: not supported"
 msgstr "फ़ाइल इंस्टाल करने में विफल: सपोर्ट नहीं किया"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1888
+#: src/gs-shell.c:1897
 msgid "Failed to install file: authentication failed"
 msgstr "फ़ाइल स्थापित करने में विफल: प्रमाणीकरण विफल रहा"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1925
+#: src/gs-shell.c:1934
 msgid "Failed to install: not supported"
 msgstr "इंस्टाल करने में विफल: सपोर्ट नहीं किया"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1929
+#: src/gs-shell.c:1938
 msgid "Failed to install: authentication failed"
 msgstr "इनस्टॉल करने में विफ़ल: प्रमाणीकरण विफ़ल हुआ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * the %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1975
+#: src/gs-shell.c:1984
 #, c-format
 msgid "Unable to contact %s"
 msgstr "%s से संपर्क करने में असमर्थ"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1990
+#: src/gs-shell.c:1999
 #, c-format
 msgid "%s needs to be restarted to use new plugins."
 msgstr "नए प्लग-इन्स का उपयोग करने के लिए %s को पुनरारंभ किए जाने की आवश्यकता है."
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1995
+#: src/gs-shell.c:2004
 msgid "This application needs to be restarted to use new plugins."
 msgstr "नए प्लग-इन्स का उपयोग करने के लिए एप्लिकेशन को पुनरारंभ करने की आवश्यकता है."
 
 #. TRANSLATORS: need to be connected to the AC power
-#: src/gs-shell.c:2002
+#: src/gs-shell.c:2011
 msgid "AC power is required"
 msgstr "AC बिजली आवश्यक है"
 
 #. TRANSLATORS: not enough juice to do this safely
-#: src/gs-shell.c:2006
+#: src/gs-shell.c:2015
 msgid "The battery level is too low"
 msgstr "बैटरी का स्तर बहुत कम है"
 
@@ -3396,114 +3402,114 @@ msgid ""
 msgstr "हमें क्षमा करें: अपडेट स्थापित करना विफल. कृपया अन्य अपडेट के लिए प्रतीक्षा करें और पुनः प्रयास करें. यदि समस्या बनी रहती है, तो अपने सॉफ़्टवेयर प्रदाता से संपर्क करें."
 
 #. TRANSLATORS: Time in 24h format
-#: src/gs-updates-page.c:239
+#: src/gs-updates-page.c:240
 msgid "%R"
 msgstr "%R"
 
 #. TRANSLATORS: Time in 12h format
-#: src/gs-updates-page.c:242
+#: src/gs-updates-page.c:243
 msgid "%l:%M %p"
 msgstr "%l:%M %p"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 24h format. i.e. "Yesterday, 14:30"
-#: src/gs-updates-page.c:248
+#: src/gs-updates-page.c:249
 msgid "Yesterday, %R"
 msgstr "कल, %R"
 
 #. TRANSLATORS: This is the word "Yesterday" followed by a
 #. time string in 12h format. i.e. "Yesterday, 2:30 PM"
-#: src/gs-updates-page.c:252
+#: src/gs-updates-page.c:253
 msgid "Yesterday, %l:%M %p"
 msgstr "कल, %l:%M %p"
 
-#: src/gs-updates-page.c:255
+#: src/gs-updates-page.c:256
 msgid "Two days ago"
 msgstr "दो दिन पहले"
 
-#: src/gs-updates-page.c:257
+#: src/gs-updates-page.c:258
 msgid "Three days ago"
 msgstr "तीन दिन पहले"
 
-#: src/gs-updates-page.c:259
+#: src/gs-updates-page.c:260
 msgid "Four days ago"
 msgstr "चार दिन पहले"
 
-#: src/gs-updates-page.c:261
+#: src/gs-updates-page.c:262
 msgid "Five days ago"
 msgstr "पाँच दिन पहले"
 
-#: src/gs-updates-page.c:263
+#: src/gs-updates-page.c:264
 msgid "Six days ago"
 msgstr "छह दिन पहले"
 
-#: src/gs-updates-page.c:265
+#: src/gs-updates-page.c:266
 msgid "One week ago"
 msgstr "एक सप्ताह पहले"
 
-#: src/gs-updates-page.c:267
+#: src/gs-updates-page.c:268
 msgid "Two weeks ago"
 msgstr "दो सप्ताह पहले"
 
 #. TRANSLATORS: the update panel is doing *something* vague
-#: src/gs-updates-page.c:283
+#: src/gs-updates-page.c:284
 msgid "Looking for new updates…"
 msgstr "नए अपडेट की खोज कर रहा है..."
 
-#: src/gs-updates-page.c:313
+#: src/gs-updates-page.c:314
 msgid "automatic updates on"
 msgstr "पर स्वचालित अपडेट"
 
-#: src/gs-updates-page.c:316
+#: src/gs-updates-page.c:317
 msgid "automatic updates off"
 msgstr "स्वचालित अपडेट बंद"
 
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:399
+#: src/gs-updates-page.c:400
 msgid "Setting up updates…"
 msgstr "अपडेट सेट कर रहा है..."
 
 #. TRANSLATORS: the updates panel is starting up
-#: src/gs-updates-page.c:400 src/gs-updates-page.c:407
+#: src/gs-updates-page.c:401 src/gs-updates-page.c:408
 msgid "(This could take a while)"
 msgstr "(इसमें कुछ समय लग सकता है)"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:515
+#: src/gs-updates-page.c:516
 #, c-format
 msgid "Last checked: %s"
 msgstr "अंतिम बार जाँचा गया: %s"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:679
+#: src/gs-updates-page.c:680
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "%s %s अब समर्थित नहीं है."
 
 #. TRANSLATORS: OS refers to operating system, e.g. Fedora
-#: src/gs-updates-page.c:684
+#: src/gs-updates-page.c:685
 msgid "Your OS is no longer supported."
 msgstr "आपका OS अब समर्थित नहीं है."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:689
+#: src/gs-updates-page.c:690
 msgid "This means that it does not receive security updates."
 msgstr "इसका अर्थ है कि यह सुरक्षा अपडेट प्राप्त नहीं करता."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:693
+#: src/gs-updates-page.c:694
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "यह सुझाव दिया जाता है कि आप सबसे हाल ही के संस्करण पर अपग्रेड करें."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:954
+#: src/gs-updates-page.c:955
 msgid "Charges May Apply"
 msgstr "शुल्क लागू हो सकते हैं"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:958
+#: src/gs-updates-page.c:959
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -3511,27 +3517,27 @@ msgstr "मोबाइल ब्रॉडबैंड का उपयोग �
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:962
+#: src/gs-updates-page.c:963
 msgid "Check _Anyway"
 msgstr "_किसी भी तरह जाँच करें"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:978
+#: src/gs-updates-page.c:979
 msgid "No Network"
 msgstr "कोई नेटवर्क नहीं"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:982
+#: src/gs-updates-page.c:983
 msgid "Internet access is required to check for updates."
 msgstr "अपडेट की जाँच करने के लिए इंटरनेट पहुँच आवश्यक है."
 
 #. This label indicates that the update check is in progress
-#: src/gs-updates-page.c:1451
+#: src/gs-updates-page.c:1458
 msgid "Checking…"
 msgstr "जांच रहा है ..."
 
-#: src/gs-updates-page.c:1464
+#: src/gs-updates-page.c:1471
 msgid "Check for updates"
 msgstr "अपडेट की जाँच करें"
 
@@ -3603,23 +3609,23 @@ msgstr "ऐप्लिकेशन अपडेट"
 msgid "Device Firmware"
 msgstr "यंत्र फ़र्मवेयर"
 
-#: src/gs-upgrade-banner.c:65
+#: src/gs-upgrade-banner.c:89
 msgid ""
 "It is recommended that you back up your data and files before upgrading."
 msgstr "अपग्रेड करने से पहले आपको अपने डेटा और फ़ाइलों का बैकअप लेने की सलाह दी जाती है।"
 
-#: src/gs-upgrade-banner.c:69
+#: src/gs-upgrade-banner.c:93
 msgid "_Restart Now"
 msgstr "_अब पुनःचालू करें"
 
-#: src/gs-upgrade-banner.c:71
+#: src/gs-upgrade-banner.c:95
 msgid "Updates will be applied when the computer is restarted."
 msgstr "जब कंप्यूटर फिर से चालू होगा तब अपडेट लागू होंगे."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
 #. * 2nd %s is the version, e.g. "Fedora 23 Now Available"
-#: src/gs-upgrade-banner.c:86
+#: src/gs-upgrade-banner.c:110
 #, c-format
 msgid "%s %s Now Available"
 msgstr "%s %s अब उपलब्ध"
@@ -3627,7 +3633,7 @@ msgstr "%s %s अब उपलब्ध"
 #. TRANSLATORS: This is the text displayed while waiting to
 #. * download a distro upgrade. First %s is the distro name and
 #. * the 2nd %s is the version, e.g. "Waiting to Download Fedora 23"
-#: src/gs-upgrade-banner.c:96
+#: src/gs-upgrade-banner.c:120
 #, c-format
 msgid "Waiting to Download %s %s"
 msgstr "%s %s के डाउनलोड की प्रतीक्षा कर रहे हैं"
@@ -3635,7 +3641,7 @@ msgstr "%s %s के डाउनलोड की प्रतीक्षा �
 #. TRANSLATORS: This is the text displayed while downloading a
 #. * distro upgrade. First %s is the distro name and the 2nd %s
 #. * is the version, e.g. "Downloading Fedora 23"
-#: src/gs-upgrade-banner.c:106
+#: src/gs-upgrade-banner.c:130
 #, c-format
 msgid "Downloading %s %s"
 msgstr "%s %s को डाउनलोड कर रहा है"
@@ -3644,7 +3650,7 @@ msgstr "%s %s को डाउनलोड कर रहा है"
 #. * upgrade has been downloaded and is ready to be installed.
 #. * First %s is the distro name and the 2nd %s is the version,
 #. * e.g. "Fedora 23 Ready to be Installed"
-#: src/gs-upgrade-banner.c:117
+#: src/gs-upgrade-banner.c:141
 #, c-format
 msgid "%s %s Ready to be Installed"
 msgstr "%s %s स्थापित किए जाने के लिए तैयार है"
@@ -4086,20 +4092,10 @@ msgstr "प्रदर्शन, स्थिरता और सुरक्�
 msgid "Downloading featured images…"
 msgstr "फ़ीचर की गई छवियाँ डाउनलोड कर रहा है..."
 
-#: plugins/eos/gs-plugin-eos.c:796
+#: plugins/eos/gs-plugin-eos.c:746
 #, c-format
 msgid "Could not launch this application."
 msgstr "इस एप्लिकेशन को लॉन्च नहीं सके."
-
-#. TRANSLATORS: this is the name of the Endless Platform app
-#: plugins/eos/gs-plugin-eos.c:931
-msgid "Endless Platform"
-msgstr "अनंत प्लेटफ़ॉर्म"
-
-#. TRANSLATORS: this is the summary of the Endless Platform app
-#: plugins/eos/gs-plugin-eos.c:933
-msgid "Framework for applications"
-msgstr "ऐप्लिकेशन्स के लिए फ़्रेमवर्क"
 
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:563
@@ -4169,7 +4165,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak, Linux पर डेस्कटॉप ऐप्लिकेशन्स के लिए एक फ़्रेमवर्क है"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:979
+#: plugins/flatpak/gs-flatpak.c:1012
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "%s के लिए flatpak मेटाडेटा प्राप्त कर रहा है…"
