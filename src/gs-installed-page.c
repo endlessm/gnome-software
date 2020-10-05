@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
@@ -155,10 +156,13 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 {
 	GtkWidget *app_row;
 
-	app_row = gs_app_row_new (app);
-	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
-	if (gs_utils_list_has_app_fuzzy (list, app))
-		gs_app_row_set_show_source (GS_APP_ROW (app_row), TRUE);
+	app_row = g_object_new (GS_TYPE_APP_ROW,
+				"app", app,
+				"show-buttons", TRUE,
+				"show-source", gs_utils_list_has_app_fuzzy (list, app),
+				"show-installed-size", !gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) && should_show_installed_size (self),
+				NULL);
+
 	g_signal_connect (app_row, "button-clicked",
 			  G_CALLBACK (gs_installed_page_app_remove_cb), self);
 	g_signal_connect_object (app, "notify::state",
@@ -170,11 +174,6 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 				    self->sizegroup_name,
 				    self->sizegroup_desc,
 				    self->sizegroup_button);
-
-	if (!gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY)) {
-		gs_app_row_set_show_installed_size (GS_APP_ROW (app_row),
-						    should_show_installed_size (self));
-	}
 
 	/* only show if is an actual application */
 	gtk_widget_set_visible (app_row, gs_installed_page_is_actual_app (app));

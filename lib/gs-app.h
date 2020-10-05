@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2018 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
@@ -84,7 +85,7 @@ typedef enum {
  * @GS_APP_QUIRK_NEW_PERMISSIONS:	The update requires new permissions
  * @GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE:	The app cannot be run by the current user due to parental controls, and should not be launchable
  * @GS_APP_QUIRK_HIDE_FROM_SEARCH:	The app should not be shown in search results
- * @GS_APP_QUIRK_HIDE_EVERYWHERE:	The app should not be shown anywhere (it’s blacklisted)
+ * @GS_APP_QUIRK_HIDE_EVERYWHERE:	The app should not be shown anywhere (it’s blocklisted)
  * @GS_APP_QUIRK_DO_NOT_AUTO_UPDATE:	The app should not be automatically updated
  *
  * The application attributes.
@@ -161,6 +162,17 @@ typedef enum {
 			GS_APP_PERMISSIONS_DOWNLOADS_FULL)
 #define MEDIUM_PERMISSIONS (LIMITED_PERMISSIONS | \
 			GS_APP_PERMISSIONS_X11)
+
+/**
+ * GS_APP_PROGRESS_UNKNOWN:
+ *
+ * A value returned by gs_app_get_progress() if the app’s progress is unknown
+ * or has a wide confidence interval. Typically this would be represented in the
+ * UI using a pulsing progress bar or spinner.
+ *
+ * Since: 3.38
+ */
+#define GS_APP_PROGRESS_UNKNOWN G_MAXUINT
 
 GsApp		*gs_app_new			(const gchar	*id);
 G_DEPRECATED_FOR(gs_app_set_from_unique_id)
@@ -267,6 +279,9 @@ void		 gs_app_set_origin_hostname	(GsApp		*app,
 						 const gchar	*origin_hostname);
 GPtrArray	*gs_app_get_screenshots		(GsApp		*app);
 void		 gs_app_add_screenshot		(GsApp		*app,
+						 AsScreenshot	*screenshot);
+AsScreenshot	*gs_app_get_action_screenshot	(GsApp		*app);
+void		 gs_app_set_action_screenshot	(GsApp		*app,
 						 AsScreenshot	*screenshot);
 const gchar	*gs_app_get_update_version	(GsApp		*app);
 const gchar	*gs_app_get_update_version_ui	(GsApp		*app);

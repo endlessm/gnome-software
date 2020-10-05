@@ -19,26 +19,20 @@ def build_flatpak(appid, srcdir, repodir, branch='master', cleanrepodir=True):
         print("Deleting %s" % exportdir)
         shutil.rmtree(exportdir)
 
-    # use git master where available
-    local_checkout = '/home/hughsie/Code/flatpak'
-    if os.path.exists(local_checkout):
-        flatpak_cmd = os.path.join(local_checkout, 'flatpak')
-    else:
-        flatpak_cmd = 'flatpak'
-
     metadata_path = os.path.join(srcdir, appid, 'metadata')
     metadata = configparser.ConfigParser()
     metadata.read(metadata_path)
     is_runtime = True if 'Runtime' in metadata.sections() else False
+    is_extension = True if 'ExtensionOf' in metadata.sections() else False
 
     # runtimes have different defaults
-    if is_runtime:
+    if is_runtime and not is_extension:
         prefix = 'usr'
     else:
         prefix = 'files'
 
     # finish the build
-    argv = [flatpak_cmd, 'build-finish']
+    argv = ['flatpak', 'build-finish']
     argv.append(os.path.join(srcdir, appid))
     subprocess.call(argv)
 
@@ -52,7 +46,7 @@ def build_flatpak(appid, srcdir, repodir, branch='master', cleanrepodir=True):
     subprocess.call(argv)
 
     # export into repo
-    argv = [flatpak_cmd, 'build-export']
+    argv = ['flatpak', 'build-export']
     argv.append(repodir)
     argv.append(os.path.join(srcdir, appid))
     argv.append(branch)
@@ -60,6 +54,14 @@ def build_flatpak(appid, srcdir, repodir, branch='master', cleanrepodir=True):
     argv.append('--timestamp=2016-09-15T01:02:03')
     if is_runtime:
         argv.append('--runtime')
+    subprocess.call(argv)
+
+def build_flatpak_bundle(appid, srcdir, repodir, filename, branch='master'):
+    argv = ['flatpak', 'build-bundle']
+    argv.append(repodir)
+    argv.append(filename)
+    argv.append(appid)
+    argv.append(branch)
     subprocess.call(argv)
 
 def copy_repo(srcdir, destdir):
@@ -78,6 +80,12 @@ build_flatpak('org.test.Runtime',
               'app-with-runtime',
               'app-with-runtime/repo',
               cleanrepodir=False)
+
+# build a flatpak bundle for the app
+build_flatpak_bundle('org.test.Chiron',
+                     'app-with-runtime',
+                     'app-with-runtime/repo',
+                     'chiron.flatpak')
 
 # app referencing remote that cannot be found
 build_flatpak('org.test.Chiron',
@@ -101,17 +109,17 @@ build_flatpak('org.test.Runtime',
               'only-runtime/repo')
 
 # app with an extension
-#copy_repo('only-runtime', 'app-extension')
-#build_flatpak('org.test.Chiron',
-#              'app-extension',
-#              'app-extension/repo',
-#              cleanrepodir=False)
-#build_flatpak('org.test.Chiron.Extension',
-#              'app-extension',
-#              'app-extension/repo',
-#              cleanrepodir=False)
-#copy_repo('app-extension', 'app-extension-update')
-#build_flatpak('org.test.Chiron.Extension',
-#              'app-extension-update',
-#              'app-extension-update/repo',
-#              cleanrepodir=False)
+copy_repo('only-runtime', 'app-extension')
+build_flatpak('org.test.Chiron',
+              'app-extension',
+              'app-extension/repo',
+              cleanrepodir=False)
+build_flatpak('org.test.Chiron.Extension',
+              'app-extension',
+              'app-extension/repo',
+              cleanrepodir=False)
+copy_repo('app-extension', 'app-extension-update')
+build_flatpak('org.test.Chiron.Extension',
+              'app-extension-update',
+              'app-extension-update/repo',
+              cleanrepodir=False)

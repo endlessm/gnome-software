@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
@@ -19,15 +20,92 @@
  * Provides review data from the Open Desktop Ratings Serice.
  */
 
+#if !GLIB_CHECK_VERSION(2, 62, 0)
+typedef struct
+{
+  guint8 *data;
+  guint   len;
+  guint   alloc;
+  guint   elt_size;
+  guint   zero_terminated : 1;
+  guint   clear : 1;
+  gatomicrefcount ref_count;
+  GDestroyNotify clear_func;
+} GRealArray;
+
+gboolean
+g_array_binary_search (GArray        *array,
+                       gconstpointer  target,
+                       GCompareFunc   compare_func,
+                       guint         *out_match_index)
+{
+  gboolean result = FALSE;
+  GRealArray *_array = (GRealArray *) array;
+  guint left, middle, right;
+  gint val;
+
+  g_return_val_if_fail (_array != NULL, FALSE);
+  g_return_val_if_fail (compare_func != NULL, FALSE);
+
+  if (G_LIKELY(_array->len))
+    {
+      left = 0;
+      right = _array->len - 1;
+
+      while (left <= right)
+        {
+          middle = left + (right - left) / 2;
+
+          val = compare_func (_array->data + (_array->elt_size * middle), target);
+          if (val == 0)
+            {
+              result = TRUE;
+              break;
+            }
+          else if (val < 0)
+            left = middle + 1;
+          else if (/* val > 0 && */ middle > 0)
+            right = middle - 1;
+          else
+            break;  /* element not found */
+        }
+    }
+
+  if (result && out_match_index != NULL)
+    *out_match_index = middle;
+
+  return result;
+}
+#endif  /* glib < 2.62.0 */
+
 #define ODRS_REVIEW_CACHE_AGE_MAX		237000 /* 1 week */
 #define ODRS_REVIEW_NUMBER_RESULTS_MAX		20
+
+/* Element in priv->ratings, all allocated in one big block and sorted
+ * alphabetically to reduce the number of allocations and fragmentation. */
+typedef struct {
+	gchar *app_id;  /* (owned) */
+	guint32 n_star_ratings[6];
+} GsOdrsRating;
+
+static int
+rating_compare (const GsOdrsRating *a, const GsOdrsRating *b)
+{
+	return g_strcmp0 (a->app_id, b->app_id);
+}
+
+static void
+rating_clear (GsOdrsRating *rating)
+{
+	g_free (rating->app_id);
+}
 
 struct GsPluginData {
 	GSettings		*settings;
 	gchar			*distro;
 	gchar			*user_hash;
 	gchar			*review_server;
-	GHashTable		*ratings;
+	GArray			*ratings;  /* (element-type GsOdrsRating) (mutex ratings_mutex) (owned) (nullable) */
 	GMutex			 ratings_mutex;
 	GsApp			*cached_origin;
 };
@@ -43,8 +121,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->settings = g_settings_new ("org.gnome.software");
 	priv->review_server = g_settings_get_string (priv->settings,
 						     "review-server");
-	priv->ratings = g_hash_table_new_full (g_str_hash, g_str_equal,
-					       g_free, (GDestroyNotify) g_array_unref);
+	priv->ratings = NULL;  /* until first refreshed */
 
 	/* get the machine+user ID hash value */
 	priv->user_hash = gs_utils_get_user_hash (&error);
@@ -85,24 +162,22 @@ gs_plugin_initialize (GsPlugin *plugin)
 	gs_plugin_set_appstream_id (plugin, "org.gnome.Software.Plugin.Odrs");
 }
 
-static GArray *
-gs_plugin_odrs_load_ratings_for_app (JsonObject *json_app)
+static gboolean
+gs_plugin_odrs_load_ratings_for_app (JsonObject *json_app, const gchar *app_id, GsOdrsRating *rating_out)
 {
-	GArray *ratings;
-	guint64 tmp;
 	guint i;
 	const gchar *names[] = { "star0", "star1", "star2", "star3",
 				 "star4", "star5", NULL };
 
-	ratings = g_array_sized_new (FALSE, TRUE, sizeof(guint32), 6);
 	for (i = 0; names[i] != NULL; i++) {
 		if (!json_object_has_member (json_app, names[i]))
-			continue;
-		tmp = (guint64) json_object_get_int_member (json_app, names[i]);
-		g_array_append_val (ratings, tmp);
+			return FALSE;
+		rating_out->n_star_ratings[i] = (guint64) json_object_get_int_member (json_app, names[i]);
 	}
 
-	return ratings;
+	rating_out->app_id = g_strdup (app_id);
+
+	return TRUE;
 }
 
 static gboolean
@@ -111,16 +186,20 @@ gs_plugin_odrs_load_ratings (GsPlugin *plugin, const gchar *fn, GError **error)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	JsonNode *json_root;
 	JsonObject *json_item;
-	g_autoptr(GList) apps = NULL;
 	g_autoptr(JsonParser) json_parser = NULL;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->ratings_mutex);
-
-	/* remove all existing */
-	g_hash_table_remove_all (priv->ratings);
+	const gchar *app_id;
+	JsonNode *json_app_node;
+	JsonObjectIter iter;
+	g_autoptr(GArray) new_ratings = NULL;
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	/* parse the data and find the success */
-	json_parser = json_parser_new ();
+	json_parser = json_parser_new_immutable ();
+#if JSON_CHECK_VERSION(1, 6, 0)
+	if (!json_parser_load_from_mapped_file (json_parser, fn, error)) {
+#else
 	if (!json_parser_load_from_file (json_parser, fn, error)) {
+#endif
 		gs_utils_error_convert_json_glib (error);
 		return FALSE;
 	}
@@ -140,20 +219,36 @@ gs_plugin_odrs_load_ratings (GsPlugin *plugin, const gchar *fn, GError **error)
 		return FALSE;
 	}
 
-	/* parse each app */
 	json_item = json_node_get_object (json_root);
-	apps = json_object_get_members (json_item);
-	for (GList *l = apps; l != NULL; l = l->next) {
-		const gchar *app_id = (const gchar *) l->data;
-		JsonObject *json_app = json_object_get_object_member (json_item, app_id);
-		g_autoptr(GArray) ratings = NULL;;
-		ratings = gs_plugin_odrs_load_ratings_for_app (json_app);
-		if (ratings->len == 6) {
-			g_hash_table_insert (priv->ratings,
-					     g_strdup (app_id),
-					     g_array_ref (ratings));
-		}
+
+	new_ratings = g_array_sized_new (FALSE,  /* don’t zero-terminate */
+					 FALSE,  /* don’t clear */
+					 sizeof (GsOdrsRating),
+					 json_object_get_size (json_item));
+	g_array_set_clear_func (new_ratings, (GDestroyNotify) rating_clear);
+
+	/* parse each app */
+	json_object_iter_init (&iter, json_item);
+	while (json_object_iter_next (&iter, &app_id, &json_app_node)) {
+		GsOdrsRating rating;
+		JsonObject *json_app;
+
+		if (!JSON_NODE_HOLDS_OBJECT (json_app_node))
+			continue;
+		json_app = json_node_get_object (json_app_node);
+
+		if (gs_plugin_odrs_load_ratings_for_app (json_app, app_id, &rating))
+			g_array_append_val (new_ratings, rating);
 	}
+
+	/* Allow for binary searches later. */
+	g_array_sort (new_ratings, (GCompareFunc) rating_compare);
+
+	/* Update the shared state */
+	locker = g_mutex_locker_new (&priv->ratings_mutex);
+	g_clear_pointer (&priv->ratings, g_array_unref);
+	priv->ratings = g_steal_pointer (&new_ratings);
+
 	return TRUE;
 }
 
@@ -219,7 +314,7 @@ gs_plugin_destroy (GsPlugin *plugin)
 	g_free (priv->user_hash);
 	g_free (priv->distro);
 	g_free (priv->review_server);
-	g_hash_table_unref (priv->ratings);
+	g_clear_pointer (&priv->ratings, g_array_unref);
 	g_object_unref (priv->settings);
 	g_object_unref (priv->cached_origin);
 	g_mutex_clear (&priv->ratings_mutex);
@@ -316,7 +411,7 @@ gs_plugin_odrs_parse_reviews (GsPlugin *plugin,
 	}
 
 	/* parse the data and find the array or ratings */
-	json_parser = json_parser_new ();
+	json_parser = json_parser_new_immutable ();
 	if (!json_parser_load_from_data (json_parser, data, data_len, error)) {
 		gs_utils_error_convert_json_glib (error);
 		return NULL;
@@ -402,7 +497,7 @@ gs_plugin_odrs_parse_success (const gchar *data, gssize data_len, GError **error
 	}
 
 	/* parse the data and find the success */
-	json_parser = json_parser_new ();
+	json_parser = json_parser_new_immutable ();
 	if (!json_parser_load_from_data (json_parser, data, data_len, error)) {
 		gs_utils_error_convert_json_glib (error);
 		return FALSE;
@@ -514,22 +609,38 @@ gs_plugin_odrs_refine_ratings (GsPlugin *plugin,
 	guint cnt = 0;
 	g_autoptr(GArray) review_ratings = NULL;
 	g_autoptr(GPtrArray) reviewable_ids = NULL;
+	g_autoptr(GMutexLocker) locker = NULL;
 
 	/* get ratings for each reviewable ID */
 	reviewable_ids = _gs_app_get_reviewable_ids (app);
+
+	locker = g_mutex_locker_new (&priv->ratings_mutex);
+
+	if (priv->ratings == NULL)
+		return TRUE;
+
 	for (guint i = 0; i < reviewable_ids->len; i++) {
 		const gchar *id = g_ptr_array_index (reviewable_ids, i);
-		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->ratings_mutex);
-		GArray *ratings_tmp = g_hash_table_lookup (priv->ratings, id);
-		if (ratings_tmp == NULL)
+		const GsOdrsRating search_rating = { id, { 0, }};
+		guint found_index;
+		const GsOdrsRating *found_rating;
+
+		if (!g_array_binary_search (priv->ratings, &search_rating,
+					    (GCompareFunc) rating_compare, &found_index))
 			continue;
+
+		found_rating = &g_array_index (priv->ratings, GsOdrsRating, found_index);
+
 		/* copy into accumulator array */
 		for (guint j = 0; j < 6; j++)
-			ratings_raw[j] += g_array_index (ratings_tmp, guint32, j);
+			ratings_raw[j] += found_rating->n_star_ratings[j];
 		cnt++;
 	}
 	if (cnt == 0)
 		return TRUE;
+
+	/* Done with priv->ratings now */
+	g_clear_pointer (&locker, g_mutex_locker_free);
 
 	/* merge to accumulator array back to one GArray blob */
 	review_ratings = g_array_sized_new (FALSE, TRUE, sizeof(guint32), 6);
@@ -602,13 +713,17 @@ gs_plugin_odrs_fetch_for_app (GsPlugin *plugin, GsApp *app, GError **error)
 		return NULL;
 	cachefn_file = g_file_new_for_path (cachefn);
 	if (gs_utils_get_file_age (cachefn_file) < ODRS_REVIEW_CACHE_AGE_MAX) {
-		g_autofree gchar *json_data = NULL;
-		if (!g_file_get_contents (cachefn, &json_data, NULL, error))
+		g_autoptr(GMappedFile) mapped_file = NULL;
+
+		mapped_file = g_mapped_file_new (cachefn, FALSE, error);
+		if (mapped_file == NULL)
 			return NULL;
+
 		g_debug ("got review data for %s from %s",
 			 gs_app_get_id (app), cachefn);
 		return gs_plugin_odrs_parse_reviews (plugin,
-						     json_data, -1,
+						     g_mapped_file_get_contents (mapped_file),
+						     g_mapped_file_get_length (mapped_file),
 						     error);
 	}
 
@@ -723,12 +838,12 @@ gs_plugin_odrs_refine_reviews (GsPlugin *plugin,
 	return TRUE;
 }
 
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+static gboolean
+refine_app (GsPlugin             *plugin,
+	    GsApp                *app,
+	    GsPluginRefineFlags   flags,
+	    GCancellable         *cancellable,
+	    GError              **error)
 {
 	/* not valid */
 	if (gs_app_get_kind (app) == AS_APP_KIND_ADDON)
@@ -752,6 +867,28 @@ gs_plugin_refine_app (GsPlugin *plugin,
 			return TRUE;
 		if (!gs_plugin_odrs_refine_ratings (plugin, app,
 						    cancellable, error))
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_refine (GsPlugin             *plugin,
+		  GsAppList            *list,
+		  GsPluginRefineFlags   flags,
+		  GCancellable         *cancellable,
+		  GError              **error)
+{
+	/* nothing to do here */
+	if ((flags & (GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS |
+		      GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS |
+		      GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING)) == 0)
+		return TRUE;
+
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (!refine_app (plugin, app, flags, cancellable, error))
 			return FALSE;
 	}
 

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2011-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2016 Kalev Lember <klember@redhat.com>
@@ -589,12 +590,12 @@ gs_plugin_update_app (GsPlugin *plugin,
 	return TRUE;
 }
 
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+static gboolean
+refine_app (GsPlugin *plugin,
+	    GsApp *app,
+	    GsPluginRefineFlags flags,
+	    GCancellable *cancellable,
+	    GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
@@ -707,6 +708,23 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	/* add a rating */
 	if (flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING) {
 		gs_app_set_rating (app, 66);
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_refine (GsPlugin *plugin,
+		  GsAppList *list,
+		  GsPluginRefineFlags flags,
+		  GCancellable *cancellable,
+		  GError **error)
+{
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+
+		if (!refine_app (plugin, app, flags, cancellable, error))
+			return FALSE;
 	}
 
 	return TRUE;

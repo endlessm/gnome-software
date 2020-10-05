@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  *
@@ -92,7 +93,7 @@ gs_plugins_dummy_error_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* drop all caches */
-	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
+	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* update, which should cause an error to be emitted */
@@ -468,7 +469,7 @@ gs_plugins_dummy_hang_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* drop all caches */
-	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
+	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* get search result based on addon keyword */
@@ -620,7 +621,7 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsDummyTestHelper) helper3 = gs_dummy_test_helper_new ();
 
 	/* drop all caches */
-	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
+	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* get the updates list */
@@ -712,16 +713,17 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 int
 main (int argc, char **argv)
 {
-	const gchar *tmp_root = "/var/tmp/self-test";
+	g_autofree gchar *tmp_root = NULL;
 	gboolean ret;
+	int retval;
 	g_autofree gchar *xml = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
-	const gchar *whitelist[] = {
+	const gchar *allowlist[] = {
 		"appstream",
 		"dummy",
 		"generic-updates",
-		"hardcoded-blacklist",
+		"hardcoded-blocklist",
 		"desktop-categories",
 		"desktop-menu-path",
 		"icons",
@@ -731,7 +733,22 @@ main (int argc, char **argv)
 		NULL
 	};
 
-	g_test_init (&argc, &argv, NULL);
+	/* While we use %G_TEST_OPTION_ISOLATE_DIRS to create temporary directories
+	 * for each of the tests, we want to use the system MIME registry, assuming
+	 * that it exists and correctly has shared-mime-info installed. */
+#if GLIB_CHECK_VERSION(2, 60, 0)
+	g_content_type_set_mime_dirs (NULL);
+#endif
+
+	/* Similarly, add the system-wide icon theme path before it’s
+	 * overwritten by %G_TEST_OPTION_ISOLATE_DIRS. */
+	gs_test_expose_icon_theme_paths ();
+
+	g_test_init (&argc, &argv,
+#if GLIB_CHECK_VERSION(2, 60, 0)
+		     G_TEST_OPTION_ISOLATE_DIRS,
+#endif
+		     NULL);
 	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
 	g_setenv ("GS_XMLB_VERBOSE", "1", TRUE);
 
@@ -742,6 +759,11 @@ main (int argc, char **argv)
 	g_setenv ("GS_SELF_TEST_PROVENANCE_LICENSE_SOURCES", "london*,boston", TRUE);
 	g_setenv ("GS_SELF_TEST_PROVENANCE_LICENSE_URL", "https://www.debian.org/", TRUE);
 	g_setenv ("GNOME_SOFTWARE_POPULAR", "", TRUE);
+
+	/* Use a common cache directory for all tests, since the appstream
+	 * plugin uses it and cannot be reinitialised for each test. */
+	tmp_root = g_dir_make_tmp ("gnome-software-dummy-test-XXXXXX", NULL);
+	g_assert (tmp_root != NULL);
 	g_setenv ("GS_SELF_TEST_CACHEDIR", tmp_root, TRUE);
 
 	xml = g_strdup ("<?xml version=\"1.0\"?>\n"
@@ -808,7 +830,7 @@ main (int argc, char **argv)
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR_CORE);
 	ret = gs_plugin_loader_setup (plugin_loader,
-				      (gchar**) whitelist,
+				      (gchar**) allowlist,
 				      NULL,
 				      NULL,
 				      &error);
@@ -867,5 +889,10 @@ main (int argc, char **argv)
 	g_test_add_data_func ("/gnome-software/plugins/dummy/limit-parallel-ops",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_dummy_limit_parallel_ops_func);
-	return g_test_run ();
+	retval = g_test_run ();
+
+	/* Clean up. */
+	gs_utils_rmtree (tmp_root, NULL);
+
+	return retval;
 }

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2009-2016 Richard Hughes <richard@hughsie.com>
  *
@@ -93,7 +94,8 @@ gs_install_appstream_check_content_type (GFile *file, GError **error)
 		return FALSE;
 	}
 	xb_builder_import_source (builder, source);
-	silo = xb_builder_compile (builder, XB_BUILDER_COMPILE_FLAG_NONE,
+	silo = xb_builder_compile (builder,
+				   XB_BUILDER_COMPILE_FLAG_NONE,
 				   NULL, &error_local);
 	if (silo == NULL) {
 		g_set_error (error,

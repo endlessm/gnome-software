@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2018 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
@@ -93,19 +94,7 @@ void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
-	g_autofree gchar *user_agent = NULL;
-	g_autoptr(SoupSession) soup_session = NULL;
-
 	priv->client = fwupd_client_new ();
-
-	/* use a custom user agent to provide the fwupd version */
-	user_agent = fwupd_build_user_agent (PACKAGE_NAME, PACKAGE_VERSION);
-	soup_session = soup_session_new_with_options (SOUP_SESSION_USER_AGENT, user_agent,
-						      SOUP_SESSION_TIMEOUT, 10,
-						      NULL);
-	soup_session_remove_feature_by_type (soup_session,
-					     SOUP_TYPE_CONTENT_DECODER);
-	gs_plugin_set_soup_session (plugin, soup_session);
 
 	/* set name of MetaInfo file */
 	gs_plugin_set_appstream_id (plugin, "org.gnome.Software.Plugin.Fwupd");
@@ -222,6 +211,37 @@ gboolean
 gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(SoupSession) soup_session = NULL;
+
+#if FWUPD_CHECK_VERSION(1,4,5)
+	/* send our implemented feature set */
+	if (!fwupd_client_set_feature_flags (priv->client,
+					     FWUPD_FEATURE_FLAG_UPDATE_ACTION |
+					     FWUPD_FEATURE_FLAG_DETACH_ACTION,
+					     cancellable, error)) {
+		g_prefix_error (error, "Failed to set front-end features: ");
+		return FALSE;
+	}
+
+	/* we know the runtime daemon version now */
+	fwupd_client_set_user_agent_for_package (priv->client, PACKAGE_NAME, PACKAGE_VERSION);
+	if (!fwupd_client_ensure_networking (priv->client, error)) {
+		g_prefix_error (error, "Failed to setup networking: ");
+		return FALSE;
+	}
+	g_object_get (priv->client, "soup-session", &soup_session, NULL);
+#else
+	g_autofree gchar *user_agent = NULL;
+	/* use a custom user agent to provide the fwupd version */
+	user_agent = fwupd_build_user_agent (PACKAGE_NAME, PACKAGE_VERSION);
+	soup_session = soup_session_new_with_options (SOUP_SESSION_USER_AGENT, user_agent,
+						      SOUP_SESSION_TIMEOUT, 10,
+						      NULL);
+	soup_session_remove_feature_by_type (soup_session, SOUP_TYPE_CONTENT_DECODER);
+#endif
+
+	/* use for gnome-software downloads */
+	gs_plugin_set_soup_session (plugin, soup_session);
 
 	/* add source */
 	priv->cached_origin = gs_app_new (gs_plugin_get_name (plugin));
@@ -290,8 +310,8 @@ gs_plugin_fwupd_new_app_from_device (GsPlugin *plugin, FwupdDevice *dev)
 	as_icon_set_kind (icon, AS_ICON_KIND_STOCK);
 	as_icon_set_name (icon, "application-x-firmware");
 	gs_app_add_icon (app, icon);
-	gs_fwupd_app_set_from_release (app, rel);
 	gs_fwupd_app_set_from_device (app, dev);
+	gs_fwupd_app_set_from_release (app, rel);
 
 	if (fwupd_release_get_appstream_id (rel) != NULL)
 		gs_app_set_id (app, fwupd_release_get_appstream_id (rel));
@@ -768,6 +788,8 @@ gs_plugin_fwupd_install (GsPlugin *plugin,
 	GFile *local_file;
 	g_autofree gchar *filename = NULL;
 	gboolean downloaded_to_cache = FALSE;
+	g_autoptr(FwupdDevice) dev = NULL;
+	g_autoptr(GError) error_local = NULL;
 
 	/* not set */
 	local_file = gs_app_get_local_file (app);
@@ -817,6 +839,39 @@ gs_plugin_fwupd_install (GsPlugin *plugin,
 	if (downloaded_to_cache) {
 		if (!g_file_delete (local_file, cancellable, error))
 			return FALSE;
+	}
+
+	/* does the device have an update message */
+	dev = fwupd_client_get_device_by_id (priv->client, device_id,
+					     cancellable, &error_local);
+	if (dev == NULL) {
+		/* NOTE: this is probably entirely fine; some devices do not
+		 * re-enumerate until replugged manually or the machine is
+		 * rebooted -- and the metadata to know that is only available
+		 * in a too-new-to-depend-on fwupd version */
+		g_debug ("failed to find device after install: %s", error_local->message);
+	} else {
+		if (fwupd_device_get_update_message (dev) != NULL) {
+			g_autoptr(AsScreenshot) ss = as_screenshot_new ();
+
+#if FWUPD_CHECK_VERSION(1,4,5)
+			/* image is optional */
+			if (fwupd_device_get_update_image (dev) != NULL) {
+				g_autoptr(AsImage) im = as_image_new ();
+				as_image_set_kind (im, AS_IMAGE_KIND_SOURCE);
+				as_image_set_url (im, fwupd_device_get_update_image (dev));
+				as_screenshot_add_image (ss, im);
+			}
+#endif
+
+			/* caption is required */
+			as_screenshot_set_kind (ss, AS_SCREENSHOT_KIND_DEFAULT);
+			as_screenshot_set_caption (ss, NULL, fwupd_device_get_update_message (dev));
+			gs_app_set_action_screenshot (app, ss);
+
+			/* require the dialog */
+			gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_USER_ACTION);
+		}
 	}
 
 	/* success */

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016 Kalev Lember <klember@redhat.com>
  * Copyright (C) 2016 Richard Hughes <richard@hughsie.com>
@@ -27,6 +28,8 @@ typedef struct
 	GtkWidget	*label_upgrades_title;
 	GtkWidget	*label_upgrades_warning;
 	GtkWidget	*progressbar;
+	guint		 progress_pulse_id;
+	GtkCssProvider	*banner_provider;  /* (owned) (nullable) */
 } GsUpgradeBannerPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsUpgradeBanner, gs_upgrade_banner, GTK_TYPE_BIN)
@@ -41,6 +44,28 @@ enum {
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
+static gboolean
+_pulse_cb (gpointer user_data)
+{
+	GsUpgradeBanner *self = GS_UPGRADE_BANNER (user_data);
+	GsUpgradeBannerPrivate *priv = gs_upgrade_banner_get_instance_private (self);
+
+	gtk_progress_bar_pulse (GTK_PROGRESS_BAR (priv->progressbar));
+
+	return G_SOURCE_CONTINUE;
+}
+
+static void
+stop_progress_pulsing (GsUpgradeBanner *self)
+{
+	GsUpgradeBannerPrivate *priv = gs_upgrade_banner_get_instance_private (self);
+
+	if (priv->progress_pulse_id != 0) {
+		g_source_remove (priv->progress_pulse_id);
+		priv->progress_pulse_id = 0;
+	}
+}
+
 static void
 gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 {
@@ -49,6 +74,7 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 	g_autofree gchar *name_bold = NULL;
 	g_autofree gchar *version_bold = NULL;
 	g_autofree gchar *str = NULL;
+	guint percentage;
 
 	if (priv->app == NULL)
 		return;
@@ -165,12 +191,24 @@ gs_upgrade_banner_refresh (GsUpgradeBanner *self)
 	/* do a fill bar for the current progress */
 	switch (gs_app_get_state (priv->app)) {
 	case AS_APP_STATE_INSTALLING:
-		gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (priv->progressbar),
-		                               (gdouble) gs_app_get_progress (priv->app) / 100.0f);
-		gtk_widget_show (priv->progressbar);
+		percentage = gs_app_get_progress (priv->app);
+		if (percentage == GS_APP_PROGRESS_UNKNOWN) {
+			if (priv->progress_pulse_id == 0)
+				priv->progress_pulse_id = g_timeout_add (50, _pulse_cb, self);
+
+			gtk_widget_set_visible (priv->progressbar, TRUE);
+			break;
+		} else if (percentage <= 100) {
+			stop_progress_pulsing (self);
+			gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (priv->progressbar),
+						       (gdouble) percentage / 100.f);
+			gtk_widget_set_visible (priv->progressbar, TRUE);
+			break;
+		}
 		break;
 	default:
 		gtk_widget_hide (priv->progressbar);
+		stop_progress_pulsing (self);
 		break;
 	}
 }
@@ -247,7 +285,7 @@ gs_upgrade_banner_set_app (GsUpgradeBanner *self, GsApp *app)
 
 	/* perhaps set custom css */
 	css = gs_app_get_metadata_item (app, "GnomeSoftware::UpgradeBanner-css");
-	gs_utils_widget_set_css (priv->box_upgrades, "upgrade-banner-custom", css);
+	gs_utils_widget_set_css (priv->box_upgrades, &priv->banner_provider, "upgrade-banner-custom", css);
 
 	gs_upgrade_banner_refresh (self);
 }
@@ -263,10 +301,23 @@ gs_upgrade_banner_get_app (GsUpgradeBanner *self)
 }
 
 static void
+gs_upgrade_banner_dispose (GObject *object)
+{
+	GsUpgradeBanner *self = GS_UPGRADE_BANNER (object);
+	GsUpgradeBannerPrivate *priv = gs_upgrade_banner_get_instance_private (self);
+
+	g_clear_object (&priv->banner_provider);
+
+	G_OBJECT_CLASS (gs_upgrade_banner_parent_class)->dispose (object);
+}
+
+static void
 gs_upgrade_banner_destroy (GtkWidget *widget)
 {
 	GsUpgradeBanner *self = GS_UPGRADE_BANNER (widget);
 	GsUpgradeBannerPrivate *priv = gs_upgrade_banner_get_instance_private (self);
+
+	stop_progress_pulsing (self);
 
 	if (priv->app) {
 		g_signal_handlers_disconnect_by_func (priv->app, app_state_changed, self);
@@ -305,6 +356,7 @@ gs_upgrade_banner_class_init (GsUpgradeBannerClass *klass)
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
+	object_class->dispose = gs_upgrade_banner_dispose;
 	widget_class->destroy = gs_upgrade_banner_destroy;
 
 	signals [SIGNAL_DOWNLOAD_CLICKED] =

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2019 Richard Hughes <richard@hughsie.com>
@@ -21,9 +22,25 @@ struct _GsFeatureTile
 	GtkWidget	*stack;
 	GtkWidget	*title;
 	GtkWidget	*subtitle;
+	const gchar	*markup_cache;  /* (unowned) (nullable) */
+	GtkCssProvider	*tile_provider;  /* (owned) (nullable) */
+	GtkCssProvider	*title_provider;  /* (owned) (nullable) */
+	GtkCssProvider	*subtitle_provider;  /* (owned) (nullable) */
 };
 
 G_DEFINE_TYPE (GsFeatureTile, gs_feature_tile, GS_TYPE_APP_TILE)
+
+static void
+gs_feature_tile_dispose (GObject *object)
+{
+	GsFeatureTile *tile = GS_FEATURE_TILE (object);
+
+	g_clear_object (&tile->tile_provider);
+	g_clear_object (&tile->title_provider);
+	g_clear_object (&tile->subtitle_provider);
+
+	G_OBJECT_CLASS (gs_feature_tile_parent_class)->dispose (object);
+}
 
 static void
 gs_feature_tile_refresh (GsAppTile *self)
@@ -33,7 +50,6 @@ gs_feature_tile_refresh (GsAppTile *self)
 	AtkObject *accessible;
 	const gchar *markup;
 	g_autofree gchar *name = NULL;
-	g_autoptr(GsCss) css = NULL;
 
 	if (app == NULL)
 		return;
@@ -44,17 +60,21 @@ gs_feature_tile_refresh (GsAppTile *self)
 	gtk_label_set_label (GTK_LABEL (tile->title), gs_app_get_name (app));
 	gtk_label_set_label (GTK_LABEL (tile->subtitle), gs_app_get_summary (app));
 
-	/* perhaps set custom css */
+	/* perhaps set custom css; cache it so that images don’t get reloaded
+	 * unnecessarily */
 	markup = gs_app_get_metadata_item (app, "GnomeSoftware::FeatureTile-css");
-	css = gs_css_new ();
-	if (markup != NULL)
-		gs_css_parse (css, markup, NULL);
-	gs_utils_widget_set_css (GTK_WIDGET (tile), "feature-tile",
-				 gs_css_get_markup_for_id (css, "tile"));
-	gs_utils_widget_set_css (tile->title, "feature-tile-name",
-				 gs_css_get_markup_for_id (css, "name"));
-	gs_utils_widget_set_css (tile->subtitle, "feature-tile-subtitle",
-				 gs_css_get_markup_for_id (css, "summary"));
+	if (tile->markup_cache != markup) {
+		g_autoptr(GsCss) css = gs_css_new ();
+		if (markup != NULL)
+			gs_css_parse (css, markup, NULL);
+		gs_utils_widget_set_css (GTK_WIDGET (tile), &tile->tile_provider, "feature-tile",
+					 gs_css_get_markup_for_id (css, "tile"));
+		gs_utils_widget_set_css (tile->title, &tile->title_provider, "feature-tile-name",
+					 gs_css_get_markup_for_id (css, "name"));
+		gs_utils_widget_set_css (tile->subtitle, &tile->subtitle_provider, "feature-tile-subtitle",
+					 gs_css_get_markup_for_id (css, "summary"));
+		tile->markup_cache = markup;
+	}
 
 	accessible = gtk_widget_get_accessible (GTK_WIDGET (tile));
 
@@ -90,8 +110,11 @@ gs_feature_tile_init (GsFeatureTile *tile)
 static void
 gs_feature_tile_class_init (GsFeatureTileClass *klass)
 {
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 	GsAppTileClass *app_tile_class = GS_APP_TILE_CLASS (klass);
+
+	object_class->dispose = gs_feature_tile_dispose;
 
 	app_tile_class->refresh = gs_feature_tile_refresh;
 

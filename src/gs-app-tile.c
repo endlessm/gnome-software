@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2019 Richard Hughes <richard@hughsie.com>
@@ -85,6 +86,8 @@ gs_app_tile_finalize (GObject *object)
 		g_signal_handlers_disconnect_by_func (priv->app, gs_app_tile_state_changed_cb, self);
 	g_clear_handle_id (&priv->app_state_changed_idle_id, g_source_remove);
 	g_clear_object (&priv->app);
+
+	G_OBJECT_CLASS (gs_app_tile_parent_class)->finalize (object);
 }
 
 void

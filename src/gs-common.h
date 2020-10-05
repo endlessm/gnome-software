@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2016 Kalev Lember <klember@redhat.com>
@@ -33,6 +34,7 @@ void	gs_image_set_from_pixbuf		(GtkImage		*image,
 
 gboolean	 gs_utils_is_current_desktop	(const gchar	*name);
 void		 gs_utils_widget_set_css	(GtkWidget	*widget,
+						 GtkCssProvider	**provider,
 						 const gchar	*class_name,
 						 const gchar	*css);
 const gchar	*gs_utils_get_error_value	(const GError	*error);

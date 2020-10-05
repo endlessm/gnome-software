@@ -1,8 +1,9 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016 Joaquim Rocha <jrocha@endlessm.com>
  * Copyright (C) 2016-2018 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2017-2018 Kalev Lember <klember@redhat.com>
+ * Copyright (C) 2017-2020 Kalev Lember <klember@redhat.com>
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
@@ -306,12 +307,12 @@ gs_plugin_flatpak_refine_app (GsPlugin *plugin,
 }
 
 
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+static gboolean
+refine_app (GsPlugin             *plugin,
+	    GsApp                *app,
+	    GsPluginRefineFlags   flags,
+	    GCancellable         *cancellable,
+	    GError              **error)
 {
 	/* only process this app if was created by this plugin */
 	if (g_strcmp0 (gs_app_get_management_plugin (app),
@@ -335,6 +336,22 @@ gs_plugin_refine_app (GsPlugin *plugin,
 			}
 		}
 	}
+	return TRUE;
+}
+
+gboolean
+gs_plugin_refine (GsPlugin             *plugin,
+		  GsAppList            *list,
+		  GsPluginRefineFlags   flags,
+		  GCancellable         *cancellable,
+		  GError              **error)
+{
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (!refine_app (plugin, app, flags, cancellable, error))
+			return FALSE;
+	}
+
 	return TRUE;
 }
 
@@ -440,17 +457,134 @@ _group_apps_by_installation (GsPlugin *plugin,
 	return g_steal_pointer (&applist_by_flatpaks);
 }
 
+#if FLATPAK_CHECK_VERSION(1,6,0)
+typedef struct {
+	FlatpakTransaction *transaction;
+	guint id;
+} BasicAuthData;
+
+static void
+basic_auth_data_free (BasicAuthData *data)
+{
+	g_object_unref (data->transaction);
+	g_slice_free (BasicAuthData, data);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(BasicAuthData, basic_auth_data_free)
+
+static void
+_basic_auth_cb (const gchar *user, const gchar *password, gpointer user_data)
+{
+	g_autoptr(BasicAuthData) data = user_data;
+
+	g_debug ("Submitting basic auth data");
+
+	/* NULL user aborts the basic auth request */
+	flatpak_transaction_complete_basic_auth (data->transaction, data->id, user, password, NULL /* options */);
+}
+
+static gboolean
+_basic_auth_start (FlatpakTransaction *transaction,
+                   const char *remote,
+                   const char *realm,
+                   GVariant *options,
+                   guint id,
+                   GsPlugin *plugin)
+{
+	BasicAuthData *data;
+
+	if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE))
+		return FALSE;
+
+	data = g_slice_new0 (BasicAuthData);
+	data->transaction = g_object_ref (transaction);
+	data->id = id;
+
+	g_debug ("Login required remote %s (realm %s)\n", remote, realm);
+	gs_plugin_basic_auth_start (plugin, remote, realm, G_CALLBACK (_basic_auth_cb), data);
+	return TRUE;
+}
+
+static gboolean
+_webflow_start (FlatpakTransaction *transaction,
+                const char *remote,
+                const char *url,
+                GVariant *options,
+                guint id,
+                GsPlugin *plugin)
+{
+	const char *browser;
+	g_autoptr(GError) error_local = NULL;
+
+	if (!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE))
+		return FALSE;
+
+	g_debug ("Authentication required for remote '%s'", remote);
+
+	/* Allow hard overrides with $BROWSER */
+	browser = g_getenv ("BROWSER");
+	if (browser != NULL) {
+		const char *args[3] = { NULL, url, NULL };
+		args[0] = browser;
+		if (!g_spawn_async (NULL, (char **)args, NULL, G_SPAWN_SEARCH_PATH,
+		                    NULL, NULL, NULL, &error_local)) {
+			g_autoptr(GsPluginEvent) event = NULL;
+
+			g_warning ("Failed to start browser %s: %s", browser, error_local->message);
+
+			event = gs_plugin_event_new ();
+			gs_flatpak_error_convert (&error_local);
+			gs_plugin_event_set_error (event, error_local);
+			gs_plugin_event_add_flag (event, GS_PLUGIN_EVENT_FLAG_WARNING);
+			gs_plugin_report_event (plugin, event);
+
+			return FALSE;
+		}
+	} else {
+		if (!g_app_info_launch_default_for_uri (url, NULL, &error_local)) {
+			g_autoptr(GsPluginEvent) event = NULL;
+
+			g_warning ("Failed to show url: %s", error_local->message);
+
+			event = gs_plugin_event_new ();
+			gs_flatpak_error_convert (&error_local);
+			gs_plugin_event_set_error (event, error_local);
+			gs_plugin_event_add_flag (event, GS_PLUGIN_EVENT_FLAG_WARNING);
+			gs_plugin_report_event (plugin, event);
+
+			return FALSE;
+		}
+	}
+
+	g_debug ("Waiting for browser...");
+
+	return TRUE;
+}
+
+static void
+_webflow_done (FlatpakTransaction *transaction,
+               GVariant *options,
+               guint id,
+               GsPlugin *plugin)
+{
+	g_debug ("Browser done");
+}
+#endif
+
 static FlatpakTransaction *
 _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 		    GCancellable *cancellable, GError **error)
 {
 	FlatpakInstallation *installation;
+#if !FLATPAK_CHECK_VERSION(1, 7, 3)
 	g_autoptr(GFile) installation_path = NULL;
+#endif  /* flatpak < 1.7.3 */
 	g_autoptr(FlatpakInstallation) installation_clone = NULL;
 	g_autoptr(FlatpakTransaction) transaction = NULL;
 
 	installation = gs_flatpak_get_installation (flatpak);
 
+#if !FLATPAK_CHECK_VERSION(1, 7, 3)
 	/* Operate on a copy of the installation so we can set the interactive
 	 * flag for the duration of this transaction. */
 	installation_path = flatpak_installation_get_path (installation);
@@ -463,6 +597,9 @@ _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 	/* Let flatpak know if it is a background operation */
 	flatpak_installation_set_no_interaction (installation_clone,
 						 !gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
+#else  /* if flatpak ≥ 1.7.3 */
+	installation_clone = g_object_ref (installation);
+#endif  /* flatpak ≥ 1.7.3 */
 
 	/* create transaction */
 	transaction = gs_flatpak_transaction_new (installation_clone, cancellable, error);
@@ -472,9 +609,23 @@ _build_transaction (GsPlugin *plugin, GsFlatpak *flatpak,
 		return NULL;
 	}
 
+#if FLATPAK_CHECK_VERSION(1, 7, 3)
+	/* Let flatpak know if it is a background operation */
+	flatpak_transaction_set_no_interaction (transaction,
+						!gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
+#endif  /* flatpak ≥ 1.7.3 */
+
 	/* connect up signals */
 	g_signal_connect (transaction, "ref-to-app",
 			  G_CALLBACK (_ref_to_app), plugin);
+#if FLATPAK_CHECK_VERSION(1,6,0)
+	g_signal_connect (transaction, "basic-auth-start",
+			  G_CALLBACK (_basic_auth_start), plugin);
+	g_signal_connect (transaction, "webflow-start",
+			  G_CALLBACK (_webflow_start), plugin);
+	g_signal_connect (transaction, "webflow-done",
+			  G_CALLBACK (_webflow_done), plugin);
+#endif
 
 	/* use system installations as dependency sources for user installations */
 	flatpak_transaction_add_default_dependency_sources (transaction);
@@ -574,6 +725,11 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		gs_flatpak_error_convert (error);
 		return FALSE;
 	}
+
+	/* add to the transaction cache for quick look up -- other unrelated
+	 * refs will be matched using gs_plugin_flatpak_find_app_by_ref() */
+	gs_flatpak_transaction_add_app (transaction, app);
+
 	ref = gs_flatpak_app_get_ref_display (app);
 	if (!flatpak_transaction_add_uninstall (transaction, ref, error)) {
 		gs_flatpak_error_convert (error);
@@ -777,6 +933,10 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 			gs_flatpak_error_convert (error);
 			return FALSE;
 		}
+
+		/* add to the transaction cache for quick look up -- other unrelated
+		 * refs will be matched using gs_plugin_flatpak_find_app_by_ref() */
+		gs_flatpak_transaction_add_app (transaction, app);
 	}
 
 	/* run transaction */

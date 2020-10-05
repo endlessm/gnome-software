@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2018 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2018 Kalev Lember <klember@redhat.com>
@@ -173,35 +174,275 @@ _transaction_ready (FlatpakTransaction *transaction)
 					FLATPAK_TRANSACTION_OPERATION_UPDATE)
 				gs_app_set_state (app, AS_APP_STATE_INSTALLING);
 		}
+
+#if FLATPAK_CHECK_VERSION(1, 7, 3)
+		/* Debug dump. */
+		{
+			GPtrArray *related_to_ops = flatpak_transaction_operation_get_related_to_ops (op);
+			g_autoptr(GString) debug_message = g_string_new ("");
+
+			g_string_append_printf (debug_message,
+						"%s: op %p, app %s (%p), download size %" G_GUINT64_FORMAT ", related-to:",
+						G_STRFUNC, op,
+						app ? gs_app_get_unique_id (app) : "?",
+						app,
+						flatpak_transaction_operation_get_download_size (op));
+			for (gsize i = 0; related_to_ops != NULL && i < related_to_ops->len; i++) {
+				FlatpakTransactionOperation *related_to_op = g_ptr_array_index (related_to_ops, i);
+				g_string_append_printf (debug_message,
+							"\n ├ %s (%p)", flatpak_transaction_operation_get_ref (related_to_op), related_to_op);
+			}
+			g_string_append (debug_message, "\n └ (end)");
+			g_debug ("%s", debug_message->str);
+		}
+#endif  /* flatpak ≥ 1.7.3 */
 	}
 	return TRUE;
 }
+
+typedef struct
+{
+	GsFlatpakTransaction *transaction;  /* (owned) */
+	FlatpakTransactionOperation *operation;  /* (owned) */
+	GsApp *app;  /* (owned) */
+} ProgressData;
+
+static void
+progress_data_free (ProgressData *data)
+{
+	g_clear_object (&data->operation);
+	g_clear_object (&data->app);
+	g_clear_object (&data->transaction);
+	g_free (data);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (ProgressData, progress_data_free)
+
+#if FLATPAK_CHECK_VERSION(1, 7, 3)
+static gboolean
+op_is_related_to_op (FlatpakTransactionOperation *op,
+                     FlatpakTransactionOperation *root_op)
+{
+	GPtrArray *related_to_ops;  /* (element-type FlatpakTransactionOperation) */
+
+	if (op == root_op)
+		return TRUE;
+
+	related_to_ops = flatpak_transaction_operation_get_related_to_ops (op);
+	for (gsize i = 0; related_to_ops != NULL && i < related_to_ops->len; i++) {
+		FlatpakTransactionOperation *related_to_op = g_ptr_array_index (related_to_ops, i);
+		if (related_to_op == root_op || op_is_related_to_op (related_to_op, root_op))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+static guint64
+saturated_uint64_add (guint64 a, guint64 b)
+{
+	return (a <= G_MAXUINT64 - b) ? a + b : G_MAXUINT64;
+}
+
+/*
+ * update_progress_for_op:
+ * @self: a #GsFlatpakTransaction
+ * @current_progress: progress reporting object
+ * @ops: results of calling flatpak_transaction_get_operations() on @self, for performance
+ * @current_op: the #FlatpakTransactionOperation which the @current_progress is
+ *    for; this is the operation currently being run by libflatpak
+ * @root_op: the #FlatpakTransactionOperation at the root of the operation subtree
+ *    to calculate progress for
+ *
+ * Calculate and update the #GsApp:progress for each app associated with
+ * @root_op in a flatpak transaction. This will include the #GsApp for the app
+ * being installed (for example), but also the #GsApps for all of its runtimes
+ * and locales, and any other dependencies of them.
+ *
+ * Each #GsApp:progress is calculated based on the sum of the progress of all
+ * the apps related to that one — so the progress for an app will factor in the
+ * progress for all its runtimes.
+ */
+static void
+update_progress_for_op (GsFlatpakTransaction        *self,
+                        FlatpakTransactionProgress  *current_progress,
+                        GList                       *ops,
+                        FlatpakTransactionOperation *current_op,
+                        FlatpakTransactionOperation *root_op)
+{
+	g_autoptr(GsApp) root_app = NULL;
+	guint64 related_prior_download_bytes = 0;
+	guint64 related_download_bytes = 0;
+	guint64 current_bytes_transferred = flatpak_transaction_progress_get_bytes_transferred (current_progress);
+	gboolean seen_current_op = FALSE, seen_root_op = FALSE;
+	gboolean root_op_skipped = flatpak_transaction_operation_get_is_skipped (root_op);
+	guint percent;
+
+	/* If @root_op is being skipped and its GsApp isn't being
+	 * installed/removed, don't update the progress on it. It may be that
+	 * @root_op is the runtime of an app and the app is the thing the
+	 * transaction was created for.
+	 */
+	if (root_op_skipped) {
+		/* _transaction_operation_set_app() is only called on non-skipped ops */
+		const gchar *ref = flatpak_transaction_operation_get_ref (root_op);
+		root_app = _ref_to_app (self, ref);
+		if (root_app == NULL) {
+			g_warning ("Couldn't find GsApp for transaction operation %s",
+			           flatpak_transaction_operation_get_ref (root_op));
+			return;
+		}
+		if (gs_app_get_state (root_app) != AS_APP_STATE_INSTALLING &&
+		    gs_app_get_state (root_app) != AS_APP_STATE_REMOVING)
+			return;
+	} else {
+		GsApp *unskipped_root_app = _transaction_operation_get_app (root_op);
+		if (unskipped_root_app == NULL) {
+			g_warning ("Couldn't find GsApp for transaction operation %s",
+			           flatpak_transaction_operation_get_ref (root_op));
+			return;
+		}
+		root_app = g_object_ref (unskipped_root_app);
+	}
+
+	/* This relies on ops in a #FlatpakTransaction being run in the order
+	 * they’re returned by flatpak_transaction_get_operations(), which is true. */
+	for (GList *l = ops; l != NULL; l = l->next) {
+		FlatpakTransactionOperation *op = FLATPAK_TRANSACTION_OPERATION (l->data);
+		guint64 op_download_size = flatpak_transaction_operation_get_download_size (op);
+
+		if (op == current_op)
+			seen_current_op = TRUE;
+		if (op == root_op)
+			seen_root_op = TRUE;
+
+		/* Currently libflatpak doesn't return skipped ops in
+		 * flatpak_transaction_get_operations(), but check just in case.
+		 */
+		if (op == root_op && root_op_skipped)
+			continue;
+
+		if (op_is_related_to_op (op, root_op)) {
+			/* Saturate instead of overflowing */
+			related_download_bytes = saturated_uint64_add (related_download_bytes, op_download_size);
+			if (!seen_current_op)
+				related_prior_download_bytes = saturated_uint64_add (related_prior_download_bytes, op_download_size);
+		}
+	}
+
+	g_assert (related_prior_download_bytes <= related_download_bytes);
+	g_assert (seen_root_op || root_op_skipped);
+
+	/* Avoid overflows when converting to percent, at the cost of losing
+	 * some precision in the least significant digits. */
+	if (related_prior_download_bytes > G_MAXUINT64 / 100 ||
+	    current_bytes_transferred > G_MAXUINT64 / 100) {
+		related_prior_download_bytes /= 100;
+		    current_bytes_transferred /= 100;
+		    related_download_bytes /= 100;
+	}
+
+	/* Update the progress of @root_app. */
+	if (related_download_bytes > 0)
+		percent = ((related_prior_download_bytes * 100 / related_download_bytes) +
+		           (current_bytes_transferred * 100 / related_download_bytes));
+	else
+		percent = 0;
+
+	if (gs_app_get_progress (root_app) == 100 ||
+	    gs_app_get_progress (root_app) == GS_APP_PROGRESS_UNKNOWN ||
+	    gs_app_get_progress (root_app) <= percent) {
+		gs_app_set_progress (root_app, percent);
+	} else {
+		g_warning ("ignoring percentage %u%% -> %u%% as going down on app %s",
+			   gs_app_get_progress (root_app), percent,
+			   gs_app_get_unique_id (root_app));
+	}
+}
+#endif  /* flatpak 1.7.3 */
+
+#if FLATPAK_CHECK_VERSION(1, 7, 3)
+static void
+update_progress_for_op_recurse_up (GsFlatpakTransaction        *self,
+				   FlatpakTransactionProgress  *progress,
+				   GList                       *ops,
+				   FlatpakTransactionOperation *current_op,
+				   FlatpakTransactionOperation *root_op)
+{
+	GPtrArray *related_to_ops = flatpak_transaction_operation_get_related_to_ops (root_op);
+
+	/* Update progress for @root_op */
+	update_progress_for_op (self, progress, ops, current_op, root_op);
+
+	/* Update progress for ops related to @root_op, e.g. apps whose runtime is @root_op */
+	for (gsize i = 0; related_to_ops != NULL && i < related_to_ops->len; i++) {
+		FlatpakTransactionOperation *related_to_op = g_ptr_array_index (related_to_ops, i);
+		update_progress_for_op_recurse_up (self, progress, ops, current_op, related_to_op);
+	}
+}
+#endif  /* flatpak 1.7.3 */
 
 static void
 _transaction_progress_changed_cb (FlatpakTransactionProgress *progress,
 				  gpointer user_data)
 {
-	GsApp *app = GS_APP (user_data);
-	guint percent = flatpak_transaction_progress_get_progress (progress);
+	ProgressData *data = user_data;
+	GsApp *app = data->app;
+#if FLATPAK_CHECK_VERSION(1, 7, 3)
+	GsFlatpakTransaction *self = data->transaction;
+	g_autolist(FlatpakTransactionOperation) ops = NULL;
+#else
+	guint percent;
+#endif
+
 	if (flatpak_transaction_progress_get_is_estimating (progress)) {
 		/* "Estimating" happens while fetching the metadata, which
 		 * flatpak arbitrarily decides happens during the first 5% of
-		 * each operation. Often there are two install operations,
-		 * for the flatpak and its locale data.
-		 * However, "estimating" may also mean bogus values. We have to
-		 * arbitrarily decide whether to show this value to the user. */
-		if (percent > 10) {
-			g_debug ("Ignoring estimated progress of %u%%", percent);
-			return;
-		}
+		 * each operation. At this point, no more detailed progress
+		 * information is available. */
+		gs_app_set_progress (app, GS_APP_PROGRESS_UNKNOWN);
+		return;
 	}
+
+#if FLATPAK_CHECK_VERSION(1, 7, 3)
+	/* Update the progress on this app, and then do the same for each
+	 * related parent app up the hierarchy. For example, @data->operation
+	 * could be for a runtime which was added to the transaction because of
+	 * an app — so we need to update the progress on the app too.
+	 *
+	 * It’s important to note that a new @data->progress is created by
+	 * libflatpak for each @data->operation, and there are multiple
+	 * operations in a transaction. There is no #FlatpakTransactionProgress
+	 * which represents the progress of the whole transaction.
+	 *
+	 * There may be arbitrary many levels of related-to ops. For example,
+	 * one common situation would be to install an app which needs a new
+	 * runtime, and that runtime needs a locale to be installed, which would
+	 * give three levels of related-to relation:
+	 *    locale → runtime → app → (null)
+	 *
+	 * In addition, libflatpak may decide to skip some operations (if they
+	 * turn out to not be necessary). These skipped operations are not
+	 * included in the list returned by flatpak_transaction_get_operations(),
+	 * but they can be accessed via
+	 * flatpak_transaction_operation_get_related_to_ops(), so have to be
+	 * ignored manually.
+	 */
+	ops = flatpak_transaction_get_operations (FLATPAK_TRANSACTION (self));
+	update_progress_for_op_recurse_up (self, progress, ops, data->operation, data->operation);
+#else  /* if !flatpak 1.7.3 */
+	percent = flatpak_transaction_progress_get_progress (progress);
+
 	if (gs_app_get_progress (app) != 100 &&
+	    gs_app_get_progress (app) != GS_APP_PROGRESS_UNKNOWN &&
 	    gs_app_get_progress (app) > percent) {
 		g_warning ("ignoring percentage %u%% -> %u%% as going down...",
 			   gs_app_get_progress (app), percent);
 		return;
 	}
+
 	gs_app_set_progress (app, percent);
+#endif  /* !flatpak 1.7.3 */
 }
 
 static const gchar *
@@ -219,11 +460,19 @@ _flatpak_transaction_operation_type_to_string (FlatpakTransactionOperationType o
 }
 
 static void
+progress_data_free_closure (gpointer  user_data,
+                            GClosure *closure)
+{
+	progress_data_free (user_data);
+}
+
+static void
 _transaction_new_operation (FlatpakTransaction *transaction,
 			    FlatpakTransactionOperation *operation,
 			    FlatpakTransactionProgress *progress)
 {
 	GsApp *app;
+	g_autoptr(ProgressData) progress_data = NULL;
 
 	/* find app */
 	app = _transaction_operation_get_app (operation);
@@ -237,10 +486,17 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 	}
 
 	/* report progress */
-	g_signal_connect_object (progress, "changed",
-				 G_CALLBACK (_transaction_progress_changed_cb),
-				 app, 0);
-	flatpak_transaction_progress_set_update_frequency (progress, 100); /* FIXME? */
+	progress_data = g_new0 (ProgressData, 1);
+	progress_data->transaction = GS_FLATPAK_TRANSACTION (g_object_ref (transaction));
+	progress_data->app = g_object_ref (app);
+	progress_data->operation = g_object_ref (operation);
+
+	g_signal_connect_data (progress, "changed",
+			       G_CALLBACK (_transaction_progress_changed_cb),
+			       g_steal_pointer (&progress_data),
+			       progress_data_free_closure,
+			       0  /* flags */);
+	flatpak_transaction_progress_set_update_frequency (progress, 500); /* FIXME? */
 
 	/* set app status */
 	switch (flatpak_transaction_operation_get_operation_type (operation)) {
@@ -267,13 +523,83 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 	}
 }
 
+#if FLATPAK_CHECK_VERSION(1, 7, 3)
+static gboolean
+later_op_also_related (GList                       *ops,
+		       FlatpakTransactionOperation *current_op,
+		       FlatpakTransactionOperation *related_to_current_op)
+{
+	/* Here we're determining if anything in @ops which comes after
+	 * @current_op is related to @related_to_current_op and not skipped
+	 * (but all @ops are not skipped so no need to check explicitly)
+	 */
+	gboolean found_later_op = FALSE, seen_current_op = FALSE;
+	for (GList *l = ops; l != NULL; l = l->next) {
+		FlatpakTransactionOperation *op = l->data;
+		GPtrArray *related_to_ops;
+		if (current_op == op) {
+			seen_current_op = TRUE;
+			continue;
+		}
+		if (!seen_current_op)
+			continue;
+
+		related_to_ops = flatpak_transaction_operation_get_related_to_ops (op);
+		for (gsize i = 0; related_to_ops != NULL && i < related_to_ops->len; i++) {
+			FlatpakTransactionOperation *related_to_op = g_ptr_array_index (related_to_ops, i);
+			if (related_to_op == related_to_current_op) {
+				g_assert (flatpak_transaction_operation_get_is_skipped (related_to_op));
+				found_later_op = TRUE;
+			}
+		}
+	}
+
+	return found_later_op;
+}
+
+static void
+set_skipped_related_apps_to_installed (GsFlatpakTransaction        *self,
+				       FlatpakTransaction          *transaction,
+				       FlatpakTransactionOperation *operation)
+{
+	/* It's possible the thing being updated/installed, @operation, is a
+	 * related ref (e.g. extension or runtime) of an app which itself doesn't
+	 * need an update and therefore won't have _transaction_operation_done()
+	 * called for it directly. So we have to set the main app to installed
+	 * here.
+	*/
+	g_autolist(GObject) ops = flatpak_transaction_get_operations (transaction);
+	GPtrArray *related_to_ops = flatpak_transaction_operation_get_related_to_ops (operation);
+
+	for (gsize i = 0; related_to_ops != NULL && i < related_to_ops->len; i++) {
+		FlatpakTransactionOperation *related_to_op = g_ptr_array_index (related_to_ops, i);
+		if (flatpak_transaction_operation_get_is_skipped (related_to_op)) {
+			const gchar *ref;
+			g_autoptr(GsApp) related_to_app = NULL;
+
+			/* Check that no later op is also related to related_to_op, in
+			 * which case we want to let that operation finish before setting
+			 * the main app to installed.
+			 */
+			if (later_op_also_related (ops, operation, related_to_op))
+				continue;
+
+			ref = flatpak_transaction_operation_get_ref (related_to_op);
+			related_to_app = _ref_to_app (self, ref);
+			if (related_to_app != NULL)
+				gs_app_set_state (related_to_app, AS_APP_STATE_INSTALLED);
+		}
+	}
+}
+#endif  /* flatpak 1.7.3 */
+
 static void
 _transaction_operation_done (FlatpakTransaction *transaction,
 			     FlatpakTransactionOperation *operation,
 			     const gchar *commit,
 			     FlatpakTransactionResult details)
 {
-#if !FLATPAK_CHECK_VERSION(1,5,1)
+#if !FLATPAK_CHECK_VERSION(1,5,1) || FLATPAK_CHECK_VERSION(1,7,3)
 	GsFlatpakTransaction *self = GS_FLATPAK_TRANSACTION (transaction);
 #endif
 	/* invalidate */
@@ -287,6 +613,10 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 	case FLATPAK_TRANSACTION_OPERATION_INSTALL:
 	case FLATPAK_TRANSACTION_OPERATION_INSTALL_BUNDLE:
 		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+
+#if FLATPAK_CHECK_VERSION(1,7,3)
+		set_skipped_related_apps_to_installed (self, transaction, operation);
+#endif
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UPDATE:
 		gs_app_set_version (app, gs_app_get_update_version (app));
@@ -304,6 +634,10 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
 		else
 			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+
+#if FLATPAK_CHECK_VERSION(1,7,3)
+		set_skipped_related_apps_to_installed (self, transaction, operation);
+#endif
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UNINSTALL:
 		/* we don't actually know if this app is re-installable */

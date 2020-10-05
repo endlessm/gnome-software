@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2018-2019 Endless Mobile
  *
@@ -22,7 +23,7 @@
  * Specifically, %GS_APP_QUIRK_PARENTAL_FILTER will be added if an app’s OARS
  * rating is too extreme for the current parental controls OARS policy.
  * %GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE will be added if the app is listed on
- * the current parental controls blacklist.
+ * the current parental controls blocklist.
  *
  * Parental controls policy is loaded using libmalcontent.
  *
@@ -138,7 +139,7 @@ app_is_content_rating_appropriate (GsApp *app, MctAppFilter *app_filter)
 }
 
 static gboolean
-app_is_parentally_blacklisted (GsApp *app, MctAppFilter *app_filter)
+app_is_parentally_blocklisted (GsApp *app, MctAppFilter *app_filter)
 {
 	const gchar *desktop_id;
 	g_autoptr(GAppInfo) appinfo = NULL;
@@ -170,9 +171,9 @@ app_set_parental_quirks (GsPlugin *plugin, GsApp *app, MctAppFilter *app_filter)
 		gs_app_remove_quirk (app, GS_APP_QUIRK_PARENTAL_FILTER);
 	}
 
-	/* check the app blacklist to see if this app should be launchable */
-	if (app_is_parentally_blacklisted (app, app_filter)) {
-		g_debug ("Filtering ‘%s’: app is blacklisted for this user",
+	/* check the app blocklist to see if this app should be launchable */
+	if (app_is_parentally_blocklisted (app, app_filter)) {
+		g_debug ("Filtering ‘%s’: app is blocklisted for this user",
 		         gs_app_get_unique_id (app));
 		gs_app_add_quirk (app, GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE);
 		filtered = TRUE;
@@ -195,20 +196,51 @@ query_app_filter (GsPlugin      *plugin,
 					   error);
 }
 
+static gboolean
+reload_app_filter (GsPlugin      *plugin,
+                   GCancellable  *cancellable,
+                   GError       **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(MctAppFilter) new_app_filter = NULL;
+	g_autoptr(MctAppFilter) old_app_filter = NULL;
+
+	/* Refresh the app filter. This blocks on a D-Bus request. */
+	new_app_filter = query_app_filter (plugin, cancellable, error);
+
+	/* on failure, keep the old app filter around since it might be more
+	 * useful than nothing */
+	if (new_app_filter == NULL)
+		return FALSE;
+
+	{
+		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+		old_app_filter = g_steal_pointer (&priv->app_filter);
+		priv->app_filter = g_steal_pointer (&new_app_filter);
+	}
+
+	return TRUE;
+}
+
 static void
 app_filter_changed_cb (MctManager *manager,
                        guint64     user_id,
                        gpointer    user_data)
 {
 	GsPlugin *plugin = GS_PLUGIN (user_data);
+	g_autoptr(GError) error_local = NULL;
 
-	if (user_id == getuid ()) {
-		/* The user’s app filter has changed, which means that different
-		 * apps could be filtered from before. Reload everything to be
-		 * sure of re-filtering correctly. */
-		g_debug ("Reloading due to app filter changing for user %" G_GUINT64_FORMAT, user_id);
+	if (user_id != getuid ())
+		return;
+
+	/* The user’s app filter has changed, which means that different
+	 * apps could be filtered from before. Reload everything to be
+	 * sure of re-filtering correctly. */
+	g_debug ("Reloading due to app filter changing for user %" G_GUINT64_FORMAT, user_id);
+	if (reload_app_filter (plugin, NULL, &error_local))
 		gs_plugin_reload (plugin);
-	}
+	else
+		g_warning ("Failed to reload changed app filter: %s", error_local->message);
 }
 
 void
@@ -245,12 +277,12 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	return (priv->app_filter != NULL);
 }
 
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+static gboolean
+refine_app_locked (GsPlugin             *plugin,
+		   GsApp                *app,
+		   GsPluginRefineFlags   flags,
+		   GCancellable         *cancellable,
+		   GError              **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 
@@ -261,14 +293,30 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	/* Filter by various parental filters. The filter can’t be %NULL,
 	 * otherwise setup() would have failed and the plugin would have been
 	 * disabled. */
-	{
-		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
-		g_assert (priv->app_filter != NULL);
+	g_assert (priv->app_filter != NULL);
 
-		app_set_parental_quirks (plugin, app, priv->app_filter);
+	app_set_parental_quirks (plugin, app, priv->app_filter);
 
-		return TRUE;
+	return TRUE;
+}
+
+gboolean
+gs_plugin_refine (GsPlugin             *plugin,
+		  GsAppList            *list,
+		  GsPluginRefineFlags   flags,
+		  GCancellable         *cancellable,
+		  GError              **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (!refine_app_locked (plugin, app, flags, cancellable, error))
+			return FALSE;
 	}
+
+	return TRUE;
 }
 
 gboolean
@@ -277,25 +325,7 @@ gs_plugin_refresh (GsPlugin *plugin,
 		   GCancellable *cancellable,
 		   GError **error)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autoptr(MctAppFilter) new_app_filter = NULL;
-	g_autoptr(MctAppFilter) old_app_filter = NULL;
-
-	/* Refresh the app filter. This blocks on a D-Bus request. */
-	new_app_filter = query_app_filter (plugin, cancellable, error);
-
-	/* on failure, keep the old app filter around since it might be more
-	 * useful than nothing */
-	if (new_app_filter == NULL)
-		return FALSE;
-
-	{
-		g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
-		old_app_filter = g_steal_pointer (&priv->app_filter);
-		priv->app_filter = g_steal_pointer (&new_app_filter);
-	}
-
-	return TRUE;
+	return reload_app_filter (plugin, cancellable, error);
 }
 
 void

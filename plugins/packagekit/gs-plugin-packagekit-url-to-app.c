@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2017 Canonical Ltd
  *
@@ -105,11 +106,15 @@ gs_plugin_url_to_app (GsPlugin *plugin,
 	details = pk_results_get_details_array (results);
 
 	if (packages->len >= 1) {
+		g_autoptr(GHashTable) details_collection = NULL;
+
 		if (gs_app_get_local_file (app) != NULL)
 			return TRUE;
 
+		details_collection = gs_plugin_packagekit_details_array_to_hash (details);
+
 		gs_plugin_packagekit_resolve_packages_app (plugin, packages, app);
-		gs_plugin_packagekit_refine_details_app (plugin, details, app);
+		gs_plugin_packagekit_refine_details_app (plugin, details_collection, app);
 
 		gs_app_list_add (list, app);
 	} else {

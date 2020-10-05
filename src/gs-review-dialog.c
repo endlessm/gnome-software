@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016 Canonical Ltd.
  *
@@ -161,7 +162,6 @@ gs_review_dialog_init (GsReviewDialog *dialog)
 {
 	GtkTextBuffer *buffer;
 	gtk_widget_init_template (GTK_WIDGET (dialog));
-	gs_star_widget_set_icon_size (GS_STAR_WIDGET (dialog->star), 32);
 
 #ifdef HAVE_GSPELL
 	/* allow checking spelling */
@@ -183,7 +183,6 @@ gs_review_dialog_init (GsReviewDialog *dialog)
 						  dialog);
 
 	/* update UI */
-	gs_star_widget_set_interactive (GS_STAR_WIDGET (dialog->star), TRUE);
 	g_signal_connect_swapped (dialog->star, "rating-changed",
 				  G_CALLBACK (gs_review_dialog_changed_cb), dialog);
 	g_signal_connect_swapped (dialog->summary_entry, "notify::text",

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2016 Kalev Lember <klember@redhat.com>
@@ -35,8 +36,6 @@ struct _GsPageClass
 						 GCancellable	*cancellable,
 						 GError		**error);
 };
-
-typedef void (*GsPageAuthCallback) (GsPage *page, gboolean authorized, gpointer user_data);
 
 GsPage		*gs_page_new				(void);
 GsShell		*gs_page_get_shell			(GsPage		*page);

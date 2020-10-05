@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2015-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2018-2019 Kalev Lember <klember@redhat.com>
@@ -746,6 +747,13 @@ gs_appstream_refine_app (GsPlugin *plugin,
 			gs_app_remove_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
 	}
 
+	/* try to detect old-style AppStream 'override'
+	 * files without the merge attribute */
+	if (xb_node_query_text (component, "name", NULL) == NULL &&
+	    xb_node_query_text (component, "metadata_license", NULL) == NULL) {
+		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
+	}
+
 	/* set id */
 	tmp = xb_node_query_text (component, "id", NULL);
 	if (tmp != NULL && gs_app_get_id (app) == NULL)
@@ -770,13 +778,8 @@ gs_appstream_refine_app (GsPlugin *plugin,
 
 	/* set name */
 	tmp = xb_node_query_text (component, "name", NULL);
-	if (tmp != NULL) {
+	if (tmp != NULL)
 		gs_app_set_name (app, GS_APP_QUALITY_HIGHEST, tmp);
-	} else {
-		/* this is a heuristic, but works even with old-style AppStream
-		 * files without the merge attribute */
-		gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
-	}
 
 	/* set summary */
 	tmp = xb_node_query_text (component, "summary", NULL);

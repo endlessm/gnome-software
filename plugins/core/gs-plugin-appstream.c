@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2014 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2019 Kalev Lember <klember@redhat.com>
@@ -142,7 +143,11 @@ gs_plugin_appstream_load_appdata_fn (GsPlugin *plugin,
 
 	/* add source */
 	if (!xb_builder_source_load_file (source, file,
+#if LIBXMLB_CHECK_VERSION(0, 2, 0)
+					  XB_BUILDER_SOURCE_FLAG_WATCH_DIRECTORY,
+#else
 					  XB_BUILDER_SOURCE_FLAG_WATCH_FILE,
+#endif
 					  cancellable,
 					  error)) {
 		return FALSE;
@@ -243,7 +248,11 @@ gs_plugin_appstream_load_desktop_fn (GsPlugin *plugin,
 
 	/* add source */
 	if (!xb_builder_source_load_file (source, file,
+#if LIBXMLB_CHECK_VERSION(0, 2, 0)
+					  XB_BUILDER_SOURCE_FLAG_WATCH_DIRECTORY,
+#else
 					  XB_BUILDER_SOURCE_FLAG_WATCH_FILE,
+#endif
 					  cancellable,
 					  error)) {
 		return FALSE;
@@ -341,7 +350,11 @@ gs_plugin_appstream_load_appstream_fn (GsPlugin *plugin,
 
 	/* add source */
 	if (!xb_builder_source_load_file (source, file,
+#if LIBXMLB_CHECK_VERSION(0, 2, 0)
+					  XB_BUILDER_SOURCE_FLAG_WATCH_DIRECTORY,
+#else
 					  XB_BUILDER_SOURCE_FLAG_WATCH_FILE,
+#endif
 					  cancellable,
 					  error)) {
 		return FALSE;
@@ -487,21 +500,46 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 	} else {
 		/* add search paths */
 		g_ptr_array_add (parent_appstream,
-				 g_build_filename ("/usr/share", "app-info", "xmls", NULL));
+				 g_build_filename (DATADIR, "app-info", "xmls", NULL));
 		g_ptr_array_add (parent_appstream,
-				 g_build_filename ("/usr/share", "app-info", "yaml", NULL));
+				 g_build_filename (DATADIR, "app-info", "yaml", NULL));
 		g_ptr_array_add (parent_appdata,
-				 g_build_filename ("/usr/share", "appdata", NULL));
+				 g_build_filename (DATADIR, "appdata", NULL));
 		g_ptr_array_add (parent_appdata,
-				 g_build_filename ("/usr/share", "metainfo", NULL));
+				 g_build_filename (DATADIR, "metainfo", NULL));
 		g_ptr_array_add (parent_appstream,
-				 g_build_filename ("/var/cache", "app-info", "xmls", NULL));
+				 g_build_filename (LOCALSTATEDIR, "cache", "app-info", "xmls", NULL));
 		g_ptr_array_add (parent_appstream,
-				 g_build_filename ("/var/cache", "app-info", "yaml", NULL));
+				 g_build_filename (LOCALSTATEDIR, "cache", "app-info", "yaml", NULL));
 		g_ptr_array_add (parent_appstream,
-				 g_build_filename ("/var/lib", "app-info", "xmls", NULL));
+				 g_build_filename (LOCALSTATEDIR, "lib", "app-info", "xmls", NULL));
 		g_ptr_array_add (parent_appstream,
-				 g_build_filename ("/var/lib", "app-info", "yaml", NULL));
+				 g_build_filename (LOCALSTATEDIR, "lib", "app-info", "yaml", NULL));
+
+		/* Add the normal system directories if the installation prefix
+		 * is different from normal — typically this happens when doing
+		 * development builds. It’s useful to still list the system apps
+		 * during development. */
+		if (g_strcmp0 (DATADIR, "/usr/share") != 0) {
+			g_ptr_array_add (parent_appstream,
+					 g_build_filename ("/usr/share", "app-info", "xmls", NULL));
+			g_ptr_array_add (parent_appstream,
+					 g_build_filename ("/usr/share", "app-info", "yaml", NULL));
+			g_ptr_array_add (parent_appdata,
+					 g_build_filename ("/usr/share", "appdata", NULL));
+			g_ptr_array_add (parent_appdata,
+					 g_build_filename ("/usr/share", "metainfo", NULL));
+		}
+		if (g_strcmp0 (LOCALSTATEDIR, "/var") != 0) {
+			g_ptr_array_add (parent_appstream,
+					 g_build_filename ("/var", "cache", "app-info", "xmls", NULL));
+			g_ptr_array_add (parent_appstream,
+					 g_build_filename ("/var", "cache", "app-info", "yaml", NULL));
+			g_ptr_array_add (parent_appstream,
+					 g_build_filename ("/var", "lib", "app-info", "xmls", NULL));
+			g_ptr_array_add (parent_appstream,
+					 g_build_filename ("/var", "lib", "app-info", "yaml", NULL));
+		}
 
 		/* import all files */
 		for (guint i = 0; i < parent_appstream->len; i++) {
@@ -517,6 +555,12 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 				return FALSE;
 		}
 		if (!gs_plugin_appstream_load_desktop (plugin, builder,
+						       DATADIR "/applications",
+						       cancellable, error)) {
+			return FALSE;
+		}
+		if (g_strcmp0 (DATADIR, "/usr/share") != 0 &&
+		    !gs_plugin_appstream_load_desktop (plugin, builder,
 						       "/usr/share/applications",
 						       cancellable, error)) {
 			return FALSE;
@@ -787,29 +831,33 @@ gs_plugin_refine_from_pkgname (GsPlugin *plugin,
 }
 
 gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+gs_plugin_refine (GsPlugin *plugin,
+		  GsAppList *list,
+		  GsPluginRefineFlags flags,
+		  GCancellable *cancellable,
+		  GError **error)
 {
 	gboolean found = FALSE;
-
-	/* not us */
-	if (gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_PACKAGE &&
-	    gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_UNKNOWN)
-		return TRUE;
 
 	/* check silo is valid */
 	if (!gs_plugin_appstream_check_silo (plugin, cancellable, error))
 		return FALSE;
 
-	/* find by ID then fall back to package name */
-	if (!gs_plugin_refine_from_id (plugin, app, flags, &found, error))
-		return FALSE;
-	if (!found) {
-		if (!gs_plugin_refine_from_pkgname (plugin, app, flags, error))
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+
+		/* not us */
+		if (gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_PACKAGE &&
+		    gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_UNKNOWN)
+			return TRUE;
+
+		/* find by ID then fall back to package name */
+		if (!gs_plugin_refine_from_id (plugin, app, flags, &found, error))
 			return FALSE;
+		if (!found) {
+			if (!gs_plugin_refine_from_pkgname (plugin, app, flags, error))
+				return FALSE;
+		}
 	}
 
 	/* success */

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
@@ -138,6 +139,7 @@ struct _GsDetailsPage
 	GtkWidget		*label_details_kudo_translated;
 	GtkWidget		*label_details_kudo_updated;
 	GtkWidget		*progressbar_top;
+	guint			 progress_pulse_id;
 	GtkWidget		*popover_license_free;
 	GtkWidget		*popover_license_nonfree;
 	GtkWidget		*popover_license_unknown;
@@ -146,6 +148,7 @@ struct _GsDetailsPage
 	GtkWidget		*label_content_rating_message;
 	GtkWidget		*label_content_rating_none;
 	GtkWidget		*button_details_rating_value;
+	GtkStyleProvider	*button_details_rating_style_provider;
 	GtkWidget		*label_details_rating_title;
 	GtkWidget		*popover_permissions;
 	GtkWidget		*box_permissions_details;
@@ -285,6 +288,25 @@ gs_details_page_switch_to (GsPage *page, gboolean scroll_up)
 	gs_grab_focus_when_mapped (self->scrolledwindow_details);
 }
 
+static gboolean
+_pulse_cb (gpointer user_data)
+{
+	GsDetailsPage *self = GS_DETAILS_PAGE (user_data);
+
+	gtk_progress_bar_pulse (GTK_PROGRESS_BAR (self->progressbar_top));
+
+	return G_SOURCE_CONTINUE;
+}
+
+static void
+stop_progress_pulsing (GsDetailsPage *self)
+{
+	if (self->progress_pulse_id != 0) {
+		g_source_remove (self->progress_pulse_id);
+		self->progress_pulse_id = 0;
+	}
+}
+
 static void
 gs_details_page_refresh_progress (GsDetailsPage *self)
 {
@@ -359,10 +381,22 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	switch (state) {
 	case AS_APP_STATE_INSTALLING:
 		percentage = gs_app_get_progress (self->app);
-		if (percentage <= 100) {
+		if (percentage == GS_APP_PROGRESS_UNKNOWN) {
+			/* Translators: This string is shown when preparing to download and install an app. */
+			gtk_label_set_label (GTK_LABEL (self->label_progress_status), _("Preparing…"));
+			gtk_widget_set_visible (self->label_progress_status, TRUE);
+			gtk_widget_set_visible (self->label_progress_percentage, FALSE);
+
+			if (self->progress_pulse_id == 0)
+				self->progress_pulse_id = g_timeout_add (50, _pulse_cb, self);
+
+			gtk_widget_set_visible (self->progressbar_top, TRUE);
+			break;
+		} else if (percentage <= 100) {
 			g_autofree gchar *str = g_strdup_printf ("%u%%", percentage);
 			gtk_label_set_label (GTK_LABEL (self->label_progress_percentage), str);
 			gtk_widget_set_visible (self->label_progress_percentage, TRUE);
+			stop_progress_pulsing (self);
 			gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR (self->progressbar_top),
 						       (gdouble) percentage / 100.f);
 			gtk_widget_set_visible (self->progressbar_top, TRUE);
@@ -372,6 +406,7 @@ gs_details_page_refresh_progress (GsDetailsPage *self)
 	default:
 		gtk_widget_set_visible (self->label_progress_percentage, FALSE);
 		gtk_widget_set_visible (self->progressbar_top, FALSE);
+		stop_progress_pulsing (self);
 		break;
 	}
 	if (app_has_pending_action (self->app)) {
@@ -1660,7 +1695,7 @@ gs_details_page_app_refine_cb (GObject *source,
 }
 
 static void
-gs_details_page_content_rating_set_css (GtkWidget *widget, guint age)
+gs_details_page_content_rating_set_css (GsDetailsPage *page, guint age)
 {
 	g_autoptr(GString) css = g_string_new (NULL);
 	const gchar *color_bg = NULL;
@@ -1678,7 +1713,10 @@ gs_details_page_content_rating_set_css (GtkWidget *widget, guint age)
 	}
 	g_string_append_printf (css, "color: %s;\n", color_fg);
 	g_string_append_printf (css, "background-color: %s;\n", color_bg);
-	gs_utils_widget_set_css (widget, "content-rating-custom", css->str);
+
+	gs_utils_widget_set_css (page->button_details_rating_value,
+				 (GtkCssProvider **) &page->button_details_rating_style_provider,
+				 "content-rating-custom", css->str);
 }
 
 static void
@@ -1707,7 +1745,7 @@ gs_details_page_refresh_content_rating (GsDetailsPage *self)
 		gtk_button_set_label (GTK_BUTTON (self->button_details_rating_value), display);
 		gtk_widget_set_visible (self->button_details_rating_value, TRUE);
 		gtk_widget_set_visible (self->label_details_rating_title, TRUE);
-		gs_details_page_content_rating_set_css (self->button_details_rating_value, age);
+		gs_details_page_content_rating_set_css (self, age);
 	} else {
 		gtk_widget_set_visible (self->button_details_rating_value, FALSE);
 		gtk_widget_set_visible (self->label_details_rating_title, FALSE);
@@ -2655,6 +2693,8 @@ gs_details_page_dispose (GObject *object)
 {
 	GsDetailsPage *self = GS_DETAILS_PAGE (object);
 
+	stop_progress_pulsing (self);
+
 	if (self->app != NULL) {
 		g_signal_handlers_disconnect_by_func (self->app, gs_details_page_notify_state_changed_cb, self);
 		g_signal_handlers_disconnect_by_func (self->app, gs_details_page_progress_changed_cb, self);
@@ -2667,6 +2707,7 @@ gs_details_page_dispose (GObject *object)
 	g_clear_object (&self->app_cancellable);
 	g_clear_object (&self->session);
 	g_clear_object (&self->size_group_origin_popover);
+	g_clear_object (&self->button_details_rating_style_provider);
 
 	G_OBJECT_CLASS (gs_details_page_parent_class)->dispose (object);
 }

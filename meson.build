@@ -1,5 +1,5 @@
 project('gnome-software', 'c',
-  version : '3.36.1',
+  version : '3.38.0',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c99'],
   meson_version : '>=0.47.0'
@@ -110,21 +110,29 @@ json_glib = dependency('json-glib-1.0', version : '>= 1.2.0')
 libm = cc.find_library('m', required: false)
 libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')
 
+libsysprof_capture_dep = dependency('sysprof-capture-4',
+  required: get_option('sysprof'),
+  default_options: [
+    'enable_examples=false',
+    'enable_gtk=false',
+    'enable_tests=false',
+    'enable_tools=false',
+    'libsysprof=false',
+    'with_sysprofd=none',
+    'help=false',
+  ],
+  fallback: ['sysprof', 'libsysprof_capture_dep'],
+)
+conf.set('HAVE_SYSPROF', libsysprof_capture_dep.found())
+
 if get_option('mogwai')
   mogwai_schedule_client = dependency('mogwai-schedule-client-0', version : '>= 0.2.0')
   conf.set('HAVE_MOGWAI', 1)
 endif
 
 if get_option('valgrind')
-  message(meson.version())
-  # urgh, meson is broken
-  if meson.version().version_compare('>0.41.0')
-    valgrind = dependency('valgrind')
-    conf.set('USE_VALGRIND', 1)
-  else
-    message('Valgrind integration disabled to work around a meson bug')
-    valgrind = []
-  endif
+  valgrind = dependency('valgrind')
+  conf.set('USE_VALGRIND', 1)
 else
   message('Valgrind integration disabled')
   valgrind = []
@@ -171,7 +179,7 @@ if get_option('flatpak')
 endif
 
 if get_option('malcontent')
-  malcontent = dependency('malcontent-0', version: '>= 0.3.0')
+  malcontent = dependency('malcontent-0', version: '>= 0.3.0', fallback: ['malcontent', 'libmalcontent_dep'],)
 endif
 
 if get_option('rpm_ostree')
@@ -236,25 +244,6 @@ subdir('plugins')
 subdir('src')
 subdir('po')
 subdir('doc')
-
-if meson.version().version_compare('<0.41.0')
-  archiver = find_program('git', required : false)
-  if archiver.found()
-    run_target('dist',
-      # git config tar.tar.xz.command "xz -c"
-      command: [
-        'git', 'archive',
-        '--prefix=' + meson.project_name() + '-' + meson.project_version() + '/',
-        'HEAD',
-        '--format=tar.xz',
-        '--output',
-        meson.project_name() + '-' + meson.project_version() + '.tar.xz'
-      ]
-    )
-  else
-    message('git not found, you will not be able to run `ninja dist`')
-  endif
-endif
 
 # FIXME: remove when https://github.com/mesonbuild/meson/issues/837 fixed
 meson.add_install_script('meson_post_install.sh')

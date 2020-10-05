@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2017 Richard Hughes <richard@hughsie.com>
  *
@@ -62,12 +63,23 @@ main (int argc, char **argv)
 	gboolean ret;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
-	const gchar *whitelist[] = {
+	const gchar *allowlist[] = {
 		"fwupd",
 		NULL
 	};
 
-	g_test_init (&argc, &argv, NULL);
+	/* While we use %G_TEST_OPTION_ISOLATE_DIRS to create temporary directories
+	 * for each of the tests, we want to use the system MIME registry, assuming
+	 * that it exists and correctly has shared-mime-info installed. */
+#if GLIB_CHECK_VERSION(2, 60, 0)
+	g_content_type_set_mime_dirs (NULL);
+#endif
+
+	g_test_init (&argc, &argv,
+#if GLIB_CHECK_VERSION(2, 60, 0)
+		     G_TEST_OPTION_ISOLATE_DIRS,
+#endif
+		     NULL);
 	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
 
 	/* only critical and error are fatal */
@@ -77,7 +89,7 @@ main (int argc, char **argv)
 	plugin_loader = gs_plugin_loader_new ();
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	ret = gs_plugin_loader_setup (plugin_loader,
-				      (gchar**) whitelist,
+				      (gchar**) allowlist,
 				      NULL,
 				      NULL,
 				      &error);

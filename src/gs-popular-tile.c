@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2019 Richard Hughes <richard@hughsie.com>
@@ -23,9 +24,20 @@ struct _GsPopularTile
 	GtkWidget	*eventbox;
 	GtkWidget	*stack;
 	GtkWidget	*stars;
+	GtkCssProvider	*tile_provider;  /* (owned) (nullable) */
 };
 
 G_DEFINE_TYPE (GsPopularTile, gs_popular_tile, GS_TYPE_APP_TILE)
+
+static void
+gs_popular_tile_dispose (GObject *object)
+{
+	GsPopularTile *tile = GS_POPULAR_TILE (object);
+
+	g_clear_object (&tile->tile_provider);
+
+	G_OBJECT_CLASS (gs_popular_tile_parent_class)->dispose (object);
+}
 
 static void
 gs_popular_tile_refresh (GsAppTile *self)
@@ -74,7 +86,7 @@ gs_popular_tile_refresh (GsAppTile *self)
 
 	/* perhaps set custom css */
 	css = gs_app_get_metadata_item (app, "GnomeSoftware::PopularTile-css");
-	gs_utils_widget_set_css (GTK_WIDGET (tile), "popular-tile", css);
+	gs_utils_widget_set_css (GTK_WIDGET (tile), &tile->tile_provider, "popular-tile", css);
 
 	if (gs_app_get_pixbuf (app) != NULL) {
 		gs_image_set_from_pixbuf (GTK_IMAGE (tile->image), gs_app_get_pixbuf (app));
@@ -92,14 +104,16 @@ gs_popular_tile_init (GsPopularTile *tile)
 {
 	gtk_widget_set_has_window (GTK_WIDGET (tile), FALSE);
 	gtk_widget_init_template (GTK_WIDGET (tile));
-	gs_star_widget_set_icon_size (GS_STAR_WIDGET (tile->stars), 12);
 }
 
 static void
 gs_popular_tile_class_init (GsPopularTileClass *klass)
 {
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 	GsAppTileClass *app_tile_class = GS_APP_TILE_CLASS (klass);
+
+	object_class->dispose = gs_popular_tile_dispose;
 
 	app_tile_class->refresh = gs_popular_tile_refresh;
 

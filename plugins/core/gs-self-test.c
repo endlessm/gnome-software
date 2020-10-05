@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2017 Joaquim Rocha <jrocha@endlessm.com>
  *
@@ -24,7 +25,7 @@ gs_plugins_core_search_repo_name_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* drop all caches */
-	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
+	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* force this app to be installed */
@@ -58,7 +59,7 @@ gs_plugins_core_os_release_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GError) error = NULL;
 
 	/* drop all caches */
-	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
+	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* refine system application */
@@ -109,7 +110,7 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsAppList) list_wildcard = NULL;
 
 	/* drop all caches */
-	g_unlink ("/var/tmp/self-test/appstream/components.xmlb");
+	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
 	gs_plugin_loader_setup_again (plugin_loader);
 
 	/* create a list with generic apps */
@@ -178,13 +179,14 @@ gs_plugins_core_generic_updates_func (GsPluginLoader *plugin_loader)
 int
 main (int argc, char **argv)
 {
-	const gchar *tmp_root = "/var/tmp/self-test";
+	g_autofree gchar *tmp_root = NULL;
 	gboolean ret;
+	int retval;
 	g_autofree gchar *os_release_filename = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
 	const gchar *xml;
-	const gchar *whitelist[] = {
+	const gchar *allowlist[] = {
 		"appstream",
 		"generic-updates",
 		"icons",
@@ -192,25 +194,33 @@ main (int argc, char **argv)
 		NULL
 	};
 
-	g_test_init (&argc, &argv, NULL);
+	/* While we use %G_TEST_OPTION_ISOLATE_DIRS to create temporary directories
+	 * for each of the tests, we want to use the system MIME registry, assuming
+	 * that it exists and correctly has shared-mime-info installed. */
+#if GLIB_CHECK_VERSION(2, 60, 0)
+	g_content_type_set_mime_dirs (NULL);
+#endif
+
+	/* Similarly, add the system-wide icon theme path before it’s
+	 * overwritten by %G_TEST_OPTION_ISOLATE_DIRS. */
+	gs_test_expose_icon_theme_paths ();
+
+	g_test_init (&argc, &argv,
+#if GLIB_CHECK_VERSION(2, 60, 0)
+		     G_TEST_OPTION_ISOLATE_DIRS,
+#endif
+		     NULL);
 	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+
+	/* Use a common cache directory for all tests, since the appstream
+	 * plugin uses it and cannot be reinitialised for each test. */
+	tmp_root = g_dir_make_tmp ("gnome-software-core-test-XXXXXX", NULL);
+	g_assert (tmp_root != NULL);
 	g_setenv ("GS_SELF_TEST_CACHEDIR", tmp_root, TRUE);
 
 	os_release_filename = gs_test_get_filename (TESTDATADIR, "os-release");
 	g_assert (os_release_filename != NULL);
 	g_setenv ("GS_SELF_TEST_OS_RELEASE_FILENAME", os_release_filename, TRUE);
-
-	/* ensure test root does not exist */
-	if (g_file_test (tmp_root, G_FILE_TEST_EXISTS)) {
-		ret = gs_utils_rmtree (tmp_root, &error);
-		g_assert_no_error (error);
-		g_assert (ret);
-		g_assert (!g_file_test (tmp_root, G_FILE_TEST_EXISTS));
-	}
-
-	//g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
-	g_setenv ("GS_SELF_TEST_APPSTREAM_ICON_ROOT",
-		  "/var/tmp/self-test/flatpak/appstream/test/x86_64/active/", TRUE);
 
 	/* fake some data */
 	xml = "<?xml version=\"1.0\"?>\n"
@@ -241,7 +251,7 @@ main (int argc, char **argv)
 	plugin_loader = gs_plugin_loader_new ();
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	ret = gs_plugin_loader_setup (plugin_loader,
-				      (gchar**) whitelist,
+				      (gchar**) allowlist,
 				      NULL,
 				      NULL,
 				      &error);
@@ -258,5 +268,10 @@ main (int argc, char **argv)
 	g_test_add_data_func ("/gnome-software/plugins/core/generic-updates",
 			      plugin_loader,
 			      (GTestDataFunc) gs_plugins_core_generic_updates_func);
-	return g_test_run ();
+	retval = g_test_run ();
+
+	/* Clean up. */
+	gs_utils_rmtree (tmp_root, NULL);
+
+	return retval;
 }

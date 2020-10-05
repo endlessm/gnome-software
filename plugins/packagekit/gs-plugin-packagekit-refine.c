@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015-2018 Kalev Lember <klember@redhat.com>
@@ -344,6 +345,7 @@ gs_plugin_packagekit_refine_details2 (GsPlugin *plugin,
 	g_autoptr(GPtrArray) array = NULL;
 	g_autoptr(GPtrArray) package_ids = NULL;
 	g_autoptr(PkResults) results = NULL;
+	g_autoptr(GHashTable) details_collection = NULL;
 
 	package_ids = g_ptr_array_new_with_free_func (g_free);
 	for (i = 0; i < gs_app_list_length (list); i++) {
@@ -373,12 +375,19 @@ gs_plugin_packagekit_refine_details2 (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	/* set the update details for the update */
+	/* get the results and copy them into a hash table for fast lookups:
+	 * there are typically 400 to 700 elements in @array, and 100 to 200
+	 * elements in @list, each with 1 or 2 source IDs to look up (but
+	 * sometimes 200) */
 	array = pk_results_get_details_array (results);
+	details_collection = gs_plugin_packagekit_details_array_to_hash (array);
+
+	/* set the update details for the update */
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
-		gs_plugin_packagekit_refine_details_app (plugin, array, app);
+		gs_plugin_packagekit_refine_details_app (plugin, details_collection, app);
 	}
+
 	return TRUE;
 }
 
@@ -794,26 +803,20 @@ gs_plugin_refine (GsPlugin *plugin,
 	if (!gs_plugin_packagekit_refine_update_urgency (plugin, list, flags, cancellable, error))
 		return FALSE;
 
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+
+		/* only process this app if was created by this plugin */
+		if (g_strcmp0 (gs_app_get_management_plugin (app), "packagekit") != 0)
+			continue;
+
+		/* the scope is always system-wide */
+		if (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN)
+			gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+		if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_UNKNOWN)
+			gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
+	}
+
 	/* success */
-	return TRUE;
-}
-
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
-{
-	/* only process this app if was created by this plugin */
-	if (g_strcmp0 (gs_app_get_management_plugin (app), "packagekit") != 0)
-		return TRUE;
-
-	/* the scope is always system-wide */
-	if (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN)
-		gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
-	if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_UNKNOWN)
-		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-
 	return TRUE;
 }

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016-2018 Kalev Lember <klember@redhat.com>
  * Copyright (C) 2017 Richard Hughes <richard@hughsie.com>
@@ -342,8 +343,10 @@ _ensure_cache (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	JsonArray *collections;
 	JsonObject *root;
+#if !JSON_CHECK_VERSION(1, 6, 0)
 	gsize len;
 	g_autofree gchar *data = NULL;
+#endif  /* json-glib < 1.6.0 */
 	g_autoptr(JsonParser) parser = NULL;
 
 	/* already done */
@@ -354,6 +357,11 @@ _ensure_cache (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	if (!_refresh_cache (plugin, G_MAXUINT, cancellable, error))
 		return FALSE;
 
+#if JSON_CHECK_VERSION(1, 6, 0)
+	parser = json_parser_new_immutable ();
+	if (!json_parser_load_from_mapped_file (parser, priv->cachefn, error))
+		return FALSE;
+#else  /* if json-glib < 1.6.0 */
 	/* get cached file */
 	if (!g_file_get_contents (priv->cachefn, &data, &len, error)) {
 		gs_utils_error_convert_gio (error);
@@ -364,6 +372,7 @@ _ensure_cache (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	parser = json_parser_new ();
 	if (!json_parser_load_from_data (parser, data, len, error))
 		return FALSE;
+#endif  /* json-glib < 1.6.0 */
 
 	root = json_node_get_object (json_parser_get_root (parser));
 	if (root == NULL) {
@@ -494,17 +503,15 @@ gs_plugin_add_distro_upgrades (GsPlugin *plugin,
 	return TRUE;
 }
 
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+static gboolean
+refine_app_locked (GsPlugin             *plugin,
+		   GsApp                *app,
+		   GsPluginRefineFlags   flags,
+		   GCancellable         *cancellable,
+		   GError              **error)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
 	PkgdbItem *item;
 	const gchar *cpe_name;
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
 
 	/* not for us */
 	if (gs_app_get_kind (app) != AS_APP_KIND_OS_UPGRADE)
@@ -514,10 +521,6 @@ gs_plugin_refine_app (GsPlugin *plugin,
 	cpe_name = gs_app_get_metadata_item (app, "GnomeSoftware::CpeName");
 	if (cpe_name == NULL)
 		return TRUE;
-
-	/* ensure valid data is loaded */
-	if (!_ensure_cache (plugin, cancellable, error))
-		return FALSE;
 
 	/* find item */
 	item = _get_item_by_cpe_name (plugin, cpe_name);
@@ -537,6 +540,29 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		break;
 	default:
 		break;
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_refine (GsPlugin             *plugin,
+		  GsAppList            *list,
+		  GsPluginRefineFlags   flags,
+		  GCancellable         *cancellable,
+		  GError              **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+
+	/* ensure valid data is loaded */
+	if (!_ensure_cache (plugin, cancellable, error))
+		return FALSE;
+
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (!refine_app_locked (plugin, app, flags, cancellable, error))
+			return FALSE;
 	}
 
 	return TRUE;

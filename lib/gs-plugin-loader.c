@@ -1,7 +1,8 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2007-2018 Richard Hughes <richard@hughsie.com>
- * Copyright (C) 2014-2018 Kalev Lember <klember@redhat.com>
+ * Copyright (C) 2014-2020 Kalev Lember <klember@redhat.com>
  *
  * SPDX-License-Identifier: GPL-2.0+
  */
@@ -12,6 +13,10 @@
 #include <glib/gi18n.h>
 #include <appstream-glib.h>
 #include <math.h>
+
+#ifdef HAVE_SYSPROF
+#include <sysprof-capture.h>
+#endif
 
 #include "gs-app-collation.h"
 #include "gs-app-private.h"
@@ -61,6 +66,10 @@ typedef struct
 	gulong			 network_changed_handler;
 	gulong			 network_available_notify_handler;
 	gulong			 network_metered_notify_handler;
+
+#ifdef HAVE_SYSPROF
+	SysprofCaptureWriter	*sysprof_writer;  /* (owned) (nullable) */
+#endif
 } GsPluginLoaderPrivate;
 
 static void gs_plugin_loader_monitor_network (GsPluginLoader *plugin_loader);
@@ -74,6 +83,7 @@ enum {
 	SIGNAL_PENDING_APPS_CHANGED,
 	SIGNAL_UPDATES_CHANGED,
 	SIGNAL_RELOAD,
+	SIGNAL_BASIC_AUTH_START,
 	SIGNAL_LAST
 };
 
@@ -205,15 +215,15 @@ reset_app_progress (GsApp *app)
 	GsAppList *addons = gs_app_get_addons (app);
 	GsAppList *related = gs_app_get_related (app);
 
-	gs_app_set_progress (app, 0);
+	gs_app_set_progress (app, GS_APP_PROGRESS_UNKNOWN);
 
 	for (guint i = 0; i < gs_app_list_length (addons); i++) {
 		GsApp *app_addons = gs_app_list_index (addons, i);
-		gs_app_set_progress (app_addons, 0);
+		gs_app_set_progress (app_addons, GS_APP_PROGRESS_UNKNOWN);
 	}
 	for (guint i = 0; i < gs_app_list_length (related); i++) {
 		GsApp *app_related = gs_app_list_index (related, i);
-		gs_app_set_progress (app_related, 0);
+		gs_app_set_progress (app_related, GS_APP_PROGRESS_UNKNOWN);
 	}
 }
 
@@ -497,11 +507,17 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 			     GCancellable *cancellable,
 			     GError **error)
 {
+#ifdef HAVE_SYSPROF
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (helper->plugin_loader);
+#endif
 	GsPluginAction action = gs_plugin_job_get_action (helper->plugin_job);
 	gboolean ret = TRUE;
 	gpointer func = NULL;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GTimer) timer = g_timer_new ();
+#ifdef HAVE_SYSPROF
+	gint64 begin_time_nsec = SYSPROF_CAPTURE_CURRENT_TIME;
+#endif
 
 	/* load the possible symbol */
 	func = gs_plugin_get_symbol (plugin, helper->function_name);
@@ -540,9 +556,6 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 		if (g_strcmp0 (helper->function_name, "gs_plugin_refine_wildcard") == 0) {
 			GsPluginRefineWildcardFunc plugin_func = func;
 			ret = plugin_func (plugin, app, list, refine_flags, cancellable, &error_local);
-		} else if (g_strcmp0 (helper->function_name, "gs_plugin_refine_app") == 0) {
-			GsPluginRefineAppFunc plugin_func = func;
-			ret = plugin_func (plugin, app, refine_flags, cancellable, &error_local);
 		} else if (g_strcmp0 (helper->function_name, "gs_plugin_refine") == 0) {
 			GsPluginRefineFunc plugin_func = func;
 			ret = plugin_func (plugin, list, refine_flags, cancellable, &error_local);
@@ -739,26 +752,49 @@ gs_plugin_loader_call_vfunc (GsPluginLoaderHelper *helper,
 	        add_app_to_install_queue (helper->plugin_loader, app);
 	}
 
+#ifdef HAVE_SYSPROF
+	if (priv->sysprof_writer != NULL) {
+		g_autofree gchar *sysprof_name = NULL;
+		g_autofree gchar *sysprof_message = NULL;
+
+		sysprof_name = g_strconcat ("vfunc:", gs_plugin_action_to_string (action), NULL);
+		sysprof_message = gs_plugin_job_to_string (helper->plugin_job);
+		sysprof_capture_writer_add_mark (priv->sysprof_writer,
+						 begin_time_nsec,
+						 sched_getcpu (),
+						 getpid (),
+						 SYSPROF_CAPTURE_CURRENT_TIME - begin_time_nsec,
+						 "gnome-software",
+						 sysprof_name,
+						 sysprof_message);
+	}
+#endif  /* HAVE_SYSPROF */
+
 	/* check the plugin didn't take too long */
-	switch (action) {
-	case GS_PLUGIN_ACTION_INITIALIZE:
-	case GS_PLUGIN_ACTION_DESTROY:
-	case GS_PLUGIN_ACTION_SETUP:
-		if (g_timer_elapsed (timer, NULL) > 1.0f) {
-			g_warning ("plugin %s took %.1f seconds to do %s",
-				   gs_plugin_get_name (plugin),
-				   g_timer_elapsed (timer, NULL),
-				   gs_plugin_action_to_string (action));
+	if (g_timer_elapsed (timer, NULL) > 1.0f) {
+		GLogLevelFlags log_level;
+
+		switch (action) {
+		case GS_PLUGIN_ACTION_INITIALIZE:
+		case GS_PLUGIN_ACTION_DESTROY:
+		case GS_PLUGIN_ACTION_SETUP:
+			if (g_getenv ("GS_SELF_TEST_PLUGIN_ERROR_FAIL_HARD") == NULL)
+				log_level = G_LOG_LEVEL_WARNING;
+			else
+				log_level = G_LOG_LEVEL_DEBUG;
+			break;
+		default:
+			log_level = G_LOG_LEVEL_DEBUG;
+			break;
 		}
-		break;
-	default:
-		if (g_timer_elapsed (timer, NULL) > 1.0f) {
-			g_debug ("plugin %s took %.1f seconds to do %s",
-				 gs_plugin_get_name (plugin),
-				 g_timer_elapsed (timer, NULL),
-				 gs_plugin_action_to_string (action));
-			}
-		break;
+
+		g_log_structured_standard (G_LOG_DOMAIN, log_level,
+					   __FILE__, G_STRINGIFY (__LINE__),
+					   G_STRFUNC,
+					   "plugin %s took %.1f seconds to do %s",
+					   gs_plugin_get_name (plugin),
+					   g_timer_elapsed (timer, NULL),
+					   gs_plugin_action_to_string (action));
 	}
 
 	/* success */
@@ -786,35 +822,36 @@ gs_plugin_loader_run_refine_filter (GsPluginLoaderHelper *helper,
 		GsPlugin *plugin = g_ptr_array_index (priv->plugins, i);
 		g_autoptr(GsAppList) app_list = NULL;
 
-		/* run the batched plugin symbol then the per-app plugin */
+		/* run the batched plugin symbol then refine wildcards per-app */
 		helper->function_name = "gs_plugin_refine";
 		if (!gs_plugin_loader_call_vfunc (helper, plugin, NULL, list,
 						  refine_flags, cancellable, error)) {
 			return FALSE;
 		}
 
-		/* use a copy of the list for the loop because a function called
-		 * on the plugin may affect the list which can lead to problems
-		 * (e.g. inserting an app in the list on every call results in
-		 * an infinite loop) */
-		app_list = gs_app_list_copy (list);
-		for (guint j = 0; j < gs_app_list_length (app_list); j++) {
-			GsApp *app = gs_app_list_index (app_list, j);
-			if (!gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD)) {
-				helper->function_name = "gs_plugin_refine_app";
-			} else {
-				helper->function_name = "gs_plugin_refine_wildcard";
-			}
-			if (!gs_plugin_loader_call_vfunc (helper, plugin, app, NULL,
-							  refine_flags, cancellable, error)) {
-				return FALSE;
+		if (gs_plugin_get_symbol (plugin, "gs_plugin_refine_wildcard") != NULL) {
+			/* use a copy of the list for the loop because a function called
+			 * on the plugin may affect the list which can lead to problems
+			 * (e.g. inserting an app in the list on every call results in
+			 * an infinite loop) */
+			app_list = gs_app_list_copy (list);
+			helper->function_name = "gs_plugin_refine_wildcard";
+
+			for (guint j = 0; j < gs_app_list_length (app_list); j++) {
+				GsApp *app = gs_app_list_index (app_list, j);
+				if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD) &&
+				    !gs_plugin_loader_call_vfunc (helper, plugin, app, NULL,
+								  refine_flags, cancellable, error)) {
+					return FALSE;
+				}
 			}
 		}
+
 		gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_FINISHED);
 	}
 
 
-	/* filter any MATCH_ANY_PREFIX apps left in the list */
+	/* filter any wildcard apps left in the list */
 	gs_app_list_filter (list, gs_plugin_loader_app_is_non_wildcard, NULL);
 	return TRUE;
 }
@@ -1070,6 +1107,9 @@ gs_plugin_loader_run_results (GsPluginLoaderHelper *helper,
 			      GError **error)
 {
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (helper->plugin_loader);
+#ifdef HAVE_SYSPROF
+	gint64 begin_time_nsec G_GNUC_UNUSED = SYSPROF_CAPTURE_CURRENT_TIME;
+#endif
 
 	/* run each plugin */
 	for (guint i = 0; i < priv->plugins->len; i++) {
@@ -1085,6 +1125,27 @@ gs_plugin_loader_run_results (GsPluginLoaderHelper *helper,
 		}
 		gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_FINISHED);
 	}
+
+#ifdef HAVE_SYSPROF
+	if (priv->sysprof_writer != NULL) {
+		g_autofree gchar *sysprof_name = NULL;
+		g_autofree gchar *sysprof_message = NULL;
+
+		sysprof_name = g_strconcat ("run-results:",
+					    gs_plugin_action_to_string (gs_plugin_job_get_action (helper->plugin_job)),
+					    NULL);
+		sysprof_message = gs_plugin_job_to_string (helper->plugin_job);
+		sysprof_capture_writer_add_mark (priv->sysprof_writer,
+						 begin_time_nsec,
+						 sched_getcpu (),
+						 getpid (),
+						 SYSPROF_CAPTURE_CURRENT_TIME - begin_time_nsec,
+						 "gnome-software",
+						 sysprof_name,
+						 sysprof_message);
+	}
+#endif  /* HAVE_SYSPROF */
+
 	return TRUE;
 }
 
@@ -1200,9 +1261,9 @@ gs_plugin_loader_app_is_valid (GsApp *app, gpointer user_data)
 		return FALSE;
 	}
 
-	/* don't show blacklisted apps */
+	/* don't show blocklisted apps */
 	if (gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE)) {
-		g_debug ("app invalid as blacklisted %s",
+		g_debug ("app invalid as blocklisted %s",
 			 gs_plugin_loader_get_app_str (app));
 		return FALSE;
 	}
@@ -1512,6 +1573,10 @@ gs_plugin_loader_job_get_categories_thread_cb (GTask *task,
 {
 	GError *error = NULL;
 	GsPluginLoaderHelper *helper = (GsPluginLoaderHelper *) task_data;
+#ifdef HAVE_SYSPROF
+	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (helper->plugin_loader);
+	gint64 begin_time_nsec G_GNUC_UNUSED = SYSPROF_CAPTURE_CURRENT_TIME;
+#endif
 
 	/* run each plugin */
 	if (!gs_plugin_loader_run_results (helper, cancellable, &error)) {
@@ -1532,20 +1597,31 @@ gs_plugin_loader_job_get_categories_thread_cb (GTask *task,
 		gs_category_sort_children (cat);
 	}
 
-	/* success */
-	if (helper->catlist->len == 0) {
-		g_task_return_new_error (task,
-					 GS_PLUGIN_ERROR,
-					 GS_PLUGIN_ERROR_NOT_SUPPORTED,
-					 "no categories to show");
-		return;
+#ifdef HAVE_SYSPROF
+	if (priv->sysprof_writer != NULL) {
+		g_autofree gchar *sysprof_message = gs_plugin_job_to_string (helper->plugin_job);
+		sysprof_capture_writer_add_mark (priv->sysprof_writer,
+						 begin_time_nsec,
+						 sched_getcpu (),
+						 getpid (),
+						 SYSPROF_CAPTURE_CURRENT_TIME - begin_time_nsec,
+						 "gnome-software",
+						 "get-categories",
+						 sysprof_message);
 	}
+#endif  /* HAVE_SYSPROF */
 
 	/* show elapsed time */
 	gs_plugin_loader_job_debug (helper);
 
 	/* success */
-	g_task_return_pointer (task, g_ptr_array_ref (helper->catlist), (GDestroyNotify) g_ptr_array_unref);
+	if (helper->catlist->len == 0)
+		g_task_return_new_error (task,
+					 GS_PLUGIN_ERROR,
+					 GS_PLUGIN_ERROR_NOT_SUPPORTED,
+					 "no categories to show");
+	else
+		g_task_return_pointer (task, g_ptr_array_ref (helper->catlist), (GDestroyNotify) g_ptr_array_unref);
 }
 
 /**
@@ -1579,6 +1655,7 @@ gs_plugin_loader_job_get_categories_async (GsPluginLoader *plugin_loader,
 
 	/* run in a thread */
 	task = g_task_new (plugin_loader, cancellable, callback, user_data);
+	g_task_set_source_tag (task, gs_plugin_loader_job_get_categories_async);
 	g_task_set_task_data (task, helper, (GDestroyNotify) gs_plugin_loader_helper_free);
 	g_task_run_in_thread (task, gs_plugin_loader_job_get_categories_thread_cb);
 }
@@ -1632,7 +1709,7 @@ gs_plugin_loader_pending_apps_add (GsPluginLoader *plugin_loader,
 		GsApp *app = gs_app_list_index (list, i);
 		g_ptr_array_add (priv->pending_apps, g_object_ref (app));
 		/* make sure the progress is properly initialized */
-		gs_app_set_progress (app, 0);
+		gs_app_set_progress (app, GS_APP_PROGRESS_UNKNOWN);
 	}
 	g_idle_add (emit_pending_apps_idle, g_object_ref (plugin_loader));
 }
@@ -2018,6 +2095,23 @@ gs_plugin_loader_status_changed_cb (GsPlugin *plugin,
 		       0, app, status);
 }
 
+static void
+gs_plugin_loader_basic_auth_start_cb (GsPlugin *plugin,
+                                      const gchar *remote,
+                                      const gchar *realm,
+                                      GCallback callback,
+                                      gpointer user_data,
+                                      GsPluginLoader *plugin_loader)
+{
+	g_debug ("emitting basic-auth-start %s", realm);
+	g_signal_emit (plugin_loader,
+		       signals[SIGNAL_BASIC_AUTH_START], 0,
+		       remote,
+		       realm,
+		       callback,
+		       user_data);
+}
+
 static gboolean
 gs_plugin_loader_job_actions_changed_delay_cb (gpointer user_data)
 {
@@ -2103,6 +2197,9 @@ gs_plugin_loader_open_plugin (GsPluginLoader *plugin_loader,
 			  plugin_loader);
 	g_signal_connect (plugin, "status-changed",
 			  G_CALLBACK (gs_plugin_loader_status_changed_cb),
+			  plugin_loader);
+	g_signal_connect (plugin, "basic-auth-start",
+			  G_CALLBACK (gs_plugin_loader_basic_auth_start_cb),
 			  plugin_loader);
 	g_signal_connect (plugin, "report-event",
 			  G_CALLBACK (gs_plugin_loader_report_event_cb),
@@ -2225,6 +2322,9 @@ gs_plugin_loader_setup_again (GsPluginLoader *plugin_loader)
 		GS_PLUGIN_ACTION_INITIALIZE,
 		GS_PLUGIN_ACTION_SETUP,
 		GS_PLUGIN_ACTION_UNKNOWN };
+#ifdef HAVE_SYSPROF
+	gint64 begin_time_nsec G_GNUC_UNUSED = SYSPROF_CAPTURE_CURRENT_TIME;
+#endif
 
 	/* clear global cache */
 	gs_plugin_loader_clear_caches (plugin_loader);
@@ -2256,6 +2356,19 @@ gs_plugin_loader_setup_again (GsPluginLoader *plugin_loader)
 				gs_plugin_clear_data (plugin);
 		}
 	}
+
+#ifdef HAVE_SYSPROF
+	if (priv->sysprof_writer != NULL) {
+		sysprof_capture_writer_add_mark (priv->sysprof_writer,
+						 begin_time_nsec,
+						 sched_getcpu (),
+						 getpid (),
+						 SYSPROF_CAPTURE_CURRENT_TIME - begin_time_nsec,
+						 "gnome-software",
+						 "setup-again",
+						 NULL);
+	}
+#endif  /* HAVE_SYSPROF */
 }
 
 static gint
@@ -2286,8 +2399,8 @@ gs_plugin_loader_find_plugins (const gchar *path, GError **error)
 /**
  * gs_plugin_loader_setup:
  * @plugin_loader: a #GsPluginLoader
- * @whitelist: list of plugin names, or %NULL
- * @blacklist: list of plugin names, or %NULL
+ * @allowlist: list of plugin names, or %NULL
+ * @blocklist: list of plugin names, or %NULL
  * @cancellable: A #GCancellable, or %NULL
  * @error: A #GError, or %NULL
  *
@@ -2297,8 +2410,8 @@ gs_plugin_loader_find_plugins (const gchar *path, GError **error)
  */
 gboolean
 gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
-			gchar **whitelist,
-			gchar **blacklist,
+			gchar **allowlist,
+			gchar **blocklist,
 			GCancellable *cancellable,
 			GError **error)
 {
@@ -2313,6 +2426,9 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	guint j;
 	g_autoptr(GsPluginLoaderHelper) helper = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+#ifdef HAVE_SYSPROF
+	gint64 begin_time_nsec G_GNUC_UNUSED = SYSPROF_CAPTURE_CURRENT_TIME;
+#endif
 
 	/* use the default, but this requires a 'make install' */
 	if (priv->locations->len == 0) {
@@ -2352,31 +2468,31 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 		}
 	}
 
-	/* optional whitelist */
-	if (whitelist != NULL) {
+	/* optional allowlist */
+	if (allowlist != NULL) {
 		for (i = 0; i < priv->plugins->len; i++) {
 			gboolean ret;
 			plugin = g_ptr_array_index (priv->plugins, i);
 			if (!gs_plugin_get_enabled (plugin))
 				continue;
-			ret = g_strv_contains ((const gchar * const *) whitelist,
+			ret = g_strv_contains ((const gchar * const *) allowlist,
 					       gs_plugin_get_name (plugin));
 			if (!ret) {
-				g_debug ("%s not in whitelist, disabling",
+				g_debug ("%s not in allowlist, disabling",
 					 gs_plugin_get_name (plugin));
 			}
 			gs_plugin_set_enabled (plugin, ret);
 		}
 	}
 
-	/* optional blacklist */
-	if (blacklist != NULL) {
+	/* optional blocklist */
+	if (blocklist != NULL) {
 		for (i = 0; i < priv->plugins->len; i++) {
 			gboolean ret;
 			plugin = g_ptr_array_index (priv->plugins, i);
 			if (!gs_plugin_get_enabled (plugin))
 				continue;
-			ret = g_strv_contains ((const gchar * const *) blacklist,
+			ret = g_strv_contains ((const gchar * const *) blocklist,
 					       gs_plugin_get_name (plugin));
 			if (ret)
 				gs_plugin_set_enabled (plugin, FALSE);
@@ -2527,6 +2643,20 @@ gs_plugin_loader_setup (GsPluginLoader *plugin_loader,
 	/* now we can load the install-queue */
 	if (!load_install_queue (plugin_loader, error))
 		return FALSE;
+
+#ifdef HAVE_SYSPROF
+	if (priv->sysprof_writer != NULL) {
+		sysprof_capture_writer_add_mark (priv->sysprof_writer,
+						 begin_time_nsec,
+						 sched_getcpu (),
+						 getpid (),
+						 SYSPROF_CAPTURE_CURRENT_TIME - begin_time_nsec,
+						 "gnome-software",
+						 "setup",
+						 NULL);
+	}
+#endif  /* HAVE_SYSPROF */
+
 	return TRUE;
 }
 
@@ -2635,6 +2765,9 @@ gs_plugin_loader_dispose (GObject *object)
 	g_clear_object (&priv->soup_session);
 	g_clear_object (&priv->settings);
 	g_clear_pointer (&priv->pending_apps, g_ptr_array_unref);
+#ifdef HAVE_SYSPROF
+	g_clear_pointer (&priv->sysprof_writer, sysprof_capture_writer_unref);
+#endif
 
 	G_OBJECT_CLASS (gs_plugin_loader_parent_class)->dispose (object);
 }
@@ -2714,6 +2847,12 @@ gs_plugin_loader_class_init (GsPluginLoaderClass *klass)
 			      G_STRUCT_OFFSET (GsPluginLoaderClass, reload),
 			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+	signals [SIGNAL_BASIC_AUTH_START] =
+		g_signal_new ("basic-auth-start",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (GsPluginLoaderClass, basic_auth_start),
+			      NULL, NULL, g_cclosure_marshal_generic,
+			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER);
 }
 
 static void
@@ -2756,6 +2895,10 @@ gs_plugin_loader_init (GsPluginLoader *plugin_loader)
 	gchar *match;
 	gchar **projects;
 	guint i;
+
+#ifdef HAVE_SYSPROF
+	priv->sysprof_writer = sysprof_capture_writer_new_from_env (0);
+#endif  /* HAVE_SYSPROF */
 
 	priv->scale = 1;
 	priv->plugins = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
@@ -3067,6 +3210,11 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	GsPluginRefineFlags filter_flags;
 	GsPluginRefineFlags refine_flags;
 	gboolean add_to_pending_array = FALSE;
+	guint max_results;
+	GsAppListSortFunc sort_func;
+#ifdef HAVE_SYSPROF
+	gint64 begin_time_nsec G_GNUC_UNUSED = SYSPROF_CAPTURE_CURRENT_TIME;
+#endif
 
 	/* these change the pending count on the installed panel */
 	switch (action) {
@@ -3178,9 +3326,12 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 		break;
 	}
 
-	/* refine with enough data so that the sort_func can do what it needs */
+	/* refine with enough data so that the sort_func in
+	 * gs_plugin_loader_job_sorted_truncation() can do what it needs */
 	filter_flags = gs_plugin_job_get_filter_flags (helper->plugin_job);
-	if (filter_flags > 0) {
+	max_results = gs_plugin_job_get_max_results (helper->plugin_job);
+	sort_func = gs_plugin_job_get_sort_func (helper->plugin_job);
+	if (filter_flags > 0 && max_results > 0 && sort_func != NULL) {
 		g_autoptr(GsPluginLoaderHelper) helper2 = NULL;
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
@@ -3359,6 +3510,21 @@ gs_plugin_loader_process_thread_cb (GTask *task,
 	if (priv->updates_changed_cnt > 0)
 		gs_plugin_loader_updates_changed (plugin_loader);
 
+#ifdef HAVE_SYSPROF
+	if (priv->sysprof_writer != NULL) {
+		g_autofree gchar *sysprof_name = g_strconcat ("process-thread:", gs_plugin_action_to_string (action), NULL);
+		g_autofree gchar *sysprof_message = gs_plugin_job_to_string (helper->plugin_job);
+		sysprof_capture_writer_add_mark (priv->sysprof_writer,
+						 begin_time_nsec,
+						 sched_getcpu (),
+						 getpid (),
+						 SYSPROF_CAPTURE_CURRENT_TIME - begin_time_nsec,
+						 "gnome-software",
+						 sysprof_name,
+						 sysprof_message);
+	}
+#endif  /* HAVE_SYSPROF */
+
 	/* show elapsed time */
 	gs_plugin_loader_job_debug (helper);
 
@@ -3387,7 +3553,9 @@ gs_plugin_loader_job_timeout_cb (gpointer user_data)
 	GsPluginLoaderHelper *helper = (GsPluginLoaderHelper *) user_data;
 
 	/* call the cancellable */
-	g_debug ("cancelling job as it took too long");
+	g_debug ("cancelling job %s as it took longer than %u seconds",
+		 helper->function_name,
+		 gs_plugin_job_get_timeout (helper->plugin_job));
 	g_cancellable_cancel (helper->cancellable);
 
 	/* failed */
@@ -3442,15 +3610,26 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 	GsPluginLoaderPrivate *priv = gs_plugin_loader_get_instance_private (plugin_loader);
 	g_autoptr(GTask) task = NULL;
 	g_autoptr(GCancellable) cancellable_job = g_cancellable_new ();
+#if GLIB_CHECK_VERSION(2, 60, 0)
+	g_autofree gchar *task_name = NULL;
+#endif
 
 	g_return_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader));
 	g_return_if_fail (GS_IS_PLUGIN_JOB (plugin_job));
 	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
 
+	action = gs_plugin_job_get_action (plugin_job);
+#if GLIB_CHECK_VERSION(2, 60, 0)
+	task_name = g_strdup_printf ("%s %s", G_STRFUNC, gs_plugin_action_to_string (action));
+#endif
+
 	/* check job has valid action */
-	if (gs_plugin_job_get_action (plugin_job) == GS_PLUGIN_ACTION_UNKNOWN) {
+	if (action == GS_PLUGIN_ACTION_UNKNOWN) {
 		g_autofree gchar *job_str = gs_plugin_job_to_string (plugin_job);
 		task = g_task_new (plugin_loader, cancellable_job, callback, user_data);
+#if GLIB_CHECK_VERSION(2, 60, 0)
+		g_task_set_name (task, task_name);
+#endif
 		g_task_return_new_error (task,
 					 GS_PLUGIN_ERROR,
 					 GS_PLUGIN_ERROR_NOT_SUPPORTED,
@@ -3459,11 +3638,13 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 	}
 
 	/* deal with the install queue */
-	action = gs_plugin_job_get_action (plugin_job);
 	if (action == GS_PLUGIN_ACTION_REMOVE) {
 		if (remove_app_from_install_queue (plugin_loader, gs_plugin_job_get_app (plugin_job))) {
 			GsAppList *list = gs_plugin_job_get_list (plugin_job);
 			task = g_task_new (plugin_loader, cancellable, callback, user_data);
+#if GLIB_CHECK_VERSION(2, 60, 0)
+			g_task_set_name (task, task_name);
+#endif
 			g_task_return_pointer (task, g_object_ref (list), (GDestroyNotify) g_object_unref);
 			return;
 		}
@@ -3531,6 +3712,10 @@ gs_plugin_loader_job_process_async (GsPluginLoader *plugin_loader,
 
 	/* check required args */
 	task = g_task_new (plugin_loader, cancellable_job, callback, user_data);
+#if GLIB_CHECK_VERSION(2, 60, 0)
+	g_task_set_name (task, task_name);
+#endif
+
 	switch (action) {
 	case GS_PLUGIN_ACTION_SEARCH:
 	case GS_PLUGIN_ACTION_SEARCH_FILES:

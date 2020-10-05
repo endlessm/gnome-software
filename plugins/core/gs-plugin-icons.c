@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2014 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2015 Kalev Lember <klember@redhat.com>
@@ -26,14 +27,27 @@ struct GsPluginData {
 	GHashTable		*icon_theme_paths;
 };
 
+static void gs_plugin_icons_add_theme_path (GsPlugin *plugin, const gchar *path);
+
 void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+	const gchar *test_search_path;
+
 	priv->icon_theme = gtk_icon_theme_new ();
 	gtk_icon_theme_set_screen (priv->icon_theme, gdk_screen_get_default ());
 	priv->icon_theme_paths = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 	g_mutex_init (&priv->icon_theme_lock);
+
+	test_search_path = g_getenv ("GS_SELF_TEST_ICON_THEME_PATH");
+	if (test_search_path != NULL) {
+		g_auto(GStrv) dirs = g_strsplit (test_search_path, ":", -1);
+
+		/* add_theme_path() prepends, so we have to iterate in reverse to preserve order */
+		for (gsize i = g_strv_length (dirs); i > 0; i--)
+			gs_plugin_icons_add_theme_path (plugin, dirs[i - 1]);
+	}
 
 	/* needs remote icons downloaded */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
@@ -252,12 +266,12 @@ gs_plugin_icons_load_cached (GsPlugin *plugin, AsIcon *icon, GError **error)
 	return g_object_ref (as_icon_get_pixbuf (icon));
 }
 
-gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-		      GsApp *app,
-		      GsPluginRefineFlags flags,
-		      GCancellable *cancellable,
-		      GError **error)
+static gboolean
+refine_app (GsPlugin             *plugin,
+	    GsApp                *app,
+	    GsPluginRefineFlags   flags,
+	    GCancellable         *cancellable,
+	    GError              **error)
 {
 	GPtrArray *icons;
 	guint i;
@@ -308,6 +322,26 @@ gs_plugin_refine_app (GsPlugin *plugin,
 		g_debug ("failed to load icon for %s: %s",
 			 gs_app_get_id (app),
 			 error_local->message);
+	}
+
+	return TRUE;
+}
+
+gboolean
+gs_plugin_refine (GsPlugin             *plugin,
+		  GsAppList            *list,
+		  GsPluginRefineFlags   flags,
+		  GCancellable         *cancellable,
+		  GError              **error)
+{
+	/* nothing to do here */
+	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON) == 0)
+		return TRUE;
+
+	for (guint i = 0; i < gs_app_list_length (list); i++) {
+		GsApp *app = gs_app_list_index (list, i);
+		if (!refine_app (plugin, app, flags, cancellable, error))
+			return FALSE;
 	}
 
 	return TRUE;

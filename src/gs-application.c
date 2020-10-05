@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
  * Copyright (C) 2013-2018 Richard Hughes <richard@hughsie.com>
@@ -142,8 +143,8 @@ static void
 gs_application_initialize_plugins (GsApplication *app)
 {
 	static gboolean initialized = FALSE;
-	g_auto(GStrv) plugin_blacklist = NULL;
-	g_auto(GStrv) plugin_whitelist = NULL;
+	g_auto(GStrv) plugin_blocklist = NULL;
+	g_auto(GStrv) plugin_allowlist = NULL;
 	g_autoptr(GError) error = NULL;
 	const gchar *tmp;
 
@@ -153,19 +154,19 @@ gs_application_initialize_plugins (GsApplication *app)
 	initialized = TRUE;
 
 	/* allow for debugging */
-	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_BLACKLIST");
+	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_BLOCKLIST");
 	if (tmp != NULL)
-		plugin_blacklist = g_strsplit (tmp, ",", -1);
-	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_WHITELIST");
+		plugin_blocklist = g_strsplit (tmp, ",", -1);
+	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_ALLOWLIST");
 	if (tmp != NULL)
-		plugin_whitelist = g_strsplit (tmp, ",", -1);
+		plugin_allowlist = g_strsplit (tmp, ",", -1);
 
 	app->plugin_loader = gs_plugin_loader_new ();
 	if (g_file_test (LOCALPLUGINDIR, G_FILE_TEST_EXISTS))
 		gs_plugin_loader_add_location (app->plugin_loader, LOCALPLUGINDIR);
 	if (!gs_plugin_loader_setup (app->plugin_loader,
-				     plugin_whitelist,
-				     plugin_blacklist,
+				     plugin_allowlist,
+				     plugin_blocklist,
 				     NULL,
 				     &error)) {
 		g_warning ("Failed to setup plugins: %s", error->message);
@@ -318,7 +319,6 @@ about_activated (GSimpleAction *action,
 	};
 	const gchar *copyright = "Copyright \xc2\xa9 2016-2019 Richard Hughes, Matthias Clasen, Kalev Lember";
 	GtkAboutDialog *dialog;
-	g_autofree gchar *title = NULL;
 
 	dialog = GTK_ABOUT_DIALOG (gtk_about_dialog_new ());
 	gtk_about_dialog_set_authors (dialog, authors);
@@ -329,11 +329,8 @@ about_activated (GSimpleAction *action,
 	gtk_about_dialog_set_version (dialog, VERSION);
 	gtk_about_dialog_set_program_name (dialog, g_get_application_name ());
 
-	/* TRANSLATORS: this is the title of the about window, e.g.
-	 * 'About Software' or 'About Application Installer' where the %s is
-	 * the application name chosen by the distro */
-	title = g_strdup_printf (_("About %s"), g_get_application_name ());
-	gtk_window_set_title (GTK_WINDOW (dialog), title);
+	/* TRANSLATORS: this is the title of the about window */
+	gtk_window_set_title (GTK_WINDOW (dialog), _("About Software"));
 
 	/* TRANSLATORS: well, we seem to think so, anyway */
 	gtk_about_dialog_set_comments (dialog, _("A nice way to manage the "

@@ -1,4 +1,5 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2016 Richard Hughes <richard@hughsie.com>
  * Copyright (C) 2013 Matthias Clasen <mclasen@redhat.com>
@@ -97,7 +98,7 @@ typedef struct
 	AsAppState		 state_recover;
 	AsAppScope		 scope;
 	AsBundleKind		 bundle_kind;
-	guint			 progress;
+	guint			 progress;  /* integer 0–100 (inclusive), or %GS_APP_PROGRESS_UNKNOWN */
 	gboolean		 allow_cancel;
 	GHashTable		*metadata;
 	GsAppList		*addons;
@@ -111,7 +112,8 @@ typedef struct
 	GsApp			*runtime;
 	GFile			*local_file;
 	AsContentRating		*content_rating;
-	GdkPixbuf		*pixbuf;
+	GdkPixbuf		*pixbuf;  /* (nullable) (owned) */
+	AsScreenshot		*action_screenshot;  /* (nullable) (owned) */
 	GCancellable		*cancellable;
 	GsPluginAction		 pending_action;
 	GsAppPermissions         permissions;
@@ -442,7 +444,9 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		g_autofree gchar *qstr = gs_app_quirk_to_string (priv->quirk);
 		gs_app_kv_lpad (str, "quirk", qstr);
 	}
-	if (priv->progress > 0)
+	if (priv->progress == GS_APP_PROGRESS_UNKNOWN)
+		gs_app_kv_printf (str, "progress", "unknown");
+	else
 		gs_app_kv_printf (str, "progress", "%u%%", priv->progress);
 	if (priv->id != NULL)
 		gs_app_kv_lpad (str, "id", priv->id);
@@ -465,6 +469,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_lpad (str, "name", priv->name);
 	if (priv->pixbuf != NULL)
 		gs_app_kv_printf (str, "pixbuf", "%p", priv->pixbuf);
+	if (priv->action_screenshot != NULL)
+		gs_app_kv_printf (str, "action-screenshot", "%p", priv->action_screenshot);
 	for (i = 0; i < priv->icons->len; i++) {
 		AsIcon *icon = g_ptr_array_index (priv->icons, i);
 		gs_app_kv_lpad (str, "icon-kind",
@@ -837,7 +843,7 @@ gs_app_get_state (GsApp *app)
  *
  * Gets the percentage completion.
  *
- * Returns: the percentage completion, or 0 for unknown
+ * Returns: the percentage completion (0–100 inclusive), or %GS_APP_PROGRESS_UNKNOWN for unknown
  *
  * Since: 3.22
  **/
@@ -845,7 +851,7 @@ guint
 gs_app_get_progress (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_return_val_if_fail (GS_IS_APP (app), 0);
+	g_return_val_if_fail (GS_IS_APP (app), GS_APP_PROGRESS_UNKNOWN);
 	return priv->progress;
 }
 
@@ -892,7 +898,7 @@ gs_app_set_state_recover (GsApp *app)
 
 	/* make sure progress gets reset when recovering state, to prevent
 	 * confusing initial states when going through more than one attempt */
-	gs_app_set_progress (app, 0);
+	gs_app_set_progress (app, GS_APP_PROGRESS_UNKNOWN);
 
 	priv->state = priv->state_recover;
 	gs_app_queue_notify (app, obj_props[PROP_STATE]);
@@ -1026,9 +1032,12 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 /**
  * gs_app_set_progress:
  * @app: a #GsApp
- * @percentage: a percentage progress
+ * @percentage: a percentage progress (0–100 inclusive), or %GS_APP_PROGRESS_UNKNOWN
  *
- * This sets the progress completion of the application.
+ * This sets the progress completion of the application. Use
+ * %GS_APP_PROGRESS_UNKNOWN if the progress is unknown or has a wide confidence
+ * interval.
+ *
  * If called more than once with the same value then subsequent calls
  * will be ignored.
  *
@@ -1043,9 +1052,9 @@ gs_app_set_progress (GsApp *app, guint percentage)
 	locker = g_mutex_locker_new (&priv->mutex);
 	if (priv->progress == percentage)
 		return;
-	if (percentage > 100) {
-		g_debug ("cannot set %u%% for %s, setting instead: 100%%",
-			 percentage, gs_app_get_unique_id_unlocked (app));
+	if (percentage != GS_APP_PROGRESS_UNKNOWN && percentage > 100) {
+		g_warning ("cannot set %u%% for %s, setting instead: 100%%",
+			   percentage, gs_app_get_unique_id_unlocked (app));
 		percentage = 100;
 	}
 	priv->progress = percentage;
@@ -1635,7 +1644,7 @@ gs_app_set_developer_name (GsApp *app, const gchar *developer_name)
  *
  * Gets a pixbuf to represent the application.
  *
- * Returns: (transfer none): a #GdkPixbuf, or %NULL
+ * Returns: (transfer none) (nullable): a #GdkPixbuf, or %NULL
  *
  * Since: 3.22
  **/
@@ -1645,6 +1654,24 @@ gs_app_get_pixbuf (GsApp *app)
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
 	return priv->pixbuf;
+}
+
+/**
+ * gs_app_get_action_screenshot:
+ * @app: a #GsApp
+ *
+ * Gets a screenshot for the pending user action.
+ *
+ * Returns: (transfer none) (nullable): a #AsScreenshot, or %NULL
+ *
+ * Since: 3.38
+ **/
+AsScreenshot *
+gs_app_get_action_screenshot (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	return priv->action_screenshot;
 }
 
 /**
@@ -1693,7 +1720,7 @@ gs_app_add_icon (GsApp *app, AsIcon *icon)
  * gs_app_get_use_drop_shadow:
  * @app: a #GsApp
  *
- * Uses a heuristic to work out if the application  pixbuf should have a drop
+ * Uses a heuristic to work out if the application pixbuf should have a drop
  * shadow applied.
  *
  * Returns: %TRUE if a drop shadow should be applied
@@ -1871,7 +1898,7 @@ gs_app_set_runtime (GsApp *app, GsApp *runtime)
 /**
  * gs_app_set_pixbuf:
  * @app: a #GsApp
- * @pixbuf: a #GdkPixbuf, or %NULL
+ * @pixbuf: (transfer none) (nullable): a #GdkPixbuf, or %NULL
  *
  * Sets a pixbuf used to represent the application.
  *
@@ -1885,6 +1912,25 @@ gs_app_set_pixbuf (GsApp *app, GdkPixbuf *pixbuf)
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->pixbuf, pixbuf);
+}
+
+/**
+ * gs_app_set_action_screenshot:
+ * @app: a #GsApp
+ * @action_screenshot: (transfer none) (nullable): a #AsScreenshot, or %NULL
+ *
+ * Sets a screenshot used to represent the action.
+ *
+ * Since: 3.38
+ **/
+void
+gs_app_set_action_screenshot (GsApp *app, AsScreenshot *action_screenshot)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
+	g_set_object (&priv->action_screenshot, action_screenshot);
 }
 
 typedef enum {
@@ -4145,7 +4191,7 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 		gs_app_set_state_internal (app, g_value_get_uint (value));
 		break;
 	case PROP_PROGRESS:
-		priv->progress = g_value_get_uint (value);
+		gs_app_set_progress (app, g_value_get_uint (value));
 		break;
 	case PROP_CAN_CANCEL_INSTALLATION:
 		priv->allow_cancel = g_value_get_boolean (value);
@@ -4230,6 +4276,8 @@ gs_app_finalize (GObject *object)
 		g_object_unref (priv->content_rating);
 	if (priv->pixbuf != NULL)
 		g_object_unref (priv->pixbuf);
+	if (priv->action_screenshot != NULL)
+		g_object_unref (priv->action_screenshot);
 
 	G_OBJECT_CLASS (gs_app_parent_class)->finalize (object);
 }
@@ -4305,9 +4353,14 @@ gs_app_class_init (GsAppClass *klass)
 
 	/**
 	 * GsApp:progress:
+	 *
+	 * A percentage (0–100, inclusive) indicating the progress through the
+	 * current task on this app. The value may otherwise be
+	 * %GS_APP_PROGRESS_UNKNOWN if the progress is unknown or has a wide
+	 * confidence interval.
 	 */
 	obj_props[PROP_PROGRESS] = g_param_spec_uint ("progress", NULL, NULL,
-				   0, 100, 0,
+				   0, GS_APP_PROGRESS_UNKNOWN, GS_APP_PROGRESS_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
 	/**
