@@ -19,6 +19,7 @@
 #include <sys/signal.h>
 #include <glib/gi18n.h>
 #include <xmlb.h>
+#include <ostree.h>
 
 #include "gs-appstream.h"
 #include "gs-flatpak-app.h"
@@ -541,16 +542,31 @@ fixup_flatpak_appstream_xml (XbBuilderSource *source,
 	}
 }
 
+#if FLATPAK_CHECK_VERSION(1,7,1)
+static inline const char *
+get_remote_for_collection (GPtrArray *remotes,
+			   char      *collection_id)
+{
+	for (gsize i = 0; i < remotes->len; i++) {
+		FlatpakRemote *remote = g_ptr_array_index (remotes, i);
+		g_autofree char *remote_collection_id = flatpak_remote_get_collection_id (remote);
+		if (g_strcmp0 (remote_collection_id, collection_id) == 0)
+			return flatpak_remote_get_name (remote);
+	}
+
+	return NULL;
+}
+#endif
+
 static gboolean
 gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
-				      FlatpakRemote *remote,
+				      const char *remote_url,
 				      gboolean *found_usb_apps,
 				      GCancellable *cancellable,
 				      GError **error)
 {
+#if !FLATPAK_CHECK_VERSION(1,7,1)
 	g_autoptr(GPtrArray) refs = NULL;
-	g_autofree gchar *remote_url = flatpak_remote_get_url (remote);
-
 	refs = flatpak_installation_list_remote_refs_sync (self->installation,
 							   remote_url,
 							   cancellable,
@@ -562,20 +578,55 @@ gs_flatpak_mark_apps_from_usb_remote (GsFlatpak *self,
 	for (guint i = 0; i < refs->len; ++i) {
 		FlatpakRef *ref = FLATPAK_REF (g_ptr_array_index (refs, i));
 		g_autoptr(GsApp) app = gs_flatpak_create_app (self, NULL /* origin */, ref);
+#else
+	/* In Flatpak 1.7.1 and later
+	 * flatpak_installation_list_remote_refs_sync() no longer works for
+	 * sideload repos due to https://github.com/flatpak/flatpak/pull/3476
+	 */
+	g_autoptr(GHashTable) refs = NULL;
+	g_autoptr(GFile) repo_file = g_file_new_for_uri (remote_url);
+	g_autoptr(OstreeRepo) repo = ostree_repo_new (repo_file);
+	g_autoptr(GPtrArray) remotes = NULL;
+	GHashTableIter iter;
+	gpointer key;
+
+	if (!ostree_repo_open (repo, cancellable, error)) {
+		gs_flatpak_error_convert (error);
+		return FALSE;
+	}
+
+	if (!ostree_repo_list_collection_refs (repo, NULL, &refs, 0, cancellable, error)) {
+		gs_flatpak_error_convert (error);
+		return FALSE;
+	}
+
+	remotes = flatpak_installation_list_remotes (self->installation,
+						     cancellable, error);
+	if (remotes == NULL) {
+		gs_flatpak_error_convert (error);
+		return FALSE;
+	}
+
+	g_hash_table_iter_init (&iter, refs);
+	while (g_hash_table_iter_next (&iter, &key, NULL)) {
+		OstreeCollectionRef *c_r = key;
+		g_autoptr(FlatpakRef) ref = NULL;
+		const char *origin = NULL;
+
+		/* Parsing might fail if the ref is not an app or runtime, e.g.
+		 * ostree-metadata or appstream/x86_64 */
+		ref = flatpak_ref_parse (c_r->ref_name, NULL);
+		if (ref == NULL)
+			continue;
+
+		origin = get_remote_for_collection (remotes, c_r->collection_id);
+		if (origin == NULL)
+			continue;
+
+		g_autoptr(GsApp) app = gs_flatpak_create_app (self, origin, ref);
+#endif
 		GPtrArray *usb_apps_for_remote = g_hash_table_lookup (self->usb_remotes,
 								      remote_url);
-		const gchar *ref_collection_id = flatpak_ref_get_collection_id (ref);
-		const gchar *app_collection_id = NULL;
-
-		app_collection_id = gs_flatpak_app_get_ref_collection_id (app);
-		if (g_strcmp0 (ref_collection_id, app_collection_id) != 0) {
-			g_debug ("Not marking app %s as coming from USB at %s, "
-				 "since the app and ref collection IDs don't "
-				 "match (%s != %s)",
-				 gs_app_get_unique_id (app), remote_url,
-				 app_collection_id, ref_collection_id);
-			continue;
-		}
 
 		/* Don't show runtimes, locale extensions, etc. */
 		if (gs_app_get_kind (app) != AS_APP_KIND_DESKTOP)
@@ -871,18 +922,27 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 		return FALSE;
 	}
 
+	/* Versions of Flatpak 1.7.1 and later don't return any USB type
+	 * remotes. I think this is ok because normally appstream would already
+	 * be loaded before apps from a mounted drive are added (the appstream
+	 * plugin is initalized before the flatpak one). However not sure if we
+	 * show apps in the USB category right after copying. */
+#if !FLATPAK_CHECK_VERSION(1,7,1)
 	usb_remotes = g_ptr_array_new ();
+#endif
 
 	for (guint i = 0; i < xremotes->len; i++) {
 		g_autoptr(GError) error_local = NULL;
 		FlatpakRemote *xremote = g_ptr_array_index (xremotes, i);
 
+#if !FLATPAK_CHECK_VERSION(1,7,1)
 		/* gather the USB type remotes for marking the #GsApp objects
 		 * we create here as coming from it later */
 		if (flatpak_remote_get_remote_type (xremote) == FLATPAK_REMOTE_TYPE_USB) {
 			g_ptr_array_add (usb_remotes, xremote);
 			continue;
 		}
+#endif
 		if (flatpak_remote_get_disabled (xremote))
 			continue;
 		g_debug ("found remote %s",
@@ -893,18 +953,20 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 		}
 	}
 
+#if !FLATPAK_CHECK_VERSION(1,7,1)
 	for (guint i = 0; i < usb_remotes->len; ++i) {
 		FlatpakRemote *remote = g_ptr_array_index (usb_remotes, i);
 		g_autoptr(GError) local_error = NULL;
-		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote, NULL,
+		g_autofree char *remote_url = flatpak_remote_get_url (remote);
+		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote_url, NULL,
 							   cancellable, &local_error)) {
-			g_autofree gchar *remote_url = flatpak_remote_get_url (remote);
 			g_debug ("Failed to mark apps coming from USB remote at %s: %s",
 				 remote_url,
 				 local_error->message);
 			continue;
 		}
 	}
+#endif
 
 	/* add any installed files without AppStream info */
 	gs_flatpak_rescan_installed (self, builder, cancellable, error);
@@ -2408,6 +2470,43 @@ gs_plugin_refine_item_size (GsFlatpak *self,
 	return TRUE;
 }
 
+#if FLATPAK_CHECK_VERSION(1,7,1)
+static GPtrArray *
+get_repo_subdirectories (GFile *base_dir)
+{
+	g_autoptr(GPtrArray) remotes = NULL;
+	g_autoptr(GFileEnumerator) dir_enum = NULL;
+	g_autoptr(GFile) dot_ostree_repo_d_subpath = NULL;
+
+	/* Check the same directories as flatpak (see add_subdirs() in
+	 * common/flatpak-dir.c) */
+	remotes = g_ptr_array_new_with_free_func (g_object_unref);
+	g_ptr_array_add (remotes, g_file_resolve_relative_path (base_dir, "ostree/repo"));
+	g_ptr_array_add (remotes, g_file_resolve_relative_path (base_dir, ".ostree/repo"));
+
+	dot_ostree_repo_d_subpath = g_file_resolve_relative_path (base_dir, ".ostree/repos.d");
+	dir_enum = g_file_enumerate_children (dot_ostree_repo_d_subpath,
+					G_FILE_ATTRIBUTE_STANDARD_NAME ","
+					G_FILE_ATTRIBUTE_STANDARD_TYPE,
+					G_FILE_QUERY_INFO_NONE,
+					NULL, NULL);
+
+	while (dir_enum != NULL) {
+		GFileInfo *info;
+		GFile *path;
+
+		if (!g_file_enumerator_iterate (dir_enum, &info, &path, NULL, NULL) ||
+		    info == NULL)
+			break;
+
+		if (g_file_info_get_file_type (info) == G_FILE_TYPE_DIRECTORY)
+			g_ptr_array_add (remotes, g_object_ref (path));
+	}
+
+	return g_steal_pointer (&remotes);
+}
+#endif
+
 GsApp *
 gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 				     GFile *file,
@@ -2418,6 +2517,8 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 	gboolean dir_has_repo = FALSE;
 	gboolean reload_overview = FALSE;
 	g_autoptr(GsApp) app = NULL;
+
+#if !FLATPAK_CHECK_VERSION(1,7,1)
 	const FlatpakRemoteType usb_type[] = { FLATPAK_REMOTE_TYPE_USB };
 
 	remotes = flatpak_installation_list_remotes_by_type (self->installation,
@@ -2440,7 +2541,7 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 
 		dir_has_repo = TRUE;
 
-		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote, &reload_overview_local,
+		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote_uri, &reload_overview_local,
 							   cancellable, &local_error)) {
 			g_debug ("Failed to mark USB apps from remote at %s: %s",
 				 remote_uri, local_error->message);
@@ -2449,6 +2550,27 @@ gs_flatpak_create_app_from_repo_dir (GsFlatpak *self,
 
 		reload_overview = reload_overview || reload_overview_local;
 	}
+#else
+	remotes = get_repo_subdirectories (file);
+	for (guint i = 0; i < remotes->len; ++i) {
+		GFile *remote_file = g_ptr_array_index (remotes, i);
+		g_autofree gchar *remote_uri = g_file_get_uri (remote_file);
+		g_autoptr(GError) local_error = NULL;
+		gboolean reload_overview_local = FALSE;
+
+		if (!gs_flatpak_mark_apps_from_usb_remote (self, remote_uri, &reload_overview_local,
+							   cancellable, &local_error)) {
+			g_debug ("Failed to mark USB apps from remote at %s: %s",
+				 remote_uri, local_error->message);
+			continue;
+		}
+
+		if (reload_overview_local)
+			dir_has_repo = TRUE;
+
+		reload_overview = reload_overview || reload_overview_local;
+	}
+#endif /* !FLATPAK_CHECK_VERSION(1,7,1) */
 
 	if (!dir_has_repo) {
 		g_autofree gchar *file_uri = g_file_get_uri (file);
