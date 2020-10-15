@@ -1198,6 +1198,11 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 		}
 	}
 
+#if FLATPAK_CHECK_VERSION(1, 8, 2)
+	/* automatically clean up unused EOL runtimes when updating */
+	flatpak_transaction_set_include_unused_uninstall_ops (transaction, TRUE);
+#endif
+
 	if (!gs_flatpak_transaction_run (transaction, cancellable, error)) {
 		for (guint i = 0; i < gs_app_list_length (list_tmp); i++) {
 			GsApp *app = gs_app_list_index (list_tmp, i);
