@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"PO-Revision-Date: 2020-10-21 13:57+0000\n"
+"Last-Translator: Will Thompson <wjt@endlessos.org>\n"
 "Language-Team: Korean (http://www.transifex.com/endless-os/gnome-software/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -252,7 +252,7 @@ msgstr "비 자유-상업용 프로그램을 나타내는 URI"
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "app-info folder"
-msgstr "app-info 폴더로 다운로드할 appstream 파일을 가리키는 URL 목록"
+msgstr "app-info 폴더로 다운로드할 appstream 파일 URL 목록"
 
 #: data/org.gnome.software.gschema.xml:136
 msgid "Install the AppStream files to a system-wide location for all users"
@@ -484,7 +484,7 @@ msgstr "Seong-ho Cho <shcho@gnome.org>"
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "소프트웨어 정보"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -575,11 +575,11 @@ msgstr ""
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "원격 %s에 로그인해야합니다(%s 영역)"
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "로그인 필요"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -589,15 +589,15 @@ msgstr "취소(_C)"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "로그인(_L)"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "사용자(_U)"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "암호(_P)"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1440,7 +1440,7 @@ msgstr "업데이트 대기 중…"
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr ""
+msgstr "준비 중…"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -1679,13 +1679,13 @@ msgstr "업데이트(_U)"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "바로 가기 추가(_A)"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "바로 가기 제거(_M)"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -4174,42 +4174,42 @@ msgstr "%s flatpak 메타데이터 가져오는 중…"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "%s 장치 업데이트"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "%s 시스템 업데이트"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "%s 내장 컨트롤러 업데이트"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "%s 관리 엔진 업데이트"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "%s 기업 관리 엔진 업데이트"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "%s 고객 관리 엔진 업데이트"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4217,7 +4217,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "%s 컨트롤러 업데이트"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4225,21 +4225,21 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "%s 썬더볼트 컨트롤러 업데이트"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "%s CPU 마이크로코드 업데이트"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "%s 설정 업데이트"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691

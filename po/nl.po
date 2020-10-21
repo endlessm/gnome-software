@@ -3,7 +3,7 @@
 # This file is distributed under the same license as the gnome-software package.
 # 
 # Translators:
-# Hannie Dumoleyn <hannie@ubuntu-nl.org>, 2016-2019
+# Hannie Dumoleyn <hannie@ubuntu-nl.org>, 2016-2020
 # Justin van Steijn <justin50@live.nl> 2015, 2016
 # Justin van Steijn <jvs@fsfe.org> 2015, 2016-2019
 # Nathan Follens <nthn@unseen.is>, 2015
@@ -12,8 +12,8 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"PO-Revision-Date: 2020-10-21 13:58+0000\n"
+"Last-Translator: Will Thompson <wjt@endlessos.org>\n"
 "Language-Team: Dutch (http://www.transifex.com/endless-os/gnome-software/language/nl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -487,7 +487,7 @@ msgstr "Nathan Follens\nJustin van Steijn\nHannie Dumoleyn\n\nMeer info over Gno
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "Over Software"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -578,11 +578,11 @@ msgstr ""
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "Aanmelding externe server %s (realm %s) verplicht"
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "Aanmelding vereist"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -592,15 +592,15 @@ msgstr "_Annuleren"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "_Aanmelden"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "Gebr_uiker"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "_Wachtwoord"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1445,7 +1445,7 @@ msgstr "Update in afwachting…"
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr ""
+msgstr "Voorbereiden…"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -1685,13 +1685,13 @@ msgstr "_Bijwerken"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "Sneltoets _toevoegen"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "Sneltoets _verwijderen"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -4194,42 +4194,42 @@ msgstr "Flatpak-metadata voor %s worden opgehaald…"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "Update apparaat %s"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "Systeem-update %s"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "Update embedded Controller %s"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "Update ME %s"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "Update corporate ME %s"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "Update consumer ME %s"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4237,7 +4237,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "Update controller %s"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4245,21 +4245,21 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "Update Thunderbolt Controller %s"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "Update CPU Microcode %s"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "Update configuratie %s"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691

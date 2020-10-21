@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"PO-Revision-Date: 2020-10-21 13:57+0000\n"
+"Last-Translator: Will Thompson <wjt@endlessos.org>\n"
 "Language-Team: Slovenian (http://www.transifex.com/endless-os/gnome-software/language/sl/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -171,7 +171,7 @@ msgstr "Časovni žig zadnje posodobitve"
 
 #: data/org.gnome.software.gschema.xml:68
 msgid "The last timestamp when the system was online and got any updates"
-msgstr "Zadnji časovni žig, ko je bil sistem povezan na splet in je imel kakršne koli posodobitve"
+msgstr "Zadnji časovni žig, ko je bil sistem povezan v omrežje in posodobljen"
 
 #: data/org.gnome.software.gschema.xml:72
 msgid "The age in seconds to verify the upstream screenshot is still valid"
@@ -484,7 +484,7 @@ msgstr "Matej Urbančič <mateju@svn.gnome.org>"
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "O programu Programska oprema"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -575,11 +575,11 @@ msgstr "Potrebuje prenos"
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "Prijavno ime in geslo za %s (območje %s)."
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "Zahtevana je prijava"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -589,15 +589,15 @@ msgstr "_Prekliči"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "_Prijava"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "_Uporabnik"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "_Geslo"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1321,7 +1321,7 @@ msgstr "Le za odrasle"
 
 #: src/gs-content-rating.c:561
 msgid "Mature"
-msgstr "Dozorel"
+msgstr "Preizkušeno"
 
 #: src/gs-content-rating.c:563
 msgid "Teen"
@@ -1434,19 +1434,19 @@ msgstr "Kopiranje"
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:436
 msgid "Pending installation…"
-msgstr "Inštalacija v teku ..."
+msgstr "Namestitev na čakanju …"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
 #: src/gs-details-page.c:443
 msgid "Pending update…"
-msgstr "Posodobitve v teku ..."
+msgstr "Poteka nastavljanje posodobitev …"
 
 #. Translators: This string is shown when preparing to download and install an
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr "Pripravljanje..."
+msgstr "Poteka priprava …"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -1569,15 +1569,15 @@ msgstr "Uporablja star, ne-varen zaslonski sistem"
 
 #: src/gs-details-page.c:1114 src/gs-update-dialog.c:105
 msgid "Sandbox escape"
-msgstr "Zabeleženo v peskovnik"
+msgstr "Izvajanje v peskovniku mimo varnega okolja"
 
 #: src/gs-details-page.c:1114 src/gs-update-dialog.c:105
 msgid "Can escape the sandbox and circumvent any other restrictions"
-msgstr "Lahko se izognete peskovniku in zaobidete vse druge omejitve"
+msgstr "Omogoča izvajanje v peskovniku mimo varnega okolja kot obvod vseh vrst omejitev"
 
 #: src/gs-details-page.c:1129
 msgid "This application is fully sandboxed."
-msgstr "Program podpira uporabo peskovnika."
+msgstr "Program se v celoti izvaja v peskovniku."
 
 #: src/gs-details-page.c:1137
 msgid ""
@@ -1688,13 +1688,13 @@ msgstr "_Posodobi"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "_Dodaj tipkovno bližnjico"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "Od_strani tipkovno bližnjico"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -1768,7 +1768,7 @@ msgstr "Sistemska povezljivost"
 
 #: src/gs-details-page.ui:596
 msgid "Sandboxed"
-msgstr "Zabeleženo v peskovnik"
+msgstr "Izvedeno v peskovniku"
 
 #. TRANSLATORS: the title for Snap channels
 #: src/gs-details-page.ui:616 src/gs-origin-popover-row.c:103
@@ -2154,11 +2154,11 @@ msgid ""
 "Automatic updates will be resumed when an un­metered network becomes available. Until then, it is still possible to manually install updates.\n"
 "\n"
 "Alternatively, if the current network has been in­correctly identified as being metered, this setting can be changed."
-msgstr "Trenutna mreža je merjena. Izmerjene povezave imajo z njimi povezane omejitve podatkov ali pristojbine. Zaradi shranjevanja podatkov so zato samodejne posodobitve zaustavljene.\n\nSamodejne posodobitve se bodo nadaljevale, ko bo na voljo neomejeno omrežje. Do takrat je še vedno mogoče ročno namestiti posodobitve.\n\nČe je trenutno omrežje napačno opredeljeno kot merjeno, lahko te nastavitev spremenite."
+msgstr "Trenutno uporabljeno omrežje je plačljivo. Tovrstne povezave imajo omejitve dostopa do podatkov, ali pa so z dostopom povezani stroški. Samodejne posodobitve so zato zadržane.\n\nSamodejne posodobitve bodo omogočene, ko bo na voljo druga povezava, do takrat pa je posodobitve mogoče začeti ročno.\n\nV primeru, da je vrsta omrežja zaznana napačno in uporaba ni povezana z dodatnimi stroški, je nastavitev mogoče tudi spremeniti."
 
 #: src/gs-metered-data-dialog.ui:53
 msgid "Open Network _Settings"
-msgstr "Odpri _Omrežne Nastavitve"
+msgstr "Odpri _omrežne nastavitve"
 
 #: src/gs-moderate-page.ui:7
 msgid "Moderate page"
@@ -2584,7 +2584,7 @@ msgstr "Kakšno je vaše mnenje o programu. Podajte razloge za opis programa."
 msgid ""
 "Find what data is sent in our <a "
 "href=\"https://odrs.gnome.org/privacy\">privacy policy</a>."
-msgstr "Poglej si kateri podatki so poslani v naših <a href=\"https://odrs.gnome.org/privacy\">politiki zasebnosti</a>."
+msgstr "Preglejte, kateri podatki so poslani, med <a href=\"https://odrs.gnome.org/privacy\">pravili zasebnosti</a>."
 
 #. Translators: A label for the total number of reviews.
 #: src/gs-review-histogram.ui:412
@@ -3517,7 +3517,7 @@ msgstr "samodejne posodobitve izklopljene"
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:401
 msgid "Setting up updates…"
-msgstr "poteka nastavljanje posodobitev …"
+msgstr "Poteka nastavljanje posodobitev …"
 
 #. TRANSLATORS: the updates panel is starting up
 #: src/gs-updates-page.c:402 src/gs-updates-page.c:409
@@ -3670,7 +3670,7 @@ msgstr "_Ponovno zaženi"
 
 #: src/gs-upgrade-banner.c:97
 msgid "Updates will be applied when the computer is restarted."
-msgstr "Posodobitve bodo bile upoštevane, ko se bo računalnik ponovno zagnal."
+msgstr "Posodobitve bodo uveljavljene ob naslednjem zagonu naprave."
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -4225,42 +4225,42 @@ msgstr "Pridobi metapodatke flatpak za %s …"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "Posodobitev naprave %s"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "Posodobitev sistema %s"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "Posodobitev vgrajenega nadzornika %s"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "Posodobtev ME %s"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "Posodobitev poslovnega upravljalnika %s"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "Posodobitev uporabniškega upravljalnika %s"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4268,7 +4268,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "Posodobitev upravljalnika krmilnika %s"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4276,21 +4276,21 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "Posodobitev upravljalnika krmilnika Thunderbolt %s"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "Posodobitev mikrokode CPE %s"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "Posodobitev nastavitev %s"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691

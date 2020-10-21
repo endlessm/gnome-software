@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"PO-Revision-Date: 2020-10-21 13:57+0000\n"
+"Last-Translator: Will Thompson <wjt@endlessos.org>\n"
 "Language-Team: Croatian (http://www.transifex.com/endless-os/gnome-software/language/hr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -484,7 +484,7 @@ msgstr "Launchpad Contributions:\n  gogo https://launchpad.net/~trebelnik-stefin
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "O softveru"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -575,11 +575,11 @@ msgstr ""
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "Prijava zahtijeva udaljeni %s (realm %s)"
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "Zahtjev prijave"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -589,15 +589,15 @@ msgstr "_Odustani"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "_Prijava"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "_Korisnik"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "_Lozinka"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -646,7 +646,7 @@ msgstr ""
 #. together can read e.g. 'Show Vector Graphics'.
 #: src/gs-category-page.ui:198
 msgid "Show"
-msgstr "Prikaz"
+msgstr "Prikaži"
 
 #: src/gs-category-page.ui:215
 msgid "Subcategories filter menu"
@@ -1444,7 +1444,7 @@ msgstr "Čekanje na nadopunu…"
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr ""
+msgstr "Pripremanje…"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -1685,13 +1685,13 @@ msgstr "_Nadopuni"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "_Dodaj prečac"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "Uk_loni prečac"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -3305,9 +3305,9 @@ msgstr "%s i %s su nadopunjeni."
 #, c-format
 msgid "%u application requires a restart."
 msgid_plural "%u applications require a restart."
-msgstr[0] "%u aplikacija je instalirana."
-msgstr[1] "%u aplikacije su instalirane."
-msgstr[2] "%u aplikacija je instalirano."
+msgstr[0] "%u aplikacija zahtijeva ponovno pokretanje."
+msgstr[1] "%u aplikacije zahtijevju ponovno pokretanje."
+msgstr[2] "%u aplikacija zahtijeva ponovno pokretanje."
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:278
@@ -3953,7 +3953,7 @@ msgstr "Kôdeki"
 #: plugins/core/gs-desktop-common.c:217
 msgctxt "Menu of Add-ons"
 msgid "Input Sources"
-msgstr "Ulazni izvori"
+msgstr "Tipkovnički načini unosa"
 
 #: plugins/core/gs-desktop-common.c:220
 msgctxt "Menu of Add-ons"
@@ -4208,42 +4208,42 @@ msgstr "Dobivanje flatpak metapodataka za %s…"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "%s nadopuna uređaja"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "%s nadopuna sustava"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "%s nadopuna ugrađenog upravljačkog uređaja"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "%s nadopuna PU"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "%s nadopuna korporativnog PU"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "%s nadopuna potrošačkog PU"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4251,7 +4251,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "%s nadopuna upravljačkog uređaja"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4259,21 +4259,21 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "%s nadopuna Thunderbolt upravljačkog uređaja"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "%s nadopuna CPU mikrokôda"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "%s nadopuna podešavanja"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691

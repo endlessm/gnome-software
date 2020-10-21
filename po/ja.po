@@ -10,15 +10,15 @@
 # YAMADA Shinichirou <yamada_strong_yamada_nice_64bit@yahoo.co.jp>, 2018
 # Shinichirou Yamada <yamada_strong_yamada_nice_64bit@yahoo.co.jp >, 2018
 # sicklylife <translation@sicklylife.jp>, 2019
-# sujiniku <sujinikusityuu@gmail.com>, 2018
+# sujiniku <sujinikusityuu@gmail.com>, 2018,2020
 # Takashi Oshie <>, 2016
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"PO-Revision-Date: 2020-10-21 13:57+0000\n"
+"Last-Translator: Will Thompson <wjt@endlessos.org>\n"
 "Language-Team: Japanese (http://www.transifex.com/endless-os/gnome-software/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -492,7 +492,7 @@ msgstr "松澤 二郎 <jmatsuzawa@gnome.org>\nHajime Taira <htaira@redhat.com>\n
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "“ソフトウェア”について"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -583,11 +583,11 @@ msgstr ""
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "リモートの %s (レルム %s) へのログインが必要です"
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "ログインが必要です"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -597,15 +597,15 @@ msgstr "キャンセル(_C)"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "ログイン(_L)"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "ユーザー(_U)"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "パスワード(_P)"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1448,7 +1448,7 @@ msgstr "アップデート保留中…"
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr ""
+msgstr "準備中…"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -1687,13 +1687,13 @@ msgstr "アップデート(_U)"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "ショートカットを追加(_A)"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "ショートカットを削除(_M)"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -1735,7 +1735,7 @@ msgstr "ソフトウェアリポジトリを特定"
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
-msgstr "このソフトウェアリポジトリを追加することで、他のソフトウェアやアップグレードを利用できるようになります。"
+msgstr "このソフトウェアリポジトリを追加することで、追加のソフトウェアやアップグレードを利用できるようになります。"
 
 #: src/gs-details-page.ui:411
 msgid "Only use software repositories that you trust."
@@ -1879,7 +1879,7 @@ msgstr "このアプリのレーティング理由:"
 
 #: src/gs-details-page.ui:1400
 msgid "No details were available for this rating."
-msgstr ""
+msgstr "レーティングの詳細はありません。"
 
 #. TRANSLATORS: separator for a list of items
 #: src/gs-extras-page.c:135
@@ -4161,7 +4161,7 @@ msgstr "アップグレード情報をダウンロード中…"
 #: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:283
 msgid ""
 "Upgrade for the latest features, performance and stability improvements."
-msgstr ""
+msgstr "更新して最新の機能、性能、安定性の改善を"
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:6
 msgid "Flatpak Support"
@@ -4182,42 +4182,42 @@ msgstr "%s の Flatpak メタデータを取得中…"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "%s デバイスのアップデート"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "%s システムのアップデート"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "%s Embedded Controller のアップデート"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "%s ME のアップデート"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "%s Corporate ME のアップデート"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "%s Consumer ME のアップデート"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4225,7 +4225,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "%s コントローラーのアップデート"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4233,39 +4233,39 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "%s Thunderbolt コントローラーのアップデート"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "%s CPU マイクロコードのアップデート"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "%s の設定のアップデート"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691
 msgid "Downloading firmware update signature…"
-msgstr "ファームウェア更新の署名をダウンロード中…"
+msgstr "ファームウェアアップデートの署名をダウンロード中…"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:732
 msgid "Downloading firmware update metadata…"
-msgstr "ファームウェア更新のメタデータをダウンロード中…"
+msgstr "ファームウェアアップデートのメタデータをダウンロード中…"
 
 #: plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:6
 msgid "Firmware Upgrade Support"
-msgstr "ファームウェア更新サポート"
+msgstr "ファームウェアアップグレードサポート"
 
 #: plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in:7
 msgid "Provides support for firmware upgrades"
-msgstr "ファームウェア更新機能を提供します"
+msgstr "ファームウェアのアップグレード機能を提供します"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/odrs/gs-plugin-odrs.c:291

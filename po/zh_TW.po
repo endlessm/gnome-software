@@ -10,8 +10,8 @@ msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"PO-Revision-Date: 2020-10-21 13:57+0000\n"
+"Last-Translator: Will Thompson <wjt@endlessos.org>\n"
 "Language-Team: Chinese (Taiwan) (http://www.transifex.com/endless-os/gnome-software/language/zh_TW/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -172,7 +172,7 @@ msgstr "最近更新時間戳記"
 
 #: data/org.gnome.software.gschema.xml:68
 msgid "The last timestamp when the system was online and got any updates"
-msgstr "系統上線並執行任何更新的最後時間戳記"
+msgstr "上次系統連線及取得更新的時間戳"
 
 #: data/org.gnome.software.gschema.xml:72
 msgid "The age in seconds to verify the upstream screenshot is still valid"
@@ -306,7 +306,7 @@ msgstr "返回"
 #. Translators: A label for a button to show all available software.
 #: src/gnome-software.ui:96
 msgid "_Explore"
-msgstr "_探索"
+msgstr "探索(_E)"
 
 #. Translators: A label for a button to show only software which is already
 #. installed.
@@ -479,7 +479,7 @@ msgstr "顯示版本號碼"
 
 #: src/gs-application.c:328
 msgid "translator-credits"
-msgstr "Cheng-Chia Tseng <pswo10680@gmail.com>, 2013, 2015, 2018."
+msgstr "Cheng-Chia Tseng <pswo10680@gmail.com>, 2013, 2015, 2018, 2019.\nYi-Jyun Pan <pan93412@gmail.com>, 2020."
 
 #. TRANSLATORS: this is the title of the about window
 #. TRANSLATORS: this is the menu item that opens the about window
@@ -495,7 +495,7 @@ msgstr "管理系統軟體的絕佳方式。"
 #. TRANSLATORS: we tried to show an app that did not exist
 #: src/gs-application.c:564
 msgid "Sorry! There are no details for that application."
-msgstr "抱歉！沒有此應用程式的細節。"
+msgstr "抱歉！沒有該應用程式的詳細資訊。"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
@@ -667,7 +667,7 @@ msgstr "子類別排序選單"
 #: lib/gs-cmd.c:191
 #, c-format
 msgid "Please enter a number from 1 to %u: "
-msgstr "請輸入 1 到 %u 的數字："
+msgstr "請輸入 1 到 %u 間的數字："
 
 #. TRANSLATORS: asking the user to choose an app from a list
 #: lib/gs-cmd.c:254
@@ -928,7 +928,7 @@ msgstr "使用到非法藥物"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:134
 msgid "No references to tobacco products"
-msgstr "沒有提及香菸產品"
+msgstr "沒有涉及菸草產品"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:136
@@ -1248,7 +1248,7 @@ msgstr "描繪或涉及史實上的褻瀆"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:328
 msgid "Depictions of modern-day human desecration"
-msgstr "描繪褻瀆當代人體"
+msgstr "描繪當代人體褻瀆"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:330
@@ -1278,7 +1278,7 @@ msgstr "圖像式褻瀆人體的描繪"
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:346
 msgid "No references to slavery"
-msgstr "沒有涉及奴隸"
+msgstr "沒有涉及奴隸行為"
 
 #. TRANSLATORS: content rating description
 #: src/gs-content-rating.c:348
@@ -1429,13 +1429,13 @@ msgstr "複製中"
 #. * bar to inform the user that the app should be installed soon
 #: src/gs-details-page.c:436
 msgid "Pending installation…"
-msgstr "正在等候安裝……"
+msgstr "安裝待決…"
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be updated soon
 #: src/gs-details-page.c:443
 msgid "Pending update…"
-msgstr "更新處理中..."
+msgstr "更新待決…"
 
 #. Translators: This string is shown when preparing to download and install an
 #. app.
@@ -1564,11 +1564,11 @@ msgstr "使用舊式、不安全的顯示系統"
 
 #: src/gs-details-page.c:1114 src/gs-update-dialog.c:105
 msgid "Sandbox escape"
-msgstr "沙箱逃逸"
+msgstr "沙盒跳脫"
 
 #: src/gs-details-page.c:1114 src/gs-update-dialog.c:105
 msgid "Can escape the sandbox and circumvent any other restrictions"
-msgstr "可逃逸沙盒並規避其他限制"
+msgstr "可以跳脫沙盒並繞過任何限制"
 
 #: src/gs-details-page.c:1129
 msgid "This application is fully sandboxed."
@@ -1680,13 +1680,13 @@ msgstr "更新(_U)"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "加入捷徑(_A)"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "移除捷徑(_M)"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -2033,7 +2033,7 @@ msgid ""
 msgid_plural ""
 "Unfortunately, the %s you were searching for could not be found. Please see "
 "%s for more information."
-msgstr[0] "很不幸的，您所搜尋的 %s 沒有任何結果。請參閱 %s 以了解進一步資訊。"
+msgstr[0] "很不幸的，您所搜尋的 %s 沒有任何結果。請參閱 %s 以瞭解更多資訊。"
 
 #: src/gs-extras-page.c:527 src/gs-extras-page.c:583 src/gs-extras-page.c:622
 msgid "Failed to find any search results"
@@ -2137,11 +2137,11 @@ msgid ""
 "Automatic updates will be resumed when an un­metered network becomes available. Until then, it is still possible to manually install updates.\n"
 "\n"
 "Alternatively, if the current network has been in­correctly identified as being metered, this setting can be changed."
-msgstr "已計量目前網路。計量的連線有資料限制或與之相關的費用。為了保存資料，已暫停自動更新。\n\n當有未計量的網路可用時，將恢復自動更新。在此之前，仍然可以手動安裝更新。\n\n或者，如果目前網路被誤判為在計量中，則可以變更此設定。"
+msgstr "目前的網路為計費連線。計費連線有資料傳輸量的限制，或是與其相關的費用。為了節省數據傳輸量，自動更新已隨之暫停。\n\n自動更新將在可以使用非計費連線時回復。在那之前，您依然可以手動安裝更新。\n\n另外，如果目前的網路被錯誤辨識為計費連線，您也可以修改這個設定。"
 
 #: src/gs-metered-data-dialog.ui:53
 msgid "Open Network _Settings"
-msgstr "開啟網路 _設定"
+msgstr "開啟網路設定值(_S)"
 
 #: src/gs-moderate-page.ui:7
 msgid "Moderate page"
@@ -2217,11 +2217,11 @@ msgstr "啟用第三方軟體庫？"
 
 #: src/gs-overview-page.ui:106
 msgid "Previous"
-msgstr "前一步"
+msgstr "上一個"
 
 #: src/gs-overview-page.ui:131
 msgid "Next"
-msgstr "下一步"
+msgstr "下一個"
 
 #. Translators: This is a heading for software which has been featured
 #. ('picked') by the distribution.
@@ -2731,7 +2731,7 @@ msgstr "無法下載更新：身份核對無效"
 #: src/gs-shell.c:1317
 msgid ""
 "Unable to download updates: you do not have permission to install software"
-msgstr "無法下載更新：您的權限不足以安裝軟體"
+msgstr "無法下載更新：您的權限無法安裝軟體"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1328
@@ -2804,7 +2804,7 @@ msgstr "無法安裝 %s：身份核對無效"
 #: src/gs-shell.c:1435
 #, c-format
 msgid "Unable to install %s: you do not have permission to install software"
-msgstr "無法安裝 %s：您的權限不足以安裝軟體"
+msgstr "無法安裝 %s：您的權限無法安裝軟體"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
@@ -2818,7 +2818,7 @@ msgstr "無法安裝 %s：需要交流電源"
 #: src/gs-shell.c:1450
 #, c-format
 msgid "Unable to install %s: The battery level is too low"
-msgstr "無法安裝 %s：電池電量太低"
+msgstr "無法安裝 %s：電池電量過低"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -2906,14 +2906,14 @@ msgstr "無法安裝更新：身份核對無效"
 #: src/gs-shell.c:1583
 #, c-format
 msgid "Unable to update %s: you do not have permission to update software"
-msgstr "無法更新 %s：您的權限不足以更新軟體"
+msgstr "無法更新 %s：您的權限無法更新軟體"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1589
 #, c-format
 msgid ""
 "Unable to install updates: you do not have permission to update software"
-msgstr "無法安裝更新：您的權限不足以更新軟體"
+msgstr "無法安裝更新：您的權限無法更新軟體"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
@@ -2934,14 +2934,14 @@ msgstr "無法安裝更新：需要交流電源"
 #: src/gs-shell.c:1614
 #, c-format
 msgid "Unable to update %s: The battery level is too low"
-msgstr "無法更新 %s：電池電量太低"
+msgstr "無法安裝 %s：電池電量過低"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
 #: src/gs-shell.c:1620
 #, c-format
 msgid "Unable to install updates: The battery level is too low"
-msgstr "無法安裝更新：電池電量太低"
+msgstr "無法安裝更新：電池電量過低"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -3005,7 +3005,7 @@ msgstr "無法升級成 %s：身份核對無效"
 #: src/gs-shell.c:1722
 #, c-format
 msgid "Unable to upgrade to %s: you do not have permission to upgrade"
-msgstr "無法升級成 %s：您的權限不足以升級"
+msgstr "無法升級成 %s：您的權限無法升級"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -3019,7 +3019,7 @@ msgstr "無法升級成 %s：需要交流電源"
 #: src/gs-shell.c:1736
 #, c-format
 msgid "Unable to upgrade to %s: The battery level is too low"
-msgstr "無法升級至 %s：電池電量太低"
+msgstr "無法升級成 %s：電池電量過低"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -3047,7 +3047,7 @@ msgstr "無法移除 %s：身份核對無效"
 #: src/gs-shell.c:1795
 #, c-format
 msgid "Unable to remove %s: you do not have permission to remove software"
-msgstr "無法移除 %s：您的權限不足以移除軟體"
+msgstr "無法移除 %s：您的權限無法移除軟體"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -3061,7 +3061,7 @@ msgstr "無法移除 %s：需要交流電源"
 #: src/gs-shell.c:1809
 #, c-format
 msgid "Unable to remove %s: The battery level is too low"
-msgstr "無法移除 %s：電池電量太低"
+msgstr "無法移除 %s：電池電量過低"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -3139,7 +3139,7 @@ msgstr "需要交流電源"
 #. TRANSLATORS: not enough juice to do this safely
 #: src/gs-shell.c:2036
 msgid "The battery level is too low"
-msgstr "電池電量太低"
+msgstr "電池電量過低"
 
 #. TRANSLATORS: this refers to where the app came from
 #: src/gs-shell-search-provider.c:258
@@ -3386,7 +3386,7 @@ msgstr "需要存取網際網路但無法使用。請確定您能使用網際網
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
-msgstr "這次更新中有安全性問題。請詢問您的軟體供應商以了解更多資訊。"
+msgstr "這次更新中有安全性問題。請詢問您的軟體供應商以瞭解更多資訊。"
 
 #. TRANSLATORS: we ran out of disk space
 #: src/gs-update-monitor.c:1096
@@ -3505,7 +3505,7 @@ msgstr "建議您升級到較新的版本。"
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: src/gs-updates-page.c:955
 msgid "Charges May Apply"
-msgstr "可能產生費用"
+msgstr "可能需要費用"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
@@ -3519,7 +3519,7 @@ msgstr "使用行動寬頻檢查更新，可能讓您負擔額外的數據傳輸
 #. * control-center network panel
 #: src/gs-updates-page.c:963
 msgid "Check _Anyway"
-msgstr "繼續 _檢查"
+msgstr "無論如何都檢查(_A)"
 
 #. TRANSLATORS: can't do updates check
 #: src/gs-updates-page.c:979
@@ -3616,11 +3616,11 @@ msgstr "建議您在升級前先備份您的資料與檔案。"
 
 #: src/gs-upgrade-banner.c:95
 msgid "_Restart Now"
-msgstr "馬上重新啟動"
+msgstr "立刻重新啟動(_R)"
 
 #: src/gs-upgrade-banner.c:97
 msgid "Updates will be applied when the computer is restarted."
-msgstr "更新將於電腦重新啟動後生效。"
+msgstr "更新會在電腦重新啟動時套用。"
 
 #. TRANSLATORS: This is the text displayed when a distro
 #. * upgrade is available. First %s is the distro name and the
@@ -3636,7 +3636,7 @@ msgstr "%s %s 現在可用"
 #: src/gs-upgrade-banner.c:122
 #, c-format
 msgid "Waiting to Download %s %s"
-msgstr "正在等待下載 %s %s"
+msgstr "正在等候下載 %s %s"
 
 #. TRANSLATORS: This is the text displayed while downloading a
 #. * distro upgrade. First %s is the distro name and the 2nd %s
@@ -3661,7 +3661,7 @@ msgstr "重大升級，包含新功能和加入改進。"
 
 #: src/gs-upgrade-banner.ui:50
 msgid "_Learn More"
-msgstr "了解更多(_L)"
+msgstr "深入瞭解(_L)"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
@@ -4105,11 +4105,11 @@ msgstr "Endless OS"
 #. TRANSLATORS: ‘Endless OS’ is a brand name; https://endlessos.com/
 #: plugins/eos-updater/gs-plugin-eos-updater.c:567
 msgid "An Endless OS update with new features and fixes."
-msgstr "帶有新功能與修復錯誤的 Endless OS 更新"
+msgstr "Endless OS 更新，含新功能和錯誤修正。"
 
 #: plugins/eos-updater/gs-plugin-eos-updater.c:875
 msgid "EOS update service could not fetch and apply the update."
-msgstr "EOS 更新服務無法取得並執行更新。"
+msgstr "無法取得 EOS 更新服務並套用更新。"
 
 #. TRANSLATORS: tool that is used when copying profiles system-wide
 #: plugins/external-appstream/gs-install-appstream.c:141
