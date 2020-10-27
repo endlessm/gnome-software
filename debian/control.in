@@ -13,7 +13,6 @@ Build-Depends: appstream,
                gtk-doc-tools,
                libappstream-glib-dev (>= 0.7.14),
                libflatpak-dev (>= 1.6.2+dev54.f333129-2) [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
-               libfwupd-dev (>= 1.0.3) [linux-any],
                libglib2.0-dev (>= 2.56.0),
                libgnome-desktop-3-dev (>= 3.18.0),
                libgoa-1.0-dev,
@@ -52,7 +51,7 @@ Depends: appstream,
          ${misc:Depends},
          ${shlibs:Depends}
 Conflicts: sessioninstaller
-Recommends: fwupd [linux-any], ${plugin:Recommends},
+Recommends: ${plugin:Recommends},
 Suggests: gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
           ${plugin:Suggests}
 Description: Software Center for GNOME
