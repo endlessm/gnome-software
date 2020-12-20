@@ -9,9 +9,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-01 09:22+0000\n"
-"PO-Revision-Date: 2020-10-21 13:56+0000\n"
-"Last-Translator: Will Thompson <wjt@endlessos.org>\n"
+"POT-Creation-Date: 2020-12-20 09:22+0000\n"
+"PO-Revision-Date: 2020-12-20 09:22+0000\n"
+"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
 "Language-Team: Persian (http://www.transifex.com/endless-os/gnome-software/language/fa/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -369,11 +369,11 @@ msgid "Find Out _More"
 msgstr "بیش‌تر دریابید"
 
 #. TRANSLATORS: this is a locally downloaded package
-#: lib/gs-app.c:4630
+#: lib/gs-app.c:4670
 msgid "Local file"
 msgstr "پروندهٔ محلَّی"
 
-#: lib/gs-app.c:4682
+#: lib/gs-app.c:4722
 msgid "Package"
 msgstr "بسته"
 
@@ -548,9 +548,16 @@ msgstr ""
 msgid "Device cannot be used during update."
 msgstr "از دستگاه نمی‌توان در هنگام به‌روز رسانی استفاده کرد."
 
-#: src/gs-app-row.c:459 src/gs-update-dialog.ui:182
+#: src/gs-app-row.c:461 src/gs-update-dialog.ui:182
 msgid "Requires additional permissions"
 msgstr "نیاز به دسترسی‌های اضافی دارد"
+
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
+#: src/gs-app-row.c:468
+#, c-format
+msgid "Renamed from %s"
+msgstr ""
 
 #. TRANSLATORS: This is the name and state of an app for the ATK object
 #. TRANSLATORS: this refers to an app (by name) that is installed
@@ -4182,7 +4189,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "فلت‌پک چارچوبی برای برنامه‌های میزکار روی گنو/لینوکس است"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:1019
+#: plugins/flatpak/gs-flatpak.c:1081
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "در حال گرفتن فرادادهٔ فلت‌پک برای %s…"

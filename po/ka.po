@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-01 09:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
+"POT-Creation-Date: 2020-12-20 09:22+0000\n"
+"PO-Revision-Date: 2020-12-20 09:22+0000\n"
 "Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
 "Language-Team: Georgian (http://www.transifex.com/endless-os/gnome-software/language/ka/)\n"
 "MIME-Version: 1.0\n"
@@ -367,11 +367,11 @@ msgid "Find Out _More"
 msgstr ""
 
 #. TRANSLATORS: this is a locally downloaded package
-#: lib/gs-app.c:4630
+#: lib/gs-app.c:4670
 msgid "Local file"
 msgstr ""
 
-#: lib/gs-app.c:4682
+#: lib/gs-app.c:4722
 msgid "Package"
 msgstr ""
 
@@ -546,8 +546,15 @@ msgstr ""
 msgid "Device cannot be used during update."
 msgstr ""
 
-#: src/gs-app-row.c:459 src/gs-update-dialog.ui:182
+#: src/gs-app-row.c:461 src/gs-update-dialog.ui:182
 msgid "Requires additional permissions"
+msgstr ""
+
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
+#: src/gs-app-row.c:468
+#, c-format
+msgid "Renamed from %s"
 msgstr ""
 
 #. TRANSLATORS: This is the name and state of an app for the ATK object
@@ -4180,7 +4187,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr ""
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:1019
+#: plugins/flatpak/gs-flatpak.c:1081
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr ""
