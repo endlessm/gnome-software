@@ -8,7 +8,7 @@
 # Furkan Ahmet Kara <furkanahmetkara.fk@gmail.com>, 2018
 # Gökhan Gurbetoğlu <ggurbet@gmail.com>, 2014
 # İbrahim Aydın <brhm.1995@hotmail.com>, 2017
-# Muha Aliss <muhaaliss@gmail.com>, 2019-2020
+# Muha Aliss <muhaaliss@gmail.com>, 2019-2021
 # Muhammet Kara <muhammetk@gmail.com>, 2014-2018
 # Necdet Yücel <necdetyucel@gmail.com>, 2015
 # Roddy Shuler <roddy@stanfordalumni.org>, 2017
@@ -19,9 +19,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-20 09:22+0000\n"
-"PO-Revision-Date: 2020-12-20 09:22+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"POT-Creation-Date: 2021-01-10 09:23+0000\n"
+"PO-Revision-Date: 2021-01-04 22:22+0000\n"
+"Last-Translator: Muha Aliss <muhaaliss@gmail.com>\n"
 "Language-Team: Turkish (http://www.transifex.com/endless-os/gnome-software/language/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -495,7 +495,7 @@ msgstr "Muhammet Kara <muhammetk@gmail.com>\nEmin Tufan Çetin <etcetin@gmail.co
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "Yazılım Yöneticisi Hakkında"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -567,7 +567,7 @@ msgstr "Ek yazı tipleri gerektiriyor"
 #: src/gs-app-row.c:468
 #, c-format
 msgid "Renamed from %s"
-msgstr ""
+msgstr "%s yeniden adlandırıldı."
 
 #. TRANSLATORS: This is the name and state of an app for the ATK object
 #. TRANSLATORS: this refers to an app (by name) that is installed
@@ -593,11 +593,11 @@ msgstr "İndirme gerektiriyor"
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "Giriş gerekli uzak %s(bölge %s)"
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "Giriş Gerekli"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -607,15 +607,15 @@ msgstr "_İptal"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "_Giriş"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "_Kullanıcı"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "_Parola"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1460,7 +1460,7 @@ msgstr "Güncellemeler bekleniyor…"
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr ""
+msgstr "Hazırlanıyor..."
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -4209,42 +4209,42 @@ msgstr "%s için flatpak üst verisi alınıyor…"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "%sAygıt Güncellemesi"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "%s Sistem Güncellemesi"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "%s Gömülü Denetleyici Güncellemesi"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "%s YM Güncellemesi"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "%s Kurumsal YM Güncellemesi"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "%s Tüketici YM Güncellemesi"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4252,7 +4252,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "%s Denetleyici Güncellemesi"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4260,21 +4260,21 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "%s Thunderbolt Denetleyici Güncellemesi"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "%s İşlemci Mikrokod Güncellemesi"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "%s Yapılandırma Güncellemesi"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691
