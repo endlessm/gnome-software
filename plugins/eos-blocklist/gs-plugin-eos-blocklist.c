@@ -842,10 +842,6 @@ gs_plugin_eos_blocklist_if_needed (GsPlugin *plugin, GsApp *app)
 		g_debug ("Blocklisting '%s': it's a compulsory, non-desktop app",
 			 gs_app_get_unique_id (app));
 		blocklist_app = TRUE;
-	} else if (g_str_has_prefix (id, "eos-link-")) {
-		g_debug ("Blocklisting '%s': app is an eos-link",
-			 gs_app_get_unique_id (app));
-		blocklist_app = TRUE;
 	} else if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
 		g_debug ("Blocklisting '%s': app is GNOME Software itself",
