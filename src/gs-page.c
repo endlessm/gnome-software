@@ -344,7 +344,7 @@ gs_page_copy_app (GsPage *page,
 		plugin_job = gs_plugin_job_newv (helper->action,
 						 "app", helper->app,
 						 "copy-dest", copy_dest,
-						 "interactive", TRUE,
+						 "interactive", (interaction == GS_SHELL_INTERACTION_FULL),
 						 NULL);
 
 		gs_plugin_loader_job_process_async (priv->plugin_loader,
@@ -375,7 +375,7 @@ gs_page_copy_os (GsPage *page,
 
 	plugin_job = gs_plugin_job_newv (helper->action,
 					 "copy-dest", copy_dest,
-					 "interactive", TRUE,
+					 "interactive", (interaction == GS_SHELL_INTERACTION_FULL),
 					 NULL);
 
 	gs_plugin_loader_job_process_async (priv->plugin_loader,
