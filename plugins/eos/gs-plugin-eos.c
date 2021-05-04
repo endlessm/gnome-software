@@ -122,13 +122,13 @@ gs_plugin_eos_refine_core_app (GsApp *app)
 	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE)
 		return;
 
-	/* we only allow to remove flatpak apps */
-	gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
-
+	/* Hide non-installed apt packages, as they can’t actually be installed.
+	 * The installed ones are pre-installed in the image, and can’t be
+	 * removed. We only allow flatpaks to be removed. */
 	if (!gs_app_is_installed (app)) {
-		/* forcibly set the installed state */
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
+	} else {
+		gs_app_add_quirk (app, GS_APP_QUIRK_COMPULSORY);
 	}
 }
 
