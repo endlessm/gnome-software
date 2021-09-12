@@ -24,6 +24,7 @@
 #include "gs-app-private.h"
 #include "gs-app-list-private.h"
 #include "gs-app-collation.h"
+#include "gs-enums.h"
 
 struct _GsAppList
 {
@@ -32,7 +33,7 @@ struct _GsAppList
 	GMutex			 mutex;
 	guint			 size_peak;
 	GsAppListFlags		 flags;
-	AsAppState		 state;
+	GsAppState		 state;
 	guint			 progress;  /* 0–100 inclusive, or %GS_APP_PROGRESS_UNKNOWN */
 };
 
@@ -44,6 +45,13 @@ enum {
 	PROP_LAST
 };
 
+enum {
+	SIGNAL_APP_STATE_CHANGED,
+	SIGNAL_LAST
+};
+
+static guint signals [SIGNAL_LAST] = { 0 };
+
 /**
  * gs_app_list_get_state:
  * @list: A #GsAppList
@@ -53,14 +61,14 @@ enum {
  * This method will only return a valid result if gs_app_list_add_flag() has
  * been called with %GS_APP_LIST_FLAG_WATCH_APPS.
  *
- * Returns: the #AsAppState, e.g. %AS_APP_STATE_INSTALLED
+ * Returns: the #GsAppState, e.g. %GS_APP_STATE_INSTALLED
  *
  * Since: 3.30
  **/
-AsAppState
+GsAppState
 gs_app_list_get_state (GsAppList *list)
 {
-	g_return_val_if_fail (GS_IS_APP_LIST (list), AS_APP_STATE_UNKNOWN);
+	g_return_val_if_fail (GS_IS_APP_LIST (list), GS_APP_STATE_UNKNOWN);
 	return list->state;
 }
 
@@ -162,15 +170,15 @@ gs_app_list_invalidate_progress (GsAppList *self)
 static void
 gs_app_list_invalidate_state (GsAppList *self)
 {
-	AsAppState state = AS_APP_STATE_UNKNOWN;
+	GsAppState state = GS_APP_STATE_UNKNOWN;
 	g_autoptr(GPtrArray) apps = gs_app_list_get_watched (self);
 
 	/* find any action state of the list */
 	for (guint i = 0; i < apps->len; i++) {
 		GsApp *app_tmp = g_ptr_array_index (apps, i);
-		AsAppState state_tmp = gs_app_get_state (app_tmp);
-		if (state_tmp == AS_APP_STATE_INSTALLING ||
-		    state_tmp == AS_APP_STATE_REMOVING) {
+		GsAppState state_tmp = gs_app_get_state (app_tmp);
+		if (state_tmp == GS_APP_STATE_INSTALLING ||
+		    state_tmp == GS_APP_STATE_REMOVING) {
 			state = state_tmp;
 			break;
 		}
@@ -191,6 +199,8 @@ static void
 gs_app_list_state_notify_cb (GsApp *app, GParamSpec *pspec, GsAppList *self)
 {
 	gs_app_list_invalidate_state (self);
+
+	g_signal_emit (self, signals[SIGNAL_APP_STATE_CHANGED], 0, app);
 }
 
 static void
@@ -239,7 +249,7 @@ gs_app_list_lookup_safe (GsAppList *list, const gchar *unique_id)
 {
 	for (guint i = 0; i < list->array->len; i++) {
 		GsApp *app = g_ptr_array_index (list->array, i);
-		if (as_utils_unique_id_equal (gs_app_get_unique_id (app), unique_id))
+		if (as_utils_data_id_equal (gs_app_get_unique_id (app), unique_id))
 			return app;
 	}
 	return NULL;
@@ -729,15 +739,18 @@ gs_app_list_filter_app_get_keys (GsApp *app, GsAppListFilterFlags flags)
 		return keys;
 	}
 
-	/* use the ID and any provides */
+	/* use the ID and any provided items */
 	if (flags & GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES) {
-		GPtrArray *provides = gs_app_get_provides (app);
+		GPtrArray *provided = gs_app_get_provided (app);
 		g_ptr_array_add (keys, g_strdup (gs_app_get_id (app)));
-		for (guint i = 0; i < provides->len; i++) {
-			AsProvide *prov = g_ptr_array_index (provides, i);
-			if (as_provide_get_kind (prov) != AS_PROVIDE_KIND_ID)
+		for (guint i = 0; i < provided->len; i++) {
+			AsProvided *prov = g_ptr_array_index (provided, i);
+			GPtrArray *items;
+			if (as_provided_get_kind (prov) != AS_PROVIDED_KIND_ID)
 				continue;
-			g_ptr_array_add (keys, g_strdup (as_provide_get_value (prov)));
+			items = as_provided_get_items (prov);
+			for (guint j = 0; j < items->len; j++)
+				g_ptr_array_add (keys, g_strdup (g_ptr_array_index (items, j)));
 		}
 		return keys;
 	}
@@ -875,7 +888,7 @@ gs_app_list_get_property (GObject *object, guint prop_id, GValue *value, GParamS
 	GsAppList *self = GS_APP_LIST (object);
 	switch (prop_id) {
 	case PROP_STATE:
-		g_value_set_uint (value, self->state);
+		g_value_set_enum (value, self->state);
 		break;
 	case PROP_PROGRESS:
 		g_value_set_uint (value, self->progress);
@@ -917,10 +930,9 @@ gs_app_list_class_init (GsAppListClass *klass)
 	/**
 	 * GsAppList:state:
 	 */
-	pspec = g_param_spec_uint ("state", NULL, NULL,
-				   AS_APP_STATE_UNKNOWN,
-				   AS_APP_STATE_LAST,
-				   AS_APP_STATE_UNKNOWN,
+	pspec = g_param_spec_enum ("state", NULL, NULL,
+				   GS_TYPE_APP_STATE,
+				   GS_APP_STATE_UNKNOWN,
 				   G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_STATE, pspec);
 
@@ -936,6 +948,20 @@ gs_app_list_class_init (GsAppListClass *klass)
 				   0, GS_APP_PROGRESS_UNKNOWN, GS_APP_PROGRESS_UNKNOWN,
 				   G_PARAM_READABLE);
 	g_object_class_install_property (object_class, PROP_PROGRESS, pspec);
+
+	/**
+	 * GsAppList:app-state-changed:
+	 * @app: a #GsApp
+	 *
+	 * Emitted when any of the internal #GsApp instances changes its state.
+	 *
+	 * Since: 3.40
+	 */
+	signals [SIGNAL_APP_STATE_CHANGED] =
+		g_signal_new ("app-state-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_generic,
+			      G_TYPE_NONE, 1, GS_TYPE_APP);
 }
 
 static void

@@ -22,10 +22,18 @@ gs_plugins_fedora_langpacks_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	g_autoptr(GsOsRelease) os_release = NULL;
+
+	os_release = gs_os_release_new (NULL);
+	if (g_strcmp0 (gs_os_release_get_id (os_release), "fedora") != 0) {
+		g_test_skip ("not on fedora");
+		return;
+	}
 
 	/* start with a clean slate */
 	cachefn = gs_utils_get_cache_filename ("langpacks", "langpacks-ja",
-					       GS_UTILS_CACHE_FLAG_WRITEABLE,
+					       GS_UTILS_CACHE_FLAG_WRITEABLE |
+					       GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 					       &error);
 	g_assert_no_error (error);
 	g_unlink (cachefn);
@@ -45,7 +53,7 @@ gs_plugins_fedora_langpacks_func (GsPluginLoader *plugin_loader)
 	/* check app's source and kind */
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_source_default (app), ==, "langpacks-ja");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_LOCALIZATION);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_LOCALIZATION);
 }
 
 int

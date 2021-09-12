@@ -28,6 +28,7 @@ struct _GsReposDialog
 
 	GCancellable	*cancellable;
 	GsPluginLoader	*plugin_loader;
+	GtkWidget	*frame;
 	GtkWidget	*frame_third_party;
 	GtkWidget	*label_description;
 	GtkWidget	*label_empty;
@@ -73,14 +74,14 @@ get_repo_installed_text (GsApp *repo)
 	for (guint i = 0; i < gs_app_list_length (related); i++) {
 		GsApp *app_tmp = gs_app_list_index (related, i);
 		switch (gs_app_get_kind (app_tmp)) {
-		case AS_APP_KIND_WEB_APP:
-		case AS_APP_KIND_DESKTOP:
+		case AS_COMPONENT_KIND_WEB_APP:
+		case AS_COMPONENT_KIND_DESKTOP_APP:
 			cnt_apps++;
 			break;
-		case AS_APP_KIND_FONT:
-		case AS_APP_KIND_CODEC:
-		case AS_APP_KIND_INPUT_METHOD:
-		case AS_APP_KIND_ADDON:
+		case AS_COMPONENT_KIND_FONT:
+		case AS_COMPONENT_KIND_CODEC:
+		case AS_COMPONENT_KIND_INPUT_METHOD:
+		case AS_COMPONENT_KIND_ADDON:
 			cnt_addon++;
 			break;
 		default:
@@ -349,17 +350,17 @@ repo_button_clicked_cb (GsRepoRow *row,
 	repo = gs_repo_row_get_repo (row);
 
 	switch (gs_app_get_state (repo)) {
-	case AS_APP_STATE_AVAILABLE:
-	case AS_APP_STATE_AVAILABLE_LOCAL:
+	case GS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_AVAILABLE_LOCAL:
 	        enable_repo (dialog, repo);
 		break;
-	case AS_APP_STATE_INSTALLED:
+	case GS_APP_STATE_INSTALLED:
 	        remove_confirm_repo (dialog, repo);
 		break;
 	default:
 		g_warning ("repo %s button clicked in unexpected state %s",
 		           gs_app_get_id (repo),
-		           as_app_state_to_string (gs_app_get_state (repo)));
+		           gs_app_state_to_string (gs_app_get_state (repo)));
 		break;
 	}
 }
@@ -387,17 +388,17 @@ add_repo (GsReposDialog *dialog, GsApp *repo)
 {
 	GtkWidget *row;
 	g_autofree gchar *text = NULL;
-	AsAppState state;
+	GsAppState state;
 
 	state = gs_app_get_state (repo);
-	if (!(state == AS_APP_STATE_AVAILABLE ||
-	      state == AS_APP_STATE_AVAILABLE_LOCAL ||
-	      state == AS_APP_STATE_INSTALLED ||
-	      state == AS_APP_STATE_INSTALLING ||
-	      state == AS_APP_STATE_REMOVING)) {
+	if (!(state == GS_APP_STATE_AVAILABLE ||
+	      state == GS_APP_STATE_AVAILABLE_LOCAL ||
+	      state == GS_APP_STATE_INSTALLED ||
+	      state == GS_APP_STATE_INSTALLING ||
+	      state == GS_APP_STATE_REMOVING)) {
 		g_warning ("repo %s in invalid state %s",
 		           gs_app_get_id (repo),
-		           as_app_state_to_string (state));
+		           gs_app_state_to_string (state));
 		return;
 	}
 
@@ -473,20 +474,20 @@ third_party_repo_button_clicked_cb (GsThirdPartyRepoRow *row,
 	app = gs_third_party_repo_row_get_app (row);
 
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_UNAVAILABLE:
-	case AS_APP_STATE_AVAILABLE:
-	case AS_APP_STATE_AVAILABLE_LOCAL:
+	case GS_APP_STATE_UNAVAILABLE:
+	case GS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_AVAILABLE_LOCAL:
 		install_third_party_repo (dialog, TRUE);
 		break;
-	case AS_APP_STATE_UPDATABLE_LIVE:
-	case AS_APP_STATE_UPDATABLE:
-	case AS_APP_STATE_INSTALLED:
+	case GS_APP_STATE_UPDATABLE_LIVE:
+	case GS_APP_STATE_UPDATABLE:
+	case GS_APP_STATE_INSTALLED:
 		install_third_party_repo (dialog, FALSE);
 		break;
 	default:
 		g_warning ("third party repo %s button clicked in unexpected state %s",
 		           gs_app_get_id (app),
-		           as_app_state_to_string (gs_app_get_state (app)));
+		           gs_app_state_to_string (gs_app_get_state (app)));
 		break;
 	}
 
@@ -569,6 +570,9 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 		app = gs_app_list_index (list, i);
 		add_repo (dialog, app);
 	}
+
+	gtk_widget_set_visible (dialog->frame,
+		gtk_list_box_get_row_at_index (GTK_LIST_BOX (dialog->listbox), 0) != NULL);
 }
 
 static void
@@ -859,6 +863,7 @@ gs_repos_dialog_class_init (GsReposDialogClass *klass)
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-repos-dialog.ui");
 
+	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, frame);
 	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, frame_third_party);
 	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, label_description);
 	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, label_empty);

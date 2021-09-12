@@ -53,7 +53,7 @@ static void
 _app_row_button_clicked_cb (GsAppRow *app_row, GsUpdatesSection *self)
 {
 	GsApp *app = gs_app_row_get_app (app_row);
-	if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE_LIVE)
+	if (gs_app_get_state (app) != GS_APP_STATE_UPDATABLE_LIVE)
 		return;
 	gs_page_update_app (GS_PAGE (self->page), app, gs_app_get_cancellable (app));
 }
@@ -62,11 +62,20 @@ static void
 _row_unrevealed_cb (GObject *row, GParamSpec *pspec, gpointer data)
 {
 	GtkWidget *list;
+	GsUpdatesSection *self;
 
 	list = gtk_widget_get_parent (GTK_WIDGET (row));
 	if (list == NULL)
 		return;
-	gtk_container_remove (GTK_CONTAINER (list), GTK_WIDGET (row));
+
+	self = GS_UPDATES_SECTION (list);
+
+	gs_app_list_remove (self->list, gs_app_row_get_app (GS_APP_ROW (row)));
+
+	gtk_widget_destroy (GTK_WIDGET (row));
+
+	if (!gs_app_list_length (self->list))
+		gtk_widget_hide (list);
 }
 
 static void
@@ -80,7 +89,7 @@ _unreveal_row (GsAppRow *app_row)
 static void
 _app_state_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data)
 {
-	if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED) {
+	if (gs_app_get_state (app) == GS_APP_STATE_INSTALLED) {
 		GsAppRow *app_row = GS_APP_ROW (user_data);
 		_unreveal_row (app_row);
 	}
@@ -117,7 +126,10 @@ gs_updates_section_remove_all (GsUpdatesSection *self)
 	children = gtk_container_get_children (GTK_CONTAINER (self));
 	for (GList *l = children; l != NULL; l = l->next) {
 		GtkWidget *w = GTK_WIDGET (l->data);
-		gtk_container_remove (GTK_CONTAINER (self), w);
+		/* Destroying, rather than just removing, prevents the ::unrevealed
+		 * signal from being emitted, which would cause unfortunate reentrancy.
+		 */
+		gtk_widget_destroy (w);
 	}
 	gs_app_list_remove_all (self->list);
 	gtk_widget_hide (GTK_WIDGET (self));
@@ -139,35 +151,32 @@ _get_app_sort_key (GsApp *app)
 
 	/* sort apps by kind */
 	switch (gs_app_get_kind (app)) {
-	case AS_APP_KIND_OS_UPDATE:
-		g_string_append (key, "1:");
-		break;
-	case AS_APP_KIND_DESKTOP:
+	case AS_COMPONENT_KIND_DESKTOP_APP:
 		g_string_append (key, "2:");
 		break;
-	case AS_APP_KIND_WEB_APP:
+	case AS_COMPONENT_KIND_WEB_APP:
 		g_string_append (key, "3:");
 		break;
-	case AS_APP_KIND_RUNTIME:
+	case AS_COMPONENT_KIND_RUNTIME:
 		g_string_append (key, "4:");
 		break;
-	case AS_APP_KIND_ADDON:
+	case AS_COMPONENT_KIND_ADDON:
 		g_string_append (key, "5:");
 		break;
-	case AS_APP_KIND_CODEC:
+	case AS_COMPONENT_KIND_CODEC:
 		g_string_append (key, "6:");
 		break;
-	case AS_APP_KIND_FONT:
+	case AS_COMPONENT_KIND_FONT:
 		g_string_append (key, "6:");
 		break;
-	case AS_APP_KIND_INPUT_METHOD:
+	case AS_COMPONENT_KIND_INPUT_METHOD:
 		g_string_append (key, "7:");
 		break;
-	case AS_APP_KIND_SHELL_EXTENSION:
-		g_string_append (key, "8:");
-		break;
 	default:
-		g_string_append (key, "9:");
+		if (gs_app_get_special_kind (app) == GS_APP_SPECIAL_KIND_OS_UPDATE)
+			g_string_append (key, "1:");
+		else
+			g_string_append (key, "8:");
 		break;
 	}
 
@@ -386,7 +395,7 @@ _button_update_all_clicked_cb (GtkButton *button, GsUpdatesSection *self)
 	/* look at each app in turn */
 	for (guint i = 0; i < gs_app_list_length (self->list); i++) {
 		GsApp *app = gs_app_list_index (self->list, i);
-		if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE)
+		if (gs_app_get_state (app) == GS_APP_STATE_UPDATABLE)
 			helper->do_reboot = TRUE;
 		if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT))
 			helper->do_reboot_notification = TRUE;
@@ -598,6 +607,28 @@ gs_updates_section_progress_notify_cb (GsAppList *list,
 }
 
 static void
+gs_updates_section_app_state_changed_cb (GsAppList *list,
+					 GsApp *in_app,
+					 GsUpdatesSection *self)
+{
+	guint ii, len, busy = 0;
+
+	len = gs_app_list_length (list);
+
+	for (ii = 0; ii < len; ii++) {
+		GsApp *app = gs_app_list_index (list, ii);
+		GsAppState state = gs_app_get_state (app);
+
+		if (state == GS_APP_STATE_INSTALLING ||
+		    state == GS_APP_STATE_REMOVING) {
+			busy++;
+		}
+	}
+
+	gtk_widget_set_sensitive (self->button_update, busy < len);
+}
+
+static void
 gs_updates_section_init (GsUpdatesSection *self)
 {
 	GtkStyleContext *context;
@@ -638,5 +669,12 @@ gs_updates_section_new (GsUpdatesSectionKind kind,
 	self->plugin_loader = g_object_ref (plugin_loader);
 	self->page = g_object_ref (page);
 	self->section_header = g_object_ref_sink (_build_section_header (self));
+
+	if (self->kind == GS_UPDATES_SECTION_KIND_ONLINE) {
+		g_signal_connect_object (self->list, "app-state-changed",
+					 G_CALLBACK (gs_updates_section_app_state_changed_cb),
+					 self, 0);
+	}
+
 	return GTK_LIST_BOX (self);
 }

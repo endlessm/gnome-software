@@ -17,6 +17,8 @@ gdbus_src = gnome.gdbus_codegen(
 
 gnome_software_sources = [
   'gs-app-addon-row.c',
+  'gs-app-version-history-dialog.c',
+  'gs-app-version-history-row.c',
   'gs-application.c',
   'gs-app-row.c',
   'gs-app-tile.c',
@@ -25,10 +27,11 @@ gnome_software_sources = [
   'gs-category-tile.c',
   'gs-common.c',
   'gs-css.c',
-  'gs-content-rating.c',
+  'gs-description-box.c',
   'gs-details-page.c',
   'gs-extras-page.c',
   'gs-feature-tile.c',
+  'gs-featured-carousel.c',
   'gs-first-run-dialog.c',
   'gs-fixed-size-bin.c',
   'gs-folders.c',
@@ -54,6 +57,7 @@ gnome_software_sources = [
   'gs-review-dialog.c',
   'gs-review-histogram.c',
   'gs-review-row.c',
+  'gs-rounded-bin.c',
   'gs-screenshot-image.c',
   'gs-search-page.c',
   'gs-shell.c',
@@ -71,13 +75,15 @@ gnome_software_sources = [
 ]
 
 gnome_software_dependencies = [
-  appstream_glib,
+  appstream,
   gio_unix,
   glib,
   gmodule,
   goa,
   gtk,
   json_glib,
+  libgnomesoftware_dep,
+  libhandy,
   libm,
   libsoup,
   libxmlb,
@@ -102,8 +108,8 @@ if get_option('packagekit')
   gnome_software_dependencies += [packagekit]
 endif
 
-if get_option('gnome_desktop')
-  gnome_software_dependencies += [gnome_desktop]
+if gsettings_desktop_schemas.found()
+  gnome_software_dependencies += [gsettings_desktop_schemas]
 endif
 
 if get_option('gspell')
@@ -124,12 +130,10 @@ executable(
     include_directories('../lib'),
   ],
   dependencies : gnome_software_dependencies,
-  link_with : [
-    libgnomesoftware
-  ],
   c_args : cargs,
   install : true,
-  install_dir : get_option('bindir')
+  install_dir : get_option('bindir'),
+  install_rpath : gs_private_libdir,
 )
 
 executable(
@@ -151,6 +155,16 @@ executable(
 cdata = configuration_data()
 cdata.set('bindir', join_paths(get_option('prefix'),
                                get_option('bindir')))
+if (get_option('apt'))
+  cdata.set('apthandler', 'x-scheme-handler/apt;')
+else
+  cdata.set('apthandler', '')
+endif
+if (get_option('snap'))
+  cdata.set('snaphandler', 'x-scheme-handler/snap;')
+else
+  cdata.set('snaphandler', '')
+endif
 
 # replace @bindir@
 configure_file(
@@ -168,9 +182,14 @@ configure_file(
   configuration : cdata
 )
 
-# replace @bindir@
 i18n.merge_file(
-  input: 'org.gnome.Software.desktop.in',
+  input:
+    # replace mime-type handlers
+    configure_file(
+      input : 'org.gnome.Software.desktop.in',
+      output : 'org.gnome.Software.desktop.tmp',
+      configuration : cdata
+    ),
   output: 'org.gnome.Software.desktop',
   type: 'desktop',
   po_dir: join_paths(meson.source_root(), 'po'),
@@ -230,7 +249,6 @@ if get_option('tests')
     sources : [
       'gs-css.c',
       'gs-common.c',
-      'gs-content-rating.c',
       'gs-self-test.c',
     ],
     include_directories : [
@@ -238,18 +256,17 @@ if get_option('tests')
       include_directories('../lib'),
     ],
     dependencies : [
-      appstream_glib,
+      appstream,
       gio_unix,
       glib,
       gmodule,
       goa,
+      gsettings_desktop_schemas,
       gtk,
       json_glib,
+      libgnomesoftware_dep,
       libm,
       libsoup,
-    ],
-    link_with : [
-      libgnomesoftware
     ],
     c_args : cargs
   )

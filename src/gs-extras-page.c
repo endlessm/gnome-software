@@ -12,6 +12,7 @@
 #include "gs-extras-page.h"
 
 #include "gs-app-row.h"
+#include "gs-application.h"
 #include "gs-language.h"
 #include "gs-shell.h"
 #include "gs-common.h"
@@ -54,6 +55,8 @@ struct _GsExtrasPage
 	GsLanguage		 *language;
 	GsVendor		 *vendor;
 	guint			  pending_search_cnt;
+	gchar			 *caller_app_name;
+	gchar			 *install_resources_ident;
 
 	GtkWidget		 *label_failed;
 	GtkWidget		 *label_no_results;
@@ -239,11 +242,37 @@ gs_extras_page_update_ui_state (GsExtrasPage *self)
 }
 
 static void
+gs_extras_page_maybe_emit_installed_resources_done (GsExtrasPage *self)
+{
+	if (self->install_resources_ident && (
+	    self->state == GS_EXTRAS_PAGE_STATE_LOADING ||
+	    self->state == GS_EXTRAS_PAGE_STATE_NO_RESULTS ||
+	    self->state == GS_EXTRAS_PAGE_STATE_FAILED)) {
+		GsApplication *application;
+		GError *op_error = NULL;
+
+		/* When called during the LOADING state, it means the package is already installed */
+		if (self->state == GS_EXTRAS_PAGE_STATE_NO_RESULTS) {
+			g_set_error_literal (&op_error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND, _("Requested software not found"));
+		} else if (self->state == GS_EXTRAS_PAGE_STATE_FAILED) {
+			g_set_error_literal (&op_error, G_IO_ERROR, G_IO_ERROR_FAILED, _("Failed to find requested software"));
+		}
+
+		application = GS_APPLICATION (g_application_get_default ());
+		gs_application_emit_install_resources_done (application, self->install_resources_ident, op_error);
+
+		g_clear_pointer (&self->install_resources_ident, g_free);
+		g_clear_error (&op_error);
+	}
+}
+
+static void
 gs_extras_page_set_state (GsExtrasPage *self,
                           GsExtrasPageState state)
 {
 	self->state = state;
 	gs_extras_page_update_ui_state (self);
+	gs_extras_page_maybe_emit_installed_resources_done (self);
 }
 
 static void
@@ -252,16 +281,16 @@ app_row_button_clicked_cb (GsAppRow *app_row,
 {
 	GsApp *app = gs_app_row_get_app (app_row);
 
-	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE &&
-	    gs_app_get_url (app, AS_URL_KIND_MISSING) != NULL) {
+	if (gs_app_get_state (app) == GS_APP_STATE_UNAVAILABLE &&
+	    gs_app_get_url_missing (app) != NULL) {
 		gs_shell_show_uri (self->shell,
-	                           gs_app_get_url (app, AS_URL_KIND_MISSING));
-	} else if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE ||
-	           gs_app_get_state (app) == AS_APP_STATE_AVAILABLE_LOCAL ||
-	           gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
+	                           gs_app_get_url_missing (app));
+	} else if (gs_app_get_state (app) == GS_APP_STATE_AVAILABLE ||
+	           gs_app_get_state (app) == GS_APP_STATE_AVAILABLE_LOCAL ||
+	           gs_app_get_state (app) == GS_APP_STATE_UNAVAILABLE) {
 		gs_page_install_app (GS_PAGE (self), app, GS_SHELL_INTERACTION_FULL,
 				     self->search_cancellable);
-	} else if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED) {
+	} else if (gs_app_get_state (app) == GS_APP_STATE_INSTALLED) {
 		gs_page_remove_app (GS_PAGE (self), app, self->search_cancellable);
 	} else {
 		g_critical ("extras: app in unexpected state %u", gs_app_get_state (app));
@@ -419,9 +448,9 @@ create_missing_app (SearchData *search_data)
 	}
 	gs_app_set_summary_missing (app, g_string_free (summary_missing, FALSE));
 
-	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
-	gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
-	gs_app_set_url (app, AS_URL_KIND_MISSING, search_data->url_not_found);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
+	gs_app_set_state (app, GS_APP_STATE_UNAVAILABLE);
+	gs_app_set_url_missing (app, search_data->url_not_found);
 
 	return app;
 }
@@ -450,14 +479,25 @@ build_no_results_label (GsExtrasPage *self)
 	g_ptr_array_add (array, NULL);
 
 	url = g_strdup_printf ("<a href=\"%s\">%s</a>",
-	                       gs_app_get_url (app, AS_URL_KIND_MISSING),
+	                       gs_app_get_url_missing (app),
                                /* TRANSLATORS: hyperlink title */
-                               _("this website"));
+                               _("the documentation"));
 
 	codec_titles = build_comma_separated_list ((gchar **) array->pdata);
-	/* TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "this website" */
-	return g_strdup_printf (ngettext ("Unfortunately, the %s you were searching for could not be found. Please see %s for more information.",
-	                                  "Unfortunately, the %s you were searching for could not be found. Please see %s for more information.",
+	if (self->caller_app_name) {
+		/* TRANSLATORS: no codecs were found. The first %s will be replaced by actual codec name(s),
+		   the second %s is the application name, which requested the codecs, the third %s is a link titled "the documentation" */
+		return g_strdup_printf (ngettext ("Unable to find the %s requested by %s. Please see %s for more information.",
+						  "Unable to find the %s requested by %s. Please see %s for more information.",
+						  num),
+					codec_titles,
+					self->caller_app_name,
+					url);
+	}
+
+	/* TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "the documentation" */
+	return g_strdup_printf (ngettext ("Unable to find the %s you were searching for. Please see %s for more information.",
+	                                  "Unable to find the %s you were searching for. Please see %s for more information.",
 	                                  num),
 	                        codec_titles,
 	                        url);
@@ -497,6 +537,8 @@ show_search_results (GsExtrasPage *self)
 		g_assert (list != NULL);
 		app = gs_app_row_get_app (GS_APP_ROW (list->data));
 		gs_shell_change_mode (self->shell, GS_SHELL_MODE_DETAILS, app, TRUE);
+		if (gs_app_is_installed (app))
+			gs_extras_page_maybe_emit_installed_resources_done (self);
 	} else {
 		/* show what we got */
 		g_debug ("extras: got %u search results, showing", n_children);
@@ -974,12 +1016,34 @@ gs_extras_page_search_printer_drivers (GsExtrasPage *self, gchar **device_ids)
 	gs_extras_page_load (self, array_search_data);
 }
 
+static gchar *
+gs_extras_page_get_app_name (const gchar *desktop_id)
+{
+	g_autoptr(GDesktopAppInfo) app_info = NULL;
+
+	if (!desktop_id || !*desktop_id)
+		return NULL;
+
+	app_info = g_desktop_app_info_new (desktop_id);
+	if (!app_info)
+		return NULL;
+
+	return g_strdup (g_app_info_get_display_name (G_APP_INFO (app_info)));
+}
+
 void
 gs_extras_page_search (GsExtrasPage  *self,
                        const gchar   *mode_str,
-                       gchar        **resources)
+                       gchar        **resources,
+                       const gchar   *desktop_id,
+                       const gchar   *ident)
 {
 	self->mode = gs_extras_page_mode_from_string (mode_str);
+	g_clear_pointer (&self->caller_app_name, g_free);
+	self->caller_app_name = gs_extras_page_get_app_name (desktop_id);
+	g_clear_pointer (&self->install_resources_ident, g_free);
+	self->install_resources_ident = (ident && *ident) ? g_strdup (ident) : NULL;
+
 	switch (self->mode) {
 	case GS_EXTRAS_PAGE_MODE_INSTALL_PACKAGE_FILES:
 		gs_extras_page_search_package_files (self, resources);
@@ -1045,10 +1109,10 @@ row_activated_cb (GtkListBox *list_box,
 
 	app = gs_app_row_get_app (GS_APP_ROW (row));
 
-	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE &&
-	    gs_app_get_url (app, AS_URL_KIND_MISSING) != NULL) {
+	if (gs_app_get_state (app) == GS_APP_STATE_UNAVAILABLE &&
+	    gs_app_get_url_missing (app) != NULL) {
 		gs_shell_show_uri (self->shell,
-		                   gs_app_get_url (app, AS_URL_KIND_MISSING));
+		                   gs_app_get_url_missing (app));
 	} else {
 		gs_shell_show_app (self->shell, app);
 	}
@@ -1064,7 +1128,7 @@ get_app_sort_key (GsApp *app)
 
 	/* sort missing applications as last */
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_UNAVAILABLE:
+	case GS_APP_STATE_UNAVAILABLE:
 		g_string_append (key, "9:");
 		break;
 	default:
@@ -1164,6 +1228,8 @@ gs_extras_page_dispose (GObject *object)
 	g_clear_object (&self->plugin_loader);
 
 	g_clear_pointer (&self->array_search_data, g_ptr_array_unref);
+	g_clear_pointer (&self->caller_app_name, g_free);
+	g_clear_pointer (&self->install_resources_ident, g_free);
 
 	G_OBJECT_CLASS (gs_extras_page_parent_class)->dispose (object);
 }

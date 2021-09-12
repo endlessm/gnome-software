@@ -55,7 +55,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	/* add source */
 	priv->cached_origin = gs_app_new (gs_plugin_get_name (plugin));
-	gs_app_set_kind (priv->cached_origin, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (priv->cached_origin, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_origin_hostname (priv->cached_origin, "http://www.bbc.co.uk/");
 
 	/* add the source to the plugin cache which allows us to match the
@@ -276,7 +276,7 @@ gs_plugin_add_search (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GsApp) app = NULL;
-	g_autoptr(AsIcon) ic = NULL;
+	g_autoptr(GIcon) ic = NULL;
 
 	/* hang the plugin for 5 seconds */
 	if (g_strcmp0 (values[0], "hang") == 0) {
@@ -305,9 +305,7 @@ gs_plugin_add_search (GsPlugin *plugin,
 		g_timeout_add_seconds (1, gs_plugin_dummy_poll_cb, plugin);
 
 	/* use a generic stock icon */
-	ic = as_icon_new ();
-	as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-	as_icon_set_name (ic, "drive-harddisk");
+	ic = g_themed_icon_new ("drive-harddisk");
 
 	/* add a live updatable normal application */
 	app = gs_app_new ("chiron.desktop");
@@ -316,8 +314,8 @@ gs_plugin_add_search (GsPlugin *plugin,
 	gs_app_add_icon (app, ic);
 	gs_app_set_size_installed (app, 42 * 1024 * 1024);
 	gs_app_set_size_download (app, 50 * 1024 * 1024);
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_set_metadata (app, "GnomeSoftware::Creator",
 			     gs_plugin_get_name (plugin));
@@ -337,7 +335,7 @@ gs_plugin_add_updates (GsPlugin *plugin,
 {
 	GsApp *app;
 	GsApp *proxy;
-	g_autoptr(AsIcon) ic = NULL;
+	g_autoptr(GIcon) ic = NULL;
 
 	/* update UI as this might take some time */
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
@@ -347,9 +345,7 @@ gs_plugin_add_updates (GsPlugin *plugin,
 		return FALSE;
 
 	/* use a generic stock icon */
-	ic = as_icon_new ();
-	as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-	as_icon_set_name (ic, "drive-harddisk");
+	ic = g_themed_icon_new ("drive-harddisk");
 
 	/* add a live updatable normal application */
 	app = gs_app_new ("chiron.desktop");
@@ -358,8 +354,8 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	gs_app_set_update_details (app, "Do not crash when using libvirt.");
 	gs_app_set_update_urgency (app, AS_URGENCY_KIND_HIGH);
 	gs_app_add_icon (app, ic);
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_list_add (list, app);
 	g_object_unref (app);
@@ -370,10 +366,10 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "Development files for libvirt");
 	gs_app_set_update_details (app, "Fix several memory leaks.");
 	gs_app_set_update_urgency (app, AS_URGENCY_KIND_LOW);
-	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+	gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE);
 	gs_app_add_source (app, "libvirt-glib-devel");
 	gs_app_add_source_id (app, "libvirt-glib-devel;0.0.1;noarch;fedora");
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
@@ -386,10 +382,10 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "library for chiron");
 	gs_app_set_update_details (app, "Do not crash when using libvirt.");
 	gs_app_set_update_urgency (app, AS_URGENCY_KIND_HIGH);
-	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_add_source (app, "chiron-libs");
 	gs_app_add_source_id (app, "chiron-libs;0.0.1;i386;updates-testing");
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
@@ -403,9 +399,9 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	gs_app_set_update_details (proxy, "Update all related apps.");
 	gs_app_set_update_urgency (proxy, AS_URGENCY_KIND_HIGH);
 	gs_app_add_icon (proxy, ic);
-	gs_app_set_kind (proxy, AS_APP_KIND_DESKTOP);
+	gs_app_set_kind (proxy, AS_COMPONENT_KIND_DESKTOP_APP);
 	gs_app_add_quirk (proxy, GS_APP_QUIRK_IS_PROXY);
-	gs_app_set_state (proxy, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_state (proxy, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_management_plugin (proxy, gs_plugin_get_name (plugin));
 	gs_app_list_add (list, proxy);
 	g_object_unref (proxy);
@@ -414,8 +410,8 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	app = gs_app_new ("proxy-related-app.desktop");
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Related app");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "A related app");
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_add_related (proxy, app);
 	g_object_unref (app);
@@ -424,8 +420,8 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	app = gs_app_new ("proxy-another-related-app.desktop");
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Another Related app");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "A related app");
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_add_related (proxy, app);
 	g_object_unref (app);
@@ -447,8 +443,8 @@ gs_plugin_add_installed (GsPlugin *plugin,
 	for (i = 0; packages[i] != NULL; i++) {
 		g_autoptr(GsApp) app = gs_app_new (NULL);
 		gs_app_add_source (app, packages[i]);
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-		gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+		gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
 		gs_app_set_origin (app, "london-west");
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 		gs_app_list_add (list, app);
@@ -457,8 +453,8 @@ gs_plugin_add_installed (GsPlugin *plugin,
 	/* add all app-ids */
 	for (i = 0; app_ids[i] != NULL; i++) {
 		g_autoptr(GsApp) app = gs_app_new (app_ids[i]);
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-		gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+		gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 		gs_app_list_add (list, app);
 	}
@@ -484,7 +480,7 @@ gs_plugin_add_popular (GsPlugin *plugin,
 
 	/* add again, this time with a prefix so it gets deduplicated */
 	app2 = gs_app_new ("zeus.desktop");
-	gs_app_set_scope (app2, AS_APP_SCOPE_USER);
+	gs_app_set_scope (app2, AS_COMPONENT_SCOPE_USER);
 	gs_app_set_bundle_kind (app2, AS_BUNDLE_KIND_SNAP);
 	gs_app_set_metadata (app2, "GnomeSoftware::Creator",
 			     gs_plugin_get_name (plugin));
@@ -507,12 +503,12 @@ gs_plugin_app_remove (GsPlugin *plugin,
 
 	/* remove app */
 	if (g_strcmp0 (gs_app_get_id (app), "chiron.desktop") == 0) {
-		gs_app_set_state (app, AS_APP_STATE_REMOVING);
+		gs_app_set_state (app, GS_APP_STATE_REMOVING);
 		if (!gs_plugin_dummy_delay (plugin, app, 500, cancellable, error)) {
 			gs_app_set_state_recover (app);
 			return FALSE;
 		}
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
 	}
 
 	/* keep track */
@@ -539,12 +535,12 @@ gs_plugin_app_install (GsPlugin *plugin,
 	/* install app */
 	if (g_strcmp0 (gs_app_get_id (app), "chiron.desktop") == 0 ||
 	    g_strcmp0 (gs_app_get_id (app), "zeus.desktop") == 0) {
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 		if (!gs_plugin_dummy_delay (plugin, app, 500, cancellable, error)) {
 			gs_app_set_state_recover (app);
 			return FALSE;
 		}
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 	}
 
 	/* keep track */
@@ -580,12 +576,12 @@ gs_plugin_update_app (GsPlugin *plugin,
 	}
 
 	/* simulate an update for 4 seconds */
-	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 	for (guint i = 1; i <= 4; ++i) {
 		gs_app_set_progress (app, 25 * i);
 		sleep (1);
 	}
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 
 	return TRUE;
 }
@@ -601,16 +597,16 @@ refine_app (GsPlugin *plugin,
 
 	/* make the local system EOL */
 	if (gs_app_get_metadata_item (app, "GnomeSoftware::CpeName") != NULL)
-		gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
+		gs_app_set_state (app, GS_APP_STATE_UNAVAILABLE);
 
 	/* state */
-	if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN) {
+	if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN) {
 		if (g_hash_table_lookup (priv->installed_apps,
 					 gs_app_get_id (app)) != NULL)
-			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+			gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 		if (g_hash_table_lookup (priv->available_apps,
 					 gs_app_get_id (app)) != NULL)
-			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+			gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	}
 
 	/* kind */
@@ -618,8 +614,8 @@ refine_app (GsPlugin *plugin,
 	    g_strcmp0 (gs_app_get_id (app), "mate-spell.desktop") == 0 ||
 	    g_strcmp0 (gs_app_get_id (app), "com.hughski.ColorHug2.driver") == 0 ||
 	    g_strcmp0 (gs_app_get_id (app), "zeus.desktop") == 0) {
-		if (gs_app_get_kind (app) == AS_APP_KIND_UNKNOWN)
-			gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
+		if (gs_app_get_kind (app) == AS_COMPONENT_KIND_UNKNOWN)
+			gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
 	}
 
 	/* license */
@@ -649,11 +645,8 @@ refine_app (GsPlugin *plugin,
 			gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "tmp");
 		if (gs_app_get_summary (app) == NULL)
 			gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "tmp");
-		if (gs_app_get_icons(app)->len == 0) {
-			g_autoptr(AsIcon) ic = NULL;
-			ic = as_icon_new ();
-			as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-			as_icon_set_name (ic, "drive-harddisk");
+		if (gs_app_get_icons (app) == NULL) {
+			g_autoptr(GIcon) ic = g_themed_icon_new ("drive-harddisk");
 			gs_app_add_icon (app, ic);
 		}
 	}
@@ -737,14 +730,15 @@ gs_plugin_add_category_apps (GsPlugin *plugin,
 			     GCancellable *cancellable,
 			     GError **error)
 {
+	g_autoptr(GIcon) icon = g_themed_icon_new ("chiron.desktop");
 	g_autoptr(GsApp) app = gs_app_new ("chiron.desktop");
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Chiron");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "View and use virtual machines");
 	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE, "http://www.box.org");
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
-	gs_app_set_pixbuf (app, gdk_pixbuf_new_from_file ("/usr/share/icons/hicolor/48x48/apps/chiron.desktop.png", NULL));
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
+	gs_app_add_icon (app, icon);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_list_add (list, app);
 	return TRUE;
@@ -757,14 +751,15 @@ gs_plugin_add_recent (GsPlugin *plugin,
 		      GCancellable *cancellable,
 		      GError **error)
 {
+	g_autoptr(GIcon) icon = g_themed_icon_new ("chiron.desktop");
 	g_autoptr(GsApp) app = gs_app_new ("chiron.desktop");
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Chiron");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "View and use virtual machines");
 	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE, "http://www.box.org");
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
-	gs_app_set_pixbuf (app, gdk_pixbuf_new_from_file ("/usr/share/icons/hicolor/48x48/apps/chiron.desktop.png", NULL));
-	gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
+	gs_app_add_icon (app, icon);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_list_add (list, app);
 	return TRUE;
@@ -777,25 +772,23 @@ gs_plugin_add_distro_upgrades (GsPlugin *plugin,
 			       GError **error)
 {
 	g_autoptr(GsApp) app = NULL;
-	g_autoptr(AsIcon) ic = NULL;
+	g_autoptr(GIcon) ic = NULL;
 
 	/* use stock icon */
-	ic = as_icon_new ();
-	as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-	as_icon_set_name (ic, "application-x-addon");
+	ic = g_themed_icon_new ("application-x-addon");
 
 	/* get existing item from the cache */
-	app = gs_plugin_cache_lookup (plugin, "user/*/*/os-upgrade/org.fedoraproject.release-rawhide.upgrade/*");
+	app = gs_plugin_cache_lookup (plugin, "user/*/os-upgrade/org.fedoraproject.release-rawhide.upgrade/*");
 	if (app != NULL) {
 		gs_app_list_add (list, app);
 		return TRUE;
 	}
 
 	app = gs_app_new ("org.fedoraproject.release-rawhide.upgrade");
-	gs_app_set_scope (app, AS_APP_SCOPE_USER);
-	gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+	gs_app_set_scope (app, AS_COMPONENT_SCOPE_USER);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_OPERATING_SYSTEM);
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Fedora");
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL,
 			    "A major upgrade, with new features and added polish.");
@@ -849,12 +842,12 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin, GsApp *app,
 		return TRUE;
 
 	g_debug ("starting download");
-	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 	if (!gs_plugin_dummy_delay (plugin, app, 5000, cancellable, error)) {
 		gs_app_set_state_recover (app);
 		return FALSE;
 	}
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE);
 	return TRUE;
 }
 

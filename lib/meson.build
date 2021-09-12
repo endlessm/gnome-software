@@ -1,30 +1,37 @@
 cargs = ['-DG_LOG_DOMAIN="Gs"']
 cargs += ['-DLOCALPLUGINDIR=""']
 
-install_headers([
-    'gnome-software.h',
-    'gs-app.h',
-    'gs-app-collation.h',
-    'gs-app-list.h',
-    'gs-autocleanups.h',
-    'gs-category.h',
-    'gs-ioprio.h',
-    'gs-metered.h',
-    'gs-os-release.h',
-    'gs-plugin.h',
-    'gs-plugin-event.h',
-    'gs-plugin-job.h',
-    'gs-plugin-loader.h',
-    'gs-plugin-loader-sync.h',
-    'gs-plugin-types.h',
-    'gs-plugin-vfuncs.h',
-    'gs-utils.h'
-  ],
+libgnomesoftware_public_headers = [
+  'gnome-software.h',
+  'gs-app.h',
+  'gs-app-collation.h',
+  'gs-app-list.h',
+  'gs-autocleanups.h',
+  'gs-category.h',
+  'gs-category-manager.h',
+  'gs-desktop-data.h',
+  'gs-icon.h',
+  'gs-ioprio.h',
+  'gs-key-colors.h',
+  'gs-metered.h',
+  'gs-os-release.h',
+  'gs-plugin.h',
+  'gs-plugin-event.h',
+  'gs-plugin-job.h',
+  'gs-plugin-loader.h',
+  'gs-plugin-loader-sync.h',
+  'gs-plugin-types.h',
+  'gs-plugin-vfuncs.h',
+  'gs-remote-icon.h',
+  'gs-utils.h'
+]
+
+install_headers(libgnomesoftware_public_headers,
   subdir : 'gnome-software'
 )
 
 librarydeps = [
-  appstream_glib,
+  appstream,
   gio_unix,
   glib,
   gmodule,
@@ -45,15 +52,35 @@ if get_option('polkit')
   librarydeps += polkit
 endif
 
-libgnomesoftware = static_library(
+gs_build_ident_h = vcs_tag(
+     fallback: meson.project_version(),
+        input: 'gs-build-ident.h.in',
+       output: 'gs-build-ident.h',
+)
+
+libgnomesoftware_enums = gnome.mkenums_simple('gs-enums',
+  sources : libgnomesoftware_public_headers,
+  install_header : true,
+  install_dir : join_paths(get_option('includedir'), 'gnome-software'),
+)
+
+libgnomesoftware_include_directories = [
+  include_directories('..'),
+]
+
+libgnomesoftware = library(
   'gnomesoftware',
   sources : [
     'gs-app.c',
     'gs-app-list.c',
     'gs-category.c',
+    'gs-category-manager.c',
     'gs-debug.c',
+    'gs-desktop-data.c',
+    'gs-icon.c',
     'gs-ioprio.c',
     'gs-ioprio.h',
+    'gs-key-colors.c',
     'gs-metered.c',
     'gs-os-release.c',
     'gs-plugin.c',
@@ -61,15 +88,20 @@ libgnomesoftware = static_library(
     'gs-plugin-job.c',
     'gs-plugin-loader.c',
     'gs-plugin-loader-sync.c',
+    'gs-remote-icon.c',
     'gs-test.c',
     'gs-utils.c',
-  ],
-  include_directories : [
-    include_directories('..'),
-  ],
+  ] + libgnomesoftware_enums + [gs_build_ident_h],
+  include_directories : libgnomesoftware_include_directories,
   dependencies : librarydeps,
   c_args : cargs,
   install: true,
+  install_dir: gs_private_libdir,
+)
+
+libgnomesoftware_dep = declare_dependency(link_with : libgnomesoftware,
+  sources : libgnomesoftware_enums,
+  include_directories : libgnomesoftware_include_directories
 )
 
 pkg = import('pkgconfig')
@@ -80,7 +112,11 @@ pkg.generate(
     filebase : 'gnome-software',
     name : 'gnome-software',
     subdirs : 'gnome-software',
-    variables : 'plugindir=${libdir}/gs-plugins-' + gs_plugin_api_version,
+    variables : [
+      'gs_private_libdir=${libdir}/gnome-software',
+      'plugindir=${gs_private_libdir}/plugins-' + gs_plugin_api_version,
+    ],
+    install_dir : join_paths(get_option('prefix'), get_option('libdir'), 'pkgconfig'),  # or it defaults to gs_private_libdir, which is wrong
 )
 
 executable(
@@ -92,23 +128,22 @@ executable(
     include_directories('..'),
   ],
   dependencies : [
-    appstream_glib,
+    appstream,
     gio_unix,
     glib,
     gmodule,
     goa,
     gtk,
     json_glib,
+    libgnomesoftware_dep,
     libm,
     libsoup,
     valgrind,
   ],
-  link_with : [
-    libgnomesoftware
-  ],
   c_args : cargs,
   install : true,
-  install_dir : get_option('libexecdir')
+  install_dir : get_option('libexecdir'),
+  install_rpath : gs_private_libdir,
 )
 
 if get_option('tests')
@@ -123,20 +158,20 @@ if get_option('tests')
       include_directories('..'),
     ],
     dependencies : [
-      appstream_glib,
+      appstream,
       gio_unix,
       glib,
       gmodule,
       goa,
       gtk,
       json_glib,
+      libgnomesoftware_dep,
       libm,
       libsoup
-    ],
-    link_with : [
-      libgnomesoftware
     ],
     c_args : cargs
   )
   test('gs-self-test-lib', e, suite: ['lib'], env: test_env, timeout : 120)
 endif
+
+subdir('tools')

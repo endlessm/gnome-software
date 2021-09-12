@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk+" version="3.10"/>
+  <requires lib="handy" version="1.0"/>
   <template class="GsDetailsPage" parent="GsPage">
     <child internal-child="accessible">
       <object class="AtkObject" id="details-accessible">
@@ -31,6 +32,15 @@
                 <property name="valign">center</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="loading_label">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Loading application details…</property>
+                <attributes>
+                  <attribute name="scale" value="1.4"/>
+                </attributes>
               </object>
             </child>
           </object>
@@ -189,7 +199,7 @@
                               <object class="GtkButton" id="button_remove">
                                 <property name="visible">False</property>
                                 <property name="use_underline">True</property>
-                                <property name="label" translatable="yes">_Remove</property>
+                                <property name="label" translatable="yes">_Uninstall</property>
                                 <property name="width_request">105</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">True</property>
@@ -369,14 +379,133 @@
                           </object>
                         </child>
                         <child>
-                          <object class="GtkBox" id="box_details_description">
-                            <property name="visible">True</property>
-                            <property name="margin_bottom">14</property>
+                          <object class="GsDescriptionBox" id="box_details_description">
                             <property name="orientation">vertical</property>
-                            <property name="spacing">18</property>
+                            <property name="spacing">12</property>
+                            <property name="halign">fill</property>
+                            <property name="hexpand">True</property>
+                            <property name="valign">start</property>
+                            <property name="visible">FALSE</property>
+                            <property name="margin_bottom">14</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkBox" id="box_addons">
+                            <property name="visible">True</property>
+                            <property name="orientation">vertical</property>
+                            <property name="margin_bottom">26</property>
+
                             <child>
-                              <placeholder/>
+                              <object class="GtkBox" id="box_addons_title">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                                <property name="margin_bottom">12</property>
+                                <child>
+                                  <object class="GtkLabel" id="label_addons_title">
+                                    <property name="visible">True</property>
+                                    <property name="halign">start</property>
+                                    <property name="valign">start</property>
+                                    <property name="hexpand">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="label" translatable="yes">Add-ons</property>
+                                    <style>
+                                      <class name="application-details-title"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="label_addons_uninstalled_app">
+                                    <property name="visible">True</property>
+                                    <property name="xalign">0</property>
+                                    <property name="wrap">True</property>
+                                    <property name="max-width-chars">40</property>
+                                    <property name="label" translatable="yes">Selected add-ons will be installed with the application.</property>
+                                  </object>
+                                </child>
+                              </object>
                             </child>
+
+                            <child>
+                              <object class="GtkFrame" id="box_addons_frame">
+                                <property name="visible">True</property>
+                                <property name="shadow_type">none</property>
+                                <property name="halign">fill</property>
+                                <property name="valign">start</property>
+                                <child>
+                                  <object class="GtkListBox" id="list_box_addons">
+                                    <property name="visible">True</property>
+                                    <property name="selection_mode">none</property>
+                                    <style>
+                                      <class name="content"/>
+                                    </style>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkFrame" id="box_version_history_frame">
+                            <property name="visible">True</property>
+                            <property name="shadow_type">none</property>
+                            <property name="halign">fill</property>
+                            <property name="valign">start</property>
+                            <child>
+                              <object class="GtkListBox" id="list_box_version_history">
+                                <property name="visible">True</property>
+                                <property name="selection_mode">none</property>
+                                <style>
+                                  <class name="content"/>
+                                </style>
+                                <child>
+                                  <object class="GsAppVersionHistoryRow" id="row_latest_version">
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkListBoxRow" id="version_history_button">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="orientation">horizontal</property>
+                                        <property name="halign">center</property>
+                                        <property name="margin_top">12</property>
+                                        <property name="margin_bottom">12</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="visible">True</property>
+                                            <property name="xalign">0</property>
+                                            <property name="yalign">0.5</property>
+                                            <property name="label" translatable="yes">Version History</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkImage">
+                                            <property name="visible">True</property>
+                                            <property name="icon-name">go-next-symbolic</property>
+                                            <property name="margin_start">6</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="label_webapp_warning">
+                            <property name="visible">False</property>
+                            <property name="halign">center</property>
+                            <property name="hexpand">True</property>
+                            <property name="valign">start</property>
+                            <property name="xalign">0.0</property>
+                            <property name="label" translatable="yes">This application can only be used when there is an active internet connection.</property>
+                            <style>
+                              <class name="application-details-webapp-warning"/>
+                            </style>
                           </object>
                         </child>
                         <child>
@@ -636,42 +765,6 @@
                                 </child>
 
                                 <child>
-                                  <object class="GtkLabel" id="label_details_version_title">
-                                    <property name="visible">True</property>
-                                    <property name="label" translatable="yes">Version</property>
-                                    <property name="xalign">0</property>
-                                    <property name="yalign">0.5</property>
-                                    <property name="vexpand">True</property>
-                                    <style>
-                                      <class name="dim-label"/>
-                                    </style>
-                                  </object>
-                                  <packing>
-                                    <property name="left_attach">0</property>
-                                    <property name="top_attach">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="label_details_version_value">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="hexpand">True</property>
-                                    <property name="label">0.12.3</property>
-                                    <property name="selectable">True</property>
-                                    <property name="ellipsize">end</property>
-                                    <property name="xalign">0</property>
-                                    <property name="yalign">0.5</property>
-                                    <accessibility>
-                                      <relation type="labelled-by" target="label_details_version_title"/>
-                                    </accessibility>
-                                  </object>
-                                  <packing>
-                                    <property name="left_attach">1</property>
-                                    <property name="top_attach">1</property>
-                                  </packing>
-                                </child>
-
-                                <child>
                                   <object class="GtkLabel" id="label_details_rating_title">
                                     <property name="visible">True</property>
                                     <property name="label" translatable="yes">Age Rating</property>
@@ -684,7 +777,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">9</property>
+                                    <property name="top_attach">10</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -700,12 +793,12 @@
                                       <class name="content-rating"/>
                                     </style>
                                     <accessibility>
-                                      <relation type="labelled-by" target="label_details_version_title"/>
+                                      <relation type="labelled-by" target="label_details_rating_title"/>
                                     </accessibility>
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">9</property>
+                                    <property name="top_attach">10</property>
                                   </packing>
                                 </child>
 
@@ -722,7 +815,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">10</property>
+                                    <property name="top_attach">11</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -743,7 +836,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">10</property>
+                                    <property name="top_attach">11</property>
                                   </packing>
                                 </child>
 
@@ -760,7 +853,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">2</property>
+                                    <property name="top_attach">3</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -778,7 +871,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">2</property>
+                                    <property name="top_attach">3</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -794,7 +887,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">3</property>
+                                    <property name="top_attach">4</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -814,7 +907,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">3</property>
+                                    <property name="top_attach">4</property>
                                   </packing>
                                 </child>
 
@@ -831,7 +924,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">7</property>
+                                    <property name="top_attach">8</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -845,7 +938,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">7</property>
+                                    <property name="top_attach">8</property>
                                   </packing>
                                 </child>
 
@@ -862,7 +955,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">8</property>
+                                    <property name="top_attach">9</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -876,7 +969,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">8</property>
+                                    <property name="top_attach">9</property>
                                   </packing>
                                 </child>
 
@@ -893,7 +986,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">6</property>
+                                    <property name="top_attach">7</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -908,7 +1001,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">6</property>
+                                    <property name="top_attach">7</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -924,7 +1017,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">5</property>
+                                    <property name="top_attach">6</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -954,7 +1047,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">5</property>
+                                    <property name="top_attach">6</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -970,7 +1063,7 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">0</property>
-                                    <property name="top_attach">4</property>
+                                    <property name="top_attach">5</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -1003,7 +1096,7 @@
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="button_details_license_unknown">
-                                        <property name="label" translatable="yes" comments="This refers to the license of the application">Unknown</property>
+                                        <property name="label" translatable="yes" comments="This refers to the license of the application" context="Application license">Unknown</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -1016,64 +1109,8 @@
                                   </object>
                                   <packing>
                                     <property name="left_attach">1</property>
-                                    <property name="top_attach">4</property>
+                                    <property name="top_attach">5</property>
                                   </packing>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkBox" id="box_addons">
-                            <property name="visible">True</property>
-                            <property name="orientation">vertical</property>
-                            <property name="margin_bottom">26</property>
-
-                            <child>
-                              <object class="GtkBox" id="box_addons_title">
-                                <property name="visible">True</property>
-                                <property name="orientation">vertical</property>
-                                <property name="margin_bottom">18</property>
-                                <child>
-                                  <object class="GtkLabel" id="label_addons_title">
-                                    <property name="visible">True</property>
-                                    <property name="halign">start</property>
-                                    <property name="valign">start</property>
-                                    <property name="hexpand">True</property>
-                                    <property name="xalign">0</property>
-                                    <property name="label" translatable="yes">Add-ons</property>
-                                    <style>
-                                      <class name="application-details-title"/>
-                                    </style>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel" id="label_addons_uninstalled_app">
-                                    <property name="visible">True</property>
-                                    <property name="xalign">0</property>
-                                    <property name="wrap">True</property>
-                                    <property name="max-width-chars">40</property>
-                                    <property name="label" translatable="yes">Selected add-ons will be installed with the application.</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-
-                            <child>
-                              <object class="GtkFrame" id="box_addons_frame">
-                                <property name="visible">True</property>
-                                <property name="shadow_type">in</property>
-                                <property name="halign">fill</property>
-                                <property name="valign">start</property>
-                                <style>
-                                  <class name="view"/>
-                                </style>
-                                <child>
-                                  <object class="GtkListBox" id="list_box_addons">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="selection_mode">none</property>
-                                  </object>
                                 </child>
                               </object>
                             </child>
@@ -1205,7 +1242,6 @@
   <object class="GtkSizeGroup" id="sizegroup_details_title">
     <property name="ignore_hidden">True</property>
     <widgets>
-      <widget name="label_details_version_title"/>
       <widget name="label_details_updated_title"/>
       <widget name="label_details_category_title"/>
       <widget name="label_details_origin_title"/>
@@ -1218,7 +1254,6 @@
   <object class="GtkSizeGroup" id="sizegroup_details_value">
     <property name="ignore_hidden">True</property>
     <widgets>
-      <widget name="label_details_version_value"/>
       <widget name="label_details_updated_value"/>
       <widget name="label_details_category_value"/>
       <widget name="label_details_size_installed_value"/>

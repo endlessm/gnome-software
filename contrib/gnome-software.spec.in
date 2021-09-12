@@ -2,10 +2,9 @@
 %global gtk3_version 3.22.4
 %global json_glib_version 1.2.0
 %global packagekit_version 1.1.1
-%global appstream_glib_version 0.7.15
+%global appstream_version 0.14.0
 %global libsoup_version 2.52.0
 %global gsettings_desktop_schemas_version 3.12.0
-%global gnome_desktop_version 3.18.0
 %global fwupd_version 1.2.10
 %global flatpak_version 1.1.3
 %global libxmlb_version 0.1.7
@@ -28,14 +27,13 @@ BuildRequires: docbook-style-xsl
 BuildRequires: desktop-file-utils
 BuildRequires: fwupd-devel >= %{fwupd_version}
 BuildRequires: glib2-devel >= %{glib2_version}
-BuildRequires: gnome-desktop3-devel
 BuildRequires: gnome-online-accounts-devel
 BuildRequires: gsettings-desktop-schemas-devel >= %{gsettings_desktop_schemas_version}
 BuildRequires: gspell-devel
 BuildRequires: gtk3-devel >= %{gtk3_version}
 BuildRequires: gtk-doc
 BuildRequires: json-glib-devel >= %{json_glib_version}
-BuildRequires: libappstream-glib-devel >= %{appstream_glib_version}
+BuildRequires: libappstream-devel >= %{appstream_version}
 BuildRequires: libdnf-devel
 BuildRequires: libsoup-devel
 BuildRequires: libxmlb-devel >= %{libxmlb_version}
@@ -54,14 +52,13 @@ Requires: flatpak%{?_isa} >= %{flatpak_version}
 Requires: flatpak-libs%{?_isa} >= %{flatpak_version}
 Requires: fwupd%{?_isa} >= %{fwupd_version}
 Requires: glib2%{?_isa} >= %{glib2_version}
-Requires: gnome-desktop3%{?_isa} >= %{gnome_desktop_version}
 # gnome-menus is needed for app folder .directory entries
 Requires: gnome-menus%{?_isa}
 Requires: gsettings-desktop-schemas%{?_isa} >= %{gsettings_desktop_schemas_version}
 Requires: gtk3%{?_isa} >= %{gtk3_version}
 Requires: json-glib%{?_isa} >= %{json_glib_version}
 Requires: iso-codes
-Requires: libappstream-glib%{?_isa} >= %{appstream_glib_version}
+Requires: libappstream%{?_isa} >= %{appstream_version}
 # librsvg2 is needed for gdk-pixbuf svg loader
 Requires: librsvg2%{?_isa}
 Requires: libsoup%{?_isa} >= %{libsoup_version}
@@ -73,7 +70,8 @@ Obsoletes: gnome-software-snap < 3.33.1
 Obsoletes: gnome-software-editor < 3.35.1
 
 # this is not a library version
-%define gs_plugin_version               13
+%define gs_plugin_version               16
+%define gs_plugin_dir %{_libdir}/gnome-software/plugins-%{gs_plugin_version}
 
 %description
 gnome-software is an application that makes it easy to add, remove
@@ -116,7 +114,7 @@ This package includes the rpm-ostree backend.
 %meson_install
 
 # remove unneeded dpkg plugin
-rm %{buildroot}%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_dpkg.so
+rm %{buildroot}%{gs_plugin_dir}/libgs_plugin_dpkg.so
 
 # make the software center load faster
 desktop-file-edit %{buildroot}%{_datadir}/applications/org.gnome.Software.desktop \
@@ -144,6 +142,8 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_mandir}/man1/gnome-software.1.gz
 %{_datadir}/icons/hicolor/*/apps/org.gnome.Software.svg
 %{_datadir}/icons/hicolor/symbolic/apps/org.gnome.Software-symbolic.svg
+%{_datadir}/icons/hicolor/scalable/actions/carousel-arrow-next-symbolic.svg
+%{_datadir}/icons/hicolor/scalable/actions/carousel-arrow-previous-symbolic.svg
 %{_datadir}/icons/hicolor/scalable/status/software-installed-symbolic.svg
 %{_datadir}/gnome-software/featured-*.svg
 %{_datadir}/gnome-software/featured-*.jpg
@@ -151,39 +151,35 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Flatpak.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Fwupd.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Odrs.metainfo.xml
-%dir %{_libdir}/gs-plugins-%{gs_plugin_version}
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_appstream.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_desktop-categories.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_desktop-menu-path.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_dummy.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fedora-langpacks.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fedora-pkgdb-collections.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_flatpak.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_fwupd.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_generic-updates.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_hardcoded-blocklist.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_hardcoded-popular.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_icons.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_key-colors-metadata.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_key-colors.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_modalias.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_odrs.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_os-release.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-history.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-local.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-offline.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-proxy.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-refine-repos.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-refine.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-refresh.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-upgrade.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit-url-to-app.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_packagekit.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_provenance-license.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_provenance.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_repos.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_rewrite-resource.so
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_systemd-updates.so
+%dir %{gs_plugin_dir}
+%{gs_plugin_dir}/libgs_plugin_appstream.so
+%{gs_plugin_dir}/libgs_plugin_dummy.so
+%{gs_plugin_dir}/libgs_plugin_fedora-langpacks.so
+%{gs_plugin_dir}/libgs_plugin_fedora-pkgdb-collections.so
+%{gs_plugin_dir}/libgs_plugin_flatpak.so
+%{gs_plugin_dir}/libgs_plugin_fwupd.so
+%{gs_plugin_dir}/libgs_plugin_generic-updates.so
+%{gs_plugin_dir}/libgs_plugin_hardcoded-blocklist.so
+%{gs_plugin_dir}/libgs_plugin_hardcoded-popular.so
+%{gs_plugin_dir}/libgs_plugin_icons.so
+%{gs_plugin_dir}/libgs_plugin_modalias.so
+%{gs_plugin_dir}/libgs_plugin_odrs.so
+%{gs_plugin_dir}/libgs_plugin_os-release.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-history.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-local.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-offline.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-proxy.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-refine-repos.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-refine.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-refresh.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-upgrade.so
+%{gs_plugin_dir}/libgs_plugin_packagekit-url-to-app.so
+%{gs_plugin_dir}/libgs_plugin_packagekit.so
+%{gs_plugin_dir}/libgs_plugin_provenance-license.so
+%{gs_plugin_dir}/libgs_plugin_provenance.so
+%{gs_plugin_dir}/libgs_plugin_repos.so
+%{gs_plugin_dir}/libgs_plugin_rewrite-resource.so
+%{gs_plugin_dir}/libgs_plugin_systemd-updates.so
 %{_sysconfdir}/xdg/autostart/gnome-software-service.desktop
 %{_datadir}/app-info/xmls/org.gnome.Software.Featured.xml
 %{_datadir}/dbus-1/services/org.freedesktop.PackageKit.service
@@ -195,7 +191,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_libexecdir}/gnome-software-restarter
 
 %files rpm-ostree
-%{_libdir}/gs-plugins-%{gs_plugin_version}/libgs_plugin_rpm-ostree.so
+%{gs_plugin_dir}/libgs_plugin_rpm-ostree.so
 
 %files devel
 %{_libdir}/pkgconfig/gnome-software.pc

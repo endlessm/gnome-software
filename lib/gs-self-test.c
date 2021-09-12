@@ -11,6 +11,7 @@
 
 #include "gnome-software-private.h"
 
+#include "gs-debug.h"
 #include "gs-test.h"
 
 static gboolean
@@ -110,7 +111,8 @@ gs_utils_cache_func (void)
 
 	fn1 = gs_utils_get_cache_filename ("test",
 					   "http://www.foo.bar/baz",
-					   GS_UTILS_CACHE_FLAG_WRITEABLE,
+					   GS_UTILS_CACHE_FLAG_WRITEABLE |
+					   GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 					   &error);
 	g_assert_no_error (error);
 	g_assert_cmpstr (fn1, !=, NULL);
@@ -120,7 +122,8 @@ gs_utils_cache_func (void)
 	fn2 = gs_utils_get_cache_filename ("test",
 					   "http://www.foo.bar/baz",
 					   GS_UTILS_CACHE_FLAG_WRITEABLE |
-					   GS_UTILS_CACHE_FLAG_USE_HASH,
+					   GS_UTILS_CACHE_FLAG_USE_HASH |
+					   GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 					   &error);
 	g_assert_no_error (error);
 	g_assert_cmpstr (fn2, !=, NULL);
@@ -151,7 +154,7 @@ gs_utils_error_func (void)
 	g_assert_cmpstr (error->message, ==, "failed");
 	gs_utils_error_add_app_id (&error, app);
 	gs_utils_error_add_origin_id (&error, origin);
-	g_assert_cmpstr (error->message, ==, "[*/*/*/*/gimp-repo/*] {*/*/*/*/gimp.desktop/*} failed");
+	g_assert_cmpstr (error->message, ==, "[*/*/*/gimp-repo/*] {*/*/*/gimp.desktop/*} failed");
 
 	/* find and strip any unique IDs from the error message */
 	for (guint i = 0; i < 2; i++) {
@@ -161,8 +164,8 @@ gs_utils_error_func (void)
 			origin_id = gs_utils_error_strip_origin_id (error);
 	}
 
-	g_assert_cmpstr (app_id, ==, "*/*/*/*/gimp.desktop/*");
-	g_assert_cmpstr (origin_id, ==, "*/*/*/*/gimp-repo/*");
+	g_assert_cmpstr (app_id, ==, "*/*/*/gimp.desktop/*");
+	g_assert_cmpstr (origin_id, ==, "*/*/*/gimp-repo/*");
 	g_assert_cmpstr (error->message, ==, "failed");
 }
 
@@ -274,7 +277,6 @@ gs_plugin_func (void)
 	GsAppList *list_dup;
 	GsAppList *list_remove;
 	GsApp *app;
-	g_autoptr(AsProvide) prov = as_provide_new ();
 
 	/* check enums converted */
 	for (guint i = 0; i < GS_PLUGIN_ACTION_LAST; i++) {
@@ -374,24 +376,24 @@ gs_plugin_func (void)
 	/* respect priority when deduplicating */
 	list = gs_app_list_new ();
 	app = gs_app_new ("e");
-	gs_app_set_unique_id (app, "user/foo/*/*/e/*");
+	gs_app_set_unique_id (app, "user/foo/*/e/*");
 	gs_app_list_add (list, app);
 	gs_app_set_priority (app, 0);
 	g_object_unref (app);
 	app = gs_app_new ("e");
-	gs_app_set_unique_id (app, "user/bar/*/*/e/*");
+	gs_app_set_unique_id (app, "user/bar/*/e/*");
 	gs_app_list_add (list, app);
 	gs_app_set_priority (app, 99);
 	g_object_unref (app);
 	app = gs_app_new ("e");
-	gs_app_set_unique_id (app, "user/baz/*/*/e/*");
+	gs_app_set_unique_id (app, "user/baz/*/e/*");
 	gs_app_list_add (list, app);
 	gs_app_set_priority (app, 50);
 	g_object_unref (app);
 	g_assert_cmpint (gs_app_list_length (list), ==, 3);
 	gs_app_list_filter_duplicates (list, GS_APP_LIST_FILTER_FLAG_KEY_ID);
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
-	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/bar/*/*/e/*");
+	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/bar/*/e/*");
 	g_object_unref (list);
 
 	/* respect priority (using name and version) when deduplicating */
@@ -399,21 +401,21 @@ gs_plugin_func (void)
 	app = gs_app_new ("e");
 	gs_app_add_source (app, "foo");
 	gs_app_set_version (app, "1.2.3");
-	gs_app_set_unique_id (app, "user/foo/repo/*/*/*");
+	gs_app_set_unique_id (app, "user/foo/repo/*/*");
 	gs_app_list_add (list, app);
 	gs_app_set_priority (app, 0);
 	g_object_unref (app);
 	app = gs_app_new ("e");
 	gs_app_add_source (app, "foo");
 	gs_app_set_version (app, "1.2.3");
-	gs_app_set_unique_id (app, "user/foo/repo-security/*/*/*");
+	gs_app_set_unique_id (app, "user/foo/repo-security/*/*");
 	gs_app_list_add (list, app);
 	gs_app_set_priority (app, 99);
 	g_object_unref (app);
 	app = gs_app_new ("e");
 	gs_app_add_source (app, "foo");
 	gs_app_set_version (app, "1.2.3");
-	gs_app_set_unique_id (app, "user/foo/repo-universe/*/*/*");
+	gs_app_set_unique_id (app, "user/foo/repo-universe/*/*");
 	gs_app_list_add (list, app);
 	gs_app_set_priority (app, 50);
 	g_object_unref (app);
@@ -422,20 +424,20 @@ gs_plugin_func (void)
 					     GS_APP_LIST_FILTER_FLAG_KEY_SOURCE |
 					     GS_APP_LIST_FILTER_FLAG_KEY_VERSION);
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
-	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/foo/repo-security/*/*/*");
+	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/foo/repo-security/*/*");
 	g_object_unref (list);
 
 	/* prefer installed applications */
 	list = gs_app_list_new ();
 	app = gs_app_new ("e");
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-	gs_app_set_unique_id (app, "user/foo/*/*/e/*");
+	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+	gs_app_set_unique_id (app, "user/foo/*/e/*");
 	gs_app_set_priority (app, 0);
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	app = gs_app_new ("e");
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
-	gs_app_set_unique_id (app, "user/bar/*/*/e/*");
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
+	gs_app_set_unique_id (app, "user/bar/*/e/*");
 	gs_app_set_priority (app, 100);
 	gs_app_list_add (list, app);
 	g_object_unref (app);
@@ -443,38 +445,38 @@ gs_plugin_func (void)
 				       GS_APP_LIST_FILTER_FLAG_KEY_ID |
 				       GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED);
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
-	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/foo/*/*/e/*");
+	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==, "user/foo/*/e/*");
 	g_object_unref (list);
 
 	/* use the provides ID to dedupe */
 	list = gs_app_list_new ();
 	app = gs_app_new ("gimp.desktop");
-	gs_app_set_unique_id (app, "user/fedora/*/*/gimp.desktop/*");
+	gs_app_set_unique_id (app, "user/fedora/*/gimp.desktop/*");
 	gs_app_set_priority (app, 0);
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	app = gs_app_new ("org.gimp.GIMP");
-	as_provide_set_kind (prov, AS_PROVIDE_KIND_ID);
-	as_provide_set_value (prov, "gimp.desktop");
-	gs_app_add_provide (app, prov);
-	gs_app_set_unique_id (app, "user/flathub/*/*/org.gimp.GIMP/*");
+	gs_app_add_provided_item (app,
+				  AS_PROVIDED_KIND_ID,
+				  "gimp.desktop");
+	gs_app_set_unique_id (app, "user/flathub/*/org.gimp.GIMP/*");
 	gs_app_set_priority (app, 100);
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	gs_app_list_filter_duplicates (list, GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES);
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	g_assert_cmpstr (gs_app_get_unique_id (gs_app_list_index (list, 0)), ==,
-			 "user/flathub/*/*/org.gimp.GIMP/*");
+			 "user/flathub/*/org.gimp.GIMP/*");
 	g_object_unref (list);
 
 	/* use globs when adding */
 	list = gs_app_list_new ();
 	app = gs_app_new ("b");
-	gs_app_set_unique_id (app, "a/b/c/d/e/f");
+	gs_app_set_unique_id (app, "a/b/c/d/e");
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	app = gs_app_new ("b");
-	gs_app_set_unique_id (app, "a/b/c/*/e/f");
+	gs_app_set_unique_id (app, "a/b/c/*/e");
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
@@ -484,13 +486,13 @@ gs_plugin_func (void)
 	/* lookup with a wildcard */
 	list = gs_app_list_new ();
 	app = gs_app_new ("b");
-	gs_app_set_unique_id (app, "a/b/c/d/e/f");
+	gs_app_set_unique_id (app, "a/b/c/d/e");
 	gs_app_list_add (list, app);
 	g_object_unref (app);
-	g_assert (gs_app_list_lookup (list, "a/b/c/d/e/f") != NULL);
-	g_assert (gs_app_list_lookup (list, "a/b/c/d/e/*") != NULL);
-	g_assert (gs_app_list_lookup (list, "*/b/c/d/e/f") != NULL);
-	g_assert (gs_app_list_lookup (list, "x/x/x/x/x/x") == NULL);
+	g_assert (gs_app_list_lookup (list, "a/b/c/d/e") != NULL);
+	g_assert (gs_app_list_lookup (list, "a/b/c/d/*") != NULL);
+	g_assert (gs_app_list_lookup (list, "*/b/c/d/e") != NULL);
+	g_assert (gs_app_list_lookup (list, "x/x/x/x/x") == NULL);
 	g_object_unref (list);
 
 	/* allow duplicating a wildcard */
@@ -500,7 +502,7 @@ gs_plugin_func (void)
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	app = gs_app_new ("gimp.desktop");
-	gs_app_set_unique_id (app, "system/flatpak/*/*/gimp.desktop/stable");
+	gs_app_set_unique_id (app, "system/flatpak/*/gimp.desktop/stable");
 	gs_app_list_add (list, app);
 	g_object_unref (app);
 	g_assert_cmpint (gs_app_list_length (list), ==, 2);
@@ -584,36 +586,50 @@ gs_app_thread_cb (gpointer data)
 }
 
 static void
-gs_app_thread_func (void)
+gs_app_thread_func (gconstpointer user_data)
 {
+	GsDebug *debug = GS_DEBUG ((void *)user_data);
 	GThread *thread1;
 	GThread *thread2;
 	g_autoptr(GsApp) app = gs_app_new ("gimp.desktop");
 
 	/* try really hard to cause a threading problem */
-	g_setenv ("G_MESSAGES_DEBUG", "", TRUE);
+	gs_debug_set_verbose (debug, FALSE);
 	thread1 = g_thread_new ("thread1", gs_app_thread_cb, app);
 	thread2 = g_thread_new ("thread2", gs_app_thread_cb, app);
 	g_thread_join (thread1); /* consumes the reference  */
 	g_thread_join (thread2);
-	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	gs_debug_set_verbose (debug, TRUE);
 }
 
 static void
 gs_app_unique_id_func (void)
 {
 	g_autoptr(GsApp) app = gs_app_new (NULL);
+	g_autofree gchar *data_id = NULL;
 	const gchar *unique_id;
 
-	unique_id = "system/flatpak/gnome/desktop/org.gnome.Software.desktop/master";
-	gs_app_set_from_unique_id (app, unique_id);
+	unique_id = "system/flatpak/gnome/org.gnome.Software/master";
+	gs_app_set_from_unique_id (app, unique_id, AS_COMPONENT_KIND_DESKTOP_APP);
 	g_assert (GS_IS_APP (app));
-	g_assert_cmpint (gs_app_get_scope (app), ==, AS_APP_SCOPE_SYSTEM);
+	g_assert_cmpint (gs_app_get_scope (app), ==, AS_COMPONENT_SCOPE_SYSTEM);
 	g_assert_cmpint (gs_app_get_bundle_kind (app), ==, AS_BUNDLE_KIND_FLATPAK);
 	g_assert_cmpstr (gs_app_get_origin (app), ==, "gnome");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpstr (gs_app_get_id (app), ==, "org.gnome.Software.desktop");
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpstr (gs_app_get_id (app), ==, "org.gnome.Software");
 	g_assert_cmpstr (gs_app_get_branch (app), ==, "master");
+
+	/* test conversions from 6-part IDs */
+	data_id = gs_utils_unique_id_compat_convert (unique_id);
+	g_assert_cmpstr (data_id, ==, unique_id);
+	g_clear_pointer (&data_id, g_free);
+
+	data_id = gs_utils_unique_id_compat_convert ("not a unique ID");
+	g_assert_null (data_id);
+
+	data_id = gs_utils_unique_id_compat_convert ("system/flatpak/gnome/desktop-app/org.gnome.Software/master");
+	g_assert_cmpstr (data_id, ==, unique_id);
+	g_clear_pointer (&data_id, g_free);
 }
 
 static void
@@ -657,18 +673,18 @@ gs_app_func (void)
 	g_assert_cmpstr (gs_app_get_name (app), ==, "hugh");
 
 	/* check non-transient state saving */
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
-	gs_app_set_state (app, AS_APP_STATE_REMOVING);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_REMOVING);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, GS_APP_STATE_REMOVING);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_REMOVING);
 	gs_app_set_state_recover (app); // simulate an error
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 
 	/* try again */
-	gs_app_set_state (app, AS_APP_STATE_REMOVING);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_REMOVING);
+	gs_app_set_state (app, GS_APP_STATE_REMOVING);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_REMOVING);
 	gs_app_set_state_recover (app); // simulate an error
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 
 	/* correctly parse URL */
 	gs_app_set_origin_hostname (app, "https://mirrors.fedoraproject.org/metalink");
@@ -687,10 +703,10 @@ gs_app_func (void)
 
 	/* check pending action */
 	g_assert_cmpuint (gs_app_get_pending_action (app), ==, GS_PLUGIN_ACTION_UNKNOWN);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_pending_action (app, GS_PLUGIN_ACTION_UPDATE);
 	g_assert_cmpuint (gs_app_get_pending_action (app), ==, GS_PLUGIN_ACTION_UPDATE);
-	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 	g_assert_cmpuint (gs_app_get_pending_action (app), ==, GS_PLUGIN_ACTION_UNKNOWN);
 	gs_app_set_state_recover (app);
 }
@@ -707,7 +723,7 @@ gs_app_progress_clamping_func (void)
 	} else {
 		g_test_trap_subprocess (NULL, 0, 0);
 		g_test_trap_assert_failed ();
-		g_test_trap_assert_stderr ("*WARNING*cannot set 142% for *, setting instead: 100%*");
+		g_test_trap_assert_stderr ("*cannot set 142% for *, setting instead: 100%*");
 	}
 }
 
@@ -736,24 +752,24 @@ gs_app_list_func (void)
 	gs_app_list_add_flag (list, GS_APP_LIST_FLAG_WATCH_APPS);
 
 	g_assert_cmpint (gs_app_list_get_progress (list), ==, 0);
-	g_assert_cmpint (gs_app_list_get_state (list), ==, AS_APP_STATE_UNKNOWN);
+	g_assert_cmpint (gs_app_list_get_state (list), ==, GS_APP_STATE_UNKNOWN);
 	gs_app_list_add (list, app1);
 	gs_app_set_progress (app1, 75);
-	gs_app_set_state (app1, AS_APP_STATE_AVAILABLE);
-	gs_app_set_state (app1, AS_APP_STATE_INSTALLING);
+	gs_app_set_state (app1, GS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app1, GS_APP_STATE_INSTALLING);
 	gs_test_flush_main_context ();
 	g_assert_cmpint (gs_app_list_get_progress (list), ==, 75);
-	g_assert_cmpint (gs_app_list_get_state (list), ==, AS_APP_STATE_INSTALLING);
+	g_assert_cmpint (gs_app_list_get_state (list), ==, GS_APP_STATE_INSTALLING);
 
 	gs_app_list_add (list, app2);
 	gs_app_set_progress (app2, 25);
 	gs_test_flush_main_context ();
 	g_assert_cmpint (gs_app_list_get_progress (list), ==, 50);
-	g_assert_cmpint (gs_app_list_get_state (list), ==, AS_APP_STATE_INSTALLING);
+	g_assert_cmpint (gs_app_list_get_state (list), ==, GS_APP_STATE_INSTALLING);
 
 	gs_app_list_remove (list, app1);
 	g_assert_cmpint (gs_app_list_get_progress (list), ==, 25);
-	g_assert_cmpint (gs_app_list_get_state (list), ==, AS_APP_STATE_UNKNOWN);
+	g_assert_cmpint (gs_app_list_get_state (list), ==, GS_APP_STATE_UNKNOWN);
 }
 
 static void
@@ -801,12 +817,13 @@ gs_app_list_related_func (void)
 int
 main (int argc, char **argv)
 {
+	g_autoptr(GsDebug) debug = gs_debug_new (NULL, TRUE, FALSE);
+
 	g_test_init (&argc, &argv,
 #if GLIB_CHECK_VERSION(2, 60, 0)
 		     G_TEST_OPTION_ISOLATE_DIRS,
 #endif
 		     NULL);
-	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
 
 	/* only critical and error are fatal */
 	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
@@ -823,7 +840,7 @@ main (int argc, char **argv)
 	g_test_add_func ("/gnome-software/lib/app/progress-clamping", gs_app_progress_clamping_func);
 	g_test_add_func ("/gnome-software/lib/app{addons}", gs_app_addons_func);
 	g_test_add_func ("/gnome-software/lib/app{unique-id}", gs_app_unique_id_func);
-	g_test_add_func ("/gnome-software/lib/app{thread}", gs_app_thread_func);
+	g_test_add_data_func ("/gnome-software/lib/app{thread}", debug, gs_app_thread_func);
 	g_test_add_func ("/gnome-software/lib/app{list}", gs_app_list_func);
 	g_test_add_func ("/gnome-software/lib/app{list-wildcard-dedupe}", gs_app_list_wildcard_dedupe_func);
 	g_test_add_func ("/gnome-software/lib/app{list-performance}", gs_app_list_performance_func);

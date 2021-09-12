@@ -23,12 +23,6 @@
 #include "gs-upgrade-banner.h"
 #include "gs-application.h"
 
-#ifdef HAVE_GNOME_DESKTOP
-#include <gdesktop-enums.h>
-#endif
-
-#include <langinfo.h>
-
 typedef enum {
 	GS_UPDATES_PAGE_FLAG_NONE		= 0,
 	GS_UPDATES_PAGE_FLAG_HAS_UPDATES	= 1 << 0,
@@ -90,6 +84,8 @@ struct _GsUpdatesPage
 	GtkSizeGroup		*sizegroup_button;
 	GtkSizeGroup		*sizegroup_header;
 	GtkListBox		*sections[GS_UPDATES_SECTION_KIND_LAST];
+
+	guint			 refresh_last_checked_id;
 };
 
 enum {
@@ -140,12 +136,13 @@ gs_updates_page_invalidate (GsUpdatesPage *self)
 static GsUpdatesSectionKind
 _get_app_section (GsApp *app)
 {
-	if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE_LIVE) {
-		if (gs_app_get_kind (app) == AS_APP_KIND_FIRMWARE)
+	if (gs_app_get_state (app) == GS_APP_STATE_UPDATABLE_LIVE ||
+	    gs_app_get_state (app) == GS_APP_STATE_INSTALLING) {
+		if (gs_app_get_kind (app) == AS_COMPONENT_KIND_FIRMWARE)
 			return GS_UPDATES_SECTION_KIND_ONLINE_FIRMWARE;
 		return GS_UPDATES_SECTION_KIND_ONLINE;
 	}
-	if (gs_app_get_kind (app) == AS_APP_KIND_FIRMWARE)
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_FIRMWARE)
 		return GS_UPDATES_SECTION_KIND_OFFLINE_FIRMWARE;
 	return GS_UPDATES_SECTION_KIND_OFFLINE;
 }
@@ -170,97 +167,27 @@ _get_num_updates (GsUpdatesPage *self)
 	for (guint i = 0; i < gs_app_list_length (apps); ++i) {
 		GsApp *app = gs_app_list_index (apps, i);
 		if (gs_app_is_updatable (app) ||
-		    gs_app_get_state (app) == AS_APP_STATE_INSTALLING)
+		    gs_app_get_state (app) == GS_APP_STATE_INSTALLING)
 			++count;
 	}
 	return count;
 }
 
-static GDateTime *
-time_next_midnight (void)
-{
-	GDateTime *next_midnight;
-	GTimeSpan since_midnight;
-	g_autoptr(GDateTime) now = NULL;
-
-	now = g_date_time_new_now_local ();
-	since_midnight = g_date_time_get_hour (now) * G_TIME_SPAN_HOUR +
-			 g_date_time_get_minute (now) * G_TIME_SPAN_MINUTE +
-			 g_date_time_get_second (now) * G_TIME_SPAN_SECOND +
-			 g_date_time_get_microsecond (now);
-	next_midnight = g_date_time_add (now, G_TIME_SPAN_DAY - since_midnight);
-
-	return next_midnight;
-}
-
 static gchar *
-gs_updates_page_last_checked_time_string (GsUpdatesPage *self)
+gs_updates_page_last_checked_time_string (GsUpdatesPage *self,
+					  gint *out_hours_ago,
+					  gint *out_days_ago)
 {
-#ifdef HAVE_GNOME_DESKTOP
-	GDesktopClockFormat clock_format;
-#endif
-	const gchar *format_string;
-	gchar *time_string;
-	gboolean use_24h_time = FALSE;
-	gint64 tmp;
-	gint days_ago;
-	g_autoptr(GDateTime) last_checked = NULL;
-	g_autoptr(GDateTime) midnight = NULL;
+	gint64 last_checked;
+	gchar *res;
 
-	g_settings_get (self->settings, "check-timestamp", "x", &tmp);
-	if (tmp == 0)
-		return NULL;
-	last_checked = g_date_time_new_from_unix_local (tmp);
-
-	midnight = time_next_midnight ();
-	days_ago = (gint) (g_date_time_difference (midnight, last_checked) / G_TIME_SPAN_DAY);
-
-#ifdef HAVE_GNOME_DESKTOP
-	clock_format = g_settings_get_enum (self->desktop_settings, "clock-format");
-	use_24h_time = (clock_format == G_DESKTOP_CLOCK_FORMAT_24H || self->ampm_available == FALSE);
-#endif
-
-	if (days_ago < 1) { // today
-		if (use_24h_time) {
-			/* TRANSLATORS: Time in 24h format */
-			format_string = _("%R");
-		} else {
-			/* TRANSLATORS: Time in 12h format */
-			format_string = _("%l:%M %p");
-		}
-	} else if (days_ago < 2) { // yesterday
-		if (use_24h_time) {
-			/* TRANSLATORS: This is the word "Yesterday" followed by a
-			   time string in 24h format. i.e. "Yesterday, 14:30" */
-			format_string = _("Yesterday, %R");
-		} else {
-			/* TRANSLATORS: This is the word "Yesterday" followed by a
-			   time string in 12h format. i.e. "Yesterday, 2:30 PM" */
-			format_string = _("Yesterday, %l:%M %p");
-		}
-	} else if (days_ago < 3) {
-		format_string = _("Two days ago");
-	} else if (days_ago < 4) {
-		format_string = _("Three days ago");
-	} else if (days_ago < 5) {
-		format_string = _("Four days ago");
-	} else if (days_ago < 6) {
-		format_string = _("Five days ago");
-	} else if (days_ago < 7) {
-		format_string = _("Six days ago");
-	} else if (days_ago < 8) {
-		format_string = _("One week ago");
-	} else if (days_ago < 15) {
-		format_string = _("Two weeks ago");
-	} else {
-		/* TRANSLATORS: This is the date string with: day number, month name, year.
-		   i.e. "25 May 2012" */
-		format_string = _("%e %B %Y");
+	g_settings_get (self->settings, "check-timestamp", "x", &last_checked);
+	res = gs_utils_time_to_string (last_checked);
+	if (res) {
+		g_assert (gs_utils_split_time_difference (last_checked, NULL, out_hours_ago, out_days_ago, NULL, NULL, NULL));
 	}
 
-	time_string = g_date_time_format (last_checked, format_string);
-
-	return time_string;
+	return res;
 }
 
 static const gchar *
@@ -299,11 +226,64 @@ refresh_headerbar_updates_counter (GsUpdatesPage *self)
 }
 
 static void
+gs_updates_page_remove_last_checked_timeout (GsUpdatesPage *self)
+{
+	if (self->refresh_last_checked_id) {
+		g_source_remove (self->refresh_last_checked_id);
+		self->refresh_last_checked_id = 0;
+	}
+}
+
+static void
+gs_updates_page_refresh_last_checked (GsUpdatesPage *self);
+
+static gboolean
+gs_updates_page_refresh_last_checked_cb (gpointer user_data)
+{
+	GsUpdatesPage *self = user_data;
+	gs_updates_page_refresh_last_checked (self);
+	return G_SOURCE_REMOVE;
+}
+
+static void
+gs_updates_page_refresh_last_checked (GsUpdatesPage *self)
+{
+	g_autofree gchar *checked_str = NULL;
+	gint hours_ago, days_ago;
+	checked_str = gs_updates_page_last_checked_time_string (self, &hours_ago, &days_ago);
+	if (checked_str != NULL) {
+		g_autofree gchar *last_checked = NULL;
+		guint interval;
+
+		/* TRANSLATORS: This is the time when we last checked for updates */
+		last_checked = g_strdup_printf (_("Last checked: %s"), checked_str);
+		gtk_label_set_label (GTK_LABEL (self->label_updates_last_checked),
+						last_checked);
+		gtk_widget_set_visible (self->label_updates_last_checked, TRUE);
+
+		if (hours_ago < 1)
+			interval = 60;
+		else if (days_ago < 7)
+			interval = 60 * 60;
+		else
+			interval = 60 * 60 * 24;
+
+		gs_updates_page_remove_last_checked_timeout (self);
+
+		self->refresh_last_checked_id = g_timeout_add_seconds (interval,
+			gs_updates_page_refresh_last_checked_cb, self);
+	} else {
+		gtk_widget_set_visible (self->label_updates_last_checked, FALSE);
+	}
+}
+
+static void
 gs_updates_page_update_ui_state (GsUpdatesPage *self)
 {
 	gboolean allow_mobile_refresh = TRUE;
-	g_autofree gchar *checked_str = NULL;
 	g_autofree gchar *spinner_str = NULL;
+
+	gs_updates_page_remove_last_checked_timeout (self);
 
 	if (gs_shell_get_mode (self->shell) != GS_SHELL_MODE_UPDATES)
 		return;
@@ -445,18 +425,8 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 				self->result_flags & GS_UPDATES_PAGE_FLAG_HAS_UPDATES);
 
 	/* last checked label */
-	if (g_strcmp0 (gtk_stack_get_visible_child_name (GTK_STACK (self->stack_updates)), "uptodate") == 0) {
-		checked_str = gs_updates_page_last_checked_time_string (self);
-		if (checked_str != NULL) {
-			g_autofree gchar *last_checked = NULL;
-
-			/* TRANSLATORS: This is the time when we last checked for updates */
-			last_checked = g_strdup_printf (_("Last checked: %s"), checked_str);
-			gtk_label_set_label (GTK_LABEL (self->label_updates_last_checked),
-					     last_checked);
-		}
-		gtk_widget_set_visible (self->label_updates_last_checked, checked_str != NULL);
-	}
+	if (g_strcmp0 (gtk_stack_get_visible_child_name (GTK_STACK (self->stack_updates)), "uptodate") == 0)
+		gs_updates_page_refresh_last_checked (self);
 
 	/* update the counter in headerbar */
 	refresh_headerbar_updates_counter (self);
@@ -606,7 +576,7 @@ gs_updates_page_get_system_finished_cb (GObject *source_object,
 		gtk_widget_set_visible (self->box_end_of_life, FALSE);
 		return;
 	}
-	if (gs_app_get_state (app) != AS_APP_STATE_UNAVAILABLE) {
+	if (gs_app_get_state (app) != GS_APP_STATE_UNAVAILABLE) {
 		gtk_widget_set_visible (self->box_end_of_life, FALSE);
 		return;
 	}
@@ -747,6 +717,13 @@ gs_updates_page_switch_to (GsPage *page,
 		return;
 	}
 	gs_updates_page_load (self);
+}
+
+static void
+gs_updates_page_switch_from (GsPage *page)
+{
+	GsUpdatesPage *self = GS_UPDATES_PAGE (page);
+	gs_updates_page_remove_last_checked_timeout (self);
 }
 
 static void
@@ -1140,7 +1117,7 @@ gs_updates_page_upgrade_install_cb (GsUpgradeBanner *upgrade_banner,
 	removals = gs_app_get_related (upgrade);
 	for (i = 0; i < gs_app_list_length (removals); i++) {
 		GsApp *app = gs_app_list_index (removals, i);
-		if (gs_app_get_state (app) != AS_APP_STATE_UNAVAILABLE)
+		if (gs_app_get_state (app) != GS_APP_STATE_UNAVAILABLE)
 			continue;
 		cnt++;
 	}
@@ -1185,9 +1162,9 @@ gs_updates_page_invalidate_downloaded_upgrade (GsUpdatesPage *self)
 	app = gs_upgrade_banner_get_app (GS_UPGRADE_BANNER (self->upgrade_banner));
 	if (app == NULL)
 		return;
-	if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE)
+	if (gs_app_get_state (app) != GS_APP_STATE_UPDATABLE)
 		return;
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	g_debug ("resetting %s to AVAILABLE as the updates have changed",
 		 gs_app_get_id (app));
 }
@@ -1199,8 +1176,8 @@ gs_shell_update_are_updates_in_progress (GsUpdatesPage *self)
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 		switch (gs_app_get_state (app)) {
-		case AS_APP_STATE_INSTALLING:
-		case AS_APP_STATE_REMOVING:
+		case GS_APP_STATE_INSTALLING:
+		case GS_APP_STATE_REMOVING:
 			return TRUE;
 			break;
 		default:
@@ -1238,7 +1215,7 @@ gs_updates_page_status_changed_cb (GsPluginLoader *plugin_loader,
 	case GS_PLUGIN_STATUS_INSTALLING:
 	case GS_PLUGIN_STATUS_REMOVING:
 		if (app == NULL ||
-		    (gs_app_get_kind (app) != AS_APP_KIND_OS_UPGRADE &&
+		    (gs_app_get_kind (app) != AS_COMPONENT_KIND_OPERATING_SYSTEM &&
 		     gs_app_get_id (app) != NULL)) {
 			/* if we do a install or remove then make sure all new
 			 * packages are downloaded */
@@ -1382,6 +1359,8 @@ gs_updates_page_dispose (GObject *object)
 {
 	GsUpdatesPage *self = GS_UPDATES_PAGE (object);
 
+	gs_updates_page_remove_last_checked_timeout (self);
+
 	g_cancellable_cancel (self->cancellable_refresh);
 	g_clear_object (&self->cancellable_refresh);
 	g_cancellable_cancel (self->cancellable_upgrade_download);
@@ -1418,6 +1397,7 @@ gs_updates_page_class_init (GsUpdatesPageClass *klass)
 
 	object_class->dispose = gs_updates_page_dispose;
 	page_class->switch_to = gs_updates_page_switch_to;
+	page_class->switch_from = gs_updates_page_switch_from;
 	page_class->reload = gs_updates_page_reload;
 	page_class->setup = gs_updates_page_setup;
 
@@ -1440,8 +1420,6 @@ gs_updates_page_class_init (GsUpdatesPageClass *klass)
 static void
 gs_updates_page_init (GsUpdatesPage *self)
 {
-	const char *ampm;
-
 	gtk_widget_init_template (GTK_WIDGET (self));
 
 	self->state = GS_UPDATES_PAGE_STATE_STARTUP;
@@ -1454,9 +1432,6 @@ gs_updates_page_init (GsUpdatesPage *self)
 	self->sizegroup_button = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_header = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
 
-	ampm = nl_langinfo (AM_STR);
-	if (ampm != NULL && *ampm != '\0')
-		self->ampm_available = TRUE;
 }
 
 GsUpdatesPage *

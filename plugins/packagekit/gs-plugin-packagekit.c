@@ -39,6 +39,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->task = pk_task_new ();
 	pk_client_set_background (PK_CLIENT (priv->task), FALSE);
 	pk_client_set_cache_age (PK_CLIENT (priv->task), G_MAXUINT);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 }
 
 void
@@ -72,6 +73,7 @@ gs_plugin_add_sources_related (GsPlugin *plugin,
 					 PK_FILTER_ENUM_NOT_COLLECTIONS,
 					 -1);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_get_packages (PK_CLIENT(priv->task),
 					   filter,
 					   cancellable,
@@ -135,6 +137,7 @@ gs_plugin_add_sources (GsPlugin *plugin,
 					 PK_FILTER_ENUM_NOT_SUPPORTED,
 					 -1);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_get_repo_list (PK_CLIENT(priv->task),
 					   filter,
 					   cancellable,
@@ -151,11 +154,11 @@ gs_plugin_add_sources (GsPlugin *plugin,
 		id = pk_repo_detail_get_id (rd);
 		app = gs_app_new (id);
 		gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
-		gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+		gs_app_set_kind (app, AS_COMPONENT_KIND_REPOSITORY);
 		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 		gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 		gs_app_set_state (app, pk_repo_detail_get_enabled (rd) ?
-				  AS_APP_STATE_INSTALLED : AS_APP_STATE_AVAILABLE);
+				  GS_APP_STATE_INSTALLED : GS_APP_STATE_AVAILABLE);
 		gs_app_set_name (app,
 				 GS_APP_QUALITY_LOWEST,
 				 pk_repo_detail_get_description (rd));
@@ -181,7 +184,9 @@ gs_plugin_app_origin_repo_enable (GsPlugin *plugin,
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GsPackagekitHelper) helper = gs_packagekit_helper_new (plugin);
+	g_autoptr(GsApp) repo_app = NULL;
 	g_autoptr(PkResults) results = NULL;
+	g_autoptr(PkError) error_code = NULL;
 	const gchar *repo_id;
 
 	repo_id = gs_app_get_origin (app);
@@ -196,6 +201,7 @@ gs_plugin_app_origin_repo_enable (GsPlugin *plugin,
 	/* do sync call */
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
 	                                 repo_id,
 	                                 TRUE,
@@ -203,14 +209,25 @@ gs_plugin_app_origin_repo_enable (GsPlugin *plugin,
 	                                 gs_packagekit_helper_cb, helper,
 	                                 error);
 	g_mutex_unlock (&priv->task_mutex);
-	if (!gs_plugin_packagekit_results_valid (results, error)) {
+
+	/* pk_client_repo_enable() returns an error if the repo is already enabled. */
+	if (results != NULL &&
+	    (error_code = pk_results_get_error_code (results)) != NULL &&
+	    pk_error_get_code (error_code) == PK_ERROR_ENUM_REPO_ALREADY_SET) {
+		g_clear_error (error);
+	} else if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_utils_error_add_origin_id (error, app);
 		return FALSE;
 	}
 
 	/* now that the repo is enabled, the app (not the repo!) moves from
 	 * UNAVAILABLE state to AVAILABLE */
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
+
+	/* Construct a simple fake GsApp for the repository, used only by the signal handler */
+	repo_app = gs_app_new (repo_id);
+	gs_app_set_state (repo_app, GS_APP_STATE_INSTALLED);
+	gs_plugin_repository_changed (plugin, repo_app);
 
 	return TRUE;
 }
@@ -224,12 +241,14 @@ gs_plugin_repo_enable (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GsPackagekitHelper) helper = gs_packagekit_helper_new (plugin);
 	g_autoptr(PkResults) results = NULL;
+	g_autoptr(PkError) error_code = NULL;
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
-	gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 	gs_packagekit_helper_add_app (helper, app);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
 					 gs_app_get_id (app),
 					 TRUE,
@@ -237,14 +256,22 @@ gs_plugin_repo_enable (GsPlugin *plugin,
 					 gs_packagekit_helper_cb, helper,
 					 error);
 	g_mutex_unlock (&priv->task_mutex);
-	if (!gs_plugin_packagekit_results_valid (results, error)) {
+
+	/* pk_client_repo_enable() returns an error if the repo is already enabled. */
+	if (results != NULL &&
+	    (error_code = pk_results_get_error_code (results)) != NULL &&
+	    pk_error_get_code (error_code) == PK_ERROR_ENUM_REPO_ALREADY_SET) {
+		g_clear_error (error);
+	} else if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_app_set_state_recover (app);
 		gs_utils_error_add_origin_id (error, app);
 		return FALSE;
 	}
 
 	/* state is known */
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+
+	gs_plugin_repository_changed (plugin, app);
 
 	return TRUE;
 }
@@ -272,16 +299,16 @@ gs_plugin_app_install (GsPlugin *plugin,
 		return TRUE;
 
 	/* enable repo */
-	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_REPOSITORY)
 		return gs_plugin_repo_enable (plugin, app, cancellable, error);
 
 	/* queue for install if installation needs the network */
 	if (!gs_plugin_get_network_available (plugin)) {
-		gs_app_set_state (app, AS_APP_STATE_QUEUED_FOR_INSTALL);
+		gs_app_set_state (app, GS_APP_STATE_QUEUED_FOR_INSTALL);
 		return TRUE;
 	}
 
-	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
+	if (gs_app_get_state (app) == GS_APP_STATE_UNAVAILABLE) {
 		/* get everything up front we need */
 		source_ids = gs_app_get_source_ids (app);
 		if (source_ids->len == 0) {
@@ -298,7 +325,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 		if (!gs_plugin_app_origin_repo_enable (plugin, app, cancellable, error))
 			return FALSE;
 
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 
 		/* FIXME: this is a hack, to allow PK time to re-initialize
 		 * everything in order to match an actual result. The root cause
@@ -320,7 +347,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 		}
 
 		/* state is known */
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 
 		/* if we remove the app again later, we should be able to
 		 * cancel the installation if we'd never installed it */
@@ -333,8 +360,8 @@ gs_plugin_app_install (GsPlugin *plugin,
 
 	/* get the list of available package ids to install */
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_AVAILABLE:
-	case AS_APP_STATE_UPDATABLE:
+	case GS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_UPDATABLE:
 		source_ids = gs_app_get_source_ids (app);
 		if (source_ids->len == 0) {
 			g_set_error_literal (error,
@@ -376,12 +403,12 @@ gs_plugin_app_install (GsPlugin *plugin,
 			return FALSE;
 		}
 
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 		addons = gs_app_get_addons (app);
 		for (i = 0; i < gs_app_list_length (addons); i++) {
 			GsApp *addon = gs_app_list_index (addons, i);
 			if (gs_app_get_to_be_installed (addon))
-				gs_app_set_state (addon, AS_APP_STATE_INSTALLING);
+				gs_app_set_state (addon, GS_APP_STATE_INSTALLING);
 		}
 		gs_packagekit_helper_add_app (helper, app);
 		g_mutex_lock (&priv->task_mutex);
@@ -397,10 +424,10 @@ gs_plugin_app_install (GsPlugin *plugin,
 		}
 
 		/* state is known */
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 
 		break;
-	case AS_APP_STATE_AVAILABLE_LOCAL:
+	case GS_APP_STATE_AVAILABLE_LOCAL:
 		if (gs_app_get_local_file (app) == NULL) {
 			g_set_error_literal (error,
 					     GS_PLUGIN_ERROR,
@@ -411,7 +438,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 		local_filename = g_file_get_path (gs_app_get_local_file (app));
 		package_ids = g_strsplit (local_filename, "\t", -1);
 
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 		gs_packagekit_helper_add_app (helper, app);
 		g_mutex_lock (&priv->task_mutex);
 		results = pk_task_install_files_sync (priv->task,
@@ -426,19 +453,18 @@ gs_plugin_app_install (GsPlugin *plugin,
 		}
 
 		/* state is known */
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 
 		/* get the new icon from the package */
 		gs_app_set_local_file (app, NULL);
-		gs_app_add_icon (app, NULL);
-		gs_app_set_pixbuf (app, NULL);
+		gs_app_remove_all_icons (app);
 		break;
 	default:
 		g_set_error (error,
 			     GS_PLUGIN_ERROR,
 			     GS_PLUGIN_ERROR_NOT_SUPPORTED,
 			     "do not know how to install app in state %s",
-			     as_app_state_to_string (gs_app_get_state (app)));
+			     gs_app_state_to_string (gs_app_get_state (app)));
 		return FALSE;
 	}
 
@@ -457,12 +483,14 @@ gs_plugin_repo_disable (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	g_autoptr(GsPackagekitHelper) helper = gs_packagekit_helper_new (plugin);
 	g_autoptr(PkResults) results = NULL;
+	g_autoptr(PkError) error_code = NULL;
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, app, GS_PLUGIN_STATUS_WAITING);
-	gs_app_set_state (app, AS_APP_STATE_REMOVING);
+	gs_app_set_state (app, GS_APP_STATE_REMOVING);
 	gs_packagekit_helper_add_app (helper, app);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_repo_enable (PK_CLIENT (priv->task),
 					 gs_app_get_id (app),
 					 FALSE,
@@ -470,14 +498,22 @@ gs_plugin_repo_disable (GsPlugin *plugin,
 					 gs_packagekit_helper_cb, helper,
 					 error);
 	g_mutex_unlock (&priv->task_mutex);
-	if (!gs_plugin_packagekit_results_valid (results, error)) {
+
+	/* pk_client_repo_enable() returns an error if the repo is already enabled. */
+	if (results != NULL &&
+	    (error_code = pk_results_get_error_code (results)) != NULL &&
+	    pk_error_get_code (error_code) == PK_ERROR_ENUM_REPO_ALREADY_SET) {
+		g_clear_error (error);
+	} else if (!gs_plugin_packagekit_results_valid (results, error)) {
 		gs_app_set_state_recover (app);
 		gs_utils_error_add_origin_id (error, app);
 		return FALSE;
 	}
 
 	/* state is known */
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
+
+	gs_plugin_repository_changed (plugin, app);
 
 	return TRUE;
 }
@@ -491,6 +527,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const gchar *package_id;
 	GPtrArray *source_ids;
+	GsAppList *addons;
 	g_autoptr(GsPackagekitHelper) helper = gs_packagekit_helper_new (plugin);
 	guint i;
 	guint cnt = 0;
@@ -503,7 +540,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		return TRUE;
 
 	/* disable repo */
-	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_REPOSITORY)
 		return gs_plugin_repo_disable (plugin, app, cancellable, error);
 
 	/* get the list of available package ids to install */
@@ -531,7 +568,7 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	}
 
 	/* do the action */
-	gs_app_set_state (app, AS_APP_STATE_REMOVING);
+	gs_app_set_state (app, GS_APP_STATE_REMOVING);
 	gs_packagekit_helper_add_app (helper, app);
 	g_mutex_lock (&priv->task_mutex);
 	results = pk_task_remove_packages_sync (priv->task,
@@ -546,8 +583,16 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		return FALSE;
 	}
 
+	/* Make sure addons' state is updated as well */
+	addons = gs_app_get_addons (app);
+	for (i = 0; i < gs_app_list_length (addons); i++) {
+		GsApp *addon = gs_app_list_index (addons, i);
+		if (gs_app_get_state (addon) == GS_APP_STATE_INSTALLED)
+			gs_app_set_state (addon, GS_APP_STATE_UNKNOWN);
+	}
+
 	/* state is not known: we don't know if we can re-install this app */
-	gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+	gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
 
 	/* no longer valid */
 	gs_app_clear_source_ids (app);
@@ -573,10 +618,10 @@ gs_plugin_packagekit_build_update_app (GsPlugin *plugin, PkPackage *package)
 			     gs_plugin_get_name (plugin));
 	gs_app_set_management_plugin (app, "packagekit");
 	gs_app_set_update_version (app, pk_package_get_version (package));
-	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
-	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
+	gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE);
 	gs_plugin_cache_add (plugin, pk_package_get_id (package), app);
 	return app;
 }
@@ -595,6 +640,7 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	/* do sync call */
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_get_updates (PK_CLIENT (priv->task),
 					 pk_bitfield_value (PK_FILTER_ENUM_NONE),
 					 cancellable,
@@ -633,6 +679,7 @@ gs_plugin_add_search_files (GsPlugin *plugin,
 					 PK_FILTER_ENUM_ARCH,
 					 -1);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_search_files (PK_CLIENT (priv->task),
 	                                  filter,
 	                                  search,
@@ -665,6 +712,7 @@ gs_plugin_add_search_what_provides (GsPlugin *plugin,
 					 PK_FILTER_ENUM_ARCH,
 					 -1);
 	g_mutex_lock (&priv->task_mutex);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_what_provides (PK_CLIENT (priv->task),
 	                                   filter,
 	                                   search,

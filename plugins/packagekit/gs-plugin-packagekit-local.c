@@ -30,6 +30,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	g_mutex_init (&priv->task_mutex);
 	priv->task = pk_task_new ();
 	pk_client_set_background (PK_CLIENT (priv->task), FALSE);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 }
 
 void
@@ -97,7 +98,7 @@ gs_plugin_packagekit_refresh_guess_app_id (GsPlugin *plugin,
 		}
 	}
 	if (basename_best->len > 0) {
-		gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
+		gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
 		gs_app_set_id (app, basename_best->str);
 	}
 
@@ -141,8 +142,8 @@ gs_plugin_packagekit_local_check_installed (GsPlugin *plugin,
 		return FALSE;
 	packages = pk_results_get_package_array (results);
 	if (packages->len > 0) {
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 		for (guint i = 0; i < packages->len; i++){
 			PkPackage *pkg = g_ptr_array_index (packages, i);
 			gs_app_add_source_id (app, pk_package_get_id (pkg));
@@ -190,6 +191,7 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 	files = g_strsplit (filename, "\t", -1);
 	g_mutex_lock (&priv->task_mutex);
 	pk_client_set_cache_age (PK_CLIENT (priv->task), G_MAXUINT);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_get_details_local (PK_CLIENT (priv->task),
 					       files,
 					       cancellable,
@@ -233,9 +235,9 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 		return FALSE;
 	}
 	gs_app_set_management_plugin (app, "packagekit");
-	gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE_LOCAL);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE_LOCAL);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, split[PK_PACKAGE_ID_NAME]);
 	gs_app_set_summary (app, GS_APP_QUALITY_LOWEST,
 			    pk_details_get_summary (item));
@@ -247,7 +249,7 @@ gs_plugin_file_to_app (GsPlugin *plugin,
 	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE, pk_details_get_url (item));
 	gs_app_set_size_installed (app, pk_details_get_size (item));
 	gs_app_set_size_download (app, 0);
-	license_spdx = as_utils_license_to_spdx (pk_details_get_license (item));
+	license_spdx = as_license_to_spdx_id (pk_details_get_license (item));
 	gs_app_set_license (app, GS_APP_QUALITY_LOWEST, license_spdx);
 	add_quirks_from_package_name (app, split[PK_PACKAGE_ID_NAME]);
 

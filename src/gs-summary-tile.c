@@ -40,11 +40,12 @@ gs_summary_tile_refresh (GsAppTile *self)
 	GsApp *app = gs_app_tile_get_app (self);
 	AtkObject *accessible;
 	GtkStyleContext *context;
-	const GdkPixbuf *pixbuf;
+	g_autoptr(GIcon) icon = NULL;
 	gboolean installed;
 	g_autofree gchar *name = NULL;
 	const gchar *summary;
 	const gchar *css;
+	g_autofree gchar *modified_css = NULL;
 
 	if (app == NULL)
 		return;
@@ -59,14 +60,12 @@ gs_summary_tile_refresh (GsAppTile *self)
 	gtk_label_set_label (GTK_LABEL (tile->summary), summary);
 	gtk_widget_set_visible (tile->summary, summary && summary[0]);
 
-	pixbuf = gs_app_get_pixbuf (app);
-	if (pixbuf != NULL) {
-		gs_image_set_from_pixbuf (GTK_IMAGE (tile->image), pixbuf);
-	} else {
-		gtk_image_set_from_icon_name (GTK_IMAGE (tile->image),
-					      "application-x-executable",
-					      GTK_ICON_SIZE_DIALOG);
-	}
+	icon = gs_app_get_icon_for_size (app,
+					 gtk_image_get_pixel_size (GTK_IMAGE (tile->image)),
+					 gtk_widget_get_scale_factor (tile->image),
+					 "application-x-executable");
+	gtk_image_set_from_gicon (GTK_IMAGE (tile->image), icon, GTK_ICON_SIZE_DIALOG);
+
 	context = gtk_widget_get_style_context (tile->image);
 	if (gs_app_get_use_drop_shadow (app))
 		gtk_style_context_add_class (context, "icon-dropshadow");
@@ -75,30 +74,31 @@ gs_summary_tile_refresh (GsAppTile *self)
 
 	/* perhaps set custom css */
 	css = gs_app_get_metadata_item (app, "GnomeSoftware::AppTile-css");
-	gs_utils_widget_set_css (GTK_WIDGET (tile), &tile->tile_provider, "summary-tile", css);
+	modified_css = gs_utils_set_key_colors_in_css (css, app);
+	gs_utils_widget_set_css (GTK_WIDGET (tile), &tile->tile_provider, "summary-tile", modified_css);
 
 	accessible = gtk_widget_get_accessible (GTK_WIDGET (tile));
 
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_INSTALLED:
-	case AS_APP_STATE_UPDATABLE:
-	case AS_APP_STATE_UPDATABLE_LIVE:
+	case GS_APP_STATE_INSTALLED:
+	case GS_APP_STATE_UPDATABLE:
+	case GS_APP_STATE_UPDATABLE_LIVE:
 		installed = TRUE;
 		name = g_strdup_printf (_("%s (Installed)"),
 					gs_app_get_name (app));
 		break;
-	case AS_APP_STATE_INSTALLING:
+	case GS_APP_STATE_INSTALLING:
 		installed = FALSE;
 		name = g_strdup_printf (_("%s (Installing)"),
 					gs_app_get_name (app));
 		break;
-	case AS_APP_STATE_REMOVING:
+	case GS_APP_STATE_REMOVING:
 		installed = TRUE;
 		name = g_strdup_printf (_("%s (Removing)"),
 					gs_app_get_name (app));
 		break;
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
-	case AS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_QUEUED_FOR_INSTALL:
+	case GS_APP_STATE_AVAILABLE:
 	default:
 		installed = FALSE;
 		name = g_strdup (gs_app_get_name (app));

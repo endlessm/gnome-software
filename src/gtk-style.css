@@ -30,7 +30,6 @@
 }
 
 .app-row-installed-label {
-	color: @theme_selected_bg_color;
 	font-size: smaller;
 }
 
@@ -98,6 +97,39 @@
 	text-shadow: none;
 }
 
+.content-rating-permissions label {
+	color: black;
+}
+
+.details-rating-18 {
+	color: white;
+	background-image: none;
+	background-color: #ee2222;
+}
+
+.details-rating-15 {
+	color: white;
+	background-image: none;
+	background-color: #f1c000;
+}
+
+.details-rating-12 {
+	color: white;
+	background-image: none;
+	background-color: #2a97c9;
+}
+.details-rating-5 {
+	color: white;
+	background-image: none;
+	background-color: #3f756c;
+}
+
+.details-rating-0 {
+	color: white;
+	background-image: none;
+	background-color: #009d66;
+}
+
 .details-license-free {
 	background-color: #4e9a06;
 	border-color: #3e7905;
@@ -163,6 +195,7 @@
 }
 .screenshot-image { border-radius: 5px; }
 .screenshot-image-thumb { border-radius: 3px; }
+.screenshot-image-main .image1, .screenshot-image-main .image2 { margin: 12px; }
 
 .app-tile-label {
 	font-size: 105%;
@@ -182,16 +215,14 @@
 }
 
 @define-color gs_tile_bg_color mix(@theme_base_color,@theme_bg_color,0.3);
-@define-color gs_tile_borders mix(@gs_tile_bg_color,@theme_fg_color,0.3);
-@define-color gs_tile_borders_alpha alpha(@theme_fg_color,0.3);
 
 .view.tile {
 	padding: 1px;
 	border: none;
-	box-shadow: inset 0 2px 0 @theme_base_color,
-	            inset 0 -2px 0 mix(@gs_tile_bg_color,@gs_tile_borders,0.5),
-	            inset 0 0 0 1px @gs_tile_borders,
-	            inset 0 -3px 0 -2px shade(@gs_tile_borders,0.75);
+    box-shadow: inset 0 2px 0 transparent,
+                inset 0 -2px 0 transparent,
+                inset 0 0 0 1px @unfocused_borders,
+                inset 0 -3px 0 -2px transparent;
 	background: @gs_tile_bg_color;
 }
 
@@ -235,16 +266,22 @@
 .featured-tile {
 	all: unset;
 	padding: 0;
-	border-radius: 5px; /* match button tiles */
-	border-width: 1px;
-	border-image: none;
 	box-shadow: none;
-	/* box-shadow: inset 0 0 0 1px alpha(@theme_fg_color,0.3), 0 0 1px alpha(black,0.4); */
+	color: @theme_fg_color;
 }
-  .featured-tile:backdrop label {
-    color: inherit;
-    text-shadow: none;
-  }
+.featured-tile:backdrop label {
+	color: inherit;
+	text-shadow: none;
+}
+
+.featured-tile label.title-1 {
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+
+.featured-tile.narrow label.title-1 {
+	font-size: 16pt;  /* 80% of .title-1 */
+}
 
 .application-details-infobar.info {
 	background-color: shade(@theme_bg_color, 0.9);
@@ -289,6 +326,17 @@
 .application-details-description {
 }
 
+@keyframes install-progress-unknown-move {
+	0% { background-position: 0%; }
+	50% { background-position: 100%; }
+	100% { background-position: 0%; }
+}
+
+.application-details-description .button {
+	padding-left:24px;
+	padding-right:24px;
+}
+
 .install-progress {
 	background-image: linear-gradient(to top, @theme_selected_bg_color 2px, alpha(@theme_selected_bg_color, 0) 2px);
 	background-repeat: no-repeat;
@@ -327,8 +375,8 @@
 
 .reviewbar {
 	background-image: none;
-	background-color: #babdb6;
-	color: #555753;
+	background-color: @unfocused_insensitive_color;
+	color: @insensitive_fg_color;
 }
 
 .error-label {
@@ -368,6 +416,11 @@
 	font-weight: bold;
 }
 
+.full-page-app-list {
+	border-radius: 4px;
+	border: 1px solid darker(@theme_bg_color);
+}
+
 .image-list {
 	background-color: transparent;
 }
@@ -401,7 +454,7 @@ flowboxchild {
 }
 .star-disabled,
 .star-disabled:disabled {
-	color: shade(@theme_bg_color, 0.8);
+	color: @unfocused_insensitive_color;
 }
 
 .counter-label {
@@ -499,10 +552,39 @@ flowboxchild {
 	opacity: 0.5;
 }
 
+.featured-carousel rounded-bin {
+	border-radius: 8px;
+}
+
 .featured-button-left,
 .featured-button-right {
 	padding: 2px 5px;
-	margin: 6px;
+	border-radius: 50%;
+	-gtk-outline-radius: 50%;
+	color: @theme_fg_color;
+}
+
+.featured-carousel button.osd {
+	-gtk-icon-shadow: none;
+	border: none;
+}
+
+.featured-carousel button.osd:focus {
+	/* this is @theme_fg_color at 10% opacity, but we can’t use the variable
+	 * directly as rgba() requires 4 components */
+	background: rgba(46, 52, 54, 0.1);
+}
+
+.featured-carousel button.osd:hover {
+	/* this is @theme_fg_color at 20% opacity, but we can’t use the variable
+	 * directly as rgba() requires 4 components */
+	background: rgba(46, 52, 54, 0.2);
+}
+
+.featured-carousel button.osd:active {
+	/* this is @theme_fg_color at 35% opacity, but we can’t use the variable
+	 * directly as rgba() requires 4 components */
+	background: rgba(46, 52, 54, 0.35);
 }
 
 .featured-button-left:not(:hover),

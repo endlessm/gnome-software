@@ -109,7 +109,6 @@ gs_plugin_external_appstream_refresh_sys (GsPlugin *plugin,
 	g_autofree gchar *file_name = NULL;
 	g_autofree gchar *local_mod_date = NULL;
 	g_autofree gchar *target_file_path = NULL;
-	g_autofree gchar *tmp_file_tmpl = NULL;
 	g_autoptr(GFileIOStream) iostream = NULL;
 	g_autoptr(GFile) tmp_file = NULL;
 	g_autoptr(SoupMessage) msg = NULL;
@@ -157,7 +156,8 @@ gs_plugin_external_appstream_refresh_sys (GsPlugin *plugin,
 	 * the system */
 	tmp_file_path = gs_utils_get_cache_filename ("external-appstream",
 						     file_name,
-						     GS_UTILS_CACHE_FLAG_WRITEABLE,
+						     GS_UTILS_CACHE_FLAG_WRITEABLE |
+						     GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 						     error);
 	if (tmp_file_path == NULL)
 		return FALSE;

@@ -17,7 +17,21 @@
 
 /*
  * SECTION:
- * Provides review data from the Open Desktop Ratings Serice.
+ * Provides review data from the Open Desktop Ratings Service.
+ *
+ * To test this plugin locally you will probably want to build and run the
+ * `odrs-web` container, following the instructions in the
+ * [`odrs-web` repository](https://gitlab.gnome.org/Infrastructure/odrs-web/-/blob/master/README.md),
+ * and then get gnome-software to use your local review server by running:
+ * ```
+ * gsettings set org.gnome.software review-server 'http://127.0.0.1:5000/1.0/reviews/api'
+ * ```
+ *
+ * When you are done with development, run the following command to use the real
+ * ODRS server again:
+ * ```
+ * gsettings reset org.gnome.software review-server
+ * ```
  */
 
 #if !GLIB_CHECK_VERSION(2, 62, 0)
@@ -33,7 +47,7 @@ typedef struct
   GDestroyNotify clear_func;
 } GRealArray;
 
-gboolean
+static gboolean
 g_array_binary_search (GArray        *array,
                        gconstpointer  target,
                        GCompareFunc   compare_func,
@@ -134,18 +148,19 @@ gs_plugin_initialize (GsPlugin *plugin)
 	os_release = gs_os_release_new (&error);
 	if (os_release != NULL) {
 		priv->distro = g_strdup (gs_os_release_get_name (os_release));
-		if (priv->distro == NULL) {
+		if (priv->distro == NULL)
 			g_warning ("no distro name specified");
-			priv->distro = g_strdup ("Unknown");
-		}
 	} else {
 		g_warning ("failed to get distro name: %s", error->message);
-		priv->distro = g_strdup ("Unknown");
 	}
+
+	/* Fallback */
+	if (priv->distro == NULL)
+		priv->distro = g_strdup (C_("Distribution name", "Unknown"));
 
 	/* add source */
 	priv->cached_origin = gs_app_new (gs_plugin_get_name (plugin));
-	gs_app_set_kind (priv->cached_origin, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (priv->cached_origin, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_origin_hostname (priv->cached_origin, priv->review_server);
 
 	/* add the source to the plugin cache which allows us to match the
@@ -160,6 +175,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	/* set name of MetaInfo file */
 	gs_plugin_set_appstream_id (plugin, "org.gnome.Software.Plugin.Odrs");
+
+	gs_plugin_set_enabled (plugin, priv->review_server && *priv->review_server);
 }
 
 static gboolean
@@ -267,7 +284,8 @@ gs_plugin_refresh (GsPlugin *plugin,
 	/* check cache age */
 	cache_filename = gs_utils_get_cache_filename ("odrs",
 						      "ratings.json",
-						      GS_UTILS_CACHE_FLAG_WRITEABLE,
+						      GS_UTILS_CACHE_FLAG_WRITEABLE |
+						      GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 						      error);
 	if (cache_filename == NULL)
 		return FALSE;
@@ -403,10 +421,16 @@ gs_plugin_odrs_parse_reviews (GsPlugin *plugin,
 
 	/* nothing */
 	if (data == NULL) {
-		g_set_error_literal (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_INVALID_FORMAT,
-				     "server returned no data");
+		if (!gs_plugin_get_network_available (plugin))
+			g_set_error_literal (error,
+					     GS_PLUGIN_ERROR,
+					     GS_PLUGIN_ERROR_NO_NETWORK,
+					     "server couldn't be reached");
+		else
+			g_set_error_literal (error,
+					     GS_PLUGIN_ERROR,
+					     GS_PLUGIN_ERROR_INVALID_FORMAT,
+					     "server returned no data");
 		return NULL;
 	}
 
@@ -480,7 +504,7 @@ gs_plugin_odrs_parse_reviews (GsPlugin *plugin,
 }
 
 static gboolean
-gs_plugin_odrs_parse_success (const gchar *data, gssize data_len, GError **error)
+gs_plugin_odrs_parse_success (GsPlugin *plugin, const gchar *data, gssize data_len, GError **error)
 {
 	JsonNode *json_root;
 	JsonObject *json_item;
@@ -489,10 +513,16 @@ gs_plugin_odrs_parse_success (const gchar *data, gssize data_len, GError **error
 
 	/* nothing */
 	if (data == NULL) {
-		g_set_error_literal (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_INVALID_FORMAT,
-				     "server returned no data");
+		if (!gs_plugin_get_network_available (plugin))
+			g_set_error_literal (error,
+					     GS_PLUGIN_ERROR,
+					     GS_PLUGIN_ERROR_NO_NETWORK,
+					     "server couldn't be reached");
+		else
+			g_set_error_literal (error,
+					     GS_PLUGIN_ERROR,
+					     GS_PLUGIN_ERROR_INVALID_FORMAT,
+					     "server returned no data");
 		return FALSE;
 	}
 
@@ -544,7 +574,8 @@ gs_plugin_odrs_parse_success (const gchar *data, gssize data_len, GError **error
 }
 
 static gboolean
-gs_plugin_odrs_json_post (SoupSession *session,
+gs_plugin_odrs_json_post (GsPlugin *plugin,
+			  SoupSession *session,
 			  const gchar *uri,
 			  const gchar *data,
 			  GError **error)
@@ -572,7 +603,8 @@ gs_plugin_odrs_json_post (SoupSession *session,
 	}
 
 	/* process returned JSON */
-	return gs_plugin_odrs_parse_success (msg->response_body->data,
+	return gs_plugin_odrs_parse_success (plugin,
+					     msg->response_body->data,
 					     msg->response_body->length,
 					     error);
 }
@@ -581,17 +613,24 @@ static GPtrArray *
 _gs_app_get_reviewable_ids (GsApp *app)
 {
 	GPtrArray *ids = g_ptr_array_new_with_free_func (g_free);
-	GPtrArray *provides = gs_app_get_provides (app);
+	GPtrArray *provided = gs_app_get_provided (app);
 
 	/* add the main component id */
 	g_ptr_array_add (ids, g_strdup (gs_app_get_id (app)));
 
 	/* add any ID provides */
-	for (guint i = 0; i < provides->len; i++) {
-		AsProvide *provide = g_ptr_array_index (provides, i);
-		if (as_provide_get_kind (provide) == AS_PROVIDE_KIND_ID &&
-		    as_provide_get_value (provide) != NULL) {
-			g_ptr_array_add (ids, g_strdup (as_provide_get_value (provide)));
+	for (guint i = 0; i < provided->len; i++) {
+		GPtrArray *items;
+		AsProvided *prov = g_ptr_array_index (provided, i);
+		if (as_provided_get_kind (prov) != AS_PROVIDED_KIND_ID)
+			continue;
+
+		items = as_provided_get_items (prov);
+		for (guint j = 0; j < items->len; j++) {
+			const gchar *value = (const gchar *) g_ptr_array_index (items, j);
+			if (value == NULL)
+				continue;
+			g_ptr_array_add (ids, g_strdup (value));
 		}
 	}
 	return ids;
@@ -616,12 +655,32 @@ gs_plugin_odrs_refine_ratings (GsPlugin *plugin,
 
 	locker = g_mutex_locker_new (&priv->ratings_mutex);
 
-	if (priv->ratings == NULL)
-		return TRUE;
+	if (!priv->ratings) {
+		g_autofree gchar *cache_filename = NULL;
+
+		g_clear_pointer (&locker, g_mutex_locker_free);
+
+		/* Load from the local cache, if available, when in offline or
+		   when refresh/download disabled on start */
+		cache_filename = gs_utils_get_cache_filename ("odrs",
+							      "ratings.json",
+							      GS_UTILS_CACHE_FLAG_WRITEABLE |
+							      GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
+							      error);
+
+		if (!cache_filename ||
+		    !gs_plugin_odrs_load_ratings (plugin, cache_filename, NULL))
+			return TRUE;
+
+		locker = g_mutex_locker_new (&priv->ratings_mutex);
+
+		if (!priv->ratings)
+			return TRUE;
+	}
 
 	for (guint i = 0; i < reviewable_ids->len; i++) {
 		const gchar *id = g_ptr_array_index (reviewable_ids, i);
-		const GsOdrsRating search_rating = { id, { 0, }};
+		const GsOdrsRating search_rating = { (gchar *) id, { 0, }};
 		guint found_index;
 		const GsOdrsRating *found_rating;
 
@@ -662,22 +721,30 @@ gs_plugin_odrs_refine_ratings (GsPlugin *plugin,
 static JsonNode *
 gs_plugin_odrs_get_compat_ids (GsApp *app)
 {
-	GPtrArray *provides = gs_app_get_provides (app);
+	GPtrArray *provided = gs_app_get_provided (app);
 	g_autoptr(GHashTable) ids = NULL;
 	g_autoptr(JsonArray) json_array = json_array_new ();
 	g_autoptr(JsonNode) json_node = json_node_new (JSON_NODE_ARRAY);
 
 	ids = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-	for (guint i = 0; i < provides->len; i++) {
-		AsProvide *provide = g_ptr_array_index (provides, i);
-		if (as_provide_get_kind (provide) != AS_PROVIDE_KIND_ID)
+	for (guint i = 0; i < provided->len; i++) {
+		GPtrArray *items;
+		AsProvided *prov = g_ptr_array_index (provided, i);
+
+		if (as_provided_get_kind (prov) != AS_PROVIDED_KIND_ID)
 			continue;
-		if (as_provide_get_value (provide) == NULL)
-			continue;
-		if (g_hash_table_lookup (ids, as_provide_get_value (provide)) != NULL)
-			continue;
-		g_hash_table_add (ids, g_strdup (as_provide_get_value (provide)));
-		json_array_add_string_element (json_array, as_provide_get_value (provide));
+
+		items = as_provided_get_items (prov);
+		for (guint j = 0; j < items->len; j++) {
+			const gchar *value = g_ptr_array_index (items, j);
+			if (value == NULL)
+				continue;
+
+			if (g_hash_table_lookup (ids, value) != NULL)
+				continue;
+			g_hash_table_add (ids, g_strdup (value));
+			json_array_add_string_element (json_array, value);
+		}
 	}
 	if (json_array_get_length (json_array) == 0)
 		return NULL;
@@ -707,7 +774,8 @@ gs_plugin_odrs_fetch_for_app (GsPlugin *plugin, GsApp *app, GError **error)
 	cachefn_basename = g_strdup_printf ("%s.json", gs_app_get_id (app));
 	cachefn = gs_utils_get_cache_filename ("odrs",
 					       cachefn_basename,
-					       GS_UTILS_CACHE_FLAG_WRITEABLE,
+					       GS_UTILS_CACHE_FLAG_WRITEABLE |
+					       GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 					       error);
 	if (cachefn == NULL)
 		return NULL;
@@ -770,7 +838,8 @@ gs_plugin_odrs_fetch_for_app (GsPlugin *plugin, GsApp *app, GError **error)
 				  SOUP_MEMORY_COPY, data, strlen (data));
 	status_code = soup_session_send_message (gs_plugin_get_soup_session (plugin), msg);
 	if (status_code != SOUP_STATUS_OK) {
-		if (!gs_plugin_odrs_parse_success (msg->response_body->data,
+		if (!gs_plugin_odrs_parse_success (plugin,
+						   msg->response_body->data,
 						   msg->response_body->length,
 						   error))
 			return NULL;
@@ -846,7 +915,7 @@ refine_app (GsPlugin             *plugin,
 	    GError              **error)
 {
 	/* not valid */
-	if (gs_app_get_kind (app) == AS_APP_KIND_ADDON)
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_ADDON)
 		return TRUE;
 	if (gs_app_get_id (app) == NULL)
 		return TRUE;
@@ -888,8 +957,17 @@ gs_plugin_refine (GsPlugin             *plugin,
 
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
-		if (!refine_app (plugin, app, flags, cancellable, error))
-			return FALSE;
+		g_autoptr(GError) local_error = NULL;
+		if (!refine_app (plugin, app, flags, cancellable, &local_error)) {
+			if (g_error_matches (local_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_NETWORK)) {
+				g_debug ("failed to refine app %s: %s",
+					 gs_app_get_unique_id (app), local_error->message);
+			} else {
+				g_prefix_error (&local_error, "failed to refine app: ");
+				g_propagate_error (error, g_steal_pointer (&local_error));
+				return FALSE;
+			}
+		}
 	}
 
 	return TRUE;
@@ -934,7 +1012,8 @@ gs_plugin_odrs_invalidate_cache (AsReview *review, GError **error)
 					    as_review_get_metadata_item (review, "app_id"));
 	cachefn = gs_utils_get_cache_filename ("odrs",
 					       cachefn_basename,
-					       GS_UTILS_CACHE_FLAG_WRITEABLE,
+					       GS_UTILS_CACHE_FLAG_WRITEABLE |
+					       GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 					       error);
 	if (cachefn == NULL)
 		return FALSE;
@@ -1007,7 +1086,7 @@ gs_plugin_review_submit (GsPlugin *plugin,
 
 	/* POST */
 	uri = g_strdup_printf ("%s/submit", priv->review_server);
-	return gs_plugin_odrs_json_post (gs_plugin_get_soup_session (plugin),
+	return gs_plugin_odrs_json_post (plugin, gs_plugin_get_soup_session (plugin),
 						    uri, data, error);
 }
 
@@ -1057,7 +1136,7 @@ gs_plugin_odrs_vote (GsPlugin *plugin, AsReview *review,
 		return FALSE;
 
 	/* send to server */
-	if (!gs_plugin_odrs_json_post (gs_plugin_get_soup_session (plugin),
+	if (!gs_plugin_odrs_json_post (plugin, gs_plugin_get_soup_session (plugin),
 						  uri, data, error))
 		return FALSE;
 
@@ -1139,7 +1218,7 @@ gs_plugin_create_app_dummy (const gchar *id)
 	GsApp *app = gs_app_new (id);
 	g_autoptr(GString) str = NULL;
 	str = g_string_new (id);
-	as_utils_string_replace (str, ".desktop", "");
+	as_gstring_replace (str, ".desktop", "");
 	g_string_prepend (str, "No description is available for ");
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, "Unknown Application");
 	gs_app_set_summary (app, GS_APP_QUALITY_LOWEST, "Application not found");
@@ -1170,7 +1249,8 @@ gs_plugin_add_unvoted_reviews (GsPlugin *plugin,
 	msg = soup_message_new (SOUP_METHOD_GET, uri);
 	status_code = soup_session_send_message (gs_plugin_get_soup_session (plugin), msg);
 	if (status_code != SOUP_STATUS_OK) {
-		if (!gs_plugin_odrs_parse_success (msg->response_body->data,
+		if (!gs_plugin_odrs_parse_success (plugin,
+						   msg->response_body->data,
 						   msg->response_body->length,
 						   error))
 			return FALSE;

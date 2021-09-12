@@ -156,13 +156,15 @@ populate_permissions_section (GsUpdateDialog *dialog, GsAppPermissions permissio
 static void
 set_updates_description_ui (GsUpdateDialog *dialog, GsApp *app)
 {
-	AsAppKind kind;
-	const GdkPixbuf *pixbuf;
+	AsComponentKind kind;
+	g_autoptr(GIcon) icon = NULL;
+	guint icon_size;
 	const gchar *update_details;
 
 	/* set window title */
 	kind = gs_app_get_kind (app);
-	if (kind == AS_APP_KIND_OS_UPDATE) {
+	if (kind == AS_COMPONENT_KIND_GENERIC &&
+	    gs_app_get_special_kind (app) == GS_APP_SPECIAL_KIND_OS_UPDATE) {
 		gtk_window_set_title (GTK_WINDOW (dialog), gs_app_get_name (app));
 	} else if (gs_app_get_source_default (app) != NULL &&
 		   gs_app_get_update_version (app) != NULL) {
@@ -180,7 +182,7 @@ set_updates_description_ui (GsUpdateDialog *dialog, GsApp *app)
 	}
 
 	/* set update header */
-	gtk_widget_set_visible (dialog->box_header, kind == AS_APP_KIND_DESKTOP);
+	gtk_widget_set_visible (dialog->box_header, kind == AS_COMPONENT_KIND_DESKTOP_APP);
 	update_details = gs_app_get_update_details (app);
 	if (update_details == NULL) {
 		/* TRANSLATORS: this is where the packager did not write
@@ -191,9 +193,31 @@ set_updates_description_ui (GsUpdateDialog *dialog, GsApp *app)
 	gtk_label_set_label (GTK_LABEL (dialog->label_name), gs_app_get_name (app));
 	gtk_label_set_label (GTK_LABEL (dialog->label_summary), gs_app_get_summary (app));
 
-	pixbuf = gs_app_get_pixbuf (app);
-	if (pixbuf != NULL)
-		gs_image_set_from_pixbuf (GTK_IMAGE (dialog->image_icon), pixbuf);
+	/* set the icon; fall back to 64px if 96px isn’t available, which sometimes
+	 * happens at 2× scale factor (hi-DPI) */
+	icon_size = 96;
+	icon = gs_app_get_icon_for_size (app,
+					 icon_size,
+					 gtk_widget_get_scale_factor (dialog->image_icon),
+					 NULL);
+	if (icon == NULL) {
+		icon_size = 64;
+		icon = gs_app_get_icon_for_size (app,
+						 icon_size,
+						 gtk_widget_get_scale_factor (dialog->image_icon),
+						 NULL);
+	}
+	if (icon == NULL) {
+		icon_size = 96;
+		icon = gs_app_get_icon_for_size (app,
+						 icon_size,
+						 gtk_widget_get_scale_factor (dialog->image_icon),
+						 "application-x-executable");
+	}
+
+	gtk_image_set_pixel_size (GTK_IMAGE (dialog->image_icon), icon_size);
+	gtk_image_set_from_gicon (GTK_IMAGE (dialog->image_icon), icon,
+				  GTK_ICON_SIZE_INVALID);
 
 	/* show the back button if needed */
 	gtk_widget_set_visible (dialog->button_back, !g_queue_is_empty (dialog->back_entry_stack));
@@ -338,7 +362,7 @@ unset_focus (GtkWidget *widget)
 }
 
 static gchar *
-format_version_update (GsApp *app)
+format_version_update (GsApp *app, GtkTextDirection direction)
 {
 	const gchar *tmp;
 	const gchar *version_current = NULL;
@@ -357,9 +381,25 @@ format_version_update (GsApp *app)
 	/* have both */
 	if (version_current != NULL && version_update != NULL &&
 	    g_strcmp0 (version_current, version_update) != 0) {
-		return g_strdup_printf ("%s → %s",
-					version_current,
-					version_update);
+		switch (direction) {
+		case GTK_TEXT_DIR_RTL:
+			/* This might look the wrong way round, but that’s
+			 * because the #GtkLabel this is put in will reverse the
+			 * text order in RTL, but won’t swap ← for → or
+			 * vice-versa (the bidi mirroring property of those two
+			 * arrows is false). So we need to explicitly use ‘←’ in
+			 * RTL locales, but not change the text order.
+			 * See section 2 of http://www.unicode.org/L2/L2017/17438-bidi-math-fdbk.html */
+			return g_strdup_printf ("%s ← %s",
+						version_current,
+						version_update);
+		case GTK_TEXT_DIR_NONE:
+		case GTK_TEXT_DIR_LTR:
+		default:
+			return g_strdup_printf ("%s → %s",
+						version_current,
+						version_update);
+		}
 	}
 
 	/* just update */
@@ -393,9 +433,9 @@ create_app_row (GsApp *app)
 	gtk_widget_set_hexpand (label, TRUE);
 	gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
 	gtk_container_add (GTK_CONTAINER (row), label);
-	if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE ||
-	    gs_app_get_state (app) == AS_APP_STATE_UPDATABLE_LIVE) {
-		g_autofree gchar *verstr = format_version_update (app);
+	if (gs_app_get_state (app) == GS_APP_STATE_UPDATABLE ||
+	    gs_app_get_state (app) == GS_APP_STATE_UPDATABLE_LIVE) {
+		g_autofree gchar *verstr = format_version_update (app, gtk_widget_get_direction (row));
 		label = gtk_label_new (verstr);
 	} else {
 		label = gtk_label_new (gs_app_get_version (app));
@@ -441,22 +481,12 @@ is_downgrade (const gchar *evr1,
 	 * part of the semantic version */
 
 	/* check version */
-#if AS_CHECK_VERSION(0,7,15)
-	rc = as_utils_vercmp_full (version1, version2,
-	                           AS_VERSION_COMPARE_FLAG_NONE);
-#else
-	rc = as_utils_vercmp (version1, version2);
-#endif
+	rc = as_vercmp_simple (version1, version2);
 	if (rc != 0)
 		return rc > 0;
 
 	/* check release */
-#if AS_CHECK_VERSION(0,7,15)
-	rc = as_utils_vercmp_full (version1, version2,
-	                           AS_VERSION_COMPARE_FLAG_NONE);
-#else
-	rc = as_utils_vercmp (release1, release2);
-#endif
+	rc = as_vercmp_simple (release1, release2);
 	if (rc != 0)
 		return rc > 0;
 
@@ -474,14 +504,14 @@ get_app_section (GsApp *app)
 	 * 3. updates
 	 * 4. downgrades */
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_AVAILABLE:
 		section = GS_UPDATE_DIALOG_SECTION_ADDITIONS;
 		break;
-	case AS_APP_STATE_UNAVAILABLE:
+	case GS_APP_STATE_UNAVAILABLE:
 		section = GS_UPDATE_DIALOG_SECTION_REMOVALS;
 		break;
-	case AS_APP_STATE_UPDATABLE:
-	case AS_APP_STATE_UPDATABLE_LIVE:
+	case GS_APP_STATE_UPDATABLE:
+	case GS_APP_STATE_UPDATABLE_LIVE:
 		if (is_downgrade (gs_app_get_version (app),
 		                  gs_app_get_update_version (app)))
 			section = GS_UPDATE_DIALOG_SECTION_DOWNGRADES;
@@ -490,7 +520,7 @@ get_app_section (GsApp *app)
 		break;
 	default:
 		g_warning ("get_app_section: unhandled state %s for %s",
-		           as_app_state_to_string (gs_app_get_state (app)),
+		           gs_app_state_to_string (gs_app_get_state (app)),
 		           gs_app_get_unique_id (app));
 		section = GS_UPDATE_DIALOG_SECTION_UPDATES;
 		break;
@@ -614,7 +644,7 @@ create_section (GsUpdateDialog *dialog, GsUpdateDialogSection section)
 void
 gs_update_dialog_show_update_details (GsUpdateDialog *dialog, GsApp *app)
 {
-	AsAppKind kind;
+	AsComponentKind kind;
 	g_autofree gchar *str = NULL;
 
 	/* debug */
@@ -630,7 +660,8 @@ gs_update_dialog_show_update_details (GsUpdateDialog *dialog, GsApp *app)
 
 	/* set update description */
 	kind = gs_app_get_kind (app);
-	if (kind == AS_APP_KIND_OS_UPDATE) {
+	if (kind == AS_COMPONENT_KIND_GENERIC &&
+	    gs_app_get_special_kind (app) == GS_APP_SPECIAL_KIND_OS_UPDATE) {
 		GsAppList *related;
 		GsApp *app_related;
 		GsUpdateDialogSection section;

@@ -12,7 +12,8 @@
 #include <glib-object.h>
 #include <gdk/gdk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <appstream-glib.h>
+#include <libsoup/soup.h>
+#include <appstream.h>
 
 G_BEGIN_DECLS
 
@@ -27,6 +28,55 @@ struct _GsAppClass
 						 GString	*str);
 	gpointer		 padding[30];
 };
+
+/**
+ * GsAppState:
+ * @GS_APP_STATE_UNKNOWN:			Unknown state
+ * @GS_APP_STATE_INSTALLED:			Application is installed
+ * @GS_APP_STATE_AVAILABLE:			Application is available
+ * @GS_APP_STATE_AVAILABLE_LOCAL:		Application is locally available as a file
+ * @GS_APP_STATE_UPDATABLE:			Application is installed and updatable
+ * @GS_APP_STATE_UNAVAILABLE:			Application is referenced, but not available
+ * @GS_APP_STATE_QUEUED_FOR_INSTALL:		Application is queued for install
+ * @GS_APP_STATE_INSTALLING:			Application is being installed
+ * @GS_APP_STATE_REMOVING:			Application is being removed
+ * @GS_APP_STATE_UPDATABLE_LIVE:		Application is installed and updatable live
+ * @GS_APP_STATE_PURCHASABLE:			Application is available for purchasing
+ * @GS_APP_STATE_PURCHASING:			Application is being purchased
+ *
+ * The application state.
+ **/
+typedef enum {
+	GS_APP_STATE_UNKNOWN,				/* Since: 0.2.2 */
+	GS_APP_STATE_INSTALLED,				/* Since: 0.2.2 */
+	GS_APP_STATE_AVAILABLE,				/* Since: 0.2.2 */
+	GS_APP_STATE_AVAILABLE_LOCAL,			/* Since: 0.2.2 */
+	GS_APP_STATE_UPDATABLE,				/* Since: 0.2.2 */
+	GS_APP_STATE_UNAVAILABLE,			/* Since: 0.2.2 */
+	GS_APP_STATE_QUEUED_FOR_INSTALL,		/* Since: 0.2.2 */
+	GS_APP_STATE_INSTALLING,			/* Since: 0.2.2 */
+	GS_APP_STATE_REMOVING,				/* Since: 0.2.2 */
+	GS_APP_STATE_UPDATABLE_LIVE,			/* Since: 0.5.4 */
+	GS_APP_STATE_PURCHASABLE,			/* Since: 0.5.17 */
+	GS_APP_STATE_PURCHASING,			/* Since: 0.5.17 */
+	GS_APP_STATE_LAST  /*< skip >*/
+} GsAppState;
+
+/**
+ * GsAppSpecialKind:
+ * @GS_APP_SPECIAL_KIND_NONE:			No special occupation
+ * @GS_APP_SPECIAL_KIND_OS_UPDATE:		Application represents an OS update
+ *
+ * A special occupation for #GsApp. #AsComponentKind can not represent certain
+ * GNOME Software specific features, like representing a #GsApp as OS updates
+ * which have no associated AppStream entry.
+ * They are represented by a #GsApp of kind %AS_COMPONENT_KIND_GENERIC and a value
+ * from #GsAppSpecialKind. which does not match any AppStream component type.
+ **/
+typedef enum {
+	GS_APP_SPECIAL_KIND_NONE,		/* Since: 40 */
+	GS_APP_SPECIAL_KIND_OS_UPDATE,		/* Since: 40 */
+} GsAppSpecialKind;
 
 /**
  * GsAppKudo:
@@ -62,8 +112,7 @@ typedef enum {
 	GS_APP_KUDO_HI_DPI_ICON			= 1 << 14,
 	GS_APP_KUDO_SANDBOXED			= 1 << 15,
 	GS_APP_KUDO_SANDBOXED_SECURE		= 1 << 16,
-	/*< private >*/
-	GS_APP_KUDO_LAST
+	GS_APP_KUDO_LAST  /*< skip >*/
 } GsAppKudo;
 
 /**
@@ -110,8 +159,7 @@ typedef enum {
 	GS_APP_QUIRK_HIDE_FROM_SEARCH	= 1 << 15,	/* Since: 3.32 */
 	GS_APP_QUIRK_HIDE_EVERYWHERE	= 1 << 16,	/* Since: 3.36 */
 	GS_APP_QUIRK_DO_NOT_AUTO_UPDATE	= 1 << 17,	/* Since: 3.36 */
-	/*< private >*/
-	GS_APP_QUIRK_LAST
+	GS_APP_QUIRK_LAST  /*< skip >*/
 } GsAppQuirk;
 
 #define	GS_APP_INSTALL_DATE_UNSET		0
@@ -132,8 +180,7 @@ typedef enum {
 	GS_APP_QUALITY_LOWEST,
 	GS_APP_QUALITY_NORMAL,
 	GS_APP_QUALITY_HIGHEST,
-	/*< private >*/
-	GS_APP_QUALITY_LAST
+	GS_APP_QUALITY_LAST  /*< skip >*/
 } GsAppQuality;
 
 typedef enum {
@@ -152,8 +199,7 @@ typedef enum {
 	GS_APP_PERMISSIONS_SETTINGS		= 1 << 11,
 	GS_APP_PERMISSIONS_X11			= 1 << 12,
 	GS_APP_PERMISSIONS_ESCAPE_SANDBOX	= 1 << 13,
-	/*< private >*/
-	GS_APP_PERMISSIONS_LAST
+	GS_APP_PERMISSIONS_LAST  /*< skip >*/
 } GsAppPermissions;
 
 #define LIMITED_PERMISSIONS (GS_APP_PERMISSIONS_SETTINGS | \
@@ -174,11 +220,14 @@ typedef enum {
  */
 #define GS_APP_PROGRESS_UNKNOWN G_MAXUINT
 
+const gchar 	*gs_app_state_to_string (GsAppState state);
+
 GsApp		*gs_app_new			(const gchar	*id);
 G_DEPRECATED_FOR(gs_app_set_from_unique_id)
 GsApp		*gs_app_new_from_unique_id	(const gchar	*unique_id);
 void		 gs_app_set_from_unique_id	(GsApp		*app,
-						 const gchar	*unique_id);
+						 const gchar	*unique_id,
+						 AsComponentKind kind);
 gchar		*gs_app_to_string		(GsApp		*app);
 void		 gs_app_to_string_append	(GsApp		*app,
 						 GString	*str);
@@ -186,18 +235,21 @@ void		 gs_app_to_string_append	(GsApp		*app,
 const gchar	*gs_app_get_id			(GsApp		*app);
 void		 gs_app_set_id			(GsApp		*app,
 						 const gchar	*id);
-AsAppKind	 gs_app_get_kind		(GsApp		*app);
+AsComponentKind	 gs_app_get_kind		(GsApp		*app);
 void		 gs_app_set_kind		(GsApp		*app,
-						 AsAppKind	 kind);
-AsAppState	 gs_app_get_state		(GsApp		*app);
+						 AsComponentKind kind);
+GsAppState	 gs_app_get_state		(GsApp		*app);
 void		 gs_app_set_state		(GsApp		*app,
-						 AsAppState	 state);
-AsAppScope	 gs_app_get_scope		(GsApp		*app);
+						 GsAppState	 state);
+AsComponentScope gs_app_get_scope		(GsApp		*app);
 void		 gs_app_set_scope		(GsApp		*app,
-						 AsAppScope	 scope);
+						 AsComponentScope scope);
 AsBundleKind	 gs_app_get_bundle_kind		(GsApp		*app);
 void		 gs_app_set_bundle_kind		(GsApp		*app,
 						 AsBundleKind	 bundle_kind);
+GsAppSpecialKind gs_app_get_special_kind	(GsApp		*app);
+void		 gs_app_set_special_kind	(GsApp		*app,
+						 GsAppSpecialKind kind);
 void		 gs_app_set_state_recover	(GsApp		*app);
 guint		 gs_app_get_progress		(GsApp		*app);
 void		 gs_app_set_progress		(GsApp		*app,
@@ -213,6 +265,9 @@ const gchar	*gs_app_get_name		(GsApp		*app);
 void		 gs_app_set_name		(GsApp		*app,
 						 GsAppQuality	 quality,
 						 const gchar	*name);
+const gchar	*gs_app_get_renamed_from	(GsApp		*app);
+void		 gs_app_set_renamed_from	(GsApp		*app,
+						 const gchar	*renamed_from);
 const gchar	*gs_app_get_source_default	(GsApp		*app);
 void		 gs_app_add_source		(GsApp		*app,
 						 const gchar	*source);
@@ -255,6 +310,9 @@ const gchar	*gs_app_get_url			(GsApp		*app,
 void		 gs_app_set_url			(GsApp		*app,
 						 AsUrlKind	 kind,
 						 const gchar	*url);
+const gchar	*gs_app_get_url_missing		(GsApp		*app);
+void		 gs_app_set_url_missing		(GsApp		*app,
+						 const gchar	*url);
 const gchar	*gs_app_get_launchable		(GsApp		*app,
 						 AsLaunchableKind kind);
 void		 gs_app_set_launchable		(GsApp		*app,
@@ -296,12 +354,14 @@ void		 gs_app_set_update_urgency	(GsApp		*app,
 const gchar	*gs_app_get_management_plugin	(GsApp		*app);
 void		 gs_app_set_management_plugin	(GsApp		*app,
 						 const gchar	*management_plugin);
-GdkPixbuf	*gs_app_get_pixbuf		(GsApp		*app);
-void		 gs_app_set_pixbuf		(GsApp		*app,
-						 GdkPixbuf	*pixbuf);
+GIcon		*gs_app_get_icon_for_size	(GsApp		*app,
+						 guint		 size,
+						 guint		 scale,
+						 const gchar	*fallback_icon_name);
 GPtrArray	*gs_app_get_icons		(GsApp		*app);
 void		 gs_app_add_icon		(GsApp		*app,
-						 AsIcon		*icon);
+						 GIcon		*icon);
+void		 gs_app_remove_all_icons	(GsApp		*app);
 gboolean	 gs_app_get_use_drop_shadow	(GsApp		*app);
 GFile		*gs_app_get_local_file		(GsApp		*app);
 void		 gs_app_set_local_file		(GsApp		*app,
@@ -333,9 +393,12 @@ void		 gs_app_add_review		(GsApp		*app,
 						 AsReview	*review);
 void		 gs_app_remove_review		(GsApp		*app,
 						 AsReview	*review);
-GPtrArray	*gs_app_get_provides		(GsApp		*app);
-void		 gs_app_add_provide		(GsApp		*app,
-						 AsProvide	*provide);
+GPtrArray	*gs_app_get_provided		(GsApp		*app);
+AsProvided	*gs_app_get_provided_for_kind	(GsApp		*app,
+						 AsProvidedKind kind);
+void		 gs_app_add_provided_item	(GsApp		*app,
+						 AsProvidedKind kind,
+						 const gchar	*item);
 guint64		 gs_app_get_size_installed	(GsApp		*app);
 void		 gs_app_set_size_installed	(GsApp		*app,
 						 guint64	 size_installed);
@@ -351,12 +414,15 @@ void		 gs_app_add_history		(GsApp		*app,
 guint64		 gs_app_get_install_date	(GsApp		*app);
 void		 gs_app_set_install_date	(GsApp		*app,
 						 guint64	 install_date);
+guint64		 gs_app_get_release_date	(GsApp		*app);
+void		 gs_app_set_release_date	(GsApp		*app,
+						 guint64	 release_date);
 GPtrArray	*gs_app_get_categories		(GsApp		*app);
 void		 gs_app_set_categories		(GsApp		*app,
 						 GPtrArray	*categories);
-GPtrArray	*gs_app_get_key_colors		(GsApp		*app);
+GArray		*gs_app_get_key_colors		(GsApp		*app);
 void		 gs_app_set_key_colors		(GsApp		*app,
-						 GPtrArray	*key_colors);
+						 GArray		*key_colors);
 void		 gs_app_add_key_color		(GsApp		*app,
 						 GdkRGBA	*key_color);
 void            gs_app_set_is_update_downloaded (GsApp         *app,
@@ -392,6 +458,8 @@ void		 gs_app_remove_quirk		(GsApp		*app,
 gboolean	 gs_app_is_installed		(GsApp		*app);
 gboolean	 gs_app_is_updatable		(GsApp		*app);
 gchar		*gs_app_get_origin_ui		(GsApp		*app);
+void		 gs_app_set_origin_ui		(GsApp		*app,
+						 const gchar	*origin_ui);
 gchar		*gs_app_get_packaging_format	(GsApp		*app);
 void		 gs_app_subsume_metadata	(GsApp		*app,
 						 GsApp		*donor);
@@ -401,5 +469,12 @@ void		 gs_app_set_permissions		(GsApp		*app,
 GsAppPermissions gs_app_get_update_permissions	(GsApp		*app);
 void		 gs_app_set_update_permissions	(GsApp		*app,
 						 GsAppPermissions update_permissions);
+GPtrArray	*gs_app_get_version_history	(GsApp		*app);
+void		 gs_app_set_version_history	(GsApp		*app,
+						 GPtrArray	*version_history);
+void		gs_app_ensure_icons_downloaded	(GsApp		*app,
+						 SoupSession	*soup_session,
+						 guint		 maximum_icon_size,
+						 GCancellable	*cancellable);
 
 G_END_DECLS

@@ -36,6 +36,7 @@ void
 gs_plugin_initialize (GsPlugin *plugin)
 {
 	GsPluginData *priv = gs_plugin_alloc_data (plugin, sizeof(GsPluginData));
+	GApplication *application = g_application_get_default ();
 
 	/* XbSilo needs external locking as we destroy the silo and build a new
 	 * one when something changes */
@@ -46,6 +47,12 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	/* require settings */
 	priv->settings = g_settings_new ("org.gnome.software");
+
+	/* Can be NULL when running the self tests */
+	if (application) {
+		g_signal_connect_object (application, "repository-changed",
+			G_CALLBACK (gs_plugin_update_cache_state_for_repository), plugin, G_CONNECT_SWAPPED);
+	}
 }
 
 void
@@ -214,20 +221,28 @@ gs_plugin_appstream_load_desktop_cb (XbBuilderSource *self,
 				     GCancellable *cancellable,
 				     GError **error)
 {
-	GString *xml;
-	g_autoptr(AsApp) app = as_app_new ();
+	g_autofree gchar *xml = NULL;
+	g_autoptr(AsComponent) cpt = as_component_new ();
+	g_autoptr(AsContext) actx = as_context_new ();
 	g_autoptr(GBytes) bytes = NULL;
+	gboolean ret;
+
 	bytes = xb_builder_source_ctx_get_bytes (ctx, cancellable, error);
 	if (bytes == NULL)
 		return NULL;
-	as_app_set_id (app, xb_builder_source_ctx_get_filename (ctx));
-	if (!as_app_parse_data (app, bytes, AS_APP_PARSE_FLAG_USE_FALLBACKS, error))
+
+	as_component_set_id (cpt, xb_builder_source_ctx_get_filename (ctx));
+	ret = as_component_load_from_bytes (cpt,
+					   actx,
+					   AS_FORMAT_KIND_DESKTOP_ENTRY,
+					   bytes,
+					   error);
+	if (!ret)
 		return NULL;
-	xml = as_app_to_xml (app, error);
+	xml = as_component_to_xml_data (cpt, actx, error);
 	if (xml == NULL)
 		return NULL;
-	g_string_prepend (xml, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-	return g_memory_input_stream_new_from_data (g_string_free (xml, FALSE), -1, g_free);
+	return g_memory_input_stream_new_from_data (g_steal_pointer (&xml), -1, g_free);
 }
 
 static gboolean
@@ -238,7 +253,6 @@ gs_plugin_appstream_load_desktop_fn (GsPlugin *plugin,
 				     GError **error)
 {
 	g_autoptr(GFile) file = g_file_new_for_path (filename);
-	g_autoptr(XbBuilderFixup) fixup = NULL;
 	g_autoptr(XbBuilderNode) info = NULL;
 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
 
@@ -313,20 +327,64 @@ gs_plugin_appstream_load_dep11_cb (XbBuilderSource *self,
 				   GCancellable *cancellable,
 				   GError **error)
 {
-	GString *xml;
-	g_autoptr(AsStore) store = as_store_new ();
+	g_autoptr(AsMetadata) mdata = as_metadata_new ();
 	g_autoptr(GBytes) bytes = NULL;
+	g_autoptr(GError) tmp_error = NULL;
+	g_autofree gchar *xml = NULL;
+
 	bytes = xb_builder_source_ctx_get_bytes (ctx, cancellable, error);
 	if (bytes == NULL)
 		return NULL;
-	if (!as_store_from_bytes (store, bytes, cancellable, error))
-		return FALSE;
-	xml = as_store_to_xml (store, AS_NODE_INSERT_FLAG_NONE);
-	if (xml == NULL)
+
+	as_metadata_set_format_style (mdata, AS_FORMAT_STYLE_COLLECTION);
+	as_metadata_parse_bytes (mdata,
+				 bytes,
+				 AS_FORMAT_KIND_YAML,
+				 &tmp_error);
+	if (tmp_error != NULL) {
+		g_propagate_error (error, g_steal_pointer (&tmp_error));
 		return NULL;
-	g_string_prepend (xml, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-	return g_memory_input_stream_new_from_data (g_string_free (xml, FALSE), -1, g_free);
+	}
+
+	xml = as_metadata_components_to_collection (mdata, AS_FORMAT_KIND_XML, &tmp_error);
+	if (xml == NULL) {
+		// This API currently returns NULL if there is nothing to serialize, so we
+		// have to test if this is an error or not.
+		// See https://gitlab.gnome.org/GNOME/gnome-software/-/merge_requests/763
+		// for discussion about changing this API.
+		if (tmp_error != NULL) {
+			g_propagate_error (error, g_steal_pointer (&tmp_error));
+			return NULL;
+		}
+
+		xml = g_strdup("");
+	}
+
+	return g_memory_input_stream_new_from_data (g_steal_pointer (&xml), -1, g_free);
 }
+
+#if LIBXMLB_CHECK_VERSION(0,3,1)
+static gboolean
+gs_plugin_appstream_tokenize_cb (XbBuilderFixup *self,
+				 XbBuilderNode *bn,
+				 gpointer user_data,
+				 GError **error)
+{
+	const gchar * const elements_to_tokenize[] = {
+		"id",
+		"keyword",
+		"launchable",
+		"mimetype",
+		"name",
+		"pkgname",
+		"summary",
+		NULL };
+	if (xb_builder_node_get_element (bn) != NULL &&
+	    g_strv_contains (elements_to_tokenize, xb_builder_node_get_element (bn)))
+		xb_builder_node_tokenize_text (bn);
+	return TRUE;
+}
+#endif
 
 static gboolean
 gs_plugin_appstream_load_appstream_fn (GsPlugin *plugin,
@@ -340,6 +398,9 @@ gs_plugin_appstream_load_appstream_fn (GsPlugin *plugin,
 	g_autoptr(XbBuilderFixup) fixup1 = NULL;
 	g_autoptr(XbBuilderFixup) fixup2 = NULL;
 	g_autoptr(XbBuilderFixup) fixup3 = NULL;
+#if LIBXMLB_CHECK_VERSION(0,3,1)
+	g_autoptr(XbBuilderFixup) fixup4 = NULL;
+#endif
 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
 
 	/* add support for DEP-11 files */
@@ -386,6 +447,14 @@ gs_plugin_appstream_load_appstream_fn (GsPlugin *plugin,
 				       plugin, NULL);
 	xb_builder_fixup_set_max_depth (fixup3, 1);
 	xb_builder_source_add_fixup (source, fixup3);
+
+#if LIBXMLB_CHECK_VERSION(0,3,1)
+	fixup4 = xb_builder_fixup_new ("TextTokenize",
+				       gs_plugin_appstream_tokenize_cb,
+				       NULL, NULL);
+	xb_builder_fixup_set_max_depth (fixup4, 2);
+	xb_builder_source_add_fixup (source, fixup4);
+#endif
 
 	/* success */
 	xb_builder_import_source (builder, source);
@@ -572,7 +641,8 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 
 	/* create per-user cache */
 	blobfn = gs_utils_get_cache_filename ("appstream", "components.xmlb",
-					      GS_UTILS_CACHE_FLAG_WRITEABLE,
+					      GS_UTILS_CACHE_FLAG_WRITEABLE |
+					      GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 					      error);
 	if (blobfn == NULL)
 		return FALSE;
@@ -656,7 +726,7 @@ gs_plugin_url_to_app (GsPlugin *plugin,
 	app = gs_appstream_create_app (plugin, priv->silo, component, error);
 	if (app == NULL)
 		return FALSE;
-	gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+	gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
 	gs_app_list_add (list, app);
 	return TRUE;
 }
@@ -727,7 +797,7 @@ gs_plugin_appstream_refine_state (GsPlugin *plugin, GsApp *app, GError **error)
 		g_propagate_error (error, g_steal_pointer (&error_local));
 		return FALSE;
 	}
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 	return TRUE;
 }
 
@@ -739,7 +809,7 @@ gs_plugin_refine_from_id (GsPlugin *plugin,
 			  GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const gchar *id;
+	const gchar *id, *origin;
 	g_autoptr(GError) error_local = NULL;
 	g_autoptr(GRWLockReaderLocker) locker = NULL;
 	g_autoptr(GString) xpath = g_string_new (NULL);
@@ -752,9 +822,16 @@ gs_plugin_refine_from_id (GsPlugin *plugin,
 
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
 
+	origin = gs_app_get_origin_appstream (app);
+
 	/* look in AppStream then fall back to AppData */
-	xb_string_append_union (xpath, "components/component/id[text()='%s']/../pkgname/..", id);
-	xb_string_append_union (xpath, "components/component[@type='webapp']/id[text()='%s']/..", id);
+	if (origin && *origin) {
+		xb_string_append_union (xpath, "components[@origin='%s']/component/id[text()='%s']/../pkgname/..", origin, id);
+		xb_string_append_union (xpath, "components[@origin='%s']/component[@type='webapp']/id[text()='%s']/..", origin, id);
+	} else {
+		xb_string_append_union (xpath, "components/component/id[text()='%s']/../pkgname/..", id);
+		xb_string_append_union (xpath, "components/component[@type='webapp']/id[text()='%s']/..", id);
+	}
 	xb_string_append_union (xpath, "component/id[text()='%s']/..", id);
 	components = xb_silo_query (priv->silo, xpath->str, 0, &error_local);
 	if (components == NULL) {
@@ -774,7 +851,7 @@ gs_plugin_refine_from_id (GsPlugin *plugin,
 	}
 
 	/* if an installed desktop or appdata file exists set to installed */
-	if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN) {
+	if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN) {
 		if (!gs_plugin_appstream_refine_state (plugin, app, error))
 			return FALSE;
 	}
@@ -849,7 +926,7 @@ gs_plugin_refine (GsPlugin *plugin,
 		/* not us */
 		if (gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_PACKAGE &&
 		    gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_UNKNOWN)
-			return TRUE;
+			continue;
 
 		/* find by ID then fall back to package name */
 		if (!gs_plugin_refine_from_id (plugin, app, flags, &found, error))
@@ -909,7 +986,7 @@ gs_plugin_refine_wildcard (GsPlugin *plugin,
 		new = gs_appstream_create_app (plugin, priv->silo, component, error);
 		if (new == NULL)
 			return FALSE;
-		gs_app_set_scope (new, AS_APP_SCOPE_SYSTEM);
+		gs_app_set_scope (new, AS_COMPONENT_SCOPE_SYSTEM);
 		gs_app_subsume_metadata (new, app);
 		if (!gs_appstream_refine_app (plugin, new, priv->silo, component,
 					      refine_flags, error))
@@ -990,8 +1067,8 @@ gs_plugin_add_installed (GsPlugin *plugin,
 		g_autoptr(GsApp) app = gs_appstream_create_app (plugin, priv->silo, component, error);
 		if (app == NULL)
 			return FALSE;
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
-		gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+		gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
 		gs_app_list_add (list, app);
 	}
 	return TRUE;

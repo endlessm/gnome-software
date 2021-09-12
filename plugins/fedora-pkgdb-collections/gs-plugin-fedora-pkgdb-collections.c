@@ -114,7 +114,8 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	/* get the file to cache */
 	priv->cachefn = gs_utils_get_cache_filename ("fedora-pkgdb-collections",
 						     "fedora.json",
-						     GS_UTILS_CACHE_FLAG_WRITEABLE,
+						     GS_UTILS_CACHE_FLAG_WRITEABLE |
+						     GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 						     error);
 	if (priv->cachefn == NULL)
 		return FALSE;
@@ -153,7 +154,7 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 
 	/* add source */
 	priv->cached_origin = gs_app_new (gs_plugin_get_name (plugin));
-	gs_app_set_kind (priv->cached_origin, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (priv->cached_origin, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_origin_hostname (priv->cached_origin,
 				    FEDORA_PKGDB_COLLECTIONS_API_URI);
 
@@ -256,7 +257,8 @@ _create_upgrade_from_info (GsPlugin *plugin, PkgdbItem *item)
 	g_autofree gchar *cache_key = NULL;
 	g_autofree gchar *css = NULL;
 	g_autofree gchar *url = NULL;
-	g_autoptr(AsIcon) ic = NULL;
+	g_autoptr(GFile) icon_file = NULL;
+	g_autoptr(GIcon) ic = NULL;
 
 	/* search in the cache */
 	cache_key = g_strdup_printf ("release-%u", item->version);
@@ -268,14 +270,13 @@ _create_upgrade_from_info (GsPlugin *plugin, PkgdbItem *item)
 	app_version = g_strdup_printf ("%u", item->version);
 
 	/* icon from disk */
-	ic = as_icon_new ();
-	as_icon_set_kind (ic, AS_ICON_KIND_LOCAL);
-	as_icon_set_filename (ic, "/usr/share/pixmaps/fedora-logo-sprite.png");
+	icon_file = g_file_new_for_path ("/usr/share/pixmaps/fedora-logo-sprite.png");
+	ic = g_file_icon_new (icon_file);
 
 	/* create */
 	app = gs_app_new (app_id);
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
-	gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_OPERATING_SYSTEM);
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST, item->name);
 	gs_app_set_summary (app, GS_APP_QUALITY_LOWEST,
@@ -514,7 +515,7 @@ refine_app_locked (GsPlugin             *plugin,
 	const gchar *cpe_name;
 
 	/* not for us */
-	if (gs_app_get_kind (app) != AS_APP_KIND_OS_UPGRADE)
+	if (gs_app_get_kind (app) != AS_COMPONENT_KIND_OPERATING_SYSTEM)
 		return TRUE;
 
 	/* not enough metadata */
@@ -533,10 +534,10 @@ refine_app_locked (GsPlugin             *plugin,
 	switch (item->status) {
 	case PKGDB_ITEM_STATUS_ACTIVE:
 	case PKGDB_ITEM_STATUS_DEVEL:
-		gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+		gs_app_set_state (app, GS_APP_STATE_UPDATABLE);
 		break;
 	case PKGDB_ITEM_STATUS_EOL:
-		gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
+		gs_app_set_state (app, GS_APP_STATE_UNAVAILABLE);
 		break;
 	default:
 		break;

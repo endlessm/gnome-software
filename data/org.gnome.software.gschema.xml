@@ -55,6 +55,10 @@
       <default>0</default>
       <summary>The last upgrade notification timestamp</summary>
     </key>
+    <key name="update-notification-timestamp" type="x">
+      <default>0</default>
+      <summary>The last update notification timestamp</summary>
+    </key>
     <key name="security-timestamp" type="x">
       <default>0</default>
       <summary>The timestamp of the first security update, cleared after update</summary>
@@ -134,10 +138,6 @@
     <key name="external-appstream-system-wide" type="b">
       <default>false</default>
       <summary>Install the AppStream files to a system-wide location for all users</summary>
-    </key>
-    <key name="enable-shell-extensions-repo" type="b">
-      <default>true</default>
-      <summary>Enable GNOME Shell extensions repository</summary>
     </key>
     <child name="auth" schema="org.gnome.software.auth"/>
   </schema>

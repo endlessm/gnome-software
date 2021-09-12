@@ -12,6 +12,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 
+#include "gs-application.h"
 #include "gs-page.h"
 #include "gs-common.h"
 #include "gs-screenshot-image.h"
@@ -42,6 +43,7 @@ typedef struct {
 	GtkWidget	*button_install;
 	GsPluginAction	 action;
 	GsShellInteraction interaction;
+	gboolean	 propagate_error;
 } GsPageHelper;
 
 static void
@@ -80,7 +82,7 @@ gs_page_show_update_message (GsPageHelper *helper, AsScreenshot *ss)
 					 GTK_MESSAGE_INFO,
 					 GTK_BUTTONS_OK,
 					 "%s", gs_app_get_name (helper->app));
-	escaped = g_markup_escape_text (as_screenshot_get_caption (ss, NULL), -1);
+	escaped = g_markup_escape_text (as_screenshot_get_caption (ss), -1);
 	gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (dialog),
 						  "%s", escaped);
 
@@ -127,16 +129,25 @@ gs_page_app_installed_cb (GObject *source,
 	ret = gs_plugin_loader_job_action_finish (plugin_loader,
 						   res,
 						   &error);
-	if (g_error_matches (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_CANCELLED)) {
-		g_debug ("%s", error->message);
+
+	gs_application_emit_install_resources_done (GS_APPLICATION (g_application_get_default ()), NULL, error);
+
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+	    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		g_debug ("App install cancelled with error: %s", error->message);
 		return;
 	}
 	if (!ret) {
-		g_warning ("failed to install %s: %s",
-		           gs_app_get_id (helper->app),
-		           error->message);
+		if (helper->propagate_error) {
+			gs_plugin_loader_claim_error (plugin_loader,
+						      NULL,
+						      helper->action,
+						      helper->app,
+						      helper->interaction == GS_SHELL_INTERACTION_FULL,
+						      error);
+		} else {
+			g_warning ("failed to install %s: %s", gs_app_get_id (helper->app), error->message);
+		}
 		return;
 	}
 
@@ -148,10 +159,10 @@ gs_page_app_installed_cb (GObject *source,
 	}
 
 	/* tell the user what they have to do */
-	if (gs_app_get_kind (helper->app) == AS_APP_KIND_FIRMWARE &&
+	if (gs_app_get_kind (helper->app) == AS_COMPONENT_KIND_FIRMWARE &&
 	    gs_app_has_quirk (helper->app, GS_APP_QUIRK_NEEDS_USER_ACTION)) {
 		AsScreenshot *ss = gs_app_get_action_screenshot (helper->app);
-		if (ss != NULL && as_screenshot_get_caption (ss, NULL) != NULL)
+		if (ss != NULL && as_screenshot_get_caption (ss) != NULL)
 			gs_page_show_update_message (helper, ss);
 	}
 
@@ -189,7 +200,7 @@ gs_page_app_removed_cb (GObject *source,
 		return;
 	}
 	if (!ret) {
-		g_warning ("failed to remove: %s", error->message);
+		g_warning ("failed to uninstall: %s", error->message);
 		return;
 	}
 
@@ -242,7 +253,7 @@ gs_page_install_app (GsPage *page,
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* probably non-free */
-	if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
+	if (gs_app_get_state (app) == GS_APP_STATE_UNAVAILABLE) {
 		GtkResponseType response;
 
 		response = gs_app_notify_unavailable (app, gs_shell_get_window (priv->shell));
@@ -256,9 +267,11 @@ gs_page_install_app (GsPage *page,
 	helper->page = g_object_ref (page);
 	helper->cancellable = g_object_ref (cancellable);
 	helper->interaction = interaction;
+	helper->propagate_error = TRUE;
 
 	plugin_job = gs_plugin_job_newv (helper->action,
-					 "interactive", TRUE,
+					 "interactive", (interaction == GS_SHELL_INTERACTION_FULL),
+					 "propagate-error", helper->propagate_error,
 					 "app", helper->app,
 					 NULL);
 	gs_plugin_loader_job_process_async (priv->plugin_loader,
@@ -324,7 +337,7 @@ gs_page_needs_user_action (GsPageHelper *helper, AsScreenshot *ss)
 					  * '%s' is an application summary, e.g. 'GNOME Clocks' */
 					 _("Prepare %s"),
 					 gs_app_get_name (helper->app));
-	escaped = g_markup_escape_text (as_screenshot_get_caption (ss, NULL), -1);
+	escaped = g_markup_escape_text (as_screenshot_get_caption (ss), -1);
 	gtk_message_dialog_format_secondary_markup (GTK_MESSAGE_DIALOG (dialog),
 						    "%s", escaped);
 
@@ -374,10 +387,10 @@ gs_page_update_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 	helper->cancellable = g_object_ref (cancellable);
 
 	/* tell the user what they have to do */
-	if (gs_app_get_kind (app) == AS_APP_KIND_FIRMWARE &&
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_FIRMWARE &&
 	    gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_USER_ACTION)) {
 		AsScreenshot *ss = gs_app_get_action_screenshot (app);
-		if (ss != NULL && as_screenshot_get_caption (ss, NULL) != NULL) {
+		if (ss != NULL && as_screenshot_get_caption (ss) != NULL) {
 			gs_page_needs_user_action (helper, ss);
 			return;
 		}
@@ -410,7 +423,7 @@ gs_page_remove_app_response_cb (GtkDialog *dialog,
 	if (response != GTK_RESPONSE_OK)
 		return;
 
-	g_debug ("remove %s", gs_app_get_id (helper->app));
+	g_debug ("uninstall %s", gs_app_get_id (helper->app));
 	plugin_job = gs_plugin_job_newv (helper->action,
 					 "interactive", TRUE,
 					 "app", helper->app,
@@ -438,14 +451,14 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 	helper->action = GS_PLUGIN_ACTION_REMOVE;
 	helper->app = g_object_ref (app);
 	helper->page = g_object_ref (page);
-	helper->cancellable = g_object_ref (cancellable);
-	if (gs_app_get_state (app) == AS_APP_STATE_QUEUED_FOR_INSTALL) {
+	helper->cancellable = cancellable != NULL ? g_object_ref (cancellable) : NULL;
+	if (gs_app_get_state (app) == GS_APP_STATE_QUEUED_FOR_INSTALL) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
 						 "interactive", TRUE,
 						 "app", app,
 							 NULL);
-		g_debug ("remove %s", gs_app_get_id (app));
+		g_debug ("uninstall %s", gs_app_get_id (app));
 		gs_plugin_loader_job_process_async (priv->plugin_loader, plugin_job,
 						    helper->cancellable,
 						    gs_page_app_removed_cb,
@@ -455,7 +468,7 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 
 	/* use different name and summary */
 	switch (gs_app_get_kind (app)) {
-	case AS_APP_KIND_SOURCE:
+	case AS_COMPONENT_KIND_REPOSITORY:
 		/* TRANSLATORS: this is a prompt message, and '%s' is an
 		 * repository name, e.g. 'GNOME Nightly' */
 		title = g_strdup_printf (_("Are you sure you want to remove "
@@ -463,17 +476,17 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 					 gs_app_get_name (app));
 		/* TRANSLATORS: longer dialog text */
 		message = g_strdup_printf (_("All applications from %s will be "
-					     "removed, and you will have to "
+					     "uninstalled, and you will have to "
 					     "re-install the repository to use them again."),
 					   gs_app_get_name (app));
 		break;
 	default:
 		/* TRANSLATORS: this is a prompt message, and '%s' is an
 		 * application summary, e.g. 'GNOME Clocks' */
-		title = g_strdup_printf (_("Are you sure you want to remove %s?"),
+		title = g_strdup_printf (_("Are you sure you want to uninstall %s?"),
 					 gs_app_get_name (app));
 		/* TRANSLATORS: longer dialog text */
-		message = g_strdup_printf (_("%s will be removed, and you will "
+		message = g_strdup_printf (_("%s will be uninstalled, and you will "
 					     "have to install it to use it again."),
 					   gs_app_get_name (app));
 		break;
@@ -489,7 +502,7 @@ gs_page_remove_app (GsPage *page, GsApp *app, GCancellable *cancellable)
 						  "%s", message);
 
 	/* TRANSLATORS: this is button text to remove the application */
-	remove_button = gtk_dialog_add_button (GTK_DIALOG (dialog), _("Remove"), GTK_RESPONSE_OK);
+	remove_button = gtk_dialog_add_button (GTK_DIALOG (dialog), _("Uninstall"), GTK_RESPONSE_OK);
 	context = gtk_widget_get_style_context (remove_button);
 	gtk_style_context_add_class (context, "destructive-action");
 

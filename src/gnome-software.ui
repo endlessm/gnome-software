@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.15.2 on Thu Aug 15 17:13:59 2013 -->
 <interface>
   <!-- interface-requires gtk+ 3.10 -->
+  <!-- interface-requires handy 1.0 -->
   <object class="GtkMenu" id="header_selection_menu">
     <property name="visible">True</property>
     <child>
@@ -492,6 +493,7 @@
                   <object class="GtkStack" id="stack_main">
                     <property name="visible">True</property>
                     <property name="homogeneous">False</property>
+                    <property name="transition-type">crossfade</property>
                     <child>
                       <object class="GsOverviewPage" id="overview_page">
                         <property name="visible">True</property>
@@ -592,6 +594,9 @@
               <object class="GtkListBox" id="origin_popover_list_box">
                 <property name="selection-mode">none</property>
                 <property name="visible">true</property>
+                <style>
+                  <class name="content"/>
+                </style>
               </object>
             </child>
           </object>

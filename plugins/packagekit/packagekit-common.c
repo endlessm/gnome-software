@@ -260,10 +260,10 @@ gs_plugin_packagekit_add_results (GsPlugin *plugin,
 		gs_app_set_version (app, pk_package_get_version (package));
 		switch (pk_package_get_info (package)) {
 		case PK_INFO_ENUM_INSTALLED:
-			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+			gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 			break;
 		case PK_INFO_ENUM_AVAILABLE:
-			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+			gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 			break;
 		case PK_INFO_ENUM_INSTALLING:
 		case PK_INFO_ENUM_UPDATING:
@@ -273,14 +273,14 @@ gs_plugin_packagekit_add_results (GsPlugin *plugin,
 			break;
 		case PK_INFO_ENUM_UNAVAILABLE:
 		case PK_INFO_ENUM_REMOVING:
-			gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
+			gs_app_set_state (app, GS_APP_STATE_UNAVAILABLE);
 			break;
 		default:
-			gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+			gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
 			g_warning ("unknown info state of %s",
 				   pk_info_enum_to_string (pk_package_get_info (package)));
 		}
-		gs_app_set_kind (app, AS_APP_KIND_GENERIC);
+		gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
 		gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 		gs_app_list_add (list, app);
 	}
@@ -330,23 +330,23 @@ gs_plugin_packagekit_resolve_packages_app (GsPlugin *plugin,
 	/* if *all* the source packages for the app are installed then the
 	 * application is considered completely installed */
 	if (number_installed == sources->len && number_available == 0) {
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
-			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN)
+			gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 	} else if (number_installed + number_available == sources->len) {
 		/* if all the source packages are installed and all the rest
 		 * of the packages are available then the app is available */
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
-			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN)
+			gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	} else if (number_installed + number_available > sources->len) {
 		/* we have more packages returned than source packages */
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
-		gs_app_set_state (app, AS_APP_STATE_UPDATABLE);
+		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, GS_APP_STATE_UPDATABLE);
 	} else if (number_installed + number_available < sources->len) {
 		g_autofree gchar *tmp = NULL;
 		/* we have less packages returned than source packages */
 		tmp = gs_app_to_string (app);
 		g_debug ("Failed to find all packages for:\n%s", tmp);
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
 	}
 }
 
@@ -372,7 +372,7 @@ gs_plugin_packagekit_set_metadata_from_package (GsPlugin *plugin,
 
 	/* set unavailable state */
 	if (pk_package_get_info (package) == PK_INFO_ENUM_UNAVAILABLE) {
-		gs_app_set_state (app, AS_APP_STATE_UNAVAILABLE);
+		gs_app_set_state (app, GS_APP_STATE_UNAVAILABLE);
 		if (gs_app_get_size_installed (app) == 0)
 			gs_app_set_size_installed (app, GS_APP_SIZE_UNKNOWABLE);
 		if (gs_app_get_size_download (app) == 0)
@@ -459,7 +459,7 @@ gs_plugin_packagekit_details_array_to_hash (GPtrArray *array)
 	for (gsize i = 0; i < array->len; i++) {
 		PkDetails *details = g_ptr_array_index (array, i);
 		g_hash_table_insert (details_collection,
-				     pk_details_get_package_id (details),
+				     (void *) pk_details_get_package_id (details),
 				     details);
 	}
 
@@ -475,7 +475,7 @@ gs_plugin_packagekit_refine_details_app (GsPlugin *plugin,
 	PkDetails *details;
 	const gchar *package_id;
 	guint j;
-	guint64 size = 0;
+	guint64 download_size = 0, install_size = 0;
 
 	/* @source_ids can have as many as 200 elements (google-noto); typically
 	 * it has 1 or 2
@@ -484,6 +484,9 @@ gs_plugin_packagekit_refine_details_app (GsPlugin *plugin,
 	 * repository, on the order of 400 or 700 apps */
 	source_ids = gs_app_get_source_ids (app);
 	for (j = 0; j < source_ids->len; j++) {
+		#ifdef HAVE_PK_DETAILS_GET_DOWNLOAD_SIZE
+		guint64 download_sz;
+		#endif
 		package_id = g_ptr_array_index (source_ids, j);
 		details = g_hash_table_lookup (details_collection, package_id);
 		if (details == NULL)
@@ -491,7 +494,7 @@ gs_plugin_packagekit_refine_details_app (GsPlugin *plugin,
 
 		if (gs_app_get_license (app) == NULL) {
 			g_autofree gchar *license_spdx = NULL;
-			license_spdx = as_utils_license_to_spdx (pk_details_get_license (details));
+			license_spdx = as_license_to_spdx_id (pk_details_get_license (details));
 			if (license_spdx != NULL) {
 				gs_app_set_license (app,
 						    GS_APP_QUALITY_LOWEST,
@@ -508,25 +511,34 @@ gs_plugin_packagekit_refine_details_app (GsPlugin *plugin,
 			                        GS_APP_QUALITY_LOWEST,
 			                        pk_details_get_description (details));
 		}
-		size += pk_details_get_size (details);
+		install_size += pk_details_get_size (details);
+		#ifdef HAVE_PK_DETAILS_GET_DOWNLOAD_SIZE
+		download_sz = pk_details_get_download_size (details);
+		if (download_sz != G_MAXUINT64)
+			download_size += download_sz;
+		#endif
 	}
 
+	#ifndef HAVE_PK_DETAILS_GET_DOWNLOAD_SIZE
+	download_size = install_size;
+	#endif
+
 	/* the size is the size of all sources */
-	if (gs_app_get_state (app) == AS_APP_STATE_UPDATABLE) {
-		if (size > 0 && gs_app_get_size_installed (app) == 0)
-			gs_app_set_size_installed (app, size);
-		if (size > 0 && gs_app_get_size_download (app) == 0)
-			gs_app_set_size_download (app, size);
+	if (gs_app_get_state (app) == GS_APP_STATE_UPDATABLE) {
+		if (install_size > 0 && gs_app_get_size_installed (app) == 0)
+			gs_app_set_size_installed (app, install_size);
+		if (download_size > 0 && gs_app_get_size_download (app) == 0)
+			gs_app_set_size_download (app, download_size);
 	} else if (gs_app_is_installed (app)) {
 		if (gs_app_get_size_download (app) == 0)
 			gs_app_set_size_download (app, GS_APP_SIZE_UNKNOWABLE);
-		if (size > 0 && gs_app_get_size_installed (app) == 0)
-			gs_app_set_size_installed (app, size);
+		if (install_size > 0 && gs_app_get_size_installed (app) == 0)
+			gs_app_set_size_installed (app, install_size);
 	} else {
 		if (gs_app_get_size_installed (app) == 0)
-			gs_app_set_size_installed (app, GS_APP_SIZE_UNKNOWABLE);
-		if (size > 0 && gs_app_get_size_download (app) == 0)
-			gs_app_set_size_download (app, size);
+			gs_app_set_size_installed (app, install_size > 0 ? install_size : GS_APP_SIZE_UNKNOWABLE);
+		if (download_size > 0 && gs_app_get_size_download (app) == 0)
+			gs_app_set_size_download (app, download_size);
 	}
 }
 

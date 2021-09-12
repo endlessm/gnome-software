@@ -11,6 +11,7 @@
 
 #include <glib.h>
 
+#include "gs-enums.h"
 #include "gs-plugin-private.h"
 #include "gs-plugin-job-private.h"
 
@@ -21,6 +22,7 @@ struct _GsPluginJob
 	GsPluginRefineFlags	 filter_flags;
 	GsAppListFilterFlags	 dedupe_flags;
 	gboolean		 interactive;
+	gboolean		 propagate_error;
 	guint			 max_results;
 	guint			 timeout;
 	guint64			 age;
@@ -53,6 +55,7 @@ enum {
 	PROP_REVIEW,
 	PROP_MAX_RESULTS,
 	PROP_TIMEOUT,
+	PROP_PROPAGATE_ERROR,
 	PROP_LAST
 };
 
@@ -81,6 +84,8 @@ gs_plugin_job_to_string (GsPluginJob *self)
 	}
 	if (self->interactive)
 		g_string_append_printf (str, " with interactive=True");
+	if (self->propagate_error)
+		g_string_append_printf (str, " with propagate-error=True");
 	if (self->timeout > 0)
 		g_string_append_printf (str, " with timeout=%u", self->timeout);
 	if (self->max_results > 0)
@@ -209,6 +214,20 @@ gs_plugin_job_get_interactive (GsPluginJob *self)
 {
 	g_return_val_if_fail (GS_IS_PLUGIN_JOB (self), FALSE);
 	return self->interactive;
+}
+
+void
+gs_plugin_job_set_propagate_error (GsPluginJob *self, gboolean propagate_error)
+{
+	g_return_if_fail (GS_IS_PLUGIN_JOB (self));
+	self->propagate_error = propagate_error;
+}
+
+gboolean
+gs_plugin_job_get_propagate_error (GsPluginJob *self)
+{
+	g_return_val_if_fail (GS_IS_PLUGIN_JOB (self), FALSE);
+	return self->propagate_error;
 }
 
 void
@@ -407,19 +426,19 @@ gs_plugin_job_get_property (GObject *obj, guint prop_id, GValue *value, GParamSp
 
 	switch (prop_id) {
 	case PROP_ACTION:
-		g_value_set_uint (value, self->action);
+		g_value_set_enum (value, self->action);
 		break;
 	case PROP_AGE:
 		g_value_set_uint64 (value, self->age);
 		break;
 	case PROP_REFINE_FLAGS:
-		g_value_set_uint64 (value, self->refine_flags);
+		g_value_set_flags (value, self->refine_flags);
 		break;
 	case PROP_FILTER_FLAGS:
-		g_value_set_uint64 (value, self->filter_flags);
+		g_value_set_flags (value, self->filter_flags);
 		break;
 	case PROP_DEDUPE_FLAGS:
-		g_value_set_uint64 (value, self->dedupe_flags);
+		g_value_set_flags (value, self->dedupe_flags);
 		break;
 	case PROP_INTERACTIVE:
 		g_value_set_boolean (value, self->interactive);
@@ -448,6 +467,9 @@ gs_plugin_job_get_property (GObject *obj, guint prop_id, GValue *value, GParamSp
 	case PROP_TIMEOUT:
 		g_value_set_uint (value, self->timeout);
 		break;
+	case PROP_PROPAGATE_ERROR:
+		g_value_set_boolean (value, self->propagate_error);
+		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (obj, prop_id, pspec);
 		break;
@@ -461,19 +483,19 @@ gs_plugin_job_set_property (GObject *obj, guint prop_id, const GValue *value, GP
 
 	switch (prop_id) {
 	case PROP_ACTION:
-		gs_plugin_job_set_action (self, g_value_get_uint (value));
+		gs_plugin_job_set_action (self, g_value_get_enum (value));
 		break;
 	case PROP_AGE:
 		gs_plugin_job_set_age (self, g_value_get_uint64 (value));
 		break;
 	case PROP_REFINE_FLAGS:
-		gs_plugin_job_set_refine_flags (self, g_value_get_uint64 (value));
+		gs_plugin_job_set_refine_flags (self, g_value_get_flags (value));
 		break;
 	case PROP_FILTER_FLAGS:
-		gs_plugin_job_set_filter_flags (self, g_value_get_uint64 (value));
+		gs_plugin_job_set_filter_flags (self, g_value_get_flags (value));
 		break;
 	case PROP_DEDUPE_FLAGS:
-		gs_plugin_job_set_dedupe_flags (self, g_value_get_uint64 (value));
+		gs_plugin_job_set_dedupe_flags (self, g_value_get_flags (value));
 		break;
 	case PROP_INTERACTIVE:
 		gs_plugin_job_set_interactive (self, g_value_get_boolean (value));
@@ -501,6 +523,9 @@ gs_plugin_job_set_property (GObject *obj, guint prop_id, const GValue *value, GP
 		break;
 	case PROP_TIMEOUT:
 		gs_plugin_job_set_timeout (self, g_value_get_uint (value));
+		break;
+	case PROP_PROPAGATE_ERROR:
+		gs_plugin_job_set_propagate_error (self, g_value_get_boolean (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (obj, prop_id, pspec);
@@ -531,10 +556,8 @@ gs_plugin_job_class_init (GsPluginJobClass *klass)
 	object_class->get_property = gs_plugin_job_get_property;
 	object_class->set_property = gs_plugin_job_set_property;
 
-	pspec = g_param_spec_uint ("action", NULL, NULL,
-				   GS_PLUGIN_ACTION_UNKNOWN,
-				   GS_PLUGIN_ACTION_LAST,
-				   GS_PLUGIN_ACTION_UNKNOWN,
+	pspec = g_param_spec_enum ("action", NULL, NULL,
+				   GS_TYPE_PLUGIN_ACTION, GS_PLUGIN_ACTION_UNKNOWN,
 				   G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_ACTION, pspec);
 
@@ -543,19 +566,19 @@ gs_plugin_job_class_init (GsPluginJobClass *klass)
 				     G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_AGE, pspec);
 
-	pspec = g_param_spec_uint64 ("refine-flags", NULL, NULL,
-				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+	pspec = g_param_spec_flags ("refine-flags", NULL, NULL,
+				    GS_TYPE_PLUGIN_REFINE_FLAGS, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+				    G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_REFINE_FLAGS, pspec);
 
-	pspec = g_param_spec_uint64 ("filter-flags", NULL, NULL,
-				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+	pspec = g_param_spec_flags ("filter-flags", NULL, NULL,
+				    GS_TYPE_PLUGIN_REFINE_FLAGS, GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+				    G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_FILTER_FLAGS, pspec);
 
-	pspec = g_param_spec_uint64 ("dedupe-flags", NULL, NULL,
-				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE);
+	pspec = g_param_spec_flags ("dedupe-flags", NULL, NULL,
+				    GS_TYPE_APP_LIST_FILTER_FLAGS, GS_APP_LIST_FILTER_FLAG_NONE,
+				    G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_DEDUPE_FLAGS, pspec);
 
 	pspec = g_param_spec_boolean ("interactive", NULL, NULL,
@@ -603,6 +626,11 @@ gs_plugin_job_class_init (GsPluginJobClass *klass)
 				   0, G_MAXUINT, 60,
 				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 	g_object_class_install_property (object_class, PROP_TIMEOUT, pspec);
+
+	pspec = g_param_spec_boolean ("propagate-error", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE);
+	g_object_class_install_property (object_class, PROP_PROPAGATE_ERROR, pspec);
 }
 
 static void

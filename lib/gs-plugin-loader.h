@@ -13,6 +13,7 @@
 
 #include "gs-app.h"
 #include "gs-category.h"
+#include "gs-category-manager.h"
 #include "gs-plugin-event.h"
 #include "gs-plugin-private.h"
 #include "gs-plugin-job.h"
@@ -20,24 +21,7 @@
 G_BEGIN_DECLS
 
 #define GS_TYPE_PLUGIN_LOADER		(gs_plugin_loader_get_type ())
-
-G_DECLARE_DERIVABLE_TYPE (GsPluginLoader, gs_plugin_loader, GS, PLUGIN_LOADER, GObject)
-
-struct _GsPluginLoaderClass
-{
-	GObjectClass		 parent_class;
-	void			(*status_changed)	(GsPluginLoader	*plugin_loader,
-							 GsApp		*app,
-							 GsPluginStatus	 status);
-	void			(*pending_apps_changed)	(GsPluginLoader	*plugin_loader);
-	void			(*updates_changed)	(GsPluginLoader	*plugin_loader);
-	void			(*reload)		(GsPluginLoader	*plugin_loader);
-	void			(*basic_auth_start)	(GsPluginLoader	*plugin_loader,
-							 const gchar	*remote,
-							 const gchar	*realm,
-							 GCallback	 callback,
-							 gpointer	 user_data);
-};
+G_DECLARE_FINAL_TYPE (GsPluginLoader, gs_plugin_loader, GS, PLUGIN_LOADER, GObject)
 
 GsPluginLoader	*gs_plugin_loader_new			(void);
 void		 gs_plugin_loader_job_process_async	(GsPluginLoader	*plugin_loader,
@@ -79,6 +63,8 @@ gboolean	 gs_plugin_loader_get_network_metered	(GsPluginLoader *plugin_loader);
 gboolean	 gs_plugin_loader_get_plugin_supported	(GsPluginLoader	*plugin_loader,
 							 const gchar	*function_name);
 
+void		 gs_plugin_loader_add_event		(GsPluginLoader *plugin_loader,
+							 GsPluginEvent	*event);
 GPtrArray	*gs_plugin_loader_get_events		(GsPluginLoader	*plugin_loader);
 GsPluginEvent	*gs_plugin_loader_get_event_default	(GsPluginLoader	*plugin_loader);
 void		 gs_plugin_loader_remove_events		(GsPluginLoader	*plugin_loader);
@@ -96,5 +82,17 @@ void            gs_plugin_loader_set_max_parallel_ops  (GsPluginLoader *plugin_l
                                                         guint           max_ops);
 
 const gchar	*gs_plugin_loader_get_locale		(GsPluginLoader *plugin_loader);
+
+GsCategoryManager *gs_plugin_loader_get_category_manager (GsPluginLoader *plugin_loader);
+void		 gs_plugin_loader_claim_error		(GsPluginLoader *plugin_loader,
+							 GsPlugin *plugin,
+							 GsPluginAction action,
+							 GsApp *app,
+							 gboolean interactive,
+							 const GError *error);
+void		 gs_plugin_loader_claim_job_error	(GsPluginLoader *plugin_loader,
+							 GsPlugin *plugin,
+							 GsPluginJob *job,
+							 const GError *error);
 
 G_END_DECLS

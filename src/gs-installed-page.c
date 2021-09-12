@@ -111,13 +111,16 @@ gs_installed_page_invalidate_sort_idle (gpointer user_data)
 {
 	GsAppRow *app_row = user_data;
 	GsApp *app = gs_app_row_get_app (app_row);
-	AsAppState state = gs_app_get_state (app);
+	GsAppState state = gs_app_get_state (app);
 
 	gtk_list_box_row_changed (GTK_LIST_BOX_ROW (app_row));
 
-	/* if the app has been uninstalled (which can happen from another view)
-	 * we should removed it from the installed view */
-	if (state == AS_APP_STATE_AVAILABLE || state == AS_APP_STATE_UNKNOWN)
+	/* Filter which applications can be shown in the installed page */
+	if (state != GS_APP_STATE_INSTALLING &&
+	    state != GS_APP_STATE_INSTALLED &&
+	    state != GS_APP_STATE_REMOVING &&
+	    state != GS_APP_STATE_UPDATABLE &&
+	    state != GS_APP_STATE_UPDATABLE_LIVE)
 		gs_installed_page_unreveal_row (app_row);
 
 	g_object_unref (app_row);
@@ -159,7 +162,7 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 	app_row = g_object_new (GS_TYPE_APP_ROW,
 				"app", app,
 				"show-buttons", TRUE,
-				"show-source", gs_utils_list_has_app_fuzzy (list, app),
+				"show-source", gs_utils_list_has_component_fuzzy (list, app),
 				"show-installed-size", !gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) && should_show_installed_size (self),
 				NULL);
 
@@ -320,13 +323,13 @@ gs_installed_page_get_app_sort_key (GsApp *app)
 
 	/* sort installed, removing, other */
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_INSTALLING:
+	case GS_APP_STATE_INSTALLING:
 		g_string_append (key, "1:");
 		break;
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
+	case GS_APP_STATE_QUEUED_FOR_INSTALL:
 		g_string_append (key, "2:");
 		break;
-	case AS_APP_STATE_REMOVING:
+	case GS_APP_STATE_REMOVING:
 		g_string_append (key, "3:");
 		break;
 	default:
@@ -336,35 +339,32 @@ gs_installed_page_get_app_sort_key (GsApp *app)
 
 	/* sort apps by kind */
 	switch (gs_app_get_kind (app)) {
-	case AS_APP_KIND_OS_UPDATE:
-		g_string_append (key, "1:");
-		break;
-	case AS_APP_KIND_DESKTOP:
+	case AS_COMPONENT_KIND_DESKTOP_APP:
 		g_string_append (key, "2:");
 		break;
-	case AS_APP_KIND_WEB_APP:
+	case AS_COMPONENT_KIND_WEB_APP:
 		g_string_append (key, "3:");
 		break;
-	case AS_APP_KIND_RUNTIME:
+	case AS_COMPONENT_KIND_RUNTIME:
 		g_string_append (key, "4:");
 		break;
-	case AS_APP_KIND_ADDON:
+	case AS_COMPONENT_KIND_ADDON:
 		g_string_append (key, "5:");
 		break;
-	case AS_APP_KIND_CODEC:
+	case AS_COMPONENT_KIND_CODEC:
 		g_string_append (key, "6:");
 		break;
-	case AS_APP_KIND_FONT:
+	case AS_COMPONENT_KIND_FONT:
 		g_string_append (key, "6:");
 		break;
-	case AS_APP_KIND_INPUT_METHOD:
+	case AS_COMPONENT_KIND_INPUT_METHOD:
 		g_string_append (key, "7:");
 		break;
-	case AS_APP_KIND_SHELL_EXTENSION:
-		g_string_append (key, "8:");
-		break;
 	default:
-		g_string_append (key, "9:");
+		if (gs_app_get_special_kind (app) == GS_APP_SPECIAL_KIND_OS_UPDATE)
+			g_string_append (key, "1:");
+		else
+			g_string_append (key, "8:");
 		break;
 	}
 
@@ -408,21 +408,33 @@ gs_installed_page_sort_func (GtkListBoxRow *a,
 }
 
 typedef enum {
+	GS_UPDATE_LIST_SECTION_INSTALLING_AND_REMOVING,
 	GS_UPDATE_LIST_SECTION_REMOVABLE_APPS,
 	GS_UPDATE_LIST_SECTION_SYSTEM_APPS,
 	GS_UPDATE_LIST_SECTION_ADDONS,
 	GS_UPDATE_LIST_SECTION_LAST
 } GsInstalledPageSection;
 
+/* This must mostly mirror gs_installed_page_get_app_sort_key() otherwise apps
+ * will end up sorted into a section they don’t belong in. */
 static GsInstalledPageSection
 gs_installed_page_get_app_section (GsApp *app)
 {
-	if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP ||
-	    gs_app_get_kind (app) == AS_APP_KIND_WEB_APP) {
+	GsAppState state = gs_app_get_state (app);
+	AsComponentKind kind = gs_app_get_kind (app);
+
+	if (state == GS_APP_STATE_INSTALLING ||
+	    state == GS_APP_STATE_QUEUED_FOR_INSTALL ||
+	    state == GS_APP_STATE_REMOVING)
+		return GS_UPDATE_LIST_SECTION_INSTALLING_AND_REMOVING;
+
+	if (kind == AS_COMPONENT_KIND_DESKTOP_APP ||
+	    kind == AS_COMPONENT_KIND_WEB_APP) {
 		if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY))
 			return GS_UPDATE_LIST_SECTION_SYSTEM_APPS;
 		return GS_UPDATE_LIST_SECTION_REMOVABLE_APPS;
 	}
+
 	return GS_UPDATE_LIST_SECTION_ADDONS;
 }
 
@@ -431,14 +443,30 @@ gs_installed_page_get_section_header (GsInstalledPageSection section)
 {
 	GtkWidget *header = NULL;
 
-	if (section == GS_UPDATE_LIST_SECTION_SYSTEM_APPS) {
+	switch (section) {
+	case GS_UPDATE_LIST_SECTION_SYSTEM_APPS:
 		/* TRANSLATORS: This is the header dividing the normal
 		 * applications and the system ones */
 		header = gtk_label_new (_("System Applications"));
-	} else if (section == GS_UPDATE_LIST_SECTION_ADDONS) {
+		break;
+	case GS_UPDATE_LIST_SECTION_ADDONS:
 		/* TRANSLATORS: This is the header dividing the normal
 		 * applications and the addons */
 		header = gtk_label_new (_("Add-ons"));
+		break;
+	case GS_UPDATE_LIST_SECTION_INSTALLING_AND_REMOVING:
+		/* TRANSLATORS: This is the header dividing the normal
+		 * installed applications and the applications which are
+		 * currently being installed or removed. */
+		header = gtk_label_new (_("In Progress"));
+		break;
+	case GS_UPDATE_LIST_SECTION_REMOVABLE_APPS:
+		/* TRANSLATORS: This is the header above normal installed
+		 * applications on the installed page. */
+		header = gtk_label_new (_("Applications"));
+		break;
+	default:
+		g_assert_not_reached ();
 	}
 
 	/* fix header style */
@@ -457,9 +485,13 @@ gs_installed_page_list_header_func (GtkListBoxRow *row,
                                     gpointer user_data)
 {
 	GsApp *app = gs_app_row_get_app (GS_APP_ROW (row));
-	GsInstalledPageSection before_section = GS_UPDATE_LIST_SECTION_LAST;
 	GsInstalledPageSection section;
-	GtkWidget *header;
+	GtkWidget *header = NULL;
+
+	/* Don’t show a header if the REMOVABLE_APPS section is listed first,
+	 * as it looks redundant. (But do show a header if another section is
+	 * listed first.) */
+	GsInstalledPageSection before_section = GS_UPDATE_LIST_SECTION_REMOVABLE_APPS;
 
 	/* first entry */
 	gtk_list_box_row_set_header (row, NULL);
@@ -474,7 +506,7 @@ gs_installed_page_list_header_func (GtkListBoxRow *row,
 		header = gs_installed_page_get_section_header (section);
 		if (header == NULL)
 			return;
-	} else {
+	} else if (before != NULL) {
 		header = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
 	}
 	gtk_list_box_row_set_header (row, header);
@@ -515,7 +547,7 @@ gs_installed_page_pending_apps_changed_cb (GsPluginLoader *plugin_loader,
 
 		/* never show OS upgrades, we handle the scheduling and
 		 * cancellation in GsUpgradeBanner */
-		if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPGRADE)
+		if (gs_app_get_kind (app) == AS_COMPONENT_KIND_OPERATING_SYSTEM)
 			continue;
 
 		/* do not to add pending apps more than once. */

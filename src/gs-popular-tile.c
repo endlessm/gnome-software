@@ -48,6 +48,7 @@ gs_popular_tile_refresh (GsAppTile *self)
 	gboolean installed;
 	g_autofree gchar *name = NULL;
 	const gchar *css;
+	g_autoptr(GIcon) icon = NULL;
 
 	if (app == NULL)
 		return;
@@ -55,17 +56,17 @@ gs_popular_tile_refresh (GsAppTile *self)
 	accessible = gtk_widget_get_accessible (GTK_WIDGET (tile));
 
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_INSTALLED:
-	case AS_APP_STATE_REMOVING:
-	case AS_APP_STATE_UPDATABLE:
-	case AS_APP_STATE_UPDATABLE_LIVE:
+	case GS_APP_STATE_INSTALLED:
+	case GS_APP_STATE_REMOVING:
+	case GS_APP_STATE_UPDATABLE:
+	case GS_APP_STATE_UPDATABLE_LIVE:
 		installed = TRUE;
 		/* TRANSLATORS: this refers to an app (by name) that is installed */
 		name = g_strdup_printf (_("%s (Installed)"),
 					gs_app_get_name (app));
 		break;
-	case AS_APP_STATE_AVAILABLE:
-	case AS_APP_STATE_INSTALLING:
+	case GS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_INSTALLING:
 	default:
 		installed = FALSE;
 		name = g_strdup (gs_app_get_name (app));
@@ -88,13 +89,11 @@ gs_popular_tile_refresh (GsAppTile *self)
 	css = gs_app_get_metadata_item (app, "GnomeSoftware::PopularTile-css");
 	gs_utils_widget_set_css (GTK_WIDGET (tile), &tile->tile_provider, "popular-tile", css);
 
-	if (gs_app_get_pixbuf (app) != NULL) {
-		gs_image_set_from_pixbuf (GTK_IMAGE (tile->image), gs_app_get_pixbuf (app));
-	} else {
-		gtk_image_set_from_icon_name (GTK_IMAGE (tile->image),
-					      "application-x-executable",
-					      GTK_ICON_SIZE_DIALOG);
-	}
+	icon = gs_app_get_icon_for_size (app,
+					 gtk_image_get_pixel_size (GTK_IMAGE (tile->image)),
+					 gtk_widget_get_scale_factor (tile->image),
+					 "application-x-executable");
+	gtk_image_set_from_gicon (GTK_IMAGE (tile->image), icon, GTK_ICON_SIZE_DIALOG);
 
 	gtk_label_set_label (GTK_LABEL (tile->label), gs_app_get_name (app));
 }

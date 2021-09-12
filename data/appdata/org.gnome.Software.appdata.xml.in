@@ -21,54 +21,319 @@
   </description>
   <screenshots>
     <screenshot height="675" width="1200" type="default">
-      <image>https://git.gnome.org/browse/gnome-software/plain/data/appdata/ss-overview.png</image>
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-overview.png</image>
       <caption>Overview panel</caption>
     </screenshot>
     <screenshot height="675" width="1200">
-      <image>https://git.gnome.org/browse/gnome-software/plain/data/appdata/ss-details.png</image>
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-details.png</image>
       <caption>Details panel</caption>
     </screenshot>
     <screenshot height="675" width="1200">
-      <image>https://git.gnome.org/browse/gnome-software/plain/data/appdata/ss-installed.png</image>
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-installed.png</image>
       <caption>Installed panel</caption>
     </screenshot>
     <screenshot height="675" width="1200">
-      <image>https://git.gnome.org/browse/gnome-software/plain/data/appdata/ss-updates.png</image>
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-updates.png</image>
       <caption>Updates panel</caption>
     </screenshot>
     <screenshot height="675" width="1200">
-      <image>https://git.gnome.org/browse/gnome-software/plain/data/appdata/ss-updates-details.png</image>
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-updates-details.png</image>
       <caption>The update details</caption>
     </screenshot>
   </screenshots>
 
   <!--
-   Validate with `appstream-util validate *.appdata.xml`
+   Validate with `appstreamcli validate *.appdata.xml`
   -->
   <releases>
-    <release date="2020-02-08" version="3.38.1">
+    <release date="2021-08-13" version="40.4" type="stable">
       <description>
         <p>
           This is a stable release with the following changes:
         </p>
         <ul>
-          <li>Fix package details not found for some packages</li>
-          <li>Ignore harmless warnings when using unusual fwupd versions</li>
+          <li>flatpak: Improve search of applications</li>
+          <li>Correct download size for app's runtime</li>
         </ul>
-        <p>This release also updates existing translations.</p>
+        <p>Translation updates:</p>
+        <ul>
+          <li>Occitan (post 1500)</li>
+        </ul>
       </description>
     </release>
-    <release date="2020-09-11" version="3.38.0">
+    <release date="2021-07-09" version="40.3">
       <description>
         <p>
-          This is an stable release that just updates existing translations.
+          This is a stable release with the following changes:
         </p>
+        <ul>
+          <li>Fix a bug where app sources appeared in the header of the Updates tab</li>
+          <li>Automatically install application updates, depending on the type of application and user config</li>
+          <li>Avoid extra vertical space in the featured apps carousel</li>
+          <li>Include apps from disabled repos in Shell Overview search results</li>
+          <li>Distinguish between download size and installed size for PackageKit apps</li>
+          <li>Properly update the "Last checked" timestamp on the Updates tab</li>
+          <li>Fix a crash that sometimes happens when clicking on the Website button on a details page</li>
+          <li>Fix a bug where the list of sources for an application was sometimes incomplete</li>
+        </ul>
+        <p>Translation updates:</p>
+        <ul>
+          <li>Belarusian</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2021-06-04" version="40.2">
+      <description>
+        <p>
+          This is a stable release with the following changes:
+        </p>
+        <ul>
+          <li>Avoid spurious polkit prompts by the PackageKit plugin for background operations</li>
+          <li>Handle NULL OS name or version</li>
+          <li>Fix a crash related to version history gathering</li>
+          <li>Fix a crash when a Flatpak component had been renamed</li>
+          <li>Improve error reporting when low on disk space for Flatpak</li>
+          <li>Fix a deadlock after Flatpak changes from the command line</li>
+          <li>Fix list of alternative application sources to not show duplicates</li>
+          <li>Fix application icon loading for already cached icons</li>
+          <li>Fix crash loading empty DEP-11 data</li>
+          <li>Fix update of related Flatpak runtimes</li>
+          <li>Fix automatic download of pending updates</li>
+          <li>Consider only critical updates as important</li>
+        </ul>
+        <p>Translation updates:</p>
+        <ul>
+          <li>Basque</li>
+          <li>Bokmål, Norwegian</li>
+          <li>Catalan</li>
+          <li>Friulian</li>
+          <li>Occitan (post 1500)</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2021-04-30" version="40.1">
+      <description>
+        <p>
+          This is a stable release with the following changes:
+        </p>
+        <ul>
+          <li>Fix flatpak update state if update was already done outside of GNOME Software</li>
+          <li>Update app state after repository is enabled or disabled</li>
+          <li>Fix the overview opening empty in some situations</li>
+          <li>Show apps which are being updated in the updates page, rather than just ones which are ready to be updated</li>
+          <li>Fix section headers on ‘Installed’ page</li>
+          <li>Fix searches not being triggered by typing in the search entry in some situations</li>
+          <li>Fix duplicate origins being listed incorrectly in the app details page (in particular, for UngoogledChromium)</li>
+          <li>Fix a broken rpm-ostree repository causing other repositories to be ignored</li>
+          <li>Fix animation glitch on featured apps carousel when going from app 2 to app 1</li>
+          <li>Improve featured apps carousel contrast for Steam</li>
+          <li>Speed up search queries by over 40%</li>
+          <li>Do not keep the rpm-ostree service alive forever while GNOME Software is running</li>
+          <li>Fix broken header bar on application details page in some situations</li>
+          <li>Prevent uninstallation of add-ons for system apps</li>
+          <li>Fix search from Nautilus on Fedora Silverblue</li>
+          <li>Fix reporting state of layered packages on Fedora Silverblue</li>
+          <li>Fix updating add-on state when uninstalling an app</li>
+        </ul>
+        <p>Translation updates:</p>
+        <ul>
+          <li>Basque</li>
+          <li>Catalan</li>
+          <li>Chinese (China)</li>
+          <li>Chinese (Taiwan)</li>
+          <li>Czech</li>
+          <li>Dutch</li>
+          <li>English (United Kingdom)</li>
+          <li>Finnish</li>
+          <li>French</li>
+          <li>Galician</li>
+          <li>German</li>
+          <li>Greek, Modern (1453-)</li>
+          <li>Hebrew</li>
+          <li>Indonesian</li>
+          <li>Italian</li>
+          <li>Lithuanian</li>
+          <li>Nepali</li>
+          <li>Persian</li>
+          <li>Polish</li>
+          <li>Portuguese</li>
+          <li>Portuguese (Brazil)</li>
+          <li>Romanian</li>
+          <li>Serbian</li>
+          <li>Slovenian</li>
+          <li>Spanish</li>
+          <li>Swedish</li>
+          <li>Turkish</li>
+          <li>Ukrainian</li>
+          <li>Vietnamese</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2021-03-19" version="40">
+      <description>
+        <p>
+          This is a stable release with the following changes:
+        </p>
+        <ul>
+          <li>Fix handling of invalid or incomplete application icons</li>
+          <li>Fix the plugin documentation to reflect reality</li>
+          <li>Fix the Snap plugin to actually load icons</li>
+          <li>Set download size to 0 after the package is downloaded</li>
+        </ul>
+        <p>Translation updates:</p>
+        <ul>
+          <li>British English</li>
+          <li>Danish</li>
+          <li>Greek</li>
+          <li>Italian</li>
+          <li>Norwegian Bokmål</li>
+          <li>Polish</li>
+          <li>Punjabi</li>
+          <li>Serbian</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2021-03-12" version="40.rc">
+      <description>
+        <p>
+          This is an unstable release with the following changes:
+        </p>
+        <ul>
+          <li>Implement new featured apps carousel.</li>
+          <li>List of Flatpak repositories is updated when changed using the Flatpak command line tool.</li>
+          <li>The loading page now shows the full color icon instead of the symbolic one.</li>
+          <li>Show release date in version history for releases that use the 'date' attribute.</li>
+          <li>Improved icon handling, including with hiDPI screens.</li>
+          <li>Fixed a bug in remembering when update notifications were shown.</li>
+          <li>Build as a dynamic rather than a static library, and rearrange installation paths.</li>
+        </ul>
+        <p>Translation updates:</p>
+        <ul>
+          <li>Basque</li>
+          <li>Catalan</li>
+          <li>Croatian</li>
+          <li>Czech</li>
+          <li>Dutch</li>
+          <li>English (United Kingdom)</li>
+          <li>Finnish</li>
+          <li>French</li>
+          <li>Friulian</li>
+          <li>Galician</li>
+          <li>German</li>
+          <li>Hungarian</li>
+          <li>Indonesian</li>
+          <li>Kazakh</li>
+          <li>Korean</li>
+          <li>Lithuanian</li>
+          <li>Persian</li>
+          <li>Portuguese</li>
+          <li>Portuguese (Brazil)</li>
+          <li>Romanian</li>
+          <li>Serbian</li>
+          <li>Slovenian</li>
+          <li>Spanish</li>
+          <li>Swedish</li>
+          <li>Turkish</li>
+          <li>Ukrainian</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2021-02-16" version="40.beta">
+      <description>
+        <p>
+          This is an unstable release with the following changes:
+        </p>
+        <ul>
+          <li>GNOME Software now uses libappstream instead of libappstream-glib to work with appstream data which provides information about apps and other components.</li>
+          <li>App details pages show version history information when it's available.</li>
+          <li>The loading page now shows the full color icon instead of the symbolic one.</li>
+          <li>UI elements for displaying app add-ons have been tweaked to more closely match the designs.</li>
+          <li>Installed icons and the badge showing the number of updates available were changed back to blue from green.</li>
+          <li>The dropdown showing the available sources of an application includes the packaging format (e.g. Flatpak vs RPM).</li>
+          <li>A bug was fixed that prevented installation of .flatpakref files</li>
+        </ul>
+        <p>Translation updates:</p>
+        <ul>
+          <li>Catalan</li>
+          <li>Czech</li>
+          <li>Galician</li>
+          <li>Indonesian</li>
+          <li>Panjabi</li>
+          <li>Portuguese</li>
+          <li>Slovenian</li>
+          <li>Spanish</li>
+          <li>Swedish</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2021-01-27" version="40.alpha">
+      <description>
+        <p>
+          This is the first unstable release for GNOME 40.
+        </p>
+        <ul>
+          <li>Small updates to how app descriptions and addons are presented on the details page</li>
+          <li>Fix handling of pending app installations when going online</li>
+          <li>Better support for dark themes (particularly Adwaita-Dark)</li>
+          <li>Improvements to how app screenshots are loaded and presented</li>
+          <li>Hide ‘Launch’ button if an application (for example, Wine) cannot be launched</li>
+          <li>Make the UI clearer when loading information from flatpakref files</li>
+          <li>Don’t update app metadata on start when download-updates is disabled</li>
+          <li>Fix opening the updates list when clicking on an updates notification</li>
+          <li>Fix state updates when installing flatpak apps or repos which are already installed</li>
+          <li>Add Ctrl+Q as a keyboard shortcut for closing the window</li>
+          <li>Rework timing and content of software update notifications</li>
+          <li>Prevent uninstalled local apps from appearing in the installed apps list</li>
+          <li>Support installation/uninstallation of addons for flatpak apps</li>
+          <li>Improve presentation of age ratings for apps</li>
+          <li>Fix a crash in the updates page</li>
+          <li>Fix presentation of app permissions for fully sandboxed flatpak apps</li>
+          <li>Fix deadlock on rpm-ostree systems</li>
+          <li>Fix presentation of version number changes in right-to-left locales</li>
+          <li>Error handling improvements for fwupd</li>
+          <li>Performance improvements for ODRS on startup</li>
+          <li>Improve presentation of firmware warning messages</li>
+          <li>XML parsing performance improvements</li>
+          <li>Automatically remove end-of-life flatpak runtimes</li>
+          <li>Support updating flatpaks to their new name when they are renamed</li>
+          <li>Update the GNOME Software icon</li>
+          <li>Support more search results in the snap store</li>
+          <li>Drop libgnome-desktop-3 dependency in favour of gsettings-desktop-schemas</li>
+        </ul>
+        <p>This release also updates translations:</p>
+        <ul>
+          <li>Basque</li>
+          <li>Bokmål, Norwegian</li>
+          <li>Catalan</li>
+          <li>Chinese (Taiwan)</li>
+          <li>Czech</li>
+          <li>Friulian</li>
+          <li>Galician</li>
+          <li>German</li>
+          <li>Greek, Modern (1453-)</li>
+          <li>Hebrew</li>
+          <li>Indonesian</li>
+          <li>Italian</li>
+          <li>Kabyle</li>
+          <li>Kazakh</li>
+          <li>Latvian</li>
+          <li>Lithuanian</li>
+          <li>Persian</li>
+          <li>Portuguese</li>
+          <li>Portuguese (Brazil)</li>
+          <li>Romanian</li>
+          <li>Slovak</li>
+          <li>Spanish</li>
+          <li>Turkish</li>
+          <li>Ukrainian</li>
+          <li>Vietnamese</li>
+        </ul>
       </description>
     </release>
     <release date="2020-09-01" version="3.37.92">
       <description>
         <p>
-          This is an unstable release with the following changes:
+          This is an unstable stable release with the following changes:
         </p>
         <ul>
           <li>Add sysprof support for profiling jobs</li>
@@ -1525,8 +1790,8 @@
     <kudo>Notifications</kudo>
     <kudo>SearchProvider</kudo>
   </kudos>
-  <url type="bugtracker">https://bugzilla.gnome.org/enter_bug.cgi?product=gnome-software</url>
-  <url type="donation">http://www.gnome.org/friends/</url>
+  <url type="bugtracker">https://gitlab.gnome.org/GNOME/gnome-software/-/issues/new</url>
+  <url type="donation">https://www.gnome.org/donate/</url>
   <url type="homepage">https://wiki.gnome.org/Design/Apps/Software</url>
   <url type="translate">https://wiki.gnome.org/TranslationProject</url>
   <update_contact>richard_at_hughsie.com</update_contact>

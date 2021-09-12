@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <appstream-glib.h>
 #include <glib-object.h>
 #include <gmodule.h>
 #include <gio/gio.h>
@@ -44,7 +43,9 @@ struct _GsPluginClass
 							 const gchar	*realm,
 							 GCallback	 callback,
 							 gpointer	 user_data);
-	gpointer		 padding[25];
+	void			(*repository_changed)	(GsPlugin	*plugin,
+							 GsApp		*repository);
+	gpointer		 padding[24];
 };
 
 typedef struct	GsPluginData	GsPluginData;
@@ -103,6 +104,9 @@ gboolean	 gs_plugin_check_distro_id		(GsPlugin	*plugin,
 							 const gchar	*distro_id);
 GsApp		*gs_plugin_cache_lookup			(GsPlugin	*plugin,
 							 const gchar	*key);
+void		 gs_plugin_cache_lookup_by_state	(GsPlugin	*plugin,
+							 GsAppList	*list,
+							 GsAppState	 state);
 void		 gs_plugin_cache_add			(GsPlugin	*plugin,
 							 const gchar	*key,
 							 GsApp		*app);
@@ -128,5 +132,10 @@ void		 gs_plugin_basic_auth_start		(GsPlugin	*plugin,
 							 const gchar	*realm,
 							 GCallback	 callback,
 							 gpointer	 user_data);
+void		gs_plugin_repository_changed		(GsPlugin	*plugin,
+							 GsApp		*repository);
+void		gs_plugin_update_cache_state_for_repository
+							(GsPlugin *plugin,
+							 GsApp *repository);
 
 G_END_DECLS

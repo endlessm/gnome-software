@@ -89,15 +89,15 @@ refresh_ui (GsRepoRow *row)
 
 	/* set button text */
 	switch (gs_app_get_state (priv->repo)) {
-	case AS_APP_STATE_AVAILABLE:
-	case AS_APP_STATE_AVAILABLE_LOCAL:
+	case GS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_AVAILABLE_LOCAL:
 		/* TRANSLATORS: this is a button in the software repositories
 		   dialog for enabling a repo */
 		gtk_button_set_label (GTK_BUTTON (priv->button), _("_Enable"));
 		/* enable button */
 		gtk_widget_set_sensitive (priv->button, TRUE);
 		break;
-	case AS_APP_STATE_INSTALLED:
+	case GS_APP_STATE_INSTALLED:
 		if (repo_supports_removal (priv->repo)) {
 			/* TRANSLATORS: this is a button in the software repositories dialog
 			   for removing a repo. The ellipsis indicates that further
@@ -112,14 +112,14 @@ refresh_ui (GsRepoRow *row)
 		/* enable button */
 		gtk_widget_set_sensitive (priv->button, TRUE);
 		break;
-	case AS_APP_STATE_INSTALLING:
+	case GS_APP_STATE_INSTALLING:
 		/* TRANSLATORS: this is a button in the software repositories dialog
 		   that shows the status of a repo being enabled */
 		gtk_button_set_label (GTK_BUTTON (priv->button), _("Enabling"));
 		/* disable button */
 		gtk_widget_set_sensitive (priv->button, FALSE);
 		break;
-	case AS_APP_STATE_REMOVING:
+	case GS_APP_STATE_REMOVING:
 		if (repo_supports_removal (priv->repo)) {
 			/* TRANSLATORS: this is a button in the software repositories dialog
 			   that shows the status of a repo being removed */
@@ -132,19 +132,22 @@ refresh_ui (GsRepoRow *row)
 		/* disable button */
 		gtk_widget_set_sensitive (priv->button, FALSE);
 		break;
+	case GS_APP_STATE_UNAVAILABLE:
+		gtk_widget_destroy (GTK_WIDGET (row));
+		return;
 	default:
 		break;
 	}
 
 	/* set enabled/disabled label */
 	switch (gs_app_get_state (priv->repo)) {
-	case AS_APP_STATE_INSTALLED:
+	case GS_APP_STATE_INSTALLED:
 		/* TRANSLATORS: this is a label in the software repositories
 		   dialog that indicates that a repo is enabled. */
 		gtk_label_set_text (GTK_LABEL (priv->status_label), _("Enabled"));
 		break;
-	case AS_APP_STATE_AVAILABLE:
-	case AS_APP_STATE_AVAILABLE_LOCAL:
+	case GS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_AVAILABLE_LOCAL:
 		/* TRANSLATORS: this is a label in the software repositories
 		   dialog that indicates that a repo is disabled. */
 		gtk_label_set_text (GTK_LABEL (priv->status_label), _("Disabled"));
@@ -160,9 +163,10 @@ refresh_idle (gpointer user_data)
 	g_autoptr(GsRepoRow) row = (GsRepoRow *) user_data;
 	GsRepoRowPrivate *priv = gs_repo_row_get_instance_private (row);
 
+	priv->refresh_idle_id = 0;
+
 	refresh_ui (row);
 
-	priv->refresh_idle_id = 0;
 	return G_SOURCE_REMOVE;
 }
 

@@ -11,41 +11,6 @@ shared_module(
   install_dir: plugin_dir,
   c_args : cargs,
   dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
-)
-
-shared_module(
-  'gs_plugin_key-colors',
-  sources : 'gs-plugin-key-colors.c',
-  include_directories : [
-    include_directories('../..'),
-    include_directories('../../lib'),
-  ],
-  install : true,
-  install_dir: plugin_dir,
-  c_args : cargs,
-  dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
-)
-
-shared_module(
-  'gs_plugin_key-colors-metadata',
-  sources : 'gs-plugin-key-colors-metadata.c',
-  include_directories : [
-    include_directories('../..'),
-    include_directories('../../lib'),
-  ],
-  install : true,
-  install_dir: plugin_dir,
-  c_args : cargs,
-  dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 shared_module(
@@ -59,9 +24,6 @@ shared_module(
   install_dir: plugin_dir,
   c_args : cargs,
   dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 shared_module(
@@ -75,9 +37,6 @@ shared_module(
   install_dir: plugin_dir,
   c_args : cargs,
   dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 
@@ -92,9 +51,6 @@ shared_module(
   install_dir: plugin_dir,
   c_args : cargs,
   dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 shared_module(
@@ -114,47 +70,6 @@ shared_module(
     plugin_libs,
     libxmlb,
   ],
-  link_with : [
-    libgnomesoftware
-  ]
-)
-
-shared_module(
-  'gs_plugin_desktop-categories',
-  sources : [
-    'gs-plugin-desktop-categories.c',
-    'gs-desktop-common.c',
-  ],
-  include_directories : [
-    include_directories('../..'),
-    include_directories('../../lib'),
-  ],
-  install : true,
-  install_dir: plugin_dir,
-  c_args : cargs,
-  dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
-)
-
-shared_module(
-  'gs_plugin_desktop-menu-path',
-  sources : [
-    'gs-plugin-desktop-menu-path.c',
-    'gs-desktop-common.c',
-  ],
-  include_directories : [
-    include_directories('../..'),
-    include_directories('../../lib'),
-  ],
-  install : true,
-  install_dir: plugin_dir,
-  c_args : cargs,
-  dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 shared_module(
@@ -168,9 +83,6 @@ shared_module(
   install_dir: plugin_dir,
   c_args : cargs,
   dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 if get_option('hardcoded_popular')
@@ -185,9 +97,6 @@ if get_option('hardcoded_popular')
     install_dir: plugin_dir,
     c_args : cargs,
     dependencies : plugin_libs,
-    link_with : [
-      libgnomesoftware
-    ]
   )
 endif
 
@@ -202,9 +111,6 @@ shared_module(
   install_dir: plugin_dir,
   c_args : cargs,
   dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 shared_module(
@@ -218,9 +124,6 @@ shared_module(
   install_dir: plugin_dir,
   c_args : cargs,
   dependencies : plugin_libs,
-  link_with : [
-    libgnomesoftware
-  ]
 )
 
 if get_option('tests')
@@ -240,9 +143,6 @@ if get_option('tests')
     dependencies : [
       plugin_libs,
       libxmlb,
-    ],
-    link_with : [
-      libgnomesoftware
     ],
     c_args : cargs,
   )

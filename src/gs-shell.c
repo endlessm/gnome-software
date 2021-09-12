@@ -77,6 +77,7 @@ typedef struct
 
 #ifdef HAVE_MOGWAI
 	MwscScheduler		*scheduler;
+	gboolean		 scheduler_held;
 	gulong			 scheduler_invalidated_handler;
 #endif  /* HAVE_MOGWAI */
 } GsShellPrivate;
@@ -279,6 +280,7 @@ scheduler_invalidated_cb (GsShell *shell)
 	g_signal_handler_disconnect (priv->scheduler,
 				     priv->scheduler_invalidated_handler);
 	priv->scheduler_invalidated_handler = 0;
+	priv->scheduler_held = FALSE;
 
 	g_clear_object (&priv->scheduler);
 }
@@ -299,11 +301,14 @@ scheduler_hold_cb (GObject *source_object,
 	g_autoptr(GsShell) shell = data;  /* reference added when starting the async operation */
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 
-	if (!mwsc_scheduler_hold_finish (scheduler, result, &error_local)) {
+	if (mwsc_scheduler_hold_finish (scheduler, result, &error_local)) {
+		priv->scheduler_held = TRUE;
+	} else if (!g_error_matches (error_local, G_DBUS_ERROR, G_DBUS_ERROR_FAILED)) {
 		g_warning ("Couldn't hold the Mogwai Scheduler daemon: %s",
 			   error_local->message);
-		return;
 	}
+
+	g_clear_error (&error_local);
 
 	priv->scheduler_invalidated_handler =
 		g_signal_connect_swapped (scheduler, "invalidated",
@@ -336,6 +341,7 @@ scheduler_release_cb (GObject *source_object,
 		g_warning ("Couldn't release the Mogwai Scheduler daemon: %s",
 			   error_local->message);
 
+	priv->scheduler_held = FALSE;
 	g_clear_object (&priv->scheduler);
 }
 
@@ -492,7 +498,10 @@ gs_shell_change_mode (GsShell *shell,
 		break;
 	case GS_SHELL_MODE_SEARCH:
 		page = GS_PAGE (g_hash_table_lookup (priv->pages, "search"));
+		widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "entry_search"));
 		gs_search_page_set_text (GS_SEARCH_PAGE (page), data);
+		gtk_entry_set_text (GTK_ENTRY (widget), data);
+		gtk_editable_set_position (GTK_EDITABLE (widget), -1);
 		break;
 	case GS_SHELL_MODE_UPDATES:
 		gs_shell_clean_back_entry_stack (shell);
@@ -756,14 +765,12 @@ gs_shell_reload_cb (GsPluginLoader *plugin_loader, GsShell *shell)
 	}
 }
 
-static void
-overview_page_refresh_done (GsOverviewPage *overview_page, gpointer data)
+static gboolean
+change_mode_idle (gpointer user_data)
 {
-	GsShell *shell = data;
+	GsShell *shell = user_data;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsPage *page;
-
-	g_signal_handlers_disconnect_by_func (overview_page, overview_page_refresh_done, data);
 
 	page = GS_PAGE (gtk_builder_get_object (priv->builder, "updates_page"));
 	gs_page_reload (page);
@@ -772,9 +779,25 @@ overview_page_refresh_done (GsOverviewPage *overview_page, gpointer data)
 
 	gs_shell_change_mode (shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
 
+	return G_SOURCE_REMOVE;
+}
+
+static void
+overview_page_refresh_done (GsOverviewPage *overview_page, gpointer data)
+{
+	GsShell *shell = data;
+	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+
+	g_signal_handlers_disconnect_by_func (overview_page, overview_page_refresh_done, data);
+
 	/* now that we're finished with the loading page, connect the reload signal handler */
 	g_signal_connect (priv->plugin_loader, "reload",
 	                  G_CALLBACK (gs_shell_reload_cb), shell);
+
+	/* schedule to change the mode in an idle callback, since it can take a
+	 * while and this callback handler is typically called at the end of a
+	 * long main context iteration already */
+	g_idle_add (change_mode_idle, shell);
 }
 
 static void
@@ -782,14 +805,17 @@ initial_refresh_done (GsLoadingPage *loading_page, gpointer data)
 {
 	GsShell *shell = data;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	gboolean been_overview;
 
 	g_signal_handlers_disconnect_by_func (loading_page, initial_refresh_done, data);
+
+	been_overview = priv->mode == GS_SHELL_MODE_OVERVIEW;
 
 	g_signal_emit (shell, signals[SIGNAL_LOADED], 0);
 
 	/* if the "loaded" signal handler didn't change the mode, kick off async
 	 * overview page refresh, and switch to the page once done */
-	if (priv->mode == GS_SHELL_MODE_LOADING) {
+	if (priv->mode == GS_SHELL_MODE_LOADING || been_overview) {
 		GsPage *page;
 
 		page = GS_PAGE (gtk_builder_get_object (priv->builder, "overview_page"));
@@ -955,10 +981,13 @@ main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 						     priv->scheduler_invalidated_handler);
 		priv->scheduler_invalidated_handler = 0;
 
-		mwsc_scheduler_release_async (priv->scheduler,
-					      NULL,
-					      scheduler_release_cb,
-					      g_object_ref (shell));
+		if (priv->scheduler_held)
+			mwsc_scheduler_release_async (priv->scheduler,
+						      NULL,
+						      scheduler_release_cb,
+						      g_object_ref (shell));
+		else
+			g_clear_object (&priv->scheduler);
 	}
 #endif  /* HAVE_MOGWAI */
 
@@ -1901,13 +1930,11 @@ gs_shell_show_event_url_to_app (GsShell *shell, GsPluginEvent *event)
 static gboolean
 gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 {
-	GsApp *app = gs_plugin_event_get_app (event);
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autoptr(GString) str = g_string_new (NULL);
-	g_autofree gchar *str_app = NULL;
 	g_autofree gchar *str_origin = NULL;
 
 	switch (error->code) {
@@ -1928,18 +1955,8 @@ gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
 		break;
 	case GS_PLUGIN_ERROR_RESTART_REQUIRED:
-		if (app != NULL) {
-			str_app = gs_shell_get_title_from_app (app);
-			/* TRANSLATORS: failure text for the in-app notification,
-			 * where the %s is the application name (e.g. "GIMP") */
-			g_string_append_printf (str, _("%s needs to be restarted "
-						       "to use new plugins."),
-						str_app);
-		} else {
-			/* TRANSLATORS: failure text for the in-app notification */
-			g_string_append (str, _("This application needs to be "
-						"restarted to use new plugins."));
-		}
+		/* TRANSLATORS: failure text for the in-app notification, where the 'Software' means this application, aka 'GNOME Software'. */
+		g_string_append (str, _("Software needs to be restarted to use new plugins."));
 		buttons |= GS_SHELL_EVENT_BUTTON_RESTART_REQUIRED;
 		break;
 	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
@@ -2115,7 +2132,6 @@ gs_shell_add_about_menu_item (GsShell *shell)
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GMenu *primary_menu;
 	g_autoptr(GMenuItem) menu_item = NULL;
-	g_autofree gchar *label = NULL;
 
 	primary_menu = G_MENU (gtk_builder_get_object (priv->builder, "primary_menu"));
 
@@ -2124,11 +2140,24 @@ gs_shell_add_about_menu_item (GsShell *shell)
 	g_menu_append_item (primary_menu, menu_item);
 }
 
+static gboolean
+gs_shell_close_window_accel_cb (GtkAccelGroup *accel_group,
+				GObject *acceleratable,
+				guint keyval,
+				GdkModifierType modifier)
+{
+	gtk_window_close (GTK_WINDOW (acceleratable));
+
+	return TRUE;
+}
+
 void
 gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *cancellable)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *widget;
+	g_autoptr(GtkAccelGroup) accel_group = NULL;
+	GClosure *closure;
 	GtkStyleContext *style_context;
 	GsPage *page;
 
@@ -2161,6 +2190,11 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 
 	g_signal_connect (priv->main_window, "delete-event",
 			  G_CALLBACK (main_window_closed_cb), shell);
+
+	accel_group = gtk_accel_group_new ();
+	gtk_window_add_accel_group (priv->main_window, accel_group);
+	closure = g_cclosure_new (G_CALLBACK (gs_shell_close_window_accel_cb), NULL, NULL);
+	gtk_accel_group_connect (accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_LOCKED, closure);
 
 	/* fix up the header bar */
 	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "header"));
@@ -2291,8 +2325,13 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	/* primary menu */
 	gs_shell_add_about_menu_item (shell);
 
-	/* show loading page, which triggers the initial refresh */
-	gs_shell_change_mode (shell, GS_SHELL_MODE_LOADING, NULL, TRUE);
+	if (g_settings_get_boolean (priv->settings, "download-updates")) {
+		/* show loading page, which triggers the initial refresh */
+		gs_shell_change_mode (shell, GS_SHELL_MODE_LOADING, NULL, TRUE);
+	} else {
+		g_debug ("Skipped refresh of the repositories due to 'download-updates' disabled");
+		initial_refresh_done (GS_LOADING_PAGE (page), shell);
+	}
 }
 
 void
@@ -2350,8 +2389,7 @@ gs_shell_show_installed_updates (GsShell *shell)
 	dialog = gs_update_dialog_new (priv->plugin_loader);
 	gs_update_dialog_show_installed_updates (GS_UPDATE_DIALOG (dialog));
 
-	gtk_window_set_transient_for (GTK_WINDOW (dialog), priv->main_window);
-	gtk_window_present (GTK_WINDOW (dialog));
+	gs_shell_modal_dialog_present (shell, GTK_DIALOG (dialog));
 }
 
 void
@@ -2401,7 +2439,7 @@ gs_shell_show_category (GsShell *shell, GsCategory *category)
 	gs_shell_change_mode (shell, GS_SHELL_MODE_CATEGORY, category, TRUE);
 }
 
-void gs_shell_show_extras_search (GsShell *shell, const gchar *mode, gchar **resources)
+void gs_shell_show_extras_search (GsShell *shell, const gchar *mode, gchar **resources, const gchar *desktop_id, const gchar *ident)
 {
 	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsPage *page;
@@ -2409,7 +2447,7 @@ void gs_shell_show_extras_search (GsShell *shell, const gchar *mode, gchar **res
 	page = GS_PAGE (gtk_builder_get_object (priv->builder, "extras_page"));
 
 	save_back_entry (shell);
-	gs_extras_page_search (GS_EXTRAS_PAGE (page), mode, resources);
+	gs_extras_page_search (GS_EXTRAS_PAGE (page), mode, resources, desktop_id, ident);
 	gs_shell_change_mode (shell, GS_SHELL_MODE_EXTRAS, NULL, TRUE);
 	gs_shell_activate (shell);
 }
@@ -2488,10 +2526,13 @@ gs_shell_dispose (GObject *object)
 			g_signal_handler_disconnect (priv->scheduler,
 						     priv->scheduler_invalidated_handler);
 
-		mwsc_scheduler_release_async (priv->scheduler,
-					      NULL,
-					      scheduler_release_cb,
-					      g_object_ref (shell));
+		if (priv->scheduler_held)
+			mwsc_scheduler_release_async (priv->scheduler,
+						      NULL,
+						      scheduler_release_cb,
+						      g_object_ref (shell));
+		else
+			g_clear_object (&priv->scheduler);
 	}
 #endif  /* HAVE_MOGWAI */
 

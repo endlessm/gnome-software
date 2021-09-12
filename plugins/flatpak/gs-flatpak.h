@@ -21,8 +21,7 @@ G_DECLARE_FINAL_TYPE (GsFlatpak, gs_flatpak, GS, FLATPAK, GObject)
 typedef enum {
 	GS_FLATPAK_FLAG_NONE			= 0,
 	GS_FLATPAK_FLAG_IS_TEMPORARY		= 1 << 0,
-	/*< private >*/
-	GS_FLATPAK_FLAG_LAST
+	GS_FLATPAK_FLAG_LAST  /*< skip >*/
 } GsFlatpakFlags;
 
 GsFlatpak	*gs_flatpak_new			(GsPlugin		*plugin,
@@ -32,7 +31,7 @@ FlatpakInstallation *gs_flatpak_get_installation (GsFlatpak		*self);
 
 GsApp	*gs_flatpak_ref_to_app (GsFlatpak *self, const gchar *ref, GCancellable *cancellable, GError **error);
 
-AsAppScope	gs_flatpak_get_scope		(GsFlatpak		*self);
+AsComponentScope	gs_flatpak_get_scope		(GsFlatpak		*self);
 const gchar	*gs_flatpak_get_id		(GsFlatpak		*self);
 gboolean	gs_flatpak_setup		(GsFlatpak		*self,
 						 GCancellable		*cancellable,
@@ -58,6 +57,11 @@ gboolean	gs_flatpak_refine_app		(GsFlatpak		*self,
 						 GsPluginRefineFlags	flags,
 						 GCancellable		*cancellable,
 						 GError			**error);
+void		gs_flatpak_refine_addons	(GsFlatpak *self,
+						 GsApp *parent_app,
+						 GsPluginRefineFlags flags,
+						 GsAppState state,
+						 GCancellable *cancellable);
 gboolean	gs_flatpak_refine_app_state	(GsFlatpak		*self,
 						 GsApp			*app,
 						 GCancellable		*cancellable,

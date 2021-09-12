@@ -43,6 +43,9 @@ gs_flatpak_error_convert (GError **perror)
 		case FLATPAK_ERROR_RUNTIME_NOT_FOUND:
 			error->code = GS_PLUGIN_ERROR_NOT_SUPPORTED;
 			break;
+		case FLATPAK_ERROR_OUT_OF_SPACE:
+			error->code = GS_PLUGIN_ERROR_NO_SPACE;
+			break;
 		default:
 			error->code = GS_PLUGIN_ERROR_FAILED;
 			break;
@@ -66,9 +69,9 @@ gs_flatpak_app_new_from_remote (FlatpakRemote *xremote)
 	g_autoptr(GsApp) app = NULL;
 
 	app = gs_flatpak_app_new (flatpak_remote_get_name (xremote));
-	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_state (app, flatpak_remote_get_disabled (xremote) ?
-			  AS_APP_STATE_AVAILABLE : AS_APP_STATE_INSTALLED);
+			  GS_APP_STATE_AVAILABLE : GS_APP_STATE_INSTALLED);
 	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST,
 			 flatpak_remote_get_name (xremote));
@@ -76,8 +79,10 @@ gs_flatpak_app_new_from_remote (FlatpakRemote *xremote)
 
 	/* title */
 	title = flatpak_remote_get_title (xremote);
-	if (title != NULL)
+	if (title != NULL) {
 		gs_app_set_summary (app, GS_APP_QUALITY_LOWEST, title);
+		gs_app_set_origin_ui (app, title);
+	}
 
 	/* url */
 	url = flatpak_remote_get_url (xremote);
@@ -164,12 +169,13 @@ gs_flatpak_app_new_from_repo_file (GFile *file,
 	/* create source */
 	app = gs_flatpak_app_new (repo_id);
 	gs_flatpak_app_set_file_kind (app, GS_FLATPAK_APP_FILE_KIND_REPO);
-	gs_app_set_kind (app, AS_APP_KIND_SOURCE);
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE_LOCAL);
+	gs_app_set_kind (app, AS_COMPONENT_KIND_REPOSITORY);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE_LOCAL);
 	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE);
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, repo_title);
 	gs_app_set_size_download (app, GS_APP_SIZE_UNKNOWABLE);
 	gs_flatpak_app_set_repo_url (app, repo_url);
+	gs_app_set_origin_ui (app, repo_title);
 	gs_app_set_origin_hostname (app, repo_url);
 
 	/* user specified a URL */
@@ -200,11 +206,11 @@ gs_flatpak_app_new_from_repo_file (GFile *file,
 	if (repo_default_branch != NULL)
 		gs_app_set_branch (app, repo_default_branch);
 	repo_icon = g_key_file_get_string (kf, "Flatpak Repo", "Icon", NULL);
-	if (repo_icon != NULL) {
-		g_autoptr(AsIcon) ic = as_icon_new ();
-		as_icon_set_kind (ic, AS_ICON_KIND_REMOTE);
-		as_icon_set_url (ic, repo_icon);
-		gs_app_add_icon (app, ic);
+	if (repo_icon != NULL &&
+	    (g_str_has_prefix (repo_icon, "http:") ||
+	     g_str_has_prefix (repo_icon, "https:"))) {
+		g_autoptr(GIcon) icon = gs_remote_icon_new (repo_icon);
+		gs_app_add_icon (app, icon);
 	}
 
 	/* success */

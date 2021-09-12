@@ -25,12 +25,12 @@ gs_plugin_generic_updates_merge_os_update (GsApp *app)
 {
 	/* this is only for grouping system-installed packages */
 	if (gs_app_get_bundle_kind (app) != AS_BUNDLE_KIND_PACKAGE ||
-	    gs_app_get_scope (app) != AS_APP_SCOPE_SYSTEM)
+	    gs_app_get_scope (app) != AS_COMPONENT_SCOPE_SYSTEM)
 		return FALSE;
 
-	if (gs_app_get_kind (app) == AS_APP_KIND_GENERIC)
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_GENERIC)
 		return TRUE;
-	if (gs_app_get_kind (app) == AS_APP_KIND_SOURCE)
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_REPOSITORY)
 		return TRUE;
 
 	return FALSE;
@@ -41,14 +41,14 @@ gs_plugin_generic_updates_get_os_update (GsPlugin *plugin)
 {
 	GsApp *app;
 	const gchar *id = "org.gnome.Software.OsUpdate";
-	g_autoptr(AsIcon) ic = NULL;
+	g_autoptr(GIcon) ic = NULL;
 
 	/* create new */
 	app = gs_app_new (id);
 	gs_app_add_quirk (app, GS_APP_QUIRK_IS_PROXY);
 	gs_app_set_management_plugin (app, "");
-	gs_app_set_kind (app, AS_APP_KIND_OS_UPDATE);
-	gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_special_kind (app, GS_APP_SPECIAL_KIND_OS_UPDATE);
+	gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_name (app,
 			 GS_APP_QUALITY_NORMAL,
 			 /* TRANSLATORS: this is a group of updates that are not
@@ -62,9 +62,7 @@ gs_plugin_generic_updates_get_os_update (GsPlugin *plugin)
 	gs_app_set_description (app,
 				GS_APP_QUALITY_NORMAL,
 				gs_app_get_summary (app));
-	ic = as_icon_new ();
-	as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-	as_icon_set_name (ic, "software-update-available-symbolic");
+	ic = g_themed_icon_new ("software-update-available-symbolic");
 	gs_app_add_icon (app, ic);
 	return app;
 }

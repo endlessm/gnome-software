@@ -57,6 +57,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 			  G_CALLBACK (gs_plugin_packagekit_repo_list_changed_cb), plugin);
 	pk_client_set_background (priv->client, FALSE);
 	pk_client_set_cache_age (priv->client, G_MAXUINT);
+	pk_client_set_interactive (priv->client, gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 
 	/* need pkgname and ID */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
@@ -76,7 +77,7 @@ void
 gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 {
 	if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_PACKAGE &&
-	    gs_app_get_scope (app) == AS_APP_SCOPE_SYSTEM) {
+	    gs_app_get_scope (app) == AS_COMPONENT_SCOPE_SYSTEM) {
 		gs_app_set_management_plugin (app, "packagekit");
 		gs_plugin_packagekit_set_packaging_format (plugin, app);
 		return;
@@ -179,7 +180,7 @@ gs_plugin_packagekit_resolve_packages (GsPlugin *plugin,
 	resolve2_list = gs_app_list_new ();
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN)
 			gs_app_list_add (resolve2_list, app);
 	}
 	filter = pk_bitfield_from_enums (PK_FILTER_ENUM_NEWEST,
@@ -438,6 +439,25 @@ gs_plugin_packagekit_refine_update_urgency (GsPlugin *plugin,
 		pkg = pk_package_sack_find_by_id (sack, package_id);
 		if (pkg == NULL)
 			continue;
+		#ifdef HAVE_PK_PACKAGE_GET_UPDATE_SEVERITY
+		switch (pk_package_get_update_severity (pkg)) {
+		case PK_INFO_ENUM_LOW:
+			gs_app_set_update_urgency (app, AS_URGENCY_KIND_LOW);
+			break;
+		case PK_INFO_ENUM_NORMAL:
+			gs_app_set_update_urgency (app, AS_URGENCY_KIND_MEDIUM);
+			break;
+		case PK_INFO_ENUM_IMPORTANT:
+			gs_app_set_update_urgency (app, AS_URGENCY_KIND_HIGH);
+			break;
+		case PK_INFO_ENUM_CRITICAL:
+			gs_app_set_update_urgency (app, AS_URGENCY_KIND_CRITICAL);
+			break;
+		default:
+			gs_app_set_update_urgency (app, AS_URGENCY_KIND_UNKNOWN);
+			break;
+		}
+		#else
 		switch (pk_package_get_info (pkg)) {
 		case PK_INFO_ENUM_AVAILABLE:
 		case PK_INFO_ENUM_NORMAL:
@@ -460,6 +480,7 @@ gs_plugin_packagekit_refine_update_urgency (GsPlugin *plugin,
 				   pk_info_enum_to_string (pk_package_get_info (pkg)));
 			break;
 		}
+		#endif
 	}
 	return TRUE;
 }
@@ -596,6 +617,7 @@ gs_plugin_packagekit_refine_distro_upgrade (GsPlugin *plugin,
 	g_mutex_lock (&priv->client_mutex);
 	cache_age_save = pk_client_get_cache_age (priv->client);
 	pk_client_set_cache_age (priv->client, 60 * 60 * 24 * 7); /* once per week */
+	pk_client_set_interactive (priv->client, gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
 	results = pk_client_upgrade_system (priv->client,
 					    pk_bitfield_from_enums (PK_TRANSACTION_FLAG_ENUM_SIMULATE, -1),
 					    gs_app_get_version (app),
@@ -617,7 +639,7 @@ gs_plugin_packagekit_refine_distro_upgrade (GsPlugin *plugin,
 	/* add each of these as related applications */
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		app2 = gs_app_list_index (list, i);
-		if (gs_app_get_state (app2) != AS_APP_STATE_UNAVAILABLE)
+		if (gs_app_get_state (app2) != GS_APP_STATE_UNAVAILABLE)
 			continue;
 		gs_app_add_related (app, app2);
 	}
@@ -655,7 +677,7 @@ gs_plugin_packagekit_refine_name_to_id (GsPlugin *plugin,
 		tmp = g_ptr_array_index (sources, 0);
 		if (!gs_plugin_packagekit_refine_valid_package_name (tmp))
 			continue;
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN ||
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN ||
 		    gs_plugin_refine_requires_package_id (app, flags) ||
 		    gs_plugin_refine_requires_origin (app, flags) ||
 		    gs_plugin_refine_requires_version (app, flags)) {
@@ -698,10 +720,10 @@ gs_plugin_packagekit_refine_filename_to_id (GsPlugin *plugin,
 		if (tmp == NULL)
 			continue;
 		switch (gs_app_get_kind (app)) {
-		case AS_APP_KIND_DESKTOP:
+		case AS_COMPONENT_KIND_DESKTOP_APP:
 			fn = g_strdup_printf ("/usr/share/applications/%s", tmp);
 			break;
-		case AS_APP_KIND_ADDON:
+		case AS_COMPONENT_KIND_ADDON:
 			fn = g_strdup_printf ("/usr/share/metainfo/%s.metainfo.xml", tmp);
 			if (!g_file_test (fn, G_FILE_TEST_EXISTS)) {
 				g_free (fn);
@@ -740,7 +762,7 @@ gs_plugin_packagekit_refine_update_details (GsPlugin *plugin,
 		const gchar *tmp;
 		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
 			continue;
-		if (gs_app_get_state (app) != AS_APP_STATE_UPDATABLE)
+		if (gs_app_get_state (app) != GS_APP_STATE_UPDATABLE)
 			continue;
 		if (gs_app_get_source_id_default (app) == NULL)
 			continue;
@@ -769,11 +791,11 @@ gs_plugin_refine (GsPlugin *plugin,
 {
 	/* when we need the cannot-be-upgraded applications, we implement this
 	 * by doing a UpgradeSystem(SIMULATE) which adds the removed packages
-	 * to the related-apps list with a state of %AS_APP_STATE_UNAVAILABLE */
+	 * to the related-apps list with a state of %GS_APP_STATE_UNAVAILABLE */
 	if (flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPGRADE_REMOVED) {
 		for (guint i = 0; i < gs_app_list_length (list); i++) {
 			GsApp *app = gs_app_list_index (list, i);
-			if (gs_app_get_kind (app) != AS_APP_KIND_OS_UPGRADE)
+			if (gs_app_get_kind (app) != AS_COMPONENT_KIND_OPERATING_SYSTEM)
 				continue;
 			if (!gs_plugin_packagekit_refine_distro_upgrade (plugin,
 									 app,
@@ -811,8 +833,8 @@ gs_plugin_refine (GsPlugin *plugin,
 			continue;
 
 		/* the scope is always system-wide */
-		if (gs_app_get_scope (app) == AS_APP_SCOPE_UNKNOWN)
-			gs_app_set_scope (app, AS_APP_SCOPE_SYSTEM);
+		if (gs_app_get_scope (app) == AS_COMPONENT_SCOPE_UNKNOWN)
+			gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
 		if (gs_app_get_bundle_kind (app) == AS_BUNDLE_KIND_UNKNOWN)
 			gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
 	}

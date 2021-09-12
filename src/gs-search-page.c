@@ -36,6 +36,7 @@ struct _GsSearchPage
 	gchar			*value;
 	guint			 waiting_id;
 	guint			 max_results;
+	gboolean		 changed;
 
 	GtkWidget		*list_box_search;
 	GtkWidget		*scrolledwindow_search;
@@ -51,20 +52,20 @@ gs_search_page_app_row_clicked_cb (GsAppRow *app_row,
 {
 	GsApp *app;
 	app = gs_app_row_get_app (app_row);
-	if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE)
+	if (gs_app_get_state (app) == GS_APP_STATE_AVAILABLE)
 		gs_page_install_app (GS_PAGE (self), app, GS_SHELL_INTERACTION_FULL,
 				     self->cancellable);
-	else if (gs_app_get_state (app) == AS_APP_STATE_INSTALLED)
+	else if (gs_app_get_state (app) == GS_APP_STATE_INSTALLED)
 		gs_page_remove_app (GS_PAGE (self), app, self->cancellable);
-	else if (gs_app_get_state (app) == AS_APP_STATE_UNAVAILABLE) {
-		if (gs_app_get_url (app, AS_URL_KIND_MISSING) == NULL) {
+	else if (gs_app_get_state (app) == GS_APP_STATE_UNAVAILABLE) {
+		if (gs_app_get_url_missing (app) == NULL) {
 			gs_page_install_app (GS_PAGE (self), app,
 					     GS_SHELL_INTERACTION_FULL,
 					     self->cancellable);
 			return;
 		}
 		gs_shell_show_uri (self->shell,
-		                   gs_app_get_url (app, AS_URL_KIND_MISSING));
+		                   gs_app_get_url_missing (app));
 	}
 }
 
@@ -160,13 +161,16 @@ gs_search_page_get_search_cb (GObject *source_object,
 
 	if (self->appid_to_show != NULL) {
 		g_autoptr (GsApp) a = NULL;
-		if (as_utils_unique_id_valid (self->appid_to_show)) {
+		if (as_utils_data_id_valid (self->appid_to_show)) {
 			a = gs_plugin_loader_app_create (self->plugin_loader,
 							 self->appid_to_show);
 		} else {
 			a = gs_app_new (self->appid_to_show);
 		}
-		gs_shell_show_app (self->shell, a);
+
+		if (a)
+			gs_shell_show_app (self->shell, a);
+
 		g_clear_pointer (&self->appid_to_show, g_free);
 	}
 }
@@ -190,8 +194,7 @@ gs_search_page_get_app_sort_key (GsApp *app)
 
 	/* sort apps before runtimes and extensions */
 	switch (gs_app_get_kind (app)) {
-	case AS_APP_KIND_DESKTOP:
-	case AS_APP_KIND_SHELL_EXTENSION:
+	case AS_COMPONENT_KIND_DESKTOP_APP:
 		g_string_append (key, "9:");
 		break;
 	default:
@@ -201,7 +204,7 @@ gs_search_page_get_app_sort_key (GsApp *app)
 
 	/* sort missing codecs before applications */
 	switch (gs_app_get_state (app)) {
-	case AS_APP_STATE_UNAVAILABLE:
+	case GS_APP_STATE_UNAVAILABLE:
 		g_string_append (key, "9:");
 		break;
 	default:
@@ -236,6 +239,8 @@ gs_search_page_load (GsSearchPage *self)
 {
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
+	self->changed = FALSE;
+
 	/* cancel any pending searches */
 	g_cancellable_cancel (self->search_cancellable);
 	g_clear_object (&self->search_cancellable);
@@ -247,7 +252,7 @@ gs_search_page_load (GsSearchPage *self)
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
 					 "search", self->value,
 					 "max-results", self->max_results,
-					 "timeout", 10,
+					 "timeout", 0, /* This is a user action, let it take as long as it needs to */
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_HISTORY |
@@ -302,8 +307,14 @@ gs_search_page_reload (GsPage *page)
 void
 gs_search_page_set_appid_to_show (GsSearchPage *self, const gchar *appid)
 {
+	if (appid == self->appid_to_show ||
+	    g_strcmp0 (appid, self->appid_to_show) == 0)
+		return;
+
 	g_free (self->appid_to_show);
 	self->appid_to_show = g_strdup (appid);
+
+	self->changed = TRUE;
 }
 
 const gchar *
@@ -315,15 +326,14 @@ gs_search_page_get_text (GsSearchPage *self)
 void
 gs_search_page_set_text (GsSearchPage *self, const gchar *value)
 {
-	if (value == self->value)
-		return;
-	if (g_strcmp0 (value, self->value) == 0)
+	if (value == self->value ||
+	    g_strcmp0 (value, self->value) == 0)
 		return;
 
 	g_free (self->value);
 	self->value = g_strdup (value);
 
-	gs_search_page_load (self);
+	self->changed = TRUE;
 }
 
 static void
@@ -355,6 +365,18 @@ gs_search_page_switch_to (GsPage *page, gboolean scroll_up)
 		adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_search));
 		gtk_adjustment_set_value (adj, gtk_adjustment_get_lower (adj));
 	}
+
+	if (self->value && self->changed)
+		gs_search_page_load (self);
+}
+
+static void
+gs_search_page_switch_from (GsPage *page)
+{
+	GsSearchPage *self = GS_SEARCH_PAGE (page);
+
+	g_cancellable_cancel (self->search_cancellable);
+	g_clear_object (&self->search_cancellable);
 }
 
 static void
@@ -471,6 +493,7 @@ gs_search_page_class_init (GsSearchPageClass *klass)
 	page_class->app_installed = gs_search_page_app_installed;
 	page_class->app_removed = gs_search_page_app_removed;
 	page_class->switch_to = gs_search_page_switch_to;
+	page_class->switch_from = gs_search_page_switch_from;
 	page_class->reload = gs_search_page_reload;
 	page_class->setup = gs_search_page_setup;
 

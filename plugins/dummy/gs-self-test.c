@@ -59,7 +59,7 @@ gs_plugins_dummy_install_func (GsPluginLoader *plugin_loader)
 	/* install */
 	app = gs_app_new ("chiron.desktop");
 	gs_app_set_management_plugin (app, "dummy");
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app,
 					 NULL);
@@ -67,7 +67,7 @@ gs_plugins_dummy_install_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 
 	/* remove */
 	g_object_unref (plugin_job);
@@ -78,7 +78,7 @@ gs_plugins_dummy_install_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 }
 
 static void
@@ -99,7 +99,7 @@ gs_plugins_dummy_error_func (GsPluginLoader *plugin_loader)
 	/* update, which should cause an error to be emitted */
 	app = gs_app_new ("chiron.desktop");
 	gs_app_set_management_plugin (app, "dummy");
-	gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE,
 					 "app", app,
 					 NULL);
@@ -211,7 +211,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 static void
 gs_plugins_dummy_key_colors_func (GsPluginLoader *plugin_loader)
 {
-	GPtrArray *array;
+	GArray *array;
 	gboolean ret;
 	guint i;
 	g_autoptr(GsApp) app = NULL;
@@ -219,10 +219,10 @@ gs_plugins_dummy_key_colors_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GError) error = NULL;
 
 	/* get the extra bits */
-	app = gs_app_new ("zeus.desktop");
+	app = gs_app_new ("chiron.desktop");
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
 					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_KEY_COLORS,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
 					 NULL);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
@@ -233,7 +233,7 @@ gs_plugins_dummy_key_colors_func (GsPluginLoader *plugin_loader)
 
 	/* check values are in range */
 	for (i = 0; i < array->len; i++) {
-		GdkRGBA *kc = g_ptr_array_index (array, i);
+		const GdkRGBA *kc = &g_array_index (array, GdkRGBA, i);
 		g_assert_cmpfloat (kc->red, >=, 0.f);
 		g_assert_cmpfloat (kc->red, <=, 1.f);
 		g_assert_cmpfloat (kc->green, >=, 0.f);
@@ -267,8 +267,8 @@ gs_plugins_dummy_updates_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 3);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "chiron.desktop");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE_LIVE);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpstr (gs_app_get_update_details (app), ==, "Do not crash when using libvirt.");
 	g_assert_cmpint (gs_app_get_update_urgency (app), ==, AS_URGENCY_KIND_HIGH);
 
@@ -277,15 +277,16 @@ gs_plugins_dummy_updates_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.gnome.Software.OsUpdate");
 	g_assert_cmpstr (gs_app_get_name (app), ==, "OS Updates");
 	g_assert_cmpstr (gs_app_get_summary (app), ==, "Includes performance, stability and security improvements.");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_OS_UPDATE);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_GENERIC);
+	g_assert_cmpint (gs_app_get_special_kind (app), ==, GS_APP_SPECIAL_KIND_OS_UPDATE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE);
 	g_assert_cmpint (gs_app_list_length (gs_app_get_related (app)), ==, 2);
 
 	/* get the virtual non-apps OS update */
 	app = gs_app_list_index (list, 1);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "proxy.desktop");
 	g_assert (gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY));
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE_LIVE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpint (gs_app_list_length (gs_app_get_related (app)), ==, 2);
 }
 
@@ -309,8 +310,8 @@ gs_plugins_dummy_distro_upgrades_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.fedoraproject.release-rawhide.upgrade");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_OS_UPGRADE);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_OPERATING_SYSTEM);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 
 	/* this should be set with a higher priority by AppStream */
 	g_assert_cmpstr (gs_app_get_summary (app), ==, "Release specific tagline");
@@ -324,7 +325,7 @@ gs_plugins_dummy_distro_upgrades_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE);
 
 	/* trigger the update */
 	g_object_unref (plugin_job);
@@ -335,7 +336,7 @@ gs_plugins_dummy_distro_upgrades_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE);
 }
 
 static void
@@ -348,6 +349,7 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	g_autoptr(GIcon) icon = NULL;
 
 	/* get installed packages */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_INSTALLED,
@@ -355,7 +357,6 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_MENU_PATH |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
 							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE,
@@ -369,11 +370,13 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "zeus.desktop");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_name (app), ==, "Zeus");
 	g_assert_cmpstr (gs_app_get_source_default (app), ==, "zeus");
-	g_assert (gs_app_get_pixbuf (app) != NULL);
+	icon = gs_app_get_icon_for_size (app, 48, 1, NULL);
+	g_assert_nonnull (icon);
+	g_clear_object (&icon);
 
 	/* check various bitfields */
 	g_assert (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE));
@@ -396,13 +399,14 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (addons), ==, 1);
 	addon = gs_app_list_index (addons, 0);
 	g_assert_cmpstr (gs_app_get_id (addon), ==, "zeus-spell.addon");
-	g_assert_cmpint (gs_app_get_kind (addon), ==, AS_APP_KIND_ADDON);
-	g_assert_cmpint (gs_app_get_state (addon), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_kind (addon), ==, AS_COMPONENT_KIND_ADDON);
+	g_assert_cmpint (gs_app_get_state (addon), ==, GS_APP_STATE_AVAILABLE);
 	g_assert_cmpstr (gs_app_get_name (addon), ==, "Spell Check");
 	g_assert_cmpstr (gs_app_get_source_default (addon), ==, "zeus-spell");
 	g_assert_cmpstr (gs_app_get_license (addon), ==,
 			 "LicenseRef-free=https://www.debian.org/");
-	g_assert (gs_app_get_pixbuf (addon) == NULL);
+	icon = gs_app_get_icon_for_size (addon, 48, 1, NULL);
+	g_assert_null (icon);
 }
 
 static void
@@ -427,7 +431,7 @@ gs_plugins_dummy_search_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "zeus.desktop");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
 }
 
 static void
@@ -454,10 +458,10 @@ gs_plugins_dummy_search_alternate_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 2);
 	app_tmp = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app_tmp), ==, "chiron.desktop");
-	g_assert_cmpint (gs_app_get_kind (app_tmp), ==, AS_APP_KIND_DESKTOP);
+	g_assert_cmpint (gs_app_get_kind (app_tmp), ==, AS_COMPONENT_KIND_DESKTOP_APP);
 	app_tmp = gs_app_list_index (list, 1);
 	g_assert_cmpstr (gs_app_get_id (app_tmp), ==, "zeus.desktop");
-	g_assert_cmpint (gs_app_get_kind (app_tmp), ==, AS_APP_KIND_DESKTOP);
+	g_assert_cmpint (gs_app_get_kind (app_tmp), ==, AS_COMPONENT_KIND_DESKTOP_APP);
 }
 
 static void
@@ -516,7 +520,7 @@ gs_plugins_dummy_url_to_app_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert (app != NULL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "chiron.desktop");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
 }
 
 static void
@@ -633,20 +637,20 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app1 = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app1), ==, "org.fedoraproject.release-rawhide.upgrade");
-	g_assert_cmpint (gs_app_get_kind (app1), ==, AS_APP_KIND_OS_UPGRADE);
-	g_assert_cmpint (gs_app_get_state (app1), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_kind (app1), ==, AS_COMPONENT_KIND_OPERATING_SYSTEM);
+	g_assert_cmpint (gs_app_get_state (app1), ==, GS_APP_STATE_AVAILABLE);
 
 	/* allow only one operation at a time */
 	gs_plugin_loader_set_max_parallel_ops (plugin_loader, 1);
 
 	app2 = gs_app_new ("chiron.desktop");
 	gs_app_set_management_plugin (app2, "dummy");
-	gs_app_set_state (app2, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app2, GS_APP_STATE_AVAILABLE);
 
 	/* use "proxy" prefix so the update function succeeds... */
 	app3 = gs_app_new ("proxy-zeus.desktop");
 	gs_app_set_management_plugin (app3, "dummy");
-	gs_app_set_state (app3, AS_APP_STATE_UPDATABLE_LIVE);
+	gs_app_set_state (app3, GS_APP_STATE_UPDATABLE_LIVE);
 
 	context = g_main_context_new ();
 	helper3->loop = g_main_loop_new (context, FALSE);
@@ -687,9 +691,9 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 
 	/* since we have only 1 parallel installation op possible,
 	 * verify the last operations are pending */
-	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app2), ==, GS_APP_STATE_AVAILABLE);
 	g_assert_cmpint (gs_app_get_pending_action (app2), ==, GS_PLUGIN_ACTION_INSTALL);
-	g_assert_cmpint (gs_app_get_state (app3), ==, AS_APP_STATE_UPDATABLE_LIVE);
+	g_assert_cmpint (gs_app_get_state (app3), ==, GS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpint (gs_app_get_pending_action (app3), ==, GS_PLUGIN_ACTION_UPDATE);
 
 	/* wait for the 2nd installation to finish, it means the 1st should have been
@@ -702,9 +706,9 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (helper2->error);
 	g_assert_no_error (helper3->error);
 
-	g_assert_cmpint (gs_app_get_state (app1), ==, AS_APP_STATE_UPDATABLE);
-	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_INSTALLED);
-	g_assert_cmpint (gs_app_get_state (app3), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app1), ==, GS_APP_STATE_UPDATABLE);
+	g_assert_cmpint (gs_app_get_state (app2), ==, GS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app3), ==, GS_APP_STATE_INSTALLED);
 
 	/* set the default max parallel ops */
 	gs_plugin_loader_set_max_parallel_ops (plugin_loader, 0);
@@ -724,10 +728,7 @@ main (int argc, char **argv)
 		"dummy",
 		"generic-updates",
 		"hardcoded-blocklist",
-		"desktop-categories",
-		"desktop-menu-path",
 		"icons",
-		"key-colors",
 		"provenance",
 		"provenance-license",
 		NULL

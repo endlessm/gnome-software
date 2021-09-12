@@ -60,7 +60,7 @@ gs_fwupd_app_set_from_device (GsApp *app, FwupdDevice *dev)
 
 	/* something can be done */
 	if (fwupd_device_has_flag (dev, FWUPD_DEVICE_FLAG_UPDATABLE))
-		gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+		gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 
 	/* only can be applied in systemd-offline */
 	if (fwupd_device_has_flag (dev, FWUPD_DEVICE_FLAG_ONLY_OFFLINE))
@@ -108,8 +108,7 @@ gs_fwupd_app_set_from_device (GsApp *app, FwupdDevice *dev)
 		gs_app_set_install_date (app, fwupd_device_get_created (dev));
 	if (fwupd_device_get_description (dev) != NULL) {
 		g_autofree gchar *tmp = NULL;
-		tmp = as_markup_convert (fwupd_device_get_description (dev),
-					 AS_MARKUP_CONVERT_FORMAT_SIMPLE, NULL);
+		tmp = as_markup_convert_simple (fwupd_device_get_description (dev), NULL);
 		if (tmp != NULL)
 			gs_app_set_description (app, GS_APP_QUALITY_NORMAL, tmp);
 	}
@@ -192,6 +191,9 @@ gs_fwupd_release_get_name (FwupdRelease *release)
 void
 gs_fwupd_app_set_from_release (GsApp *app, FwupdRelease *rel)
 {
+#if FWUPD_CHECK_VERSION(1,5,6)
+	GPtrArray *locations = fwupd_release_get_locations (rel);
+#endif
 	if (fwupd_release_get_name (rel) != NULL) {
 		g_autofree gchar *tmp = gs_fwupd_release_get_name (rel);
 		gs_app_set_name (app, GS_APP_QUALITY_NORMAL, tmp);
@@ -214,15 +216,24 @@ gs_fwupd_app_set_from_release (GsApp *app, FwupdRelease *rel)
 		gs_app_set_license (app, GS_APP_QUALITY_NORMAL,
 				    fwupd_release_get_license (rel));
 	}
+#if FWUPD_CHECK_VERSION(1,5,6)
+	if (locations->len > 0) {
+		const gchar *uri = g_ptr_array_index (locations, 0);
+		/* typically the first URI will be the main HTTP mirror, and we
+		 * don't have the capability to use an IPFS/IPNS URL anyway */
+		gs_app_set_origin_hostname (app, uri);
+		gs_fwupd_app_set_update_uri (app, uri);
+	}
+#else
 	if (fwupd_release_get_uri (rel) != NULL) {
 		gs_app_set_origin_hostname (app,
 					    fwupd_release_get_uri (rel));
 		gs_fwupd_app_set_update_uri (app, fwupd_release_get_uri (rel));
 	}
+#endif
 	if (fwupd_release_get_description (rel) != NULL) {
 		g_autofree gchar *tmp = NULL;
-		tmp = as_markup_convert (fwupd_release_get_description (rel),
-					 AS_MARKUP_CONVERT_FORMAT_SIMPLE, NULL);
+		tmp = as_markup_convert_simple (fwupd_release_get_description (rel), NULL);
 		if (tmp != NULL)
 			gs_app_set_update_details (app, tmp);
 	}

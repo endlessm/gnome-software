@@ -15,11 +15,14 @@
 #include "gs-screenshot-image.h"
 #include "gs-common.h"
 
+#define SPINNER_TIMEOUT_SECS 2
+
 struct _GsScreenshotImage
 {
 	GtkBin		 parent_instance;
 
 	AsScreenshot	*screenshot;
+	GtkWidget	*spinner;
 	GtkWidget	*stack;
 	GtkWidget	*box_error;
 	GtkWidget	*image1;
@@ -33,6 +36,7 @@ struct _GsScreenshotImage
 	guint		 width;
 	guint		 height;
 	guint		 scale;
+	guint		 load_timeout_id;
 	gboolean	 showing_image;
 };
 
@@ -43,6 +47,20 @@ gs_screenshot_image_get_screenshot (GsScreenshotImage *ssimg)
 {
 	g_return_val_if_fail (GS_IS_SCREENSHOT_IMAGE (ssimg), NULL);
 	return ssimg->screenshot;
+}
+
+static void
+gs_screenshot_image_start_spinner (GsScreenshotImage *ssimg)
+{
+	gtk_widget_show (ssimg->spinner);
+	gs_start_spinner (GTK_SPINNER (ssimg->spinner));
+}
+
+static void
+gs_screenshot_image_stop_spinner (GsScreenshotImage *ssimg)
+{
+	gs_stop_spinner (GTK_SPINNER (ssimg->spinner));
+	gtk_widget_hide (ssimg->spinner);
 }
 
 static void
@@ -58,6 +76,7 @@ gs_screenshot_image_set_error (GsScreenshotImage *ssimg, const gchar *message)
 	else
 		gtk_widget_show (ssimg->label_error);
 	ssimg->showing_image = FALSE;
+	gs_screenshot_image_stop_spinner (ssimg);
 }
 
 static void
@@ -95,23 +114,112 @@ as_screenshot_show_image (GsScreenshotImage *ssimg)
 
 	gtk_widget_show (GTK_WIDGET (ssimg));
 	ssimg->showing_image = TRUE;
+
+	gs_screenshot_image_stop_spinner (ssimg);
+}
+
+static GdkPixbuf *
+gs_pixbuf_resample (GdkPixbuf *original,
+		    guint width,
+		    guint height,
+		    gboolean blurred)
+{
+	g_autoptr(GdkPixbuf) pixbuf = NULL;
+	guint tmp_height;
+	guint tmp_width;
+	guint pixbuf_height;
+	guint pixbuf_width;
+	g_autoptr(GdkPixbuf) pixbuf_tmp = NULL;
+
+	/* never set */
+	if (original == NULL)
+		return NULL;
+
+	/* 0 means 'default' */
+	if (width == 0)
+		width = (guint) gdk_pixbuf_get_width (original);
+	if (height == 0)
+		height = (guint) gdk_pixbuf_get_height (original);
+
+	/* don't do anything to an image with the correct size */
+	pixbuf_width = (guint) gdk_pixbuf_get_width (original);
+	pixbuf_height = (guint) gdk_pixbuf_get_height (original);
+	if (width == pixbuf_width && height == pixbuf_height)
+		return g_object_ref (original);
+
+	/* is the aspect ratio of the source perfectly 16:9 */
+	if ((pixbuf_width / 16) * 9 == pixbuf_height) {
+		pixbuf = gdk_pixbuf_scale_simple (original,
+						  (gint) width, (gint) height,
+						  GDK_INTERP_HYPER);
+		if (blurred)
+			gs_utils_pixbuf_blur (pixbuf, 5, 3);
+		return g_steal_pointer (&pixbuf);
+	}
+
+	/* create new 16:9 pixbuf with alpha padding */
+	pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB,
+				 TRUE, 8,
+				 (gint) width,
+				 (gint) height);
+	gdk_pixbuf_fill (pixbuf, 0x00000000);
+	/* check the ratio to see which property needs to be fitted and which needs
+	 * to be reduced */
+	if (pixbuf_width * 9 > pixbuf_height * 16) {
+		tmp_width = width;
+		tmp_height = width * pixbuf_height / pixbuf_width;
+	} else {
+		tmp_width = height * pixbuf_width / pixbuf_height;
+		tmp_height = height;
+	}
+	pixbuf_tmp = gdk_pixbuf_scale_simple (original,
+					      (gint) tmp_width,
+					      (gint) tmp_height,
+					      GDK_INTERP_HYPER);
+	if (blurred)
+		gs_utils_pixbuf_blur (pixbuf_tmp, 5, 3);
+	gdk_pixbuf_copy_area (pixbuf_tmp,
+			      0, 0, /* of src */
+			      (gint) tmp_width,
+			      (gint) tmp_height,
+			      pixbuf,
+			      (gint) (width - tmp_width) / 2,
+			      (gint) (height - tmp_height) / 2);
+	return g_steal_pointer (&pixbuf);
+}
+
+static gboolean
+gs_pixbuf_save_filename (GdkPixbuf *pixbuf,
+			 const gchar *filename,
+			 guint width,
+			 guint height,
+			 GError **error)
+{
+	g_autoptr(GdkPixbuf) pb = NULL;
+
+	/* resample & save pixbuf */
+	pb = gs_pixbuf_resample (pixbuf, width, height, FALSE);
+	return gdk_pixbuf_save (pb,
+				filename,
+				"png",
+				error,
+				NULL);
 }
 
 static void
 gs_screenshot_image_show_blurred (GsScreenshotImage *ssimg,
 				  const gchar *filename_thumb)
 {
-	g_autoptr(AsImage) im = NULL;
+	g_autoptr(GdkPixbuf) pb_src = NULL;
 	g_autoptr(GdkPixbuf) pb = NULL;
 
-	/* create an helper which can do the blurring for us */
-	im = as_image_new ();
-	if (!as_image_load_filename (im, filename_thumb, NULL))
+	pb_src = gdk_pixbuf_new_from_file (filename_thumb, NULL);
+	if (pb_src == NULL)
 		return;
-	pb = as_image_save_pixbuf (im,
-				   ssimg->width * ssimg->scale,
-				   ssimg->height * ssimg->scale,
-				   AS_IMAGE_SAVE_FLAG_BLUR);
+	pb = gs_pixbuf_resample (pb_src,
+				 ssimg->width * ssimg->scale,
+				 ssimg->height * ssimg->scale,
+				 TRUE /* blurred */);
 	if (pb == NULL)
 		return;
 
@@ -129,7 +237,6 @@ gs_screenshot_image_save_downloaded_img (GsScreenshotImage *ssimg,
 					 GdkPixbuf *pixbuf,
 					 GError **error)
 {
-	g_autoptr(AsImage) im = NULL;
 	gboolean ret;
 	const GPtrArray *images;
 	g_autoptr(GError) error_local = NULL;
@@ -140,14 +247,9 @@ gs_screenshot_image_save_downloaded_img (GsScreenshotImage *ssimg,
 	guint width = ssimg->width;
 	guint height = ssimg->height;
 
-	/* save to file, using the same code as the AppStream builder
-	 * so the preview looks the same */
-	im = as_image_new ();
-	as_image_set_pixbuf (im, pixbuf);
-	ret = as_image_save_filename (im, ssimg->filename,
+	ret = gs_pixbuf_save_filename (pixbuf, ssimg->filename,
 				      ssimg->width * ssimg->scale,
 				      ssimg->height * ssimg->scale,
-				      AS_IMAGE_SAVE_FLAG_PAD_16_9,
 				      error);
 
 	if (!ret)
@@ -175,7 +277,8 @@ gs_screenshot_image_save_downloaded_img (GsScreenshotImage *ssimg,
 	size_dir = g_strdup_printf ("%ux%u", width, height);
 	cache_kind = g_build_filename ("screenshots", size_dir, NULL);
 	filename = gs_utils_get_cache_filename (cache_kind, basename,
-						GS_UTILS_CACHE_FLAG_WRITEABLE,
+						GS_UTILS_CACHE_FLAG_WRITEABLE |
+						GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 						&error_local);
 
         if (filename == NULL) {
@@ -188,9 +291,9 @@ gs_screenshot_image_save_downloaded_img (GsScreenshotImage *ssimg,
                 return TRUE;
         }
 
-	ret = as_image_save_filename (im, filename, width, height,
-				      AS_IMAGE_SAVE_FLAG_PAD_16_9,
-				      &error_local);
+	ret = gs_pixbuf_save_filename (pixbuf, filename,
+					width, height,
+					&error_local);
 
 	if (!ret) {
 		/* if we cannot save this screenshot, warn about that but do not
@@ -214,6 +317,11 @@ gs_screenshot_image_complete_cb (SoupSession *session,
 	g_autoptr(GdkPixbuf) pixbuf = NULL;
 	g_autoptr(GInputStream) stream = NULL;
 
+	if (ssimg->load_timeout_id) {
+		g_source_remove (ssimg->load_timeout_id);
+		ssimg->load_timeout_id = 0;
+	}
+
 	/* return immediately if the message was cancelled or if we're in destruction */
 	if (msg->status_code == SOUP_STATUS_CANCELLED || ssimg->session == NULL)
 		return;
@@ -221,12 +329,16 @@ gs_screenshot_image_complete_cb (SoupSession *session,
 	if (msg->status_code == SOUP_STATUS_NOT_MODIFIED) {
 		g_debug ("screenshot has not been modified");
 		as_screenshot_show_image (ssimg);
+		gs_screenshot_image_stop_spinner (ssimg);
 		return;
 	}
 	if (msg->status_code != SOUP_STATUS_OK) {
-                g_warning ("Result of screenshot downloading attempt with "
-			   "status code '%u': %s", msg->status_code,
-			   msg->reason_phrase);
+		/* Ignore failures due to being offline */
+		if (msg->status_code != SOUP_STATUS_CANT_RESOLVE)
+			g_warning ("Result of screenshot downloading attempt with "
+				   "status code '%u': %s", msg->status_code,
+				   msg->reason_phrase);
+		gs_screenshot_image_stop_spinner (ssimg);
 		/* if we're already showing an image, then don't set the error
 		 * as having an image (even if outdated) is better */
 		if (ssimg->showing_image)
@@ -241,8 +353,10 @@ gs_screenshot_image_complete_cb (SoupSession *session,
 	stream = g_memory_input_stream_new_from_data (msg->response_body->data,
 						      msg->response_body->length,
 						      NULL);
-	if (stream == NULL)
+	if (stream == NULL) {
+		gs_screenshot_image_stop_spinner (ssimg);
 		return;
+	}
 
 	/* load the image */
 	pixbuf = gdk_pixbuf_new_from_stream (stream, NULL, NULL);
@@ -345,6 +459,17 @@ gs_screenshot_soup_msg_set_modified_request (SoupMessage *msg, GFile *file)
 				     mod_date);
 }
 
+static gboolean
+gs_screenshot_show_spinner_cb (gpointer user_data)
+{
+	GsScreenshotImage *ssimg = user_data;
+
+	ssimg->load_timeout_id = 0;
+	gs_screenshot_image_start_spinner (ssimg);
+
+	return FALSE;
+}
+
 void
 gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 				GCancellable *cancellable)
@@ -406,12 +531,7 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 						       basename,
 						       GS_UTILS_CACHE_FLAG_NONE,
 						       NULL);
-	if (ssimg->filename == NULL) {
-		/* TRANSLATORS: this is when we try create the cache directory
-		 * but we were out of space or permission was denied */
-		gs_screenshot_image_set_error (ssimg, _("Could not create cache"));
-		return;
-	}
+	g_assert (ssimg->filename != NULL);
 
 	/* does local file already exist and has recently been downloaded */
 	if (g_file_test (ssimg->filename, G_FILE_TEST_EXISTS)) {
@@ -449,8 +569,7 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 							     basename_thumb,
 							     GS_UTILS_CACHE_FLAG_NONE,
 							     NULL);
-		if (cachefn_thumb == NULL)
-			return;
+		g_assert (cachefn_thumb != NULL);
 		if (g_file_test (cachefn_thumb, G_FILE_TEST_EXISTS))
 			gs_screenshot_image_show_blurred (ssimg, cachefn_thumb);
 	}
@@ -460,8 +579,15 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 	g_free (ssimg->filename);
 	ssimg->filename = gs_utils_get_cache_filename (cache_kind,
 						       basename,
-						       GS_UTILS_CACHE_FLAG_WRITEABLE,
+						       GS_UTILS_CACHE_FLAG_WRITEABLE |
+						       GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 						       NULL);
+	if (ssimg->filename == NULL) {
+		/* TRANSLATORS: this is when we try create the cache directory
+		 * but we were out of space or permission was denied */
+		gs_screenshot_image_set_error (ssimg, _("Could not create cache"));
+		return;
+	}
 
 	/* download file */
 	g_debug ("downloading %s to %s", url, ssimg->filename);
@@ -471,6 +597,11 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 		 * that was not a valid URL */
 		gs_screenshot_image_set_error (ssimg, _("Screenshot not valid"));
 		return;
+	}
+
+	if (ssimg->load_timeout_id) {
+		g_source_remove (ssimg->load_timeout_id);
+		ssimg->load_timeout_id = 0;
 	}
 
 	/* cancel any previous messages */
@@ -495,6 +626,9 @@ gs_screenshot_image_load_async (GsScreenshotImage *ssimg,
 		gs_screenshot_soup_msg_set_modified_request (ssimg->message, file);
 	}
 
+	ssimg->load_timeout_id = g_timeout_add_seconds (SPINNER_TIMEOUT_SECS,
+		gs_screenshot_show_spinner_cb, ssimg);
+
 	/* send async */
 	soup_session_queue_message (ssimg->session,
 				    g_object_ref (ssimg->message) /* transfer full */,
@@ -512,6 +646,11 @@ static void
 gs_screenshot_image_destroy (GtkWidget *widget)
 {
 	GsScreenshotImage *ssimg = GS_SCREENSHOT_IMAGE (widget);
+
+	if (ssimg->load_timeout_id) {
+		g_source_remove (ssimg->load_timeout_id);
+		ssimg->load_timeout_id = 0;
+	}
 
 	if (ssimg->message != NULL) {
 		soup_session_cancel_message (ssimg->session,
@@ -575,6 +714,7 @@ gs_screenshot_image_class_init (GsScreenshotImageClass *klass)
 	gtk_widget_class_set_template_from_resource (widget_class,
 						     "/org/gnome/Software/gs-screenshot-image.ui");
 
+	gtk_widget_class_bind_template_child (widget_class, GsScreenshotImage, spinner);
 	gtk_widget_class_bind_template_child (widget_class, GsScreenshotImage, stack);
 	gtk_widget_class_bind_template_child (widget_class, GsScreenshotImage, image1);
 	gtk_widget_class_bind_template_child (widget_class, GsScreenshotImage, image2);

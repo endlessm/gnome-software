@@ -101,6 +101,11 @@ _ref_to_app (GsFlatpakTransaction *self, const gchar *ref)
 	if (app != NULL)
 		return g_object_ref (app);
 	g_signal_emit (self, signals[SIGNAL_REF_TO_APP], 0, ref, &app);
+
+	/* Cache the result */
+	if (app != NULL)
+		g_hash_table_insert (self->refhash, g_strdup (ref), g_object_ref (app));
+
 	return app;
 }
 
@@ -170,9 +175,13 @@ _transaction_ready (FlatpakTransaction *transaction)
 			_transaction_operation_set_app (op, app);
 			/* if we're updating a component, then mark all the apps
 			 * involved to ensure updating the button state */
-			if (flatpak_transaction_operation_get_operation_type (op) ==
-					FLATPAK_TRANSACTION_OPERATION_UPDATE)
-				gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+			if (flatpak_transaction_operation_get_operation_type (op) == FLATPAK_TRANSACTION_OPERATION_UPDATE) {
+				if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN ||
+				    gs_app_get_state (app) == GS_APP_STATE_INSTALLED)
+					gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
+
+				gs_app_set_state (app, GS_APP_STATE_INSTALLING);
+			}
 		}
 
 #if FLATPAK_CHECK_VERSION(1, 7, 3)
@@ -292,8 +301,8 @@ update_progress_for_op (GsFlatpakTransaction        *self,
 			           flatpak_transaction_operation_get_ref (root_op));
 			return;
 		}
-		if (gs_app_get_state (root_app) != AS_APP_STATE_INSTALLING &&
-		    gs_app_get_state (root_app) != AS_APP_STATE_REMOVING)
+		if (gs_app_get_state (root_app) != GS_APP_STATE_INSTALLING &&
+		    gs_app_get_state (root_app) != GS_APP_STATE_REMOVING)
 			return;
 	} else {
 		GsApp *unskipped_root_app = _transaction_operation_get_app (root_op);
@@ -501,22 +510,23 @@ _transaction_new_operation (FlatpakTransaction *transaction,
 	/* set app status */
 	switch (flatpak_transaction_operation_get_operation_type (operation)) {
 	case FLATPAK_TRANSACTION_OPERATION_INSTALL:
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
-			gs_app_set_state (app, AS_APP_STATE_AVAILABLE);
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN)
+			gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_INSTALL_BUNDLE:
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
-			gs_app_set_state (app, AS_APP_STATE_AVAILABLE_LOCAL);
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN)
+			gs_app_set_state (app, GS_APP_STATE_AVAILABLE_LOCAL);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UPDATE:
-		if (gs_app_get_state (app) == AS_APP_STATE_UNKNOWN)
-			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
-		gs_app_set_state (app, AS_APP_STATE_INSTALLING);
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN ||
+		    gs_app_get_state (app) == GS_APP_STATE_INSTALLED)
+			gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLING);
 		break;
 	case FLATPAK_TRANSACTION_OPERATION_UNINSTALL:
-		gs_app_set_state (app, AS_APP_STATE_REMOVING);
+		gs_app_set_state (app, GS_APP_STATE_REMOVING);
 		break;
 	default:
 		break;
@@ -587,7 +597,7 @@ set_skipped_related_apps_to_installed (GsFlatpakTransaction        *self,
 			ref = flatpak_transaction_operation_get_ref (related_to_op);
 			related_to_app = _ref_to_app (self, ref);
 			if (related_to_app != NULL)
-				gs_app_set_state (related_to_app, AS_APP_STATE_INSTALLED);
+				gs_app_set_state (related_to_app, GS_APP_STATE_INSTALLED);
 		}
 	}
 }
@@ -612,7 +622,7 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 	switch (flatpak_transaction_operation_get_operation_type (operation)) {
 	case FLATPAK_TRANSACTION_OPERATION_INSTALL:
 	case FLATPAK_TRANSACTION_OPERATION_INSTALL_BUNDLE:
-		gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 
 #if FLATPAK_CHECK_VERSION(1,7,3)
 		set_skipped_related_apps_to_installed (self, transaction, operation);
@@ -631,9 +641,9 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 #else
 		if (flatpak_transaction_get_no_deploy (transaction))
 #endif
-			gs_app_set_state (app, AS_APP_STATE_UPDATABLE_LIVE);
+			gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 		else
-			gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+			gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 
 #if FLATPAK_CHECK_VERSION(1,7,3)
 		set_skipped_related_apps_to_installed (self, transaction, operation);
@@ -642,10 +652,10 @@ _transaction_operation_done (FlatpakTransaction *transaction,
 	case FLATPAK_TRANSACTION_OPERATION_UNINSTALL:
 		/* we don't actually know if this app is re-installable */
 		gs_flatpak_app_set_commit (app, NULL);
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
 		break;
 	default:
-		gs_app_set_state (app, AS_APP_STATE_UNKNOWN);
+		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
 		break;
 	}
 }
@@ -703,12 +713,53 @@ _transaction_end_of_lifed (FlatpakTransaction *transaction,
 			   const gchar *rebase)
 {
 	if (rebase) {
-		g_printerr ("%s is end-of-life, in preference of %s\n", ref, rebase);
+		g_message ("%s is end-of-life, in favor of %s", ref, rebase);
 	} else if (reason) {
-		g_printerr ("%s is end-of-life, with reason: %s\n", ref, reason);
+		g_message ("%s is end-of-life, with reason: %s", ref, reason);
 	}
 	//FIXME: show something in the UI
 }
+
+#if FLATPAK_CHECK_VERSION(1,4,1)
+static gboolean
+_transaction_end_of_lifed_with_rebase (FlatpakTransaction  *transaction,
+				       const gchar         *remote,
+				       const gchar         *ref,
+				       const gchar         *reason,
+				       const gchar         *rebased_to_ref,
+				       const gchar        **previous_ids)
+{
+	if (rebased_to_ref) {
+		g_message ("%s is end-of-life, in favor of %s", ref, rebased_to_ref);
+	} else if (reason) {
+		g_message ("%s is end-of-life, with reason: %s", ref, reason);
+	}
+
+	if (rebased_to_ref && remote) {
+		g_autoptr(GError) local_error = NULL;
+
+		if (!flatpak_transaction_add_rebase (transaction, remote, rebased_to_ref,
+						     NULL, previous_ids, &local_error) ||
+		    !flatpak_transaction_add_uninstall (transaction, ref, &local_error)) {
+			/* There's no way to make the whole transaction fail on
+			 * this error path, so just print a warning and return
+			 * FALSE, which will cause the operation on the
+			 * end-of-lifed ref not to be skipped.
+			 */
+			g_warning ("Failed to rebase %s to %s: %s", ref, rebased_to_ref, local_error->message);
+			return FALSE;
+		}
+
+		/* Note: A message about the rename will be shown in the UI
+		 * thanks to code in gs_flatpak_refine_appstream() which
+		 * sets gs_app_set_renamed_from().
+		 */
+		return TRUE;
+	}
+
+	return FALSE;
+}
+#endif
 
 static gboolean
 _transaction_add_new_remote (FlatpakTransaction *transaction,
@@ -766,6 +817,9 @@ gs_flatpak_transaction_class_init (GsFlatpakTransactionClass *klass)
 	transaction_class->operation_error = _transaction_operation_error;
 	transaction_class->choose_remote_for_ref = _transaction_choose_remote_for_ref;
 	transaction_class->end_of_lifed = _transaction_end_of_lifed;
+#if FLATPAK_CHECK_VERSION(1,4,1)
+	transaction_class->end_of_lifed_with_rebase = _transaction_end_of_lifed_with_rebase;
+#endif
 #if !FLATPAK_CHECK_VERSION(1,5,1)
 	object_class->set_property = gs_flatpak_transaction_set_property;
 

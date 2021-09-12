@@ -22,6 +22,7 @@ G_BEGIN_DECLS
  * @GS_UTILS_CACHE_FLAG_WRITEABLE:	A writable directory is required
  * @GS_UTILS_CACHE_FLAG_USE_HASH:	Prefix a hash to the filename
  * @GS_UTILS_CACHE_FLAG_ENSURE_EMPTY:	Clear existing cached items
+ * @GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY:	Create the cache directory (Since: 40)
  *
  * The cache flags.
  **/
@@ -30,8 +31,8 @@ typedef enum {
 	GS_UTILS_CACHE_FLAG_WRITEABLE		= 1 << 0,
 	GS_UTILS_CACHE_FLAG_USE_HASH		= 1 << 1,
 	GS_UTILS_CACHE_FLAG_ENSURE_EMPTY	= 1 << 2,
-	/*< private >*/
-	GS_UTILS_CACHE_FLAG_LAST
+	GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY	= 1 << 3,
+	GS_UTILS_CACHE_FLAG_LAST  /*< skip >*/
 } GsUtilsCacheFlags;
 
 guint		 gs_utils_get_file_age		(GFile		*file);
@@ -92,5 +93,40 @@ gboolean	 gs_utils_parse_evr		(const gchar	 *evr,
 						 gchar		**out_version,
 						 gchar		**out_release);
 void		 gs_utils_set_online_updates_timestamp (GSettings *settings);
+
+gchar		*gs_utils_unique_id_compat_convert	(const gchar	*data_id);
+
+gchar		*gs_utils_build_unique_id	(AsComponentScope scope,
+						 AsBundleKind bundle_kind,
+						 const gchar *origin,
+						 const gchar *cid,
+						 const gchar *branch);
+
+void		 gs_utils_pixbuf_blur		(GdkPixbuf	*src,
+						 guint		radius,
+						 guint		iterations);
+
+#if !GLIB_CHECK_VERSION(2, 64, 0)
+typedef void GsMainContextPusher;
+
+static inline GsMainContextPusher *
+gs_main_context_pusher_new (GMainContext *main_context)
+{
+  g_main_context_push_thread_default (main_context);
+  return (GsMainContextPusher *) main_context;
+}
+
+static inline void
+gs_main_context_pusher_free (GsMainContextPusher *pusher)
+{
+  g_main_context_pop_thread_default ((GMainContext *) pusher);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (GsMainContextPusher, gs_main_context_pusher_free)
+#else
+#define GsMainContextPusher GMainContextPusher
+#define gs_main_context_pusher_new g_main_context_pusher_new
+#define gs_main_context_pusher_free g_main_context_pusher_free
+#endif
 
 G_END_DECLS

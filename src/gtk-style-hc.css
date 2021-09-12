@@ -34,6 +34,7 @@
 }
 .screenshot-image { border-radius: 5px; }
 .screenshot-image-thumb { border-radius: 3px; }
+.screenshot-image-main .image1, .screenshot-image-main .image2 { margin: 12px; }
 
 .app-tile-label {
 	font-size: 105%;
@@ -109,6 +110,17 @@
 }
 
 .application-details-description {
+}
+
+@keyframes install-progress-unknown-move {
+	0% { background-position: 0%; }
+	50% { background-position: 100%; }
+	100% { background-position: 0%; }
+}
+
+.application-details-description .button {
+	padding-left:24px;
+	padding-right:24px;
 }
 
 .install-progress {

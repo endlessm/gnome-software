@@ -29,10 +29,10 @@ GtkResponseType
 void	gs_image_set_from_pixbuf_with_scale	(GtkImage		*image,
 						 const GdkPixbuf	*pixbuf,
 						 gint			 scale);
-void	gs_image_set_from_pixbuf		(GtkImage		*image,
-						 const GdkPixbuf	*pixbuf);
 
 gboolean	 gs_utils_is_current_desktop	(const gchar	*name);
+gchar		*gs_utils_set_key_colors_in_css	(const gchar	*css,
+						 GsApp		*app);
 void		 gs_utils_widget_set_css	(GtkWidget	*widget,
 						 GtkCssProvider	**provider,
 						 const gchar	*class_name,
@@ -42,10 +42,18 @@ void		 gs_utils_show_error_dialog	(GtkWindow	*parent,
 						 const gchar	*title,
 						 const gchar	*msg,
 						 const gchar	*details);
-gchar		*gs_utils_build_unique_id_kind	(AsAppKind	 kind,
+gchar		*gs_utils_build_unique_id_kind	(AsComponentKind kind,
 						 const gchar	*id);
-gboolean	 gs_utils_list_has_app_fuzzy	(GsAppList	*list,
+gboolean	 gs_utils_list_has_component_fuzzy	(GsAppList	*list,
 						 GsApp		*app);
 void		 gs_utils_reboot_notify		(GsAppList	*list);
+gchar		*gs_utils_time_to_string	(gint64		 unix_time_seconds);
+gboolean	gs_utils_split_time_difference	(gint64 unix_time_seconds,
+						 gint *out_minutes_ago,
+						 gint *out_hours_ago,
+						 gint *out_days_ago,
+						 gint *out_weeks_ago,
+						 gint *out_months_ago,
+						 gint *out_years_ago);
 
 G_END_DECLS

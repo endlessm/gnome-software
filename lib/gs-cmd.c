@@ -106,7 +106,8 @@ gs_cmd_refine_flag_from_string (const gchar *flag, GError **error)
 	if (g_strcmp0 (flag, "related") == 0)
 		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_RELATED;
 	if (g_strcmp0 (flag, "menu-path") == 0)
-		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_MENU_PATH;
+		/* no longer supported by itself; categories are largely equivalent */
+		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES;
 	if (g_strcmp0 (flag, "upgrade-removed") == 0)
 		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPGRADE_REMOVED;
 	if (g_strcmp0 (flag, "provenance") == 0)
@@ -116,7 +117,8 @@ gs_cmd_refine_flag_from_string (const gchar *flag, GError **error)
 	if (g_strcmp0 (flag, "review-ratings") == 0)
 		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS;
 	if (g_strcmp0 (flag, "key-colors") == 0)
-		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_KEY_COLORS;
+		/* no longer supported by itself; derived automatically from the icon */
+		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON;
 	if (g_strcmp0 (flag, "icon") == 0)
 		return GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON;
 	if (g_strcmp0 (flag, "permissions") == 0)
@@ -294,7 +296,7 @@ main (int argc, char **argv)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GPtrArray) categories = NULL;
-	g_autoptr(GsDebug) debug = gs_debug_new ();
+	g_autoptr(GsDebug) debug = gs_debug_new_from_environment ();
 	g_autofree gchar *plugin_blocklist_str = NULL;
 	g_autofree gchar *plugin_allowlist_str = NULL;
 	g_autofree gchar *refine_flags_str = NULL;
@@ -324,7 +326,6 @@ main (int argc, char **argv)
 	};
 
 	setlocale (LC_ALL, "");
-	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
 
 	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
 	bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -341,8 +342,7 @@ main (int argc, char **argv)
 		g_print ("Failed to parse options: %s\n", error->message);
 		return EXIT_FAILURE;
 	}
-	if (verbose)
-		g_setenv ("GS_DEBUG", "1", TRUE);
+	gs_debug_set_verbose (debug, verbose);
 
 	/* prefer local sources */
 	if (prefer_local)
@@ -454,7 +454,7 @@ main (int argc, char **argv)
 	} else if (argc == 3 && g_strcmp0 (argv[1], "action-upgrade-download") == 0) {
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		app = gs_app_new (argv[2]);
-		gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+		gs_app_set_kind (app, AS_COMPONENT_KIND_OPERATING_SYSTEM);
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD,
 						 "app", app,
 						 NULL);
@@ -632,17 +632,26 @@ main (int argc, char **argv)
 			}
 		}
 	} else if (argc == 3 && g_strcmp0 (argv[1], "get-category-apps") == 0) {
-		g_autoptr(GsCategory) category = NULL;
-		g_autoptr(GsCategory) parent = NULL;
+		g_autoptr(GsCategory) category_owned = NULL;
+		GsCategory *category = NULL;
 		g_auto(GStrv) split = NULL;
+		GsCategoryManager *manager = gs_plugin_loader_get_category_manager (self->plugin_loader);
+
 		split = g_strsplit (argv[2], "/", 2);
 		if (g_strv_length (split) == 1) {
-			category = gs_category_new (split[0]);
+			category_owned = gs_category_manager_lookup (manager, split[0]);
+			category = category_owned;
 		} else {
-			parent = gs_category_new (split[0]);
-			category = gs_category_new (split[1]);
-			gs_category_add_child (parent, category);
+			g_autoptr(GsCategory) parent = gs_category_manager_lookup (manager, split[0]);
+			if (parent != NULL)
+				category = gs_category_find_child (parent, split[1]);
 		}
+
+		if (category == NULL) {
+			g_printerr ("Error: Could not find category ‘%s’\n", argv[2]);
+			return EXIT_FAILURE;
+		}
+
 		for (i = 0; i < repeat; i++) {
 			g_autoptr(GsPluginJob) plugin_job = NULL;
 			if (list != NULL)

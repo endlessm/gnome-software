@@ -14,6 +14,12 @@
 
 #include "gs-common.h"
 
+#ifdef HAVE_GSETTINGS_DESKTOP_SCHEMAS
+#include <gdesktop-enums.h>
+#endif
+
+#include <langinfo.h>
+
 #define SPINNER_DELAY 500
 
 static gboolean
@@ -118,15 +124,7 @@ gs_app_notify_installed (GsApp *app)
 	g_autoptr(GNotification) n = NULL;
 
 	switch (gs_app_get_kind (app)) {
-	case AS_APP_KIND_OS_UPDATE:
-		/* TRANSLATORS: this is the summary of a notification that OS updates
-		 * have been successfully installed */
-		summary = g_strdup (_("OS updates are now installed"));
-		/* TRANSLATORS: this is the body of a notification that OS updates
-		 * have been successfully installed */
-		body = _("Recently installed updates are available to review");
-		break;
-	case AS_APP_KIND_DESKTOP:
+	case AS_COMPONENT_KIND_DESKTOP_APP:
 		/* TRANSLATORS: this is the summary of a notification that an application
 		 * has been successfully installed */
 		summary = g_strdup_printf (_("%s is now installed"), gs_app_get_name (app));
@@ -141,13 +139,23 @@ gs_app_notify_installed (GsApp *app)
 		}
 		break;
 	default:
-		/* TRANSLATORS: this is the summary of a notification that a component
-		 * has been successfully installed */
-		summary = g_strdup_printf (_("%s is now installed"), gs_app_get_name (app));
-		if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
-			/* TRANSLATORS: an application has been installed, but
-			 * needs a reboot to complete the installation */
-			body = _("A restart is required for the changes to take effect.");
+		if (gs_app_get_kind (app) == AS_COMPONENT_KIND_GENERIC &&
+		    gs_app_get_special_kind (app) == GS_APP_SPECIAL_KIND_OS_UPDATE) {
+			/* TRANSLATORS: this is the summary of a notification that OS updates
+			* have been successfully installed */
+			summary = g_strdup (_("OS updates are now installed"));
+			/* TRANSLATORS: this is the body of a notification that OS updates
+			* have been successfully installed */
+			body = _("Recently installed updates are available to review");
+		} else {
+			/* TRANSLATORS: this is the summary of a notification that a component
+			* has been successfully installed */
+			summary = g_strdup_printf (_("%s is now installed"), gs_app_get_name (app));
+			if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+				/* TRANSLATORS: an application has been installed, but
+				* needs a reboot to complete the installation */
+				body = _("A restart is required for the changes to take effect.");
+			}
 		}
 		break;
 	}
@@ -159,11 +167,12 @@ gs_app_notify_installed (GsApp *app)
 		/* TRANSLATORS: button text */
 		g_notification_add_button_with_target (n, _("Restart"),
 						       "app.reboot", NULL);
-	} else if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP) {
+	} else if (gs_app_get_kind (app) == AS_COMPONENT_KIND_DESKTOP_APP) {
 		/* TRANSLATORS: this is button that opens the newly installed application */
 		g_notification_add_button_with_target (n, _("Launch"),
-						       "app.launch", "s",
-						       gs_app_get_id (app));
+						       "app.launch", "(ss)",
+						       gs_app_get_id (app),
+						       gs_app_get_management_plugin (app));
 	}
 	g_notification_set_default_action_and_target  (n, "app.details", "(ss)",
 						       gs_app_get_unique_id (app), "");
@@ -265,7 +274,7 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 	/* be aware of patent clauses */
 	if (hint & GS_APP_LICENSE_PATENT_CONCERN) {
 		g_string_append (body, "\n\n");
-		if (gs_app_get_kind (app) != AS_APP_KIND_CODEC) {
+		if (gs_app_get_kind (app) != AS_COMPONENT_KIND_CODEC) {
 			g_string_append_printf (body,
 						/* TRANSLATORS: Laws are geographical, urgh... */
 						_("It may be illegal to install "
@@ -313,14 +322,6 @@ gs_image_set_from_pixbuf_with_scale (GtkImage *image, const GdkPixbuf *pixbuf, g
 	cairo_surface_destroy (surface);
 }
 
-void
-gs_image_set_from_pixbuf (GtkImage *image, const GdkPixbuf *pixbuf)
-{
-	gint scale;
-	scale = gdk_pixbuf_get_width (pixbuf) / 64;
-	gs_image_set_from_pixbuf_with_scale (image, pixbuf, scale);
-}
-
 gboolean
 gs_utils_is_current_desktop (const gchar *name)
 {
@@ -343,6 +344,58 @@ gs_utils_widget_css_parsing_error_cb (GtkCssProvider *provider,
 		   gtk_css_section_get_start_line (section),
 		   gtk_css_section_get_start_position (section),
 		   error->message);
+}
+
+/**
+ * gs_utils_set_key_colors_in_css:
+ * @css: some CSS
+ * @app: a #GsApp to get the key colors from
+ *
+ * Replace placeholders in @css with the key colors from @app, returning a copy
+ * of the CSS with the key colors inlined as `rgb()` literals.
+ *
+ * The key color placeholders are of the form `@keycolor-XX@`, where `XX` is a
+ * two digit counter. The first counter (`00`) will be replaced with the first
+ * key color in @app, the second counter (`01`) with the second, etc.
+ *
+ * CSS may be %NULL, in which case %NULL is returned.
+ *
+ * Returns: (transfer full): a copy of @css with the key color placeholders
+ *     replaced, free with g_free()
+ * Since: 40
+ */
+gchar *
+gs_utils_set_key_colors_in_css (const gchar *css,
+                                GsApp       *app)
+{
+	GArray *key_colors;
+	g_autoptr(GString) css_new = NULL;
+
+	if (css == NULL)
+		return NULL;
+
+	key_colors = gs_app_get_key_colors (app);
+
+	/* Do we not need to do any replacements? */
+	if (key_colors->len == 0 ||
+	    g_strstr_len (css, -1, "@keycolor") == NULL)
+		return g_strdup (css);
+
+	/* replace key color values */
+	css_new = g_string_new (css);
+	for (guint j = 0; j < key_colors->len; j++) {
+		const GdkRGBA *color = &g_array_index (key_colors, GdkRGBA, j);
+		g_autofree gchar *key = NULL;
+		g_autofree gchar *value = NULL;
+		key = g_strdup_printf ("@keycolor-%02u@", j);
+		value = g_strdup_printf ("rgb(%.0f,%.0f,%.0f)",
+					 color->red * 255.f,
+					 color->green * 255.f,
+					 color->blue * 255.f);
+		as_gstring_replace (css_new, key, value);
+	}
+
+	return g_string_free (g_steal_pointer (&css_new), FALSE);
 }
 
 /**
@@ -556,7 +609,7 @@ gs_utils_get_error_value (const GError *error)
 
 /**
  * gs_utils_build_unique_id_kind:
- * @kind: A #AsAppKind
+ * @kind: A #AsComponentKind
  * @id: An application ID
  *
  * Converts the ID valid into a wildcard unique ID of a specific kind.
@@ -565,20 +618,19 @@ gs_utils_get_error_value (const GError *error)
  * Returns: (transfer full): a unique ID, or %NULL
  */
 gchar *
-gs_utils_build_unique_id_kind (AsAppKind kind, const gchar *id)
+gs_utils_build_unique_id_kind (AsComponentKind kind, const gchar *id)
 {
-	if (as_utils_unique_id_valid (id))
+	if (as_utils_data_id_valid (id))
 		return g_strdup (id);
-	return as_utils_unique_id_build (AS_APP_SCOPE_UNKNOWN,
+	return gs_utils_build_unique_id (AS_COMPONENT_SCOPE_UNKNOWN,
 					 AS_BUNDLE_KIND_UNKNOWN,
 					 NULL,
-					 kind,
 					 id,
 					 NULL);
 }
 
 /**
- * gs_utils_list_has_app_fuzzy:
+ * gs_utils_list_has_component_fuzzy:
  * @list: A #GsAppList
  * @app: A #GsApp
  *
@@ -592,7 +644,7 @@ gs_utils_build_unique_id_kind (AsAppKind kind, const gchar *id)
  * Returns: %TRUE if the app is visually the "same"
  */
 gboolean
-gs_utils_list_has_app_fuzzy (GsAppList *list, GsApp *app)
+gs_utils_list_has_component_fuzzy (GsAppList *list, GsApp *app)
 {
 	guint i;
 	GsApp *tmp;
@@ -651,4 +703,115 @@ gs_utils_reboot_notify (GsAppList *list)
 	g_notification_set_default_action_and_target (n, "app.set-mode", "s", "updates");
 	g_notification_set_priority (n, G_NOTIFICATION_PRIORITY_URGENT);
 	g_application_send_notification (g_application_get_default (), "restart-required", n);
+}
+
+/**
+ * gs_utils_split_time_difference:
+ * @unix_time_seconds: Time since the epoch in seconds
+ * @out_minutes_ago: (out) (nullable): how many minutes elapsed
+ * @out_hours_ago: (out) (nullable): how many hours elapsed
+ * @out_days_ago: (out) (nullable): how many days elapsed
+ * @out_weeks_ago: (out) (nullable): how many weeks elapsed
+ * @out_months_ago: (out) (nullable): how many months elapsed
+ * @out_years_ago: (out) (nullable): how many years elapsed
+ *
+ * Calculates the difference between the @unix_time_seconds and the current time
+ * and splits it into separate values.
+ *
+ * Returns: whether the out parameters had been set
+ *
+ * Since: 41
+ **/
+gboolean
+gs_utils_split_time_difference (gint64 unix_time_seconds,
+				gint *out_minutes_ago,
+				gint *out_hours_ago,
+				gint *out_days_ago,
+				gint *out_weeks_ago,
+				gint *out_months_ago,
+				gint *out_years_ago)
+{
+	gint minutes_ago, hours_ago, days_ago;
+	gint weeks_ago, months_ago, years_ago;
+	g_autoptr(GDateTime) date_time = NULL;
+	g_autoptr(GDateTime) now = NULL;
+	GTimeSpan timespan;
+
+	if (unix_time_seconds <= 0)
+		return FALSE;
+
+	date_time = g_date_time_new_from_unix_local (unix_time_seconds);
+	now = g_date_time_new_now_local ();
+	timespan = g_date_time_difference (now, date_time);
+
+	minutes_ago = (gint) (timespan / G_TIME_SPAN_MINUTE);
+	hours_ago = (gint) (timespan / G_TIME_SPAN_HOUR);
+	days_ago = (gint) (timespan / G_TIME_SPAN_DAY);
+	weeks_ago = days_ago / 7;
+	months_ago = days_ago / 30;
+	years_ago = weeks_ago / 52;
+
+	if (out_minutes_ago)
+		*out_minutes_ago = minutes_ago;
+	if (out_hours_ago)
+		*out_hours_ago = hours_ago;
+	if (out_days_ago)
+		*out_days_ago = days_ago;
+	if (out_weeks_ago)
+		*out_weeks_ago = weeks_ago;
+	if (out_months_ago)
+		*out_months_ago = months_ago;
+	if (out_years_ago)
+		*out_years_ago = years_ago;
+
+	return TRUE;
+}
+
+/**
+ * gs_utils_time_to_string:
+ * @unix_time_seconds: Time since the epoch in seconds
+ *
+ * Converts a time to a string such as "5 minutes ago" or "2 weeks ago"
+ *
+ * Returns: (transfer full): the time string, or %NULL if @unix_time_seconds is
+ *   not valid
+ */
+gchar *
+gs_utils_time_to_string (gint64 unix_time_seconds)
+{
+	gint minutes_ago, hours_ago, days_ago;
+	gint weeks_ago, months_ago, years_ago;
+
+	if (!gs_utils_split_time_difference (unix_time_seconds,
+		&minutes_ago, &hours_ago, &days_ago,
+		&weeks_ago, &months_ago, &years_ago))
+		return NULL;
+
+	if (minutes_ago < 5) {
+		/* TRANSLATORS: something happened less than 5 minutes ago */
+		return g_strdup (_("Just now"));
+	} else if (hours_ago < 1)
+		return g_strdup_printf (ngettext ("%d minute ago",
+						  "%d minutes ago", minutes_ago),
+					minutes_ago);
+	else if (days_ago < 1)
+		return g_strdup_printf (ngettext ("%d hour ago",
+						  "%d hours ago", hours_ago),
+					hours_ago);
+	else if (days_ago < 15)
+		return g_strdup_printf (ngettext ("%d day ago",
+						  "%d days ago", days_ago),
+					days_ago);
+	else if (weeks_ago < 8)
+		return g_strdup_printf (ngettext ("%d week ago",
+						  "%d weeks ago", weeks_ago),
+					weeks_ago);
+	else if (years_ago < 1)
+		return g_strdup_printf (ngettext ("%d month ago",
+						  "%d months ago", months_ago),
+					months_ago);
+	else
+		return g_strdup_printf (ngettext ("%d year ago",
+						  "%d years ago", years_ago),
+					years_ago);
 }

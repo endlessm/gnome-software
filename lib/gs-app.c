@@ -15,12 +15,14 @@
  * @stability: Unstable
  * @short_description: An application that is either installed or that can be installed
  *
- * This object represents a 1:1 mapping to a .desktop file. The design is such
- * so you can't have different GsApp's for different versions or architectures
- * of a package. This rule really only applies to GsApps of kind %AS_APP_KIND_DESKTOP
- * and %AS_APP_KIND_GENERIC. We allow GsApps of kind %AS_APP_KIND_OS_UPDATE or
- * %AS_APP_KIND_GENERIC, which don't correspond to desktop files, but instead
- * represent a system update and its individual components.
+ * For GsApps of kind %AS_COMPONENT_KIND_DESKTOP_APP, this object represents a 1:1 mapping
+ * to a .desktop file. The design is such so you can't have different GsApp's for different
+ * versions or architectures of a package. For other AppStream component types, GsApp maps
+ * their properties and %AS_COMPONENT_KIND_GENERIC is used if their type is a generic software
+ * component. For GNOME Software specific app-like entries, which don't correspond to desktop
+ * files or distinct software components, but e.g. represent a system update and its individual
+ * components, use the separate #GsAppSpecialKind enum and %gs_app_set_special_kind while setting
+ * the AppStream component-kind to generic.
  *
  * The #GsPluginLoader de-duplicates the GsApp instances that are produced by
  * plugins to ensure that there is a single instance of GsApp for each id, making
@@ -40,8 +42,13 @@
 
 #include "gs-app-collation.h"
 #include "gs-app-private.h"
+#include "gs-desktop-data.h"
+#include "gs-enums.h"
+#include "gs-icon.h"
+#include "gs-key-colors.h"
 #include "gs-os-release.h"
 #include "gs-plugin.h"
+#include "gs-remote-icon.h"
 #include "gs-utils.h"
 
 typedef struct
@@ -54,8 +61,9 @@ typedef struct
 	gboolean		 unique_id_valid;
 	gchar			*branch;
 	gchar			*name;
+	gchar			*renamed_from;
 	GsAppQuality		 name_quality;
-	GPtrArray		*icons;
+	GPtrArray		*icons;  /* (nullable) (owned) (element-type AsIcon), sorted by pixel size, smallest first */
 	GPtrArray		*sources;
 	GPtrArray		*source_ids;
 	gchar			*project_group;
@@ -70,13 +78,15 @@ typedef struct
 	GsAppQuality		 description_quality;
 	GPtrArray		*screenshots;
 	GPtrArray		*categories;
-	GPtrArray		*key_colors;
+	GArray			*key_colors;  /* (nullable) (element-type GdkRGBA) */
 	GHashTable		*urls;
 	GHashTable		*launchables;
+	gchar			*url_missing;
 	gchar			*license;
 	GsAppQuality		 license_quality;
 	gchar			**menu_path;
 	gchar			*origin;
+	gchar			*origin_ui;
 	gchar			*origin_appstream;
 	gchar			*origin_hostname;
 	gchar			*update_version;
@@ -90,13 +100,14 @@ typedef struct
 	gint			 rating;
 	GArray			*review_ratings;
 	GPtrArray		*reviews; /* of AsReview */
-	GPtrArray		*provides; /* of AsProvide */
+	GPtrArray		*provided; /* of AsProvided */
 	guint64			 size_installed;
 	guint64			 size_download;
-	AsAppKind		 kind;
-	AsAppState		 state;
-	AsAppState		 state_recover;
-	AsAppScope		 scope;
+	AsComponentKind		 kind;
+	GsAppSpecialKind	 special_kind;
+	GsAppState		 state;
+	GsAppState		 state_recover;
+	AsComponentScope	 scope;
 	AsBundleKind		 bundle_kind;
 	guint			 progress;  /* integer 0–100 (inclusive), or %GS_APP_PROGRESS_UNKNOWN */
 	gboolean		 allow_cancel;
@@ -105,6 +116,7 @@ typedef struct
 	GsAppList		*related;
 	GsAppList		*history;
 	guint64			 install_date;
+	guint64			 release_date;
 	guint64			 kudos;
 	gboolean		 to_be_installed;
 	GsAppQuirk		 quirk;
@@ -112,12 +124,12 @@ typedef struct
 	GsApp			*runtime;
 	GFile			*local_file;
 	AsContentRating		*content_rating;
-	GdkPixbuf		*pixbuf;  /* (nullable) (owned) */
 	AsScreenshot		*action_screenshot;  /* (nullable) (owned) */
 	GCancellable		*cancellable;
 	GsPluginAction		 pending_action;
 	GsAppPermissions         permissions;
 	gboolean		 is_update_downloaded;
+	GPtrArray		*version_history; /* (element-type AsRelease) (nullable) (owned) */
 } GsAppPrivate;
 
 enum {
@@ -129,14 +141,17 @@ enum {
 	PROP_DESCRIPTION,
 	PROP_RATING,
 	PROP_KIND,
+	PROP_SPECIAL_KIND,
 	PROP_STATE,
 	PROP_PROGRESS,
 	PROP_CAN_CANCEL_INSTALLATION,
 	PROP_INSTALL_DATE,
+	PROP_RELEASE_DATE,
 	PROP_QUIRK,
 	PROP_PENDING_ACTION,
 	PROP_KEY_COLORS,
 	PROP_IS_UPDATE_DOWNLOADED,
+	PROP_URL_MISSING,
 	PROP_LAST
 };
 
@@ -169,9 +184,11 @@ _g_set_ptr_array (GPtrArray **array_ptr, GPtrArray *new_array)
 {
 	if (*array_ptr == new_array)
 		return FALSE;
+	if (new_array != NULL)
+		g_ptr_array_ref (new_array);
 	if (*array_ptr != NULL)
 		g_ptr_array_unref (*array_ptr);
-	*array_ptr = g_ptr_array_ref (new_array);
+	*array_ptr = new_array;
 	return TRUE;
 }
 
@@ -180,10 +197,50 @@ _g_set_array (GArray **array_ptr, GArray *new_array)
 {
 	if (*array_ptr == new_array)
 		return FALSE;
+	if (new_array != NULL)
+		g_array_ref (new_array);
 	if (*array_ptr != NULL)
 		g_array_unref (*array_ptr);
-	*array_ptr = g_array_ref (new_array);
+	*array_ptr = new_array;
 	return TRUE;
+}
+
+/**
+ * gs_app_state_to_string:
+ * @state: the #GsAppState.
+ *
+ * Converts the enumerated value to an text representation.
+ *
+ * Returns: string version of @state, or %NULL for unknown
+ **/
+const gchar *
+gs_app_state_to_string (GsAppState state)
+{
+	if (state == GS_APP_STATE_UNKNOWN)
+		return "unknown";
+	if (state == GS_APP_STATE_INSTALLED)
+		return "installed";
+	if (state == GS_APP_STATE_AVAILABLE)
+		return "available";
+	if (state == GS_APP_STATE_PURCHASABLE)
+		return "purchasable";
+	if (state == GS_APP_STATE_PURCHASING)
+		return "purchasing";
+	if (state == GS_APP_STATE_AVAILABLE_LOCAL)
+		return "local";
+	if (state == GS_APP_STATE_QUEUED_FOR_INSTALL)
+		return "queued";
+	if (state == GS_APP_STATE_INSTALLING)
+		return "installing";
+	if (state == GS_APP_STATE_REMOVING)
+		return "removing";
+	if (state == GS_APP_STATE_UPDATABLE)
+		return "updatable";
+	if (state == GS_APP_STATE_UPDATABLE_LIVE)
+		return "updatable-live";
+	if (state == GS_APP_STATE_UNAVAILABLE)
+		return "unavailable";
+	return NULL;
 }
 
 static void
@@ -217,7 +274,7 @@ gs_app_kv_printf (GString *str, const gchar *key, const gchar *fmt, ...)
 }
 
 static const gchar *
-_as_app_quirk_flag_to_string (GsAppQuirk quirk)
+_as_component_quirk_flag_to_string (GsAppQuirk quirk)
 {
 	switch (quirk) {
 	case GS_APP_QUIRK_PROVENANCE:
@@ -274,10 +331,9 @@ gs_app_get_unique_id_unlocked (GsApp *app)
 	/* hmm, do what we can */
 	if (priv->unique_id == NULL || !priv->unique_id_valid) {
 		g_free (priv->unique_id);
-		priv->unique_id = as_utils_unique_id_build (priv->scope,
+		priv->unique_id = gs_utils_build_unique_id (priv->scope,
 							    priv->bundle_kind,
 							    priv->origin,
-							    priv->kind,
 							    priv->id,
 							    priv->branch);
 		priv->unique_id_valid = TRUE;
@@ -303,6 +359,9 @@ gs_app_compare_priority (GsApp *app1, GsApp *app2)
 {
 	GsAppPrivate *priv1 = gs_app_get_instance_private (app1);
 	GsAppPrivate *priv2 = gs_app_get_instance_private (app2);
+
+	g_return_val_if_fail (GS_IS_APP (app1), 0);
+	g_return_val_if_fail (GS_IS_APP (app2), 0);
 
 	/* prefer prio */
 	if (priv1->priority > priv2->priority)
@@ -343,7 +402,7 @@ gs_app_quirk_to_string (GsAppQuirk quirk)
 		if ((quirk & i) == 0)
 			continue;
 		g_string_append_printf (str, "%s,",
-					_as_app_quirk_flag_to_string (i));
+					_as_component_quirk_flag_to_string (i));
 	}
 
 	/* nothing recognised */
@@ -361,6 +420,8 @@ static gchar *
 gs_app_kudos_to_string (guint64 kudos)
 {
 	g_autoptr(GPtrArray) array = g_ptr_array_new ();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 	if ((kudos & GS_APP_KUDO_MY_LANGUAGE) > 0)
 		g_ptr_array_add (array, "my-language");
 	if ((kudos & GS_APP_KUDO_RECENT_RELEASE) > 0)
@@ -389,6 +450,7 @@ gs_app_kudos_to_string (guint64 kudos)
 		g_ptr_array_add (array, "sandboxed");
 	if ((kudos & GS_APP_KUDO_SANDBOXED_SECURE) > 0)
 		g_ptr_array_add (array, "sandboxed-secure");
+#pragma GCC diagnostic pop
 	g_ptr_array_add (array, NULL);
 	return g_strjoinv ("|", (gchar **) array->pdata);
 }
@@ -409,6 +471,9 @@ gchar *
 gs_app_to_string (GsApp *app)
 {
 	GString *str = g_string_new ("GsApp:");
+
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
 	gs_app_to_string_append (app, str);
 	if (str->len > 0)
 		g_string_truncate (str, str->len - 1);
@@ -427,7 +492,7 @@ gs_app_to_string (GsApp *app)
 void
 gs_app_to_string_append (GsApp *app, GString *str)
 {
-	GsAppClass *klass = GS_APP_GET_CLASS (app);
+	GsAppClass *klass;
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	AsImage *im;
 	GList *keys;
@@ -437,9 +502,11 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (str != NULL);
 
+	klass = GS_APP_GET_CLASS (app);
+
 	g_string_append_printf (str, " [%p]\n", app);
-	gs_app_kv_lpad (str, "kind", as_app_kind_to_string (priv->kind));
-	gs_app_kv_lpad (str, "state", as_app_state_to_string (priv->state));
+	gs_app_kv_lpad (str, "kind", as_component_kind_to_string (priv->kind));
+	gs_app_kv_lpad (str, "state", gs_app_state_to_string (priv->state));
 	if (priv->quirk > 0) {
 		g_autofree gchar *qstr = gs_app_quirk_to_string (priv->quirk);
 		gs_app_kv_lpad (str, "quirk", qstr);
@@ -452,8 +519,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_lpad (str, "id", priv->id);
 	if (priv->unique_id != NULL)
 		gs_app_kv_lpad (str, "unique-id", gs_app_get_unique_id (app));
-	if (priv->scope != AS_APP_SCOPE_UNKNOWN)
-		gs_app_kv_lpad (str, "scope", as_app_scope_to_string (priv->scope));
+	if (priv->scope != AS_COMPONENT_SCOPE_UNKNOWN)
+		gs_app_kv_lpad (str, "scope", as_component_scope_to_string (priv->scope));
 	if (priv->bundle_kind != AS_BUNDLE_KIND_UNKNOWN) {
 		gs_app_kv_lpad (str, "bundle-kind",
 				as_bundle_kind_to_string (priv->bundle_kind));
@@ -467,27 +534,12 @@ gs_app_to_string_append (GsApp *app, GString *str)
 			  gs_app_get_kudos_percentage (app));
 	if (priv->name != NULL)
 		gs_app_kv_lpad (str, "name", priv->name);
-	if (priv->pixbuf != NULL)
-		gs_app_kv_printf (str, "pixbuf", "%p", priv->pixbuf);
 	if (priv->action_screenshot != NULL)
 		gs_app_kv_printf (str, "action-screenshot", "%p", priv->action_screenshot);
-	for (i = 0; i < priv->icons->len; i++) {
-		AsIcon *icon = g_ptr_array_index (priv->icons, i);
-		gs_app_kv_lpad (str, "icon-kind",
-				as_icon_kind_to_string (as_icon_get_kind (icon)));
-		if (as_icon_get_pixbuf (icon) != NULL) {
-			gs_app_kv_printf (str, "icon-pixbuf", "%p",
-					  as_icon_get_pixbuf (icon));
-		}
-		if (as_icon_get_name (icon) != NULL)
-			gs_app_kv_lpad (str, "icon-name",
-					as_icon_get_name (icon));
-		if (as_icon_get_prefix (icon) != NULL)
-			gs_app_kv_lpad (str, "icon-prefix",
-					as_icon_get_prefix (icon));
-		if (as_icon_get_filename (icon) != NULL)
-			gs_app_kv_lpad (str, "icon-filename",
-					as_icon_get_filename (icon));
+	for (i = 0; priv->icons != NULL && i < priv->icons->len; i++) {
+		GIcon *icon = g_ptr_array_index (priv->icons, i);
+		g_autofree gchar *icon_str = g_icon_to_string (icon);
+		gs_app_kv_lpad (str, "icon", icon_str);
 	}
 	if (priv->match_value != 0)
 		gs_app_kv_printf (str, "match-value", "%05x", priv->match_value);
@@ -514,7 +566,7 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	for (i = 0; i < priv->screenshots->len; i++) {
 		AsScreenshot *ss = g_ptr_array_index (priv->screenshots, i);
 		g_autofree gchar *key = NULL;
-		tmp = as_screenshot_get_caption (ss, NULL);
+		tmp = as_screenshot_get_caption (ss);
 		im = as_screenshot_get_image (ss, 0, 0);
 		if (im == NULL)
 			continue;
@@ -578,6 +630,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_lpad (str, "branch", priv->branch);
 	if (priv->origin != NULL && priv->origin[0] != '\0')
 		gs_app_kv_lpad (str, "origin", priv->origin);
+	if (priv->origin_ui != NULL && priv->origin_ui[0] != '\0')
+		gs_app_kv_lpad (str, "origin-ui", priv->origin_ui);
 	if (priv->origin_appstream != NULL && priv->origin_appstream[0] != '\0')
 		gs_app_kv_lpad (str, "origin-appstream", priv->origin_appstream);
 	if (priv->origin_hostname != NULL && priv->origin_hostname[0] != '\0')
@@ -593,12 +647,21 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	}
 	if (priv->reviews != NULL)
 		gs_app_kv_printf (str, "reviews", "%u", priv->reviews->len);
-	if (priv->provides != NULL)
-		gs_app_kv_printf (str, "provides", "%u", priv->provides->len);
+	if (priv->provided != NULL) {
+		guint total = 0;
+		for (i = 0; i < priv->provided->len; i++)
+			total += as_provided_get_items (AS_PROVIDED (g_ptr_array_index (priv->provided, i)))->len;
+		gs_app_kv_printf (str, "provided", "%u", total);
+	}
 	if (priv->install_date != 0) {
 		gs_app_kv_printf (str, "install-date", "%"
 				  G_GUINT64_FORMAT "",
 				  priv->install_date);
+	}
+	if (priv->release_date != 0) {
+		gs_app_kv_printf (str, "release-date", "%"
+				  G_GUINT64_FORMAT "",
+				  priv->release_date);
 	}
 	if (priv->size_installed != 0)
 		gs_app_kv_size (str, "size-installed", priv->size_installed);
@@ -619,8 +682,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		tmp = g_ptr_array_index (priv->categories, i);
 		gs_app_kv_lpad (str, "category", tmp);
 	}
-	for (i = 0; i < priv->key_colors->len; i++) {
-		GdkRGBA *color = g_ptr_array_index (priv->key_colors, i);
+	for (i = 0; priv->key_colors != NULL && i < priv->key_colors->len; i++) {
+		GdkRGBA *color = &g_array_index (priv->key_colors, GdkRGBA, i);
 		g_autofree gchar *key = NULL;
 		key = g_strdup_printf ("key-color-%02u", i);
 		gs_app_kv_printf (str, key, "%.0f,%.0f,%.0f",
@@ -737,29 +800,29 @@ gs_app_set_id (GsApp *app, const gchar *id)
  *
  * Gets the scope of the application.
  *
- * Returns: the #AsAppScope, e.g. %AS_APP_SCOPE_USER
+ * Returns: the #AsComponentScope, e.g. %AS_COMPONENT_SCOPE_USER
  *
- * Since: 3.22
+ * Since: 40
  **/
-AsAppScope
+AsComponentScope
 gs_app_get_scope (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_return_val_if_fail (GS_IS_APP (app), AS_APP_SCOPE_UNKNOWN);
+	g_return_val_if_fail (GS_IS_APP (app), AS_COMPONENT_SCOPE_UNKNOWN);
 	return priv->scope;
 }
 
 /**
  * gs_app_set_scope:
  * @app: a #GsApp
- * @scope: a #AsAppScope, e.g. AS_APP_SCOPE_SYSTEM
+ * @scope: a #AsComponentScope, e.g. %AS_COMPONENT_SCOPE_SYSTEM
  *
  * This sets the scope of the application.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
-gs_app_set_scope (GsApp *app, AsAppScope scope)
+gs_app_set_scope (GsApp *app, AsComponentScope scope)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 
@@ -781,9 +844,9 @@ gs_app_set_scope (GsApp *app, AsAppScope scope)
  *
  * Gets the bundle kind of the application.
  *
- * Returns: the #AsAppScope, e.g. %AS_BUNDLE_KIND_FLATPAK
+ * Returns: the #AsComponentScope, e.g. %AS_BUNDLE_KIND_FLATPAK
  *
- * Since: 3.22
+ * Since: 40
  **/
 AsBundleKind
 gs_app_get_bundle_kind (GsApp *app)
@@ -796,11 +859,11 @@ gs_app_get_bundle_kind (GsApp *app)
 /**
  * gs_app_set_bundle_kind:
  * @app: a #GsApp
- * @bundle_kind: a #AsAppScope, e.g. AS_BUNDLE_KIND_FLATPAK
+ * @bundle_kind: a #AsComponentScope, e.g. AS_BUNDLE_KIND_FLATPAK
  *
  * This sets the bundle kind of the application.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
 gs_app_set_bundle_kind (GsApp *app, AsBundleKind bundle_kind)
@@ -820,20 +883,62 @@ gs_app_set_bundle_kind (GsApp *app, AsBundleKind bundle_kind)
 }
 
 /**
+ * gs_app_get_special_kind:
+ * @app: a #GsApp
+ *
+ * Gets the special occupation of the application.
+ *
+ * Returns: the #GsAppSpecialKind, e.g. %GS_APP_SPECIAL_KIND_OS_UPDATE
+ *
+ * Since: 40
+ **/
+GsAppSpecialKind
+gs_app_get_special_kind (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), GS_APP_SPECIAL_KIND_NONE);
+	return priv->special_kind;
+}
+
+/**
+ * gs_app_set_special_kind:
+ * @app: a #GsApp
+ * @kind: a #GsAppSpecialKind, e.g. %GS_APP_SPECIAL_KIND_OS_UPDATE
+ *
+ * This sets the special occupation of the application (making
+ * the #AsComponentKind of this application %AS_COMPONENT_KIND_GENERIC
+ * per definition).
+ *
+ * Since: 40
+ **/
+void
+gs_app_set_special_kind	(GsApp *app, GsAppSpecialKind kind)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_if_fail (GS_IS_APP (app));
+
+	if (priv->special_kind == kind)
+		return;
+	gs_app_set_kind (app, AS_COMPONENT_KIND_GENERIC);
+	priv->special_kind = kind;
+	gs_app_queue_notify (app, obj_props[PROP_SPECIAL_KIND]);
+}
+
+/**
  * gs_app_get_state:
  * @app: a #GsApp
  *
  * Gets the state of the application.
  *
- * Returns: the #AsAppState, e.g. %AS_APP_STATE_INSTALLED
+ * Returns: the #GsAppState, e.g. %GS_APP_STATE_INSTALLED
  *
- * Since: 3.22
+ * Since: 40
  **/
-AsAppState
+GsAppState
 gs_app_get_state (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_return_val_if_fail (GS_IS_APP (app), AS_APP_STATE_UNKNOWN);
+	g_return_val_if_fail (GS_IS_APP (app), GS_APP_STATE_UNKNOWN);
 	return priv->state;
 }
 
@@ -886,15 +991,18 @@ void
 gs_app_set_state_recover (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	if (priv->state_recover == AS_APP_STATE_UNKNOWN)
+
+	g_return_if_fail (GS_IS_APP (app));
+
+	if (priv->state_recover == GS_APP_STATE_UNKNOWN)
 		return;
 	if (priv->state_recover == priv->state)
 		return;
 
 	g_debug ("recovering state on %s from %s to %s",
 		 priv->id,
-		 as_app_state_to_string (priv->state),
-		 as_app_state_to_string (priv->state_recover));
+		 gs_app_state_to_string (priv->state),
+		 gs_app_state_to_string (priv->state_recover));
 
 	/* make sure progress gets reset when recovering state, to prevent
 	 * confusing initial states when going through more than one attempt */
@@ -906,7 +1014,7 @@ gs_app_set_state_recover (GsApp *app)
 
 /* mutex must be held */
 static gboolean
-gs_app_set_state_internal (GsApp *app, AsAppState state)
+gs_app_set_state_internal (GsApp *app, GsAppState state)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	gboolean state_change_ok = FALSE;
@@ -917,84 +1025,85 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 
 	/* check the state change is allowed */
 	switch (priv->state) {
-	case AS_APP_STATE_UNKNOWN:
+	case GS_APP_STATE_UNKNOWN:
 		/* unknown has to go into one of the stable states */
-		if (state == AS_APP_STATE_INSTALLED ||
-		    state == AS_APP_STATE_QUEUED_FOR_INSTALL ||
-		    state == AS_APP_STATE_AVAILABLE ||
-		    state == AS_APP_STATE_AVAILABLE_LOCAL ||
-		    state == AS_APP_STATE_UPDATABLE ||
-		    state == AS_APP_STATE_UPDATABLE_LIVE ||
-		    state == AS_APP_STATE_UNAVAILABLE)
+		if (state == GS_APP_STATE_INSTALLED ||
+		    state == GS_APP_STATE_QUEUED_FOR_INSTALL ||
+		    state == GS_APP_STATE_AVAILABLE ||
+		    state == GS_APP_STATE_AVAILABLE_LOCAL ||
+		    state == GS_APP_STATE_UPDATABLE ||
+		    state == GS_APP_STATE_UPDATABLE_LIVE ||
+		    state == GS_APP_STATE_UNAVAILABLE)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_INSTALLED:
+	case GS_APP_STATE_INSTALLED:
 		/* installed has to go into an action state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_REMOVING ||
-		    state == AS_APP_STATE_UNAVAILABLE ||
-		    state == AS_APP_STATE_UPDATABLE ||
-		    state == AS_APP_STATE_UPDATABLE_LIVE)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_REMOVING ||
+		    state == GS_APP_STATE_UNAVAILABLE ||
+		    state == GS_APP_STATE_UPDATABLE ||
+		    state == GS_APP_STATE_UPDATABLE_LIVE)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_INSTALLING ||
-		    state == AS_APP_STATE_AVAILABLE)
+	case GS_APP_STATE_QUEUED_FOR_INSTALL:
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_INSTALLING ||
+		    state == GS_APP_STATE_AVAILABLE)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_AVAILABLE:
+	case GS_APP_STATE_AVAILABLE:
 		/* available has to go into an action state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_QUEUED_FOR_INSTALL ||
-		    state == AS_APP_STATE_INSTALLING)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_QUEUED_FOR_INSTALL ||
+		    state == GS_APP_STATE_INSTALLING)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_INSTALLING:
+	case GS_APP_STATE_INSTALLING:
 		/* installing has to go into an stable state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_INSTALLED ||
-		    state == AS_APP_STATE_UPDATABLE ||
-		    state == AS_APP_STATE_UPDATABLE_LIVE ||
-		    state == AS_APP_STATE_AVAILABLE)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_INSTALLED ||
+		    state == GS_APP_STATE_UPDATABLE ||
+		    state == GS_APP_STATE_UPDATABLE_LIVE ||
+		    state == GS_APP_STATE_AVAILABLE)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_REMOVING:
+	case GS_APP_STATE_REMOVING:
 		/* removing has to go into an stable state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_AVAILABLE ||
-		    state == AS_APP_STATE_INSTALLED)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_UNAVAILABLE ||
+		    state == GS_APP_STATE_AVAILABLE ||
+		    state == GS_APP_STATE_INSTALLED)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_UPDATABLE:
+	case GS_APP_STATE_UPDATABLE:
 		/* updatable has to go into an action state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_REMOVING ||
-		    state == AS_APP_STATE_INSTALLING)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_REMOVING ||
+		    state == GS_APP_STATE_INSTALLING)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_UPDATABLE_LIVE:
+	case GS_APP_STATE_UPDATABLE_LIVE:
 		/* updatable-live has to go into an action state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_REMOVING ||
-		    state == AS_APP_STATE_INSTALLING)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_REMOVING ||
+		    state == GS_APP_STATE_INSTALLING)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_UNAVAILABLE:
+	case GS_APP_STATE_UNAVAILABLE:
 		/* updatable has to go into an action state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_AVAILABLE)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_AVAILABLE)
 			state_change_ok = TRUE;
 		break;
-	case AS_APP_STATE_AVAILABLE_LOCAL:
+	case GS_APP_STATE_AVAILABLE_LOCAL:
 		/* local has to go into an action state */
-		if (state == AS_APP_STATE_UNKNOWN ||
-		    state == AS_APP_STATE_INSTALLING)
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == GS_APP_STATE_INSTALLING)
 			state_change_ok = TRUE;
 		break;
 	default:
 		g_warning ("state %s unhandled",
-			   as_app_state_to_string (priv->state));
+			   gs_app_state_to_string (priv->state));
 		g_assert_not_reached ();
 	}
 
@@ -1002,22 +1111,22 @@ gs_app_set_state_internal (GsApp *app, AsAppState state)
 	if (!state_change_ok) {
 		g_warning ("State change on %s from %s to %s is not OK",
 			   gs_app_get_unique_id_unlocked (app),
-			   as_app_state_to_string (priv->state),
-			   as_app_state_to_string (state));
+			   gs_app_state_to_string (priv->state),
+			   gs_app_state_to_string (state));
 	}
 
 	priv->state = state;
 
-	if (state == AS_APP_STATE_UNKNOWN ||
-	    state == AS_APP_STATE_AVAILABLE_LOCAL ||
-	    state == AS_APP_STATE_AVAILABLE)
+	if (state == GS_APP_STATE_UNKNOWN ||
+	    state == GS_APP_STATE_AVAILABLE_LOCAL ||
+	    state == GS_APP_STATE_AVAILABLE)
 		priv->install_date = 0;
 
 	/* save this to simplify error handling in the plugins */
 	switch (state) {
-	case AS_APP_STATE_INSTALLING:
-	case AS_APP_STATE_REMOVING:
-	case AS_APP_STATE_QUEUED_FOR_INSTALL:
+	case GS_APP_STATE_INSTALLING:
+	case GS_APP_STATE_REMOVING:
+	case GS_APP_STATE_QUEUED_FOR_INSTALL:
 		/* transient, so ignore */
 		break;
 	default:
@@ -1100,11 +1209,11 @@ gs_app_set_pending_action_internal (GsApp *app,
 /**
  * gs_app_set_state:
  * @app: a #GsApp
- * @state: a #AsAppState, e.g. AS_APP_STATE_UPDATABLE_LIVE
+ * @state: a #GsAppState, e.g. GS_APP_STATE_UPDATABLE_LIVE
  *
  * This sets the state of the application.
  * The following state diagram explains the typical states.
- * All applications start in state %AS_APP_STATE_UNKNOWN,
+ * All applications start in state %GS_APP_STATE_UNKNOWN,
  * but the frontend is not supposed to see GsApps with this state.
  *
  * Plugins are responsible for changing the state to one of the other
@@ -1122,7 +1231,7 @@ gs_app_set_pending_action_internal (GsApp *app,
  * Since: 3.22
  **/
 void
-gs_app_set_state (GsApp *app, AsAppState state)
+gs_app_set_state (GsApp *app, GsAppState state)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
@@ -1135,7 +1244,7 @@ gs_app_set_state (GsApp *app, AsAppState state)
 		 * actions that usually change the state, we assign it to the
 		 * appropriate action here */
 		GsPluginAction action = GS_PLUGIN_ACTION_UNKNOWN;
-		if (priv->state == AS_APP_STATE_QUEUED_FOR_INSTALL)
+		if (priv->state == GS_APP_STATE_QUEUED_FOR_INSTALL)
 			action = GS_PLUGIN_ACTION_INSTALL;
 		gs_app_set_pending_action_internal (app, action);
 
@@ -1149,26 +1258,26 @@ gs_app_set_state (GsApp *app, AsAppState state)
  *
  * Gets the kind of the application.
  *
- * Returns: the #AsAppKind, e.g. %AS_APP_KIND_UNKNOWN
+ * Returns: the #AsComponentKind, e.g. %AS_COMPONENT_KIND_UNKNOWN
  *
- * Since: 3.22
+ * Since: 40
  **/
-AsAppKind
+AsComponentKind
 gs_app_get_kind (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_return_val_if_fail (GS_IS_APP (app), AS_APP_KIND_UNKNOWN);
+	g_return_val_if_fail (GS_IS_APP (app), AS_COMPONENT_KIND_UNKNOWN);
 	return priv->kind;
 }
 
 /**
  * gs_app_set_kind:
  * @app: a #GsApp
- * @kind: a #AsAppKind, e.g. #AS_APP_KIND_DESKTOP
+ * @kind: a #AsComponentKind, e.g. #AS_COMPONENT_KIND_DESKTOP_APP
  *
  * This sets the kind of the application.
  * The following state diagram explains the typical states.
- * All applications start with kind %AS_APP_KIND_UNKNOWN.
+ * All applications start with kind %AS_COMPONENT_KIND_UNKNOWN.
  *
  * |[
  * PACKAGE --> NORMAL
@@ -1176,10 +1285,10 @@ gs_app_get_kind (GsApp *app)
  * NORMAL  --> SYSTEM
  * ]|
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
-gs_app_set_kind (GsApp *app, AsAppKind kind)
+gs_app_set_kind (GsApp *app, AsComponentKind kind)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	gboolean state_change_ok = FALSE;
@@ -1194,26 +1303,26 @@ gs_app_set_kind (GsApp *app, AsAppKind kind)
 		return;
 
 	/* trying to change */
-	if (priv->kind != AS_APP_KIND_UNKNOWN &&
-	    kind == AS_APP_KIND_UNKNOWN) {
+	if (priv->kind != AS_COMPONENT_KIND_UNKNOWN &&
+	    kind == AS_COMPONENT_KIND_UNKNOWN) {
 		g_warning ("automatically prevented from changing "
 			   "kind on %s from %s to %s!",
 			   gs_app_get_unique_id_unlocked (app),
-			   as_app_kind_to_string (priv->kind),
-			   as_app_kind_to_string (kind));
+			   as_component_kind_to_string (priv->kind),
+			   as_component_kind_to_string (kind));
 		return;
 	}
 
 	/* check the state change is allowed */
 	switch (priv->kind) {
-	case AS_APP_KIND_UNKNOWN:
-	case AS_APP_KIND_GENERIC:
+	case AS_COMPONENT_KIND_UNKNOWN:
+	case AS_COMPONENT_KIND_GENERIC:
 		/* all others derive from generic */
 		state_change_ok = TRUE;
 		break;
-	case AS_APP_KIND_DESKTOP:
+	case AS_COMPONENT_KIND_DESKTOP_APP:
 		/* desktop has to be reset to override */
-		if (kind == AS_APP_KIND_UNKNOWN)
+		if (kind == AS_COMPONENT_KIND_UNKNOWN)
 			state_change_ok = TRUE;
 		break;
 	default:
@@ -1225,8 +1334,8 @@ gs_app_set_kind (GsApp *app, AsAppKind kind)
 	if (!state_change_ok) {
 		g_warning ("Kind change on %s from %s to %s is not OK",
 			   priv->id,
-			   as_app_kind_to_string (priv->kind),
-			   as_app_kind_to_string (kind));
+			   as_component_kind_to_string (priv->kind),
+			   as_component_kind_to_string (kind));
 		return;
 	}
 
@@ -1277,7 +1386,7 @@ gs_app_set_unique_id (GsApp *app, const gchar *unique_id)
 	locker = g_mutex_locker_new (&priv->mutex);
 
 	/* check for sanity */
-	if (!as_utils_unique_id_valid (unique_id))
+	if (!as_utils_data_id_valid (unique_id))
 		g_warning ("unique_id %s not valid", unique_id);
 
 	g_free (priv->unique_id);
@@ -1328,6 +1437,44 @@ gs_app_set_name (GsApp *app, GsAppQuality quality, const gchar *name)
 	priv->name_quality = quality;
 	if (_g_set_str (&priv->name, name))
 		g_object_notify_by_pspec (G_OBJECT (app), obj_props[PROP_NAME]);
+}
+
+/**
+ * gs_app_get_renamed_from:
+ * @app: a #GsApp
+ *
+ * Gets the old human-readable name of an application that's being renamed, the
+ * same name that was returned by gs_app_get_name() before the rename.
+ *
+ * Returns: (nullable): a string, or %NULL for unset
+ *
+ * Since: 40
+ **/
+const gchar *
+gs_app_get_renamed_from (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	return priv->renamed_from;
+}
+
+/**
+ * gs_app_set_renamed_from:
+ * @app: a #GsApp
+ * @renamed_from: (nullable): The old name, e.g. "Iagno"
+ *
+ * Sets the old name of an application that's being renamed
+ *
+ * Since: 40
+ **/
+void
+gs_app_set_renamed_from (GsApp *app, const gchar *renamed_from)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
+	_g_set_str (&priv->renamed_from, renamed_from);
 }
 
 /**
@@ -1639,21 +1786,91 @@ gs_app_set_developer_name (GsApp *app, const gchar *developer_name)
 }
 
 /**
- * gs_app_get_pixbuf:
+ * gs_app_get_icon_for_size:
  * @app: a #GsApp
+ * @size: size (width or height, square) of the icon to fetch, in device pixels
+ * @scale: scale of the icon to fetch, typically from gtk_widget_get_scale_factor()
+ * @fallback_icon_name: (nullable): name of an icon to load as a fallback if
+ *    no other suitable one is found, or %NULL for no fallback
  *
- * Gets a pixbuf to represent the application.
+ * Finds the most appropriate icon in the @app’s set of icons to be loaded at
+ * the given @size×@scale to represent the application. This might be provided
+ * by the backend at the given @size, or downsized from a larger icon provided
+ * by the backend. The return value is guaranteed to be suitable for loading as
+ * a pixbuf at @size, if it’s not %NULL.
  *
- * Returns: (transfer none) (nullable): a #GdkPixbuf, or %NULL
+ * If an image at least @size pixels in width isn’t available, and
+ * @fallback_icon_name has not been provided, %NULL will be returned. If
+ * @fallback_icon_name has been provided, a #GIcon representing that will be
+ * returned, and %NULL is guaranteed not to be returned.
  *
- * Since: 3.22
- **/
-GdkPixbuf *
-gs_app_get_pixbuf (GsApp *app)
+ * Icons which come from a remote server (over HTTP or HTTPS) will be returned
+ * as a pointer into a local cache, which may not have been populated. You must
+ * call gs_remote_icon_ensure_cached() on icons of type #GsRemoteIcon to
+ * download them; this function will not do that for you.
+ *
+ * This function may do disk I/O or image resizing, but it will not do network
+ * I/O to load a pixbuf. It should be acceptable to call this from a UI thread.
+ *
+ * Returns: (transfer full) (nullable): a #GIcon, or %NULL
+ *
+ * Since: 40
+ */
+GIcon *
+gs_app_get_icon_for_size (GsApp       *app,
+                          guint        size,
+                          guint        scale,
+                          const gchar *fallback_icon_name)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	return priv->pixbuf;
+	g_return_val_if_fail (size > 0, NULL);
+	g_return_val_if_fail (scale >= 1, NULL);
+
+	g_debug ("Looking for icon for %s, at size %u×%u, with fallback %s",
+		 gs_app_get_id (app), size, scale, fallback_icon_name);
+
+	/* See if there’s an icon the right size, or the first one which is too
+	 * big which could be scaled down. Note that the icons array may be
+	 * lazily created. */
+	for (guint i = 0; priv->icons != NULL && i < priv->icons->len; i++) {
+		GIcon *icon = priv->icons->pdata[i];
+		g_autofree gchar *icon_str = g_icon_to_string (icon);
+		guint icon_width = gs_icon_get_width (icon);
+		guint icon_scale = gs_icon_get_scale (icon);
+
+		g_debug ("\tConsidering icon of type %s (%s), width %u×%u",
+			 G_OBJECT_TYPE_NAME (icon), icon_str, icon_width, icon_scale);
+
+		/* Ignore icons with unknown width and skip over ones which
+		 * are too small. */
+		if (icon_width == 0 || icon_width * icon_scale < size * scale)
+			continue;
+
+		if (icon_width * icon_scale >= size * scale)
+			return g_object_ref (icon);
+	}
+
+	g_debug ("Found no icons of the right size; checking themed icons");
+
+	/* If there’s a themed icon with no width set, use that, as typically
+	 * themed icons are available in all the right sizes. */
+	for (guint i = 0; priv->icons != NULL && i < priv->icons->len; i++) {
+		GIcon *icon = priv->icons->pdata[i];
+		guint icon_width = gs_icon_get_width (icon);
+
+		if (icon_width == 0 && G_IS_THEMED_ICON (icon))
+			return g_object_ref (icon);
+	}
+
+	if (fallback_icon_name != NULL) {
+		g_debug ("Using fallback icon %s", fallback_icon_name);
+		return g_themed_icon_new (fallback_icon_name);
+	} else {
+		g_debug ("No icon found");
+		return NULL;
+	}
 }
 
 /**
@@ -1664,7 +1881,7 @@ gs_app_get_pixbuf (GsApp *app)
  *
  * Returns: (transfer none) (nullable): a #AsScreenshot, or %NULL
  *
- * Since: 3.38
+ * Since: 40
  **/
 AsScreenshot *
 gs_app_get_action_screenshot (GsApp *app)
@@ -1680,7 +1897,11 @@ gs_app_get_action_screenshot (GsApp *app)
  *
  * Gets the icons for the application.
  *
- * Returns: (transfer none) (element-type AsIcon): an array of icons
+ * This will never return an empty array; it will always return either %NULL or
+ * a non-empty array.
+ *
+ * Returns: (transfer none) (element-type GIcon) (nullable): an array of icons,
+ *     or %NULL if there are no icons
  *
  * Since: 3.22
  **/
@@ -1689,31 +1910,80 @@ gs_app_get_icons (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	if (priv->icons != NULL && priv->icons->len == 0)
+		return NULL;
+
 	return priv->icons;
+}
+
+static gint
+icon_sort_width_cb (gconstpointer a,
+                    gconstpointer b)
+{
+	GIcon *icon_a = *((GIcon **) a);
+	GIcon *icon_b = *((GIcon **) b);
+	guint width_a = gs_icon_get_width (icon_a);
+	guint width_b = gs_icon_get_width (icon_b);
+
+	/* Sort unknown widths (0 value) to the end. */
+	if (width_a == 0 && width_b == 0)
+		return 0;
+	else if (width_a == 0)
+		return 1;
+	else if (width_b == 0)
+		return -1;
+	else
+		return width_a - width_b;
 }
 
 /**
  * gs_app_add_icon:
  * @app: a #GsApp
- * @icon: a #AsIcon, or %NULL to remove all icons
+ * @icon: a #GIcon
  *
  * Adds an icon to use for the application.
  * If the first icon added cannot be loaded then the next one is tried.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
-gs_app_add_icon (GsApp *app, AsIcon *icon)
+gs_app_add_icon (GsApp *app, GIcon *icon)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+	g_return_if_fail (G_IS_ICON (icon));
+
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (priv->icons == NULL)
+		priv->icons = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+
+	g_ptr_array_add (priv->icons, g_object_ref (icon));
+
+	/* Ensure the array is sorted by increasing width. */
+	g_ptr_array_sort (priv->icons, icon_sort_width_cb);
+}
+
+/**
+ * gs_app_remove_all_icons:
+ * @app: a #GsApp
+ *
+ * Remove all icons from @app.
+ *
+ * Since: 40
+ */
+void
+gs_app_remove_all_icons (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
-	if (icon == NULL) {
+
+	if (priv->icons != NULL)
 		g_ptr_array_set_size (priv->icons, 0);
-		return;
-	}
-	g_ptr_array_add (priv->icons, g_object_ref (icon));
 }
 
 /**
@@ -1731,16 +2001,29 @@ gboolean
 gs_app_get_use_drop_shadow (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	AsIcon *ic;
+	GIcon *icon;
+	const gchar * const *names;
+
+	g_return_val_if_fail (GS_IS_APP (app), FALSE);
 
 	/* guess */
-	if (priv->icons->len == 0)
+	if (priv->icons == NULL || priv->icons->len == 0)
 		return TRUE;
 
-	/* stock, and symbolic */
-	ic = g_ptr_array_index (priv->icons, 0);
-	return as_icon_get_kind (ic) != AS_ICON_KIND_STOCK ||
-		!g_str_has_suffix (as_icon_get_name (ic), "-symbolic");
+	icon = g_ptr_array_index (priv->icons, 0);
+
+	/* Apply drop shadows to non-themed icons. */
+	if (!G_IS_THEMED_ICON (icon))
+		return TRUE;
+
+	/* Don’t apply drop shadows to symbolic icons. */
+	names = g_themed_icon_get_names (G_THEMED_ICON (icon));
+	for (gsize i = 0; names[i] != NULL; i++) {
+		if (g_str_has_suffix (names[i], "-symbolic"))
+			return FALSE;
+	}
+
+	return TRUE;
 }
 
 /**
@@ -1828,7 +2111,7 @@ gs_app_set_local_file (GsApp *app, GFile *local_file)
  *
  * Returns: (transfer none): a #AsContentRating, or %NULL
  *
- * Since: 3.24
+ * Since: 40
  **/
 AsContentRating *
 gs_app_get_content_rating (GsApp *app)
@@ -1845,7 +2128,7 @@ gs_app_get_content_rating (GsApp *app)
  *
  * Sets the content rating for this application.
  *
- * Since: 3.24
+ * Since: 40
  **/
 void
 gs_app_set_content_rating (GsApp *app, AsContentRating *content_rating)
@@ -1890,28 +2173,10 @@ gs_app_set_runtime (GsApp *app, GsApp *runtime)
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
+	g_return_if_fail (GS_IS_APP (runtime));
 	g_return_if_fail (app != runtime);
 	locker = g_mutex_locker_new (&priv->mutex);
 	g_set_object (&priv->runtime, runtime);
-}
-
-/**
- * gs_app_set_pixbuf:
- * @app: a #GsApp
- * @pixbuf: (transfer none) (nullable): a #GdkPixbuf, or %NULL
- *
- * Sets a pixbuf used to represent the application.
- *
- * Since: 3.22
- **/
-void
-gs_app_set_pixbuf (GsApp *app, GdkPixbuf *pixbuf)
-{
-	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = NULL;
-	g_return_if_fail (GS_IS_APP (app));
-	locker = g_mutex_locker_new (&priv->mutex);
-	g_set_object (&priv->pixbuf, pixbuf);
 }
 
 /**
@@ -1921,7 +2186,7 @@ gs_app_set_pixbuf (GsApp *app, GdkPixbuf *pixbuf)
  *
  * Sets a screenshot used to represent the action.
  *
- * Since: 3.38
+ * Since: 40
  **/
 void
 gs_app_set_action_screenshot (GsApp *app, AsScreenshot *action_screenshot)
@@ -2202,7 +2467,7 @@ gs_app_set_description (GsApp *app, GsAppQuality quality, const gchar *descripti
  *
  * Returns: a string, or %NULL for unset
  *
- * Since: 3.22
+ * Since: 40
  **/
 const gchar *
 gs_app_get_url (GsApp *app, AsUrlKind kind)
@@ -2222,7 +2487,7 @@ gs_app_get_url (GsApp *app, AsUrlKind kind)
  *
  * Sets a web address of a specific type.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
 gs_app_set_url (GsApp *app, AsUrlKind kind, const gchar *url)
@@ -2237,6 +2502,52 @@ gs_app_set_url (GsApp *app, AsUrlKind kind, const gchar *url)
 }
 
 /**
+ * gs_app_get_url_missing:
+ * @app: a #GsApp
+ *
+ * Gets a web address for the application with explanations
+ * why it does not have an installation candidate.
+ *
+ * Returns: (nullable): a string, or %NULL for unset
+ *
+ * Since: 40
+ **/
+const gchar *
+gs_app_get_url_missing (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
+	return priv->url_missing;
+}
+
+/**
+ * gs_app_set_url_missing:
+ * @app: a #GsApp
+ * @url: (nullable): a web URL, e.g. `http://www.packagekit.org/pk-package-not-found.html`, or %NULL
+ *
+ * Sets a web address containing explanations why this app
+ * does not have an installation candidate.
+ *
+ * Since: 40
+ **/
+void
+gs_app_set_url_missing (GsApp *app, const gchar *url)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (g_strcmp0 (priv->url_missing, url) == 0)
+		return;
+	g_free (priv->url_missing);
+	priv->url_missing = g_strdup (url);
+	gs_app_queue_notify (app, obj_props[PROP_URL_MISSING]);
+}
+
+/**
  * gs_app_get_launchable:
  * @app: a #GsApp
  * @kind: a #AsLaunchableKind, e.g. %AS_LAUNCHABLE_KIND_DESKTOP_ID
@@ -2245,13 +2556,15 @@ gs_app_set_url (GsApp *app, AsUrlKind kind, const gchar *url)
  *
  * Returns: a string, or %NULL for unset
  *
- * Since: 3.28
+ * Since: 40
  **/
 const gchar *
 gs_app_get_launchable (GsApp *app, AsLaunchableKind kind)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
+	locker = g_mutex_locker_new (&priv->mutex);
 	return g_hash_table_lookup (priv->launchables,
 				    as_launchable_kind_to_string (kind));
 }
@@ -2264,18 +2577,27 @@ gs_app_get_launchable (GsApp *app, AsLaunchableKind kind)
  *
  * Sets a launchable of a specific type.
  *
- * Since: 3.28
+ * Since: 40
  **/
 void
 gs_app_set_launchable (GsApp *app, AsLaunchableKind kind, const gchar *launchable)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	gpointer current_value = NULL;
+	const gchar *key;
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
-	g_hash_table_insert (priv->launchables,
-			     g_strdup (as_launchable_kind_to_string (kind)),
-			     g_strdup (launchable));
+	key = as_launchable_kind_to_string (kind);
+	if (g_hash_table_lookup_extended (priv->launchables, key, NULL, &current_value)) {
+		if (g_strcmp0 ((const gchar *) current_value, launchable) != 0)
+			g_debug ("Preventing app '%s' replace of %s's launchable '%s' with '%s'",
+				 priv->name, key, (const gchar *) current_value, launchable);
+	} else {
+		g_hash_table_insert (priv->launchables,
+				     (gpointer) as_launchable_kind_to_string (kind),
+				     g_strdup (launchable));
+	}
 }
 
 /**
@@ -2314,23 +2636,6 @@ gs_app_get_license_is_free (GsApp *app)
 	return priv->license_is_free;
 }
 
-static gboolean
-gs_app_get_license_token_is_nonfree (const gchar *token)
-{
-	/* grammar */
-	if (g_strcmp0 (token, "(") == 0)
-		return FALSE;
-	if (g_strcmp0 (token, ")") == 0)
-		return FALSE;
-
-	/* a token, but still nonfree */
-	if (g_str_has_prefix (token, "@LicenseRef-proprietary"))
-		return TRUE;
-
-	/* if it has a prefix, assume it is free */
-	return token[0] != '@';
-}
-
 /**
  * gs_app_set_license:
  * @app: a #GsApp
@@ -2346,8 +2651,6 @@ gs_app_set_license (GsApp *app, GsAppQuality quality, const gchar *license)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
-	guint i;
-	g_auto(GStrv) tokens = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
 
@@ -2360,19 +2663,8 @@ gs_app_set_license (GsApp *app, GsAppQuality quality, const gchar *license)
 		return;
 	priv->license_quality = quality;
 
-	/* assume free software until we find a nonfree SPDX token */
-	priv->license_is_free = TRUE;
-	tokens = as_utils_spdx_license_tokenize (license);
-	for (i = 0; tokens[i] != NULL; i++) {
-		if (g_strcmp0 (tokens[i], "&") == 0 ||
-		    g_strcmp0 (tokens[i], "+") == 0 ||
-		    g_strcmp0 (tokens[i], "|") == 0)
-			continue;
-		if (gs_app_get_license_token_is_nonfree (tokens[i])) {
-			priv->license_is_free = FALSE;
-			break;
-		}
-	}
+	priv->license_is_free = as_license_is_free_license (license);
+
 	_g_set_str (&priv->license, license);
 }
 
@@ -2413,6 +2705,18 @@ gs_app_set_summary_missing (GsApp *app, const gchar *summary_missing)
 	_g_set_str (&priv->summary_missing, summary_missing);
 }
 
+static gboolean
+_gs_app_has_desktop_group (GsApp *app, const gchar *desktop_group)
+{
+	guint i;
+	g_auto(GStrv) split = g_strsplit (desktop_group, "::", -1);
+	for (i = 0; split[i] != NULL; i++) {
+		if (!gs_app_has_category (app, split[i]))
+			return FALSE;
+	}
+	return TRUE;
+}
+
 /**
  * gs_app_get_menu_path:
  * @app: a #GsApp
@@ -2430,6 +2734,43 @@ gs_app_get_menu_path (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	/* Lazy load. */
+	if (priv->menu_path == NULL) {
+		const gchar *strv[] = { "", NULL, NULL };
+		const GsDesktopData *msdata;
+		gboolean found = FALSE;
+
+		/* find a top level category the app has */
+		msdata = gs_desktop_get_data ();
+		for (gsize i = 0; !found && msdata[i].id != NULL; i++) {
+			const GsDesktopData *data = &msdata[i];
+			for (gsize j = 0; !found && data->mapping[j].id != NULL; j++) {
+				const GsDesktopMap *map = &data->mapping[j];
+				g_autofree gchar *msgctxt = NULL;
+
+				if (g_strcmp0 (map->id, "all") == 0)
+					continue;
+				if (g_strcmp0 (map->id, "featured") == 0)
+					continue;
+				msgctxt = g_strdup_printf ("Menu of %s", data->name);
+				for (gsize k = 0; !found && map->fdo_cats[k] != NULL; k++) {
+					const gchar *tmp = msdata[i].mapping[j].fdo_cats[k];
+					if (_gs_app_has_desktop_group (app, tmp)) {
+						strv[0] = g_dgettext (GETTEXT_PACKAGE, msdata[i].name);
+						strv[1] = g_dpgettext2 (GETTEXT_PACKAGE, msgctxt,
+							                msdata[i].mapping[j].name);
+						found = TRUE;
+						break;
+					}
+				}
+			}
+		}
+
+		/* always set something to avoid keep searching for this */
+		gs_app_set_menu_path (app, (gchar **) strv);
+	}
+
 	return priv->menu_path;
 }
 
@@ -2630,7 +2971,7 @@ gs_app_set_origin_hostname (GsApp *app, const gchar *origin_hostname)
  *
  * Adds a screenshot to the application.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
 gs_app_add_screenshot (GsApp *app, AsScreenshot *screenshot)
@@ -2779,7 +3120,7 @@ gs_app_set_update_details (GsApp *app, const gchar *update_details)
  *
  * Returns: a #AsUrgencyKind, or %AS_URGENCY_KIND_UNKNOWN for unset
  *
- * Since: 3.22
+ * Since: 40
  **/
 AsUrgencyKind
 gs_app_get_update_urgency (GsApp *app)
@@ -2796,7 +3137,7 @@ gs_app_get_update_urgency (GsApp *app)
  *
  * Sets the update urgency.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
 gs_app_set_update_urgency (GsApp *app, AsUrgencyKind update_urgency)
@@ -2983,7 +3324,7 @@ gs_app_get_reviews (GsApp *app)
  *
  * Adds a user-submitted review to the application.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
 gs_app_add_review (GsApp *app, AsReview *review)
@@ -3003,7 +3344,7 @@ gs_app_add_review (GsApp *app, AsReview *review)
  *
  * Removes a user-submitted review to the application.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
 gs_app_remove_review (GsApp *app, AsReview *review)
@@ -3016,41 +3357,78 @@ gs_app_remove_review (GsApp *app, AsReview *review)
 }
 
 /**
- * gs_app_get_provides:
+ * gs_app_get_provided:
  * @app: a #GsApp
  *
- * Gets all the provides for the application.
+ * Gets all the provided item sets for the application.
  *
- * Returns: (element-type AsProvide) (transfer none): the list of provides
+ * Returns: (element-type AsProvided) (transfer none): the list of provided items
  *
- * Since: 3.22
+ * Since: 40
  **/
-GPtrArray *
-gs_app_get_provides (GsApp *app)
+GPtrArray*
+gs_app_get_provided (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	return priv->provides;
+	return priv->provided;
 }
 
 /**
- * gs_app_add_provide:
- * @app: a #GsApp
- * @provide: a #AsProvide
+ * gs_app_get_provided_for_kind:
+ * @cpt: a #AsComponent instance.
+ * @kind: kind of the provided item, e.g. %AS_PROVIDED_KIND_MIMETYPE
  *
- * Adds a provide to the application.
+ * Get an #AsProvided object for the given interface type, or %NULL if
+ * none was found.
  *
- * Since: 3.22
- **/
-void
-gs_app_add_provide (GsApp *app, AsProvide *provide)
+ * Returns: (nullable) (transfer none): the #AsProvided
+ *
+ * Since: 40
+ */
+AsProvided*
+gs_app_get_provided_for_kind (GsApp *app, AsProvidedKind kind)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	for (guint i = 0; i < priv->provided->len; i++) {
+		AsProvided *prov = AS_PROVIDED (g_ptr_array_index (priv->provided, i));
+		if (as_provided_get_kind (prov) == kind)
+			return prov;
+	}
+	return NULL;
+}
+
+/**
+ * gs_app_add_provided:
+ * @app: a #GsApp
+ * @kind: the kind of the provided item, e.g. %AS_PROVIDED_KIND_MEDIATYPE
+ * @item: the item to add.
+ *
+ * Adds a provided items of the given kind to the application.
+ *
+ * Since: 40
+ **/
+void
+gs_app_add_provided_item (GsApp *app, AsProvidedKind kind, const gchar *item)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	AsProvided *prov;
 	g_autoptr(GMutexLocker) locker = NULL;
+
 	g_return_if_fail (GS_IS_APP (app));
-	g_return_if_fail (AS_IS_PROVIDE (provide));
+	g_return_if_fail (item != NULL);
+	g_return_if_fail (kind != AS_PROVIDED_KIND_UNKNOWN && kind < AS_PROVIDED_KIND_LAST);
+
 	locker = g_mutex_locker_new (&priv->mutex);
-	g_ptr_array_add (priv->provides, g_object_ref (provide));
+	prov = gs_app_get_provided_for_kind (app, kind);
+	if (prov == NULL) {
+		prov = as_provided_new ();
+		as_provided_set_kind (prov, kind);
+		g_ptr_array_add (priv->provided, prov);
+	}
+	as_provided_add_item (prov, item);
 }
 
 /**
@@ -3079,8 +3457,8 @@ gs_app_get_size_download (GsApp *app)
 
 	/* add the runtime if this is not installed */
 	if (priv->runtime != NULL) {
-		if (gs_app_get_state (priv->runtime) == AS_APP_STATE_AVAILABLE)
-			sz += gs_app_get_size_installed (priv->runtime);
+		if (gs_app_get_state (priv->runtime) == GS_APP_STATE_AVAILABLE)
+			sz += gs_app_get_size_download (priv->runtime);
 	}
 
 	/* add related apps */
@@ -3217,7 +3595,7 @@ gs_app_set_metadata (GsApp *app, const gchar *key, const gchar *value)
  * Gets some metadata for the application.
  * Is is expected that plugins namespace any plugin-specific metadata.
  *
- * Returns: a string, or %NULL for unset
+ * Returns: (transfer none) (nullable): a variant, or %NULL for unset
  *
  * Since: 3.26
  **/
@@ -3382,8 +3760,8 @@ gs_app_add_related (GsApp *app, GsApp *app2)
 
 	/* if the app is updatable-live and any related app is not then
 	 * degrade to the offline state */
-	if (priv->state == AS_APP_STATE_UPDATABLE_LIVE &&
-	    priv2->state == AS_APP_STATE_UPDATABLE)
+	if (priv->state == GS_APP_STATE_UPDATABLE_LIVE &&
+	    priv2->state == GS_APP_STATE_UPDATABLE)
 		priv->state = priv2->state;
 
 	gs_app_list_add (priv->related, app2);
@@ -3465,6 +3843,45 @@ gs_app_set_install_date (GsApp *app, guint64 install_date)
 }
 
 /**
+ * gs_app_get_release_date:
+ * @app: a #GsApp
+ *
+ * Gets the date that an application was released.
+ *
+ * Returns: A UNIX epoch, or 0 for unset
+ *
+ * Since: 3.40
+ **/
+guint64
+gs_app_get_release_date (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), 0);
+	return priv->release_date;
+}
+
+/**
+ * gs_app_set_release_date:
+ * @app: a #GsApp
+ * @release_date: an epoch, or 0
+ *
+ * Sets the date that an application was released.
+ *
+ * Since: 3.40
+ **/
+void
+gs_app_set_release_date (GsApp *app, guint64 release_date)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_if_fail (GS_IS_APP (app));
+	if (release_date == priv->release_date)
+		return;
+	priv->release_date = release_date;
+
+	gs_app_queue_notify (app, obj_props[PROP_RELEASE_DATE]);
+}
+
+/**
  * gs_app_is_installed:
  * @app: a #GsApp
  *
@@ -3479,10 +3896,10 @@ gs_app_is_installed (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), FALSE);
-	return (priv->state == AS_APP_STATE_INSTALLED) ||
-	       (priv->state == AS_APP_STATE_UPDATABLE) ||
-	       (priv->state == AS_APP_STATE_UPDATABLE_LIVE) ||
-	       (priv->state == AS_APP_STATE_REMOVING);
+	return (priv->state == GS_APP_STATE_INSTALLED) ||
+	       (priv->state == GS_APP_STATE_UPDATABLE) ||
+	       (priv->state == GS_APP_STATE_UPDATABLE_LIVE) ||
+	       (priv->state == GS_APP_STATE_REMOVING);
 }
 
 /**
@@ -3500,10 +3917,10 @@ gs_app_is_updatable (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), FALSE);
-	if (priv->kind == AS_APP_KIND_OS_UPGRADE)
+	if (priv->kind == AS_COMPONENT_KIND_OPERATING_SYSTEM)
 		return TRUE;
-	return (priv->state == AS_APP_STATE_UPDATABLE) ||
-	       (priv->state == AS_APP_STATE_UPDATABLE_LIVE);
+	return (priv->state == GS_APP_STATE_UPDATABLE) ||
+	       (priv->state == GS_APP_STATE_UPDATABLE_LIVE);
 }
 
 /**
@@ -3664,6 +4081,113 @@ gs_app_get_is_update_downloaded (GsApp *app)
 	return priv->is_update_downloaded;
 }
 
+static void
+calculate_key_colors (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GIcon) icon_small = NULL;
+	g_autoptr(GdkPixbuf) pb_small = NULL;
+	const gchar *overrides_str;
+
+	/* Lazily create the array */
+	if (priv->key_colors == NULL)
+		priv->key_colors = g_array_new (FALSE, FALSE, sizeof (GdkRGBA));
+
+	/* Look for an override first. Parse and use it if possible. This is
+	 * typically specified in the appdata for an app as:
+	 * |[
+	 * <component>
+	 *   <custom>
+	 *     <value key="GnomeSoftware::key-colors">[(124, 53, 77), (99, 16, 0)]</value>
+	 *   </custom>
+	 * </component>
+	 * ]|
+	 */
+	overrides_str = gs_app_get_metadata_item (app, "GnomeSoftware::key-colors");
+	if (overrides_str != NULL) {
+		g_autoptr(GVariant) overrides = NULL;
+		g_autoptr(GError) local_error = NULL;
+
+		overrides = g_variant_parse (G_VARIANT_TYPE ("a(yyy)"),
+					     overrides_str,
+					     NULL,
+					     NULL,
+					     &local_error);
+
+		if (overrides != NULL && g_variant_n_children (overrides) > 0) {
+			GVariantIter iter;
+			guint8 red, green, blue;
+
+			g_variant_iter_init (&iter, overrides);
+			while (g_variant_iter_loop (&iter, "(yyy)", &red, &green, &blue)) {
+				GdkRGBA rgba;
+				rgba.red = (gdouble) red / 255.0;
+				rgba.green = (gdouble) green / 255.0;
+				rgba.blue = (gdouble) blue / 255.0;
+				rgba.alpha = 1.0;
+				g_array_append_val (priv->key_colors, rgba);
+			}
+
+			return;
+		} else {
+			g_warning ("Invalid value for GnomeSoftware::key-colors for %s: %s",
+				   gs_app_get_id (app), local_error->message);
+			/* fall through */
+		}
+	}
+
+	/* Try and load the pixbuf. */
+	icon_small = gs_app_get_icon_for_size (app, 32, 1, NULL);
+
+	if (icon_small == NULL) {
+		g_debug ("no pixbuf, so no key colors");
+		return;
+	} else if (G_IS_LOADABLE_ICON (icon_small)) {
+		g_autoptr(GInputStream) icon_stream = g_loadable_icon_load (G_LOADABLE_ICON (icon_small), 32, NULL, NULL, NULL);
+		pb_small = gdk_pixbuf_new_from_stream_at_scale (icon_stream, 32, 32, TRUE, NULL, NULL);
+	} else if (G_IS_THEMED_ICON (icon_small)) {
+		g_autoptr(GtkIconTheme) theme = NULL;
+		g_autoptr(GtkIconInfo) icon_info = NULL;
+
+		if (gdk_screen_get_default () != NULL) {
+			theme = g_object_ref (gtk_icon_theme_get_default ());
+		} else {
+			const gchar *test_search_path;
+
+			/* This fallback path is needed for the unit tests,
+			 * which run without a screen, and in an environment
+			 * where the XDG dir variables don’t point to the system
+			 * datadir which contains the system icon theme. */
+			theme = gtk_icon_theme_new ();
+
+			test_search_path = g_getenv ("GS_SELF_TEST_ICON_THEME_PATH");
+			if (test_search_path != NULL) {
+				g_auto(GStrv) dirs = g_strsplit (test_search_path, ":", -1);
+
+				/* This prepends, so we have to iterate in reverse to preserve order */
+				for (gsize i = g_strv_length (dirs); i > 0; i--)
+					gtk_icon_theme_prepend_search_path (theme, dirs[i - 1]);
+			}
+		}
+
+		icon_info = gtk_icon_theme_lookup_by_gicon (theme, icon_small, 32, GTK_ICON_LOOKUP_USE_BUILTIN);
+		if (icon_info != NULL)
+			pb_small = gtk_icon_info_load_icon (icon_info, NULL);
+	} else {
+		g_debug ("unsupported pixbuf, so no key colors");
+		return;
+	}
+
+	if (pb_small == NULL) {
+		g_debug ("pixbuf couldn’t be loaded, so no key colors");
+		return;
+	}
+
+	/* get a list of key colors */
+	g_clear_pointer (&priv->key_colors, g_array_unref);
+	priv->key_colors = gs_calculate_key_colors (pb_small);
+}
+
 /**
  * gs_app_get_key_colors:
  * @app: a #GsApp
@@ -3672,13 +4196,17 @@ gs_app_get_is_update_downloaded (GsApp *app)
  *
  * Returns: (element-type GdkRGBA) (transfer none): a list
  *
- * Since: 3.22
+ * Since: 40
  **/
-GPtrArray *
+GArray *
 gs_app_get_key_colors (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	if (priv->key_colors == NULL)
+		calculate_key_colors (app);
+
 	return priv->key_colors;
 }
 
@@ -3689,17 +4217,17 @@ gs_app_get_key_colors (GsApp *app)
  *
  * Sets the key colors used in the application icon.
  *
- * Since: 3.22
+ * Since: 40
  **/
 void
-gs_app_set_key_colors (GsApp *app, GPtrArray *key_colors)
+gs_app_set_key_colors (GsApp *app, GArray *key_colors)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_colors != NULL);
 	locker = g_mutex_locker_new (&priv->mutex);
-	if (_g_set_ptr_array (&priv->key_colors, key_colors))
+	if (_g_set_array (&priv->key_colors, key_colors))
 		gs_app_queue_notify (app, obj_props[PROP_KEY_COLORS]);
 }
 
@@ -3708,7 +4236,7 @@ gs_app_set_key_colors (GsApp *app, GPtrArray *key_colors)
  * @app: a #GsApp
  * @key_color: a #GdkRGBA
  *
- * Adds a key colors used in the application icon.
+ * Adds a key color used in the application icon.
  *
  * Since: 3.22
  **/
@@ -3718,7 +4246,12 @@ gs_app_add_key_color (GsApp *app, GdkRGBA *key_color)
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_color != NULL);
-	g_ptr_array_add (priv->key_colors, gdk_rgba_copy (key_color));
+
+	/* Lazily create the array */
+	if (priv->key_colors == NULL)
+		priv->key_colors = g_array_new (FALSE, FALSE, sizeof (GdkRGBA));
+
+	g_array_append_val (priv->key_colors, *key_color);
 	gs_app_queue_notify (app, obj_props[PROP_KEY_COLORS]);
 }
 
@@ -4057,7 +4590,11 @@ gs_app_get_cancellable (GsApp *app)
 {
 	g_autoptr(GCancellable) cancellable = NULL;
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	locker = g_mutex_locker_new (&priv->mutex);
 
 	if (priv->cancellable == NULL || g_cancellable_is_cancelled (priv->cancellable)) {
 		cancellable = g_cancellable_new ();
@@ -4078,7 +4615,9 @@ GsPluginAction
 gs_app_get_pending_action (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_val_if_fail (GS_IS_APP (app), GS_PLUGIN_ACTION_UNKNOWN);
+	locker = g_mutex_locker_new (&priv->mutex);
 	return priv->pending_action;
 }
 
@@ -4094,7 +4633,9 @@ gs_app_set_pending_action (GsApp *app,
 			   GsPluginAction action)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&priv->mutex);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
 	gs_app_set_pending_action_internal (app, action);
 }
 
@@ -4126,8 +4667,11 @@ gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *
 	case PROP_KIND:
 		g_value_set_uint (value, priv->kind);
 		break;
+	case PROP_SPECIAL_KIND:
+		g_value_set_enum (value, priv->special_kind);
+		break;
 	case PROP_STATE:
-		g_value_set_uint (value, priv->state);
+		g_value_set_enum (value, priv->state);
 		break;
 	case PROP_PROGRESS:
 		g_value_set_uint (value, priv->progress);
@@ -4138,14 +4682,23 @@ gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *
 	case PROP_INSTALL_DATE:
 		g_value_set_uint64 (value, priv->install_date);
 		break;
+	case PROP_RELEASE_DATE:
+		g_value_set_uint64 (value, priv->release_date);
+		break;
 	case PROP_QUIRK:
-		g_value_set_uint64 (value, priv->quirk);
+		g_value_set_flags (value, priv->quirk);
+		break;
+	case PROP_PENDING_ACTION:
+		g_value_set_enum (value, priv->pending_action);
 		break;
 	case PROP_KEY_COLORS:
-		g_value_set_boxed (value, priv->key_colors);
+		g_value_set_boxed (value, gs_app_get_key_colors (app));
 		break;
 	case PROP_IS_UPDATE_DOWNLOADED:
 		g_value_set_boolean (value, priv->is_update_downloaded);
+		break;
+	case PROP_URL_MISSING:
+		g_value_set_string (value, priv->url_missing);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4187,8 +4740,11 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 	case PROP_KIND:
 		gs_app_set_kind (app, g_value_get_uint (value));
 		break;
+	case PROP_SPECIAL_KIND:
+		gs_app_set_special_kind (app, g_value_get_enum (value));
+		break;
 	case PROP_STATE:
-		gs_app_set_state_internal (app, g_value_get_uint (value));
+		gs_app_set_state_internal (app, g_value_get_enum (value));
 		break;
 	case PROP_PROGRESS:
 		gs_app_set_progress (app, g_value_get_uint (value));
@@ -4199,14 +4755,24 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 	case PROP_INSTALL_DATE:
 		gs_app_set_install_date (app, g_value_get_uint64 (value));
 		break;
+	case PROP_RELEASE_DATE:
+		gs_app_set_release_date (app, g_value_get_uint64 (value));
+		break;
 	case PROP_QUIRK:
-		priv->quirk = g_value_get_uint64 (value);
+		priv->quirk = g_value_get_flags (value);
+		break;
+	case PROP_PENDING_ACTION:
+		/* Read only */
+		g_assert_not_reached ();
 		break;
 	case PROP_KEY_COLORS:
 		gs_app_set_key_colors (app, g_value_get_boxed (value));
 		break;
 	case PROP_IS_UPDATE_DOWNLOADED:
 		gs_app_set_is_update_downloaded (app, g_value_get_boolean (value));
+		break;
+	case PROP_URL_MISSING:
+		gs_app_set_url_missing (app, g_value_get_string (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4228,8 +4794,9 @@ gs_app_dispose (GObject *object)
 	g_clear_pointer (&priv->screenshots, g_ptr_array_unref);
 	g_clear_pointer (&priv->review_ratings, g_array_unref);
 	g_clear_pointer (&priv->reviews, g_ptr_array_unref);
-	g_clear_pointer (&priv->provides, g_ptr_array_unref);
+	g_clear_pointer (&priv->provided, g_ptr_array_unref);
 	g_clear_pointer (&priv->icons, g_ptr_array_unref);
+	g_clear_pointer (&priv->version_history, g_ptr_array_unref);
 
 	G_OBJECT_CLASS (gs_app_parent_class)->dispose (object);
 }
@@ -4245,11 +4812,14 @@ gs_app_finalize (GObject *object)
 	g_free (priv->unique_id);
 	g_free (priv->branch);
 	g_free (priv->name);
+	g_free (priv->renamed_from);
+	g_free (priv->url_missing);
 	g_hash_table_unref (priv->urls);
 	g_hash_table_unref (priv->launchables);
 	g_free (priv->license);
 	g_strfreev (priv->menu_path);
 	g_free (priv->origin);
+	g_free (priv->origin_ui);
 	g_free (priv->origin_appstream);
 	g_free (priv->origin_hostname);
 	g_ptr_array_unref (priv->sources);
@@ -4268,14 +4838,12 @@ gs_app_finalize (GObject *object)
 	g_free (priv->management_plugin);
 	g_hash_table_unref (priv->metadata);
 	g_ptr_array_unref (priv->categories);
-	g_ptr_array_unref (priv->key_colors);
+	g_clear_pointer (&priv->key_colors, g_array_unref);
 	g_clear_object (&priv->cancellable);
 	if (priv->local_file != NULL)
 		g_object_unref (priv->local_file);
 	if (priv->content_rating != NULL)
 		g_object_unref (priv->content_rating);
-	if (priv->pixbuf != NULL)
-		g_object_unref (priv->pixbuf);
 	if (priv->action_screenshot != NULL)
 		g_object_unref (priv->action_screenshot);
 
@@ -4336,19 +4904,32 @@ gs_app_class_init (GsAppClass *klass)
 	/**
 	 * GsApp:kind:
 	 */
+	/* FIXME: Should use AS_TYPE_APP_KIND when it’s available */
 	obj_props[PROP_KIND] = g_param_spec_uint ("kind", NULL, NULL,
-				   AS_APP_KIND_UNKNOWN,
-				   AS_APP_KIND_LAST,
-				   AS_APP_KIND_UNKNOWN,
+				   AS_COMPONENT_KIND_UNKNOWN,
+				   AS_COMPONENT_KIND_LAST,
+				   AS_COMPONENT_KIND_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+
+	/**
+	 * GsApp:special-kind:
+	 *
+	 * GNOME Software specific occupation of the #GsApp entity
+	 * that does not reflect a software type defined by AppStream.
+	 *
+	 * Since: 40
+	 */
+	obj_props[PROP_SPECIAL_KIND] = g_param_spec_enum ("special-kind", NULL, NULL,
+					GS_TYPE_APP_SPECIAL_KIND,
+					GS_APP_SPECIAL_KIND_NONE,
+					G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:state:
 	 */
-	obj_props[PROP_STATE] = g_param_spec_uint ("state", NULL, NULL,
-				   AS_APP_STATE_UNKNOWN,
-				   AS_APP_STATE_LAST,
-				   AS_APP_STATE_UNKNOWN,
+	obj_props[PROP_STATE] = g_param_spec_enum ("state", NULL, NULL,
+				   GS_TYPE_APP_STATE,
+				   GS_APP_STATE_UNKNOWN,
 				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
 	/**
@@ -4378,24 +4959,36 @@ gs_app_class_init (GsAppClass *klass)
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
 	/**
+	 * GsApp:release-date:
+	 *
+	 * Set to the release date of the application on the server. Can be 0,
+	 * which means the release date is unknown.
+	 *
+	 * Since: 3.40
+	 */
+	obj_props[PROP_RELEASE_DATE] = g_param_spec_uint64 ("release-date", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+
+	/**
 	 * GsApp:quirk:
 	 */
-	obj_props[PROP_QUIRK] = g_param_spec_uint64 ("quirk", NULL, NULL,
-				     0, G_MAXUINT64, 0,
+	obj_props[PROP_QUIRK] = g_param_spec_flags ("quirk", NULL, NULL,
+				     GS_TYPE_APP_QUIRK, GS_APP_QUIRK_NONE,
 				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
 	/**
 	 * GsApp:pending-action:
 	 */
-	obj_props[PROP_PENDING_ACTION] = g_param_spec_uint64 ("pending-action", NULL, NULL,
-				     0, G_MAXUINT64, 0,
+	obj_props[PROP_PENDING_ACTION] = g_param_spec_enum ("pending-action", NULL, NULL,
+				     GS_TYPE_PLUGIN_ACTION, GS_PLUGIN_ACTION_UNKNOWN,
 				     G_PARAM_READABLE);
 
 	/**
 	 * GsApp:key-colors:
 	 */
 	obj_props[PROP_KEY_COLORS] = g_param_spec_boxed ("key-colors", NULL, NULL,
-				    G_TYPE_PTR_ARRAY, G_PARAM_READWRITE);
+				    G_TYPE_ARRAY, G_PARAM_READWRITE);
 
 	/**
 	 * GsApp:is-update-downloaded:
@@ -4403,6 +4996,18 @@ gs_app_class_init (GsAppClass *klass)
 	obj_props[PROP_IS_UPDATE_DOWNLOADED] = g_param_spec_boolean ("is-update-downloaded", NULL, NULL,
 					       FALSE,
 					       G_PARAM_READWRITE);
+
+	/**
+	 * GsApp:url-missing:
+	 *
+	 * A web URL pointing to explanations why this app
+	 * does not have an installation candidate.
+	 *
+	 * Since: 40
+	 */
+	obj_props[PROP_URL_MISSING] = g_param_spec_string ("url-missing", NULL, NULL,
+					NULL,
+					G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
 
 	g_object_class_install_properties (object_class, PROP_LAST, obj_props);
 }
@@ -4415,14 +5020,12 @@ gs_app_init (GsApp *app)
 	priv->sources = g_ptr_array_new_with_free_func (g_free);
 	priv->source_ids = g_ptr_array_new_with_free_func (g_free);
 	priv->categories = g_ptr_array_new_with_free_func (g_free);
-	priv->key_colors = g_ptr_array_new_with_free_func ((GDestroyNotify) gdk_rgba_free);
 	priv->addons = gs_app_list_new ();
 	priv->related = gs_app_list_new ();
 	priv->history = gs_app_list_new ();
 	priv->screenshots = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->reviews = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->provides = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
-	priv->icons = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
+	priv->provided = g_ptr_array_new_with_free_func ((GDestroyNotify) g_object_unref);
 	priv->metadata = g_hash_table_new_full (g_str_hash,
 	                                        g_str_equal,
 	                                        g_free,
@@ -4433,7 +5036,7 @@ gs_app_init (GsApp *app)
 	                                    g_free);
 	priv->launchables = g_hash_table_new_full (g_str_hash,
 	                                           g_str_equal,
-	                                           g_free,
+	                                           NULL,
 	                                           g_free);
 	priv->allow_cancel = TRUE;
 	g_mutex_init (&priv->mutex);
@@ -4484,28 +5087,29 @@ gs_app_new (const gchar *id)
  * Since: 3.26
  **/
 void
-gs_app_set_from_unique_id (GsApp *app, const gchar *unique_id)
+gs_app_set_from_unique_id (GsApp *app, const gchar *unique_id, AsComponentKind kind)
 {
 	g_auto(GStrv) split = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (unique_id != NULL);
 
+	if (kind != AS_COMPONENT_KIND_UNKNOWN)
+		gs_app_set_kind (app, kind);
+
 	split = g_strsplit (unique_id, "/", -1);
-	if (g_strv_length (split) != 6)
+	if (g_strv_length (split) != 5)
 		return;
 	if (g_strcmp0 (split[0], "*") != 0)
-		gs_app_set_scope (app, as_app_scope_from_string (split[0]));
+		gs_app_set_scope (app, as_component_scope_from_string (split[0]));
 	if (g_strcmp0 (split[1], "*") != 0)
 		gs_app_set_bundle_kind (app, as_bundle_kind_from_string (split[1]));
 	if (g_strcmp0 (split[2], "*") != 0)
 		gs_app_set_origin (app, split[2]);
 	if (g_strcmp0 (split[3], "*") != 0)
-		gs_app_set_kind (app, as_app_kind_from_string (split[3]));
+		gs_app_set_id (app, split[3]);
 	if (g_strcmp0 (split[4], "*") != 0)
-		gs_app_set_id (app, split[4]);
-	if (g_strcmp0 (split[5], "*") != 0)
-		gs_app_set_branch (app, split[5]);
+		gs_app_set_branch (app, split[4]);
 }
 
 /**
@@ -4529,7 +5133,7 @@ gs_app_new_from_unique_id (const gchar *unique_id)
 	GsApp *app;
 	g_return_val_if_fail (unique_id != NULL, NULL);
 	app = gs_app_new (NULL);
-	gs_app_set_from_unique_id (app, unique_id);
+	gs_app_set_from_unique_id (app, unique_id, AS_COMPONENT_KIND_UNKNOWN);
 	return app;
 }
 
@@ -4546,28 +5150,72 @@ gs_app_new_from_unique_id (const gchar *unique_id)
 gchar *
 gs_app_get_origin_ui (GsApp *app)
 {
+	GsAppPrivate *priv;
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_autoptr(GsOsRelease) os_release = NULL;
+	g_autofree gchar *packaging_format = NULL;
+	const gchar *origin_str = NULL;
+
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
 	/* use the distro name for official packages */
 	if (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE)) {
-		g_autoptr(GsOsRelease) os_release = gs_os_release_new (NULL);
+		os_release = gs_os_release_new (NULL);
 		if (os_release != NULL)
-			return g_strdup (gs_os_release_get_name (os_release));
+			origin_str = gs_os_release_get_name (os_release);
 	}
 
-	/* use "Local file" rather than the filename for local files */
-	if (gs_app_get_state (app) == AS_APP_STATE_AVAILABLE_LOCAL) {
-		/* TRANSLATORS: this is a locally downloaded package */
-		return g_strdup (_("Local file"));
+	priv = gs_app_get_instance_private (app);
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (!origin_str) {
+		origin_str = priv->origin_ui;
+
+		if (origin_str == NULL || origin_str[0] == '\0') {
+			/* use "Local file" rather than the filename for local files */
+			if (gs_app_get_state (app) == GS_APP_STATE_AVAILABLE_LOCAL)
+				origin_str = _("Local file");
+			else if (g_strcmp0 (gs_app_get_origin (app), "flathub") == 0)
+				origin_str = "Flathub";
+			else if (g_strcmp0 (gs_app_get_origin (app), "flathub-beta") == 0)
+				origin_str = "Flathub Beta";
+			else
+				origin_str = gs_app_get_origin (app);
+		}
 	}
 
-	/* capitalize "Flathub" and "Flathub Beta" */
-	if (g_strcmp0 (gs_app_get_origin (app), "flathub") == 0) {
-		return g_strdup ("Flathub");
-	} else if (g_strcmp0 (gs_app_get_origin (app), "flathub-beta") == 0) {
-		return g_strdup ("Flathub Beta");
+	packaging_format = gs_app_get_packaging_format (app);
+
+	if (packaging_format) {
+		/* TRANSLATORS: the first %s is replaced with an origin name;
+		   the second %s is replaced with the packaging format.
+		   Example string: "Local file (RPM)" */
+		return g_strdup_printf (_("%s (%s)"), origin_str, packaging_format);
 	}
 
-	/* fall back to origin */
-	return g_strdup (gs_app_get_origin (app));
+	return g_strdup (origin_str);
+}
+
+void
+gs_app_set_origin_ui (GsApp *app,
+		      const gchar *origin_ui)
+{
+	GsAppPrivate *priv;
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	g_return_if_fail (GS_IS_APP (app));
+
+	priv = gs_app_get_instance_private (app);
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (origin_ui && !*origin_ui)
+		origin_ui = NULL;
+
+	if (g_strcmp0 (priv->origin_ui, origin_ui) == 0)
+		return;
+
+	g_free (priv->origin_ui);
+	priv->origin_ui = g_strdup (origin_ui);
 }
 
 /**
@@ -4586,6 +5234,8 @@ gs_app_get_packaging_format (GsApp *app)
 	AsBundleKind bundle_kind;
 	const gchar *bundle_kind_ui;
 	const gchar *packaging_format;
+
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
 
 	/* does the app have packaging format set? */
 	packaging_format = gs_app_get_metadata_item (app, "GnomeSoftware::PackagingFormat");
@@ -4637,7 +5287,12 @@ void
 gs_app_subsume_metadata (GsApp *app, GsApp *donor)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (donor);
-	g_autoptr(GList) keys = g_hash_table_get_keys (priv->metadata);
+	g_autoptr(GList) keys = NULL;
+
+	g_return_if_fail (GS_IS_APP (app));
+	g_return_if_fail (GS_IS_APP (donor));
+
+	keys = g_hash_table_get_keys (priv->metadata);
 	for (GList *l = keys; l != NULL; l = l->next) {
 		const gchar *key = l->data;
 		GVariant *tmp = gs_app_get_metadata_variant (donor, key);
@@ -4651,7 +5306,7 @@ GsAppPermissions
 gs_app_get_permissions (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-
+	g_return_val_if_fail (GS_IS_APP (app), GS_APP_PERMISSIONS_UNKNOWN);
 	return priv->permissions;
 }
 
@@ -4659,7 +5314,7 @@ void
 gs_app_set_permissions (GsApp *app, GsAppPermissions permissions)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-
+	g_return_if_fail (GS_IS_APP (app));
 	priv->permissions = permissions;
 }
 
@@ -4667,7 +5322,7 @@ GsAppPermissions
 gs_app_get_update_permissions (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-
+	g_return_val_if_fail (GS_IS_APP (app), GS_APP_PERMISSIONS_UNKNOWN);
 	return priv->update_permissions;
 }
 
@@ -4675,6 +5330,106 @@ void
 gs_app_set_update_permissions (GsApp *app, GsAppPermissions update_permissions)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-
+	g_return_if_fail (GS_IS_APP (app));
 	priv->update_permissions = update_permissions;
+}
+
+/**
+ * gs_app_get_version_history:
+ * @app: a #GsApp
+ *
+ * Gets the list of past releases for an application (including the latest
+ * one).
+ *
+ * Returns: (element-type AsRelease) (transfer container) (nullable): a list, or
+ *     %NULL if the version history is not known
+ *
+ * Since: 41
+ **/
+GPtrArray *
+gs_app_get_version_history (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	locker = g_mutex_locker_new (&priv->mutex);
+	if (priv->version_history == NULL)
+		return NULL;
+	return g_ptr_array_ref (priv->version_history);
+}
+
+/**
+ * gs_app_set_version_history:
+ * @app: a #GsApp
+ * @version_history: (element-type AsRelease) (nullable): a set of entries
+ *   representing the version history, or %NULL if none are known
+ *
+ * Set the list of past releases for an application (including the latest one).
+ *
+ * Since: 40
+ **/
+void
+gs_app_set_version_history (GsApp *app, GPtrArray *version_history)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+
+	if (version_history != NULL && version_history->len == 0)
+		version_history = NULL;
+
+	locker = g_mutex_locker_new (&priv->mutex);
+	_g_set_ptr_array (&priv->version_history, version_history);
+}
+
+/**
+ * gs_app_ensure_icons_downloaded:
+ * @app: a #GsApp
+ * @soup_session: a #SoupSession
+ * @maximum_icon_size: maximum icon size
+ * @cancellable: (nullable): optional #GCancellable object
+ *
+ * Ensure all remote icons in the @app's icons are locally cached.
+ *
+ * Since: 41
+ **/
+void
+gs_app_ensure_icons_downloaded (GsApp *app,
+				SoupSession *soup_session,
+				guint maximum_icon_size,
+				GCancellable *cancellable)
+{
+	GsAppPrivate *priv;
+	g_autoptr(GMutexLocker) locker = NULL;
+	GPtrArray *icons;
+	guint i;
+
+	g_return_if_fail (GS_IS_APP (app));
+
+	priv = gs_app_get_instance_private (app);
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	/* process all icons */
+	icons = priv->icons;
+
+	for (i = 0; icons != NULL && i < icons->len; i++) {
+		GIcon *icon = g_ptr_array_index (icons, i);
+		g_autoptr(GError) error_local = NULL;
+
+		/* Only remote icons need to be cached. */
+		if (!GS_IS_REMOTE_ICON (icon))
+			continue;
+
+		if (!gs_remote_icon_ensure_cached (GS_REMOTE_ICON (icon),
+						   soup_session,
+						   maximum_icon_size,
+						   cancellable,
+						   &error_local)) {
+			/* we failed, but keep going */
+			g_debug ("failed to cache icon for %s: %s",
+				 gs_app_get_id (app),
+				 error_local->message);
+		}
+	}
 }

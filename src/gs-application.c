@@ -16,6 +16,7 @@
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 #include <gio/gdesktopappinfo.h>
+#include <handy.h>
 #include <libsoup/soup.h>
 
 #ifdef GDK_WINDOWING_X11
@@ -29,6 +30,8 @@
 #include "gs-dbus-helper.h"
 #endif
 
+#include "gs-build-ident.h"
+#include "gs-debug.h"
 #include "gs-first-run-dialog.h"
 #include "gs-shell.h"
 #include "gs-update-monitor.h"
@@ -48,18 +51,42 @@ struct _GsApplication {
 #ifdef HAVE_PACKAGEKIT
 	GsDbusHelper	*dbus_helper;
 #endif
-	GsShellSearchProvider *search_provider;
+	GsShellSearchProvider *search_provider;  /* (nullable) (owned) */
 	GSettings       *settings;
 	GSimpleActionGroup	*action_map;
 	guint		 shell_loaded_handler_id;
+	GsDebug		*debug;  /* (owned) (not nullable) */
 };
 
 G_DEFINE_TYPE (GsApplication, gs_application, GTK_TYPE_APPLICATION);
 
+typedef enum {
+	PROP_DEBUG = 1,
+} GsApplicationProperty;
+
+static GParamSpec *obj_props[PROP_DEBUG + 1] = { NULL, };
+
+enum {
+	INSTALL_RESOURCES_DONE,
+	REPOSITORY_CHANGED,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL];
+
+static const char *
+get_version (void)
+{
+	if (g_strcmp0 (BUILD_TYPE, "release") == 0)
+		return VERSION;
+	else
+		return GS_BUILD_IDENTIFIER;
+}
+
 typedef struct {
 	GsApplication *app;
 	GSimpleAction *action;
-	GVariant *action_param;
+	GVariant *action_param;  /* (nullable) */
 } GsActivationHelper;
 
 static GsActivationHelper *
@@ -70,7 +97,7 @@ gs_activation_helper_new (GsApplication *app,
 	GsActivationHelper *helper = g_slice_new0 (GsActivationHelper);
 	helper->app = app;
 	helper->action = G_SIMPLE_ACTION (action);
-	helper->action_param = parameter;
+	helper->action_param = (parameter != NULL) ? g_variant_ref_sink (parameter) : NULL;
 
 	return helper;
 }
@@ -78,7 +105,7 @@ gs_activation_helper_new (GsApplication *app,
 static void
 gs_activation_helper_free (GsActivationHelper *helper)
 {
-	g_variant_unref (helper->action_param);
+	g_clear_pointer (&helper->action_param, g_variant_unref);
 	g_slice_free (GsActivationHelper, helper);
 }
 
@@ -326,7 +353,7 @@ about_activated (GSimpleAction *action,
 	gtk_about_dialog_set_license_type (dialog, GTK_LICENSE_GPL_2_0);
 	gtk_about_dialog_set_logo_icon_name (dialog, "org.gnome.Software");
 	gtk_about_dialog_set_translator_credits (dialog, _("translator-credits"));
-	gtk_about_dialog_set_version (dialog, VERSION);
+	gtk_about_dialog_set_version (dialog, get_version());
 	gtk_about_dialog_set_program_name (dialog, g_get_application_name ());
 
 	/* TRANSLATORS: this is the title of the about window */
@@ -586,9 +613,11 @@ details_activated (GSimpleAction *action,
 		gs_shell_reset_state (app->shell);
 		gs_shell_show_search_result (app->shell, id, search);
 	} else {
+		g_autofree gchar *data_id = NULL;
 		g_autoptr(GsPluginJob) plugin_job = NULL;
-		if (as_utils_unique_id_valid (id)) {
-			g_autoptr(GsApp) a = gs_plugin_loader_app_create (app->plugin_loader, id);
+		data_id = gs_utils_unique_id_compat_convert (id);
+		if (data_id != NULL) {
+			g_autoptr(GsApp) a = gs_plugin_loader_app_create (app->plugin_loader, data_id);
 			gs_shell_reset_state (app->shell);
 			gs_shell_show_app (app->shell, a);
 			return;
@@ -659,9 +688,11 @@ install_activated (GSimpleAction *action,
 	const gchar *id;
 	GsShellInteraction interaction;
 	g_autoptr (GsApp) a = NULL;
+	g_autofree gchar *data_id = NULL;
 
 	g_variant_get (parameter, "(&su)", &id, &interaction);
-	if (!as_utils_unique_id_valid (id)) {
+	data_id = gs_utils_unique_id_compat_convert (id);
+	if (data_id == NULL) {
 		g_warning ("Need to use a valid unique-id: %s", id);
 		return;
 	}
@@ -669,9 +700,9 @@ install_activated (GSimpleAction *action,
 	if (interaction == GS_SHELL_INTERACTION_FULL)
 		gs_application_present_window (app, NULL);
 
-	a = gs_plugin_loader_app_create (app->plugin_loader, id);
+	a = gs_plugin_loader_app_create (app->plugin_loader, data_id);
 	if (a == NULL) {
-		g_warning ("Could not create app from unique-id: %s", id);
+		g_warning ("Could not create app from data-id: %s", data_id);
 		return;
 	}
 
@@ -741,22 +772,42 @@ launch_activated (GSimpleAction *action,
 		  gpointer       data)
 {
 	GsApplication *self = GS_APPLICATION (data);
-	const gchar *id;
-	g_autoptr(GsApp) app = NULL;
-	g_autoptr(GsPluginJob) refine_job = NULL;
+	GsApp *app = NULL;
+	const gchar *id, *management_plugin;
+	g_autoptr(GsAppList) list = NULL;
+	g_autoptr(GsPluginJob) search_job = NULL;
 	g_autoptr(GsPluginJob) launch_job = NULL;
 	g_autoptr(GError) error = NULL;
+	guint ii, len;
 
-	id = g_variant_get_string (parameter, NULL);
-	app = gs_app_new (id);
-	refine_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION,
+	g_variant_get (parameter, "(&s&s)", &id, &management_plugin);
+
+	search_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
+					 "search", id,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME,
 					 NULL);
-	if (!gs_plugin_loader_job_action (self->plugin_loader, refine_job, self->cancellable, &error)) {
-		g_warning ("Failed to refine app: %s", error->message);
+	list = gs_plugin_loader_job_process (self->plugin_loader, search_job, self->cancellable, &error);
+	if (!list) {
+		g_warning ("Failed to search for application '%s' (from '%s'): %s", id, management_plugin, error ? error->message : "Unknown error");
 		return;
 	}
+
+	len = gs_app_list_length (list);
+	for (ii = 0; ii < len && !app; ii++) {
+		GsApp *list_app = gs_app_list_index (list, ii);
+
+		if (gs_app_is_installed (list_app) &&
+		    g_strcmp0 (gs_app_get_management_plugin (list_app), management_plugin) == 0)
+			app = list_app;
+	}
+
+	if (!app) {
+		g_warning ("Did not find application '%s' from '%s'", id, management_plugin);
+		return;
+	}
+
 	launch_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_LAUNCH,
 					 "app", app,
 					 NULL);
@@ -798,9 +849,11 @@ install_resources_activated (GSimpleAction *action,
 	GdkDisplay *display;
 	const gchar *mode;
 	const gchar *startup_id;
+	const gchar *desktop_id;
+	const gchar *ident;
 	g_autofree gchar **resources = NULL;
 
-	g_variant_get (parameter, "(&s^a&s&s)", &mode, &resources, &startup_id);
+	g_variant_get (parameter, "(&s^a&s&s&s&s)", &mode, &resources, &startup_id, &desktop_id, &ident);
 
 	display = gdk_display_get_default ();
 #ifdef GDK_WINDOWING_X11
@@ -821,7 +874,7 @@ install_resources_activated (GSimpleAction *action,
 	gs_application_present_window (app, startup_id);
 
 	gs_shell_reset_state (app->shell);
-	gs_shell_show_extras_search (app->shell, mode, resources);
+	gs_shell_show_extras_search (app->shell, mode, resources, desktop_id, ident);
 }
 
 static GActionEntry actions[] = {
@@ -830,7 +883,7 @@ static GActionEntry actions[] = {
 	{ "reboot-and-install", reboot_and_install, NULL, NULL, NULL },
 	{ "reboot", reboot_activated, NULL, NULL, NULL },
 	{ "shutdown", shutdown_activated, NULL, NULL, NULL },
-	{ "launch", launch_activated, "s", NULL, NULL },
+	{ "launch", launch_activated, "(ss)", NULL, NULL },
 	{ "show-offline-update-error", show_offline_updates_error, NULL, NULL, NULL },
 	{ "autoupdate", autoupdate_activated, NULL, NULL, NULL },
 	{ "nop", NULL, NULL, NULL }
@@ -846,7 +899,7 @@ static GActionEntry actions_after_loading[] = {
 	{ "details-url", details_url_activated, "(s)", NULL, NULL },
 	{ "install", install_activated, "(su)", NULL, NULL },
 	{ "filename", filename_activated, "(s)", NULL, NULL },
-	{ "install-resources", install_resources_activated, "(sass)", NULL, NULL },
+	{ "install-resources", install_resources_activated, "(sassss)", NULL, NULL },
 	{ "nop", NULL, NULL, NULL }
 };
 
@@ -878,7 +931,8 @@ static void
 gs_application_setup_search_provider (GsApplication *app)
 {
 	gs_application_initialize_plugins (app);
-	gs_shell_search_provider_setup (app->search_provider, app->plugin_loader);
+	if (app->search_provider)
+		gs_shell_search_provider_setup (app->search_provider, app->plugin_loader);
 }
 
 static void
@@ -894,7 +948,7 @@ wrapper_action_activated_cb (GSimpleAction *action,
 	if (app->shell_loaded_handler_id != 0) {
 		GsActivationHelper *helper = gs_activation_helper_new (app,
 								       G_SIMPLE_ACTION (real_action),
-								       g_variant_ref (parameter));
+								       parameter);
 
 		g_signal_connect_swapped (app->shell, "loaded",
 					  G_CALLBACK (activate_on_shell_loaded_cb), helper);
@@ -945,6 +999,8 @@ gs_application_startup (GApplication *application)
 	GsApplication *app = GS_APPLICATION (application);
 	G_APPLICATION_CLASS (gs_application_parent_class)->startup (application);
 
+	hdy_init ();
+
 	gs_application_add_wrapper_actions (application);
 
 	g_action_map_add_action_entries (G_ACTION_MAP (application),
@@ -985,6 +1041,55 @@ gs_application_activate (GApplication *application)
 }
 
 static void
+gs_application_constructed (GObject *object)
+{
+	GsApplication *self = GS_APPLICATION (object);
+
+	G_OBJECT_CLASS (gs_application_parent_class)->constructed (object);
+
+	/* Check on our construct-only properties */
+	g_assert (self->debug != NULL);
+}
+
+static void
+gs_application_get_property (GObject    *object,
+                             guint       prop_id,
+                             GValue     *value,
+                             GParamSpec *pspec)
+{
+	GsApplication *self = GS_APPLICATION (object);
+
+	switch ((GsApplicationProperty) prop_id) {
+	case PROP_DEBUG:
+		g_value_set_object (value, self->debug);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
+gs_application_set_property (GObject      *object,
+                             guint         prop_id,
+                             const GValue *value,
+                             GParamSpec   *pspec)
+{
+	GsApplication *self = GS_APPLICATION (object);
+
+	switch ((GsApplicationProperty) prop_id) {
+	case PROP_DEBUG:
+		/* Construct only */
+		g_assert (self->debug == NULL);
+		self->debug = g_value_dup_object (value);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
 gs_application_dispose (GObject *object)
 {
 	GsApplication *app = GS_APPLICATION (object);
@@ -1001,6 +1106,7 @@ gs_application_dispose (GObject *object)
 #endif
 	g_clear_object (&app->settings);
 	g_clear_object (&app->action_map);
+	g_clear_object (&app->debug);
 
 	G_OBJECT_CLASS (gs_application_parent_class)->dispose (object);
 }
@@ -1018,6 +1124,7 @@ get_page_interaction_from_string (const gchar *interaction)
 static int
 gs_application_handle_local_options (GApplication *app, GVariantDict *options)
 {
+	GsApplication *self = GS_APPLICATION (app);
 	const gchar *id;
 	const gchar *pkgname;
 	const gchar *local_filename;
@@ -1026,15 +1133,14 @@ gs_application_handle_local_options (GApplication *app, GVariantDict *options)
 	gint rc = -1;
 	g_autoptr(GError) error = NULL;
 
-	if (g_variant_dict_contains (options, "verbose"))
-		g_setenv ("GS_DEBUG", "1", TRUE);
+	gs_debug_set_verbose (self->debug, g_variant_dict_contains (options, "verbose"));
 
 	/* prefer local sources */
 	if (g_variant_dict_contains (options, "prefer-local"))
 		g_setenv ("GNOME_SOFTWARE_PREFER_LOCAL", "true", TRUE);
 
 	if (g_variant_dict_contains (options, "version")) {
-		g_print ("gnome-software " VERSION "\n");
+		g_print ("gnome-software %s\n", get_version());
 		return 0;
 	}
 
@@ -1128,23 +1234,102 @@ gs_application_open (GApplication  *application,
 }
 
 static void
-gs_application_class_init (GsApplicationClass *class)
+gs_application_class_init (GsApplicationClass *klass)
 {
-	G_OBJECT_CLASS (class)->dispose = gs_application_dispose;
-	G_APPLICATION_CLASS (class)->startup = gs_application_startup;
-	G_APPLICATION_CLASS (class)->activate = gs_application_activate;
-	G_APPLICATION_CLASS (class)->handle_local_options = gs_application_handle_local_options;
-	G_APPLICATION_CLASS (class)->open = gs_application_open;
-	G_APPLICATION_CLASS (class)->dbus_register = gs_application_dbus_register;
-	G_APPLICATION_CLASS (class)->dbus_unregister = gs_application_dbus_unregister;
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GApplicationClass *application_class = G_APPLICATION_CLASS (klass);
+
+	object_class->constructed = gs_application_constructed;
+	object_class->get_property = gs_application_get_property;
+	object_class->set_property = gs_application_set_property;
+	object_class->dispose = gs_application_dispose;
+
+	application_class->startup = gs_application_startup;
+	application_class->activate = gs_application_activate;
+	application_class->handle_local_options = gs_application_handle_local_options;
+	application_class->open = gs_application_open;
+	application_class->dbus_register = gs_application_dbus_register;
+	application_class->dbus_unregister = gs_application_dbus_unregister;
+
+	/**
+	 * GsApplication:debug: (nullable)
+	 *
+	 * A #GsDebug object to control debug and logging output from the
+	 * application and everything within it.
+	 *
+	 * This may be %NULL if you don’t care about log output.
+	 *
+	 * Since: 40
+	 */
+	obj_props[PROP_DEBUG] =
+		g_param_spec_object ("debug", NULL, NULL,
+				     GS_TYPE_DEBUG,
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+
+	g_object_class_install_properties (object_class, G_N_ELEMENTS (obj_props), obj_props);
+
+	/**
+	 * GsApplication::install-resources-done:
+	 * @ident: Operation identificator, as string
+	 * @op_error: (nullable): an install #GError, or %NULL on success
+	 *
+	 * Emitted after a resource installation operation identified by @ident
+	 * had finished. The @op_error can hold eventual error message, when
+	 * the installation failed.
+	 */
+	signals[INSTALL_RESOURCES_DONE] = g_signal_new (
+		"install-resources-done",
+		G_TYPE_FROM_CLASS (klass),
+		G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE,
+		0,
+		NULL, NULL,
+		NULL,
+		G_TYPE_NONE, 2,
+		G_TYPE_STRING, G_TYPE_ERROR);
+
+	/**
+	 * GsApplication::repository-changed:
+	 * @repository: a #GsApp of the repository
+	 *
+	 * Emitted when the repository changed, usually when it is enabled or disabled.
+	 *
+	 * Since: 40
+	 */
+	signals[REPOSITORY_CHANGED] = g_signal_new (
+		"repository-changed",
+		G_TYPE_FROM_CLASS (klass),
+		G_SIGNAL_ACTION | G_SIGNAL_NO_RECURSE,
+		0,
+		NULL, NULL,
+		NULL,
+		G_TYPE_NONE, 1,
+		GS_TYPE_APP);
 }
 
+/**
+ * gs_application_new:
+ * @debug: (transfer none) (not nullable): a #GsDebug for the application instance
+ *
+ * Create a new #GsApplication.
+ *
+ * Returns: (transfer full): a new #GsApplication
+ * Since: 40
+ */
 GsApplication *
-gs_application_new (void)
+gs_application_new (GsDebug *debug)
 {
 	return g_object_new (GS_APPLICATION_TYPE,
 			     "application-id", "org.gnome.Software",
 			     "flags", G_APPLICATION_HANDLES_OPEN,
 			     "inactivity-timeout", 12000,
+			     "debug", debug,
 			     NULL);
+}
+
+void
+gs_application_emit_install_resources_done (GsApplication *application,
+					    const gchar *ident,
+					    const GError *op_error)
+{
+	g_signal_emit (application, signals[INSTALL_RESOURCES_DONE], 0, ident, op_error, NULL);
 }

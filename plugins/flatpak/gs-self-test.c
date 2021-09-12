@@ -95,7 +95,7 @@ gs_plugins_flatpak_repo_non_ascii_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
-	g_assert_cmpstr (gs_app_get_unique_id (app), ==, "*/*/*/source/example__1____/master");
+	g_assert_cmpstr (gs_app_get_unique_id (app), ==, "*/*/*/example__1____/master");
 }
 
 static void
@@ -115,6 +115,7 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app2 = NULL;
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	g_autoptr(GIcon) icon = NULL;
 
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
@@ -139,8 +140,8 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_SOURCE);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_REPOSITORY);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "example");
 	g_assert_cmpstr (gs_app_get_management_plugin (app), ==, "flatpak");
 	g_assert_cmpstr (gs_app_get_origin_hostname (app), ==, "localhost");
@@ -150,7 +151,8 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpstr (gs_app_get_description (app), ==,
 			 "Longer multiline comment that does into detail.");
 	g_assert_true (gs_app_get_local_file (app) != NULL);
-	g_assert_true (gs_app_get_pixbuf (app) != NULL);
+	icon = gs_app_get_icon_for_size (app, 64, 1, NULL);
+	g_assert_nonnull (icon);
 
 	/* now install the remote */
 	g_object_unref (plugin_job);
@@ -161,7 +163,7 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 
 	/* check config file was updated */
 	root = g_getenv ("GS_SELF_TEST_FLATPAK_DATADIR");
@@ -189,7 +191,7 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (app2 != NULL);
-	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app2), ==, GS_APP_STATE_INSTALLED);
 
 	/* remove it */
 	g_object_unref (plugin_job);
@@ -200,7 +202,7 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UNAVAILABLE);
 	g_assert_cmpint (gs_app_get_progress (app), ==, GS_APP_PROGRESS_UNKNOWN);
 }
 
@@ -278,9 +280,9 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	if (testdir == NULL)
 		return;
 	testdir_repourl = g_strdup_printf ("file://%s/repo", testdir);
-	gs_app_set_kind (app_source, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_management_plugin (app_source, "flatpak");
-	gs_app_set_state (app_source, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, testdir_repourl);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app_source,
@@ -289,7 +291,7 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_INSTALLED);
 
 	/* check remote was set up */
 	ret = g_key_file_load_from_file (kf2, config_fn, G_KEY_FILE_NONE, &error);
@@ -308,7 +310,7 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (sources), ==, 1);
 	app = gs_app_list_index (sources, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "test");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_SOURCE);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_REPOSITORY);
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
@@ -349,8 +351,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 	g_assert_cmpint ((gint64) gs_app_get_kudos (app), ==,
 			 GS_APP_KUDO_MY_LANGUAGE |
 			 GS_APP_KUDO_HAS_KEYWORDS |
@@ -366,8 +368,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	/* check runtime */
 	runtime = gs_app_get_runtime (app);
 	g_assert_true (runtime != NULL);
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/runtime/org.test.Runtime/master");
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/org.test.Runtime/master");
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* install, also installing runtime */
 	g_object_unref (plugin_job);
@@ -378,10 +380,11 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
-	g_assert_cmpint (gs_app_get_progress (app), ==, GS_APP_PROGRESS_UNKNOWN);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
+	g_assert_true (gs_app_get_progress (app) == GS_APP_PROGRESS_UNKNOWN ||
+		       gs_app_get_progress (app) == 100);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_INSTALLED);
 
 	/* check the application exists in the right places */
 	metadata_fn = g_build_filename (root,
@@ -429,8 +432,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_INSTALLED);
 	g_assert_true (!g_file_test (metadata_fn, G_FILE_TEST_IS_REGULAR));
 	g_assert_true (!g_file_test (desktop_fn, G_FILE_TEST_IS_REGULAR));
 
@@ -453,9 +456,10 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_true (seen_unknown);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
-	g_assert_cmpint (gs_app_get_progress (app), ==, GS_APP_PROGRESS_UNKNOWN);
+	g_assert_true (gs_app_get_progress (app) == GS_APP_PROGRESS_UNKNOWN ||
+		       gs_app_get_progress (app) == 100);
 	g_signal_handler_disconnect (app, signal_id);
 
 	/* remove the application */
@@ -466,8 +470,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_INSTALLED);
 	g_assert_true (!g_file_test (metadata_fn, G_FILE_TEST_IS_REGULAR));
 	g_assert_true (!g_file_test (desktop_fn, G_FILE_TEST_IS_REGULAR));
 
@@ -480,7 +484,7 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED);
 	g_assert_true (!ret);
 	g_clear_error (&error);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_INSTALLED);
 
 	/* remove the runtime */
 	g_object_unref (plugin_job);
@@ -491,7 +495,7 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* remove the remote */
 	g_object_unref (plugin_job);
@@ -502,7 +506,7 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_UNAVAILABLE);
 }
 
 static void
@@ -540,9 +544,9 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 	if (testdir == NULL)
 		return;
 	testdir_repourl = g_strdup_printf ("file://%s/repo", testdir);
-	gs_app_set_kind (app_source, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_management_plugin (app_source, "flatpak");
-	gs_app_set_state (app_source, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, testdir_repourl);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app_source,
@@ -551,7 +555,7 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_INSTALLED);
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
@@ -577,7 +581,7 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 
 	/* install, also installing runtime */
 	g_object_unref (plugin_job);
@@ -588,7 +592,7 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED);
 	g_assert_true (!ret);
 	g_clear_error (&error);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 	g_assert_cmpint (gs_app_get_progress (app), ==, GS_APP_PROGRESS_UNKNOWN);
 
 	/* remove the remote */
@@ -600,7 +604,7 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_UNAVAILABLE);
 }
 
 static void
@@ -616,9 +620,9 @@ update_app_progress_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data
 static void
 update_app_state_notify_cb (GsApp *app, GParamSpec *pspec, gpointer user_data)
 {
-	AsAppState state = gs_app_get_state (app);
-	g_debug ("state now %s", as_app_state_to_string (state));
-	if (state == AS_APP_STATE_INSTALLING) {
+	GsAppState state = gs_app_get_state (app);
+	g_debug ("state now %s", gs_app_state_to_string (state));
+	if (state == GS_APP_STATE_INSTALLING) {
 		gboolean *tmp = (gboolean *) user_data;
 		*tmp = TRUE;
 	}
@@ -698,17 +702,17 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
-	g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app),
-			"user/flatpak/*/desktop/org.test.Chiron/master"));
+	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
+			"user/flatpak/*/org.test.Chiron/master"));
 	g_assert_true (gs_app_get_local_file (app) != NULL);
 
 	/* get runtime */
 	runtime = gs_app_get_runtime (app);
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/*/runtime/org.test.Runtime/master");
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/*/org.test.Runtime/master");
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 
 	/* check the number of sources */
 	g_object_unref (plugin_job);
@@ -730,8 +734,8 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 					    loop);
 	g_main_loop_run (loop);
 	gs_test_flush_main_context ();
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_INSTALLED);
 
 	/* check the number of sources */
 	g_object_unref (plugin_job);
@@ -750,7 +754,7 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UNKNOWN);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UNKNOWN);
 
 	/* remove the runtime */
 	g_object_unref (plugin_job);
@@ -761,12 +765,12 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* remove the remote */
 	app_source = gs_app_list_index (sources2, 0);
 	g_assert_true (app_source != NULL);
-	g_assert_cmpstr (gs_app_get_unique_id (app_source), ==, "user/flatpak/*/source/test/*");
+	g_assert_cmpstr (gs_app_get_unique_id (app_source), ==, "user/flatpak/*/test/*");
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
 					 "app", app_source,
@@ -775,7 +779,7 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_UNAVAILABLE);
 }
 
 /* same as gs_plugins_flatpak_runtime_repo_func, but this time manually
@@ -823,10 +827,10 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (app_src != NULL);
-	g_assert_cmpint (gs_app_get_kind (app_src), ==, AS_APP_KIND_SOURCE);
-	g_assert_cmpint (gs_app_get_state (app_src), ==, AS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_kind (app_src), ==, AS_COMPONENT_KIND_REPOSITORY);
+	g_assert_cmpint (gs_app_get_state (app_src), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app_src), ==, "test");
-	g_assert_cmpstr (gs_app_get_unique_id (app_src), ==, "*/*/*/source/test/master");
+	g_assert_cmpstr (gs_app_get_unique_id (app_src), ==, "*/*/*/test/master");
 	g_assert_true (gs_app_get_local_file (app_src) != NULL);
 
 	/* install the source manually */
@@ -838,7 +842,7 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_src), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_src), ==, GS_APP_STATE_INSTALLED);
 
 	/* write a flatpakref file */
 	fn_repourl = g_file_get_uri (file_repo);
@@ -861,17 +865,17 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
-	g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app),
-			"user/flatpak/*/desktop/org.test.Chiron/master"));
+	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
+			"user/flatpak/*/org.test.Chiron/master"));
 	g_assert_true (gs_app_get_local_file (app) != NULL);
 
 	/* get runtime */
 	runtime = gs_app_get_runtime (app);
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/runtime/org.test.Runtime/master");
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/org.test.Runtime/master");
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* check the number of sources */
 	g_object_unref (plugin_job);
@@ -892,8 +896,8 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_INSTALLED);
 
 	/* check the number of sources */
 	g_object_unref (plugin_job);
@@ -911,7 +915,7 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UNKNOWN);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UNKNOWN);
 
 	/* remove the runtime */
 	g_object_unref (plugin_job);
@@ -922,12 +926,12 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* remove the remote */
 	app_source = gs_app_list_index (sources2, 0);
 	g_assert_true (app_source != NULL);
-	g_assert_cmpstr (gs_app_get_unique_id (app_source), ==, "user/flatpak/*/source/test/*");
+	g_assert_cmpstr (gs_app_get_unique_id (app_source), ==, "user/flatpak/*/test/*");
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
 					 "app", app_source,
@@ -936,7 +940,7 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_UNAVAILABLE);
 }
 
 static void
@@ -969,9 +973,9 @@ gs_plugins_flatpak_broken_remote_func (GsPluginLoader *plugin_loader)
 	testdir = gs_test_get_filename (TESTDATADIR, "only-runtime");
 	if (testdir == NULL)
 		return;
-	gs_app_set_kind (app_source, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_management_plugin (app_source, "flatpak");
-	gs_app_set_state (app_source, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, "file:///wont/work");
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app_source,
@@ -979,7 +983,7 @@ gs_plugins_flatpak_broken_remote_func (GsPluginLoader *plugin_loader)
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_INSTALLED);
 
 	/* write a flatpakrepo file (the flatpakref below must have a RuntimeRepo=
 	 * to avoid a warning) */
@@ -1006,15 +1010,15 @@ gs_plugins_flatpak_broken_remote_func (GsPluginLoader *plugin_loader)
 	app = gs_plugin_loader_job_process_app (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
 #if FLATPAK_CHECK_VERSION(1,1,2)
-	g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app),
-			"user/flatpak/chiron-origin/desktop/org.test.Chiron/master"));
+	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
+			"user/flatpak/chiron-origin/org.test.Chiron/master"));
 #else
-	g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app),
-			"user/flatpak/org.test.Chiron-origin/desktop/org.test.Chiron/master"));
+	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
+			"user/flatpak/org.test.Chiron-origin/org.test.Chiron/master"));
 #endif
 	g_assert_cmpstr (gs_app_get_url (app, AS_URL_KIND_HOMEPAGE), ==, "http://127.0.0.1/");
 	g_assert_cmpstr (gs_app_get_name (app), ==, "Chiron");
@@ -1069,9 +1073,9 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	if (testdir == NULL)
 		return;
 	testdir_repourl = g_strdup_printf ("file://%s/repo", testdir);
-	gs_app_set_kind (app_source, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_management_plugin (app_source, "flatpak");
-	gs_app_set_state (app_source, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, testdir_repourl);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app_source,
@@ -1079,7 +1083,7 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_INSTALLED);
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
@@ -1104,8 +1108,8 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	runtime = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (runtime), ==, "org.test.Runtime");
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/runtime/org.test.Runtime/master");
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/org.test.Runtime/master");
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* install the runtime ahead of time */
 	g_object_unref (plugin_job);
@@ -1115,7 +1119,7 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_INSTALLED);
 
 	if (is_bundle) {
 		/* find the flatpak bundle file */
@@ -1162,8 +1166,8 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	app = gs_plugin_loader_job_process_app (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
-	g_assert_cmpint (gs_app_get_kind (app), ==, AS_APP_KIND_DESKTOP);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
 	g_assert_cmpstr (gs_app_get_name (app), ==, "Chiron");
 	g_assert_cmpstr (gs_app_get_summary (app), ==, "Single line synopsis");
@@ -1173,16 +1177,16 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 		/* Note: The origin is set to "flatpak" here because an origin remote
 		 * won't be created until the app is installed.
 		 */
-		g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app),
-				"user/flatpak/flatpak/desktop/org.test.Chiron/master"));
+		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
+				"user/flatpak/flatpak/org.test.Chiron/master"));
 		g_assert_true (gs_flatpak_app_get_file_kind (app) == GS_FLATPAK_APP_FILE_KIND_BUNDLE);
 	} else {
 #if FLATPAK_CHECK_VERSION(1,1,2)
-		g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app),
-				"user/flatpak/chiron-origin/desktop/org.test.Chiron/master"));
+		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
+				"user/flatpak/chiron-origin/org.test.Chiron/master"));
 #else
-		g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app),
-				"user/flatpak/org.test.Chiron-origin/desktop/org.test.Chiron/master"));
+		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
+				"user/flatpak/org.test.Chiron-origin/org.test.Chiron/master"));
 #endif
 		g_assert_true (gs_flatpak_app_get_file_kind (app) == GS_FLATPAK_APP_FILE_KIND_REF);
 		g_assert_cmpstr (gs_app_get_url (app, AS_URL_KIND_HOMEPAGE), ==, "http://127.0.0.1/");
@@ -1191,8 +1195,8 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 
 	/* get runtime */
 	runtime = gs_app_get_runtime (app);
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/runtime/org.test.Runtime/master");
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/org.test.Runtime/master");
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_INSTALLED);
 
 	/* install */
 	g_object_unref (plugin_job);
@@ -1202,7 +1206,7 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
 	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
@@ -1231,21 +1235,21 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	app2 = gs_plugin_loader_job_process_app (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (app2 != NULL);
-	g_assert_cmpint (gs_app_get_state (app2), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app2), ==, GS_APP_STATE_INSTALLED);
 	if (is_bundle) {
 #if FLATPAK_CHECK_VERSION(1,1,2)
-		g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app2),
-				"user/flatpak/chiron-origin/desktop/org.test.Chiron/master"));
+		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app2),
+				"user/flatpak/chiron-origin/org.test.Chiron/master"));
 #else
-		g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app2),
-				"user/flatpak/org.test.Chiron-origin/desktop/org.test.Chiron/master"));
+		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app2),
+				"user/flatpak/org.test.Chiron-origin/org.test.Chiron/master"));
 #endif
 	} else {
 		/* Note: the origin is now test-1 because that remote was created from the
 		 * RuntimeRepo= setting
 		 */
-		g_assert_true (as_utils_unique_id_equal (gs_app_get_unique_id (app2),
-			  "user/flatpak/test-1/desktop/org.test.Chiron/master"));
+		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app2),
+			  "user/flatpak/test-1/org.test.Chiron/master"));
 	}
 
 	/* remove app */
@@ -1278,9 +1282,9 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	if (!is_bundle) {
 		/* remove remote added by RuntimeRepo= in flatpakref */
 		g_autoptr(GsApp) runtime_source = gs_flatpak_app_new ("test-1");
-		gs_app_set_kind (runtime_source, AS_APP_KIND_SOURCE);
+		gs_app_set_kind (runtime_source, AS_COMPONENT_KIND_REPOSITORY);
 		gs_app_set_management_plugin (runtime_source, "flatpak");
-		gs_app_set_state (runtime_source, AS_APP_STATE_INSTALLED);
+		gs_app_set_state (runtime_source, GS_APP_STATE_INSTALLED);
 		g_object_unref (plugin_job);
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
 						 "app", runtime_source,
@@ -1336,7 +1340,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	GsApp *app;
 	GsApp *app_tmp;
 	GsApp *runtime;
-	GsApp *old_runtime;
 	gboolean got_progress_installing = FALSE;
 	gboolean ret;
 	guint notify_progress_id;
@@ -1350,6 +1353,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_autofree gchar *repodir2_fn = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsApp) app_source = NULL;
+	g_autoptr(GsApp) old_runtime = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsAppList) list_updates = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
@@ -1386,9 +1390,9 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 
 	/* add a remote */
 	app_source = gs_flatpak_app_new ("test");
-	gs_app_set_kind (app_source, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_management_plugin (app_source, "flatpak");
-	gs_app_set_state (app_source, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	repo_url = g_strdup_printf ("file://%s", repo_path);
 	gs_flatpak_app_set_repo_url (app_source, repo_url);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
@@ -1398,7 +1402,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_INSTALLED);
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
@@ -1426,7 +1430,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 
 	/* install, also installing runtime */
 	g_object_unref (plugin_job);
@@ -1437,7 +1441,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
 	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
@@ -1466,17 +1470,23 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert_true (list_updates != NULL);
 
-	/* make sure there are two entries */
+	/* make sure there is one entry */
 	g_assert_cmpint (gs_app_list_length (list_updates), ==, 1);
 	for (guint i = 0; i < gs_app_list_length (list_updates); i++) {
 		app_tmp = gs_app_list_index (list_updates, i);
 		g_debug ("got update %s", gs_app_get_unique_id (app_tmp));
 	}
 
-	/* check they are the same GObject */
-	app_tmp = gs_app_list_lookup (list_updates, "*/flatpak/test/*/org.test.Chiron/*");
-	g_assert_true (app_tmp == app);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE_LIVE);
+	/* check that the runtime is not the update's one */
+	old_runtime = gs_app_get_runtime (app);
+	g_assert_true (old_runtime != NULL);
+	g_object_ref (old_runtime);
+	g_assert_cmpstr (gs_app_get_branch (old_runtime), !=, "new_master");
+
+	/* use the returned app, which can be a different object instance from previously */
+	app = gs_app_list_lookup (list_updates, "*/flatpak/test/org.test.Chiron/*");
+	g_assert_nonnull (app);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE_LIVE);
 	g_assert_cmpstr (gs_app_get_update_details (app), ==, "Version 1.2.4:\nThis is best.\n\nVersion 1.2.3:\nThis is better.");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, "1.2.4");
 
@@ -1498,11 +1508,6 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 				  G_CALLBACK (update_app_progress_notify_cb),
 				  &progress_cnt);
 
-	/* check that the runtime is not the update's one */
-	old_runtime = gs_app_get_runtime (app);
-	g_assert_true (old_runtime != NULL);
-	g_assert_cmpstr (gs_app_get_branch (old_runtime), !=, "new_master");
-
 	/* use a mainloop so we get the events in the default context */
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE,
@@ -1514,11 +1519,12 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 					    loop);
 	g_main_loop_run (loop);
 	gs_test_flush_main_context ();
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.4");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
 	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
-	g_assert_cmpint (gs_app_get_progress (app), ==, GS_APP_PROGRESS_UNKNOWN);
+	g_assert_true (gs_app_get_progress (app) == GS_APP_PROGRESS_UNKNOWN ||
+		       gs_app_get_progress (app) == 100);
 	g_assert_true (got_progress_installing);
 	//g_assert_cmpint (progress_cnt, >, 20); //FIXME: bug in OSTree
 	g_assert_cmpint (pending_app_changed_cnt, ==, 0);
@@ -1527,10 +1533,10 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	/* check that the app's runtime has changed */
 	runtime = gs_app_get_runtime (app);
 	g_assert_true (runtime != NULL);
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/runtime/org.test.Runtime/new_master");
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/org.test.Runtime/new_master");
 	g_assert_true (old_runtime != runtime);
 	g_assert_cmpstr (gs_app_get_branch (runtime), ==, "new_master");
-	g_assert_true (gs_app_get_state (runtime) == AS_APP_STATE_INSTALLED);
+	g_assert_true (gs_app_get_state (runtime) == GS_APP_STATE_INSTALLED);
 
 	/* no longer care */
 	g_signal_handler_disconnect (plugin_loader, pending_apps_changed_id);
@@ -1548,7 +1554,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_true (ret);
 
 	/* remove the old_runtime */
-	g_assert_cmpstr (gs_app_get_unique_id (old_runtime), ==, "user/flatpak/test/runtime/org.test.Runtime/master");
+	g_assert_cmpstr (gs_app_get_unique_id (old_runtime), ==, "user/flatpak/test/org.test.Runtime/master");
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
 					 "app", old_runtime,
@@ -1559,7 +1565,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_true (ret);
 
 	/* remove the runtime */
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/runtime/org.test.Runtime/new_master");
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/org.test.Runtime/new_master");
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE,
 					 "app", runtime,
@@ -1578,7 +1584,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_UNAVAILABLE);
 }
 
 static void
@@ -1635,9 +1641,9 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 
 	/* add a remote */
 	app_source = gs_flatpak_app_new ("test");
-	gs_app_set_kind (app_source, AS_APP_KIND_SOURCE);
+	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_management_plugin (app_source, "flatpak");
-	gs_app_set_state (app_source, AS_APP_STATE_AVAILABLE);
+	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	repo_url = g_strdup_printf ("file://%s", repo_path);
 	gs_flatpak_app_set_repo_url (app_source, repo_url);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
@@ -1647,7 +1653,7 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_INSTALLED);
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
@@ -1674,7 +1680,7 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_list_length (list), ==, 1);
 	app = gs_app_list_index (list, 0);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 
 	/* install, also installing runtime and suggested extensions */
 	g_object_unref (plugin_job);
@@ -1685,14 +1691,14 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 
 	/* check if the extension was installed */
 	extension = gs_plugin_loader_app_create (plugin_loader,
-			"user/flatpak/*/runtime/org.test.Chiron.Extension/master");
+			"user/flatpak/*/org.test.Chiron.Extension/master");
 	g_assert_nonnull (extension);
-	g_assert_cmpint (gs_app_get_state (extension), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (extension), ==, GS_APP_STATE_INSTALLED);
 
 	/* switch to the new repo (to get the update) */
 	g_assert_cmpint (unlink (repo_path), ==, 0);
@@ -1725,13 +1731,12 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	}
 
 	/* check that the extension has no update */
-	app_tmp = gs_app_list_lookup (list_updates, "*/flatpak/test/*/org.test.Chiron.Extension/*");
+	app_tmp = gs_app_list_lookup (list_updates, "*/flatpak/test/org.test.Chiron.Extension/*");
 	g_assert_null (app_tmp);
 
 	/* check that the app has an update (it's affected by the extension's update) */
-	app_tmp = gs_app_list_lookup (list_updates, "*/flatpak/test/*/org.test.Chiron/*");
-	g_assert_true (app_tmp == app);
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_UPDATABLE_LIVE);
+	app = gs_app_list_lookup (list_updates, "*/flatpak/test/org.test.Chiron/*");
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE_LIVE);
 
 	/* care about signals */
 	pending_apps_changed_id =
@@ -1766,16 +1771,22 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	/* Older flatpak versions don't have the API we use to propagate state
 	 * between extension and app
 	 */
-	gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 #else
-	g_assert_cmpint (gs_app_get_state (app), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 #endif
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_true (got_progress_installing);
 	g_assert_cmpint (pending_app_changed_cnt, ==, 0);
 
+	/* The install refreshes GsApp-s cache, thus re-get the extension */
+	g_clear_object (&extension);
+	extension = gs_plugin_loader_app_create (plugin_loader,
+			"user/flatpak/*/org.test.Chiron.Extension/master");
+	g_assert_nonnull (extension);
+
 	/* check the extension's state after the update */
-	g_assert_cmpint (gs_app_get_state (extension), ==, AS_APP_STATE_INSTALLED);
+	g_assert_cmpint (gs_app_get_state (extension), ==, GS_APP_STATE_INSTALLED);
 
 	/* no longer care */
 	g_signal_handler_disconnect (plugin_loader, pending_apps_changed_id);
@@ -1783,8 +1794,28 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	g_signal_handler_disconnect (app, notify_state_id);
 	g_signal_handler_disconnect (app, notify_progress_id);
 
+	g_clear_object (&list);
+	/* Reload the 'app', as it could change due to repo change */
+	g_object_unref (plugin_job);
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
+					 "search", "Bingo",
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_DEFAULT |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME,
+					 NULL);
+	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
+	gs_test_flush_main_context ();
+	g_assert_no_error (error);
+	g_assert_nonnull (list);
+
+	/* make sure there is one entry, the flatpak app */
+	g_assert_cmpint (gs_app_list_length (list), ==, 1);
+	app = gs_app_list_index (list, 0);
+	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
+
 	/* getting the runtime for later removal */
 	runtime = gs_app_get_runtime (app);
+	g_assert_nonnull (runtime);
 
 	/* remove the app */
 	g_object_unref (plugin_job);
@@ -1804,7 +1835,7 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (runtime), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* remove the remote */
 	g_object_unref (plugin_job);
@@ -1815,7 +1846,7 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert_true (ret);
-	g_assert_cmpint (gs_app_get_state (app_source), ==, AS_APP_STATE_AVAILABLE);
+	g_assert_cmpint (gs_app_get_state (app_source), ==, GS_APP_STATE_UNAVAILABLE);
 
 	/* verify that the extension has been removed by the app's removal */
 	g_assert_false (gs_app_is_installed (extension));

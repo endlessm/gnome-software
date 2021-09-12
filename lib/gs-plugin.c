@@ -41,6 +41,7 @@
 #endif
 
 #include "gs-app-list-private.h"
+#include "gs-enums.h"
 #include "gs-os-release.h"
 #include "gs-plugin-private.h"
 #include "gs-plugin.h"
@@ -89,6 +90,7 @@ enum {
 	SIGNAL_REPORT_EVENT,
 	SIGNAL_ALLOW_UPDATES,
 	SIGNAL_BASIC_AUTH_START,
+	SIGNAL_REPOSITORY_CHANGED,
 	SIGNAL_LAST
 };
 
@@ -1281,7 +1283,8 @@ gs_plugin_download_rewrite_resource_uri (GsPlugin *plugin,
 	/* get cache location */
 	cachefn = gs_utils_get_cache_filename ("cssresource", uri,
 					       GS_UTILS_CACHE_FLAG_WRITEABLE |
-					       GS_UTILS_CACHE_FLAG_USE_HASH,
+					       GS_UTILS_CACHE_FLAG_USE_HASH |
+					       GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY,
 					       error);
 	if (cachefn == NULL)
 		return NULL;
@@ -1328,7 +1331,7 @@ gs_plugin_download_rewrite_resource (GsPlugin *plugin,
 	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
 
 	/* replace datadir */
-	as_utils_string_replace (resource_str, "@datadir@", DATADIR);
+	as_gstring_replace (resource_str, "@datadir@", DATADIR);
 	resource = resource_str->str;
 
 	/* look in string for any url() links */
@@ -1396,6 +1399,44 @@ gs_plugin_cache_lookup (GsPlugin *plugin, const gchar *key)
 	if (app == NULL)
 		return NULL;
 	return g_object_ref (app);
+}
+
+/**
+ * gs_plugin_cache_lookup_by_state:
+ * @plugin: a #GsPlugin
+ * @list: a #GsAppList to add applications to
+ * @state: a #GsAppState
+ *
+ * Adds each cached #GsApp with state @state into the @list.
+ * When the state is %GS_APP_STATE_UNKNOWN, then adds all
+ * cached applications.
+ *
+ * Since: 40
+ **/
+void
+gs_plugin_cache_lookup_by_state (GsPlugin *plugin,
+				 GsAppList *list,
+				 GsAppState state)
+{
+	GsPluginPrivate *priv;
+	GHashTableIter iter;
+	gpointer value;
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	g_return_if_fail (GS_IS_PLUGIN (plugin));
+	g_return_if_fail (GS_IS_APP_LIST (list));
+
+	priv = gs_plugin_get_instance_private (plugin);
+	locker = g_mutex_locker_new (&priv->cache_mutex);
+
+	g_hash_table_iter_init (&iter, priv->cache);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		GsApp *app = value;
+
+		if (state == GS_APP_STATE_UNKNOWN ||
+		    state == gs_app_get_state (app))
+			gs_app_list_add (list, app);
+	}
 }
 
 /**
@@ -1871,6 +1912,8 @@ gchar *
 gs_plugin_refine_flags_to_string (GsPluginRefineFlags refine_flags)
 {
 	g_autoptr(GPtrArray) cstrs = g_ptr_array_new ();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_USE_HISTORY)
 		g_ptr_array_add (cstrs, "use-history");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE)
@@ -1895,8 +1938,6 @@ gs_plugin_refine_flags_to_string (GsPluginRefineFlags refine_flags)
 		g_ptr_array_add (cstrs, "require-origin");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_RELATED)
 		g_ptr_array_add (cstrs, "require-related");
-	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_MENU_PATH)
-		g_ptr_array_add (cstrs, "require-menu-path");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS)
 		g_ptr_array_add (cstrs, "require-addons");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES)
@@ -1911,8 +1952,6 @@ gs_plugin_refine_flags_to_string (GsPluginRefineFlags refine_flags)
 		g_ptr_array_add (cstrs, "require-reviews");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS)
 		g_ptr_array_add (cstrs, "require-review-ratings");
-	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_KEY_COLORS)
-		g_ptr_array_add (cstrs, "require-key-colors");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON)
 		g_ptr_array_add (cstrs, "require-icon");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS)
@@ -1935,6 +1974,7 @@ gs_plugin_refine_flags_to_string (GsPluginRefineFlags refine_flags)
 		g_ptr_array_add (cstrs, "require-kudos");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING)
 		g_ptr_array_add (cstrs, "content-rating");
+#pragma GCC diagnostic pop
 	if (cstrs->len == 0)
 		return g_strdup ("none");
 	g_ptr_array_add (cstrs, NULL);
@@ -1948,7 +1988,7 @@ gs_plugin_set_property (GObject *object, guint prop_id, const GValue *value, GPa
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
 	switch (prop_id) {
 	case PROP_FLAGS:
-		priv->flags = g_value_get_uint64 (value);
+		priv->flags = g_value_get_flags (value);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1963,7 +2003,7 @@ gs_plugin_get_property (GObject *object, guint prop_id, GValue *value, GParamSpe
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
 	switch (prop_id) {
 	case PROP_FLAGS:
-		g_value_set_uint64 (value, priv->flags);
+		g_value_set_flags (value, priv->flags);
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1981,8 +2021,9 @@ gs_plugin_class_init (GsPluginClass *klass)
 	object_class->get_property = gs_plugin_get_property;
 	object_class->finalize = gs_plugin_finalize;
 
-	pspec = g_param_spec_uint64 ("flags", NULL, NULL,
-				     0, G_MAXUINT64, 0, G_PARAM_READWRITE);
+	pspec = g_param_spec_flags ("flags", NULL, NULL,
+				    GS_TYPE_PLUGIN_FLAGS, GS_PLUGIN_FLAGS_NONE,
+				    G_PARAM_READWRITE);
 	g_object_class_install_property (object_class, PROP_FLAGS, pspec);
 
 	signals [SIGNAL_UPDATES_CHANGED] =
@@ -2026,6 +2067,13 @@ gs_plugin_class_init (GsPluginClass *klass)
 			      G_STRUCT_OFFSET (GsPluginClass, basic_auth_start),
 			      NULL, NULL, g_cclosure_marshal_generic,
 			      G_TYPE_NONE, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_POINTER);
+
+	signals [SIGNAL_REPOSITORY_CHANGED] =
+		g_signal_new ("repository-changed",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (GsPluginClass, repository_changed),
+			      NULL, NULL, g_cclosure_marshal_generic,
+			      G_TYPE_NONE, 1, GS_TYPE_APP);
 }
 
 static void
@@ -2039,8 +2087,8 @@ gs_plugin_init (GsPlugin *plugin)
 
 	priv->enabled = TRUE;
 	priv->scale = 1;
-	priv->cache = g_hash_table_new_full ((GHashFunc) as_utils_unique_id_hash,
-					     (GEqualFunc) as_utils_unique_id_equal,
+	priv->cache = g_hash_table_new_full ((GHashFunc) as_utils_data_id_hash,
+					     (GEqualFunc) as_utils_data_id_equal,
 					     g_free,
 					     (GDestroyNotify) g_object_unref);
 	priv->vfuncs = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -2066,4 +2114,95 @@ gs_plugin_new (void)
 	GsPlugin *plugin;
 	plugin = g_object_new (GS_TYPE_PLUGIN, NULL);
 	return plugin;
+}
+
+typedef struct {
+	GsPlugin *plugin;
+	GsApp	 *repository;
+} GsPluginRepositoryChangedHelper;
+
+static gboolean
+gs_plugin_repository_changed_cb (gpointer user_data)
+{
+	GsPluginRepositoryChangedHelper *helper = user_data;
+	g_signal_emit (helper->plugin,
+		       signals[SIGNAL_REPOSITORY_CHANGED], 0,
+		       helper->repository);
+	g_clear_object (&helper->repository);
+	g_clear_object (&helper->plugin);
+	g_slice_free (GsPluginRepositoryChangedHelper, helper);
+	return FALSE;
+}
+
+/**
+ * gs_plugin_repository_changed:
+ * @plugin: a #GsPlugin
+ * @repository: a #GsApp representing the repository
+ *
+ * Emit the "repository-changed" signal in the main thread.
+ *
+ * Since: 40
+ **/
+void
+gs_plugin_repository_changed (GsPlugin *plugin,
+			      GsApp *repository)
+{
+	GsPluginRepositoryChangedHelper *helper;
+	g_autoptr(GSource) idle_source = NULL;
+
+	g_return_if_fail (GS_IS_PLUGIN (plugin));
+	g_return_if_fail (GS_IS_APP (repository));
+
+	helper = g_slice_new0 (GsPluginRepositoryChangedHelper);
+	helper->plugin = g_object_ref (plugin);
+	helper->repository = g_object_ref (repository);
+
+	idle_source = g_idle_source_new ();
+	g_source_set_callback (idle_source, gs_plugin_repository_changed_cb, helper, NULL);
+	g_source_attach (idle_source, NULL);
+}
+
+/**
+ * gs_plugin_update_cache_state_for_repository:
+ * @plugin: a #GsPlugin
+ * @repository: a #GsApp representing a repository, which changed
+ *
+ * Update state of the all cached #GsApp instances related
+ * to the @repository.
+ *
+ * Since: 40
+ **/
+void
+gs_plugin_update_cache_state_for_repository (GsPlugin *plugin,
+					     GsApp *repository)
+{
+	GsPluginPrivate *priv;
+	GHashTableIter iter;
+	g_autoptr(GMutexLocker) locker = NULL;
+	gpointer value;
+	const gchar *repo_id;
+	GsAppState repo_state;
+
+	g_return_if_fail (GS_IS_PLUGIN (plugin));
+	g_return_if_fail (GS_IS_APP (repository));
+
+	priv = gs_plugin_get_instance_private (plugin);
+	repo_id = gs_app_get_id (repository);
+	repo_state = gs_app_get_state (repository);
+
+	locker = g_mutex_locker_new (&priv->cache_mutex);
+
+	g_hash_table_iter_init (&iter, priv->cache);
+	while (g_hash_table_iter_next (&iter, NULL, &value)) {
+		GsApp *app = value;
+		GsAppState app_state = gs_app_get_state (app);
+
+		if (((app_state == GS_APP_STATE_AVAILABLE &&
+		    repo_state != GS_APP_STATE_INSTALLED) ||
+		    (app_state == GS_APP_STATE_UNAVAILABLE &&
+		    repo_state == GS_APP_STATE_INSTALLED)) &&
+		    g_strcmp0 (gs_app_get_origin (app), repo_id) == 0) {
+			gs_app_set_state (app, repo_state == GS_APP_STATE_INSTALLED ? GS_APP_STATE_AVAILABLE : GS_APP_STATE_UNAVAILABLE);
+		}
+	}
 }

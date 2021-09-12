@@ -1,7 +1,7 @@
 project('gnome-software', 'c',
-  version : '3.38.1',
+  version : '40.4',
   license : 'GPL-2.0+',
-  default_options : ['warning_level=1', 'c_std=c99'],
+  default_options : ['warning_level=1', 'c_std=c11'],
   meson_version : '>=0.47.0'
 )
 
@@ -9,11 +9,15 @@ conf = configuration_data()
 conf.set_quoted('VERSION', meson.project_version())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE_VERSION', meson.project_version())
+conf.set_quoted('BUILD_TYPE', get_option('buildtype'))
 
 # this refers to the gnome-software plugin API version
 # this is not in any way related to a package or soname version
-gs_plugin_api_version = '13'
+gs_plugin_api_version = '16'
 conf.set_quoted('GS_PLUGIN_API_VERSION', gs_plugin_api_version)
+
+# private subdirectory of libdir for the private shared libgnomesoftware to live in
+gs_private_libdir = join_paths(get_option('prefix'), get_option('libdir'), 'gnome-software')
 
 # install docs
 install_data('README.md', install_dir : 'share/doc/gnome-software')
@@ -45,7 +49,6 @@ test_args = [
   '-Wmissing-prototypes',
   '-Wnested-externs',
   '-Werror=nested-externs',
-  '-Wno-discarded-qualifiers',
   '-Wno-missing-field-initializers',
   '-Wno-strict-aliasing',
   '-Wno-suggest-attribute=format',
@@ -98,7 +101,15 @@ add_project_arguments('-D_GNU_SOURCE', language : 'c')
 
 conf.set('HAVE_LINUX_UNISTD_H', cc.has_header('linux/unistd.h'))
 
-appstream_glib = dependency('appstream-glib', version : '>= 0.7.14')
+appstream = dependency('appstream',
+  version : '>= 0.14.0',
+  fallback : ['appstream', 'appstream_dep'],
+  default_options : [
+    'docs=false',
+    'apidocs=false',
+    'install-docs=false'
+  ]
+)
 gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.32.0')
 libxmlb = dependency('xmlb', version : '>= 0.1.7', fallback : ['libxmlb', 'libxmlb_dep'])
 gio_unix = dependency('gio-unix-2.0', version : '>= 2.56.0')
@@ -109,6 +120,18 @@ glib = dependency('glib-2.0', version : '>= 2.55.0')
 json_glib = dependency('json-glib-1.0', version : '>= 1.2.0')
 libm = cc.find_library('m', required: false)
 libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')
+libhandy = dependency('libhandy-1',
+  version: '>=1.0.2',
+  fallback: ['libhandy', 'libhandy_dep'],
+  default_options: [
+      'examples=false',
+      'glade_catalog=disabled',
+      'introspection=disabled',
+      'static=true',
+      'tests=false',
+      'vapi=false',
+    ]
+  )
 
 libsysprof_capture_dep = dependency('sysprof-capture-4',
   required: get_option('sysprof'),
@@ -138,9 +161,9 @@ else
   valgrind = []
 endif
 
-if get_option('gnome_desktop')
-  gnome_desktop = dependency('gnome-desktop-3.0', version : '>= 3.18.0')
-  conf.set('HAVE_GNOME_DESKTOP', 1)
+gsettings_desktop_schemas = dependency('gsettings-desktop-schemas', version : '>= 3.18.0', required: get_option('gsettings_desktop_schemas'))
+if gsettings_desktop_schemas.found()
+  conf.set('HAVE_GSETTINGS_DESKTOP_SCHEMAS', 1)
 endif
 
 if get_option('gspell')
@@ -163,6 +186,12 @@ if get_option('packagekit')
   else
       conf.set('GS_PACKAGEKIT_AUTOREMOVE', 'FALSE')
   endif
+  if meson.get_compiler('c').has_function('pk_package_get_update_severity', prefix: '#include <packagekit-glib2/packagekit.h>', dependencies: packagekit)
+      conf.set('HAVE_PK_PACKAGE_GET_UPDATE_SEVERITY', '1')
+  endif
+  if meson.get_compiler('c').has_function('pk_details_get_download_size', prefix: '#include <packagekit-glib2/packagekit.h>', dependencies: packagekit)
+      conf.set('HAVE_PK_DETAILS_GET_DOWNLOAD_SIZE', '1')
+  endif
 endif
 
 if get_option('eos_updater')
@@ -179,7 +208,7 @@ if get_option('flatpak')
 endif
 
 if get_option('malcontent')
-  malcontent = dependency('malcontent-0', version: '>= 0.3.0', fallback: ['malcontent', 'libmalcontent_dep'],)
+  malcontent = dependency('malcontent-0', version: '>= 0.3.0', fallback: ['malcontent', 'libmalcontent_dep'], default_options: ['ui=disabled'])
 endif
 
 if get_option('rpm_ostree')
