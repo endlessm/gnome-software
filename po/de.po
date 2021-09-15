@@ -7,6 +7,7 @@
 # Bernd Homuth <dev@hmt.im>, 2015
 # Christian Kirbach <christian.kirbach@gmail.com>, 2015
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2013,2016
+# Mario Blättermann <mario.blaettermann@gmail.com>, 2020
 # Paul Seyfert <pseyfert@mathphys.fsk.uni-heidelberg.de>, 2015,2017
 # Roddy Shuler <roddy@stanfordalumni.org>, 2017
 # Stefan Schroeder <ondekoza@gmail.com>, 2016-2017
@@ -16,8 +17,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
+"POT-Creation-Date: 2021-09-15 12:11+0000\n"
+"PO-Revision-Date: 2020-12-20 09:22+0000\n"
 "Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
 "Language-Team: German (http://www.transifex.com/endless-os/gnome-software/language/de/)\n"
 "MIME-Version: 1.0\n"
@@ -376,11 +377,11 @@ msgid "Find Out _More"
 msgstr "Mehr _herausfinden"
 
 #. TRANSLATORS: this is a locally downloaded package
-#: lib/gs-app.c:4630
+#: lib/gs-app.c:4670
 msgid "Local file"
 msgstr "Lokale Datei"
 
-#: lib/gs-app.c:4682
+#: lib/gs-app.c:4722
 msgid "Package"
 msgstr "Paket"
 
@@ -486,13 +487,13 @@ msgstr "Versionsnummer anzeigen"
 
 #: src/gs-application.c:328
 msgid "translator-credits"
-msgstr "Eduard Gotwig <gotwig@ubuntu.com>, 2013\nChristian Kirbach <christian.kirbach@gmail.com>, 2013\nBenjamin Steinwender <b@stbe.at>, 2014\nPaul Seyfert <pseyfert@mathphys.fsk.uni-heidelberg.de>, 2015, 2017\nBernd Homuth <dev@hmt.im>, 2015, 2016, 2019\nChristian Kirbach <christian.kirbach@gmail.com>, 2015\nJ.M. Ruetter <jm@jublo.net>, 2015\nMario Blättermann <mario.blaettermann@gmail.com>, 2016, 2018\nTim Sabsch <tim@sabsch.com>, 2019"
+msgstr "Eduard Gotwig <gotwig@ubuntu.com>, 2013\nChristian Kirbach <christian.kirbach@gmail.com>, 2013, 2019\nBenjamin Steinwender <b@stbe.at>, 2014\nPaul Seyfert <pseyfert@mathphys.fsk.uni-heidelberg.de>, 2015, 2017\nBernd Homuth <dev@hmt.im>, 2015, 2016, 2019\nChristian Kirbach <christian.kirbach@gmail.com>, 2015\nJ.M. Ruetter <jm@jublo.net>, 2015\nMario Blättermann <mario.blaettermann@gmail.com>, 2016, 2018\nTim Sabsch <tim@sabsch.com>, 2019"
 
 #. TRANSLATORS: this is the title of the about window
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "Info zu Software"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -520,7 +521,7 @@ msgstr ""
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
 #: src/gs-app-row.c:139 src/gs-category-page.ui:92
-#: src/gs-updates-section.c:499
+#: src/gs-updates-section.c:502
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -555,9 +556,16 @@ msgstr ""
 msgid "Device cannot be used during update."
 msgstr "Gerät kann während der Aktualisierung nicht verwendet werden."
 
-#: src/gs-app-row.c:459 src/gs-update-dialog.ui:182
+#: src/gs-app-row.c:461 src/gs-update-dialog.ui:182
 msgid "Requires additional permissions"
 msgstr "Benötigt zusätzliche Berechtigungen"
+
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
+#: src/gs-app-row.c:468
+#, c-format
+msgid "Renamed from %s"
+msgstr ""
 
 #. TRANSLATORS: This is the name and state of an app for the ATK object
 #. TRANSLATORS: this refers to an app (by name) that is installed
@@ -583,11 +591,11 @@ msgstr ""
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "Anmeldung auf %s erforderlich (Realm %s)"
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "Anmeldung erforderlich"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -597,15 +605,15 @@ msgstr "_Abbrechen"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "Anmel_den"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "Ben_utzer"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "_Passwort"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1450,7 +1458,7 @@ msgstr "Ausstehende Aktualisierung …"
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr ""
+msgstr "Wird vorbereitet …"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -1473,7 +1481,7 @@ msgstr "_Installieren"
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
 #: src/gs-details-page.c:969 src/gs-details-page.c:987
-#: src/gs-details-page.ui:167 src/gs-updates-section.c:478
+#: src/gs-details-page.ui:167 src/gs-updates-section.c:481
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
 msgstr "Herunterla_den"
@@ -1690,13 +1698,13 @@ msgstr "Akt_ualisieren"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "Tastenkombination _hinzufügen"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "Tastenkombination _entfernen"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -2045,8 +2053,8 @@ msgid ""
 msgid_plural ""
 "Unfortunately, the %s you were searching for could not be found. Please see "
 "%s for more information."
-msgstr[0] "%s wurde unglücklicherweise nicht gefunden. Besuchen Sie %s für weitere Informationen."
-msgstr[1] "%s wurden unglücklicherweise nicht gefunden. Besuchen Sie %s für weitere Informationen."
+msgstr[0] "%s wurde nicht gefunden. Besuchen Sie %s für weitere Informationen."
+msgstr[1] "%s wurden nicht gefunden. Besuchen Sie %s für weitere Informationen."
 
 #: src/gs-extras-page.c:527 src/gs-extras-page.c:583 src/gs-extras-page.c:622
 msgid "Failed to find any search results"
@@ -3599,37 +3607,37 @@ msgstr "Aktualisierungen werden automatisch verwaltet"
 
 #. TRANSLATORS: This is the button for installing all
 #. * offline updates
-#: src/gs-updates-section.c:301
+#: src/gs-updates-section.c:304
 msgid "Restart & Update"
 msgstr "Neu starten und Aktualisierungen installieren"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-section.c:307
+#: src/gs-updates-section.c:310
 msgid "Update All"
 msgstr "Alle Aktualisieren"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-section.c:438
+#: src/gs-updates-section.c:441
 msgid "Integrated Firmware"
 msgstr "Integrierte Firmware"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-section.c:442
+#: src/gs-updates-section.c:445
 msgid "Requires Restart"
 msgstr "Neustart erforderlich"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-section.c:446
+#: src/gs-updates-section.c:449
 msgid "Application Updates"
 msgstr "Aktualisierungen"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-section.c:450
+#: src/gs-updates-section.c:453
 msgid "Device Firmware"
 msgstr "Geräte-Firmware"
 
@@ -4189,7 +4197,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak ist eine Laufzeitumgebung für Linux-Desktop-Anwendungen, deren Pakete distributionsunabhängig laufen"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:1019
+#: plugins/flatpak/gs-flatpak.c:1081
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "Flatpak-Metadaten für %s werden geholt …"
@@ -4199,42 +4207,42 @@ msgstr "Flatpak-Metadaten für %s werden geholt …"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "Geräteaktualisierung von %s"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "Systemaktualisierung auf %s"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "Aktualisierung des eingebetteten Geräts %s"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "ME-Aktualisierung auf %s"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "Kommerzielle ME-Aktualisierung auf %s"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "Anwender-ME-Aktualisierung auf %s"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4242,7 +4250,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "Steuergerät-Aktualisierung auf %s"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4250,21 +4258,21 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "Thunderbolt-Steuergerät-Aktualisierung auf %s"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "CPU-Microcode-Aktualisierung auf %s"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "Konfigurationsaktualisierung auf %s"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691

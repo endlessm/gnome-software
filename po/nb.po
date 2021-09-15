@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
+"POT-Creation-Date: 2021-09-15 12:11+0000\n"
+"PO-Revision-Date: 2020-12-20 09:22+0000\n"
 "Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
 "Language-Team: Norwegian Bokmål (http://www.transifex.com/endless-os/gnome-software/language/nb/)\n"
 "MIME-Version: 1.0\n"
@@ -369,11 +369,11 @@ msgid "Find Out _More"
 msgstr "Finn ut _mer"
 
 #. TRANSLATORS: this is a locally downloaded package
-#: lib/gs-app.c:4630
+#: lib/gs-app.c:4670
 msgid "Local file"
 msgstr "Lokal fil"
 
-#: lib/gs-app.c:4682
+#: lib/gs-app.c:4722
 msgid "Package"
 msgstr "Pakke"
 
@@ -513,7 +513,7 @@ msgstr ""
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
 #: src/gs-app-row.c:139 src/gs-category-page.ui:92
-#: src/gs-updates-section.c:499
+#: src/gs-updates-section.c:502
 msgid "Cancel"
 msgstr "Avbryt"
 
@@ -548,9 +548,16 @@ msgstr ""
 msgid "Device cannot be used during update."
 msgstr "Enheten kan ikke brukes under oppdatering."
 
-#: src/gs-app-row.c:459 src/gs-update-dialog.ui:182
+#: src/gs-app-row.c:461 src/gs-update-dialog.ui:182
 msgid "Requires additional permissions"
 msgstr "Krever flere rettigheter"
+
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
+#: src/gs-app-row.c:468
+#, c-format
+msgid "Renamed from %s"
+msgstr ""
 
 #. TRANSLATORS: This is the name and state of an app for the ATK object
 #. TRANSLATORS: this refers to an app (by name) that is installed
@@ -1466,7 +1473,7 @@ msgstr "_Installer"
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
 #: src/gs-details-page.c:969 src/gs-details-page.c:987
-#: src/gs-details-page.ui:167 src/gs-updates-section.c:478
+#: src/gs-details-page.ui:167 src/gs-updates-section.c:481
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
 msgstr "Last ne_d"
@@ -1683,13 +1690,13 @@ msgstr "_Oppdater"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "_Legg til snarvei"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "Fje_rn snarvei"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -3592,37 +3599,37 @@ msgstr "Oppdateringer håndteres automatisk"
 
 #. TRANSLATORS: This is the button for installing all
 #. * offline updates
-#: src/gs-updates-section.c:301
+#: src/gs-updates-section.c:304
 msgid "Restart & Update"
 msgstr "Start på nytt og oppdater"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-section.c:307
+#: src/gs-updates-section.c:310
 msgid "Update All"
 msgstr "Oppdater alle"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-section.c:438
+#: src/gs-updates-section.c:441
 msgid "Integrated Firmware"
 msgstr "Integrert fastvare"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-section.c:442
+#: src/gs-updates-section.c:445
 msgid "Requires Restart"
 msgstr "Krever omstart"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-section.c:446
+#: src/gs-updates-section.c:449
 msgid "Application Updates"
 msgstr "Programoppdateringer"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-section.c:450
+#: src/gs-updates-section.c:453
 msgid "Device Firmware"
 msgstr "Fastvare for enhet"
 
@@ -4182,7 +4189,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak er et rammeverk for skrivebordsprogrammer på Linux"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:1019
+#: plugins/flatpak/gs-flatpak.c:1081
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "Henter flatpak-metadata for %s …"

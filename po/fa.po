@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-18 08:22+0000\n"
-"PO-Revision-Date: 2020-10-13 15:13+0000\n"
+"POT-Creation-Date: 2021-09-15 12:11+0000\n"
+"PO-Revision-Date: 2020-12-20 09:22+0000\n"
 "Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
 "Language-Team: Persian (http://www.transifex.com/endless-os/gnome-software/language/fa/)\n"
 "MIME-Version: 1.0\n"
@@ -138,13 +138,13 @@ msgstr "پالایش برنامه‌ها بر مبنای مجموعهٔ شاخه
 
 #: data/org.gnome.software.gschema.xml:42
 msgid "Non-free applications show a warning dialog before install"
-msgstr "هنگام نصب برنامه‌های غیر آزاد یک محاوره هشدار نمایش داده شود"
+msgstr "برنامه‌های انحصاری، پیش از نصب، گفت‌وگوی هشداری نمایش می‌دهند"
 
 #: data/org.gnome.software.gschema.xml:43
 msgid ""
 "When non-free applications are installed a warning dialog can be shown. This"
 " controls if that dialog is suppressed."
-msgstr "هنگامی که برنامه‌های غیر آزاد نصب می‌شود، می‌توان یک محاوره هشدار نمایش داد. این کنترل میکند که محاوره نمایش داده شود یا نه."
+msgstr "هنگامی که برنامه‌های انحصاری نصب می‌شود، می‌توان یک گفت‌وگوی هشدار نمایش داد. این کنترل میکند که گفت‌وگو نمایش داده شود یا نه."
 
 #: data/org.gnome.software.gschema.xml:47
 msgid "A list of popular applications"
@@ -220,7 +220,7 @@ msgstr "نصب برنامه‌های گردآوری شده (bundled) برای ت
 
 #: data/org.gnome.software.gschema.xml:107
 msgid "Allow access to the Software Repositories dialog"
-msgstr "اجازه دسترسی به محاورهٔ مخازن نرم‌افزاری"
+msgstr "اجازه دسترسی به گفت‌وگوی مخازن نرم‌افزاری"
 
 #: data/org.gnome.software.gschema.xml:111
 msgid "Offer upgrades for pre-releases"
@@ -369,11 +369,11 @@ msgid "Find Out _More"
 msgstr "بیش‌تر دریابید"
 
 #. TRANSLATORS: this is a locally downloaded package
-#: lib/gs-app.c:4630
+#: lib/gs-app.c:4670
 msgid "Local file"
 msgstr "پروندهٔ محلَّی"
 
-#: lib/gs-app.c:4682
+#: lib/gs-app.c:4722
 msgid "Package"
 msgstr "بسته"
 
@@ -485,7 +485,7 @@ msgstr "آرش موسوی <mousavi.arash@gmail.com>\nدانیال بهزادی <
 #. TRANSLATORS: this is the menu item that opens the about window
 #: src/gs-application.c:333 src/gs-shell.c:2208
 msgid "About Software"
-msgstr ""
+msgstr "درباره «برنامه‌ها»"
 
 #. TRANSLATORS: well, we seem to think so, anyway
 #: src/gs-application.c:336
@@ -513,7 +513,7 @@ msgstr ""
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
 #: src/gs-app-row.c:139 src/gs-category-page.ui:92
-#: src/gs-updates-section.c:499
+#: src/gs-updates-section.c:502
 msgid "Cancel"
 msgstr "لغو"
 
@@ -548,9 +548,16 @@ msgstr ""
 msgid "Device cannot be used during update."
 msgstr "از دستگاه نمی‌توان در هنگام به‌روز رسانی استفاده کرد."
 
-#: src/gs-app-row.c:459 src/gs-update-dialog.ui:182
+#: src/gs-app-row.c:461 src/gs-update-dialog.ui:182
 msgid "Requires additional permissions"
 msgstr "نیاز به دسترسی‌های اضافی دارد"
+
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
+#: src/gs-app-row.c:468
+#, c-format
+msgid "Renamed from %s"
+msgstr ""
 
 #. TRANSLATORS: This is the name and state of an app for the ATK object
 #. TRANSLATORS: this refers to an app (by name) that is installed
@@ -576,11 +583,11 @@ msgstr ""
 #: src/gs-basic-auth-dialog.c:82
 #, c-format
 msgid "Login required remote %s (realm %s)"
-msgstr ""
+msgstr "نیاز به ورود دوردست %s (قلمرو %s)"
 
 #: src/gs-basic-auth-dialog.ui:10
 msgid "Login Required"
-msgstr ""
+msgstr "نیاز به ورود"
 
 #: src/gs-basic-auth-dialog.ui:19 src/gs-details-page.ui:240
 #: src/gs-removal-dialog.ui:32 src/gs-review-dialog.ui:22
@@ -590,15 +597,15 @@ msgstr "_لغو"
 
 #: src/gs-basic-auth-dialog.ui:39
 msgid "_Login"
-msgstr ""
+msgstr "_ورود"
 
 #: src/gs-basic-auth-dialog.ui:99
 msgid "_User"
-msgstr ""
+msgstr "_کاربر"
 
 #: src/gs-basic-auth-dialog.ui:119
 msgid "_Password"
-msgstr ""
+msgstr "_گذرواژه"
 
 #. TRANSLATORS: this is where all applications that don't
 #. * fit in other groups are put
@@ -1443,7 +1450,7 @@ msgstr "منتظر به‌روز رسانی…"
 #. app.
 #: src/gs-details-page.c:457
 msgid "Preparing…"
-msgstr ""
+msgstr "در حال آماده‌سازی…"
 
 #. TRANSLATORS: this is the warning box
 #: src/gs-details-page.c:814
@@ -1466,7 +1473,7 @@ msgstr "_نصب"
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
 #: src/gs-details-page.c:969 src/gs-details-page.c:987
-#: src/gs-details-page.ui:167 src/gs-updates-section.c:478
+#: src/gs-details-page.ui:167 src/gs-updates-section.c:481
 #: src/gs-upgrade-banner.ui:102
 msgid "_Download"
 msgstr "_بارگیری"
@@ -1683,13 +1690,13 @@ msgstr "_به‌روز رسانی"
 #. application.
 #: src/gs-details-page.ui:277
 msgid "_Add shortcut"
-msgstr ""
+msgstr "_افزودن میان‌بر"
 
 #. Translators: A label for a button to remove a shortcut to the selected
 #. application.
 #: src/gs-details-page.ui:291
 msgid "Re_move shortcut"
-msgstr ""
+msgstr "_برداشتن میان‌بر"
 
 #: src/gs-details-page.ui:365
 msgid "No screenshot provided"
@@ -3592,37 +3599,37 @@ msgstr "به‌روز رسانی‌ها بطور خودکاری مدیریت م�
 
 #. TRANSLATORS: This is the button for installing all
 #. * offline updates
-#: src/gs-updates-section.c:301
+#: src/gs-updates-section.c:304
 msgid "Restart & Update"
 msgstr "راه‌اندازی دوباره و به‌روز رسانی"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable applications
-#: src/gs-updates-section.c:307
+#: src/gs-updates-section.c:310
 msgid "Update All"
 msgstr "به‌روز رسانی همه"
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
-#: src/gs-updates-section.c:438
+#: src/gs-updates-section.c:441
 msgid "Integrated Firmware"
 msgstr "میان‌افزار یکپارچه"
 
 #. TRANSLATORS: This is the header for offline OS and offline
 #. * app updates that require a reboot to apply
-#: src/gs-updates-section.c:442
+#: src/gs-updates-section.c:445
 msgid "Requires Restart"
 msgstr "نیاز به راه‌اندازی دوباره دارد"
 
 #. TRANSLATORS: This is the header for online runtime and
 #. * app updates, typically flatpaks or snaps
-#: src/gs-updates-section.c:446
+#: src/gs-updates-section.c:449
 msgid "Application Updates"
 msgstr "به‌روز رسانی برنامه‌ها"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
-#: src/gs-updates-section.c:450
+#: src/gs-updates-section.c:453
 msgid "Device Firmware"
 msgstr "میان‌افزار افزاره"
 
@@ -4182,7 +4189,7 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "فلت‌پک چارچوبی برای برنامه‌های میزکار روی گنو/لینوکس است"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:1019
+#: plugins/flatpak/gs-flatpak.c:1081
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "در حال گرفتن فرادادهٔ فلت‌پک برای %s…"
@@ -4192,42 +4199,42 @@ msgstr "در حال گرفتن فرادادهٔ فلت‌پک برای %s…"
 #: plugins/fwupd/gs-fwupd-app.c:136
 #, c-format
 msgid "%s Device Update"
-msgstr ""
+msgstr "به‌روز رسانی افزارهٔ %s"
 
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:141
 #, c-format
 msgid "%s System Update"
-msgstr ""
+msgstr "به‌روز رسانی سامانهٔ %s"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:146
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr ""
+msgstr "به‌روز رسانی واپایشگر توکار %s"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:151
 #, c-format
 msgid "%s ME Update"
-msgstr ""
+msgstr "به‌روز رسانی موتور مدیریت %s"
 
 #. TRANSLATORS: ME stands for Management Engine (with Intel AMT),
 #. * where the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:156
 #, c-format
 msgid "%s Corporate ME Update"
-msgstr ""
+msgstr "به‌روز رسانی موتور مدیریت تجاری %s"
 
 #. TRANSLATORS: ME stands for Management Engine, where
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:161
 #, c-format
 msgid "%s Consumer ME Update"
-msgstr ""
+msgstr "به‌روز رسانی موتور مدیریت مصرفی %s"
 
 #. TRANSLATORS: the controller is a device that has other devices
 #. * plugged into it, for example ThunderBolt, FireWire or USB,
@@ -4235,7 +4242,7 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:167
 #, c-format
 msgid "%s Controller Update"
-msgstr ""
+msgstr "به‌روز رسانی واپایشگر %s"
 
 #. TRANSLATORS: the Thunderbolt controller is a device that
 #. * has other high speed Thunderbolt devices plugged into it;
@@ -4243,21 +4250,21 @@ msgstr ""
 #: plugins/fwupd/gs-fwupd-app.c:173
 #, c-format
 msgid "%s Thunderbolt Controller Update"
-msgstr ""
+msgstr "به‌روز رسانی واپایشگر تاندربولت %s"
 
 #. TRANSLATORS: the CPU microcode is firmware loaded onto the CPU
 #. * at system bootup
 #: plugins/fwupd/gs-fwupd-app.c:178
 #, c-format
 msgid "%s CPU Microcode Update"
-msgstr ""
+msgstr "به‌روز رسانی ریزرمز پردازندهٔ %s"
 
 #. TRANSLATORS: configuration refers to hardware state,
 #. * e.g. a security database or a default power value
 #: plugins/fwupd/gs-fwupd-app.c:183
 #, c-format
 msgid "%s Configuration Update"
-msgstr ""
+msgstr "به‌روز رسانی پیکربندی %s"
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fwupd/gs-plugin-fwupd.c:691
