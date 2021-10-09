@@ -66,36 +66,54 @@
           <object class="GtkStack" id="stack_updates">
             <property name="visible">True</property>
             <child>
-              <object class="GtkBox" id="updates_spinner_box">
+              <object class="HdyClamp">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">12</property>
-                <property name="halign">center</property>
                 <property name="valign">center</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
+                <!-- We explicitly want to use the default HdyClamp sizes here,
+                     as does HdyStatusPage. -->
                 <style>
-                  <class name="dim-label"/>
+                  <class name="status-page"/>
                 </style>
                 <child>
-                  <object class="GtkSpinner" id="spinner_updates">
+                  <object class="GtkBox">
                     <property name="visible">True</property>
-                    <property name="width_request">32</property>
-                    <property name="height_request">32</property>
-                    <property name="halign">center</property>
+                    <property name="orientation">vertical</property>
                     <property name="valign">center</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_updates_spinner">
-                    <property name="visible">True</property>
-                    <property name="label"/>
-                    <property name="justify">center</property>
-                    <attributes>
-                      <attribute name="scale" value="1.4"/>
-                    </attributes>
+                    <child>
+                      <object class="GtkSpinner" id="spinner_updates">
+                        <property name="visible">True</property>
+                        <style>
+                          <class name="icon"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label_updates_spinner">
+                        <property name="visible">True</property>
+                        <property name="wrap">True</property>
+                        <property name="wrap-mode">word-char</property>
+                        <property name="justify">center</property>
+                        <property name="label" translatable="yes" comments="TRANSLATORS: the updates panel is starting up.">Loading Updates…</property>
+                        <style>
+                          <class name="title"/>
+                          <class name="large-title"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="wrap">True</property>
+                        <property name="wrap-mode">word-char</property>
+                        <property name="justify">center</property>
+                        <property name="use-markup">True</property>
+                        <property name="label" translatable="yes" comments="TRANSLATORS: the updates panel is starting up.">This could take a while.</property>
+                        <style>
+                          <class name="body"/>
+                          <class name="description"/>
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -110,10 +128,14 @@
                 <property name="hscrollbar_policy">never</property>
                 <property name="vscrollbar_policy">automatic</property>
                 <property name="shadow_type">none</property>
+                <style>
+                  <class name="list-page"/>
+                </style>
                 <child>
-                  <object class="GsFixedSizeBin" id="gs_fixed_bin">
+                  <object class="HdyClamp">
                     <property name="visible">True</property>
-                    <property name="preferred-width">860</property>
+                    <property name="maximum-size">600</property>
+                    <property name="tightening-threshold">400</property>
                     <child>
                       <object class="GtkBox" id="list_box_updates_box">
                         <property name="visible">True</property>
@@ -123,14 +145,14 @@
                             <property name="visible">False</property>
                             <property name="hexpand">True</property>
                             <property name="vexpand">False</property>
-                            <property name="margin_top">18</property>
+                            <property name="margin-top">12</property>
                           </object>
                         </child>
                         <child>
                           <object class="GtkBox" id="updates_box">
                             <property name="visible">True</property>
                             <property name="orientation">vertical</property>
-                            <property name="margin_bottom">18</property>
+                            <property name="spacing">24</property>
                           </object>
                         </child>
                       </object>
@@ -156,43 +178,77 @@
                     <property name="vexpand">True</property>
                   </object>
                 </child>
-                <child type="center">
-                  <object class="GtkBox" id="updates_uptodate_centerbox">
-                    <property name="visible">True</property>
-                    <property name="orientation">vertical</property>
-                    <property name="spacing">12</property>
-                    <style>
-                      <class name="dim-label"/>
-                    </style>
-                    <child>
-                      <object class="GtkImage" id="image_updates">
-                        <property name="visible">True</property>
-                        <property name="pixel_size">128</property>
-                        <property name="icon_name">object-select-symbolic</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label10">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes" comments="TRANSLATORS: This means all software (plural) installed on this system is up to date.">Software is up to date</property>
-                        <attributes>
-                          <attribute name="scale" value="1.4"/>
-                        </attributes>
-                      </object>
-                    </child>
-                  </object>
-                </child>
                 <child>
-                  <object class="GtkLabel" id="label_updates_last_checked">
+
+                  <!-- FIXME: This should be a HdyStatusPage but it doesn’t
+                       currently support non-icon images
+                       See https://gitlab.gnome.org/GNOME/libhandy/-/issues/448 -->
+                  <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
-                    <property name="margin_bottom">32</property>
-                    <property name="label">Last checked: HH:MM</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="propagate-natural-height">True</property>
                     <style>
-                      <class name="dim-label"/>
+                      <class name="fake-hdy-status-page"/>
                     </style>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="orientation">vertical</property>
+                        <property name="valign">center</property>
+                        <child>
+                          <object class="HdyClamp">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="visible">True</property>
+                                <property name="orientation">vertical</property>
+                                <property name="valign">center</property>
+                                <child>
+                                  <object class="GtkImage">
+                                    <property name="visible">True</property>
+                                    <!--><property name="pixel-size">400</property>-->
+                                    <property name="resource">/org/gnome/Software/up-to-date.svg</property>
+                                    <style>
+                                      <class name="icon"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="wrap">True</property>
+                                    <property name="wrap-mode">word-char</property>
+                                    <property name="justify">center</property>
+                                    <property name="label" translatable="yes" comments="TRANSLATORS: This means all software (plural) installed on this system is up to date.">Up to Date</property>
+                                    <style>
+                                      <class name="title"/>
+                                      <class name="large-title"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkLabel" id="uptodate_description">
+                                    <property name="visible">True</property>
+                                    <property name="wrap">True</property>
+                                    <property name="wrap-mode">word-char</property>
+                                    <property name="justify">center</property>
+                                    <property name="use-markup">True</property>
+                                    <property name="label">Last checked: HH:MM</property>
+                                    <style>
+                                      <class name="body"/>
+                                      <class name="description"/>
+                                    </style>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                   <packing>
-                    <property name="pack_type">end</property>
+                    <property name="expand">True</property>
                   </packing>
                 </child>
               </object>
@@ -201,45 +257,16 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="updates_mobile_box">
+              <object class="HdyStatusPage">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">12</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <style>
-                  <class name="dim-label"/>
-                </style>
-                <child>
-                  <object class="GtkImage" id="image_updates_mobile">
-                    <property name="visible">True</property>
-                    <property name="pixel_size">128</property>
-                    <property name="icon_name">dialog-warning-symbolic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_updates_mobile">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Checking for updates when using mobile broadband could cause you to incur charges</property>
-                    <property name="wrap">True</property>
-                    <property name="halign">center</property>
-                    <property name="max-width-chars">40</property>
-                    <property name="justify">center</property>
-                    <attributes>
-                      <attribute name="scale" value="1.4"/>
-                    </attributes>
-                  </object>
-                </child>
+                <property name="icon_name">dialog-warning-symbolic</property>
+                <property name="title" translatable="yes">Use Mobile Data?</property>
+                <property name="description" translatable="yes">Checking for updates when using mobile broadband could cause you to incur charges.</property>
                 <child>
                   <object class="GtkButton" id="button_updates_mobile">
                     <property name="label" translatable="yes">_Check Anyway</property>
-                    <property name="width_request">150</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
                     <property name="use_underline">True</property>
-                    <property name="hexpand">False</property>
                     <property name="halign">center</property>
                   </object>
                 </child>
@@ -249,44 +276,16 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="updates_offline_box">
+              <object class="HdyStatusPage">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">12</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <style>
-                  <class name="dim-label"/>
-                </style>
-                <child>
-                  <object class="GtkImage" id="image_updates_offline">
-                    <property name="visible">True</property>
-                    <property name="pixel_size">128</property>
-                    <property name="icon_name">network-offline-symbolic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_updates_offline">
-                    <property name="visible">True</property>
-                    <property name="label" translatable="yes">Go online to check for updates</property>
-                    <property name="wrap">True</property>
-                    <property name="halign">center</property>
-                    <property name="justify">center</property>
-                    <attributes>
-                      <attribute name="scale" value="1.4"/>
-                    </attributes>
-                  </object>
-                </child>
+                <property name="icon_name">network-offline-symbolic</property>
+                <property name="title" translatable="yes">No Connection</property>
+                <property name="description" translatable="yes">Go online to check for updates.</property>
                 <child>
                   <object class="GtkButton" id="button_updates_offline">
                     <property name="label" translatable="yes">_Network Settings</property>
-                    <property name="width_request">150</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
                     <property name="use_underline">True</property>
-                    <property name="hexpand">False</property>
                     <property name="halign">center</property>
                   </object>
                 </child>
@@ -296,70 +295,22 @@
               </packing>
             </child>
             <child>
-              <object class="GtkBox" id="updates_failed_box">
+              <object class="HdyStatusPage" id="updates_failed_page">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">12</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <style>
-                  <class name="dim-label"/>
-                </style>
-                <child>
-                  <object class="GtkImage" id="image_updates_failed">
-                    <property name="visible">True</property>
-                    <property name="pixel_size">128</property>
-                    <property name="icon_name">action-unavailable-symbolic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="label_updates_failed">
-                    <property name="visible">True</property>
-                    <property name="wrap">True</property>
-                    <property name="max-width-chars">60</property>
-                    <property name="label" translatable="No">Failed to get updates</property>
-                    <attributes>
-                      <attribute name="scale" value="1.4"/>
-                    </attributes>
-                  </object>
-                </child>
+                <property name="icon_name">action-unavailable-symbolic</property>
+                <property name="title" translatable="No">Error</property>
+                <property name="description" translatable="No">Failed to get updates.</property>
               </object>
               <packing>
                 <property name="name">failed</property>
               </packing>
             </child>
             <child>
-              <object class="GtkBox">
+              <object class="HdyStatusPage">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">12</property>
-                <property name="halign">center</property>
-                <property name="valign">center</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <style>
-                  <class name="dim-label"/>
-                </style>
-                <child>
-                  <object class="GtkImage">
-                    <property name="visible">True</property>
-                    <property name="pixel_size">128</property>
-                    <property name="icon_name">action-unavailable-symbolic</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="visible">True</property>
-                    <property name="wrap">True</property>
-                    <property name="max-width-chars">60</property>
-                    <property name="label" translatable="yes">Updates are automatically managed</property>
-                    <attributes>
-                      <attribute name="scale" value="1.4"/>
-                    </attributes>
-                  </object>
-                </child>
+                <property name="icon_name">action-unavailable-symbolic</property>
+                <property name="title" translatable="yes">Error</property>
+                <property name="description" translatable="yes">Updates are automatically managed.</property>
               </object>
               <packing>
                 <property name="name">managed</property>

@@ -43,6 +43,10 @@ struct _GsAppClass
  * @GS_APP_STATE_UPDATABLE_LIVE:		Application is installed and updatable live
  * @GS_APP_STATE_PURCHASABLE:			Application is available for purchasing
  * @GS_APP_STATE_PURCHASING:			Application is being purchased
+ * @GS_APP_STATE_PENDING_INSTALL:		Application is installed, but may have pending some actions,
+ *						like restart, to finish it
+ * @GS_APP_STATE_PENDING_REMOVE:		Application is removed, but may have pending some actions,
+ *						like restart, to finish it
  *
  * The application state.
  **/
@@ -59,6 +63,8 @@ typedef enum {
 	GS_APP_STATE_UPDATABLE_LIVE,			/* Since: 0.5.4 */
 	GS_APP_STATE_PURCHASABLE,			/* Since: 0.5.17 */
 	GS_APP_STATE_PURCHASING,			/* Since: 0.5.17 */
+	GS_APP_STATE_PENDING_INSTALL,			/* Since: 41 */
+	GS_APP_STATE_PENDING_REMOVE,			/* Since: 41 */
 	GS_APP_STATE_LAST  /*< skip >*/
 } GsAppState;
 
@@ -362,7 +368,6 @@ GPtrArray	*gs_app_get_icons		(GsApp		*app);
 void		 gs_app_add_icon		(GsApp		*app,
 						 GIcon		*icon);
 void		 gs_app_remove_all_icons	(GsApp		*app);
-gboolean	 gs_app_get_use_drop_shadow	(GsApp		*app);
 GFile		*gs_app_get_local_file		(GsApp		*app);
 void		 gs_app_set_local_file		(GsApp		*app,
 						 GFile		*local_file);
@@ -402,9 +407,19 @@ void		 gs_app_add_provided_item	(GsApp		*app,
 guint64		 gs_app_get_size_installed	(GsApp		*app);
 void		 gs_app_set_size_installed	(GsApp		*app,
 						 guint64	 size_installed);
+guint64		 gs_app_get_size_installed_dependencies
+						(GsApp		*app);
+guint64		 gs_app_get_size_user_data	(GsApp		*app);
+void		 gs_app_set_size_user_data	(GsApp		*app,
+						 guint64	 size_user_data);
+guint64		 gs_app_get_size_cache_data	(GsApp		*app);
+void		 gs_app_set_size_cache_data	(GsApp		*app,
+						 guint64	 size_cache_data);
 guint64		 gs_app_get_size_download	(GsApp		*app);
 void		 gs_app_set_size_download	(GsApp		*app,
 						 guint64	 size_download);
+guint64		 gs_app_get_size_download_dependencies
+						(GsApp		*app);
 void		 gs_app_add_related		(GsApp		*app,
 						 GsApp		*app2);
 void		 gs_app_add_addon		(GsApp		*app,
@@ -461,6 +476,7 @@ gchar		*gs_app_get_origin_ui		(GsApp		*app);
 void		 gs_app_set_origin_ui		(GsApp		*app,
 						 const gchar	*origin_ui);
 gchar		*gs_app_get_packaging_format	(GsApp		*app);
+const gchar	*gs_app_get_packaging_format_raw(GsApp *app);
 void		 gs_app_subsume_metadata	(GsApp		*app,
 						 GsApp		*donor);
 GsAppPermissions gs_app_get_permissions		(GsApp		*app);
@@ -476,5 +492,15 @@ void		gs_app_ensure_icons_downloaded	(GsApp		*app,
 						 SoupSession	*soup_session,
 						 guint		 maximum_icon_size,
 						 GCancellable	*cancellable);
+
+GPtrArray	*gs_app_get_relations		(GsApp		*app);
+void		 gs_app_add_relation		(GsApp		*app,
+						 AsRelation	*relation);
+void		 gs_app_set_relations		(GsApp		*app,
+						 GPtrArray	*relations);
+
+gboolean	 gs_app_get_has_translations	(GsApp		*app);
+void		 gs_app_set_has_translations	(GsApp		*app,
+						 gboolean	 has_translations);
 
 G_END_DECLS

@@ -57,6 +57,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 	priv->cached_origin = gs_app_new (gs_plugin_get_name (plugin));
 	gs_app_set_kind (priv->cached_origin, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_origin_hostname (priv->cached_origin, "http://www.bbc.co.uk/");
+	gs_app_set_management_plugin (priv->cached_origin, gs_plugin_get_name (plugin));
 
 	/* add the source to the plugin cache which allows us to match the
 	 * unique ID to a GsApp when creating an event */
@@ -81,7 +82,6 @@ gs_plugin_initialize (GsPlugin *plugin)
 	/* need help from appstream */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "os-release");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "odrs");
 }
 
 void
@@ -775,7 +775,7 @@ gs_plugin_add_distro_upgrades (GsPlugin *plugin,
 	g_autoptr(GIcon) ic = NULL;
 
 	/* use stock icon */
-	ic = g_themed_icon_new ("application-x-addon");
+	ic = g_themed_icon_new ("system-component-addon");
 
 	/* get existing item from the cache */
 	app = gs_plugin_cache_lookup (plugin, "user/*/os-upgrade/org.fedoraproject.release-rawhide.upgrade/*");
@@ -804,7 +804,8 @@ gs_plugin_add_distro_upgrades (GsPlugin *plugin,
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
 	gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css",
 			     "background: url('" DATADIR "/gnome-software/upgrade-bg.png');"
-			     "background-size: 100% 100%;");
+			     "background-size: 100% 100%;"
+			     "border-width: 0;");
 	gs_app_add_icon (app, ic);
 	gs_app_list_add (list, app);
 
@@ -868,64 +869,5 @@ gboolean
 gs_plugin_update_cancel (GsPlugin *plugin, GsApp *app,
 			 GCancellable *cancellable, GError **error)
 {
-	return TRUE;
-}
-
-gboolean
-gs_plugin_review_submit (GsPlugin *plugin,
-			 GsApp *app,
-			 AsReview *review,
-			 GCancellable *cancellable,
-			 GError **error)
-{
-	g_debug ("Submitting dummy review");
-	return TRUE;
-}
-
-gboolean
-gs_plugin_review_report (GsPlugin *plugin,
-			 GsApp *app,
-			 AsReview *review,
-			 GCancellable *cancellable,
-			 GError **error)
-{
-	g_debug ("Reporting dummy review");
-	as_review_add_flags (review, AS_REVIEW_FLAG_VOTED);
-	return TRUE;
-}
-
-gboolean
-gs_plugin_review_upvote (GsPlugin *plugin,
-			 GsApp *app,
-			 AsReview *review,
-			 GCancellable *cancellable,
-			 GError **error)
-{
-	g_debug ("Upvoting dummy review");
-	as_review_add_flags (review, AS_REVIEW_FLAG_VOTED);
-	return TRUE;
-}
-
-gboolean
-gs_plugin_review_downvote (GsPlugin *plugin,
-			   GsApp *app,
-			   AsReview *review,
-			   GCancellable *cancellable,
-			   GError **error)
-{
-	g_debug ("Downvoting dummy review");
-	as_review_add_flags (review, AS_REVIEW_FLAG_VOTED);
-	return TRUE;
-}
-
-gboolean
-gs_plugin_review_remove (GsPlugin *plugin,
-			 GsApp *app,
-			 AsReview *review,
-			 GCancellable *cancellable,
-			 GError **error)
-{
-	/* all okay */
-	g_debug ("Removing dummy self-review");
 	return TRUE;
 }

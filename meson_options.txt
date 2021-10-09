@@ -10,7 +10,6 @@ option('fwupd', type : 'boolean', value : true, description : 'enable fwupd supp
 option('flatpak', type : 'boolean', value : true, description : 'enable Flatpak support')
 option('malcontent', type : 'boolean', value : true, description : 'enable parental controls support using libmalcontent')
 option('rpm_ostree', type : 'boolean', value : false, description : 'enable rpm-ostree support')
-option('odrs', type : 'boolean', value : true, description : 'enable ODRS support')
 option('gudev', type : 'boolean', value : true, description : 'enable GUdev support')
 option('apt', type : 'boolean', value : false, description : 'enable apt: URL handler in the .desktop file')
 option('snap', type : 'boolean', value : false, description : 'enable Snap support')
@@ -21,3 +20,4 @@ option('hardcoded_popular', type : 'boolean', value : true, description : 'enabl
 option('default_featured_apps', type : 'boolean', value : true, description : 'enable installation of default featured apps list')
 option('mogwai', type : 'boolean', value : false, description : 'enable metered data support using Mogwai')
 option('sysprof', type : 'feature', value : 'auto', description : 'enable sysprof-capture support for profiling')
+option('profile', type : 'string', value : '', description : 'Build with specified application ID')

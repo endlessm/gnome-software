@@ -16,35 +16,35 @@
 #include "gs-common.h"
 #include "gs-os-release.h"
 #include "gs-repo-row.h"
-#include "gs-third-party-repo-row.h"
+#include "gs-repos-section.h"
 #include "gs-utils.h"
 #include <glib/gi18n.h>
 
 struct _GsReposDialog
 {
-	GtkDialog	 parent_instance;
+	HdyWindow	 parent_instance;
 	GSettings	*settings;
-	GsApp		*third_party_repo;
+	gchar		*third_party_cmdtool;
+	gboolean	 third_party_enabled;
+	GHashTable	*third_party_repos; /* (nullable) (owned), mapping from owned repo ID → owned plugin name */
+	GHashTable	*sections; /* gchar * ~> GsReposSection * */
 
 	GCancellable	*cancellable;
 	GsPluginLoader	*plugin_loader;
-	GtkWidget	*frame;
-	GtkWidget	*frame_third_party;
-	GtkWidget	*label_description;
-	GtkWidget	*label_empty;
-	GtkWidget	*label_header;
-	GtkWidget	*listbox;
-	GtkWidget	*listbox_third_party;
-	GtkWidget	*row_third_party;
+	GtkWidget	*status_empty;
+	GtkWidget	*content_page;
 	GtkWidget	*spinner;
 	GtkWidget	*stack;
 };
 
-G_DEFINE_TYPE (GsReposDialog, gs_repos_dialog, GTK_TYPE_DIALOG)
+G_DEFINE_TYPE (GsReposDialog, gs_repos_dialog, HDY_TYPE_WINDOW)
+
+static void reload_third_party_repos (GsReposDialog *dialog);
 
 typedef struct {
 	GsReposDialog	*dialog;
 	GsApp		*repo;
+	GWeakRef	 row_weakref;
 	GsPluginAction	 action;
 } InstallRemoveData;
 
@@ -53,95 +53,39 @@ install_remove_data_free (InstallRemoveData *data)
 {
 	g_clear_object (&data->dialog);
 	g_clear_object (&data->repo);
+	g_weak_ref_clear (&data->row_weakref);
 	g_slice_free (InstallRemoveData, data);
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(InstallRemoveData, install_remove_data_free);
 
-static void reload_sources (GsReposDialog *dialog);
-static void reload_third_party_repo (GsReposDialog *dialog);
-
-static gchar *
-get_repo_installed_text (GsApp *repo)
-{
-	GsAppList *related;
-	guint cnt_addon = 0;
-	guint cnt_apps = 0;
-	g_autofree gchar *addons_text = NULL;
-	g_autofree gchar *apps_text = NULL;
-
-	related = gs_app_get_related (repo);
-	for (guint i = 0; i < gs_app_list_length (related); i++) {
-		GsApp *app_tmp = gs_app_list_index (related, i);
-		switch (gs_app_get_kind (app_tmp)) {
-		case AS_COMPONENT_KIND_WEB_APP:
-		case AS_COMPONENT_KIND_DESKTOP_APP:
-			cnt_apps++;
-			break;
-		case AS_COMPONENT_KIND_FONT:
-		case AS_COMPONENT_KIND_CODEC:
-		case AS_COMPONENT_KIND_INPUT_METHOD:
-		case AS_COMPONENT_KIND_ADDON:
-			cnt_addon++;
-			break;
-		default:
-			break;
-		}
-	}
-
-	if (cnt_apps == 0 && cnt_addon == 0) {
-		/* nothing! */
-		return NULL;
-	}
-	if (cnt_addon == 0) {
-		/* TRANSLATORS: This string is used to construct the 'X applications
-		   installed' sentence, describing a software repository. */
-		return g_strdup_printf (ngettext ("%u application installed",
-		                                  "%u applications installed",
-		                                  cnt_apps), cnt_apps);
-	}
-	if (cnt_apps == 0) {
-		/* TRANSLATORS: This string is used to construct the 'X add-ons
-		   installed' sentence, describing a software repository. */
-		return g_strdup_printf (ngettext ("%u add-on installed",
-		                                  "%u add-ons installed",
-		                                  cnt_addon), cnt_addon);
-	}
-
-	/* TRANSLATORS: This string is used to construct the 'X applications
-	   and y add-ons installed' sentence, describing a software repository.
-	   The correct form here depends on the number of applications. */
-	apps_text = g_strdup_printf (ngettext ("%u application",
-	                                       "%u applications",
-	                                       cnt_apps), cnt_apps);
-	/* TRANSLATORS: This string is used to construct the 'X applications
-	   and y add-ons installed' sentence, describing a software repository.
-	   The correct form here depends on the number of add-ons. */
-	addons_text = g_strdup_printf (ngettext ("%u add-on",
-	                                         "%u add-ons",
-	                                         cnt_addon), cnt_addon);
-	/* TRANSLATORS: This string is used to construct the 'X applications
-	   and y add-ons installed' sentence, describing a software repository.
-	   The correct form here depends on the total number of
-	   applications and add-ons. */
-	return g_strdup_printf (ngettext ("%s and %s installed",
-	                                  "%s and %s installed",
-	                                  cnt_apps + cnt_addon),
-	                                  apps_text, addons_text);
-}
-
 static gboolean
-repo_supports_removal (GsApp *repo)
+key_press_event_cb (GtkWidget            *sender,
+                    GdkEvent             *event,
+                    HdyPreferencesWindow *self)
 {
-	const gchar *management_plugin = gs_app_get_management_plugin (repo);
+	guint keyval;
+	GdkModifierType state;
+	GdkKeymap *keymap;
+	GdkEventKey *key_event = (GdkEventKey *) event;
 
-	/* can't remove a repo, only enable/disable existing ones */
-	if (g_strcmp0 (management_plugin, "fwupd") == 0 ||
-	    g_strcmp0 (management_plugin, "packagekit") == 0 ||
-	    g_strcmp0 (management_plugin, "rpm-ostree") == 0)
-		return FALSE;
+	gdk_event_get_state (event, &state);
 
-	return TRUE;
+	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (sender));
+
+	gdk_keymap_translate_keyboard_state (keymap,
+					     key_event->hardware_keycode,
+					     state,
+					     key_event->group,
+					     &keyval, NULL, NULL, NULL);
+
+	if (keyval == GDK_KEY_Escape) {
+		gtk_window_close (GTK_WINDOW (self));
+
+		return GDK_EVENT_STOP;
+	}
+
+	return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -152,9 +96,13 @@ repo_enabled_cb (GObject *source,
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
 	g_autoptr(InstallRemoveData) install_remove_data = (InstallRemoveData *) user_data;
 	g_autoptr(GError) error = NULL;
+	g_autoptr(GsRepoRow) row = NULL;
 	const gchar *action_str;
 
 	action_str = gs_plugin_action_to_string (install_remove_data->action);
+	row = g_weak_ref_get (&install_remove_data->row_weakref);
+	if (row)
+		gs_repo_row_unmark_busy (row);
 
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
 		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
@@ -196,21 +144,30 @@ enable_repo_response_cb (GtkDialog *confirm_dialog,
 	gtk_widget_destroy (GTK_WIDGET (confirm_dialog));
 
 	/* not agreed */
-	if (response != GTK_RESPONSE_OK)
+	if (response != GTK_RESPONSE_OK) {
+		g_autoptr(GsRepoRow) row = g_weak_ref_get (&install_data->row_weakref);
+		if (row)
+			gs_repo_row_unmark_busy (row);
 		return;
+	}
 
 	_enable_repo (g_steal_pointer (&install_data));
 }
 
 static void
-enable_repo (GsReposDialog *dialog, GsApp *repo)
+enable_repo (GsReposDialog *dialog,
+	     GsRepoRow *row,
+	     GsApp *repo)
 {
 	g_autoptr(InstallRemoveData) install_data = NULL;
 
 	install_data = g_slice_new0 (InstallRemoveData);
-	install_data->action = GS_PLUGIN_ACTION_INSTALL;
-	install_data->repo = g_object_ref (repo);
+	install_data->action = GS_PLUGIN_ACTION_ENABLE_REPO;
 	install_data->dialog = g_object_ref (dialog);
+	install_data->repo = g_object_ref (repo);
+	g_weak_ref_init (&install_data->row_weakref, row);
+
+	gs_repo_row_mark_busy (row);
 
 	/* user needs to confirm acceptance of an agreement */
 	if (gs_app_get_agreement (repo) != NULL) {
@@ -268,8 +225,12 @@ remove_repo_response_cb (GtkDialog *confirm_dialog,
 	gtk_widget_destroy (GTK_WIDGET (confirm_dialog));
 
 	/* not agreed */
-	if (response != GTK_RESPONSE_OK)
+	if (response != GTK_RESPONSE_OK) {
+		g_autoptr(GsRepoRow) row = g_weak_ref_get (&remove_data->row_weakref);
+		if (row)
+			gs_repo_row_unmark_busy (row);
 		return;
+	}
 
 	g_debug ("removing repo %s", gs_app_get_id (remove_data->repo));
 	plugin_job = gs_plugin_job_newv (remove_data->action,
@@ -283,53 +244,44 @@ remove_repo_response_cb (GtkDialog *confirm_dialog,
 }
 
 static void
-remove_confirm_repo (GsReposDialog *dialog, GsApp *repo)
+remove_confirm_repo (GsReposDialog *dialog,
+		     GsRepoRow *row,
+		     GsApp *repo,
+		     GsPluginAction action)
 {
 	InstallRemoveData *remove_data;
 	GtkWidget *confirm_dialog;
 	g_autofree gchar *message = NULL;
-	g_autofree gchar *title = NULL;
 	GtkWidget *button;
 	GtkStyleContext *context;
 
 	remove_data = g_slice_new0 (InstallRemoveData);
-	remove_data->action = GS_PLUGIN_ACTION_REMOVE;
-	remove_data->repo = g_object_ref (repo);
+	remove_data->action = action;
 	remove_data->dialog = g_object_ref (dialog);
+	remove_data->repo = g_object_ref (repo);
+	g_weak_ref_init (&remove_data->row_weakref, row);
 
-	if (repo_supports_removal (repo)) {
-		/* TRANSLATORS: this is a prompt message, and '%s' is a
-		 * repository name, e.g. 'GNOME Nightly' */
-		title = g_strdup_printf (_("Remove “%s”?"),
-		                         gs_app_get_name (repo));
-	} else {
-		/* TRANSLATORS: this is a prompt message, and '%s' is a
-		 * repository name, e.g. 'GNOME Nightly' */
-		title = g_strdup_printf (_("Disable “%s”?"),
-		                         gs_app_get_name (repo));
-	}
-	/* TRANSLATORS: longer dialog text */
-	message = g_strdup (_("Software that has been installed from this "
-	                      "repository will no longer receive updates, "
-	                      "including security fixes."));
+	/* TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora Modular - x86_64" */
+	message = g_strdup_printf (_("Software that has been installed from “%s” will cease receive updates."),
+			gs_app_get_name (repo));
 
 	/* ask for confirmation */
 	confirm_dialog = gtk_message_dialog_new (GTK_WINDOW (dialog),
 	                                         GTK_DIALOG_MODAL,
 	                                         GTK_MESSAGE_QUESTION,
 	                                         GTK_BUTTONS_CANCEL,
-	                                         "%s", title);
+	                                         "%s",
+						 action == GS_PLUGIN_ACTION_DISABLE_REPO ? _("Disable Repository?") : _("Remove Repository?"));
 	gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (confirm_dialog),
 						  "%s", message);
 
-	if (repo_supports_removal (repo)) {
-		/* TRANSLATORS: this is button text to remove the repo */
-		button = gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("Remove"), GTK_RESPONSE_OK);
+	if (action == GS_PLUGIN_ACTION_DISABLE_REPO) {
+		/* TRANSLATORS: this is button text to disable a repo */
+		button = gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("_Disable"), GTK_RESPONSE_OK);
 	} else {
-		/* TRANSLATORS: this is button text to remove the repo */
-		button = gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("Disable"), GTK_RESPONSE_OK);
+		/* TRANSLATORS: this is button text to remove a repo */
+		button = gtk_dialog_add_button (GTK_DIALOG (confirm_dialog), _("_Remove"), GTK_RESPONSE_OK);
 	}
-
 	context = gtk_widget_get_style_context (button);
 	gtk_style_context_add_class (context, "destructive-action");
 
@@ -339,11 +291,14 @@ remove_confirm_repo (GsReposDialog *dialog, GsApp *repo)
 
 	gtk_window_set_modal (GTK_WINDOW (confirm_dialog), TRUE);
 	gtk_window_present (GTK_WINDOW (confirm_dialog));
+
+	gs_repo_row_mark_busy (row);
 }
 
 static void
-repo_button_clicked_cb (GsRepoRow *row,
-                        GsReposDialog *dialog)
+repo_section_switch_clicked_cb (GsReposSection *section,
+				GsRepoRow *row,
+				GsReposDialog *dialog)
 {
 	GsApp *repo;
 
@@ -352,10 +307,10 @@ repo_button_clicked_cb (GsRepoRow *row,
 	switch (gs_app_get_state (repo)) {
 	case GS_APP_STATE_AVAILABLE:
 	case GS_APP_STATE_AVAILABLE_LOCAL:
-	        enable_repo (dialog, repo);
+		enable_repo (dialog, row, repo);
 		break;
 	case GS_APP_STATE_INSTALLED:
-	        remove_confirm_repo (dialog, repo);
+		remove_confirm_repo (dialog, row, repo, GS_PLUGIN_ACTION_DISABLE_REPO);
 		break;
 	default:
 		g_warning ("repo %s button clicked in unexpected state %s",
@@ -365,30 +320,145 @@ repo_button_clicked_cb (GsRepoRow *row,
 	}
 }
 
-static GtkListBox *
-get_list_box_for_repo (GsReposDialog *dialog, GsApp *repo)
+static void
+repo_section_remove_clicked_cb (GsReposSection *section,
+				GsRepoRow *row,
+				GsReposDialog *dialog)
 {
-	if (dialog->third_party_repo != NULL) {
-		const gchar *source_repo;
-		const gchar *source_third_party_package;
-
-		source_repo = gs_app_get_source_id_default (repo);
-		source_third_party_package = gs_app_get_source_id_default (dialog->third_party_repo);
-
-		/* group repos from the same repo-release package together */
-		if (g_strcmp0 (source_repo, source_third_party_package) == 0)
-			return GTK_LIST_BOX (dialog->listbox_third_party);
-	}
-
-	return GTK_LIST_BOX (dialog->listbox);
+	GsApp *repo = gs_repo_row_get_repo (row);
+	remove_confirm_repo (dialog, row, repo, GS_PLUGIN_ACTION_REMOVE_REPO);
 }
 
 static void
-add_repo (GsReposDialog *dialog, GsApp *repo)
+fedora_third_party_call_thread (GTask *task,
+				gpointer source_object,
+				gpointer task_data,
+				GCancellable *cancellable)
 {
-	GtkWidget *row;
-	g_autofree gchar *text = NULL;
+	GPtrArray *args = task_data;
+	g_autoptr(GError) error = NULL;
+	gint exit_status = -1;
+
+	g_return_if_fail (args != NULL);
+
+	if (g_spawn_sync (NULL, (gchar **) args->pdata, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL, &exit_status, &error))
+		g_task_return_int (task, WEXITSTATUS (exit_status));
+	else
+		g_task_return_error (task, g_steal_pointer (&error));
+}
+
+static void
+fedora_third_party_call_async (GsReposDialog *self,
+			       const gchar *args[],
+			       GAsyncReadyCallback callback,
+			       gpointer user_data)
+{
+	g_autoptr(GTask) task = NULL;
+	GPtrArray *args_array;
+
+	g_return_if_fail (self->third_party_cmdtool != NULL);
+
+	args_array = g_ptr_array_new_with_free_func (g_free);
+	for (gsize ii = 0; args[ii] != NULL; ii++) {
+		g_ptr_array_add (args_array, g_strdup (args[ii]));
+	}
+
+	/* NULL-terminated array */
+	g_ptr_array_add (args_array, NULL);
+
+	task = g_task_new (self, NULL, callback, user_data);
+	g_task_set_source_tag (task, fedora_third_party_call_async);
+	g_task_set_task_data (task, args_array, (GDestroyNotify) g_ptr_array_unref);
+	g_task_run_in_thread (task, fedora_third_party_call_thread);
+}
+
+static gboolean
+fedora_third_party_call_finish (GsReposDialog *self,
+				GAsyncResult *result,
+				gint *out_exit_status,
+				GError **error)
+{
+	gint exit_status;
+	GError *local_error = NULL;
+
+	exit_status = g_task_propagate_int (G_TASK (result), &local_error);
+	if (local_error) {
+		g_propagate_error (error, local_error);
+		return FALSE;
+	}
+
+	if (out_exit_status)
+		*out_exit_status = exit_status;
+
+	return TRUE;
+}
+
+static void
+fedora_third_party_switch_done_cb (GObject *source_object,
+				   GAsyncResult *result,
+				   gpointer user_data)
+{
+	GsReposDialog *self = GS_REPOS_DIALOG (source_object);
+	g_autoptr(GError) error = NULL;
+
+	if (!fedora_third_party_call_finish (self, result, NULL, &error))
+		g_warning ("Failed to switch config with '%s': %s", self->third_party_cmdtool, error->message);
+
+	/* Reload the state, because the user could dismiss the authentication prompt
+	   or the repos could change their state. */
+	reload_third_party_repos (self);
+}
+
+static void
+fedora_third_party_repos_switch_notify_cb (GObject *object,
+					   GParamSpec *param,
+					   gpointer user_data)
+{
+	GsReposDialog *self = user_data;
+	const gchar *args[] = {
+		"pkexec",
+		"", /* executable */
+		"", /* command */
+		"--config-only",
+		NULL
+	};
+
+	g_return_if_fail (self->third_party_cmdtool != NULL);
+
+	args[1] = self->third_party_cmdtool;
+	args[2] = gtk_switch_get_active (GTK_SWITCH (object)) ? "enable" : "disable";
+
+	fedora_third_party_call_async (self, args, fedora_third_party_switch_done_cb, NULL);
+}
+
+static gboolean
+is_third_party_repo (GsReposDialog *dialog,
+		     GsApp *repo)
+{
+	if (dialog->third_party_repos != NULL &&
+	    gs_app_get_scope (repo) == AS_COMPONENT_SCOPE_SYSTEM) {
+		const gchar *expected_management_plugin;
+		const gchar *management_plugin;
+
+		expected_management_plugin = g_hash_table_lookup (dialog->third_party_repos, gs_app_get_id (repo));
+		if (expected_management_plugin == NULL)
+			return FALSE;
+
+		management_plugin = gs_app_get_management_plugin (repo);
+		return g_strcmp0 (management_plugin, expected_management_plugin) == 0;
+	}
+
+	return FALSE;
+}
+
+static void
+add_repo (GsReposDialog *dialog,
+	  GsApp *repo,
+	  GSList **third_party_repos)
+{
 	GsAppState state;
+	GtkWidget *section;
+	g_autofree gchar *origin_ui = NULL;
 
 	state = gs_app_get_state (repo);
 	if (!(state == GS_APP_STATE_AVAILABLE ||
@@ -402,122 +472,55 @@ add_repo (GsReposDialog *dialog, GsApp *repo)
 		return;
 	}
 
-	row = gs_repo_row_new ();
-	gs_repo_row_set_name (GS_REPO_ROW (row),
-	                      gs_app_get_name (repo));
-	text = get_repo_installed_text (repo);
-	gs_repo_row_set_comment (GS_REPO_ROW (row), text);
-	gs_repo_row_set_url (GS_REPO_ROW (row),
-	                     gs_app_get_url (repo, AS_URL_KIND_HOMEPAGE));
-	gs_repo_row_show_status (GS_REPO_ROW (row));
-	gs_repo_row_set_repo (GS_REPO_ROW (row), repo);
-
-	g_signal_connect (row, "button-clicked",
-	                  G_CALLBACK (repo_button_clicked_cb), dialog);
-
-	gtk_list_box_prepend (get_list_box_for_repo (dialog, repo), row);
-	gtk_widget_show (row);
-}
-
-static void
-third_party_repo_installed_cb (GObject *source,
-                               GAsyncResult *res,
-                               gpointer user_data)
-{
-	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
-	g_autoptr(InstallRemoveData) install_data = (InstallRemoveData *) user_data;
-	g_autoptr(GError) error = NULL;
-
-	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
-		const gchar *action_str = gs_plugin_action_to_string (install_data->action);
-
-		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
-			g_debug ("third party repo %s cancelled", action_str);
-			return;
-		}
-
-		g_warning ("failed to %s third party repo: %s", action_str, error->message);
+	if (third_party_repos && is_third_party_repo (dialog, repo)) {
+		*third_party_repos = g_slist_prepend (*third_party_repos, repo);
 		return;
 	}
 
-	reload_sources (install_data->dialog);
-}
-
-static void
-install_third_party_repo (GsReposDialog *dialog, gboolean install)
-{
-	InstallRemoveData *install_data;
-	g_autoptr(GsPluginJob) plugin_job = NULL;
-
-	install_data = g_slice_new0 (InstallRemoveData);
-	install_data->dialog = g_object_ref (dialog);
-	install_data->action = install ? GS_PLUGIN_ACTION_INSTALL : GS_PLUGIN_ACTION_REMOVE;
-
-	plugin_job = gs_plugin_job_newv (install_data->action,
-					 "interactive", TRUE,
-	                                 "app", dialog->third_party_repo,
-	                                 NULL);
-	gs_plugin_loader_job_process_async (dialog->plugin_loader,
-	                                    plugin_job,
-	                                    dialog->cancellable,
-	                                    third_party_repo_installed_cb,
-	                                    install_data);
-}
-
-static void
-third_party_repo_button_clicked_cb (GsThirdPartyRepoRow *row,
-                                    gpointer user_data)
-{
-	GsReposDialog *dialog = (GsReposDialog *) user_data;
-	GsApp *app;
-
-	app = gs_third_party_repo_row_get_app (row);
-
-	switch (gs_app_get_state (app)) {
-	case GS_APP_STATE_UNAVAILABLE:
-	case GS_APP_STATE_AVAILABLE:
-	case GS_APP_STATE_AVAILABLE_LOCAL:
-		install_third_party_repo (dialog, TRUE);
-		break;
-	case GS_APP_STATE_UPDATABLE_LIVE:
-	case GS_APP_STATE_UPDATABLE:
-	case GS_APP_STATE_INSTALLED:
-		install_third_party_repo (dialog, FALSE);
-		break;
-	default:
-		g_warning ("third party repo %s button clicked in unexpected state %s",
-		           gs_app_get_id (app),
-		           gs_app_state_to_string (gs_app_get_state (app)));
-		break;
+	origin_ui = gs_app_get_origin_ui (repo);
+	if (!origin_ui)
+		origin_ui = gs_app_get_packaging_format (repo);
+	if (!origin_ui)
+		origin_ui = g_strdup (gs_app_get_management_plugin (repo));
+	section = g_hash_table_lookup (dialog->sections, origin_ui);
+	if (section == NULL) {
+		section = gs_repos_section_new (dialog->plugin_loader);
+		hdy_preferences_group_set_title (HDY_PREFERENCES_GROUP (section),
+						 origin_ui);
+		g_signal_connect_object (section, "remove-clicked",
+					 G_CALLBACK (repo_section_remove_clicked_cb), dialog, 0);
+		g_signal_connect_object (section, "switch-clicked",
+					 G_CALLBACK (repo_section_switch_clicked_cb), dialog, 0);
+		g_hash_table_insert (dialog->sections, g_steal_pointer (&origin_ui), section);
+		gtk_widget_show (section);
 	}
 
-	g_settings_set_boolean (dialog->settings, "show-nonfree-prompt", FALSE);
+	gs_repos_section_add_repo (GS_REPOS_SECTION (section), repo);
 }
 
-static void
-refresh_third_party_repo (GsReposDialog *dialog)
+static gint
+repos_dialog_compare_sections_cb (gconstpointer aa,
+				  gconstpointer bb)
 {
-	if (dialog->third_party_repo == NULL) {
-		gtk_widget_hide (dialog->frame_third_party);
-		return;
-	}
+	GsReposSection *section_a = (GsReposSection *) aa;
+	GsReposSection *section_b = (GsReposSection *) bb;
+	const gchar *section_sort_key_a;
+	const gchar *section_sort_key_b;
+	g_autofree gchar *title_sort_key_a = NULL;
+	g_autofree gchar *title_sort_key_b = NULL;
+	gint res;
 
-	gtk_widget_show (dialog->frame_third_party);
-}
+	section_sort_key_a = gs_repos_section_get_sort_key (section_a);
+	section_sort_key_b = gs_repos_section_get_sort_key (section_b);
 
-static void
-remove_all_repo_rows_cb (GtkWidget *widget, gpointer user_data)
-{
-	GtkContainer *container = GTK_CONTAINER (user_data);
+	res = g_strcmp0 (section_sort_key_a, section_sort_key_b);
+	if (res != 0)
+		return res;
 
-	if (GS_IS_REPO_ROW (widget))
-		gtk_container_remove (container, widget);
-}
+	title_sort_key_a = gs_utils_sort_key (hdy_preferences_group_get_title (HDY_PREFERENCES_GROUP (section_a)));
+	title_sort_key_b = gs_utils_sort_key (hdy_preferences_group_get_title (HDY_PREFERENCES_GROUP (section_b)));
 
-static void
-container_remove_all_repo_rows (GtkContainer *container)
-{
-	gtk_container_foreach (container, remove_all_repo_rows_cb, container);
+	return g_strcmp0 (title_sort_key_a, title_sort_key_b);
 }
 
 static void
@@ -528,6 +531,8 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 	GsApp *app;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
+	g_autoptr(GSList) other_repos = NULL;
+	g_autoptr(GList) sections = NULL;
 
 	/* get the results */
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
@@ -541,14 +546,12 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 			g_warning ("failed to get sources: %s", error->message);
 		}
 		gtk_stack_set_visible_child_name (GTK_STACK (dialog->stack), "empty");
-		gtk_style_context_add_class (gtk_widget_get_style_context (dialog->label_header),
-		                             "dim-label");
 		return;
 	}
 
 	/* remove previous */
-	gs_container_remove_all (GTK_CONTAINER (dialog->listbox));
-	container_remove_all_repo_rows (GTK_CONTAINER (dialog->listbox_third_party));
+	g_hash_table_remove_all (dialog->sections);
+	gs_container_remove_all (GTK_CONTAINER (dialog->content_page));
 
 	/* stop the spinner */
 	gs_stop_spinner (GTK_SPINNER (dialog->spinner));
@@ -557,58 +560,86 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 	if (gs_app_list_length (list) == 0) {
 		g_debug ("no sources to show");
 		gtk_stack_set_visible_child_name (GTK_STACK (dialog->stack), "empty");
-		gtk_style_context_add_class (gtk_widget_get_style_context (dialog->label_header), "dim-label");
 		return;
 	}
-
-	gtk_style_context_remove_class (gtk_widget_get_style_context (dialog->label_header),
-	                                "dim-label");
 
 	/* add each */
 	gtk_stack_set_visible_child_name (GTK_STACK (dialog->stack), "sources");
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		app = gs_app_list_index (list, i);
-		add_repo (dialog, app);
+		add_repo (dialog, app, &other_repos);
 	}
 
-	gtk_widget_set_visible (dialog->frame,
-		gtk_list_box_get_row_at_index (GTK_LIST_BOX (dialog->listbox), 0) != NULL);
-}
+	sections = g_hash_table_get_values (dialog->sections);
+	sections = g_list_sort (sections, repos_dialog_compare_sections_cb);
+	for (GList *link = sections; link; link = g_list_next (link)) {
+		GtkWidget *section = link->data;
+		gtk_container_add (GTK_CONTAINER (dialog->content_page), section);
+	}
 
-static void
-resolve_third_party_repo_cb (GsPluginLoader *plugin_loader,
-                             GAsyncResult *res,
-                             GsReposDialog *dialog)
-{
-	GsApp *app;
-	g_autoptr(GError) error = NULL;
-	g_autoptr(GsAppList) list = NULL;
+	gtk_widget_set_visible (dialog->content_page, sections != NULL);
 
-	/* get the results */
-	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
-	if (list == NULL) {
-		if (g_error_matches (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_CANCELLED)) {
-			g_debug ("resolve third party repo cancelled");
-			return;
-		} else {
-			g_warning ("failed to resolve third party repo: %s", error->message);
-			return;
+	if (other_repos) {
+		GsReposSection *section;
+		GtkWidget *widget;
+		GtkWidget *row;
+		g_autofree gchar *anchor = NULL;
+		g_autofree gchar *hint = NULL;
+
+		widget = gtk_switch_new ();
+		gtk_widget_set_valign (widget, GTK_ALIGN_CENTER);
+		gtk_switch_set_active (GTK_SWITCH (widget), dialog->third_party_enabled);
+		g_signal_connect_object (widget, "notify::active",
+					 G_CALLBACK (fedora_third_party_repos_switch_notify_cb), dialog, 0);
+		gtk_widget_show (widget);
+
+		row = hdy_action_row_new ();
+		hdy_preferences_row_set_title (HDY_PREFERENCES_ROW (row), _("Enable New Repositories"));
+		hdy_action_row_set_subtitle (HDY_ACTION_ROW (row), _("Turn on new repositories when they are added."));
+		hdy_action_row_set_activatable_widget (HDY_ACTION_ROW (row), widget);
+		gtk_container_add (GTK_CONTAINER (row), widget);
+		gtk_widget_show (row);
+
+		anchor = g_strdup_printf ("<a href=\"%s\">%s</a>",
+	                        "https://fedoraproject.org/wiki/Workstation/Third_Party_Software_Repositories",
+	                        /* TRANSLATORS: this is the clickable
+	                         * link on the third party repositories info bar */
+	                        _("more information"));
+		hint = g_strdup_printf (
+				/* TRANSLATORS: this is the third party repositories info bar. The '%s' is replaced
+				   with a link consisting a text "more information", which constructs a sentence:
+				   "Additional repositories from selected third parties - more information."*/
+				_("Additional repositories from selected third parties — %s."),
+				anchor);
+
+		widget = hdy_preferences_group_new ();
+		hdy_preferences_group_set_title (HDY_PREFERENCES_GROUP (widget),
+						 _("Fedora Third Party Repositories"));
+/* HdyPreferencesGroup:use-markup doesn't exist before 1.3.90, configurations
+ * where GNOME 41 will be used and Libhandy 1.3.90 won't be available are
+ * unlikely, so let's just ignore the description in such cases. */
+#if HDY_CHECK_VERSION(1, 3, 90)
+		hdy_preferences_group_set_description (HDY_PREFERENCES_GROUP (widget), hint);
+		hdy_preferences_group_set_use_markup (HDY_PREFERENCES_GROUP (widget), TRUE);
+#endif
+
+		gtk_widget_show (widget);
+		gtk_container_add (GTK_CONTAINER (widget), row);
+		gtk_container_add (GTK_CONTAINER (dialog->content_page), widget);
+
+		section = GS_REPOS_SECTION (gs_repos_section_new (dialog->plugin_loader));
+		gs_repos_section_set_sort_key (section, "900");
+		g_signal_connect_object (section, "switch-clicked",
+					 G_CALLBACK (repo_section_switch_clicked_cb), dialog, 0);
+		gtk_widget_show (GTK_WIDGET (section));
+
+		for (GSList *link = other_repos; link; link = g_slist_next (link)) {
+			GsApp *repo = link->data;
+			gs_repos_section_add_repo (section, repo);
 		}
+
+		gtk_container_add (GTK_CONTAINER (dialog->content_page), GTK_WIDGET (section));
 	}
-
-	/* we should only get one result */
-	if (gs_app_list_length (list) > 0)
-		app = gs_app_list_index (list, 0);
-	else
-		app = NULL;
-
-	g_set_object (&dialog->third_party_repo, app);
-	gs_third_party_repo_row_set_app (GS_THIRD_PARTY_REPO_ROW (dialog->row_third_party), app);
-
-	/* refresh widget */
-	refresh_third_party_repo (dialog);
 }
 
 static void
@@ -619,12 +650,115 @@ reload_sources (GsReposDialog *dialog)
 	/* get the list of non-core software repositories */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_SOURCES,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RELATED |
-					                 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
+					                 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME |
+							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_NONE,
 					 NULL);
 	gs_plugin_loader_job_process_async (dialog->plugin_loader, plugin_job,
 					    dialog->cancellable,
 					    (GAsyncReadyCallback) get_sources_cb,
 					    dialog);
+}
+
+static void
+fedora_third_party_list_repos_thread (GTask *task,
+				      gpointer source_object,
+				      gpointer task_data,
+				      GCancellable *cancellable)
+{
+	GPtrArray *args = task_data;
+	g_autoptr(GError) error = NULL;
+	g_autofree gchar *stdoutput = NULL;
+
+	g_return_if_fail (args != NULL);
+
+	if (g_spawn_sync (NULL, (gchar **) args->pdata, NULL, G_SPAWN_DEFAULT, NULL, NULL, &stdoutput, NULL, NULL, &error)) {
+		GHashTable *repos = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+		g_auto(GStrv) lines = NULL;
+
+		lines = g_strsplit (stdoutput != NULL ? stdoutput : "", "\n", -1);
+
+		for (gsize ii = 0; lines != NULL && lines[ii]; ii++) {
+			g_auto(GStrv) tokens = g_strsplit (lines[ii], ",", 2);
+			if (tokens != NULL && tokens[0] != NULL && tokens[1] != NULL) {
+				const gchar *repo_type = tokens[0];
+				/* The 'dnf' means 'packagekit' here */
+				if (g_str_equal (repo_type, "dnf"))
+					repo_type = "packagekit";
+				/* Hash them by name, which cannot clash between types */
+				g_hash_table_insert (repos, g_strdup (tokens[1]), g_strdup (repo_type));
+			}
+		}
+
+		if (g_hash_table_size (repos) == 0)
+			g_clear_pointer (&repos, g_hash_table_unref);
+
+		g_task_return_pointer (task, repos, (GDestroyNotify) g_hash_table_unref);
+	} else
+		g_task_return_error (task, g_steal_pointer (&error));
+}
+
+static void
+fedora_third_party_list_repos_done_cb (GObject *source_object,
+				       GAsyncResult *result,
+				       gpointer user_data)
+{
+	GsReposDialog *self = GS_REPOS_DIALOG (source_object);
+	g_autoptr(GHashTable) repos = NULL;
+	g_autoptr(GError) error = NULL;
+
+	repos = g_task_propagate_pointer (G_TASK (result), &error);
+
+	if (error)
+		g_warning ("Failed to list repos '%s': %s", self->third_party_cmdtool, error->message);
+	else
+		self->third_party_repos = g_steal_pointer (&repos);
+
+	reload_sources (self);
+}
+
+static void
+fedora_third_party_query_done_cb (GObject *source_object,
+				  GAsyncResult *result,
+				  gpointer user_data)
+{
+	GsReposDialog *self = GS_REPOS_DIALOG (source_object);
+	g_autoptr(GTask) task = NULL;
+	g_autoptr(GError) error = NULL;
+	gint exit_status;
+	GPtrArray *args_array;
+	const gchar *args[] = {
+		"", /* executable */
+		"list",
+		"--csv",
+		"--columns=type,name",
+		NULL
+	};
+
+	if (!fedora_third_party_call_finish (self, result, &exit_status, &error)) {
+		g_warning ("Failed to query '%s': %s", self->third_party_cmdtool, error->message);
+	} else {
+		/* The number 0 means it's enabled.
+		   See https://pagure.io/fedora-third-party/blob/main/f/doc/fedora-third-party.1.md */
+		self->third_party_enabled = exit_status == 0;
+	}
+
+	g_return_if_fail (self->third_party_cmdtool != NULL);
+
+	args[0] = self->third_party_cmdtool;
+
+	args_array = g_ptr_array_new_with_free_func (g_free);
+	for (gsize ii = 0; args[ii] != NULL; ii++) {
+		g_ptr_array_add (args_array, g_strdup (args[ii]));
+	}
+
+	/* NULL-terminated array */
+	g_ptr_array_add (args_array, NULL);
+
+	task = g_task_new (self, NULL, fedora_third_party_list_repos_done_cb, NULL);
+	g_task_set_source_tag (task, fedora_third_party_query_done_cb);
+	g_task_set_task_data (task, args_array, (GDestroyNotify) g_ptr_array_unref);
+	g_task_run_in_thread (task, fedora_third_party_list_repos_thread);
 }
 
 static gboolean
@@ -645,93 +779,33 @@ is_fedora (void)
 }
 
 static void
-reload_third_party_repo (GsReposDialog *dialog)
+reload_third_party_repos (GsReposDialog *dialog)
 {
-	const gchar *third_party_repo_package = "fedora-workstation-repositories";
-	g_autoptr(GsPluginJob) plugin_job = NULL;
+	const gchar *args[] = {
+		"", /* executable */
+		"query",
+		"--quiet",
+		NULL
+	};
 
 	/* Fedora-specific functionality */
-	if (!is_fedora ())
+	if (!is_fedora ()) {
+		reload_sources (dialog);
 		return;
-
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH_PROVIDES,
-	                                 "search", third_party_repo_package,
-	                                 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
-	                                                 GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES,
-	                                 NULL);
-	gs_plugin_loader_job_process_async (dialog->plugin_loader, plugin_job,
-	                                    dialog->cancellable,
-	                                    (GAsyncReadyCallback) resolve_third_party_repo_cb,
-	                                    dialog);
-}
-
-static void
-list_header_func (GtkListBoxRow *row,
-		  GtkListBoxRow *before,
-		  gpointer user_data)
-{
-	GtkWidget *header = NULL;
-	if (before != NULL)
-		header = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_list_box_row_set_header (row, header);
-}
-
-static gchar *
-get_row_sort_key (GtkListBoxRow *row)
-{
-	GsApp *app;
-	guint sort_order;
-	g_autofree gchar *sort_key = NULL;
-
-	/* sort third party repo rows first */
-	if (GS_IS_THIRD_PARTY_REPO_ROW (row)) {
-		sort_order = 1;
-		app = gs_third_party_repo_row_get_app (GS_THIRD_PARTY_REPO_ROW (row));
-	} else {
-		sort_order = 2;
-		app = gs_repo_row_get_repo (GS_REPO_ROW (row));
 	}
 
-	if (gs_app_get_name (app) != NULL) {
-		sort_key = gs_utils_sort_key (gs_app_get_name (app));
-		return g_strdup_printf ("%u:%s", sort_order, sort_key);
-	} else {
-		return g_strdup_printf ("%u:", sort_order);
-	}
-}
+	g_clear_pointer (&dialog->third_party_repos, g_hash_table_unref);
+	g_clear_pointer (&dialog->third_party_cmdtool, g_free);
 
-static gint
-list_sort_func (GtkListBoxRow *a,
-		GtkListBoxRow *b,
-		gpointer user_data)
-{
-	g_autofree gchar *key1 = get_row_sort_key (a);
-	g_autofree gchar *key2 = get_row_sort_key (b);
+	dialog->third_party_cmdtool = g_find_program_in_path ("fedora-third-party");
 
-	/* compare the keys according to the algorithm above */
-	return g_strcmp0 (key1, key2);
-}
-
-static void
-list_row_activated_cb (GtkListBox *list_box,
-		       GtkListBoxRow *row,
-		       GsReposDialog *dialog)
-{
-	GtkListBoxRow *other_row;
-
-	if (!GS_IS_REPO_ROW (row))
+	if (dialog->third_party_cmdtool == NULL) {
+		reload_sources (dialog);
 		return;
-
-	gs_repo_row_show_details (GS_REPO_ROW (row));
-
-	for (guint i = 0; (other_row = gtk_list_box_get_row_at_index (list_box, i)) != NULL; i++) {
-		if (!GS_IS_REPO_ROW (other_row))
-			continue;
-		if (other_row == row)
-			continue;
-
-		gs_repo_row_hide_details (GS_REPO_ROW (other_row));
 	}
+
+	args[0] = dialog->third_party_cmdtool;
+	fedora_third_party_call_async (dialog, args, fedora_third_party_query_done_cb, NULL);
 }
 
 static gchar *
@@ -755,8 +829,7 @@ get_os_name (void)
 static void
 reload_cb (GsPluginLoader *plugin_loader, GsReposDialog *dialog)
 {
-	reload_sources (dialog);
-	reload_third_party_repo (dialog);
+	reload_third_party_repos (dialog);
 }
 
 static void
@@ -778,9 +851,11 @@ gs_repos_dialog_dispose (GObject *object)
 	}
 
 	g_cancellable_cancel (dialog->cancellable);
+	g_clear_pointer (&dialog->third_party_cmdtool, g_free);
+	g_clear_pointer (&dialog->third_party_repos, g_hash_table_unref);
+	g_clear_pointer (&dialog->sections, g_hash_table_unref);
 	g_clear_object (&dialog->cancellable);
 	g_clear_object (&dialog->settings);
-	g_clear_object (&dialog->third_party_repo);
 
 	G_OBJECT_CLASS (gs_repos_dialog_parent_class)->dispose (object);
 }
@@ -788,7 +863,6 @@ gs_repos_dialog_dispose (GObject *object)
 static void
 gs_repos_dialog_init (GsReposDialog *dialog)
 {
-	g_autofree gchar *label_description_text = NULL;
 	g_autofree gchar *label_empty_text = NULL;
 	g_autofree gchar *os_name = NULL;
 	g_autoptr(GString) str = g_string_new (NULL);
@@ -797,60 +871,15 @@ gs_repos_dialog_init (GsReposDialog *dialog)
 
 	dialog->cancellable = g_cancellable_new ();
 	dialog->settings = g_settings_new ("org.gnome.software");
+	dialog->sections = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
 	os_name = get_os_name ();
-
-	gtk_list_box_set_header_func (GTK_LIST_BOX (dialog->listbox),
-				      list_header_func,
-				      dialog,
-				      NULL);
-	gtk_list_box_set_sort_func (GTK_LIST_BOX (dialog->listbox),
-				    list_sort_func,
-				    dialog, NULL);
-	g_signal_connect (dialog->listbox, "row-activated",
-			  G_CALLBACK (list_row_activated_cb), dialog);
-
-	/* TRANSLATORS: This is the description text displayed in the Software Repositories dialog.
-	   %s gets replaced by the name of the actual distro, e.g. Fedora. */
-	label_description_text = g_strdup_printf (_("These repositories supplement the default software provided by %s."),
-	                                          os_name);
-	gtk_label_set_text (GTK_LABEL (dialog->label_description), label_description_text);
-
-	/* set up third party repository row */
-	gtk_list_box_set_header_func (GTK_LIST_BOX (dialog->listbox_third_party),
-	                              list_header_func,
-	                              dialog,
-	                              NULL);
-	gtk_list_box_set_sort_func (GTK_LIST_BOX (dialog->listbox_third_party),
-	                            list_sort_func,
-	                            dialog, NULL);
-	g_signal_connect (dialog->listbox_third_party, "row-activated",
-	                  G_CALLBACK (list_row_activated_cb), dialog);
-	g_signal_connect (dialog->row_third_party, "button-clicked",
-	                  G_CALLBACK (third_party_repo_button_clicked_cb), dialog);
-	gs_third_party_repo_row_set_name (GS_THIRD_PARTY_REPO_ROW (dialog->row_third_party),
-	                                  /* TRANSLATORS: info bar title in the software repositories dialog */
-	                                  _("Third Party Repositories"));
-	g_string_append (str,
-	                 /* TRANSLATORS: this is the third party repositories info bar. */
-	                 _("Access additional software from selected third party sources."));
-	g_string_append (str, " ");
-	g_string_append (str,
-	                 /* TRANSLATORS: this is the third party repositories info bar. */
-	                 _("Some of this software is proprietary and therefore has restrictions on use, sharing, and access to source code."));
-	g_string_append_printf (str, " <a href=\"%s\">%s</a>",
-	                        "https://fedoraproject.org/wiki/Workstation/Third_Party_Software_Repositories",
-	                        /* TRANSLATORS: this is the clickable
-	                         * link on the third party repositories info bar */
-	                        _("Find out more…"));
-	gs_third_party_repo_row_set_comment (GS_THIRD_PARTY_REPO_ROW (dialog->row_third_party), str->str);
-	refresh_third_party_repo (dialog);
 
 	/* TRANSLATORS: This is the description text displayed in the Software Repositories dialog.
 	   %s gets replaced by the name of the actual distro, e.g. Fedora. */
 	label_empty_text = g_strdup_printf (_("These repositories supplement the default software provided by %s."),
 	                                    os_name);
-	gtk_label_set_text (GTK_LABEL (dialog->label_empty), label_empty_text);
+	hdy_status_page_set_description (HDY_STATUS_PAGE (dialog->status_empty), label_empty_text);
 }
 
 static void
@@ -863,16 +892,12 @@ gs_repos_dialog_class_init (GsReposDialogClass *klass)
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-repos-dialog.ui");
 
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, frame);
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, frame_third_party);
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, label_description);
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, label_empty);
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, label_header);
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, listbox);
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, listbox_third_party);
-	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, row_third_party);
+	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, status_empty);
+	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, content_page);
 	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, spinner);
 	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, stack);
+
+	gtk_widget_class_bind_template_callback (widget_class, key_press_event_cb);
 }
 
 GtkWidget *
@@ -881,15 +906,13 @@ gs_repos_dialog_new (GtkWindow *parent, GsPluginLoader *plugin_loader)
 	GsReposDialog *dialog;
 
 	dialog = g_object_new (GS_TYPE_REPOS_DIALOG,
-			       "use-header-bar", TRUE,
 			       "transient-for", parent,
 			       "modal", TRUE,
 			       NULL);
 	set_plugin_loader (dialog, plugin_loader);
 	gtk_stack_set_visible_child_name (GTK_STACK (dialog->stack), "waiting");
 	gs_start_spinner (GTK_SPINNER (dialog->spinner));
-	reload_sources (dialog);
-	reload_third_party_repo (dialog);
+	reload_third_party_repos (dialog);
 
 	return GTK_WIDGET (dialog);
 }

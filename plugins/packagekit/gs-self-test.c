@@ -203,7 +203,7 @@ gs_plugins_packagekit_local_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* no packagekit, abort */
-	if (!gs_plugin_loader_get_enabled (plugin_loader, "packagekit-local")) {
+	if (!gs_plugin_loader_get_enabled (plugin_loader, "packagekit")) {
 		g_test_skip ("not enabled");
 		return;
 	}
@@ -240,9 +240,13 @@ main (int argc, char **argv)
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
 	const gchar *allowlist[] = {
-		"packagekit-local",
+		"packagekit",
 		NULL
 	};
+
+	/* The tests access the system proxy schemas, so pre-load those before
+	 * %G_TEST_OPTION_ISOLATE_DIRS resets the XDG system dirs. */
+	g_settings_schema_source_get_default ();
 
 	g_test_init (&argc, &argv,
 #if GLIB_CHECK_VERSION(2, 60, 0)

@@ -44,6 +44,8 @@ struct _GsFlatpak {
 	GHashTable		*remote_title; /* gchar *remote name ~> gchar *remote title */
 	GMutex			 remote_title_mutex;
 	gboolean		 requires_full_rescan;
+	gint			 busy; /* (atomic) */
+	gboolean		 changed_while_busy;
 };
 
 G_DEFINE_TYPE (GsFlatpak, gs_flatpak, G_TYPE_OBJECT)
@@ -354,7 +356,7 @@ gs_flatpak_create_app (GsFlatpak *self,
 		gs_app_set_summary (app, GS_APP_QUALITY_NORMAL,
 				    "Framework for applications");
 		gs_app_set_version (app, flatpak_ref_get_branch (FLATPAK_REF (xref)));
-		icon = g_themed_icon_new ("system-run-symbolic");
+		icon = g_themed_icon_new ("system-component-runtime");
 		gs_app_add_icon (app, icon);
 	}
 
@@ -377,7 +379,7 @@ gs_flatpak_create_source (GsFlatpak *self, FlatpakRemote *xremote)
 	g_autoptr(GsApp) app = NULL;
 
 	/* create a temp GsApp */
-	app = gs_flatpak_app_new_from_remote (xremote);
+	app = gs_flatpak_app_new_from_remote (self->plugin, xremote, flatpak_installation_get_is_user (self->installation));
 	gs_flatpak_claim_app (self, app);
 
 	/* we already have one, returned the ref'd cached copy */
@@ -388,6 +390,19 @@ gs_flatpak_create_source (GsFlatpak *self, FlatpakRemote *xremote)
 	/* no existing match, just steal the temp object */
 	gs_plugin_cache_add (self->plugin, NULL, app);
 	return g_steal_pointer (&app);
+}
+
+static gboolean
+gs_flatpak_claim_changed_idle_cb (gpointer user_data)
+{
+	GsFlatpak *self = user_data;
+
+	self->requires_full_rescan = TRUE;
+
+	gs_plugin_cache_invalidate (self->plugin);
+	gs_plugin_reload (self->plugin);
+
+	return G_SOURCE_REMOVE;
 }
 
 static void
@@ -416,10 +431,11 @@ gs_plugin_flatpak_changed_cb (GFileMonitor *monitor,
 		xb_silo_invalidate (self->silo);
 	g_clear_pointer (&writer_locker, g_rw_lock_writer_locker_free);
 
-	self->requires_full_rescan = TRUE;
-
-	gs_plugin_cache_invalidate (self->plugin);
-	gs_plugin_reload (self->plugin);
+	if (gs_flatpak_get_busy (self)) {
+		self->changed_while_busy = TRUE;
+	} else {
+		gs_flatpak_claim_changed_idle_cb (self);
+	}
 }
 
 static gboolean
@@ -944,6 +960,7 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 	g_autoptr(GRWLockReaderLocker) reader_locker = NULL;
 	g_autoptr(GRWLockWriterLocker) writer_locker = NULL;
 	g_autoptr(XbBuilder) builder = xb_builder_new ();
+	g_autoptr(GMainContext) old_thread_default = NULL;
 
 	reader_locker = g_rw_lock_reader_locker_new (&self->silo_lock);
 	/* everything is okay */
@@ -1000,10 +1017,22 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 		return FALSE;
 	file = g_file_new_for_path (blobfn);
 	g_debug ("ensuring %s", blobfn);
+
+	/* FIXME: https://gitlab.gnome.org/GNOME/gnome-software/-/issues/1422 */
+	old_thread_default = g_main_context_ref_thread_default ();
+	if (old_thread_default == g_main_context_default ())
+		g_clear_pointer (&old_thread_default, g_main_context_unref);
+	if (old_thread_default != NULL)
+		g_main_context_pop_thread_default (old_thread_default);
+
 	self->silo = xb_builder_ensure (builder, file,
 					XB_BUILDER_COMPILE_FLAG_IGNORE_INVALID |
 					XB_BUILDER_COMPILE_FLAG_SINGLE_LANG,
 					NULL, error);
+
+	if (old_thread_default != NULL)
+		g_main_context_push_thread_default (old_thread_default);
+
 	if (self->silo == NULL)
 		return FALSE;
 
@@ -1567,7 +1596,9 @@ gs_flatpak_create_new_remote (GsFlatpak *self,
 }
 
 gboolean
-gs_flatpak_app_install_source (GsFlatpak *self, GsApp *app,
+gs_flatpak_app_install_source (GsFlatpak *self,
+			       GsApp *app,
+			       gboolean is_install,
 			       GCancellable *cancellable,
 			       GError **error)
 {
@@ -1580,6 +1611,8 @@ gs_flatpak_app_install_source (GsFlatpak *self, GsApp *app,
 		/* if the remote already exists, just enable it */
 		g_debug ("enabling existing remote %s", flatpak_remote_get_name (xremote));
 		flatpak_remote_set_disabled (xremote, FALSE);
+	} else if (!is_install) {
+		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED, "Cannot enable flatpak remote '%s', remote not found", gs_app_get_id (app));
 	} else {
 		/* create a new remote */
 		xremote = gs_flatpak_create_new_remote (self, app, cancellable, error);
@@ -2498,6 +2531,16 @@ gs_flatpak_prune_addons_list (GsFlatpak *self,
 	return TRUE;
 }
 
+static guint64
+gs_flatpak_get_app_directory_size (GsApp *app,
+				   const gchar *subdir_name,
+				   GCancellable *cancellable)
+{
+	g_autofree gchar *filename = NULL;
+	filename = g_build_filename (g_get_home_dir (), ".var", "app", gs_app_get_id (app), subdir_name, NULL);
+	return gs_utils_get_file_size (filename, NULL, NULL, cancellable);
+}
+
 static gboolean
 gs_plugin_refine_item_size (GsFlatpak *self,
 			    GsApp *app,
@@ -2658,6 +2701,7 @@ gs_flatpak_refine_appstream_from_bytes (GsFlatpak *self,
 	g_autoptr(GInputStream) stream_data = NULL;
 	g_autoptr(GInputStream) stream_gz = NULL;
 	g_autoptr(GZlibDecompressor) decompressor = NULL;
+	g_autoptr(GMainContext) old_thread_default = NULL;
 
 	/* add current locales */
 	for (guint i = 0; locales[i] != NULL; i++)
@@ -2716,10 +2760,22 @@ gs_flatpak_refine_appstream_from_bytes (GsFlatpak *self,
 	}
 
 	xb_builder_import_source (builder, source);
+
+	/* FIXME: https://gitlab.gnome.org/GNOME/gnome-software/-/issues/1422 */
+	old_thread_default = g_main_context_ref_thread_default ();
+	if (old_thread_default == g_main_context_default ())
+		g_clear_pointer (&old_thread_default, g_main_context_unref);
+	if (old_thread_default != NULL)
+		g_main_context_pop_thread_default (old_thread_default);
+
 	silo = xb_builder_compile (builder,
 				   XB_BUILDER_COMPILE_FLAG_SINGLE_LANG,
 				   cancellable,
 				   error);
+
+	if (old_thread_default != NULL)
+		g_main_context_push_thread_default (old_thread_default);
+
 	if (silo == NULL)
 		return FALSE;
 	if (g_getenv ("GS_XMLB_VERBOSE") != NULL) {
@@ -2782,11 +2838,11 @@ get_renamed_component (GsFlatpak *self,
 {
 	const gchar *origin = gs_app_get_origin (app);
 	const gchar *renamed_to;
-	g_autofree gchar *xpath = NULL;
 #if LIBXMLB_CHECK_VERSION(0, 3, 0)
 	g_autoptr(XbQuery) query = NULL;
 	g_auto(XbQueryContext) context = XB_QUERY_CONTEXT_INIT ();
 #else
+	g_autofree gchar *xpath = NULL;
 	g_autofree gchar *source_safe = NULL;
 #endif
 	g_autoptr(FlatpakRemoteRef) remote_ref = NULL;
@@ -2991,6 +3047,21 @@ gs_flatpak_refine_app_unlocked (GsFlatpak *self,
 		}
 	}
 
+	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE_DATA) != 0 &&
+	    gs_app_is_installed (app) &&
+	    gs_app_get_kind (app) != AS_COMPONENT_KIND_RUNTIME) {
+		if (gs_app_get_size_cache_data (app) == GS_APP_SIZE_UNKNOWABLE)
+			gs_app_set_size_cache_data (app, gs_flatpak_get_app_directory_size (app, "cache", cancellable));
+		if (gs_app_get_size_user_data (app) == GS_APP_SIZE_UNKNOWABLE)
+			gs_app_set_size_user_data (app, gs_flatpak_get_app_directory_size (app, "config", cancellable) +
+							gs_flatpak_get_app_directory_size (app, "data", cancellable));
+
+		if (g_cancellable_is_cancelled (cancellable)) {
+			gs_app_set_size_cache_data (app, GS_APP_SIZE_UNKNOWABLE);
+			gs_app_set_size_user_data (app, GS_APP_SIZE_UNKNOWABLE);
+		}
+	}
+
 	/* origin-hostname */
 	if (flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME) {
 		if (!gs_plugin_refine_item_origin_hostname (self, app,
@@ -3164,10 +3235,12 @@ gs_flatpak_launch (GsFlatpak *self,
 gboolean
 gs_flatpak_app_remove_source (GsFlatpak *self,
 			      GsApp *app,
+			      gboolean is_remove,
 			      GCancellable *cancellable,
 			      GError **error)
 {
 	g_autoptr(FlatpakRemote) xremote = NULL;
+	gboolean success;
 
 	/* find the remote */
 	xremote = flatpak_installation_get_remote_by_name (self->installation,
@@ -3183,10 +3256,17 @@ gs_flatpak_app_remove_source (GsFlatpak *self,
 
 	/* remove */
 	gs_app_set_state (app, GS_APP_STATE_REMOVING);
-	if (!flatpak_installation_remove_remote (self->installation,
-						 gs_app_get_id (app),
-						 cancellable,
-						 error)) {
+	if (is_remove) {
+		success = flatpak_installation_remove_remote (self->installation, gs_app_get_id (app), cancellable, error);
+	} else {
+		gboolean was_disabled = flatpak_remote_get_disabled (xremote);
+		flatpak_remote_set_disabled (xremote, TRUE);
+		success = flatpak_installation_modify_remote (self->installation, xremote, cancellable, error);
+		if (!success)
+			flatpak_remote_set_disabled (xremote, was_disabled);
+	}
+
+	if (!success) {
 		gs_flatpak_error_convert (error);
 		gs_app_set_state_recover (app);
 		return FALSE;
@@ -3198,7 +3278,7 @@ gs_flatpak_app_remove_source (GsFlatpak *self,
 		xb_silo_invalidate (self->silo);
 	g_rw_lock_reader_unlock (&self->silo_lock);
 
-	gs_app_set_state (app, GS_APP_STATE_UNAVAILABLE);
+	gs_app_set_state (app, is_remove ? GS_APP_STATE_UNAVAILABLE : GS_APP_STATE_AVAILABLE);
 
 	gs_plugin_repository_changed (self->plugin, app);
 
@@ -3292,7 +3372,7 @@ gs_flatpak_file_to_app_bundle (GsFlatpak *self,
 
 	/* Fallback */
 	if (icon_data64 == NULL && icon_data128 == NULL) {
-		g_autoptr(GIcon) icon = g_themed_icon_new ("application-x-executable");
+		g_autoptr(GIcon) icon = g_themed_icon_new ("system-component-application");
 		gs_app_add_icon (app, icon);
 	}
 
@@ -3468,6 +3548,8 @@ gs_flatpak_file_to_app_ref (GsFlatpak *self,
 		return NULL;
 
 	/* build silo */
+	/* No need to change the thread-default main context because the silo
+	 * doesn’t live beyond this function */
 	silo = xb_builder_compile (builder,
 				   XB_BUILDER_COMPILE_FLAG_SINGLE_LANG,
 				   cancellable,
@@ -3580,7 +3662,7 @@ gs_flatpak_add_category_apps (GsFlatpak *self,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	return gs_appstream_add_category_apps (self->plugin, self->silo,
+	return gs_appstream_add_category_apps (self->silo,
 					       category, list,
 					       cancellable, error);
 }
@@ -3597,7 +3679,7 @@ gs_flatpak_add_categories (GsFlatpak *self,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	return gs_appstream_add_categories (self->plugin, self->silo,
+	return gs_appstream_add_categories (self->silo,
 					    list, cancellable, error);
 }
 
@@ -3614,7 +3696,7 @@ gs_flatpak_add_popular (GsFlatpak *self,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	if (!gs_appstream_add_popular (self->plugin, self->silo, list_tmp,
+	if (!gs_appstream_add_popular (self->silo, list_tmp,
 				       cancellable, error))
 		return FALSE;
 
@@ -3636,7 +3718,7 @@ gs_flatpak_add_featured (GsFlatpak *self,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	if (!gs_appstream_add_featured (self->plugin, self->silo, list_tmp,
+	if (!gs_appstream_add_featured (self->silo, list_tmp,
 					cancellable, error))
 		return FALSE;
 
@@ -3659,7 +3741,7 @@ gs_flatpak_add_alternates (GsFlatpak *self,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	if (!gs_appstream_add_alternates (self->plugin, self->silo, app, list_tmp,
+	if (!gs_appstream_add_alternates (self->silo, app, list_tmp,
 					  cancellable, error))
 		return FALSE;
 
@@ -3684,6 +3766,29 @@ gs_flatpak_add_recent (GsFlatpak *self,
 	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
 	if (!gs_appstream_add_recent (self->plugin, self->silo, list_tmp, age,
 				      cancellable, error))
+		return FALSE;
+
+	gs_flatpak_claim_app_list (self, list_tmp);
+	gs_app_list_add_list (list, list_tmp);
+
+	return TRUE;
+}
+
+gboolean
+gs_flatpak_url_to_app (GsFlatpak *self,
+		       GsAppList *list,
+		       const gchar *url,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	g_autoptr(GsAppList) list_tmp = gs_app_list_new ();
+	g_autoptr(GRWLockReaderLocker) locker = NULL;
+
+	if (!gs_flatpak_rescan_app_data (self, cancellable, error))
+		return FALSE;
+
+	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
+	if (!gs_appstream_url_to_app (self->plugin, self->silo, list_tmp, url, cancellable, error))
 		return FALSE;
 
 	gs_flatpak_claim_app_list (self, list_tmp);
@@ -3788,4 +3893,31 @@ gs_flatpak_new (GsPlugin *plugin, FlatpakInstallation *installation, GsFlatpakFl
 	self->plugin = g_object_ref (plugin);
 	self->flags = flags;
 	return GS_FLATPAK (self);
+}
+
+void
+gs_flatpak_set_busy (GsFlatpak *self,
+		     gboolean busy)
+{
+	g_return_if_fail (GS_IS_FLATPAK (self));
+
+	if (busy) {
+		g_atomic_int_inc (&self->busy);
+	} else {
+		g_return_if_fail (g_atomic_int_get (&self->busy) > 0);
+		if (g_atomic_int_dec_and_test (&self->busy)) {
+			if (self->changed_while_busy) {
+				self->changed_while_busy = FALSE;
+				g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, gs_flatpak_claim_changed_idle_cb,
+					g_object_ref (self), g_object_unref);
+			}
+		}
+	}
+}
+
+gboolean
+gs_flatpak_get_busy (GsFlatpak *self)
+{
+	g_return_val_if_fail (GS_IS_FLATPAK (self), FALSE);
+	return g_atomic_int_get (&self->busy) > 0;
 }

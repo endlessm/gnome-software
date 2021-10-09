@@ -24,13 +24,13 @@ struct _GsSearchPage
 	GsPage			 parent_instance;
 
 	GsPluginLoader		*plugin_loader;
-	GtkBuilder		*builder;
 	GCancellable		*cancellable;
 	GCancellable		*search_cancellable;
 	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
 	GtkSizeGroup		*sizegroup_desc;
-	GtkSizeGroup		*sizegroup_button;
+	GtkSizeGroup		*sizegroup_button_label;
+	GtkSizeGroup		*sizegroup_button_image;
 	GsShell			*shell;
 	gchar			*appid_to_show;
 	gchar			*value;
@@ -45,6 +45,10 @@ struct _GsSearchPage
 };
 
 G_DEFINE_TYPE (GsSearchPage, gs_search_page, GS_TYPE_PAGE)
+
+typedef enum {
+	PROP_VADJUSTMENT = 1,
+} GsSearchPageProperty;
 
 static void
 gs_search_page_app_row_clicked_cb (GsAppRow *app_row,
@@ -78,6 +82,23 @@ gs_search_page_waiting_cancel (GsSearchPage *self)
 }
 
 static void
+gs_search_page_app_to_show_created_cb (GObject *source_object,
+				       GAsyncResult *result,
+				       gpointer user_data)
+{
+	GsSearchPage *self = user_data;
+	g_autoptr(GsApp) app = NULL;
+	g_autoptr(GError) error = NULL;
+
+	app = gs_plugin_loader_app_create_finish (GS_PLUGIN_LOADER (source_object), result, &error);
+	if (app != NULL) {
+		g_return_if_fail (GS_IS_SEARCH_PAGE (self));
+
+		gs_shell_show_app (self->shell, app);
+	}
+}
+
+static void
 gs_search_page_get_search_cb (GObject *source_object,
                               GAsyncResult *res,
                               gpointer user_data)
@@ -101,14 +122,20 @@ gs_search_page_get_search_cb (GObject *source_object,
 		}
 		g_warning ("failed to get search apps: %s", error->message);
 		gs_stop_spinner (GTK_SPINNER (self->spinner_search));
-		gtk_stack_set_visible_child_name (GTK_STACK (self->stack_search), "no-results");
+		if (self->value && self->value[0])
+			gtk_stack_set_visible_child_name (GTK_STACK (self->stack_search), "no-results");
+		else
+			gtk_stack_set_visible_child_name (GTK_STACK (self->stack_search), "no-search");
 		return;
 	}
 
 	/* no results */
 	if (gs_app_list_length (list) == 0) {
 		g_debug ("no search results to show");
-		gtk_stack_set_visible_child_name (GTK_STACK (self->stack_search), "no-results");
+		if (self->value && self->value[0])
+			gtk_stack_set_visible_child_name (GTK_STACK (self->stack_search), "no-results");
+		else
+			gtk_stack_set_visible_child_name (GTK_STACK (self->stack_search), "no-search");
 		return;
 	}
 
@@ -129,7 +156,8 @@ gs_search_page_get_search_cb (GObject *source_object,
 					    self->sizegroup_image,
 					    self->sizegroup_name,
 					    self->sizegroup_desc,
-					    self->sizegroup_button);
+					    self->sizegroup_button_label,
+					    self->sizegroup_button_image);
 		gtk_widget_show (app_row);
 	}
 
@@ -162,8 +190,8 @@ gs_search_page_get_search_cb (GObject *source_object,
 	if (self->appid_to_show != NULL) {
 		g_autoptr (GsApp) a = NULL;
 		if (as_utils_data_id_valid (self->appid_to_show)) {
-			a = gs_plugin_loader_app_create (self->plugin_loader,
-							 self->appid_to_show);
+			gs_plugin_loader_app_create_async (self->plugin_loader, self->appid_to_show, self->cancellable,
+				gs_search_page_app_to_show_created_cb, self);
 		} else {
 			a = gs_app_new (self->appid_to_show);
 		}
@@ -224,7 +252,7 @@ gs_search_page_get_app_sort_key (GsApp *app)
 	return g_string_free (key, FALSE);
 }
 
-static gboolean
+static gint
 gs_search_page_sort_cb (GsApp *app1, GsApp *app2, gpointer user_data)
 {
 	g_autofree gchar *key1 = NULL;
@@ -265,8 +293,7 @@ gs_search_page_load (GsSearchPage *self)
 					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 					 NULL);
-	gs_plugin_job_set_sort_func (plugin_job, gs_search_page_sort_cb);
-	gs_plugin_job_set_sort_func_data (plugin_job, self);
+	gs_plugin_job_set_sort_func (plugin_job, gs_search_page_sort_cb, self);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->search_cancellable,
 					    gs_search_page_get_search_cb,
@@ -333,37 +360,22 @@ gs_search_page_set_text (GsSearchPage *self, const gchar *value)
 	g_free (self->value);
 	self->value = g_strdup (value);
 
-	self->changed = TRUE;
+	/* Load immediately, when the page is active */
+	if (self->value && gs_page_is_active (GS_PAGE (self)))
+		gs_search_page_load (self);
+	else
+		self->changed = TRUE;
 }
 
 static void
-gs_search_page_switch_to (GsPage *page, gboolean scroll_up)
+gs_search_page_switch_to (GsPage *page)
 {
 	GsSearchPage *self = GS_SEARCH_PAGE (page);
-	GtkWidget *widget;
 
 	if (gs_shell_get_mode (self->shell) != GS_SHELL_MODE_SEARCH) {
 		g_warning ("Called switch_to(search) when in mode %s",
 			   gs_shell_get_mode_string (self->shell));
 		return;
-	}
-
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
-	gtk_widget_show (widget);
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "menu_button"));
-	gtk_widget_show (widget);
-
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "search_bar"));
-	gtk_widget_show (widget);
-
-	/* hardcode */
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "search_button"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), TRUE);
-
-	if (scroll_up) {
-		GtkAdjustment *adj;
-		adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_search));
-		gtk_adjustment_set_value (adj, gtk_adjustment_get_lower (adj));
 	}
 
 	if (self->value && self->changed)
@@ -377,29 +389,6 @@ gs_search_page_switch_from (GsPage *page)
 
 	g_cancellable_cancel (self->search_cancellable);
 	g_clear_object (&self->search_cancellable);
-}
-
-static void
-gs_search_page_list_header_func (GtkListBoxRow *row,
-                                 GtkListBoxRow *before,
-                                 gpointer user_data)
-{
-	GtkWidget *header;
-
-	/* first entry */
-	header = gtk_list_box_row_get_header (row);
-	if (before == NULL) {
-		gtk_list_box_row_set_header (row, NULL);
-		return;
-	}
-
-	/* already set */
-	if (header != NULL)
-		return;
-
-	/* set new */
-	header = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_list_box_row_set_header (row, header);
 }
 
 static void
@@ -425,7 +414,6 @@ static gboolean
 gs_search_page_setup (GsPage *page,
                       GsShell *shell,
                       GsPluginLoader *plugin_loader,
-                      GtkBuilder *builder,
                       GCancellable *cancellable,
                       GError **error)
 {
@@ -434,7 +422,6 @@ gs_search_page_setup (GsPage *page,
 	g_return_val_if_fail (GS_IS_SEARCH_PAGE (self), TRUE);
 
 	self->plugin_loader = g_object_ref (plugin_loader);
-	self->builder = g_object_ref (builder);
 	self->cancellable = g_object_ref (cancellable);
 	self->shell = shell;
 
@@ -446,10 +433,42 @@ gs_search_page_setup (GsPage *page,
 	/* setup search */
 	g_signal_connect (self->list_box_search, "row-activated",
 			  G_CALLBACK (gs_search_page_app_row_activated_cb), self);
-	gtk_list_box_set_header_func (GTK_LIST_BOX (self->list_box_search),
-				      gs_search_page_list_header_func,
-				      self, NULL);
 	return TRUE;
+}
+
+static void
+gs_search_page_get_property (GObject    *object,
+                             guint       prop_id,
+                             GValue     *value,
+                             GParamSpec *pspec)
+{
+	GsSearchPage *self = GS_SEARCH_PAGE (object);
+
+	switch ((GsSearchPageProperty) prop_id) {
+	case PROP_VADJUSTMENT:
+		g_value_set_object (value, gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_search)));
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
+gs_search_page_set_property (GObject      *object,
+                             guint         prop_id,
+                             const GValue *value,
+                             GParamSpec   *pspec)
+{
+	switch ((GsSearchPageProperty) prop_id) {
+	case PROP_VADJUSTMENT:
+		/* Not supported yet */
+		g_assert_not_reached ();
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
 }
 
 static void
@@ -460,9 +479,9 @@ gs_search_page_dispose (GObject *object)
 	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
 	g_clear_object (&self->sizegroup_desc);
-	g_clear_object (&self->sizegroup_button);
+	g_clear_object (&self->sizegroup_button_label);
+	g_clear_object (&self->sizegroup_button_image);
 
-	g_clear_object (&self->builder);
 	g_clear_object (&self->plugin_loader);
 	g_clear_object (&self->cancellable);
 	g_clear_object (&self->search_cancellable);
@@ -488,14 +507,19 @@ gs_search_page_class_init (GsSearchPageClass *klass)
 	GsPageClass *page_class = GS_PAGE_CLASS (klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
+	object_class->get_property = gs_search_page_get_property;
+	object_class->set_property = gs_search_page_set_property;
 	object_class->dispose = gs_search_page_dispose;
 	object_class->finalize = gs_search_page_finalize;
+
 	page_class->app_installed = gs_search_page_app_installed;
 	page_class->app_removed = gs_search_page_app_removed;
 	page_class->switch_to = gs_search_page_switch_to;
 	page_class->switch_from = gs_search_page_switch_from;
 	page_class->reload = gs_search_page_reload;
 	page_class->setup = gs_search_page_setup;
+
+	g_object_class_override_property (object_class, PROP_VADJUSTMENT, "vadjustment");
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-search-page.ui");
 
@@ -513,7 +537,8 @@ gs_search_page_init (GsSearchPage *self)
 	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_button = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 
 	self->max_results = GS_SEARCH_PAGE_MAX_RESULTS;
 }

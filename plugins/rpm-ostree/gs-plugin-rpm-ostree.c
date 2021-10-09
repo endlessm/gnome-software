@@ -14,6 +14,7 @@
 #include <gio/gio.h>
 #include <gio/gunixfdlist.h>
 #include <glib/gstdio.h>
+#include <glib/gi18n-lib.h>
 #include <libdnf/libdnf.h>
 #include <ostree.h>
 #include <rpm/rpmdb.h>
@@ -68,15 +69,8 @@ gs_plugin_initialize (GsPlugin *plugin)
 	 * more sense to use a custom plugin instead of using PackageKit.
 	 */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-history");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-local");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-offline");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-proxy");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-refine");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-refine-repos");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-refresh");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-upgrade");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "packagekit-url-to-app");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_CONFLICTS, "systemd-updates");
 
 	/* need pkgname */
@@ -1323,12 +1317,11 @@ gs_plugin_app_install (GsPlugin *plugin,
 	if (g_strcmp0 (gs_app_get_management_plugin (app), gs_plugin_get_name (plugin)) != 0)
 		return TRUE;
 
+	/* enable repo, handled by dedicated function */
+	g_return_val_if_fail (gs_app_get_kind (app) != AS_COMPONENT_KIND_REPOSITORY, FALSE);
+
 	if (!gs_rpmostree_ref_proxies (plugin, &os_proxy, &sysroot_proxy, cancellable, error))
 		return FALSE;
-
-	/* enable repo */
-	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_REPOSITORY)
-		return gs_rpmostree_repo_enable (plugin, app, TRUE, os_proxy, sysroot_proxy, cancellable, error);
 
 	switch (gs_app_get_state (app)) {
 	case GS_APP_STATE_AVAILABLE:
@@ -1398,7 +1391,7 @@ gs_plugin_app_install (GsPlugin *plugin,
 	}
 
 	/* state is known */
-	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+	gs_app_set_state (app, GS_APP_STATE_PENDING_INSTALL);
 
 	/* get the new icon from the package */
 	gs_app_set_local_file (app, NULL);
@@ -1429,9 +1422,8 @@ gs_plugin_app_remove (GsPlugin *plugin,
 	if (!gs_rpmostree_ref_proxies (plugin, &os_proxy, &sysroot_proxy, cancellable, error))
 		return FALSE;
 
-	/* disable repo */
-	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_REPOSITORY)
-		return gs_rpmostree_repo_enable (plugin, app, FALSE, os_proxy, sysroot_proxy, cancellable, error);
+	/* disable repo, handled by dedicated function */
+	g_return_val_if_fail (gs_app_get_kind (app) != AS_COMPONENT_KIND_REPOSITORY, FALSE);
 
 	gs_app_set_state (app, GS_APP_STATE_REMOVING);
 	tp->app = g_object_ref (app);
@@ -1468,8 +1460,12 @@ gs_plugin_app_remove (GsPlugin *plugin,
 		return FALSE;
 	}
 
-	/* state is not known: we don't know if we can re-install this app */
-	gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+		gs_app_set_state (app, GS_APP_STATE_PENDING_REMOVE);
+	} else {
+		/* state is not known: we don't know if we can re-install this app */
+		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
+	}
 
 	return TRUE;
 }
@@ -1507,6 +1503,29 @@ find_packages_by_provides (DnfSack *sack,
 }
 
 static gboolean
+gs_rpm_ostree_has_launchable (GsApp *app)
+{
+	const gchar *desktop_id;
+	GDesktopAppInfo *desktop_appinfo;
+
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_NOT_LAUNCHABLE) ||
+	    gs_app_has_quirk (app, GS_APP_QUIRK_PARENTAL_NOT_LAUNCHABLE))
+		return FALSE;
+
+	desktop_id = gs_app_get_launchable (app, AS_LAUNCHABLE_KIND_DESKTOP_ID);
+	if (!desktop_id)
+		desktop_id = gs_app_get_id (app);
+	if (!desktop_id)
+		return FALSE;
+
+	desktop_appinfo = gs_utils_get_desktop_app_info (desktop_id);
+	if (!desktop_appinfo)
+		return FALSE;
+
+	return TRUE;
+}
+
+static gboolean
 resolve_installed_packages_app (GsPlugin *plugin,
                                 GHashTable *packages,
                                 GHashTable *layered_packages,
@@ -1522,8 +1541,13 @@ resolve_installed_packages_app (GsPlugin *plugin,
 
 	if (pkg) {
 		gs_app_set_version (app, rpm_ostree_package_get_evr (pkg));
-		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN)
-			gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+		if (gs_app_get_state (app) == GS_APP_STATE_UNKNOWN) {
+			/* Kind of hack, pending installs do not have available the desktop file */
+			if (gs_app_get_kind (app) != AS_COMPONENT_KIND_DESKTOP_APP || gs_rpm_ostree_has_launchable (app))
+				gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+			else
+				gs_app_set_state (app, GS_APP_STATE_PENDING_INSTALL);
+		}
 		if ((rpm_ostree_package_get_name (pkg) &&
 		     g_hash_table_contains (layered_packages, rpm_ostree_package_get_name (pkg))) ||
 		    (rpm_ostree_package_get_nevra (pkg) &&
@@ -2123,8 +2147,55 @@ gs_plugin_add_sources (GsPlugin *plugin,
 		gs_app_set_name (app, GS_APP_QUALITY_LOWEST, description);
 		gs_app_set_summary (app, GS_APP_QUALITY_LOWEST, description);
 
+		gs_app_set_metadata (app, "GnomeSoftware::SortKey", "200");
+		gs_app_set_origin_ui (app, _("Operating System (OSTree)"));
+
 		gs_app_list_add (list, app);
 	}
 
 	return TRUE;
+}
+
+gboolean
+gs_plugin_enable_repo (GsPlugin *plugin,
+		       GsApp *repo,
+		       GCancellable *cancellable,
+		       GError **error)
+{
+	g_autoptr(GsRPMOSTreeOS) os_proxy = NULL;
+	g_autoptr(GsRPMOSTreeSysroot) sysroot_proxy = NULL;
+
+	/* only process this app if it was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (repo), gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	/* enable repo */
+	g_return_val_if_fail (gs_app_get_kind (repo) == AS_COMPONENT_KIND_REPOSITORY, FALSE);
+
+	if (!gs_rpmostree_ref_proxies (plugin, &os_proxy, &sysroot_proxy, cancellable, error))
+		return FALSE;
+
+	return gs_rpmostree_repo_enable (plugin, repo, TRUE, os_proxy, sysroot_proxy, cancellable, error);
+}
+
+gboolean
+gs_plugin_disable_repo (GsPlugin *plugin,
+			GsApp *repo,
+			GCancellable *cancellable,
+			GError **error)
+{
+	g_autoptr(GsRPMOSTreeOS) os_proxy = NULL;
+	g_autoptr(GsRPMOSTreeSysroot) sysroot_proxy = NULL;
+
+	/* only process this app if it was created by this plugin */
+	if (g_strcmp0 (gs_app_get_management_plugin (repo), gs_plugin_get_name (plugin)) != 0)
+		return TRUE;
+
+	/* disable repo */
+	g_return_val_if_fail (gs_app_get_kind (repo) == AS_COMPONENT_KIND_REPOSITORY, FALSE);
+
+	if (!gs_rpmostree_ref_proxies (plugin, &os_proxy, &sysroot_proxy, cancellable, error))
+		return FALSE;
+
+	return gs_rpmostree_repo_enable (plugin, repo, FALSE, os_proxy, sysroot_proxy, cancellable, error);
 }

@@ -45,7 +45,6 @@ struct _GsUpdatesPage
 	GsPage			 parent_instance;
 
 	GsPluginLoader		*plugin_loader;
-	GtkBuilder		*builder;
 	GCancellable		*cancellable;
 	GCancellable		*cancellable_refresh;
 	GCancellable		*cancellable_upgrade_download;
@@ -61,16 +60,16 @@ struct _GsUpdatesPage
 	GtkWidget		*header_spinner_start;
 	GtkWidget		*header_checking_label;
 	GtkWidget		*header_start_box;
-	GtkWidget		*header_end_box;
 	gboolean		 has_agreed_to_mobile_data;
 	gboolean		 ampm_available;
+	guint			 updates_counter;
+	gboolean		 is_narrow;
 
 	GtkWidget		*updates_box;
 	GtkWidget		*button_updates_mobile;
 	GtkWidget		*button_updates_offline;
-	GtkWidget		*label_updates_failed;
-	GtkWidget		*label_updates_last_checked;
-	GtkWidget		*label_updates_spinner;
+	GtkWidget		*updates_failed_page;
+	GtkLabel		*uptodate_description;
 	GtkWidget		*scrolledwindow_updates;
 	GtkWidget		*spinner_updates;
 	GtkWidget		*stack_updates;
@@ -81,9 +80,10 @@ struct _GsUpdatesPage
 	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
 	GtkSizeGroup		*sizegroup_desc;
-	GtkSizeGroup		*sizegroup_button;
+	GtkSizeGroup		*sizegroup_button_label;
+	GtkSizeGroup		*sizegroup_button_image;
 	GtkSizeGroup		*sizegroup_header;
-	GtkListBox		*sections[GS_UPDATES_SECTION_KIND_LAST];
+	GsUpdatesSection	*sections[GS_UPDATES_SECTION_KIND_LAST];
 
 	guint			 refresh_last_checked_id;
 };
@@ -96,6 +96,16 @@ enum {
 };
 
 G_DEFINE_TYPE (GsUpdatesPage, gs_updates_page, GS_TYPE_PAGE)
+
+typedef enum {
+	PROP_IS_NARROW = 1,
+	/* Overrides: */
+	PROP_VADJUSTMENT,
+	PROP_TITLE,
+	PROP_COUNTER,
+} GsUpdatesPageProperty;
+
+static GParamSpec *obj_props[PROP_IS_NARROW + 1] = { NULL, };
 
 static void
 gs_updates_page_set_flag (GsUpdatesPage *self, GsUpdatesPageFlags flag)
@@ -152,7 +162,7 @@ _get_all_apps (GsUpdatesPage *self)
 {
 	GsAppList *apps = gs_app_list_new ();
 	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++) {
-		GsAppList *list = gs_updates_section_get_list (GS_UPDATES_SECTION (self->sections[i]));
+		GsAppList *list = gs_updates_section_get_list (self->sections[i]);
 		gs_app_list_add_list (apps, list);
 	}
 	return apps;
@@ -190,39 +200,21 @@ gs_updates_page_last_checked_time_string (GsUpdatesPage *self,
 	return res;
 }
 
-static const gchar *
-gs_updates_page_get_state_string (GsPluginStatus status)
-{
-	/* TRANSLATORS: the update panel is doing *something* vague */
-	return _("Looking for new updates…");
-}
-
 static void
 refresh_headerbar_updates_counter (GsUpdatesPage *self)
 {
-	GtkWidget *widget;
-	guint num_updates;
+	guint new_updates_counter;
 
-	num_updates = _get_num_updates (self);
+	new_updates_counter = _get_num_updates (self);
+	if (!gs_plugin_loader_get_allow_updates (self->plugin_loader) ||
+	    self->state == GS_UPDATES_PAGE_STATE_FAILED)
+		new_updates_counter = 0;
 
-	/* update the counter */
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "button_updates_counter"));
-	if (num_updates > 0 &&
-	    gs_plugin_loader_get_allow_updates (self->plugin_loader)) {
-		g_autofree gchar *text = NULL;
-		text = g_strdup_printf ("%u", num_updates);
-		gtk_label_set_label (GTK_LABEL (widget), text);
-		gtk_widget_show (widget);
-	} else {
-		gtk_widget_hide (widget);
-	}
+	if (new_updates_counter == self->updates_counter)
+		return;
 
-	/* update the tab style */
-	if (num_updates > 0 &&
-	    gs_shell_get_mode (self->shell) != GS_SHELL_MODE_UPDATES)
-		gtk_style_context_add_class (gtk_widget_get_style_context (widget), "needs-attention");
-	else
-		gtk_style_context_remove_class (gtk_widget_get_style_context (widget), "needs-attention");
+	self->updates_counter = new_updates_counter;
+	g_object_notify (G_OBJECT (self), "counter");
 }
 
 static void
@@ -257,9 +249,8 @@ gs_updates_page_refresh_last_checked (GsUpdatesPage *self)
 
 		/* TRANSLATORS: This is the time when we last checked for updates */
 		last_checked = g_strdup_printf (_("Last checked: %s"), checked_str);
-		gtk_label_set_label (GTK_LABEL (self->label_updates_last_checked),
-						last_checked);
-		gtk_widget_set_visible (self->label_updates_last_checked, TRUE);
+		gtk_label_set_label (self->uptodate_description, last_checked);
+		gtk_widget_set_visible (GTK_WIDGET (self->uptodate_description), TRUE);
 
 		if (hours_ago < 1)
 			interval = 60;
@@ -273,7 +264,7 @@ gs_updates_page_refresh_last_checked (GsUpdatesPage *self)
 		self->refresh_last_checked_id = g_timeout_add_seconds (interval,
 			gs_updates_page_refresh_last_checked_cb, self);
 	} else {
-		gtk_widget_set_visible (self->label_updates_last_checked, FALSE);
+		gtk_widget_set_visible (GTK_WIDGET (self->uptodate_description), FALSE);
 	}
 }
 
@@ -281,7 +272,6 @@ static void
 gs_updates_page_update_ui_state (GsUpdatesPage *self)
 {
 	gboolean allow_mobile_refresh = TRUE;
-	g_autofree gchar *spinner_str = NULL;
 
 	gs_updates_page_remove_last_checked_timeout (self);
 
@@ -308,26 +298,6 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		gtk_spinner_stop (GTK_SPINNER (self->header_spinner_start));
 		gtk_widget_hide (self->header_spinner_start);
 		gtk_widget_hide (self->header_checking_label);
-		break;
-	}
-
-	/* spinner text */
-	switch (self->state) {
-	case GS_UPDATES_PAGE_STATE_STARTUP:
-		spinner_str = g_strdup_printf ("%s\n%s",
-				       /* TRANSLATORS: the updates panel is starting up */
-				       _("Setting up updates…"),
-				       _("(This could take a while)"));
-		gtk_label_set_label (GTK_LABEL (self->label_updates_spinner), spinner_str);
-		break;
-	case GS_UPDATES_PAGE_STATE_ACTION_REFRESH:
-		spinner_str = g_strdup_printf ("%s\n%s",
-				       gs_updates_page_get_state_string (self->last_status),
-				       /* TRANSLATORS: the updates panel is starting up */
-				       _("(This could take a while)"));
-		gtk_label_set_label (GTK_LABEL (self->label_updates_spinner), spinner_str);
-		break;
-	default:
 		break;
 	}
 
@@ -472,7 +442,6 @@ gs_updates_page_get_updates_cb (GsPluginLoader *plugin_loader,
                                 GAsyncResult *res,
                                 GsUpdatesPage *self)
 {
-	GtkWidget *widget;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsAppList) list = NULL;
 
@@ -484,12 +453,10 @@ gs_updates_page_get_updates_cb (GsPluginLoader *plugin_loader,
 		gs_updates_page_clear_flag (self, GS_UPDATES_PAGE_FLAG_HAS_UPDATES);
 		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
 			g_warning ("updates-shell: failed to get updates: %s", error->message);
-		gtk_label_set_label (GTK_LABEL (self->label_updates_failed),
-				     error->message);
+		hdy_status_page_set_description (HDY_STATUS_PAGE (self->updates_failed_page),
+						 error->message);
 		gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_FAILED);
-		widget = GTK_WIDGET (gtk_builder_get_object (self->builder,
-							     "button_updates_counter"));
-		gtk_widget_hide (widget);
+		refresh_headerbar_updates_counter (self);
 		return;
 	}
 
@@ -497,7 +464,7 @@ gs_updates_page_get_updates_cb (GsPluginLoader *plugin_loader,
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 		GsUpdatesSectionKind section = _get_app_section (app);
-		gs_updates_section_add_app (GS_UPDATES_SECTION (self->sections[section]), app);
+		gs_updates_section_add_app (self->sections[section], app);
 	}
 
 	/* update the counter in headerbar */
@@ -551,31 +518,52 @@ gs_updates_page_get_upgrades_cb (GObject *source_object,
 	gs_updates_page_decrement_refresh_count (self);
 }
 
+typedef struct {
+	GsApp		*app; /* (owned) */
+	GsUpdatesPage	*self; /* (owned) */
+} GsPageHelper;
+
+static GsPageHelper *
+gs_page_helper_new (GsUpdatesPage *self,
+		    GsApp	 *app)
+{
+	GsPageHelper *helper;
+	helper = g_slice_new0 (GsPageHelper);
+	helper->self = g_object_ref (self);
+	helper->app = g_object_ref (app);
+	return helper;
+}
+
 static void
-gs_updates_page_get_system_finished_cb (GObject *source_object,
-					GAsyncResult *res,
-					gpointer user_data)
+gs_page_helper_free (GsPageHelper *helper)
+{
+	g_clear_object (&helper->app);
+	g_clear_object (&helper->self);
+	g_slice_free (GsPageHelper, helper);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(GsPageHelper, gs_page_helper_free);
+
+static void
+gs_updates_page_refine_system_finished_cb (GObject *source_object,
+					   GAsyncResult *res,
+					   gpointer user_data)
 {
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
-	GsUpdatesPage *self = GS_UPDATES_PAGE (user_data);
+	g_autoptr(GsPageHelper) helper = user_data;
+	GsUpdatesPage *self = helper->self;
+	GsApp *app = helper->app;
 	g_autoptr(GError) error = NULL;
-	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GString) str = g_string_new (NULL);
 
 	/* get result */
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
 		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
-			g_warning ("failed to get system: %s", error->message);
+			g_warning ("Failed to refine system: %s", error->message);
 		return;
 	}
 
 	/* show or hide the end of life notification */
-	app = gs_plugin_loader_get_system_app (plugin_loader);
-	if (app == NULL) {
-		g_warning ("failed to get system app");
-		gtk_widget_set_visible (self->box_end_of_life, FALSE);
-		return;
-	}
 	if (gs_app_get_state (app) != GS_APP_STATE_UNAVAILABLE) {
 		gtk_widget_set_visible (self->box_end_of_life, FALSE);
 		return;
@@ -607,6 +595,45 @@ gs_updates_page_get_system_finished_cb (GObject *source_object,
 }
 
 static void
+gs_updates_page_get_system_finished_cb (GObject *source_object,
+					GAsyncResult *res,
+					gpointer user_data)
+{
+	guint64 refine_flags;
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
+	GsUpdatesPage *self = user_data;
+	GsPageHelper *helper;
+	g_autoptr(GsApp) app = NULL;
+	g_autoptr(GsPluginJob) plugin_job = NULL;
+	g_autoptr(GError) error = NULL;
+
+	app = gs_plugin_loader_get_system_app_finish (plugin_loader, res, &error);
+	if (app == NULL) {
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+			g_warning ("Failed to get system: %s", error->message);
+		return;
+	}
+
+	g_return_if_fail (GS_IS_UPDATES_PAGE (self));
+
+	refine_flags = GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
+		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS |
+		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION;
+
+	helper = gs_page_helper_new (self, app);
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
+					 "interactive", TRUE,
+					 "app", app,
+					 "refine-flags", refine_flags,
+					 NULL);
+	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
+					    self->cancellable,
+					    gs_updates_page_refine_system_finished_cb,
+					    helper);
+}
+
+static void
 gs_updates_page_load (GsUpdatesPage *self)
 {
 	guint64 refine_flags;
@@ -618,7 +645,7 @@ gs_updates_page_load (GsUpdatesPage *self)
 
 	/* remove all existing apps */
 	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++)
-		gs_updates_section_remove_all (GS_UPDATES_SECTION (self->sections[i]));
+		gs_updates_section_remove_all (self->sections[i]);
 
 	refine_flags = GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE |
@@ -637,17 +664,8 @@ gs_updates_page_load (GsUpdatesPage *self)
 					    self);
 
 	/* get the system state */
-	g_object_unref (plugin_job);
-	app = gs_plugin_loader_get_system_app (self->plugin_loader);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "interactive", TRUE,
-					 "app", app,
-					 "refine-flags", refine_flags,
-					 NULL);
-	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
-					    self->cancellable,
-					    gs_updates_page_get_system_finished_cb,
-					    self);
+	gs_plugin_loader_get_system_app_async (self->plugin_loader, self->cancellable,
+		gs_updates_page_get_system_finished_cb, self);
 
 	/* don't refresh every each time */
 	if ((self->result_flags & GS_UPDATES_PAGE_FLAG_HAS_UPGRADES) == 0) {
@@ -681,11 +699,9 @@ gs_updates_page_reload (GsPage *page)
 }
 
 static void
-gs_updates_page_switch_to (GsPage *page,
-                           gboolean scroll_up)
+gs_updates_page_switch_to (GsPage *page)
 {
 	GsUpdatesPage *self = GS_UPDATES_PAGE (page);
-	GtkWidget *widget;
 
 	if (gs_shell_get_mode (self->shell) != GS_SHELL_MODE_UPDATES) {
 		g_warning ("Called switch_to(updates) when in mode %s",
@@ -693,18 +709,7 @@ gs_updates_page_switch_to (GsPage *page,
 		return;
 	}
 
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "buttonbox_main"));
-	gtk_widget_show (widget);
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "menu_button"));
-	gtk_widget_show (widget);
-
 	gtk_widget_set_visible (self->button_refresh, TRUE);
-
-	if (scroll_up) {
-		GtkAdjustment *adj;
-		adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_updates));
-		gtk_adjustment_set_value (adj, gtk_adjustment_get_lower (adj));
-	}
 
 	/* no need to refresh */
 	if (self->cache_valid) {
@@ -746,8 +751,8 @@ gs_updates_page_refresh_cb (GsPluginLoader *plugin_loader,
 			return;
 		}
 		g_warning ("failed to refresh: %s", error->message);
-		gtk_label_set_label (GTK_LABEL (self->label_updates_failed),
-				     error->message);
+		hdy_status_page_set_description (HDY_STATUS_PAGE (self->updates_failed_page),
+						 error->message);
 		gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_FAILED);
 		return;
 	}
@@ -759,7 +764,8 @@ gs_updates_page_refresh_cb (GsPluginLoader *plugin_loader,
 
 	/* get the new list */
 	gs_updates_page_invalidate (self);
-	gs_page_switch_to (GS_PAGE (self), TRUE);
+	gs_page_switch_to (GS_PAGE (self));
+	gs_page_scroll_up (GS_PAGE (self));
 }
 
 static void
@@ -837,6 +843,7 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
                                    GsUpdatesPage *self)
 {
 	GtkWidget *dialog;
+	GtkWindow *parent_window = GTK_WINDOW (gtk_widget_get_ancestor (GTK_WIDGET (self), GTK_TYPE_WINDOW));
 
 	/* cancel existing action? */
 	if (self->state == GS_UPDATES_PAGE_STATE_ACTION_REFRESH) {
@@ -857,7 +864,7 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 			gs_updates_page_get_new_updates (self);
 			return;
 		}
-		dialog = gtk_message_dialog_new (gs_shell_get_window (self->shell),
+		dialog = gtk_message_dialog_new (parent_window,
 						 GTK_DIALOG_MODAL |
 						 GTK_DIALOG_USE_HEADER_BAR |
 						 GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -877,11 +884,11 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 		g_signal_connect (dialog, "response",
 				  G_CALLBACK (gs_updates_page_refresh_confirm_cb),
 				  self);
-		gs_shell_modal_dialog_present (self->shell, GTK_DIALOG (dialog));
+		gs_shell_modal_dialog_present (self->shell, GTK_WINDOW (dialog));
 
 	/* no network connection */
 	} else {
-		dialog = gtk_message_dialog_new (gs_shell_get_window (self->shell),
+		dialog = gtk_message_dialog_new (parent_window,
 						 GTK_DIALOG_MODAL |
 						 GTK_DIALOG_USE_HEADER_BAR |
 						 GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -901,7 +908,7 @@ gs_updates_page_button_refresh_cb (GtkWidget *widget,
 		g_signal_connect (dialog, "response",
 				  G_CALLBACK (gs_updates_page_refresh_confirm_cb),
 				  self);
-		gs_shell_modal_dialog_present (self->shell, GTK_DIALOG (dialog));
+		gs_shell_modal_dialog_present (self->shell, GTK_WINDOW (dialog));
 	}
 }
 
@@ -912,29 +919,13 @@ gs_updates_page_pending_apps_changed_cb (GsPluginLoader *plugin_loader,
 	gs_updates_page_invalidate (self);
 }
 
-typedef struct {
-	GsApp		*app;
-	GsUpdatesPage	*self;
-} GsPageHelper;
-
-static void
-gs_page_helper_free (GsPageHelper *helper)
-{
-	if (helper->app != NULL)
-		g_object_unref (helper->app);
-	if (helper->self != NULL)
-		g_object_unref (helper->self);
-	g_slice_free (GsPageHelper, helper);
-}
-
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(GsPageHelper, gs_page_helper_free);
-
 static void
 upgrade_download_finished_cb (GObject *source,
                               GAsyncResult *res,
                               gpointer user_data)
 {
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source);
+	g_autoptr(GsPageHelper) helper = user_data;
 	g_autoptr(GError) error = NULL;
 
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
@@ -958,9 +949,7 @@ gs_updates_page_upgrade_download_cb (GsUpgradeBanner *upgrade_banner,
 		return;
 	}
 
-	helper = g_slice_new0 (GsPageHelper);
-	helper->app = g_object_ref (app);
-	helper->self = g_object_ref (self);
+	helper = gs_page_helper_new (self, app);
 
 	if (self->cancellable_upgrade_download != NULL)
 		g_object_unref (self->cancellable_upgrade_download);
@@ -1134,25 +1123,7 @@ gs_updates_page_upgrade_install_cb (GsUpgradeBanner *upgrade_banner,
 	                  self);
 	gs_removal_dialog_show_upgrade_removals (GS_REMOVAL_DIALOG (dialog),
 	                                         upgrade);
-	gs_shell_modal_dialog_present (self->shell, GTK_DIALOG (dialog));
-}
-
-static void
-gs_updates_page_upgrade_help_cb (GsUpgradeBanner *upgrade_banner,
-                                 GsUpdatesPage *self)
-{
-	GsApp *app;
-	const gchar *uri;
-
-	app = gs_upgrade_banner_get_app (upgrade_banner);
-	if (app == NULL) {
-		g_warning ("no upgrade available to launch");
-		return;
-	}
-
-	/* open the link */
-	uri = gs_app_get_url (app, AS_URL_KIND_HOMEPAGE);
-	gs_shell_show_uri (self->shell, uri);
+	gs_shell_modal_dialog_present (self->shell, GTK_WINDOW (dialog));
 }
 
 static void
@@ -1254,24 +1225,28 @@ static gboolean
 gs_updates_page_setup (GsPage *page,
                        GsShell *shell,
                        GsPluginLoader *plugin_loader,
-                       GtkBuilder *builder,
                        GCancellable *cancellable,
                        GError **error)
 {
 	GsUpdatesPage *self = GS_UPDATES_PAGE (page);
 	AtkObject *accessible;
+	GtkWidget *widget;
 
 	g_return_val_if_fail (GS_IS_UPDATES_PAGE (self), TRUE);
 
 	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++) {
 		self->sections[i] = gs_updates_section_new (i, plugin_loader, page);
-		gs_updates_section_set_size_groups (GS_UPDATES_SECTION (self->sections[i]),
+		gs_updates_section_set_size_groups (self->sections[i],
 						    self->sizegroup_image,
 						    self->sizegroup_name,
 						    self->sizegroup_desc,
-						    self->sizegroup_button,
+						    self->sizegroup_button_label,
+						    self->sizegroup_button_image,
 						    self->sizegroup_header);
 		gtk_widget_set_vexpand (GTK_WIDGET (self->sections[i]), FALSE);
+		g_object_bind_property (G_OBJECT (self), "is-narrow",
+					self->sections[i], "is-narrow",
+					G_BINDING_SYNC_CREATE);
 		gtk_container_add (GTK_CONTAINER (self->updates_box), GTK_WIDGET (self->sections[i]));
 	}
 
@@ -1293,7 +1268,6 @@ gs_updates_page_setup (GsPage *page,
 	g_signal_connect_object (self->plugin_loader, "notify::network-available",
 				 G_CALLBACK (gs_updates_page_network_available_notify_cb),
 				 self, 0);
-	self->builder = g_object_ref (builder);
 	self->cancellable = g_object_ref (cancellable);
 
 	/* setup system upgrades */
@@ -1303,19 +1277,27 @@ gs_updates_page_setup (GsPage *page,
 			  G_CALLBACK (gs_updates_page_upgrade_install_cb), self);
 	g_signal_connect (self->upgrade_banner, "cancel-clicked",
 			  G_CALLBACK (gs_updates_page_upgrade_cancel_cb), self);
-	g_signal_connect (self->upgrade_banner, "help-clicked",
-			  G_CALLBACK (gs_updates_page_upgrade_help_cb), self);
-
-	self->header_end_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
-	gtk_widget_set_visible (self->header_end_box, TRUE);
-	gs_page_set_header_end_widget (GS_PAGE (self), self->header_end_box);
 
 	self->header_start_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
 	gtk_widget_set_visible (self->header_start_box, TRUE);
 	gs_page_set_header_start_widget (GS_PAGE (self), self->header_start_box);
 
 	/* This label indicates that the update check is in progress */
-	self->header_checking_label = gtk_label_new (_("Checking…"));
+	self->header_checking_label = hdy_squeezer_new ();
+	hdy_squeezer_set_xalign (HDY_SQUEEZER (self->header_checking_label), 0);
+	hdy_squeezer_set_transition_type (HDY_SQUEEZER (self->header_checking_label), HDY_SQUEEZER_TRANSITION_TYPE_CROSSFADE);
+
+	widget = gtk_label_new (_("Checking…"));
+	gtk_widget_show (widget);
+	gtk_container_add (GTK_CONTAINER (self->header_checking_label), widget);
+
+	/* FIXME: This box is just a 0x0 widget the squeezer will show when it
+	 * hasn't enough space to show the label. In GTK 4, we will be able to
+	 * use AdwSqueezer:allow-none instead. */
+	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_widget_show (widget);
+	gtk_container_add (GTK_CONTAINER (self->header_checking_label), widget);
+
 	gtk_container_add (GTK_CONTAINER (self->header_start_box), self->header_checking_label);
 	gtk_container_child_set(GTK_CONTAINER (self->header_start_box), self->header_checking_label,
 				"pack-type", GTK_PACK_END, NULL);
@@ -1345,13 +1327,65 @@ gs_updates_page_setup (GsPage *page,
 	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_button = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_header = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
 
 	/* set initial state */
 	if (!gs_plugin_loader_get_allow_updates (self->plugin_loader))
 		self->state = GS_UPDATES_PAGE_STATE_MANAGED;
 	return TRUE;
+}
+
+static void
+gs_updates_page_get_property (GObject    *object,
+                              guint       prop_id,
+                              GValue     *value,
+                              GParamSpec *pspec)
+{
+	GsUpdatesPage *self = GS_UPDATES_PAGE (object);
+
+	switch ((GsUpdatesPageProperty) prop_id) {
+	case PROP_IS_NARROW:
+		g_value_set_boolean (value, gs_updates_page_get_is_narrow (self));
+		break;
+	case PROP_VADJUSTMENT:
+		g_value_set_object (value, gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_updates)));
+		break;
+	case PROP_TITLE:
+		g_value_set_string (value, _("Updates"));
+		break;
+	case PROP_COUNTER:
+		g_value_set_uint (value, self->updates_counter);
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
+gs_updates_page_set_property (GObject      *object,
+                              guint         prop_id,
+                              const GValue *value,
+                              GParamSpec   *pspec)
+{
+	GsUpdatesPage *self = GS_UPDATES_PAGE (object);
+
+	switch ((GsUpdatesPageProperty) prop_id) {
+	case PROP_IS_NARROW:
+		gs_updates_page_set_is_narrow (self, g_value_get_boolean (value));
+		break;
+	case PROP_VADJUSTMENT:
+	case PROP_TITLE:
+	case PROP_COUNTER:
+		/* Read only */
+		g_assert_not_reached ();
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
 }
 
 static void
@@ -1373,7 +1407,6 @@ gs_updates_page_dispose (GObject *object)
 		}
 	}
 
-	g_clear_object (&self->builder);
 	g_clear_object (&self->plugin_loader);
 	g_clear_object (&self->cancellable);
 	g_clear_object (&self->settings);
@@ -1382,7 +1415,8 @@ gs_updates_page_dispose (GObject *object)
 	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
 	g_clear_object (&self->sizegroup_desc);
-	g_clear_object (&self->sizegroup_button);
+	g_clear_object (&self->sizegroup_button_label);
+	g_clear_object (&self->sizegroup_button_image);
 	g_clear_object (&self->sizegroup_header);
 
 	G_OBJECT_CLASS (gs_updates_page_parent_class)->dispose (object);
@@ -1395,20 +1429,44 @@ gs_updates_page_class_init (GsUpdatesPageClass *klass)
 	GsPageClass *page_class = GS_PAGE_CLASS (klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
+	object_class->get_property = gs_updates_page_get_property;
+	object_class->set_property = gs_updates_page_set_property;
 	object_class->dispose = gs_updates_page_dispose;
+
 	page_class->switch_to = gs_updates_page_switch_to;
 	page_class->switch_from = gs_updates_page_switch_from;
 	page_class->reload = gs_updates_page_reload;
 	page_class->setup = gs_updates_page_setup;
+
+	/**
+	 * GsUpdatesPage:is-narrow:
+	 *
+	 * Whether the page is in narrow mode.
+	 *
+	 * In narrow mode, the page will take up less horizontal space, doing so
+	 * by e.g. using icons rather than labels in buttons. This is needed to
+	 * keep the UI useable on small form-factors like smartphones.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_IS_NARROW] =
+		g_param_spec_boolean ("is-narrow", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+
+	g_object_class_install_properties (object_class, G_N_ELEMENTS (obj_props), obj_props);
+
+	g_object_class_override_property (object_class, PROP_VADJUSTMENT, "vadjustment");
+	g_object_class_override_property (object_class, PROP_TITLE, "title");
+	g_object_class_override_property (object_class, PROP_COUNTER, "counter");
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-updates-page.ui");
 
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, updates_box);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, button_updates_mobile);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, button_updates_offline);
-	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, label_updates_failed);
-	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, label_updates_last_checked);
-	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, label_updates_spinner);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, updates_failed_page);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, uptodate_description);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, scrolledwindow_updates);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, spinner_updates);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, stack_updates);
@@ -1429,15 +1487,55 @@ gs_updates_page_init (GsUpdatesPage *self)
 	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_button = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_header = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
 
+}
+
+/**
+ * gs_updates_page_get_is_narrow:
+ * @self: a #GsUpdatesPage
+ *
+ * Get the value of #GsUpdatesPage:is-narrow.
+ *
+ * Returns: %TRUE if the page is in narrow mode, %FALSE otherwise
+ *
+ * Since: 41
+ */
+gboolean
+gs_updates_page_get_is_narrow (GsUpdatesPage *self)
+{
+	g_return_val_if_fail (GS_IS_UPDATES_PAGE (self), FALSE);
+
+	return self->is_narrow;
+}
+
+/**
+ * gs_updates_page_set_is_narrow:
+ * @self: a #GsUpdatesPage
+ * @is_narrow: %TRUE to set the page in narrow mode, %FALSE otherwise
+ *
+ * Set the value of #GsUpdatesPage:is-narrow.
+ *
+ * Since: 41
+ */
+void
+gs_updates_page_set_is_narrow (GsUpdatesPage *self, gboolean is_narrow)
+{
+	g_return_if_fail (GS_IS_UPDATES_PAGE (self));
+
+	is_narrow = !!is_narrow;
+
+	if (self->is_narrow == is_narrow)
+		return;
+
+	self->is_narrow = is_narrow;
+	g_object_notify_by_pspec (G_OBJECT (self), obj_props[PROP_IS_NARROW]);
 }
 
 GsUpdatesPage *
 gs_updates_page_new (void)
 {
-	GsUpdatesPage *self;
-	self = g_object_new (GS_TYPE_UPDATES_PAGE, NULL);
-	return GS_UPDATES_PAGE (self);
+	return GS_UPDATES_PAGE (g_object_new (GS_TYPE_UPDATES_PAGE, NULL));
 }

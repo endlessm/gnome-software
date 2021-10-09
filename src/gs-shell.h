@@ -10,6 +10,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <handy.h>
 
 #include "gnome-software-private.h"
 
@@ -17,14 +18,7 @@ G_BEGIN_DECLS
 
 #define GS_TYPE_SHELL (gs_shell_get_type ())
 
-G_DECLARE_DERIVABLE_TYPE (GsShell, gs_shell, GS, SHELL, GObject)
-
-struct _GsShellClass
-{
-	GObjectClass			 parent_class;
-
-	void (* loaded)		 (GsShell *shell);
-};
+G_DECLARE_FINAL_TYPE (GsShell, gs_shell, GS, SHELL, HdyApplicationWindow)
 
 typedef enum {
 	GS_SHELL_MODE_UNKNOWN,
@@ -59,7 +53,7 @@ void		 gs_shell_reset_state		(GsShell	*shell);
 void		 gs_shell_set_mode		(GsShell	*shell,
 						 GsShellMode	 mode);
 void		 gs_shell_modal_dialog_present	(GsShell	*shell,
-						 GtkDialog	*dialog);
+						 GtkWindow	*window);
 GsShellMode	 gs_shell_get_mode		(GsShell	*shell);
 const gchar	*gs_shell_get_mode_string	(GsShell	*shell);
 void		 gs_shell_install		(GsShell		*shell,
@@ -89,9 +83,8 @@ void		 gs_shell_show_uri		(GsShell	*shell,
 void		 gs_shell_setup			(GsShell	*shell,
 						 GsPluginLoader	*plugin_loader,
 						 GCancellable	*cancellable);
-gboolean	 gs_shell_is_active		(GsShell	*shell);
-GtkWindow	*gs_shell_get_window		(GsShell	*shell);
 void		 gs_shell_show_notification	(GsShell	*shell,
 						 const gchar	*title);
+gboolean	 gs_shell_get_is_narrow		(GsShell	*shell);
 
 G_END_DECLS

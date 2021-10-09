@@ -16,6 +16,8 @@ Adapted from the [GNOME release process](https://wiki.gnome.org/MaintainersCorne
 These instructions use the following variables:
  - `new_version`: the version number of the release you are making, for example 3.38.1
  - `previous_version`: the version number of the most-recently released version in the same release series, for example 3.38.0
+ - `branch`: the branch which the release is based on, for example gnome-40 or main
+ - `key_id`: the ID of your GPG key, see the output of `gpg --list-keys` and the note at the end of this file
 
 Make sure your repository is up to date and doesn’t contain local changes:
 ```
@@ -29,7 +31,7 @@ Download
 [gitlab-changelog](https://gitlab.gnome.org/pwithnall/gitlab-changelog) and use
 it to write release entries:
 ```
-gitlab-changelog GNOME/gnome-software ${previous_version}..
+gitlab-changelog.py GNOME/gnome-software ${previous_version}..
 ```
 
 Edit this down to just the user visible changes, and list them in
@@ -41,7 +43,7 @@ You can get review of your appdata changes from other co-maintainers if you wish
 
 Generate `NEWS` file:
 ```
-appstreamcli metainfo-to-news ../data/appdata/org.gnome.Software.appdata.xml.in ../NEWS
+appstreamcli metainfo-to-news ./data/appdata/org.gnome.Software.appdata.xml.in ./NEWS
 ```
 
 Commit the release:
@@ -61,14 +63,17 @@ ninja -C build/ dist
 
 Tag, sign and push the release (see below for information about `git evtag`):
 ```
-git evtag sign ${new_version}
-git push --atomic origin master ${new_version}
+git evtag sign -u ${key_id} ${new_version}
+git push --atomic origin ${branch} ${new_version}
 ```
+To use a specific key add an option `-u ${keyid|email}` after the `sign` argument.
+
+Use `Tag ${new_version} release` as the tag message.
 
 Upload the release tarball:
 ```
-scp build/meson-dist/*.tar.xz master.gnome.org:
-ssh master.gnome.org ftpadmin install gnome-software-*.tar.xz
+scp build/meson-dist/gnome-software-${new_version}.tar.xz master.gnome.org:
+ssh master.gnome.org ftpadmin install gnome-software-${new_version}.tar.xz
 ```
 
 Add the release notes to GitLab and close the milestone:
@@ -76,7 +81,9 @@ Add the release notes to GitLab and close the milestone:
    and upload the release notes for the new release from the `NEWS` file
  - Go to https://gitlab.gnome.org/GNOME/gnome-software/-/releases/${new_version}/edit
    and link the milestone to it, then list the new release tarball and
-   `sha256sum` file in the ‘Release Assets’ section
+   `sha256sum` file in the ‘Release Assets’ section as the ’Other’ types.
+   Get the file links from https://download.gnome.org/sources/gnome-software/ and
+   name them ’Release tarball’ and ’Release tarball sha256sum’
  - Go to https://gitlab.gnome.org/GNOME/gnome-software/-/milestones/
    choose the milestone and close it, as all issues and merge requests tagged
    for this release should now be complete

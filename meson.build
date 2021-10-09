@@ -1,5 +1,5 @@
 project('gnome-software', 'c',
-  version : '40.4',
+  version : '41.0',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c11'],
   meson_version : '>=0.47.0'
@@ -10,6 +10,16 @@ conf.set_quoted('VERSION', meson.project_version())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE_VERSION', meson.project_version())
 conf.set_quoted('BUILD_TYPE', get_option('buildtype'))
+
+build_profile = get_option('profile')
+if get_option('buildtype') == 'release'
+  build_profile = ''
+endif
+
+conf.set_quoted('BUILD_PROFILE', build_profile)
+
+application_id = 'org.gnome.Software' + build_profile
+conf.set_quoted('APPLICATION_ID', application_id)
 
 # this refers to the gnome-software plugin API version
 # this is not in any way related to a package or soname version
@@ -41,6 +51,7 @@ test_args = [
   '-Werror=implicit-function-declaration',
   '-Winit-self',
   '-Winline',
+  '-Wmaybe-uninitialized',
   '-Wmissing-declarations',
   '-Wmissing-format-attribute',
   '-Wmissing-include-dirs',
@@ -114,14 +125,13 @@ gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.32.0')
 libxmlb = dependency('xmlb', version : '>= 0.1.7', fallback : ['libxmlb', 'libxmlb_dep'])
 gio_unix = dependency('gio-unix-2.0', version : '>= 2.56.0')
 gmodule = dependency('gmodule-2.0')
-goa = dependency('goa-1.0')
 gtk = dependency('gtk+-3.0', version : '>= 3.22.4')
 glib = dependency('glib-2.0', version : '>= 2.55.0')
 json_glib = dependency('json-glib-1.0', version : '>= 1.2.0')
 libm = cc.find_library('m', required: false)
 libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')
 libhandy = dependency('libhandy-1',
-  version: '>=1.0.2',
+  version: '>=1.2.0',
   fallback: ['libhandy', 'libhandy_dep'],
   default_options: [
       'examples=false',
@@ -192,6 +202,11 @@ if get_option('packagekit')
   if meson.get_compiler('c').has_function('pk_details_get_download_size', prefix: '#include <packagekit-glib2/packagekit.h>', dependencies: packagekit)
       conf.set('HAVE_PK_DETAILS_GET_DOWNLOAD_SIZE', '1')
   endif
+  if meson.get_compiler('c').has_function('pk_offline_cancel_with_flags', prefix: '#include <packagekit-glib2/packagekit.h>', dependencies: packagekit) and \
+     meson.get_compiler('c').has_function('pk_offline_trigger_with_flags', prefix: '#include <packagekit-glib2/packagekit.h>', dependencies: packagekit) and \
+     meson.get_compiler('c').has_function('pk_offline_trigger_upgrade_with_flags', prefix: '#include <packagekit-glib2/packagekit.h>', dependencies: packagekit)
+      conf.set('HAVE_PK_OFFLINE_WITH_FLAGS', '1')
+  endif
 endif
 
 if get_option('eos_updater')
@@ -251,6 +266,7 @@ conf.set_quoted('LOCALSTATEDIR',
 conf.set_quoted('LIBEXECDIR',
                 join_paths(get_option('prefix'),
                            get_option('libexecdir')))
+conf.set('ENABLE_EXTERNAL_APPSTREAM', get_option('external_appstream'))
 configure_file(
   output : 'config.h',
   configuration : conf
@@ -271,6 +287,9 @@ subdir('data')
 subdir('lib')
 subdir('plugins')
 subdir('src')
+if get_option('external_appstream')
+  subdir('gs-install-appstream')
+endif
 subdir('po')
 subdir('doc')
 

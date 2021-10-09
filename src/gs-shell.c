@@ -10,6 +10,7 @@
 
 #include "config.h"
 
+#include <handy.h>
 #include <string.h>
 #include <glib/gi18n.h>
 
@@ -36,6 +37,8 @@
 #include "gs-update-monitor.h"
 #include "gs-utils.h"
 
+#define NARROW_WIDTH_THRESHOLD 800
+
 static const gchar *page_name[] = {
 	"unknown",
 	"overview",
@@ -56,38 +59,71 @@ typedef struct {
 	gchar		*search;
 } BackEntry;
 
-typedef struct
+struct _GsShell
 {
+	HdyApplicationWindow	 parent_object;
+
 	GSettings		*settings;
-	gboolean		 ignore_primary_buttons;
 	GCancellable		*cancellable;
 	GsPluginLoader		*plugin_loader;
-	GsShellMode		 mode;
-	GHashTable		*pages;
 	GtkWidget		*header_start_widget;
 	GtkWidget		*header_end_widget;
-	GtkBuilder		*builder;
-	GtkWindow		*main_window;
+	GtkWidget		*details_header_end_widget;
 	GQueue			*back_entry_stack;
 	GPtrArray		*modal_dialogs;
-	gulong			 search_changed_id;
 	gchar			*events_info_uri;
-	gboolean		 in_mode_change;
+	HdyDeck			*main_deck;
+	HdyDeck			*details_deck;
+	GtkStack		*stack_loading;
+	GtkStack		*stack_main;
+	GtkStack		*stack_sub;
 	GsPage			*page;
+
+	GBinding		*sub_page_header_title_binding;
 
 #ifdef HAVE_MOGWAI
 	MwscScheduler		*scheduler;
 	gboolean		 scheduler_held;
 	gulong			 scheduler_invalidated_handler;
 #endif  /* HAVE_MOGWAI */
-} GsShellPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (GsShell, gs_shell, G_TYPE_OBJECT)
+	GtkWidget		*main_header;
+	GtkWidget		*details_header;
+	GtkWidget		*metered_updates_bar;
+	GtkWidget		*search_button;
+	GtkWidget		*entry_search;
+	GtkWidget		*search_bar;
+	GtkWidget		*button_back;
+	GtkWidget		*button_back2;
+	GtkWidget		*notification_event;
+	GtkWidget		*button_events_sources;
+	GtkWidget		*button_events_no_space;
+	GtkWidget		*button_events_network_settings;
+	GtkWidget		*button_events_restart_required;
+	GtkWidget		*button_events_more_info;
+	GtkWidget		*button_events_dismiss;
+	GtkWidget		*label_events;
+	GtkWidget		*primary_menu;
+	GtkWidget		*sub_page_header_title;
+
+	gboolean		 is_narrow;
+	guint			 allocation_changed_cb_id;
+
+	GsPage			*pages[GS_SHELL_MODE_LAST];
+};
+
+G_DEFINE_TYPE (GsShell, gs_shell, HDY_TYPE_APPLICATION_WINDOW)
+
+typedef enum {
+	PROP_IS_NARROW = 1,
+} GsShellProperty;
 
 enum {
 	SIGNAL_LOADED,
 	SIGNAL_LAST
 };
+
+static GParamSpec *obj_props[PROP_IS_NARROW + 1] = { NULL, };
 
 static guint signals [SIGNAL_LAST] = { 0 };
 
@@ -95,81 +131,61 @@ static void
 modal_dialog_unmapped_cb (GtkWidget *dialog,
                           GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	g_debug ("modal dialog %p unmapped", dialog);
-	g_ptr_array_remove (priv->modal_dialogs, dialog);
+	g_ptr_array_remove (shell->modal_dialogs, dialog);
 }
 
 void
-gs_shell_modal_dialog_present (GsShell *shell, GtkDialog *dialog)
+gs_shell_modal_dialog_present (GsShell *shell, GtkWindow *window)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWindow *parent;
 
 	/* show new modal on top of old modal */
-	if (priv->modal_dialogs->len > 0) {
-		parent = g_ptr_array_index (priv->modal_dialogs,
-					    priv->modal_dialogs->len - 1);
+	if (shell->modal_dialogs->len > 0) {
+		parent = g_ptr_array_index (shell->modal_dialogs,
+					    shell->modal_dialogs->len - 1);
 		g_debug ("using old modal %p as parent", parent);
 	} else {
-		parent = priv->main_window;
+		parent = GTK_WINDOW (shell);
 		g_debug ("using main window");
 	}
-	gtk_window_set_transient_for (GTK_WINDOW (dialog), parent);
+	gtk_window_set_transient_for (window, parent);
 
 	/* add to stack, transfer ownership to here */
-	g_ptr_array_add (priv->modal_dialogs, dialog);
-	g_signal_connect (GTK_WIDGET (dialog), "unmap",
+	g_ptr_array_add (shell->modal_dialogs, window);
+	g_signal_connect (GTK_WIDGET (window), "unmap",
 	                  G_CALLBACK (modal_dialog_unmapped_cb), shell);
 
 	/* present the new one */
-	gtk_window_set_modal (GTK_WINDOW (dialog), TRUE);
-	gtk_window_present (GTK_WINDOW (dialog));
-}
-
-gboolean
-gs_shell_is_active (GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	return gtk_window_is_active (priv->main_window);
-}
-
-GtkWindow *
-gs_shell_get_window (GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	return priv->main_window;
+	gtk_window_set_modal (window, TRUE);
+	gtk_window_present (window);
 }
 
 void
 gs_shell_activate (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	gtk_window_present (priv->main_window);
+	gtk_window_present (GTK_WINDOW (shell));
 }
 
 static void
 gs_shell_set_header_start_widget (GsShell *shell, GtkWidget *widget)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *old_widget;
-	GtkWidget *header;
 
-	old_widget = priv->header_start_widget;
-	header = GTK_WIDGET (gtk_builder_get_object (priv->builder, "header"));
+	old_widget = shell->header_start_widget;
 
-	if (priv->header_start_widget == widget)
+	if (shell->header_start_widget == widget)
 		return;
 
 	if (widget != NULL) {
 		g_object_ref (widget);
-		gtk_header_bar_pack_start (GTK_HEADER_BAR (header), widget);
+		hdy_header_bar_pack_start (HDY_HEADER_BAR (shell->main_header), widget);
 	}
 
-	priv->header_start_widget = widget;
+	shell->header_start_widget = widget;
 
 	if (old_widget != NULL) {
-		gtk_container_remove (GTK_CONTAINER (header), old_widget);
+		gtk_container_remove (GTK_CONTAINER (shell->main_header), old_widget);
 		g_object_unref (old_widget);
 	}
 }
@@ -177,25 +193,45 @@ gs_shell_set_header_start_widget (GsShell *shell, GtkWidget *widget)
 static void
 gs_shell_set_header_end_widget (GsShell *shell, GtkWidget *widget)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *old_widget;
-	GtkWidget *header;
 
-	old_widget = priv->header_end_widget;
-	header = GTK_WIDGET (gtk_builder_get_object (priv->builder, "header"));
+	old_widget = shell->header_end_widget;
 
-	if (priv->header_end_widget == widget)
+	if (shell->header_end_widget == widget)
 		return;
 
 	if (widget != NULL) {
 		g_object_ref (widget);
-		gtk_header_bar_pack_end (GTK_HEADER_BAR (header), widget);
+		hdy_header_bar_pack_end (HDY_HEADER_BAR (shell->main_header), widget);
 	}
 
-	priv->header_end_widget = widget;
+	shell->header_end_widget = widget;
 
 	if (old_widget != NULL) {
-		gtk_container_remove (GTK_CONTAINER (header), old_widget);
+		gtk_container_remove (GTK_CONTAINER (shell->main_header), old_widget);
+		g_object_unref (old_widget);
+	}
+}
+
+static void
+gs_shell_set_details_header_end_widget (GsShell *shell, GtkWidget *widget)
+{
+	GtkWidget *old_widget;
+
+	old_widget = shell->details_header_end_widget;
+
+	if (shell->details_header_end_widget == widget)
+		return;
+
+	if (widget != NULL) {
+		g_object_ref (widget);
+		hdy_header_bar_pack_end (HDY_HEADER_BAR (shell->details_header), widget);
+	}
+
+	shell->details_header_end_widget = widget;
+
+	if (old_widget != NULL) {
+		gtk_container_remove (GTK_CONTAINER (shell->details_header), old_widget);
 		g_object_unref (old_widget);
 	}
 }
@@ -203,26 +239,22 @@ gs_shell_set_header_end_widget (GsShell *shell, GtkWidget *widget)
 static void
 gs_shell_refresh_auto_updates_ui (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	gboolean automatic_updates_paused;
 	gboolean automatic_updates_enabled;
-	GtkInfoBar *metered_updates_bar;
 
-	automatic_updates_enabled = g_settings_get_boolean (priv->settings, "download-updates");
-
-	metered_updates_bar = GTK_INFO_BAR (gtk_builder_get_object (priv->builder, "metered_updates_bar"));
+	automatic_updates_enabled = g_settings_get_boolean (shell->settings, "download-updates");
 
 #ifdef HAVE_MOGWAI
-	automatic_updates_paused = (priv->scheduler == NULL || !mwsc_scheduler_get_allow_downloads (priv->scheduler));
+	automatic_updates_paused = (shell->scheduler == NULL || !mwsc_scheduler_get_allow_downloads (shell->scheduler));
 #else
-	automatic_updates_paused = gs_plugin_loader_get_network_metered (priv->plugin_loader);
+	automatic_updates_paused = gs_plugin_loader_get_network_metered (shell->plugin_loader);
 #endif
 
-	gtk_info_bar_set_revealed (metered_updates_bar,
-				   priv->mode != GS_SHELL_MODE_LOADING &&
+	gtk_info_bar_set_revealed (GTK_INFO_BAR (shell->metered_updates_bar),
+				   gs_shell_get_mode (shell) != GS_SHELL_MODE_LOADING &&
 				   automatic_updates_enabled &&
 				   automatic_updates_paused);
-	gtk_info_bar_set_default_response (metered_updates_bar, GTK_RESPONSE_OK);
+	gtk_info_bar_set_default_response (GTK_INFO_BAR (shell->metered_updates_bar), GTK_RESPONSE_OK);
 }
 
 static void
@@ -231,11 +263,10 @@ gs_shell_metered_updates_bar_response_cb (GtkInfoBar *info_bar,
 					  gpointer    user_data)
 {
 	GsShell *shell = GS_SHELL (user_data);
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkDialog *dialog;
 
-	dialog = GTK_DIALOG (gs_metered_data_dialog_new (priv->main_window));
-	gs_shell_modal_dialog_present (shell, dialog);
+	dialog = GTK_DIALOG (gs_metered_data_dialog_new (GTK_WINDOW (shell)));
+	gs_shell_modal_dialog_present (shell, GTK_WINDOW (dialog));
 
 	/* just destroy */
 	g_signal_connect_swapped (dialog, "response",
@@ -270,19 +301,17 @@ gs_shell_network_metered_notify_cb (GsPluginLoader *plugin_loader,
 static void
 scheduler_invalidated_cb (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-
 	/* The scheduler shouldn’t normally be invalidated, since we Hold() it
 	 * until we’re done with it. However, if the scheduler is stopped by
 	 * systemd (`systemctl stop mogwai-scheduled`) this signal will be
 	 * emitted. It may also be invalidated while our main window is hidden,
 	 * as we release our Hold() then. */
-	g_signal_handler_disconnect (priv->scheduler,
-				     priv->scheduler_invalidated_handler);
-	priv->scheduler_invalidated_handler = 0;
-	priv->scheduler_held = FALSE;
+	g_signal_handler_disconnect (shell->scheduler,
+				     shell->scheduler_invalidated_handler);
+	shell->scheduler_invalidated_handler = 0;
+	shell->scheduler_held = FALSE;
 
-	g_clear_object (&priv->scheduler);
+	g_clear_object (&shell->scheduler);
 }
 
 static void
@@ -299,10 +328,9 @@ scheduler_hold_cb (GObject *source_object,
 	g_autoptr(GError) error_local = NULL;
 	MwscScheduler *scheduler = (MwscScheduler *) source_object;
 	g_autoptr(GsShell) shell = data;  /* reference added when starting the async operation */
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 
 	if (mwsc_scheduler_hold_finish (scheduler, result, &error_local)) {
-		priv->scheduler_held = TRUE;
+		shell->scheduler_held = TRUE;
 	} else if (!g_error_matches (error_local, G_DBUS_ERROR, G_DBUS_ERROR_FAILED)) {
 		g_warning ("Couldn't hold the Mogwai Scheduler daemon: %s",
 			   error_local->message);
@@ -310,7 +338,7 @@ scheduler_hold_cb (GObject *source_object,
 
 	g_clear_error (&error_local);
 
-	priv->scheduler_invalidated_handler =
+	shell->scheduler_invalidated_handler =
 		g_signal_connect_swapped (scheduler, "invalidated",
 					  (GCallback) scheduler_invalidated_cb,
 					  shell);
@@ -320,8 +348,8 @@ scheduler_hold_cb (GObject *source_object,
 				 shell,
 				 G_CONNECT_SWAPPED);
 
-	g_assert (priv->scheduler == NULL);
-	priv->scheduler = scheduler;
+	g_assert (shell->scheduler == NULL);
+	shell->scheduler = scheduler;
 
 	/* Update the UI accordingly. */
 	gs_shell_refresh_auto_updates_ui (shell);
@@ -334,15 +362,14 @@ scheduler_release_cb (GObject *source_object,
 {
 	MwscScheduler *scheduler = (MwscScheduler *) source_object;
 	g_autoptr(GsShell) shell = data;  /* reference added when starting the async operation */
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	g_autoptr(GError) error_local = NULL;
 
 	if (!mwsc_scheduler_release_finish (scheduler, result, &error_local))
 		g_warning ("Couldn't release the Mogwai Scheduler daemon: %s",
 			   error_local->message);
 
-	priv->scheduler_held = FALSE;
-	g_clear_object (&priv->scheduler);
+	shell->scheduler_held = FALSE;
+	g_clear_object (&shell->scheduler);
 }
 
 static void
@@ -378,11 +405,10 @@ gs_shell_basic_auth_start_cb (GsPluginLoader *plugin_loader,
                               gpointer callback_data,
                               GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *dialog;
 
-	dialog = gs_basic_auth_dialog_new (priv->main_window, remote, realm, callback, callback_data);
-	gs_shell_modal_dialog_present (shell, GTK_DIALOG (dialog));
+	dialog = gs_basic_auth_dialog_new (GTK_WINDOW (shell), remote, realm, callback, callback_data);
+	gs_shell_modal_dialog_present (shell, GTK_WINDOW (dialog));
 
 	/* just destroy */
 	g_signal_connect_swapped (dialog, "response",
@@ -403,11 +429,150 @@ free_back_entry (BackEntry *entry)
 static void
 gs_shell_clean_back_entry_stack (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	BackEntry *entry;
 
-	while ((entry = g_queue_pop_head (priv->back_entry_stack)) != NULL) {
+	while ((entry = g_queue_pop_head (shell->back_entry_stack)) != NULL) {
 		free_back_entry (entry);
+	}
+}
+
+static gboolean
+gs_shell_get_mode_is_main (GsShellMode mode)
+{
+	switch (mode) {
+	case GS_SHELL_MODE_OVERVIEW:
+	case GS_SHELL_MODE_INSTALLED:
+	case GS_SHELL_MODE_SEARCH:
+	case GS_SHELL_MODE_UPDATES:
+	case GS_SHELL_MODE_LOADING:
+		return TRUE;
+	case GS_SHELL_MODE_DETAILS:
+	case GS_SHELL_MODE_CATEGORY:
+	case GS_SHELL_MODE_EXTRAS:
+	case GS_SHELL_MODE_MODERATE:
+		return FALSE;
+	default:
+		return TRUE;
+	}
+}
+
+static void search_button_clicked_cb (GtkToggleButton *toggle_button, GsShell *shell);
+static void gs_overview_page_button_cb (GtkWidget *widget, GsShell *shell);
+
+static void
+update_header_widgets (GsShell *shell)
+{
+	GsShellMode mode = gs_shell_get_mode (shell);
+
+	/* only show the search button in overview and search pages */
+	g_signal_handlers_block_by_func (shell->search_button, search_button_clicked_cb, shell);
+
+	/* hide unless we're going to search */
+	hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (shell->search_bar),
+					mode == GS_SHELL_MODE_SEARCH);
+
+	g_signal_handlers_unblock_by_func (shell->search_button, search_button_clicked_cb, shell);
+}
+
+static void
+stack_notify_visible_child_cb (GObject    *object,
+                               GParamSpec *pspec,
+                               gpointer    user_data)
+{
+	GsShell *shell = GS_SHELL (user_data);
+	GsPage *page;
+	GtkWidget *widget;
+	GsShellMode mode = gs_shell_get_mode (shell);
+	gsize i;
+
+	update_header_widgets (shell);
+
+	/* do action for mode */
+	page = shell->pages[mode];
+
+	if (mode == GS_SHELL_MODE_OVERVIEW ||
+	    mode == GS_SHELL_MODE_INSTALLED ||
+	    mode == GS_SHELL_MODE_UPDATES)
+		gs_shell_clean_back_entry_stack (shell);
+
+	if (shell->page != NULL)
+		gs_page_switch_from (shell->page);
+	g_set_object (&shell->page, page);
+	gs_page_switch_to (page);
+
+	/* update header bar widgets */
+	switch (mode) {
+	case GS_SHELL_MODE_OVERVIEW:
+	case GS_SHELL_MODE_INSTALLED:
+	case GS_SHELL_MODE_SEARCH:
+		gtk_widget_show (shell->search_button);
+		break;
+	case GS_SHELL_MODE_UPDATES:
+		gtk_widget_hide (shell->search_button);
+		break;
+	default:
+		/* We don't care about changing the visibility of the search
+		 * button in modes appearing in sub-pages.  */
+		break;
+	}
+
+	widget = gs_page_get_header_start_widget (page);
+	switch (mode) {
+	case GS_SHELL_MODE_OVERVIEW:
+	case GS_SHELL_MODE_INSTALLED:
+	case GS_SHELL_MODE_UPDATES:
+	case GS_SHELL_MODE_SEARCH:
+		gs_shell_set_header_start_widget (shell, widget);
+		break;
+	default:
+		g_assert (widget == NULL);
+		break;
+	}
+
+	widget = gs_page_get_header_end_widget (page);
+	switch (mode) {
+	case GS_SHELL_MODE_OVERVIEW:
+	case GS_SHELL_MODE_INSTALLED:
+	case GS_SHELL_MODE_UPDATES:
+	case GS_SHELL_MODE_SEARCH:
+		gs_shell_set_header_end_widget (shell, widget);
+		break;
+	case GS_SHELL_MODE_DETAILS:
+		gs_shell_set_details_header_end_widget (shell, widget);
+		break;
+	default:
+		g_assert (widget == NULL);
+		break;
+	}
+
+	g_clear_object (&shell->sub_page_header_title_binding);
+	shell->sub_page_header_title_binding = g_object_bind_property (gtk_stack_get_visible_child (shell->stack_sub), "title",
+								       shell->sub_page_header_title, "label",
+								       G_BINDING_SYNC_CREATE);
+
+	/* refresh the updates bar when moving out of the loading mode, but only
+	 * if the Mogwai scheduler state is already known, to avoid spuriously
+	 * showing the updates bar */
+#ifdef HAVE_MOGWAI
+	if (shell->scheduler != NULL)
+#else
+	if (TRUE)
+#endif
+		gs_shell_refresh_auto_updates_ui (shell);
+
+	/* destroy any existing modals */
+	if (shell->modal_dialogs != NULL) {
+		/* block signal emission of 'unmapped' since that will
+		 * call g_ptr_array_remove_index. The unmapped signal may
+		 * be emitted whilst running unref handlers for
+		 * g_ptr_array_set_size */
+		for (i = 0; i < shell->modal_dialogs->len; ++i) {
+			GtkWidget *dialog = g_ptr_array_index (shell->modal_dialogs, i);
+			g_signal_handlers_disconnect_by_func (dialog,
+							      modal_dialog_unmapped_cb,
+							      shell);
+		}
+		g_ptr_array_set_size (shell->modal_dialogs, 0);
 	}
 }
 
@@ -417,99 +582,41 @@ gs_shell_change_mode (GsShell *shell,
 		      gpointer data,
 		      gboolean scroll_up)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GsApp *app;
 	GsPage *page;
-	GtkWidget *widget;
-	GtkStyleContext *context;
+	gboolean mode_is_main = gs_shell_get_mode_is_main (mode);
 
-	if (priv->ignore_primary_buttons)
+	if (gs_shell_get_mode (shell) == mode)
 		return;
 
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "header"));
-	gtk_header_bar_set_show_close_button (GTK_HEADER_BAR (widget), TRUE);
-
-	/* hide all mode specific header widgets here, they will be shown in the
-	 * refresh functions
-	 */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "application_details_header"));
-	gtk_widget_hide (widget);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "buttonbox_main"));
-	gtk_widget_hide (widget);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "menu_button"));
-	gtk_widget_hide (widget);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "header_selection_menu_button"));
-	gtk_widget_hide (widget);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "origin_box"));
-	gtk_widget_hide (widget);
-
-	priv->in_mode_change = TRUE;
-	/* only show the search button in overview and search pages */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_button"));
-	gtk_widget_set_visible (widget, mode == GS_SHELL_MODE_OVERVIEW ||
-					mode == GS_SHELL_MODE_SEARCH);
-	/* hide unless we're going to search */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_bar"));
-	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (widget),
-					mode == GS_SHELL_MODE_SEARCH);
-	priv->in_mode_change = FALSE;
-
-	context = gtk_widget_get_style_context (GTK_WIDGET (gtk_builder_get_object (priv->builder, "header")));
-	gtk_style_context_remove_class (context, "selection-mode");
-
-	/* set the window title back to default */
-	gtk_window_set_title (priv->main_window, g_get_application_name ());
-
-	/* update main buttons according to mode */
-	priv->ignore_primary_buttons = TRUE;
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_explore"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), mode == GS_SHELL_MODE_OVERVIEW);
-
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_installed"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), mode == GS_SHELL_MODE_INSTALLED);
-
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_updates"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), mode == GS_SHELL_MODE_UPDATES);
-	gtk_widget_set_visible (widget, gs_plugin_loader_get_allow_updates (priv->plugin_loader) ||
-					mode == GS_SHELL_MODE_UPDATES);
-
-	priv->ignore_primary_buttons = FALSE;
-
 	/* switch page */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "stack_main"));
-	gtk_stack_set_visible_child_name (GTK_STACK (widget), page_name[mode]);
+	if (mode == GS_SHELL_MODE_LOADING) {
+		gtk_stack_set_visible_child_name (shell->stack_loading, "loading");
+		return;
+	}
 
-	/* do action for mode */
-	priv->mode = mode;
-	switch (mode) {
-	case GS_SHELL_MODE_OVERVIEW:
-		gs_shell_clean_back_entry_stack (shell);
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "overview"));
-		break;
-	case GS_SHELL_MODE_INSTALLED:
-		gs_shell_clean_back_entry_stack (shell);
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "installed"));
-		break;
-	case GS_SHELL_MODE_MODERATE:
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "moderate"));
-		break;
-	case GS_SHELL_MODE_LOADING:
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "loading"));
-		break;
-	case GS_SHELL_MODE_SEARCH:
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "search"));
-		widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "entry_search"));
+	gtk_stack_set_visible_child_name (shell->stack_loading, "main");
+	if (mode == GS_SHELL_MODE_DETAILS) {
+		hdy_deck_set_visible_child_name (shell->details_deck, "details");
+	} else {
+		hdy_deck_set_visible_child_name (shell->details_deck, "main");
+		/* We only change the main deck when not reaching the details
+		 * page to preserve the navigation history in the UI's state.
+		 * First change the page, then the deck, to avoid load of
+		 * the previously shown page, which will be changed shortly after. */
+		gtk_stack_set_visible_child_name (mode_is_main ? shell->stack_main : shell->stack_sub, page_name[mode]);
+		hdy_deck_set_visible_child_name (shell->main_deck, mode_is_main ? "main" : "sub");
+	}
+
+	/* do any mode-specific actions */
+	page = shell->pages[mode];
+
+	if (mode == GS_SHELL_MODE_SEARCH) {
 		gs_search_page_set_text (GS_SEARCH_PAGE (page), data);
-		gtk_entry_set_text (GTK_ENTRY (widget), data);
-		gtk_editable_set_position (GTK_EDITABLE (widget), -1);
-		break;
-	case GS_SHELL_MODE_UPDATES:
-		gs_shell_clean_back_entry_stack (shell);
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "updates"));
-		break;
-	case GS_SHELL_MODE_DETAILS:
+		gtk_entry_set_text (GTK_ENTRY (shell->entry_search), data);
+		gtk_editable_set_position (GTK_EDITABLE (shell->entry_search), -1);
+	} else if (mode == GS_SHELL_MODE_DETAILS) {
 		app = GS_APP (data);
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "details"));
 		if (gs_app_get_local_file (app) != NULL) {
 			gs_details_page_set_local_file (GS_DETAILS_PAGE (page),
 			                                gs_app_get_local_file (app));
@@ -519,65 +626,40 @@ gs_shell_change_mode (GsShell *shell,
 		} else {
 			gs_details_page_set_app (GS_DETAILS_PAGE (page), data);
 		}
-		break;
-	case GS_SHELL_MODE_CATEGORY:
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "category"));
+	} else if (mode == GS_SHELL_MODE_CATEGORY) {
 		gs_category_page_set_category (GS_CATEGORY_PAGE (page),
 		                               GS_CATEGORY (data));
-		break;
-	case GS_SHELL_MODE_EXTRAS:
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "extras"));
-		break;
-	default:
-		g_assert_not_reached ();
 	}
 
-	/* show the back button if needed */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_back"));
-	gtk_widget_set_visible (widget,
-				mode != GS_SHELL_MODE_SEARCH &&
-				!g_queue_is_empty (priv->back_entry_stack));
+	if (scroll_up)
+		gs_page_scroll_up (page);
+}
 
-	priv->in_mode_change = TRUE;
+static gboolean
+overlay_get_child_position_cb (GtkOverlay   *overlay,
+                               GtkWidget    *widget,
+                               GdkRectangle *allocation,
+                               gpointer      user_data)
+{
+	GsShell *self = GS_SHELL (user_data);
+	GtkRequisition overlay_natural_size;
 
-	if (priv->page != NULL)
-		gs_page_switch_from (priv->page);
-	g_set_object (&priv->page, page);
-	gs_page_switch_to (page, scroll_up);
-	priv->in_mode_change = FALSE;
+	/* Override the default position of the in-app notification overlay
+	 * to position it below the header bar. The overlay can’t easily be
+	 * moved in the widget hierarchy so it doesn’t have the header bar as
+	 * a child, since there are several header bars in different pages of
+	 * a HdyDeck. */
+	g_assert (gtk_widget_is_ancestor (self->main_header, GTK_WIDGET (overlay)));
 
-	/* update header bar widgets */
-	widget = gs_page_get_header_start_widget (page);
-	gs_shell_set_header_start_widget (shell, widget);
+	gtk_widget_get_preferred_size (widget, NULL, &overlay_natural_size);
 
-	widget = gs_page_get_header_end_widget (page);
-	gs_shell_set_header_end_widget (shell, widget);
+	allocation->width = overlay_natural_size.width;
+	allocation->height = overlay_natural_size.height;
 
-	/* refresh the updates bar when moving out of the loading mode, but only
-	 * if the Mogwai scheduler state is already known, to avoid spuriously
-	 * showing the updates bar */
-#ifdef HAVE_MOGWAI
-	if (priv->scheduler != NULL)
-#else
-	if (TRUE)
-#endif
-		gs_shell_refresh_auto_updates_ui (shell);
+	allocation->x = gtk_widget_get_allocated_width (GTK_WIDGET (overlay)) / 2 - overlay_natural_size.width / 2;
+	allocation->y = gtk_widget_get_allocated_height (GTK_WIDGET (self->main_header));
 
-	/* destroy any existing modals */
-	if (priv->modal_dialogs != NULL) {
-		gsize i = 0;
-		/* block signal emission of 'unmapped' since that will
-		 * call g_ptr_array_remove_index. The unmapped signal may
-		 * be emitted whilst running unref handlers for
-		 * g_ptr_array_set_size */
-		for (i = 0; i < priv->modal_dialogs->len; ++i) {
-			GtkWidget *dialog = g_ptr_array_index (priv->modal_dialogs, i);
-			g_signal_handlers_disconnect_by_func (dialog,
-							      modal_dialog_unmapped_cb,
-							      shell);
-		}
-		g_ptr_array_set_size (priv->modal_dialogs, 0);
-	}
+	return TRUE;
 }
 
 static void
@@ -592,30 +674,26 @@ gs_overview_page_button_cb (GtkWidget *widget, GsShell *shell)
 static void
 save_back_entry (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	BackEntry *entry;
-	GsPage *page;
 
 	entry = g_new0 (BackEntry, 1);
-	entry->mode = priv->mode;
+	entry->mode = gs_shell_get_mode (shell);
 
-	entry->focus = gtk_window_get_focus (priv->main_window);
+	entry->focus = gtk_window_get_focus (GTK_WINDOW (shell));
 	if (entry->focus != NULL)
 		g_object_add_weak_pointer (G_OBJECT (entry->focus),
 					   (gpointer *) &entry->focus);
 
-	switch (priv->mode) {
+	switch (entry->mode) {
 	case GS_SHELL_MODE_CATEGORY:
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "category"));
-		entry->category = gs_category_page_get_category (GS_CATEGORY_PAGE (page));
+		entry->category = gs_category_page_get_category (GS_CATEGORY_PAGE (shell->pages[GS_SHELL_MODE_CATEGORY]));
 		g_object_ref (entry->category);
 		g_debug ("pushing back entry for %s with %s",
 			 page_name[entry->mode],
 			 gs_category_get_id (entry->category));
 		break;
 	case GS_SHELL_MODE_SEARCH:
-		page = GS_PAGE (g_hash_table_lookup (priv->pages, "search"));
-		entry->search = g_strdup (gs_search_page_get_text (GS_SEARCH_PAGE (page)));
+		entry->search = g_strdup (gs_search_page_get_text (GS_SEARCH_PAGE (shell->pages[GS_SHELL_MODE_SEARCH])));
 		g_debug ("pushing back entry for %s with %s",
 			 page_name[entry->mode], entry->search);
 		break;
@@ -624,7 +702,7 @@ save_back_entry (GsShell *shell)
 		break;
 	}
 
-	g_queue_push_head (priv->back_entry_stack, entry);
+	g_queue_push_head (shell->back_entry_stack, entry);
 }
 
 static void
@@ -652,11 +730,10 @@ gs_shell_plugin_events_network_settings_cb (GtkWidget *widget, GsShell *shell)
 static void
 gs_shell_plugin_events_more_info_cb (GtkWidget *widget, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	g_autoptr(GError) error = NULL;
-	if (!g_app_info_launch_default_for_uri (priv->events_info_uri, NULL, &error)) {
+	if (!g_app_info_launch_default_for_uri (shell->events_info_uri, NULL, &error)) {
 		g_warning ("failed to launch URI %s: %s",
-			   priv->events_info_uri, error->message);
+			   shell->events_info_uri, error->message);
 	}
 }
 
@@ -695,18 +772,16 @@ unblock_changed_signal (GtkSearchEntry *entry)
 static void
 gs_shell_go_back (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	BackEntry *entry;
-	GtkWidget *widget;
 
 	/* nothing to do */
-	if (g_queue_is_empty (priv->back_entry_stack)) {
+	if (g_queue_is_empty (shell->back_entry_stack)) {
 		g_debug ("no back stack, showing overview");
 		gs_shell_change_mode (shell, GS_SHELL_MODE_OVERVIEW, NULL, FALSE);
 		return;
 	}
 
-	entry = g_queue_pop_head (priv->back_entry_stack);
+	entry = g_queue_pop_head (shell->back_entry_stack);
 
 	switch (entry->mode) {
 	case GS_SHELL_MODE_UNKNOWN:
@@ -726,11 +801,10 @@ gs_shell_go_back (GsShell *shell)
 			 page_name[entry->mode], entry->search);
 
 		/* set the text in the entry and move cursor to the end */
-		widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "entry_search"));
-		block_changed_signal (GTK_SEARCH_ENTRY (widget));
-		gtk_entry_set_text (GTK_ENTRY (widget), entry->search);
-		gtk_editable_set_position (GTK_EDITABLE (widget), -1);
-		unblock_changed_signal (GTK_SEARCH_ENTRY (widget));
+		block_changed_signal (GTK_SEARCH_ENTRY (shell->entry_search));
+		gtk_entry_set_text (GTK_ENTRY (shell->entry_search), entry->search);
+		gtk_editable_set_position (GTK_EDITABLE (shell->entry_search), -1);
+		unblock_changed_signal (GTK_SEARCH_ENTRY (shell->entry_search));
 
 		/* set the mode directly */
 		gs_shell_change_mode (shell, entry->mode,
@@ -749,6 +823,12 @@ gs_shell_go_back (GsShell *shell)
 }
 
 static void
+gs_shell_details_back_button_cb (GtkWidget *widget, GsShell *shell)
+{
+	gs_shell_go_back (shell);
+}
+
+static void
 gs_shell_back_button_cb (GtkWidget *widget, GsShell *shell)
 {
 	gs_shell_go_back (shell);
@@ -757,11 +837,10 @@ gs_shell_back_button_cb (GtkWidget *widget, GsShell *shell)
 static void
 gs_shell_reload_cb (GsPluginLoader *plugin_loader, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	g_autoptr(GList) keys = g_hash_table_get_keys (priv->pages);
-	for (GList *l = keys; l != NULL; l = l->next) {
-		GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, l->data));
-		gs_page_reload (page);
+	for (gsize i = 0; i < G_N_ELEMENTS (shell->pages); i++) {
+		GsPage *page = shell->pages[i];
+		if (page != NULL)
+			gs_page_reload (page);
 	}
 }
 
@@ -769,13 +848,9 @@ static gboolean
 change_mode_idle (gpointer user_data)
 {
 	GsShell *shell = user_data;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GsPage *page;
 
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "updates_page"));
-	gs_page_reload (page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "installed_page"));
-	gs_page_reload (page);
+	gs_page_reload (GS_PAGE (shell->pages[GS_SHELL_MODE_UPDATES]));
+	gs_page_reload (GS_PAGE (shell->pages[GS_SHELL_MODE_INSTALLED]));
 
 	gs_shell_change_mode (shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
 
@@ -786,12 +861,11 @@ static void
 overview_page_refresh_done (GsOverviewPage *overview_page, gpointer data)
 {
 	GsShell *shell = data;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 
 	g_signal_handlers_disconnect_by_func (overview_page, overview_page_refresh_done, data);
 
 	/* now that we're finished with the loading page, connect the reload signal handler */
-	g_signal_connect (priv->plugin_loader, "reload",
+	g_signal_connect (shell->plugin_loader, "reload",
 	                  G_CALLBACK (gs_shell_reload_cb), shell);
 
 	/* schedule to change the mode in an idle callback, since it can take a
@@ -804,77 +878,81 @@ static void
 initial_refresh_done (GsLoadingPage *loading_page, gpointer data)
 {
 	GsShell *shell = data;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	gboolean been_overview;
 
 	g_signal_handlers_disconnect_by_func (loading_page, initial_refresh_done, data);
 
-	been_overview = priv->mode == GS_SHELL_MODE_OVERVIEW;
+	been_overview = gs_shell_get_mode (shell) == GS_SHELL_MODE_OVERVIEW;
 
 	g_signal_emit (shell, signals[SIGNAL_LOADED], 0);
 
 	/* if the "loaded" signal handler didn't change the mode, kick off async
 	 * overview page refresh, and switch to the page once done */
-	if (priv->mode == GS_SHELL_MODE_LOADING || been_overview) {
-		GsPage *page;
-
-		page = GS_PAGE (gtk_builder_get_object (priv->builder, "overview_page"));
-		g_signal_connect (page, "refreshed",
+	if (gs_shell_get_mode (shell) == GS_SHELL_MODE_LOADING || been_overview) {
+		g_signal_connect (shell->pages[GS_SHELL_MODE_OVERVIEW], "refreshed",
 		                  G_CALLBACK (overview_page_refresh_done), shell);
-		gs_page_reload (page);
+		gs_page_reload (GS_PAGE (shell->pages[GS_SHELL_MODE_OVERVIEW]));
 		return;
 	}
 
 	/* now that we're finished with the loading page, connect the reload signal handler */
-	g_signal_connect (priv->plugin_loader, "reload",
+	g_signal_connect (shell->plugin_loader, "reload",
 	                  G_CALLBACK (gs_shell_reload_cb), shell);
 }
 
 static gboolean
 window_keypress_handler (GtkWidget *window, GdkEvent *event, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *w;
-
 	/* handle ctrl+f shortcut */
 	if (event->type == GDK_KEY_PRESS) {
 		GdkEventKey *e = (GdkEventKey *) event;
 		if ((e->state & GDK_CONTROL_MASK) > 0 &&
 		    e->keyval == GDK_KEY_f) {
-			w = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_bar"));
-			if (!gtk_search_bar_get_search_mode (GTK_SEARCH_BAR (w))) {
-				gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (w), TRUE);
-				w = GTK_WIDGET (gtk_builder_get_object (priv->builder,
-								        "entry_search"));
-				gtk_widget_grab_focus (w);
+			if (!hdy_search_bar_get_search_mode (HDY_SEARCH_BAR (shell->search_bar))) {
+				GsShellMode mode = gs_shell_get_mode (shell);
+
+				hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (shell->search_bar), TRUE);
+				gtk_widget_grab_focus (shell->entry_search);
+
+				/* If the mode doesn't have a search button,
+				 * switch to the search page right away,
+				 * otherwise we would show the search bar
+				 * without a button to toggle it. */
+				switch (mode) {
+				case GS_SHELL_MODE_OVERVIEW:
+				case GS_SHELL_MODE_INSTALLED:
+				case GS_SHELL_MODE_SEARCH:
+					break;
+				default:
+					gs_shell_show_search (shell, "");
+					break;
+				}
 			} else {
-				gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (w), FALSE);
+				hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (shell->search_bar), FALSE);
 			}
 			return GDK_EVENT_STOP;
 		}
 	}
 
 	/* pass to search bar */
-	w = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_bar"));
-	return gtk_search_bar_handle_event (GTK_SEARCH_BAR (w), event);
+	return hdy_search_bar_handle_event (HDY_SEARCH_BAR (shell->search_bar), event);
 }
 
 static void
 search_changed_handler (GObject *entry, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const gchar *text;
 
 	text = gtk_entry_get_text (GTK_ENTRY (entry));
-	if (strlen (text) > 2) {
+	if (strlen (text) >= 2) {
 		if (gs_shell_get_mode (shell) != GS_SHELL_MODE_SEARCH) {
 			save_back_entry (shell);
 			gs_shell_change_mode (shell, GS_SHELL_MODE_SEARCH,
 					      (gpointer) text, TRUE);
 		} else {
-			GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, "search"));
-			gs_search_page_set_text (GS_SEARCH_PAGE (page), text);
-			gs_page_switch_to (page, TRUE);
+			gs_search_page_set_text (GS_SEARCH_PAGE (shell->pages[GS_SHELL_MODE_SEARCH]), text);
+			gs_page_switch_to (shell->pages[GS_SHELL_MODE_SEARCH]);
+			gs_page_scroll_up (shell->pages[GS_SHELL_MODE_SEARCH]);
 		}
 	}
 }
@@ -882,56 +960,31 @@ search_changed_handler (GObject *entry, GsShell *shell)
 static void
 search_button_clicked_cb (GtkToggleButton *toggle_button, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *search_bar;
-
-	search_bar = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_bar"));
-	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (search_bar),
-	                                gtk_toggle_button_get_active (toggle_button));
-
-	if (priv->in_mode_change)
-		return;
-
 	/* go back when exiting the search view */
-	if (priv->mode == GS_SHELL_MODE_SEARCH &&
+	if (gs_shell_get_mode (shell) == GS_SHELL_MODE_SEARCH &&
 	    !gtk_toggle_button_get_active (toggle_button))
 		gs_shell_go_back (shell);
-}
-
-static void
-search_mode_enabled_cb (GtkSearchBar *search_bar, GParamSpec *pspec, GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *search_button;
-
-	search_button = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_button"));
-	gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (search_button),
-	                              gtk_search_bar_get_search_mode (search_bar));
 }
 
 static gboolean
 window_key_press_event (GtkWidget *win, GdkEventKey *event, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GdkKeymap *keymap;
 	GdkModifierType state;
 	gboolean is_rtl;
-	GtkWidget *button;
-
-	button = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_back"));
-	if (!gtk_widget_is_visible (button) || !gtk_widget_is_sensitive (button))
-	    	return GDK_EVENT_PROPAGATE;
 
 	state = event->state;
 	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (win));
 	gdk_keymap_add_virtual_modifiers (keymap, &state);
 	state = state & gtk_accelerator_get_default_mod_mask ();
-	is_rtl = gtk_widget_get_direction (button) == GTK_TEXT_DIR_RTL;
+	is_rtl = gtk_widget_get_direction (shell->button_back) == GTK_TEXT_DIR_RTL;
 
 	if ((!is_rtl && state == GDK_MOD1_MASK && event->keyval == GDK_KEY_Left) ||
 	    (is_rtl && state == GDK_MOD1_MASK && event->keyval == GDK_KEY_Right) ||
 	    event->keyval == GDK_KEY_Back) {
-		gtk_widget_activate (button);
+		/* GTK will only actually activate the one which is visible */
+		gtk_widget_activate (shell->button_back);
+		gtk_widget_activate (shell->button_back2);
 		return GDK_EVENT_STOP;
 	}
 
@@ -941,18 +994,13 @@ window_key_press_event (GtkWidget *win, GdkEventKey *event, GsShell *shell)
 static gboolean
 window_button_press_event (GtkWidget *win, GdkEventButton *event, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *button;
-
 	/* Mouse hardware back button is 8 */
 	if (event->button != 8)
 		return GDK_EVENT_PROPAGATE;
 
-	button = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_back"));
-	if (!gtk_widget_is_visible (button) || !gtk_widget_is_sensitive (button))
-		return GDK_EVENT_PROPAGATE;
-
-	gtk_widget_activate (button);
+	/* GTK will only actually activate the one which is visible */
+	gtk_widget_activate (shell->button_back);
+	gtk_widget_activate (shell->button_back2);
 	return GDK_EVENT_STOP;
 }
 
@@ -960,8 +1008,6 @@ static gboolean
 main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 {
 	GsShell *shell = user_data;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *widget;
 
 	/* hide any notifications */
 	g_application_withdraw_notification (g_application_get_default (),
@@ -970,24 +1016,23 @@ main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 					     "install-resources");
 
 	/* clear any in-app notification */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "notification_event"));
-	gtk_revealer_set_reveal_child (GTK_REVEALER (widget), FALSE);
+	gtk_revealer_set_reveal_child (GTK_REVEALER (shell->notification_event), FALSE);
 
 	/* release our hold on the download scheduler */
 #ifdef HAVE_MOGWAI
-	if (priv->scheduler != NULL) {
-		if (priv->scheduler_invalidated_handler > 0)
-			g_signal_handler_disconnect (priv->scheduler,
-						     priv->scheduler_invalidated_handler);
-		priv->scheduler_invalidated_handler = 0;
+	if (shell->scheduler != NULL) {
+		if (shell->scheduler_invalidated_handler > 0)
+			g_signal_handler_disconnect (shell->scheduler,
+						     shell->scheduler_invalidated_handler);
+		shell->scheduler_invalidated_handler = 0;
 
-		if (priv->scheduler_held)
-			mwsc_scheduler_release_async (priv->scheduler,
+		if (shell->scheduler_held)
+			mwsc_scheduler_release_async (shell->scheduler,
 						      NULL,
 						      scheduler_release_cb,
 						      g_object_ref (shell));
 		else
-			g_clear_object (&priv->scheduler);
+			g_clear_object (&shell->scheduler);
 	}
 #endif  /* HAVE_MOGWAI */
 
@@ -999,16 +1044,15 @@ main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 static void
 gs_shell_main_window_mapped_cb (GtkWidget *widget, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	gs_plugin_loader_set_scale (priv->plugin_loader,
+	gs_plugin_loader_set_scale (shell->plugin_loader,
 				    (guint) gtk_widget_get_scale_factor (widget));
 
 	/* Set up the updates bar. Do this here rather than in gs_shell_setup()
 	 * since we only want to hold the scheduler open while the gnome-software
 	 * main window is visible, and not while we’re running in the background. */
 #ifdef HAVE_MOGWAI
-	if (priv->scheduler == NULL)
-		mwsc_scheduler_new_async (priv->cancellable,
+	if (shell->scheduler == NULL)
+		mwsc_scheduler_new_async (shell->cancellable,
 					  (GAsyncReadyCallback) scheduler_ready_cb,
 					  g_object_ref (shell));
 #else
@@ -1019,48 +1063,20 @@ gs_shell_main_window_mapped_cb (GtkWidget *widget, GsShell *shell)
 static void
 gs_shell_main_window_realized_cb (GtkWidget *widget, GsShell *shell)
 {
-
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GdkRectangle geometry;
 	GdkDisplay *display;
 	GdkMonitor *monitor;
 
-	display = gtk_widget_get_display (GTK_WIDGET (priv->main_window));
+	display = gtk_widget_get_display (GTK_WIDGET (shell));
 	monitor = gdk_display_get_monitor_at_window (display,
-						     gtk_widget_get_window (GTK_WIDGET (priv->main_window)));
+						     gtk_widget_get_window (GTK_WIDGET (shell)));
 
 	/* adapt the window for low and medium resolution screens */
 	gdk_monitor_get_geometry (monitor, &geometry);
 	if (geometry.width < 800 || geometry.height < 600) {
-		    GtkWidget *buttonbox = GTK_WIDGET (gtk_builder_get_object (priv->builder, "buttonbox_main"));
-
-		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
-					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_explore")),
-					     "non-homogeneous", TRUE,
-					     NULL);
-		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
-					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_installed")),
-					     "non-homogeneous", TRUE,
-					     NULL);
-		    gtk_container_child_set (GTK_CONTAINER (buttonbox),
-					     GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_updates")),
-					     "non-homogeneous", TRUE,
-					     NULL);
 	} else if (geometry.width < 1366 || geometry.height < 768) {
-		gtk_window_set_default_size (priv->main_window, 1050, 600);
+		gtk_window_set_default_size (GTK_WINDOW (shell), 1050, 600);
 	}
-}
-
-static void
-gs_shell_allow_updates_notify_cb (GsPluginLoader *plugin_loader,
-				    GParamSpec *pspec,
-				    GsShell *shell)
-{
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *widget;
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_updates"));
-	gtk_widget_set_visible (widget, gs_plugin_loader_get_allow_updates (plugin_loader) ||
-					priv->mode == GS_SHELL_MODE_UPDATES);
 }
 
 typedef enum {
@@ -1085,42 +1101,37 @@ gs_shell_show_event_app_notify (GsShell *shell,
 				const gchar *title,
 				GsShellEventButtons buttons)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *widget;
-
 	/* set visible */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "notification_event"));
-	gtk_revealer_set_reveal_child (GTK_REVEALER (widget), TRUE);
+	gtk_revealer_set_reveal_child (GTK_REVEALER (shell->notification_event), TRUE);
 
 	/* sources button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_sources"));
-	gtk_widget_set_visible (widget, (buttons & GS_SHELL_EVENT_BUTTON_SOURCES) > 0);
+	gtk_widget_set_visible (shell->button_events_sources,
+				(buttons & GS_SHELL_EVENT_BUTTON_SOURCES) > 0);
 
 	/* no-space button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_no_space"));
-	gtk_widget_set_visible (widget, (buttons & GS_SHELL_EVENT_BUTTON_NO_SPACE) > 0 &&
-					gs_shell_has_disk_examination_app());
+	gtk_widget_set_visible (shell->button_events_no_space,
+				(buttons & GS_SHELL_EVENT_BUTTON_NO_SPACE) > 0 &&
+				gs_shell_has_disk_examination_app());
 
 	/* network settings button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_network_settings"));
-	gtk_widget_set_visible (widget, (buttons & GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS) > 0);
+	gtk_widget_set_visible (shell->button_events_network_settings,
+				(buttons & GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS) > 0);
 
 	/* restart button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_restart_required"));
-	gtk_widget_set_visible (widget, (buttons & GS_SHELL_EVENT_BUTTON_RESTART_REQUIRED) > 0);
+	gtk_widget_set_visible (shell->button_events_restart_required,
+				(buttons & GS_SHELL_EVENT_BUTTON_RESTART_REQUIRED) > 0);
 
 	/* more-info button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_more_info"));
-	gtk_widget_set_visible (widget, (buttons & GS_SHELL_EVENT_BUTTON_MORE_INFO) > 0);
+	gtk_widget_set_visible (shell->button_events_more_info,
+				(buttons & GS_SHELL_EVENT_BUTTON_MORE_INFO) > 0);
 
 	/* dismiss button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_dismiss"));
-	gtk_widget_set_visible (widget, (buttons & GS_SHELL_EVENT_BUTTON_RESTART_REQUIRED) == 0);
+	gtk_widget_set_visible (shell->button_events_dismiss,
+				(buttons & GS_SHELL_EVENT_BUTTON_RESTART_REQUIRED) == 0);
 
 	/* set title */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "label_events"));
-	gtk_label_set_markup (GTK_LABEL (widget), title);
-	gtk_widget_set_visible (widget, title != NULL);
+	gtk_label_set_markup (GTK_LABEL (shell->label_events), title);
+	gtk_widget_set_visible (shell->label_events, title != NULL);
 }
 
 void
@@ -1191,7 +1202,6 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 {
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	GsPluginAction action = gs_plugin_event_get_action (event);
 	g_autofree gchar *str_origin = NULL;
@@ -1281,8 +1291,8 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 	if (origin != NULL) {
 		const gchar *uri = gs_app_get_url (origin, AS_URL_KIND_HELP);
 		if (uri != NULL) {
-			g_free (priv->events_info_uri);
-			priv->events_info_uri = g_strdup (uri);
+			g_free (shell->events_info_uri);
+			shell->events_info_uri = g_strdup (uri);
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
@@ -1298,7 +1308,6 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 	GsApp *app = gs_plugin_event_get_app (event);
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autofree gchar *str_app = NULL;
 	g_autofree gchar *str_origin = NULL;
@@ -1411,8 +1420,8 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 	if (origin != NULL) {
 		const gchar *uri = gs_app_get_url (origin, AS_URL_KIND_HELP);
 		if (uri != NULL) {
-			g_free (priv->events_info_uri);
-			priv->events_info_uri = g_strdup (uri);
+			g_free (shell->events_info_uri);
+			shell->events_info_uri = g_strdup (uri);
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
@@ -1428,7 +1437,6 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 	GsApp *app = gs_plugin_event_get_app (event);
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autofree gchar *str_app = NULL;
 	g_autofree gchar *str_origin = NULL;
@@ -1587,8 +1595,8 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 	if (origin != NULL) {
 		const gchar *uri = gs_app_get_url (origin, AS_URL_KIND_HELP);
 		if (uri != NULL) {
-			g_free (priv->events_info_uri);
-			priv->events_info_uri = g_strdup (uri);
+			g_free (shell->events_info_uri);
+			shell->events_info_uri = g_strdup (uri);
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
@@ -1604,7 +1612,6 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 	GsApp *app = gs_plugin_event_get_app (event);
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autoptr(GString) str = g_string_new (NULL);
 	g_autofree gchar *str_app = NULL;
@@ -1697,8 +1704,8 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 	if (origin != NULL) {
 		const gchar *uri = gs_app_get_url (origin, AS_URL_KIND_HELP);
 		if (uri != NULL) {
-			g_free (priv->events_info_uri);
-			priv->events_info_uri = g_strdup (uri);
+			g_free (shell->events_info_uri);
+			shell->events_info_uri = g_strdup (uri);
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
@@ -1714,7 +1721,6 @@ gs_shell_show_event_remove (GsShell *shell, GsPluginEvent *event)
 	GsApp *app = gs_plugin_event_get_app (event);
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autoptr(GString) str = g_string_new (NULL);
 	g_autofree gchar *str_app = NULL;
@@ -1773,8 +1779,8 @@ gs_shell_show_event_remove (GsShell *shell, GsPluginEvent *event)
 	if (origin != NULL) {
 		const gchar *uri = gs_app_get_url (origin, AS_URL_KIND_HELP);
 		if (uri != NULL) {
-			g_free (priv->events_info_uri);
-			priv->events_info_uri = g_strdup (uri);
+			g_free (shell->events_info_uri);
+			shell->events_info_uri = g_strdup (uri);
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
@@ -1790,7 +1796,6 @@ gs_shell_show_event_launch (GsShell *shell, GsPluginEvent *event)
 	GsApp *app = gs_plugin_event_get_app (event);
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autoptr(GString) str = g_string_new (NULL);
 	g_autofree gchar *str_app = NULL;
@@ -1834,8 +1839,8 @@ gs_shell_show_event_launch (GsShell *shell, GsPluginEvent *event)
 	if (origin != NULL) {
 		const gchar *uri = gs_app_get_url (origin, AS_URL_KIND_HELP);
 		if (uri != NULL) {
-			g_free (priv->events_info_uri);
-			priv->events_info_uri = g_strdup (uri);
+			g_free (shell->events_info_uri);
+			shell->events_info_uri = g_strdup (uri);
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
@@ -1932,7 +1937,6 @@ gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 {
 	GsApp *origin = gs_plugin_event_get_origin (event);
 	GsShellEventButtons buttons = GS_SHELL_EVENT_BUTTON_NONE;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autoptr(GString) str = g_string_new (NULL);
 	g_autofree gchar *str_origin = NULL;
@@ -1985,8 +1989,8 @@ gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 	if (origin != NULL) {
 		const gchar *uri = gs_app_get_url (origin, AS_URL_KIND_HELP);
 		if (uri != NULL) {
-			g_free (priv->events_info_uri);
-			priv->events_info_uri = g_strdup (uri);
+			g_free (shell->events_info_uri);
+			shell->events_info_uri = g_strdup (uri);
 			buttons |= GS_SHELL_EVENT_BUTTON_MORE_INFO;
 		}
 	}
@@ -2021,12 +2025,16 @@ gs_shell_show_event (GsShell *shell, GsPluginEvent *event)
 	case GS_PLUGIN_ACTION_DOWNLOAD:
 		return gs_shell_show_event_refresh (shell, event);
 	case GS_PLUGIN_ACTION_INSTALL:
+	case GS_PLUGIN_ACTION_INSTALL_REPO:
+	case GS_PLUGIN_ACTION_ENABLE_REPO:
 		return gs_shell_show_event_install (shell, event);
 	case GS_PLUGIN_ACTION_UPDATE:
 		return gs_shell_show_event_update (shell, event);
 	case GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD:
 		return gs_shell_show_event_upgrade (shell, event);
 	case GS_PLUGIN_ACTION_REMOVE:
+	case GS_PLUGIN_ACTION_REMOVE_REPO:
+	case GS_PLUGIN_ACTION_DISABLE_REPO:
 		return gs_shell_show_event_remove (shell, event);
 	case GS_PLUGIN_ACTION_LAUNCH:
 		return gs_shell_show_event_launch (shell, event);
@@ -2045,12 +2053,10 @@ gs_shell_show_event (GsShell *shell, GsPluginEvent *event)
 static void
 gs_shell_rescan_events (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *widget;
 	g_autoptr(GsPluginEvent) event = NULL;
 
 	/* find the first active event and show it */
-	event = gs_plugin_loader_get_event_default (priv->plugin_loader);
+	event = gs_plugin_loader_get_event_default (shell->plugin_loader);
 	if (event != NULL) {
 		if (!gs_shell_show_event (shell, event)) {
 			GsPluginAction action = gs_plugin_event_get_action (event);
@@ -2075,8 +2081,7 @@ gs_shell_rescan_events (GsShell *shell)
 	}
 
 	/* nothing to show */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "notification_event"));
-	gtk_revealer_set_reveal_child (GTK_REVEALER (widget), FALSE);
+	gtk_revealer_set_reveal_child (GTK_REVEALER (shell->notification_event), FALSE);
 }
 
 static void
@@ -2090,12 +2095,11 @@ gs_shell_events_notify_cb (GsPluginLoader *plugin_loader,
 static void
 gs_shell_plugin_event_dismissed_cb (GtkButton *button, GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	guint i;
 	g_autoptr(GPtrArray) events = NULL;
 
 	/* mark any events currently showing as invalid */
-	events = gs_plugin_loader_get_events (priv->plugin_loader);
+	events = gs_plugin_loader_get_events (shell->plugin_loader);
 	for (i = 0; i < events->len; i++) {
 		GsPluginEvent *event = g_ptr_array_index (events, i);
 		if (gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_VISIBLE)) {
@@ -2111,15 +2115,13 @@ gs_shell_plugin_event_dismissed_cb (GtkButton *button, GsShell *shell)
 static void
 gs_shell_setup_pages (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	g_autoptr(GList) keys = g_hash_table_get_keys (priv->pages);
-	for (GList *l = keys; l != NULL; l = l->next) {
+	for (gsize i = 0; i < G_N_ELEMENTS (shell->pages); i++) {
 		g_autoptr(GError) error = NULL;
-		GsPage *page = GS_PAGE (g_hash_table_lookup (priv->pages, l->data));
-		if (!gs_page_setup (page, shell,
-				    priv->plugin_loader,
-				    priv->builder,
-				    priv->cancellable,
+		GsPage *page = shell->pages[i];
+		if (page != NULL &&
+		    !gs_page_setup (page, shell,
+				    shell->plugin_loader,
+				    shell->cancellable,
 				    &error)) {
 			g_warning ("Failed to setup panel: %s", error->message);
 		}
@@ -2129,15 +2131,11 @@ gs_shell_setup_pages (GsShell *shell)
 static void
 gs_shell_add_about_menu_item (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GMenu *primary_menu;
 	g_autoptr(GMenuItem) menu_item = NULL;
-
-	primary_menu = G_MENU (gtk_builder_get_object (priv->builder, "primary_menu"));
 
 	/* TRANSLATORS: this is the menu item that opens the about window */
 	menu_item = g_menu_item_new (_("About Software"), "app.about");
-	g_menu_append_item (primary_menu, menu_item);
+	g_menu_append_item (G_MENU (shell->primary_menu), menu_item);
 }
 
 static gboolean
@@ -2151,173 +2149,81 @@ gs_shell_close_window_accel_cb (GtkAccelGroup *accel_group,
 	return TRUE;
 }
 
+static void
+updates_page_notify_counter_cb (GObject    *obj,
+                                GParamSpec *pspec,
+                                gpointer    user_data)
+{
+	GsPage *page = GS_PAGE (obj);
+	GsShell *shell = GS_SHELL (user_data);
+	gboolean needs_attention;
+
+	/* Update the needs-attention child property of the page in the
+	 * GtkStack. There’s no need to account for whether it’s the currently
+	 * visible page, as the CSS rules do that for us. This can’t be a simple
+	 * property binding, though, as it’s a binding between an object
+	 * property and a child property. */
+	needs_attention = (gs_page_get_counter (page) > 0);
+
+	gtk_container_child_set (GTK_CONTAINER (shell->stack_main), GTK_WIDGET (page),
+				 "needs-attention", needs_attention,
+				 NULL);
+}
+
+static void
+category_page_app_clicked_cb (GsCategoryPage *page,
+                              GsApp          *app,
+                              gpointer        user_data)
+{
+	GsShell *shell = GS_SHELL (user_data);
+
+	gs_shell_show_app (shell, app);
+}
+
 void
 gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *cancellable)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GtkWidget *widget;
 	g_autoptr(GtkAccelGroup) accel_group = NULL;
 	GClosure *closure;
-	GtkStyleContext *style_context;
-	GsPage *page;
+	GsOdrsProvider *odrs_provider;
 
 	g_return_if_fail (GS_IS_SHELL (shell));
 
-	priv->plugin_loader = g_object_ref (plugin_loader);
-	g_signal_connect_object (priv->plugin_loader, "notify::events",
+	shell->plugin_loader = g_object_ref (plugin_loader);
+	g_signal_connect_object (shell->plugin_loader, "notify::events",
 				 G_CALLBACK (gs_shell_events_notify_cb),
 				 shell, 0);
-	g_signal_connect_object (priv->plugin_loader, "notify::allow-updates",
-				 G_CALLBACK (gs_shell_allow_updates_notify_cb),
-				 shell, 0);
-	g_signal_connect_object (priv->plugin_loader, "notify::network-metered",
+	g_signal_connect_object (shell->plugin_loader, "notify::network-metered",
 				 G_CALLBACK (gs_shell_network_metered_notify_cb),
 				 shell, 0);
-	g_signal_connect_object (priv->plugin_loader, "basic-auth-start",
+	g_signal_connect_object (shell->plugin_loader, "basic-auth-start",
 				 G_CALLBACK (gs_shell_basic_auth_start_cb),
 				 shell, 0);
-	priv->cancellable = g_object_ref (cancellable);
 
-	priv->settings = g_settings_new ("org.gnome.software");
+	g_object_bind_property (shell->plugin_loader, "allow-updates",
+				shell->pages[GS_SHELL_MODE_UPDATES], "visible",
+				G_BINDING_SYNC_CREATE);
+
+	shell->cancellable = g_object_ref (cancellable);
+
+	shell->settings = g_settings_new ("org.gnome.software");
 
 	/* get UI */
-	priv->builder = gtk_builder_new_from_resource ("/org/gnome/Software/gnome-software.ui");
-	priv->main_window = GTK_WINDOW (gtk_builder_get_object (priv->builder, "window_software"));
-	g_signal_connect (priv->main_window, "map",
-			  G_CALLBACK (gs_shell_main_window_mapped_cb), shell);
-	g_signal_connect (priv->main_window, "realize",
-			  G_CALLBACK (gs_shell_main_window_realized_cb), shell);
-
-	g_signal_connect (priv->main_window, "delete-event",
-			  G_CALLBACK (main_window_closed_cb), shell);
-
 	accel_group = gtk_accel_group_new ();
-	gtk_window_add_accel_group (priv->main_window, accel_group);
+	gtk_window_add_accel_group (GTK_WINDOW (shell), accel_group);
 	closure = g_cclosure_new (G_CALLBACK (gs_shell_close_window_accel_cb), NULL, NULL);
 	gtk_accel_group_connect (accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_LOCKED, closure);
 
-	/* fix up the header bar */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "header"));
-	if (gs_utils_is_current_desktop ("Unity")) {
-		style_context = gtk_widget_get_style_context (widget);
-		gtk_style_context_remove_class (style_context, GTK_STYLE_CLASS_TITLEBAR);
-		gtk_style_context_add_class (style_context, GTK_STYLE_CLASS_PRIMARY_TOOLBAR);
-		gtk_header_bar_set_decoration_layout (GTK_HEADER_BAR (widget), "");
-	} else {
-		g_object_ref (widget);
-		gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (widget)), widget);
-		gtk_window_set_titlebar (GTK_WINDOW (priv->main_window), widget);
-		g_object_unref (widget);
-	}
-
-	/* global keynav */
-	g_signal_connect_after (priv->main_window, "key_press_event",
-				G_CALLBACK (window_key_press_event), shell);
-	/* mouse hardware back button */
-	g_signal_connect_after (priv->main_window, "button_press_event",
-				G_CALLBACK (window_button_press_event), shell);
-
-	/* show the search bar when clicking on the search button */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_button"));
-	g_signal_connect (widget, "clicked",
-	                  G_CALLBACK (search_button_clicked_cb),
-	                  shell);
-	/* set the search button enabled when search bar appears */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "search_bar"));
-	g_signal_connect (widget, "notify::search-mode-enabled",
-	                  G_CALLBACK (search_mode_enabled_cb),
-	                  shell);
-
-	/* show the account popover when clicking on the account button */
-	/* widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "menu_button"));
-	g_signal_connect (widget, "clicked",
-	                  G_CALLBACK (menu_button_clicked_cb),
-	                  shell); */
-
-	/* setup buttons */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_back"));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_shell_back_button_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_explore"));
-	g_object_set_data (G_OBJECT (widget),
-			   "gnome-software::overview-mode",
-			   GINT_TO_POINTER (GS_SHELL_MODE_OVERVIEW));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_overview_page_button_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_installed"));
-	g_object_set_data (G_OBJECT (widget),
-			   "gnome-software::overview-mode",
-			   GINT_TO_POINTER (GS_SHELL_MODE_INSTALLED));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_overview_page_button_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_updates"));
-	g_object_set_data (G_OBJECT (widget),
-			   "gnome-software::overview-mode",
-			   GINT_TO_POINTER (GS_SHELL_MODE_UPDATES));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_overview_page_button_cb), shell);
-
-	/* set up in-app notification controls */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_dismiss"));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_shell_plugin_event_dismissed_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_sources"));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_shell_plugin_events_sources_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_no_space"));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_shell_plugin_events_no_space_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_network_settings"));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_shell_plugin_events_network_settings_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_more_info"));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_shell_plugin_events_more_info_cb), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "button_events_restart_required"));
-	g_signal_connect (widget, "clicked",
-			  G_CALLBACK (gs_shell_plugin_events_restart_required_cb), shell);
-
-	/* add pages to hash */
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "overview_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("overview"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "updates_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("updates"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "installed_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("installed"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "moderate_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("moderate"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "loading_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("loading"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "search_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("search"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "details_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("details"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "category_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("category"), page);
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "extras_page"));
-	g_hash_table_insert (priv->pages, g_strdup ("extras"), page);
+	/* set up pages */
 	gs_shell_setup_pages (shell);
 
 	/* set up the metered data info bar and mogwai */
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "metered_updates_bar"));
-	g_signal_connect (widget, "response",
-			  (GCallback) gs_shell_metered_updates_bar_response_cb, shell);
-
-	g_signal_connect (priv->settings, "changed::download-updates",
+	g_signal_connect (shell->settings, "changed::download-updates",
 			  (GCallback) gs_shell_download_updates_changed_cb, shell);
 
-	/* set up search */
-	g_signal_connect (priv->main_window, "key-press-event",
-			  G_CALLBACK (window_keypress_handler), shell);
-	widget = GTK_WIDGET (gtk_builder_get_object (priv->builder, "entry_search"));
-	priv->search_changed_id =
-		g_signal_connect (widget, "search-changed",
-				  G_CALLBACK (search_changed_handler), shell);
-
-	/* load content */
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "loading_page"));
-	g_signal_connect (page, "refreshed",
-			  G_CALLBACK (initial_refresh_done), shell);
+	odrs_provider = gs_plugin_loader_get_odrs_provider (shell->plugin_loader);
+	gs_details_page_set_odrs_provider (GS_DETAILS_PAGE (shell->pages[GS_SHELL_MODE_DETAILS]), odrs_provider);
+	gs_moderate_page_set_odrs_provider (GS_MODERATE_PAGE (shell->pages[GS_SHELL_MODE_MODERATE]), odrs_provider);
 
 	/* coldplug */
 	gs_shell_rescan_events (shell);
@@ -2325,24 +2231,22 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	/* primary menu */
 	gs_shell_add_about_menu_item (shell);
 
-	if (g_settings_get_boolean (priv->settings, "download-updates")) {
+	if (g_settings_get_boolean (shell->settings, "download-updates")) {
 		/* show loading page, which triggers the initial refresh */
 		gs_shell_change_mode (shell, GS_SHELL_MODE_LOADING, NULL, TRUE);
 	} else {
 		g_debug ("Skipped refresh of the repositories due to 'download-updates' disabled");
-		initial_refresh_done (GS_LOADING_PAGE (page), shell);
+		initial_refresh_done (GS_LOADING_PAGE (shell->pages[GS_SHELL_MODE_LOADING]), shell);
 	}
 }
 
 void
 gs_shell_reset_state (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-
 	/* reset to overview, unless we're in the loading state which advances
 	 * to overview on its own */
-	if (priv->mode != GS_SHELL_MODE_LOADING)
-		priv->mode = GS_SHELL_MODE_OVERVIEW;
+	if (gs_shell_get_mode (shell) != GS_SHELL_MODE_LOADING)
+		gs_shell_change_mode (shell, GS_SHELL_MODE_OVERVIEW, NULL, TRUE);
 
 	gs_shell_clean_back_entry_stack (shell);
 }
@@ -2356,72 +2260,72 @@ gs_shell_set_mode (GsShell *shell, GsShellMode mode)
 GsShellMode
 gs_shell_get_mode (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	const gchar *name;
 
-	return priv->mode;
+	if (g_strcmp0 (gtk_stack_get_visible_child_name (shell->stack_loading), "loading") == 0)
+		return GS_SHELL_MODE_LOADING;
+
+	if (g_strcmp0 (hdy_deck_get_visible_child_name (shell->details_deck), "details") == 0)
+		return GS_SHELL_MODE_DETAILS;
+
+	if (g_strcmp0 (hdy_deck_get_visible_child_name (shell->main_deck), "main") == 0)
+		name = gtk_stack_get_visible_child_name (shell->stack_main);
+	else
+		name = gtk_stack_get_visible_child_name (shell->stack_sub);
+
+	for (gsize i = 0; i < G_N_ELEMENTS (page_name); i++)
+		if (g_strcmp0 (page_name[i], name) == 0)
+			return i;
+
+	g_assert_not_reached ();
 }
 
 const gchar *
 gs_shell_get_mode_string (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	return page_name[priv->mode];
+	GsShellMode mode = gs_shell_get_mode (shell);
+	return page_name[mode];
 }
 
 void
 gs_shell_install (GsShell *shell, GsApp *app, GsShellInteraction interaction)
 {
-	GsPage *page;
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	save_back_entry (shell);
 	gs_shell_change_mode (shell, GS_SHELL_MODE_DETAILS,
 			      (gpointer) app, TRUE);
-	page = GS_PAGE (g_hash_table_lookup (priv->pages, "details"));
-	gs_page_install_app (page, app, interaction, priv->cancellable);
+	gs_page_install_app (shell->pages[GS_SHELL_MODE_DETAILS], app, interaction, shell->cancellable);
 }
 
 void
 gs_shell_show_installed_updates (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *dialog;
 
-	dialog = gs_update_dialog_new (priv->plugin_loader);
-	gs_update_dialog_show_installed_updates (GS_UPDATE_DIALOG (dialog));
+	dialog = gs_update_dialog_new (shell->plugin_loader);
 
-	gs_shell_modal_dialog_present (shell, GTK_DIALOG (dialog));
+	gs_shell_modal_dialog_present (shell, GTK_WINDOW (dialog));
 }
 
 void
 gs_shell_show_sources (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *dialog;
 
 	/* use if available */
 	if (g_spawn_command_line_async ("software-properties-gtk", NULL))
 		return;
 
-	dialog = gs_repos_dialog_new (priv->main_window, priv->plugin_loader);
-	gs_shell_modal_dialog_present (shell, GTK_DIALOG (dialog));
-
-	/* just destroy */
-	g_signal_connect_swapped (dialog, "response",
-				  G_CALLBACK (gtk_widget_destroy), dialog);
+	dialog = gs_repos_dialog_new (GTK_WINDOW (shell), shell->plugin_loader);
+	gs_shell_modal_dialog_present (shell, GTK_WINDOW (dialog));
 }
 
 void
 gs_shell_show_prefs (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	GtkWidget *dialog;
 
-	dialog = gs_prefs_dialog_new (priv->main_window, priv->plugin_loader);
-	gs_shell_modal_dialog_present (shell, GTK_DIALOG (dialog));
-
-	/* just destroy */
-	g_signal_connect_swapped (dialog, "response",
-				  G_CALLBACK (gtk_widget_destroy), dialog);
+	dialog = gs_prefs_dialog_new (GTK_WINDOW (shell), shell->plugin_loader);
+	gs_shell_modal_dialog_present (shell, GTK_WINDOW (dialog));
 }
 
 void
@@ -2441,13 +2345,8 @@ gs_shell_show_category (GsShell *shell, GsCategory *category)
 
 void gs_shell_show_extras_search (GsShell *shell, const gchar *mode, gchar **resources, const gchar *desktop_id, const gchar *ident)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GsPage *page;
-
-	page = GS_PAGE (gtk_builder_get_object (priv->builder, "extras_page"));
-
 	save_back_entry (shell);
-	gs_extras_page_search (GS_EXTRAS_PAGE (page), mode, resources, desktop_id, ident);
+	gs_extras_page_search (GS_EXTRAS_PAGE (shell->pages[GS_SHELL_MODE_EXTRAS]), mode, resources, desktop_id, ident);
 	gs_shell_change_mode (shell, GS_SHELL_MODE_EXTRAS, NULL, TRUE);
 	gs_shell_activate (shell);
 }
@@ -2474,12 +2373,8 @@ gs_shell_show_local_file (GsShell *shell, GFile *file)
 void
 gs_shell_show_search_result (GsShell *shell, const gchar *id, const gchar *search)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
-	GsPage *page;
-
 	save_back_entry (shell);
-	page = GS_PAGE (g_hash_table_lookup (priv->pages, "search"));
-	gs_search_page_set_appid_to_show (GS_SEARCH_PAGE (page), id);
+	gs_search_page_set_appid_to_show (GS_SEARCH_PAGE (shell->pages[GS_SHELL_MODE_SEARCH]), id);
 	gs_shell_change_mode (shell, GS_SHELL_MODE_SEARCH,
 			      (gpointer) search, TRUE);
 }
@@ -2487,10 +2382,9 @@ gs_shell_show_search_result (GsShell *shell, const gchar *id, const gchar *searc
 void
 gs_shell_show_uri (GsShell *shell, const gchar *url)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 	g_autoptr(GError) error = NULL;
 
-	if (!gtk_show_uri_on_window (priv->main_window,
+	if (!gtk_show_uri_on_window (GTK_WINDOW (shell),
 	                             url,
 	                             GDK_CURRENT_TIME,
 	                             &error)) {
@@ -2499,75 +2393,244 @@ gs_shell_show_uri (GsShell *shell, const gchar *url)
 	}
 }
 
+/**
+ * gs_shell_get_is_narrow:
+ * @shell: a #GsShell
+ *
+ * Get the value of #GsShell:is-narrow.
+ *
+ * Returns: %TRUE if the window is in narrow mode, %FALSE otherwise
+ *
+ * Since: 41
+ */
+gboolean
+gs_shell_get_is_narrow (GsShell *shell)
+{
+	g_return_val_if_fail (GS_IS_SHELL (shell), FALSE);
+
+	return shell->is_narrow;
+}
+
+static void
+gs_shell_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+	GsShell *shell = GS_SHELL (object);
+
+	switch ((GsShellProperty) prop_id) {
+	case PROP_IS_NARROW:
+		g_value_set_boolean (value, gs_shell_get_is_narrow (shell));
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
+gs_shell_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+	switch ((GsShellProperty) prop_id) {
+	case PROP_IS_NARROW:
+		/* Read only. */
+		g_assert_not_reached ();
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
 static void
 gs_shell_dispose (GObject *object)
 {
 	GsShell *shell = GS_SHELL (object);
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
 
-	if (priv->back_entry_stack != NULL) {
-		g_queue_free_full (priv->back_entry_stack, (GDestroyNotify) free_back_entry);
-		priv->back_entry_stack = NULL;
+	g_clear_object (&shell->sub_page_header_title_binding);
+
+	if (shell->back_entry_stack != NULL) {
+		g_queue_free_full (shell->back_entry_stack, (GDestroyNotify) free_back_entry);
+		shell->back_entry_stack = NULL;
 	}
-	g_clear_object (&priv->builder);
-	g_clear_object (&priv->cancellable);
-	g_clear_object (&priv->plugin_loader);
-	g_clear_object (&priv->header_start_widget);
-	g_clear_object (&priv->header_end_widget);
-	g_clear_object (&priv->page);
-	g_clear_pointer (&priv->pages, g_hash_table_unref);
-	g_clear_pointer (&priv->events_info_uri, g_free);
-	g_clear_pointer (&priv->modal_dialogs, g_ptr_array_unref);
-	g_clear_object (&priv->settings);
+	g_clear_object (&shell->cancellable);
+	g_clear_object (&shell->plugin_loader);
+	g_clear_object (&shell->header_start_widget);
+	g_clear_object (&shell->header_end_widget);
+	g_clear_object (&shell->page);
+	g_clear_pointer (&shell->events_info_uri, g_free);
+	g_clear_pointer (&shell->modal_dialogs, g_ptr_array_unref);
+	g_clear_object (&shell->settings);
 
 #ifdef HAVE_MOGWAI
-	if (priv->scheduler != NULL) {
-		if (priv->scheduler_invalidated_handler > 0)
-			g_signal_handler_disconnect (priv->scheduler,
-						     priv->scheduler_invalidated_handler);
+	if (shell->scheduler != NULL) {
+		if (shell->scheduler_invalidated_handler > 0)
+			g_signal_handler_disconnect (shell->scheduler,
+						     shell->scheduler_invalidated_handler);
 
-		if (priv->scheduler_held)
-			mwsc_scheduler_release_async (priv->scheduler,
+		if (shell->scheduler_held)
+			mwsc_scheduler_release_async (shell->scheduler,
 						      NULL,
 						      scheduler_release_cb,
 						      g_object_ref (shell));
 		else
-			g_clear_object (&priv->scheduler);
+			g_clear_object (&shell->scheduler);
 	}
 #endif  /* HAVE_MOGWAI */
 
 	G_OBJECT_CLASS (gs_shell_parent_class)->dispose (object);
 }
 
+static gboolean
+allocation_changed_cb (gpointer user_data)
+{
+	GsShell *shell = GS_SHELL (user_data);
+	GtkAllocation allocation;
+	gboolean is_narrow;
+	GtkStyleContext *context;
+
+	gtk_widget_get_allocation (GTK_WIDGET (shell), &allocation);
+
+	is_narrow = allocation.width <= NARROW_WIDTH_THRESHOLD;
+
+	if (shell->is_narrow != is_narrow) {
+		shell->is_narrow = is_narrow;
+		g_object_notify_by_pspec (G_OBJECT (shell), obj_props[PROP_IS_NARROW]);
+	}
+
+	shell->allocation_changed_cb_id = 0;
+
+	context = gtk_widget_get_style_context (GTK_WIDGET (shell));
+
+	if (is_narrow)
+		gtk_style_context_add_class (context, "narrow");
+	else
+		gtk_style_context_remove_class (context, "narrow");
+
+	return G_SOURCE_REMOVE;
+}
+
+static void
+gs_shell_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+{
+	GsShell *shell = GS_SHELL (widget);
+
+	GTK_WIDGET_CLASS (gs_shell_parent_class)->size_allocate (widget, allocation);
+
+	/* Delay updating is-narrow so children can adapt to it, which isn't
+	 * possible during the widget's allocation phase as it would break their
+	 * size request.
+	 */
+	if (shell->allocation_changed_cb_id == 0)
+		shell->allocation_changed_cb_id = g_idle_add (allocation_changed_cb, shell);
+}
+
 static void
 gs_shell_class_init (GsShellClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+	object_class->get_property = gs_shell_get_property;
+	object_class->set_property = gs_shell_set_property;
 	object_class->dispose = gs_shell_dispose;
+
+	widget_class->size_allocate = gs_shell_size_allocate;
+
+	/**
+	 * GsShell:is-narrow:
+	 *
+	 * Whether the window is in narrow mode.
+	 *
+	 * Pages can track this property to adapt to the available width.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_IS_NARROW] =
+		g_param_spec_boolean ("is-narrow", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+
+	g_object_class_install_properties (object_class, G_N_ELEMENTS (obj_props), obj_props);
 
 	signals [SIGNAL_LOADED] =
 		g_signal_new ("loaded",
 			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      G_STRUCT_OFFSET (GsShellClass, loaded),
-			      NULL, NULL, g_cclosure_marshal_VOID__VOID,
+			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
 			      G_TYPE_NONE, 0);
+
+	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-shell.ui");
+
+	gtk_widget_class_bind_template_child (widget_class, GsShell, main_header);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, main_deck);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, details_header);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, details_deck);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, stack_loading);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, stack_main);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, stack_sub);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, metered_updates_bar);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, search_button);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, entry_search);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, search_bar);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_back);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_back2);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, notification_event);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_events_sources);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_events_no_space);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_events_network_settings);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_events_restart_required);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_events_more_info);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, button_events_dismiss);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, label_events);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, primary_menu);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, sub_page_header_title);
+
+	gtk_widget_class_bind_template_child_full (widget_class, "overview_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_OVERVIEW]));
+	gtk_widget_class_bind_template_child_full (widget_class, "updates_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_UPDATES]));
+	gtk_widget_class_bind_template_child_full (widget_class, "installed_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_INSTALLED]));
+	gtk_widget_class_bind_template_child_full (widget_class, "moderate_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_MODERATE]));
+	gtk_widget_class_bind_template_child_full (widget_class, "loading_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_LOADING]));
+	gtk_widget_class_bind_template_child_full (widget_class, "search_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_SEARCH]));
+	gtk_widget_class_bind_template_child_full (widget_class, "details_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_DETAILS]));
+	gtk_widget_class_bind_template_child_full (widget_class, "category_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_CATEGORY]));
+	gtk_widget_class_bind_template_child_full (widget_class, "extras_page", FALSE, G_STRUCT_OFFSET (GsShell, pages[GS_SHELL_MODE_EXTRAS]));
+
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_main_window_mapped_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_main_window_realized_cb);
+	gtk_widget_class_bind_template_callback (widget_class, main_window_closed_cb);
+	gtk_widget_class_bind_template_callback (widget_class, window_key_press_event);
+	gtk_widget_class_bind_template_callback (widget_class, window_keypress_handler);
+	gtk_widget_class_bind_template_callback (widget_class, window_button_press_event);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_details_back_button_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_back_button_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_overview_page_button_cb);
+	gtk_widget_class_bind_template_callback (widget_class, updates_page_notify_counter_cb);
+	gtk_widget_class_bind_template_callback (widget_class, category_page_app_clicked_cb);
+	gtk_widget_class_bind_template_callback (widget_class, search_button_clicked_cb);
+	gtk_widget_class_bind_template_callback (widget_class, search_changed_handler);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_events_sources_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_events_no_space_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_events_network_settings_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_events_restart_required_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_events_more_info_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_event_dismissed_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_metered_updates_bar_response_cb);
+	gtk_widget_class_bind_template_callback (widget_class, stack_notify_visible_child_cb);
+	gtk_widget_class_bind_template_callback (widget_class, initial_refresh_done);
+	gtk_widget_class_bind_template_callback (widget_class, overlay_get_child_position_cb);
 }
 
 static void
 gs_shell_init (GsShell *shell)
 {
-	GsShellPrivate *priv = gs_shell_get_instance_private (shell);
+	gtk_widget_init_template (GTK_WIDGET (shell));
 
-	priv->pages = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
-	priv->back_entry_stack = g_queue_new ();
-	priv->ignore_primary_buttons = FALSE;
-	priv->modal_dialogs = g_ptr_array_new_with_free_func ((GDestroyNotify) gtk_widget_destroy);
+	hdy_search_bar_connect_entry (HDY_SEARCH_BAR (shell->search_bar), GTK_ENTRY (shell->entry_search));
+
+	shell->back_entry_stack = g_queue_new ();
+	shell->modal_dialogs = g_ptr_array_new_with_free_func ((GDestroyNotify) gtk_widget_destroy);
 }
 
 GsShell *
 gs_shell_new (void)
 {
-	GsShell *shell;
-	shell = g_object_new (GS_TYPE_SHELL, NULL);
-	return GS_SHELL (shell);
+	return GS_SHELL (g_object_new (GS_TYPE_SHELL, NULL));
 }

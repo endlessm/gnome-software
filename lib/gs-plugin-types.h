@@ -23,7 +23,7 @@ G_BEGIN_DECLS
  * @GS_PLUGIN_STATUS_INSTALLING:	Installing in progress
  * @GS_PLUGIN_STATUS_REMOVING:		Removing in progress
  *
- * The ststus of the plugin.
+ * The status of the plugin.
  **/
 typedef enum {
 	GS_PLUGIN_STATUS_UNKNOWN,
@@ -125,6 +125,7 @@ typedef enum {
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_DEVELOPER_NAME:	Require developer name
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS:		Require kudos
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_CONTENT_RATING:	Require content rating
+ * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE_DATA:		Require user and cache data sizes (Since: 41)
  * @GS_PLUGIN_REFINE_FLAGS_MASK:			All flags (Since: 40)
  *
  * The refine flags.
@@ -143,7 +144,7 @@ typedef enum {
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS	= 1 << 9,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN		= 1 << 10,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_RELATED		= 1 << 11,
-	/* 1 << 12 is currently unused; was previously REQUIRE_MENU_PATH */
+	GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE_DATA	= 1 << 12,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS		= 1 << 13,
 	GS_PLUGIN_REFINE_FLAGS_ALLOW_PACKAGES		= 1 << 14, /* TODO: move to request */
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_SEVERITY	= 1 << 15,
@@ -198,15 +199,8 @@ typedef enum {
  * @GS_PLUGIN_ACTION_UPDATE_CANCEL:		Cancel the update
  * @GS_PLUGIN_ACTION_ADD_SHORTCUT:		Add a shortcut to an application
  * @GS_PLUGIN_ACTION_REMOVE_SHORTCUT:		Remove a shortcut to an application
- * @GS_PLUGIN_ACTION_REVIEW_SUBMIT:		Submit a new review
- * @GS_PLUGIN_ACTION_REVIEW_UPVOTE:		Upvote an existing review
- * @GS_PLUGIN_ACTION_REVIEW_DOWNVOTE:		Downvote an existing review
- * @GS_PLUGIN_ACTION_REVIEW_REPORT:		Report an existing review
- * @GS_PLUGIN_ACTION_REVIEW_REMOVE:		Remove a review written by the user
- * @GS_PLUGIN_ACTION_REVIEW_DISMISS:		Dismiss (ignore) a review when moderating
  * @GS_PLUGIN_ACTION_GET_UPDATES:		Get the list of updates
  * @GS_PLUGIN_ACTION_GET_DISTRO_UPDATES:	Get the list of distro updates
- * @GS_PLUGIN_ACTION_GET_UNVOTED_REVIEWS:	Get the list of moderatable reviews
  * @GS_PLUGIN_ACTION_GET_SOURCES:		Get the list of sources
  * @GS_PLUGIN_ACTION_GET_INSTALLED:		Get the list of installed applications
  * @GS_PLUGIN_ACTION_GET_POPULAR:		Get the list of popular applications
@@ -227,6 +221,10 @@ typedef enum {
  * @GS_PLUGIN_ACTION_DOWNLOAD:			Download an application
  * @GS_PLUGIN_ACTION_GET_ALTERNATES:		Get the alternates for a specific application
  * @GS_PLUGIN_ACTION_GET_LANGPACKS:		Get appropriate language pack
+ * @GS_PLUGIN_ACTION_INSTALL_REPO:		Install a repository (Since: 41)
+ * @GS_PLUGIN_ACTION_REMOVE_REPO:		Remove a repository (Since: 41)
+ * @GS_PLUGIN_ACTION_ENABLE_REPO:		Enable a repository (Since: 41)
+ * @GS_PLUGIN_ACTION_DISABLE_REPO:		Disable a repository (Since: 41)
  *
  * The plugin action.
  **/
@@ -243,15 +241,8 @@ typedef enum {
 	GS_PLUGIN_ACTION_UPDATE_CANCEL,
 	GS_PLUGIN_ACTION_ADD_SHORTCUT,
 	GS_PLUGIN_ACTION_REMOVE_SHORTCUT,
-	GS_PLUGIN_ACTION_REVIEW_SUBMIT,
-	GS_PLUGIN_ACTION_REVIEW_UPVOTE,
-	GS_PLUGIN_ACTION_REVIEW_DOWNVOTE,
-	GS_PLUGIN_ACTION_REVIEW_REPORT,
-	GS_PLUGIN_ACTION_REVIEW_REMOVE,
-	GS_PLUGIN_ACTION_REVIEW_DISMISS,
 	GS_PLUGIN_ACTION_GET_UPDATES,
 	GS_PLUGIN_ACTION_GET_DISTRO_UPDATES,
-	GS_PLUGIN_ACTION_GET_UNVOTED_REVIEWS,
 	GS_PLUGIN_ACTION_GET_SOURCES,
 	GS_PLUGIN_ACTION_GET_INSTALLED,
 	GS_PLUGIN_ACTION_GET_POPULAR,
@@ -272,6 +263,10 @@ typedef enum {
 	GS_PLUGIN_ACTION_DOWNLOAD,
 	GS_PLUGIN_ACTION_GET_ALTERNATES,
 	GS_PLUGIN_ACTION_GET_LANGPACKS,
+	GS_PLUGIN_ACTION_INSTALL_REPO,
+	GS_PLUGIN_ACTION_REMOVE_REPO,
+	GS_PLUGIN_ACTION_ENABLE_REPO,
+	GS_PLUGIN_ACTION_DISABLE_REPO,
 	GS_PLUGIN_ACTION_LAST  /*< skip >*/
 } GsPluginAction;
 

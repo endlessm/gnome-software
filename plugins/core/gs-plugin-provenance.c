@@ -58,7 +58,7 @@ gs_plugin_initialize (GsPlugin *plugin)
 
 	/* after the package source is set */
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "dummy");
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "packagekit-refine");
+	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "packagekit");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "rpm-ostree");
 }
 
@@ -96,6 +96,16 @@ refine_app (GsPlugin             *plugin,
 	origin = gs_app_get_origin (app);
 	if (origin != NULL && gs_utils_strv_fnmatch (sources, origin)) {
 		gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
+		return TRUE;
+	}
+
+	/* Software sources/repositories are represented as #GsApps too. Add the
+	 * provenance quirk to the system-configured repositories (but not
+	 * user-configured ones). */
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_REPOSITORY &&
+	    gs_utils_strv_fnmatch (sources, gs_app_get_id (app))) {
+		if (gs_app_get_scope (app) != AS_COMPONENT_SCOPE_USER)
+			gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 		return TRUE;
 	}
 

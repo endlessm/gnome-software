@@ -13,6 +13,7 @@
 #include <string.h>
 #include <glib/gi18n.h>
 #include <gsettings-desktop-schemas/gdesktop-enums.h>
+#include <locale.h>
 
 #include "gs-update-monitor.h"
 #include "gs-common.h"
@@ -25,6 +26,7 @@ struct _GsUpdateMonitor {
 
 	GApplication	*application;
 	GCancellable    *cancellable;
+	GCancellable	*refresh_cancellable;
 	GSettings	*settings;
 	GsPluginLoader	*plugin_loader;
 	GDBusProxy	*proxy_upower;
@@ -32,7 +34,11 @@ struct _GsUpdateMonitor {
 
 	GNetworkMonitor *network_monitor;
 	guint		 network_changed_handler;
-	GCancellable    *network_cancellable;
+
+#if GLIB_CHECK_VERSION(2, 69, 1)
+	GPowerProfileMonitor	*power_profile_monitor;  /* (owned) (nullable) */
+	gulong			 power_profile_changed_handler;
+#endif
 
 	guint		 cleanup_notifications_id;	/* at startup */
 	guint		 check_startup_id;		/* 60s after startup */
@@ -59,17 +65,28 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC(DownloadUpdatesData, download_updates_data_free);
 typedef struct {
 	GsUpdateMonitor		*monitor;
 	GsApp			*app;
-} LanguagePackData;
+} WithAppData;
+
+static WithAppData *
+with_app_data_new (GsUpdateMonitor	*monitor,
+		   GsApp		*app)
+{
+	WithAppData *data;
+	data = g_slice_new0 (WithAppData);
+	data->monitor = g_object_ref (monitor);
+	data->app = g_object_ref (app);
+	return data;
+}
 
 static void
-language_pack_data_free (LanguagePackData *data)
+with_app_data_free (WithAppData *data)
 {
 	g_clear_object (&data->monitor);
 	g_clear_object (&data->app);
-	g_slice_free (LanguagePackData, data);
+	g_slice_free (WithAppData, data);
 }
 
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(LanguagePackData, language_pack_data_free);
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(WithAppData, with_app_data_free);
 
 static gboolean
 reenable_offline_update_notification (gpointer data)
@@ -82,33 +99,41 @@ reenable_offline_update_notification (gpointer data)
 static void
 check_updates_kind (GsAppList *apps,
 		    gboolean *out_has_important,
+		    gboolean *out_any_important_downloaded,
 		    gboolean *out_all_downloaded,
 		    gboolean *out_any_downloaded)
 {
-	gboolean has_important, all_downloaded, any_downloaded;
+	gboolean has_important, any_important_downloaded, all_downloaded, any_downloaded;
 	guint ii, len;
 	GsApp *app;
 
 	len = gs_app_list_length (apps);
 	has_important = FALSE;
+	any_important_downloaded = FALSE;
 	all_downloaded = len > 0;
 	any_downloaded = FALSE;
 
 	for (ii = 0; ii < len && (!has_important || all_downloaded || !any_downloaded); ii++) {
+		gboolean is_important;
+
 		app = gs_app_list_index (apps, ii);
 
-		has_important = has_important ||
-				gs_app_get_update_urgency (app) == AS_URGENCY_KIND_CRITICAL;
+		is_important = gs_app_get_update_urgency (app) == AS_URGENCY_KIND_CRITICAL;
+		has_important = has_important || is_important;
 
 		/* took from gs-updates-section.c: _all_offline_updates_downloaded();
 		   the app is considered downloaded, when its download size is 0 */
-		if (gs_app_get_size_download (app))
+		if (gs_app_get_size_download (app)) {
 			all_downloaded = FALSE;
-		else
+		} else {
 			any_downloaded = TRUE;
+			if (is_important)
+				any_important_downloaded = TRUE;
+		}
 	}
 
 	*out_has_important = has_important;
+	*out_any_important_downloaded = any_important_downloaded;
 	*out_all_downloaded = all_downloaded;
 	*out_any_downloaded = any_downloaded;
 }
@@ -167,7 +192,7 @@ should_notify_about_pending_updates (GsUpdateMonitor *monitor,
 				     const gchar **out_title,
 				     const gchar **out_body)
 {
-	gboolean has_important = FALSE, all_downloaded = FALSE, any_downloaded = FALSE;
+	gboolean has_important = FALSE, any_important_downloaded = FALSE, all_downloaded = FALSE, any_downloaded = FALSE;
 	gboolean should_download, res = FALSE;
 	gint64 timestamp_days;
 
@@ -177,7 +202,7 @@ should_notify_about_pending_updates (GsUpdateMonitor *monitor,
 	}
 
 	should_download = should_download_updates (monitor);
-	check_updates_kind (apps, &has_important, &all_downloaded, &any_downloaded);
+	check_updates_kind (apps, &has_important, &any_important_downloaded, &all_downloaded, &any_downloaded);
 
 	if (!gs_app_list_length (apps)) {
 		/* Notify only when the download is disabled and it's the 4th day or it's more than 7 days */
@@ -188,7 +213,7 @@ should_notify_about_pending_updates (GsUpdateMonitor *monitor,
 		}
 	} else if (has_important) {
 		if (timestamp_days >= 1) {
-			if (all_downloaded) {
+			if (any_important_downloaded) {
 				*out_title = _("Critical Software Update Ready to Install");
 				*out_body = _("An important software update is ready to be installed.");
 				res = TRUE;
@@ -198,7 +223,9 @@ should_notify_about_pending_updates (GsUpdateMonitor *monitor,
 				res = TRUE;
 			}
 		}
-	} else if (all_downloaded) {
+		/* When automatic updates are on and there are things ready to be installed, then rather claim
+		 * about things to be installed, than things to be downloaded. */
+	} else if (all_downloaded || (any_downloaded && should_download)) {
 		if (timestamp_days >= 3) {
 			*out_title = _("Software Updates Ready to Install");
 			*out_body = _("Software updates are waiting and ready to be installed.");
@@ -211,9 +238,10 @@ should_notify_about_pending_updates (GsUpdateMonitor *monitor,
 		res = TRUE;
 	}
 
-	g_debug ("%s: last_test_days:%" G_GINT64_FORMAT " n-apps:%u should_download:%d has_important:%d "
+	g_debug ("%s: last_test_days:%" G_GINT64_FORMAT " n-apps:%u should_download:%d has_important:%d any_important_downloaded:%d "
 		"all_downloaded:%d any_downloaded:%d res:%d%s%s%s%s", G_STRFUNC,
-		timestamp_days, gs_app_list_length (apps), should_download, has_important, all_downloaded, any_downloaded, res,
+		timestamp_days, gs_app_list_length (apps), should_download, has_important, any_important_downloaded,
+		all_downloaded, any_downloaded, res,
 		res ? " reason:" : "",
 		res ? *out_title : "",
 		res ? "|" : "",
@@ -600,13 +628,14 @@ static void
 get_system_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
 	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (object);
-	GsUpdateMonitor *monitor = GS_UPDATE_MONITOR (data);
+	GsUpdateMonitor *monitor = data;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GNotification) n = NULL;
 	g_autoptr(GsApp) app = NULL;
 
 	/* get result */
-	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
+	app = gs_plugin_loader_get_system_app_finish (plugin_loader, res, &error);
+	if (app == NULL) {
 		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
 			g_warning ("failed to get system: %s", error->message);
 		return;
@@ -620,7 +649,6 @@ get_system_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		return;
 
 	/* is not EOL */
-	app = gs_plugin_loader_get_system_app (plugin_loader);
 	if (gs_app_get_state (app) != GS_APP_STATE_UNAVAILABLE)
 		return;
 
@@ -754,17 +782,10 @@ static void
 get_system (GsUpdateMonitor *monitor)
 {
 	g_autoptr(GsApp) app = NULL;
-	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	g_debug ("Getting system");
-	app = gs_plugin_loader_get_system_app (monitor->plugin_loader);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 NULL);
-	gs_plugin_loader_job_process_async (monitor->plugin_loader, plugin_job,
-					    monitor->cancellable,
-					    get_system_finished_cb,
-					    monitor);
+	gs_plugin_loader_get_system_app_async (monitor->plugin_loader, monitor->cancellable,
+		get_system_finished_cb, monitor);
 }
 
 static void
@@ -804,7 +825,7 @@ static void
 install_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
 {
 	g_autoptr(GError) error = NULL;
-	g_autoptr(LanguagePackData) language_pack_data = data;
+	g_autoptr(WithAppData) with_app_data = data;
 
 	if (!gs_plugin_loader_job_action_finish (GS_PLUGIN_LOADER (object), res, &error)) {
 		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
@@ -812,7 +833,7 @@ install_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
 		return;
 	} else {
 		g_debug ("language pack for %s installed",
-			 gs_app_get_name (language_pack_data->app));
+			 gs_app_get_name (with_app_data->app));
 	}
 }
 
@@ -840,12 +861,10 @@ get_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* there should be one langpack for a given locale */
 	app = g_object_ref (gs_app_list_index (app_list, 0));
 	if (!gs_app_is_installed (app)) {
-		g_autoptr(LanguagePackData) language_pack_data = NULL;
+		WithAppData *with_app_data;
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 
-		language_pack_data = g_slice_new0 (LanguagePackData);
-		language_pack_data->monitor = g_object_ref (monitor);
-		language_pack_data->app = g_object_ref (app);
+		with_app_data = with_app_data_new (monitor, app);
 
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 							 "app", app,
@@ -854,7 +873,7 @@ get_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
 						    plugin_job,
 						    monitor->cancellable,
 						    install_language_pack_cb,
-						    g_steal_pointer (&language_pack_data));
+						    with_app_data);
 	}
 }
 
@@ -868,7 +887,7 @@ check_language_pack (GsUpdateMonitor *monitor) {
 	const gchar *locale;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
-	locale = gs_plugin_loader_get_locale (monitor->plugin_loader);
+	locale = setlocale (LC_MESSAGES, NULL);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_LANGPACKS,
 					 "search", locale,
 					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
@@ -922,6 +941,18 @@ check_updates (GsUpdateMonitor *monitor)
 		g_debug ("no UPower support, so not doing power level checks");
 	}
 
+#if GLIB_CHECK_VERSION(2, 69, 1)
+	/* never refresh when in power saver mode */
+	if (monitor->power_profile_monitor != NULL) {
+		if (g_power_profile_monitor_get_power_saver_enabled (monitor->power_profile_monitor)) {
+			g_debug ("Not getting updates with power saver enabled");
+			return;
+		}
+	} else {
+		g_debug ("No power profile monitor support, so not doing power profile checks");
+	}
+#endif
+
 	g_settings_get (monitor->settings, "check-timestamp", "x", &tmp);
 	last_refreshed = g_date_time_new_from_unix_local (tmp);
 	if (last_refreshed != NULL) {
@@ -957,7 +988,7 @@ check_updates (GsUpdateMonitor *monitor)
 					 "age", (guint64) (60 * 60 * 24),
 					 NULL);
 	gs_plugin_loader_job_process_async (monitor->plugin_loader, plugin_job,
-					    monitor->network_cancellable,
+					    monitor->refresh_cancellable,
 					    refresh_cache_finished_cb,
 					    monitor);
 }
@@ -1170,7 +1201,7 @@ cleanup_notifications_cb (gpointer user_data)
 }
 
 void
-gs_update_monitor_show_error (GsUpdateMonitor *monitor, GsShell *shell)
+gs_update_monitor_show_error (GsUpdateMonitor *monitor, GtkWindow *window)
 {
 	const gchar *title;
 	const gchar *msg;
@@ -1222,7 +1253,7 @@ gs_update_monitor_show_error (GsUpdateMonitor *monitor, GsShell *shell)
 		break;
 	}
 
-	gs_utils_show_error_dialog (gs_shell_get_window (shell),
+	gs_utils_show_error_dialog (window,
 	                            title,
 	                            msg,
 	                            show_detailed_error ? monitor->last_offline_error->message : NULL);
@@ -1251,11 +1282,31 @@ gs_update_monitor_network_changed_cb (GNetworkMonitor *network_monitor,
 	/* cancel an on-going refresh if we're now in a metered connection */
 	if (!g_settings_get_boolean (monitor->settings, "refresh-when-metered") &&
 	    g_network_monitor_get_network_metered (network_monitor)) {
-		g_cancellable_cancel (monitor->network_cancellable);
-		g_object_unref (monitor->network_cancellable);
-		monitor->network_cancellable = g_cancellable_new ();
+		g_cancellable_cancel (monitor->refresh_cancellable);
+		g_object_unref (monitor->refresh_cancellable);
+		monitor->refresh_cancellable = g_cancellable_new ();
 	}
 }
+
+#if GLIB_CHECK_VERSION(2, 69, 1)
+static void
+gs_update_monitor_power_profile_changed_cb (GObject    *object,
+                                            GParamSpec *pspec,
+                                            gpointer    user_data)
+{
+	GsUpdateMonitor *self = GS_UPDATE_MONITOR (user_data);
+
+	if (g_power_profile_monitor_get_power_saver_enabled (self->power_profile_monitor)) {
+		/* Cancel an ongoing refresh if we’re now in power saving mode. */
+		g_cancellable_cancel (self->refresh_cancellable);
+		g_object_unref (self->refresh_cancellable);
+		self->refresh_cancellable = g_cancellable_new ();
+	} else {
+		/* Else, it might be time to check for updates */
+		check_updates (self);
+	}
+}
+#endif
 
 static void
 gs_update_monitor_init (GsUpdateMonitor *monitor)
@@ -1272,11 +1323,12 @@ gs_update_monitor_init (GsUpdateMonitor *monitor)
 	monitor->check_startup_id =
 		g_timeout_add_seconds (60, check_updates_on_startup_cb, monitor);
 
-	/* we use two cancellables because one can be cancelled by any network
-	 * changes to a metered connection, and this shouldn't intervene with other
-	 * operations */
+	/* we use two cancellables because we want to be able to cancel refresh
+	 * operations more opportunistically than other operations, since
+	 * they’re less important and cancelling them doesn’t result in much
+	 * wasted work */
 	monitor->cancellable = g_cancellable_new ();
-	monitor->network_cancellable = g_cancellable_new ();
+	monitor->refresh_cancellable = g_cancellable_new ();
 
 	/* connect to UPower to get the system power state */
 	monitor->proxy_upower = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
@@ -1296,13 +1348,22 @@ gs_update_monitor_init (GsUpdateMonitor *monitor)
 	}
 
 	network_monitor = g_network_monitor_get_default ();
-	if (network_monitor == NULL)
-		return;
-	monitor->network_monitor = g_object_ref (network_monitor);
-	monitor->network_changed_handler = g_signal_connect (monitor->network_monitor,
-							     "network-changed",
-							     G_CALLBACK (gs_update_monitor_network_changed_cb),
-							     monitor);
+	if (network_monitor != NULL) {
+		monitor->network_monitor = g_object_ref (network_monitor);
+		monitor->network_changed_handler = g_signal_connect (monitor->network_monitor,
+								     "network-changed",
+								     G_CALLBACK (gs_update_monitor_network_changed_cb),
+								     monitor);
+	}
+
+#if GLIB_CHECK_VERSION(2, 69, 1)
+	monitor->power_profile_monitor = g_power_profile_monitor_dup_default ();
+	if (monitor->power_profile_monitor != NULL)
+		monitor->power_profile_changed_handler = g_signal_connect (monitor->power_profile_monitor,
+									   "notify::power-saver-enabled",
+									   G_CALLBACK (gs_update_monitor_power_profile_changed_cb),
+									   monitor);
+#endif
 }
 
 static void
@@ -1316,10 +1377,15 @@ gs_update_monitor_dispose (GObject *object)
 		monitor->network_changed_handler = 0;
 	}
 
+#if GLIB_CHECK_VERSION(2, 69, 1)
+	g_clear_signal_handler (&monitor->power_profile_changed_handler, monitor->power_profile_monitor);
+	g_clear_object (&monitor->power_profile_monitor);
+#endif
+
 	g_cancellable_cancel (monitor->cancellable);
 	g_clear_object (&monitor->cancellable);
-	g_cancellable_cancel (monitor->network_cancellable);
-	g_clear_object (&monitor->network_cancellable);
+	g_cancellable_cancel (monitor->refresh_cancellable);
+	g_clear_object (&monitor->refresh_cancellable);
 
 	stop_updates_check (monitor);
 	stop_upgrades_check (monitor);

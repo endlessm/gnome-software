@@ -27,7 +27,6 @@ BuildRequires: docbook-style-xsl
 BuildRequires: desktop-file-utils
 BuildRequires: fwupd-devel >= %{fwupd_version}
 BuildRequires: glib2-devel >= %{glib2_version}
-BuildRequires: gnome-online-accounts-devel
 BuildRequires: gsettings-desktop-schemas-devel >= %{gsettings_desktop_schemas_version}
 BuildRequires: gspell-devel
 BuildRequires: gtk3-devel >= %{gtk3_version}
@@ -150,7 +149,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_datadir}/metainfo/org.gnome.Software.appdata.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Flatpak.metainfo.xml
 %{_datadir}/metainfo/org.gnome.Software.Plugin.Fwupd.metainfo.xml
-%{_datadir}/metainfo/org.gnome.Software.Plugin.Odrs.metainfo.xml
 %dir %{gs_plugin_dir}
 %{gs_plugin_dir}/libgs_plugin_appstream.so
 %{gs_plugin_dir}/libgs_plugin_dummy.so
@@ -163,17 +161,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{gs_plugin_dir}/libgs_plugin_hardcoded-popular.so
 %{gs_plugin_dir}/libgs_plugin_icons.so
 %{gs_plugin_dir}/libgs_plugin_modalias.so
-%{gs_plugin_dir}/libgs_plugin_odrs.so
 %{gs_plugin_dir}/libgs_plugin_os-release.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-history.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-local.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-offline.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-proxy.so
 %{gs_plugin_dir}/libgs_plugin_packagekit-refine-repos.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-refine.so
 %{gs_plugin_dir}/libgs_plugin_packagekit-refresh.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-upgrade.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-url-to-app.so
 %{gs_plugin_dir}/libgs_plugin_packagekit.so
 %{gs_plugin_dir}/libgs_plugin_provenance-license.so
 %{gs_plugin_dir}/libgs_plugin_provenance.so

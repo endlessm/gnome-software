@@ -73,7 +73,6 @@ void		 gs_plugin_add_flags			(GsPlugin	*plugin,
 void		 gs_plugin_remove_flags			(GsPlugin	*plugin,
 							 GsPluginFlags	 flags);
 guint		 gs_plugin_get_scale			(GsPlugin	*plugin);
-const gchar	*gs_plugin_get_locale			(GsPlugin	*plugin);
 const gchar	*gs_plugin_get_language			(GsPlugin	*plugin);
 SoupSession	*gs_plugin_get_soup_session		(GsPlugin	*plugin);
 void		 gs_plugin_set_soup_session		(GsPlugin	*plugin,
@@ -137,5 +136,7 @@ void		gs_plugin_repository_changed		(GsPlugin	*plugin,
 void		gs_plugin_update_cache_state_for_repository
 							(GsPlugin *plugin,
 							 GsApp *repository);
+gboolean	gs_plugin_get_action_supported		(GsPlugin	*plugin,
+							 GsPluginAction	 action);
 
 G_END_DECLS

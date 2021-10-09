@@ -157,6 +157,7 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	gs_app_set_kind (priv->cached_origin, AS_COMPONENT_KIND_REPOSITORY);
 	gs_app_set_origin_hostname (priv->cached_origin,
 				    FEDORA_PKGDB_COLLECTIONS_API_URI);
+	gs_app_set_management_plugin (priv->cached_origin, gs_plugin_get_name (plugin));
 
 	/* add the source to the plugin cache which allows us to match the
 	 * unique ID to a GsApp when creating an event */
@@ -220,8 +221,37 @@ gs_plugin_refresh (GsPlugin *plugin,
 static gchar *
 _get_upgrade_css_background (guint version)
 {
+	g_autoptr(GSettings) settings = NULL;
 	g_autofree gchar *filename1 = NULL;
 	g_autofree gchar *filename2 = NULL;
+	g_autofree gchar *uri = NULL;
+
+	settings = g_settings_new ("org.gnome.software");
+	uri = g_settings_get_string (settings, "upgrade-background-uri");
+	if (uri != NULL && *uri != '\0') {
+		const gchar *ptr;
+		guint percents_u = 0;
+		for (ptr = uri; *ptr != '\0'; ptr++) {
+			if (*ptr == '%') {
+				if (ptr[1] == 'u')
+					percents_u++;
+				else if (ptr[1] == '%')
+					ptr++;
+				else
+					break;
+			}
+		}
+
+		if (*ptr != '\0' || percents_u > 3) {
+			g_warning ("Incorrect upgrade-background-uri (%s), it can contain only up to three '%%u' sequences", uri);
+		} else {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+			filename1 = g_strdup_printf (uri, version, version, version);
+#pragma GCC diagnostic pop
+			return g_strdup_printf ("url('%s')", filename1);
+		}
+	}
 
 	filename1 = g_strdup_printf ("/usr/share/backgrounds/f%u/default/standard/f%u.png", version, version);
 	if (g_file_test (filename1, G_FILE_TEST_EXISTS))
@@ -231,7 +261,7 @@ _get_upgrade_css_background (guint version)
 	if (g_file_test (filename2, G_FILE_TEST_EXISTS))
 		return g_strdup_printf ("url('%s')", filename2);
 
-	return NULL;
+	return g_strdup ("url('" DATADIR "/gnome-software/upgrade-bg.png')");
 }
 
 static gint
@@ -283,8 +313,8 @@ _create_upgrade_from_info (GsPlugin *plugin, PkgdbItem *item)
 			    /* TRANSLATORS: this is a title for Fedora distro upgrades */
 			    _("Upgrade for the latest features, performance and stability improvements."));
 	gs_app_set_version (app, app_version);
-	gs_app_set_size_installed (app, 1024 * 1024 * 1024); /* estimate */
-	gs_app_set_size_download (app, 256 * 1024 * 1024); /* estimate */
+	gs_app_set_size_installed (app, GS_APP_SIZE_UNKNOWABLE);
+	gs_app_set_size_download (app, GS_APP_SIZE_UNKNOWABLE);
 	gs_app_set_license (app, GS_APP_QUALITY_LOWEST, "LicenseRef-free");
 	gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
 	gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
@@ -296,13 +326,15 @@ _create_upgrade_from_info (GsPlugin *plugin, PkgdbItem *item)
 			       item->version);
 	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE, url);
 
-	/* use a fancy background if possible */
+	/* use a fancy background if possible, and suppress the border which is
+	 * shown by default; the background image is designed to be borderless */
 	background = _get_upgrade_css_background (item->version);
 	if (background != NULL) {
 		css = g_strdup_printf ("background: %s;"
 				       "background-position: top;"
-				       "background-size: cover;"
-				       "color: white; text-shadow: 0 2px 2px rgba(0,0,0,0.5);",
+				       "background-size: 100%% 100%%;"
+				       "color: white;"
+				       "border-width: 0;",
 				       background);
 		gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css", css);
 	}

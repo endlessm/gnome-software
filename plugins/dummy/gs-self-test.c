@@ -9,6 +9,7 @@
 #include "config.h"
 
 #include <glib/gstdio.h>
+#include <locale.h>
 
 #include "gnome-software-private.h"
 
@@ -392,7 +393,7 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_assert (!gs_app_has_category (app, "ImageProcessing"));
 	g_assert (gs_app_get_menu_path (app) != NULL);
 	menu_path = g_strjoinv ("->", gs_app_get_menu_path (app));
-	g_assert_cmpstr (menu_path, ==, "Audio & Video->Music Players");
+	g_assert_cmpstr (menu_path, ==, "Create->Music Players");
 
 	/* check addon */
 	addons = gs_app_get_addons (app);
@@ -754,7 +755,7 @@ main (int argc, char **argv)
 	g_setenv ("GS_XMLB_VERBOSE", "1", TRUE);
 
 	/* set all the things required as a dummy test harness */
-	g_setenv ("GS_SELF_TEST_LOCALE", "en_GB", TRUE);
+	setlocale (LC_MESSAGES, "en_GB.UTF-8");
 	g_setenv ("GS_SELF_TEST_DUMMY_ENABLE", "1", TRUE);
 	g_setenv ("GS_SELF_TEST_PROVENANCE_SOURCES", "london*,boston", TRUE);
 	g_setenv ("GS_SELF_TEST_PROVENANCE_LICENSE_SOURCES", "london*,boston", TRUE);

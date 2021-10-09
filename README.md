@@ -1,4 +1,4 @@
-[![Build Status](https://gitlab.gnome.org/GNOME/gnome-software/badges/master/build.svg)](https://gitlab.gnome.org/GNOME/gnome-software/pipelines)
+[![Build Status](https://gitlab.gnome.org/GNOME/gnome-software/badges/main/pipeline.svg)](https://gitlab.gnome.org/GNOME/gnome-software/pipelines)
 
 # Software
 
@@ -31,7 +31,22 @@ Bug reports and merge requests should be filed on [GNOME GitLab](https://gitlab.
 
 For development discussion, join us on `#gnome-software` on [irc.gnome.org](https://wiki.gnome.org/Community/GettingInTouch/IRC).
 
-# Building
+# Running a nightly build
+
+A [flatpak bundle](https://docs.flatpak.org/en/latest/single-file-bundles.html)
+of Software can be built on demand here by running the ‘flatpak bundle’ CI job.
+It is not fully functional, but is useful for development and testing of
+upcoming UI changes to Software. It may become more functional over time. It
+is not an official or supported release.
+
+The CI job saves the bundle in its artifacts list as `gnome-software-dev.flatpak`.
+This can be installed and run locally by downloading it and running:
+```
+$ flatpak install --bundle ./gnome-software-dev.flatpak
+$ flatpak run org.gnome.SoftwareDevel
+```
+
+# Building locally
 
 Software uses a number of plugins and depending on your operating system you
 may want to disable or enable certain ones. For example on Fedora Silverblue
@@ -48,6 +63,19 @@ $ killall gnome-software
 $ XDG_DATA_DIRS=install/share:$XDG_DATA_DIRS LD_LIBRARY_PATH=install/lib64/:$LD_LIBRARY_PATH ./install/bin/gnome-software
 # On Debian, Ubuntu, etc:
 $ XDG_DATA_DIRS=install/share:$XDG_DATA_DIRS LD_LIBRARY_PATH=install/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH ./install/bin/gnome-software
+```
+
+## Default branch renamed to `main`
+
+The default development branch of gnome-software has been renamed to `main`. To
+update your local checkout, use:
+```sh
+git checkout master
+git branch -m master main
+git fetch
+git branch --unset-upstream
+git branch -u origin/main
+git symbolic-ref refs/remotes/origin/HEAD refs/remotes/origin/main
 ```
 
 # Debugging

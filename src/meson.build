@@ -15,17 +15,29 @@ gdbus_src = gnome.gdbus_codegen(
   namespace : 'Gs'
 )
 
+enums = gnome.mkenums_simple('gs-enums',
+  sources : [
+    'gs-context-dialog-row.h',
+  ],
+  install_header : false,
+)
+
 gnome_software_sources = [
+  'gs-age-rating-context-dialog.c',
   'gs-app-addon-row.c',
   'gs-app-version-history-dialog.c',
   'gs-app-version-history-row.c',
   'gs-application.c',
+  'gs-app-context-bar.c',
+  'gs-app-details-page.c',
   'gs-app-row.c',
   'gs-app-tile.c',
+  'gs-app-translation-dialog.c',
   'gs-basic-auth-dialog.c',
   'gs-category-page.c',
   'gs-category-tile.c',
   'gs-common.c',
+  'gs-context-dialog-row.c',
   'gs-css.c',
   'gs-description-box.c',
   'gs-details-page.c',
@@ -33,38 +45,42 @@ gnome_software_sources = [
   'gs-feature-tile.c',
   'gs-featured-carousel.c',
   'gs-first-run-dialog.c',
-  'gs-fixed-size-bin.c',
   'gs-folders.c',
-  'gs-hiding-box.c',
-  'gs-history-dialog.c',
+  'gs-hardware-support-context-dialog.c',
   'gs-info-bar.c',
   'gs-installed-page.c',
   'gs-language.c',
+  'gs-license-tile.c',
   'gs-loading-page.c',
   'gs-main.c',
   'gs-metered-data-dialog.c',
   'gs-moderate-page.c',
   'gs-overview-page.c',
   'gs-origin-popover-row.c',
+  'gs-os-update-page.c',
   'gs-page.c',
-  'gs-popular-tile.c',
+  'gs-picture.c',
   'gs-prefs-dialog.c',
   'gs-progress-button.c',
   'gs-removal-dialog.c',
   'gs-repos-dialog.c',
+  'gs-repos-section.c',
   'gs-repo-row.c',
   'gs-review-bar.c',
   'gs-review-dialog.c',
   'gs-review-histogram.c',
   'gs-review-row.c',
   'gs-rounded-bin.c',
+  'gs-safety-context-dialog.c',
+  'gs-screenshot-carousel.c',
   'gs-screenshot-image.c',
   'gs-search-page.c',
   'gs-shell.c',
   'gs-shell-search-provider.c',
+  'gs-star-image.c',
   'gs-star-widget.c',
+  'gs-storage-context-dialog.c',
   'gs-summary-tile.c',
-  'gs-third-party-repo-row.c',
   'gs-update-dialog.c',
   'gs-update-list.c',
   'gs-update-monitor.c',
@@ -79,7 +95,6 @@ gnome_software_dependencies = [
   gio_unix,
   glib,
   gmodule,
-  goa,
   gtk,
   json_glib,
   libgnomesoftware_dep,
@@ -124,7 +139,7 @@ executable(
   'gnome-software',
   resources_src,
   gdbus_src,
-  sources : gnome_software_sources,
+  sources : gnome_software_sources + enums,
   include_directories : [
     include_directories('..'),
     include_directories('../lib'),
@@ -165,11 +180,12 @@ if (get_option('snap'))
 else
   cdata.set('snaphandler', '')
 endif
+cdata.set('application_id', application_id)
 
 # replace @bindir@
 configure_file(
   input : 'org.gnome.Software.service.in',
-  output : 'org.gnome.Software.service',
+  output : application_id + '.service',
   install_dir: join_paths(get_option('datadir'), 'dbus-1/services'),
   configuration : cdata
 )
@@ -190,7 +206,7 @@ i18n.merge_file(
       output : 'org.gnome.Software.desktop.tmp',
       configuration : cdata
     ),
-  output: 'org.gnome.Software.desktop',
+  output: application_id + '.desktop',
   type: 'desktop',
   po_dir: join_paths(meson.source_root(), 'po'),
   install: true,
@@ -260,7 +276,6 @@ if get_option('tests')
       gio_unix,
       glib,
       gmodule,
-      goa,
       gsettings_desktop_schemas,
       gtk,
       json_glib,

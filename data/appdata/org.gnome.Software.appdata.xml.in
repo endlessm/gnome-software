@@ -20,124 +20,188 @@
     </p>
   </description>
   <screenshots>
-    <screenshot height="675" width="1200" type="default">
-      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-overview.png</image>
+    <screenshot height="852" width="1252" type="default">
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/HEAD/data/appdata/ss-overview.png</image>
       <caption>Overview panel</caption>
     </screenshot>
-    <screenshot height="675" width="1200">
-      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-details.png</image>
+    <screenshot height="852" width="1252">
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/HEAD/data/appdata/ss-details.png</image>
       <caption>Details panel</caption>
     </screenshot>
-    <screenshot height="675" width="1200">
-      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-installed.png</image>
+    <screenshot height="852" width="1252">
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/HEAD/data/appdata/ss-details2.png</image>
+      <caption>Details panel</caption>
+    </screenshot>
+    <screenshot height="852" width="1252">
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/HEAD/data/appdata/ss-installed.png</image>
       <caption>Installed panel</caption>
     </screenshot>
-    <screenshot height="675" width="1200">
-      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-updates.png</image>
+    <screenshot height="852" width="1252">
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/HEAD/data/appdata/ss-up-to-date.png</image>
       <caption>Updates panel</caption>
     </screenshot>
-    <screenshot height="675" width="1200">
-      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/master/data/appdata/ss-updates-details.png</image>
+    <screenshot height="852" width="1252">
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/HEAD/data/appdata/ss-updates.png</image>
+      <caption>Updates panel</caption>
+    </screenshot>
+    <screenshot height="628" width="692">
+      <image>https://gitlab.gnome.org/GNOME/gnome-software/raw/HEAD/data/appdata/ss-updates-details.png</image>
       <caption>The update details</caption>
     </screenshot>
   </screenshots>
+
+  <recommends>
+    <!-- Works on desktops or touchscreen devices -->
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </recommends>
+
+  <requires>
+    <!-- Adaptive -->
+    <display_length compare="ge">small</display_length>
+  </requires>
 
   <!--
    Validate with `appstreamcli validate *.appdata.xml`
   -->
   <releases>
-    <release date="2021-08-13" version="40.4" type="stable">
+    <release date="2021-09-17" version="41.0" type="stable">
       <description>
         <p>
           This is a stable release with the following changes:
         </p>
         <ul>
-          <li>flatpak: Improve search of applications</li>
-          <li>Correct download size for app's runtime</li>
+          <li>Instead of showing all package-based apps as "potentially unsafe", only use that language for 3rd party ones</li>
+          <li>Fix a bug where the "Show more" button on an app details page would flicker when the window is resized</li>
+          <li>Fix a bug where Software sometimes shows an Uninstall button after uninstalling something</li>
+          <li>Add GNOME Circle apps to the featured carousel</li>
+          <li>Fix a bug where Software would sometimes fail to execute an install/remove operation for PackageKit software rather than showing a PolicyKit password prompt</li>
+          <li>Fix a bug where Software would fail to upgrade the distribution via PackageKit</li>
+          <li>Fix the hiding of rows on the Updates tab after they have been updated</li>
         </ul>
-        <p>Translation updates:</p>
+        <p>This release also updates translations:</p>
         <ul>
+          <li>Basque</li>
+          <li>Catalan</li>
+          <li>Chinese (China)</li>
+          <li>Croatian</li>
+          <li>Czech</li>
+          <li>Danish</li>
+          <li>Dutch</li>
+          <li>Finnish</li>
+          <li>French</li>
+          <li>Galician</li>
+          <li>German</li>
+          <li>Hungarian</li>
+          <li>Indonesian</li>
+          <li>Korean</li>
+          <li>Lithuanian</li>
           <li>Occitan (post 1500)</li>
+          <li>Polish</li>
+          <li>Portuguese</li>
+          <li>Portuguese (Brazil)</li>
+          <li>Romanian</li>
+          <li>Russian</li>
+          <li>Slovenian</li>
+          <li>Spanish</li>
+          <li>Swedish</li>
+          <li>Ukrainian</li>
         </ul>
       </description>
     </release>
-    <release date="2021-07-09" version="40.3">
+    <release date="2021-09-07" version="41.rc" type="development">
       <description>
         <p>
-          This is a stable release with the following changes:
+          This is the third unstable release for GNOME 41.
         </p>
         <ul>
-          <li>Fix a bug where app sources appeared in the header of the Updates tab</li>
-          <li>Automatically install application updates, depending on the type of application and user config</li>
-          <li>Avoid extra vertical space in the featured apps carousel</li>
-          <li>Include apps from disabled repos in Shell Overview search results</li>
-          <li>Distinguish between download size and installed size for PackageKit apps</li>
-          <li>Properly update the "Last checked" timestamp on the Updates tab</li>
-          <li>Fix a crash that sometimes happens when clicking on the Website button on a details page</li>
-          <li>Fix a bug where the list of sources for an application was sometimes incomplete</li>
+          <li>Tweaks to the context tiles and dialogs</li>
+          <li>Fixes to the details page for non-desktop apps</li>
+          <li>Re-add support for the add-ons categories</li>
+          <li>Sort new and updated apps by release date on the category page</li>
         </ul>
-        <p>Translation updates:</p>
+        <p>This release also updates translations:</p>
+        <ul>
+          <li>Basque</li>
+          <li>Catalan</li>
+          <li>Chinese (China)</li>
+          <li>Chinese (Taiwan)</li>
+          <li>Croatian</li>
+          <li>English (United Kingdom)</li>
+          <li>Finnish</li>
+          <li>Galician</li>
+          <li>Indonesian</li>
+          <li>Kazakh</li>
+          <li>Korean</li>
+          <li>Lithuanian</li>
+          <li>Occitan (post 1500)</li>
+          <li>Persian</li>
+          <li>Portuguese</li>
+          <li>Portuguese (Brazil)</li>
+          <li>Slovenian</li>
+          <li>Spanish</li>
+          <li>Swedish</li>
+          <li>Ukrainian</li>
+        </ul>
+      </description>
+    </release>
+    <release date="2021-08-13" version="41.beta" type="development">
+      <description>
+        <p>
+          This is the second unstable release for GNOME 41.
+        </p>
+        <ul>
+          <li>Many parts of the user interface reworked</li>
+          <li>Fix when the 'Launch' button is shown after an application install</li>
+          <li>Fix appstream:// URL handling</li>
+          <li>Fix application freeze on Flatpak application install/remove/update</li>
+          <li>Disable automatic update downloads when in power saver mode</li>
+        </ul>
+        <p>This release also updates translations:</p>
         <ul>
           <li>Belarusian</li>
-        </ul>
-      </description>
-    </release>
-    <release date="2021-06-04" version="40.2">
-      <description>
-        <p>
-          This is a stable release with the following changes:
-        </p>
-        <ul>
-          <li>Avoid spurious polkit prompts by the PackageKit plugin for background operations</li>
-          <li>Handle NULL OS name or version</li>
-          <li>Fix a crash related to version history gathering</li>
-          <li>Fix a crash when a Flatpak component had been renamed</li>
-          <li>Improve error reporting when low on disk space for Flatpak</li>
-          <li>Fix a deadlock after Flatpak changes from the command line</li>
-          <li>Fix list of alternative application sources to not show duplicates</li>
-          <li>Fix application icon loading for already cached icons</li>
-          <li>Fix crash loading empty DEP-11 data</li>
-          <li>Fix update of related Flatpak runtimes</li>
-          <li>Fix automatic download of pending updates</li>
-          <li>Consider only critical updates as important</li>
-        </ul>
-        <p>Translation updates:</p>
-        <ul>
-          <li>Basque</li>
-          <li>Bokmål, Norwegian</li>
+          <li>Bulgarian</li>
           <li>Catalan</li>
           <li>Friulian</li>
+          <li>Galician</li>
+          <li>German</li>
+          <li>Greek, Modern (1453-)</li>
           <li>Occitan (post 1500)</li>
+          <li>Persian</li>
+          <li>Portuguese</li>
+          <li>Portuguese (Brazil)</li>
+          <li>Slovenian</li>
+          <li>Ukrainian</li>
         </ul>
       </description>
     </release>
-    <release date="2021-04-30" version="40.1">
+    <release date="2021-07-20" version="41.alpha" type="development">
       <description>
         <p>
-          This is a stable release with the following changes:
+          This is the first unstable release for GNOME 41.
         </p>
         <ul>
-          <li>Fix flatpak update state if update was already done outside of GNOME Software</li>
-          <li>Update app state after repository is enabled or disabled</li>
-          <li>Fix the overview opening empty in some situations</li>
-          <li>Show apps which are being updated in the updates page, rather than just ones which are ready to be updated</li>
-          <li>Fix section headers on ‘Installed’ page</li>
-          <li>Fix searches not being triggered by typing in the search entry in some situations</li>
-          <li>Fix duplicate origins being listed incorrectly in the app details page (in particular, for UngoogledChromium)</li>
-          <li>Fix a broken rpm-ostree repository causing other repositories to be ignored</li>
-          <li>Fix animation glitch on featured apps carousel when going from app 2 to app 1</li>
-          <li>Improve featured apps carousel contrast for Steam</li>
-          <li>Speed up search queries by over 40%</li>
-          <li>Do not keep the rpm-ostree service alive forever while GNOME Software is running</li>
-          <li>Fix broken header bar on application details page in some situations</li>
-          <li>Prevent uninstallation of add-ons for system apps</li>
-          <li>Fix search from Nautilus on Fedora Silverblue</li>
-          <li>Fix reporting state of layered packages on Fedora Silverblue</li>
-          <li>Fix updating add-on state when uninstalling an app</li>
+          <li>Many parts of the user interface reworked</li>
+          <li>Improve error reporting from flatpak when low on disk space</li>
+          <li>Fix issues with updating the UI when uninstalling apps with add-ons</li>
+          <li>Don’t keep rpm-ostreed alive forever</li>
+          <li>Prevent polkit checks showing up for background operations</li>
+          <li>Disallow submitting reviews for an app you haven’t installed</li>
+          <li>Show download size in the Updates page</li>
+          <li>Notify when restart is needed when uninstalling an app</li>
+          <li>Fix some issues with searches not running</li>
+          <li>Allow non-integer average star ratings for apps</li>
+          <li>Reduce number of categories in the UI</li>
+          <li>Improve ‘pending updates’ notifications</li>
+          <li>Refine presentation of download and installed size on details page</li>
+          <li>Remove left over gnome-online-account dependencies</li>
         </ul>
-        <p>Translation updates:</p>
+        <p>This release also updates translations:</p>
         <ul>
           <li>Basque</li>
+          <li>Belarusian</li>
+          <li>Bokmål, Norwegian</li>
           <li>Catalan</li>
           <li>Chinese (China)</li>
           <li>Chinese (Taiwan)</li>
@@ -145,31 +209,28 @@
           <li>Dutch</li>
           <li>English (United Kingdom)</li>
           <li>Finnish</li>
-          <li>French</li>
-          <li>Galician</li>
+          <li>Friulian</li>
           <li>German</li>
           <li>Greek, Modern (1453-)</li>
           <li>Hebrew</li>
-          <li>Indonesian</li>
           <li>Italian</li>
           <li>Lithuanian</li>
           <li>Nepali</li>
+          <li>Occitan (post 1500)</li>
           <li>Persian</li>
           <li>Polish</li>
           <li>Portuguese</li>
           <li>Portuguese (Brazil)</li>
           <li>Romanian</li>
+          <li>Russian</li>
           <li>Serbian</li>
-          <li>Slovenian</li>
           <li>Spanish</li>
           <li>Swedish</li>
-          <li>Turkish</li>
           <li>Ukrainian</li>
-          <li>Vietnamese</li>
         </ul>
       </description>
     </release>
-    <release date="2021-03-19" version="40">
+    <release date="2021-03-19" version="40" type="stable">
       <description>
         <p>
           This is a stable release with the following changes:
@@ -193,7 +254,7 @@
         </ul>
       </description>
     </release>
-    <release date="2021-03-12" version="40.rc">
+    <release date="2021-03-12" version="40.rc" type="development">
       <description>
         <p>
           This is an unstable release with the following changes:
@@ -238,7 +299,7 @@
         </ul>
       </description>
     </release>
-    <release date="2021-02-16" version="40.beta">
+    <release date="2021-02-16" version="40.beta" type="development">
       <description>
         <p>
           This is an unstable release with the following changes:
@@ -266,7 +327,7 @@
         </ul>
       </description>
     </release>
-    <release date="2021-01-27" version="40.alpha">
+    <release date="2021-01-27" version="40.alpha" type="development">
       <description>
         <p>
           This is the first unstable release for GNOME 40.
@@ -330,8 +391,8 @@
         </ul>
       </description>
     </release>
-    <release date="2020-09-01" version="3.37.92">
-      <description>
+    <release date="2020-09-01" version="3.37.92" type="development">
+      <description translatable="no">
         <p>
           This is an unstable stable release with the following changes:
         </p>
@@ -353,15 +414,15 @@
         <p>This release also updates existing translations.</p>
       </description>
     </release>
-    <release date="2020-03-11" version="3.36.0">
-      <description>
+    <release date="2020-03-11" version="3.36.0" type="stable">
+      <description translatable="no">
         <p>
           This is the first stable release for GNOME 3.36.
         </p>
       </description>
     </release>
-    <release date="2020-03-04" version="3.35.92">
-      <description>
+    <release date="2020-03-04" version="3.35.92" type="development">
+      <description translatable="no">
         <p>
           This is an unstable stable release with the following changes:
         </p>
@@ -374,8 +435,8 @@
         <p>This release also updates existing translations.</p>
       </description>
     </release>
-    <release date="2020-02-19" version="3.35.91">
-      <description>
+    <release date="2020-02-19" version="3.35.91" type="development">
+      <description translatable="no">
         <p>
           This is an unstable stable release with the following changes:
         </p>
@@ -398,8 +459,8 @@
         <p>This release also adds and updates existing translations.</p>
       </description>
     </release>
-    <release date="2019-11-25" version="3.35.2">
-      <description>
+    <release date="2019-11-25" version="3.35.2" type="development">
+      <description translatable="no">
         <p>
           This is an unstable stable release with the following changes:
         </p>
@@ -436,8 +497,8 @@
         <p>This release also adds and updates existing translations.</p>
       </description>
     </release>
-    <release date="2019-09-09" version="3.34.0">
-      <description>
+    <release date="2019-09-09" version="3.34.0" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -461,8 +522,8 @@
         <p>This release also adds and updates existing translations.</p>
       </description>
     </release>
-    <release date="2019-07-11" version="3.32.4">
-      <description>
+    <release date="2019-07-11" version="3.32.4" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -474,8 +535,8 @@
         </ul>
       </description>
     </release>
-    <release date="2019-05-24" version="3.32.3">
-      <description>
+    <release date="2019-05-24" version="3.32.3" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -492,8 +553,8 @@
         </ul>
       </description>
     </release>
-    <release date="2019-05-07" version="3.32.2">
-      <description>
+    <release date="2019-05-07" version="3.32.2" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -511,8 +572,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2019-04-15" version="3.32.1">
-      <description>
+    <release date="2019-04-15" version="3.32.1" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -531,8 +592,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2019-03-11" version="3.32.0">
-      <description>
+    <release date="2019-03-11" version="3.32.0" type="stable">
+      <description translatable="no">
         <p>
           This is the first stable release for GNOME 3.32. Notable changes compared to 3.30 include:
         </p>
@@ -549,8 +610,8 @@
         </ul>
       </description>
     </release>
-    <release date="2019-03-05" version="3.31.92">
-      <description>
+    <release date="2019-03-05" version="3.31.92" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.31 development series,
           marking the end of the development cycle. Next release will be 3.32.0!
@@ -570,8 +631,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2019-02-24" version="3.31.90">
-      <description>
+    <release date="2019-02-24" version="3.31.90" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.31 development series,
           with the following improvements:
@@ -606,8 +667,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2019-01-16" version="3.31.2">
-      <description>
+    <release date="2019-01-16" version="3.31.2" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.31 development series,
           with the following improvements:
@@ -650,8 +711,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-10-09" version="3.31.1">
-      <description>
+    <release date="2018-10-09" version="3.31.1" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.31 development series,
           with the following improvements:
@@ -674,8 +735,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-10-05" version="3.30.2">
-      <description>
+    <release date="2018-10-05" version="3.30.2" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -695,8 +756,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-09-25" version="3.30.1">
-      <description>
+    <release date="2018-09-25" version="3.30.1" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -714,15 +775,15 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-09-04" version="3.30.0">
-      <description>
+    <release date="2018-09-04" version="3.30.0" type="stable">
+      <description translatable="no">
         <p>
           This is the first stable release for GNOME 3.30.
         </p>
       </description>
     </release>
-    <release date="2018-08-28" version="3.29.92">
-      <description>
+    <release date="2018-08-28" version="3.29.92" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.27 development series,
           with the following improvements:
@@ -746,8 +807,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-03-05" version="3.29.1">
-      <description>
+    <release date="2018-03-05" version="3.29.1" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.27 development series,
           with the following improvements:
@@ -759,8 +820,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-05-09" version="3.28.2">
-      <description>
+    <release date="2018-05-09" version="3.28.2" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -774,8 +835,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-04-09" version="3.28.1">
-      <description>
+    <release date="2018-04-09" version="3.28.1" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -799,8 +860,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-03-12" version="3.28.0">
-      <description>
+    <release date="2018-03-12" version="3.28.0" type="stable">
+      <description translatable="no">
         <p>
           This is the first stable release for GNOME 3.28,
           with the following improvements:
@@ -818,8 +879,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-03-05" version="3.27.92">
-      <description>
+    <release date="2018-03-05" version="3.27.92" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.27 development series,
           marking the end of the development cycle. Next release will be 3.28.0!
@@ -842,8 +903,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-02-14" version="3.27.90">
-      <description>
+    <release date="2018-02-14" version="3.27.90" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.27 development series,
           with the following improvements:
@@ -865,8 +926,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2018-01-08" version="3.27.4">
-      <description>
+    <release date="2018-01-08" version="3.27.4" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.27 development series,
           with the following improvements:
@@ -884,8 +945,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-11-13" version="3.27.3">
-      <description>
+    <release date="2017-11-13" version="3.27.3" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.27 development series,
           with the following improvements:
@@ -909,8 +970,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-11-13" version="3.27.2">
-      <description>
+    <release date="2017-11-13" version="3.27.2" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.27 development series,
           with the following improvements:
@@ -929,8 +990,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-11-09" version="3.26.2">
-      <description>
+    <release date="2017-11-09" version="3.26.2" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -949,8 +1010,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-10-02" version="3.26.1">
-      <description>
+    <release date="2017-10-02" version="3.26.1" type="stable">
+      <description translatable="no">
         <p>
           This is a stable release with the following changes:
         </p>
@@ -965,8 +1026,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-09-11" version="3.26.0">
-      <description>
+    <release date="2017-09-11" version="3.26.0" type="stable">
+      <description translatable="no">
         <p>
           This is the first stable release for GNOME 3.26,
           with the following improvements:
@@ -988,8 +1049,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-08-21" version="3.25.91">
-      <description>
+    <release date="2017-08-21" version="3.25.91" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.25 development series,
           with the following improvements:
@@ -1006,8 +1067,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-08-07" version="3.25.90">
-      <description>
+    <release date="2017-08-07" version="3.25.90" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.25 development series,
           with the following improvements:
@@ -1026,8 +1087,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-07-21" version="3.25.4">
-      <description>
+    <release date="2017-07-21" version="3.25.4" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.25 development series,
           with the following improvements:
@@ -1054,8 +1115,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-06-22" version="3.25.3">
-      <description>
+    <release date="2017-06-22" version="3.25.3" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.25 development series,
           with the following improvements:
@@ -1085,8 +1146,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-05-08" version="3.25.2">
-      <description>
+    <release date="2017-05-08" version="3.25.2" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.25 development series,
           with the following improvements:
@@ -1104,8 +1165,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-04-28" version="3.25.1">
-      <description>
+    <release date="2017-04-28" version="3.25.1" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.25 development series,
           with the following improvements:
@@ -1129,8 +1190,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-03-13" version="3.23.92">
-      <description>
+    <release date="2017-03-13" version="3.23.92" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.23 development series,
           with the following bug fixes:
@@ -1144,8 +1205,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-02-27" version="3.23.91">
-      <description>
+    <release date="2017-02-27" version="3.23.91" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.23 development series,
           with the following improvements:
@@ -1164,8 +1225,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2017-02-13" version="3.23.90">
-      <description>
+    <release date="2017-02-13" version="3.23.90" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.23 development series,
           with the following improvements:
@@ -1188,8 +1249,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2016-12-15" version="3.23.3">
-      <description>
+    <release date="2016-12-15" version="3.23.3" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.23 development series,
           with the following improvements:
@@ -1215,8 +1276,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2016-11-21" version="3.23.2">
-      <description>
+    <release date="2016-11-21" version="3.23.2" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.23 development series,
           with the following improvements:
@@ -1242,8 +1303,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2016-11-07" version="3.22.2">
-      <description>
+    <release date="2016-11-07" version="3.22.2" type="stable">
+      <description translatable="no">
         <p>This stable release fixes the following bugs:</p>
         <ul>
           <li>Large number of fixes and improvements for flatpak support</li>
@@ -1258,8 +1319,8 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2016-10-12" version="3.22.1">
-      <description>
+    <release date="2016-10-12" version="3.22.1" type="stable">
+      <description translatable="no">
         <p>This stable release fixes the following bugs:</p>
         <ul>
           <li>Fix several issues with flatpak bundles</li>
@@ -1271,16 +1332,16 @@
         <p>This release also updates translations.</p>
       </description>
     </release>
-    <release date="2016-09-19" version="3.22.0">
-      <description>
+    <release date="2016-09-19" version="3.22.0" type="stable">
+      <description translatable="no">
         <p>
           This is the first stable release for GNOME 3.22 and updates several
           translations.
         </p>
       </description>
     </release>
-    <release date="2016-09-13" version="3.21.92">
-      <description>
+    <release date="2016-09-13" version="3.21.92" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.21 development series,
           with the following improvements:
@@ -1301,8 +1362,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release date="2016-08-31" version="3.21.91">
-      <description>
+    <release date="2016-08-31" version="3.21.91" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.21 development series,
           with the following improvements:
@@ -1322,8 +1383,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release date="2016-08-15" version="3.21.90">
-      <description>
+    <release date="2016-08-15" version="3.21.90" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.21 development series,
           with the following improvements:
@@ -1342,8 +1403,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release date="2016-07-18" version="3.21.4">
-      <description>
+    <release date="2016-07-18" version="3.21.4" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.21 development series,
           with the following improvements:
@@ -1379,8 +1440,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release date="2016-05-23" version="3.21.2">
-      <description>
+    <release date="2016-05-23" version="3.21.2" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.21 development series,
           with the following improvements:
@@ -1406,8 +1467,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release date="2016-04-25" version="3.21.1">
-      <description>
+    <release date="2016-04-25" version="3.21.1" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.21 development series,
           with the following improvements:
@@ -1468,8 +1529,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release date="2016-02-29" version="3.19.91">
-      <description>
+    <release date="2016-02-29" version="3.19.91" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.19 development series,
           with the following improvements:
@@ -1492,8 +1553,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release date="2016-02-15" version="3.19.90">
-      <description>
+    <release date="2016-02-15" version="3.19.90" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.19 development series,
           with the following improvements:
@@ -1515,8 +1576,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1452867221" version="3.19.4">
-      <description>
+    <release timestamp="1452867221" version="3.19.4" type="development">
+      <description translatable="no">
         <p>
           This is an unstable release in the 3.19 development series,
           with the following improvements:
@@ -1541,8 +1602,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1446724044" version="3.18.3">
-      <description>
+    <release timestamp="1446724044" version="3.18.3" type="stable">
+      <description translatable="no">
         <p>This stable release fixes the following bugs:</p>
         <ul>
           <li>Use the correct user agent string when downloading firmware</li>
@@ -1552,8 +1613,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1444908967" version="3.18.2">
-      <description>
+    <release timestamp="1444908967" version="3.18.2" type="stable">
+      <description translatable="no">
         <p>This stable release fixes the following bugs:</p>
         <ul>
           <li>Fix a regression that could lead to never finding any updates</li>
@@ -1562,8 +1623,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1444738225" version="3.18.1">
-      <description>
+    <release timestamp="1444738225" version="3.18.1" type="stable">
+      <description translatable="no">
         <p>This stable release fixes the following bugs:</p>
         <ul>
           <li>Do not force the cache refresh and delete otherwise valid packages</li>
@@ -1578,13 +1639,13 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1442827658" version="3.18.0">
-      <description>
+    <release timestamp="1442827658" version="3.18.0" type="stable">
+      <description translatable="no">
         <p>This is the first stable release for the GNOME 3.18 desktop!</p>
       </description>
     </release>
-    <release timestamp="1442313469" version="3.17.92">
-      <description>
+    <release timestamp="1442313469" version="3.17.92" type="development">
+      <description translatable="no">
         <p>This is an unstable release in the 3.17 development series, with the following improvements:</p>
         <ul>
           <li>Fix getting firmware updates by parsing the metadata correctly</li>
@@ -1594,8 +1655,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1441303652" version="3.17.91">
-      <description>
+    <release timestamp="1441303652" version="3.17.91" type="development">
+      <description translatable="no">
         <p>This is an unstable release in the 3.17 development series, with the following improvements:</p>
         <ul>
           <li>Better theming for the category sidebar</li>
@@ -1607,8 +1668,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1439990842" version="3.17.90">
-      <description>
+    <release timestamp="1439990842" version="3.17.90" type="development">
+      <description translatable="no">
         <p>This is an unstable release with the following bugs fixed:</p>
         <ul>
           <li>Use CSS to style the error message details</li>
@@ -1617,8 +1678,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1439370225" version="3.17.3">
-      <description>
+    <release timestamp="1439370225" version="3.17.3" type="development">
+      <description translatable="no">
         <p>This is an unstable release in the 3.17 development series, with the following improvements:</p>
         <ul>
           <li>Add basic support for Limba bundles</li>
@@ -1641,8 +1702,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1433526589" version="3.17.2">
-      <description>
+    <release timestamp="1433526589" version="3.17.2" type="development">
+      <description translatable="no">
         <p>This is an unstable release in the 3.17 development series, with the following improvements:</p>
         <ul>
           <li>Make fwupd dependency automagic</li>
@@ -1658,8 +1719,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1432590395" version="3.17.1">
-      <description>
+    <release timestamp="1432590395" version="3.17.1" type="development">
+      <description translatable="no">
         <p>This is the first unstable release in the 3.17 development series, with a number of new features:</p>
         <ul>
           <li>Support getting firmware updates through the fwupd daemon</li>
@@ -1673,8 +1734,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1431345463" version="3.16.2">
-      <description>
+    <release timestamp="1431345463" version="3.16.2" type="stable">
+      <description translatable="no">
         <p>This release fixes the following bugs:</p>
         <ul>
           <li>Remove redundant OK button from the updates installed notification</li>
@@ -1687,8 +1748,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1429029680" version="3.16.1">
-      <description>
+    <release timestamp="1429029680" version="3.16.1" type="stable">
+      <description translatable="no">
         <p>This release fixes the following bugs:</p>
         <ul>
           <li>Correctly save HiDPI images to HiDPI directories</li>
@@ -1697,13 +1758,13 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1427103917" version="3.16.0">
-      <description>
+    <release timestamp="1427103917" version="3.16.0" type="stable">
+      <description translatable="no">
         <p>This stable release marks the release of GNOME 3.16!</p>
       </description>
     </release>
-    <release timestamp="1426498834" version="3.15.92">
-      <description>
+    <release timestamp="1426498834" version="3.15.92" type="development">
+      <description translatable="no">
         <p>This unstable release adds the following features:</p>
         <ul>
           <li>React to theme changes</li>
@@ -1720,8 +1781,8 @@
         <p>This release also updates translations for many languages.</p>
       </description>
     </release>
-    <release timestamp="1425309931" version="3.15.91">
-      <description>
+    <release timestamp="1425309931" version="3.15.91" type="development">
+      <description translatable="no">
         <p>This unstable release adds the following features:</p>
         <ul>
           <li>Enable kinetic scrolling in updates dialog</li>
@@ -1735,8 +1796,8 @@
         </ul>
       </description>
     </release>
-    <release timestamp="1424116753" version="3.15.90">
-      <description>
+    <release timestamp="1424116753" version="3.15.90" type="development">
+      <description translatable="no">
         <p>This unstable release adds the following features:</p>
         <ul>
           <li>Add a new panel for displaying session service results</li>
@@ -1749,8 +1810,8 @@
         </ul>
       </description>
     </release>
-    <release timestamp="1421625600" version="3.15.4">
-      <description>
+    <release timestamp="1421625600" version="3.15.4" type="development">
+      <description translatable="no">
         <p>This unstable release adds the following features:</p>
         <ul>
           <li>Fix searching with very small search terms</li>
@@ -1765,8 +1826,8 @@
         </ul>
       </description>
     </release>
-    <release timestamp="1416787200" version="3.15.2">
-      <description>
+    <release timestamp="1416787200" version="3.15.2" type="development">
+      <description translatable="no">
         <p>This unstable release adds the following features:</p>
         <ul>
           <li>Show a blurred low-resolution screenshot while loading the HiDPI one</li>

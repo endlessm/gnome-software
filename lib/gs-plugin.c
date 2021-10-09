@@ -61,7 +61,6 @@ typedef struct
 	gboolean		 enabled;
 	guint			 interactive_cnt;
 	GMutex			 interactive_mutex;
-	gchar			*locale;		/* allow-none */
 	gchar			*language;		/* allow-none */
 	gchar			*name;
 	gchar			*appstream_id;
@@ -210,7 +209,6 @@ gs_plugin_finalize (GObject *object)
 	g_free (priv->name);
 	g_free (priv->appstream_id);
 	g_free (priv->data);
-	g_free (priv->locale);
 	g_free (priv->language);
 	if (priv->soup_session != NULL)
 		g_object_unref (priv->soup_session);
@@ -532,32 +530,6 @@ gs_plugin_set_priority (GsPlugin *plugin, guint priority)
 }
 
 /**
- * gs_plugin_get_locale:
- * @plugin: a #GsPlugin
- *
- * Gets the user locale. This is in the form documented in `man 3 setlocale`:
- * ```
- * language[_territory][.codeset][@modifier]
- * ```
- * where `language` is an
- * [ISO 639 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes),
- * `territory` is an
- * [ISO 3166 country code](https://en.wikipedia.org/wiki/ISO_3166-1), and
- * `codeset` is a character set or encoding identifier like `ISO-8859-1` or
- * `UTF-8`. For a list of all supported locales, run `locale -a`.
- *
- * Returns: the locale string, e.g. `en_GB` or `uz_UZ.utf8@cyrillic`
- *
- * Since: 3.22
- **/
-const gchar *
-gs_plugin_get_locale (GsPlugin *plugin)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	return priv->locale;
-}
-
-/**
  * gs_plugin_get_language:
  * @plugin: a #GsPlugin
  *
@@ -576,23 +548,6 @@ gs_plugin_get_language (GsPlugin *plugin)
 {
 	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
 	return priv->language;
-}
-
-/**
- * gs_plugin_set_locale:
- * @plugin: a #GsPlugin
- * @locale: a locale string, e.g. "en_GB"
- *
- * Sets the plugin locale.
- *
- * Since: 3.22
- **/
-void
-gs_plugin_set_locale (GsPlugin *plugin, const gchar *locale)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_free (priv->locale);
-	priv->locale = g_strdup (locale);
 }
 
 /**
@@ -685,7 +640,7 @@ gs_plugin_get_network_available (GsPlugin *plugin)
 /**
  * gs_plugin_has_flags:
  * @plugin: a #GsPlugin
- * @flags: a #GsPluginFlags, e.g. %GS_PLUGIN_FLAGS_RUNNING_SELF
+ * @flags: a #GsPluginFlags, e.g. %GS_PLUGIN_FLAGS_INTERACTIVE
  *
  * Finds out if a plugin has a specific flag set.
  *
@@ -703,7 +658,7 @@ gs_plugin_has_flags (GsPlugin *plugin, GsPluginFlags flags)
 /**
  * gs_plugin_add_flags:
  * @plugin: a #GsPlugin
- * @flags: a #GsPluginFlags, e.g. %GS_PLUGIN_FLAGS_RUNNING_SELF
+ * @flags: a #GsPluginFlags, e.g. %GS_PLUGIN_FLAGS_INTERACTIVE
  *
  * Adds specific flags to the plugin.
  *
@@ -719,7 +674,7 @@ gs_plugin_add_flags (GsPlugin *plugin, GsPluginFlags flags)
 /**
  * gs_plugin_remove_flags:
  * @plugin: a #GsPlugin
- * @flags: a #GsPluginFlags, e.g. %GS_PLUGIN_FLAGS_RUNNING_SELF
+ * @flags: a #GsPluginFlags, e.g. %GS_PLUGIN_FLAGS_INTERACTIVE
  *
  * Removes specific flags from the plugin.
  *
@@ -1627,18 +1582,6 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 {
 	if (action == GS_PLUGIN_ACTION_REFRESH)
 		return "gs_plugin_refresh";
-	if (action == GS_PLUGIN_ACTION_REVIEW_SUBMIT)
-		return "gs_plugin_review_submit";
-	if (action == GS_PLUGIN_ACTION_REVIEW_UPVOTE)
-		return "gs_plugin_review_upvote";
-	if (action == GS_PLUGIN_ACTION_REVIEW_DOWNVOTE)
-		return "gs_plugin_review_downvote";
-	if (action == GS_PLUGIN_ACTION_REVIEW_REPORT)
-		return "gs_plugin_review_report";
-	if (action == GS_PLUGIN_ACTION_REVIEW_REMOVE)
-		return "gs_plugin_review_remove";
-	if (action == GS_PLUGIN_ACTION_REVIEW_DISMISS)
-		return "gs_plugin_review_dismiss";
 	if (action == GS_PLUGIN_ACTION_INSTALL)
 		return "gs_plugin_app_install";
 	if (action == GS_PLUGIN_ACTION_REMOVE)
@@ -1671,8 +1614,6 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_add_distro_upgrades";
 	if (action == GS_PLUGIN_ACTION_GET_SOURCES)
 		return "gs_plugin_add_sources";
-	if (action == GS_PLUGIN_ACTION_GET_UNVOTED_REVIEWS)
-		return "gs_plugin_add_unvoted_reviews";
 	if (action == GS_PLUGIN_ACTION_GET_INSTALLED)
 		return "gs_plugin_add_installed";
 	if (action == GS_PLUGIN_ACTION_GET_FEATURED)
@@ -1705,6 +1646,14 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_add_alternates";
 	if (action == GS_PLUGIN_ACTION_GET_LANGPACKS)
 		return "gs_plugin_add_langpacks";
+	if (action == GS_PLUGIN_ACTION_INSTALL_REPO)
+		return "gs_plugin_install_repo";
+	if (action == GS_PLUGIN_ACTION_REMOVE_REPO)
+		return "gs_plugin_remove_repo";
+	if (action == GS_PLUGIN_ACTION_ENABLE_REPO)
+		return "gs_plugin_enable_repo";
+	if (action == GS_PLUGIN_ACTION_DISABLE_REPO)
+		return "gs_plugin_disable_repo";
 	return NULL;
 }
 
@@ -1745,24 +1694,10 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "add-shortcut";
 	if (action == GS_PLUGIN_ACTION_REMOVE_SHORTCUT)
 		return "remove-shortcut";
-	if (action == GS_PLUGIN_ACTION_REVIEW_SUBMIT)
-		return "review-submit";
-	if (action == GS_PLUGIN_ACTION_REVIEW_UPVOTE)
-		return "review-upvote";
-	if (action == GS_PLUGIN_ACTION_REVIEW_DOWNVOTE)
-		return "review-downvote";
-	if (action == GS_PLUGIN_ACTION_REVIEW_REPORT)
-		return "review-report";
-	if (action == GS_PLUGIN_ACTION_REVIEW_REMOVE)
-		return "review-remove";
-	if (action == GS_PLUGIN_ACTION_REVIEW_DISMISS)
-		return "review-dismiss";
 	if (action == GS_PLUGIN_ACTION_GET_UPDATES)
 		return "get-updates";
 	if (action == GS_PLUGIN_ACTION_GET_DISTRO_UPDATES)
 		return "get-distro-updates";
-	if (action == GS_PLUGIN_ACTION_GET_UNVOTED_REVIEWS)
-		return "get-unvoted-reviews";
 	if (action == GS_PLUGIN_ACTION_GET_SOURCES)
 		return "get-sources";
 	if (action == GS_PLUGIN_ACTION_GET_INSTALLED)
@@ -1801,6 +1736,14 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "get-alternates";
 	if (action == GS_PLUGIN_ACTION_GET_LANGPACKS)
 		return "get-langpacks";
+	if (action == GS_PLUGIN_ACTION_INSTALL_REPO)
+		return "repo-install";
+	if (action == GS_PLUGIN_ACTION_REMOVE_REPO)
+		return "repo-remove";
+	if (action == GS_PLUGIN_ACTION_ENABLE_REPO)
+		return "repo-enable";
+	if (action == GS_PLUGIN_ACTION_DISABLE_REPO)
+		return "repo-disable";
 	return NULL;
 }
 
@@ -1841,24 +1784,10 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_ADD_SHORTCUT;
 	if (g_strcmp0 (action, "remove-shortcut") == 0)
 		return GS_PLUGIN_ACTION_REMOVE_SHORTCUT;
-	if (g_strcmp0 (action, "review-submit") == 0)
-		return GS_PLUGIN_ACTION_REVIEW_SUBMIT;
-	if (g_strcmp0 (action, "review-upvote") == 0)
-		return GS_PLUGIN_ACTION_REVIEW_UPVOTE;
-	if (g_strcmp0 (action, "review-downvote") == 0)
-		return GS_PLUGIN_ACTION_REVIEW_DOWNVOTE;
-	if (g_strcmp0 (action, "review-report") == 0)
-		return GS_PLUGIN_ACTION_REVIEW_REPORT;
-	if (g_strcmp0 (action, "review-remove") == 0)
-		return GS_PLUGIN_ACTION_REVIEW_REMOVE;
-	if (g_strcmp0 (action, "review-dismiss") == 0)
-		return GS_PLUGIN_ACTION_REVIEW_DISMISS;
 	if (g_strcmp0 (action, "get-updates") == 0)
 		return GS_PLUGIN_ACTION_GET_UPDATES;
 	if (g_strcmp0 (action, "get-distro-updates") == 0)
 		return GS_PLUGIN_ACTION_GET_DISTRO_UPDATES;
-	if (g_strcmp0 (action, "get-unvoted-reviews") == 0)
-		return GS_PLUGIN_ACTION_GET_UNVOTED_REVIEWS;
 	if (g_strcmp0 (action, "get-sources") == 0)
 		return GS_PLUGIN_ACTION_GET_SOURCES;
 	if (g_strcmp0 (action, "get-installed") == 0)
@@ -1897,6 +1826,14 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_GET_ALTERNATES;
 	if (g_strcmp0 (action, "get-langpacks") == 0)
 		return GS_PLUGIN_ACTION_GET_LANGPACKS;
+	if (g_strcmp0 (action, "repo-install") == 0)
+		return GS_PLUGIN_ACTION_INSTALL_REPO;
+	if (g_strcmp0 (action, "repo-remove") == 0)
+		return GS_PLUGIN_ACTION_REMOVE_REPO;
+	if (g_strcmp0 (action, "repo-enable") == 0)
+		return GS_PLUGIN_ACTION_ENABLE_REPO;
+	if (g_strcmp0 (action, "repo-disable") == 0)
+		return GS_PLUGIN_ACTION_DISABLE_REPO;
 	return GS_PLUGIN_ACTION_UNKNOWN;
 }
 
@@ -2205,4 +2142,30 @@ gs_plugin_update_cache_state_for_repository (GsPlugin *plugin,
 			gs_app_set_state (app, repo_state == GS_APP_STATE_INSTALLED ? GS_APP_STATE_AVAILABLE : GS_APP_STATE_UNAVAILABLE);
 		}
 	}
+}
+
+/**
+ * gs_plugin_get_action_supported:
+ * @plugin: a #GsPlugin
+ * @action: a #GsPluginAction
+ *
+ * Checks whether the @plugin supports @action, meaning whether
+ * the @plugin can execute the @action.
+ *
+ * Returns: Whether the @plugin supports the @action
+ *
+ * Since: 41
+ **/
+gboolean
+gs_plugin_get_action_supported (GsPlugin *plugin,
+				GsPluginAction action)
+{
+	const gchar *function_name;
+
+	g_return_val_if_fail (GS_IS_PLUGIN (plugin), FALSE);
+
+	function_name = gs_plugin_action_to_function_name (action);
+	g_return_val_if_fail (function_name != NULL, FALSE);
+
+	return gs_plugin_get_symbol (plugin, function_name) != NULL;
 }

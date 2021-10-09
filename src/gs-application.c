@@ -31,6 +31,7 @@
 #endif
 
 #include "gs-build-ident.h"
+#include "gs-common.h"
 #include "gs-debug.h"
 #include "gs-first-run-dialog.h"
 #include "gs-shell.h"
@@ -46,6 +47,7 @@ struct _GsApplication {
 	GtkCssProvider	*provider;
 	GsPluginLoader	*plugin_loader;
 	gint		 pending_apps;
+	GtkWindow	*main_window;
 	GsShell		*shell;
 	GsUpdateMonitor *update_monitor;
 #ifdef HAVE_PACKAGEKIT
@@ -236,10 +238,8 @@ gs_application_show_first_run_dialog (GsApplication *app)
 
 	if (g_settings_get_boolean (app->settings, "first-run") == TRUE) {
 		dialog = gs_first_run_dialog_new ();
-		gs_shell_modal_dialog_present (app->shell, GTK_DIALOG (dialog));
+		gs_shell_modal_dialog_present (app->shell, GTK_WINDOW (dialog));
 		g_settings_set_boolean (app->settings, "first-run", FALSE);
-		g_signal_connect_swapped (dialog, "response",
-					  G_CALLBACK (gtk_widget_destroy), dialog);
 	}
 }
 
@@ -296,7 +296,8 @@ gs_application_initialize_ui (GsApplication *app)
 							 app);
 
 	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
-	gtk_application_add_window (GTK_APPLICATION (app), gs_shell_get_window (app->shell));
+	app->main_window = GTK_WINDOW (app->shell);
+	gtk_application_add_window (GTK_APPLICATION (app), app->main_window);
 }
 
 static void
@@ -342,19 +343,32 @@ about_activated (GSimpleAction *action,
 		"Allan Day",
 		"Ryan Lerch",
 		"William Jon McCann",
+		"Milan Crha",
+		"Joaquim Rocha",
+		"Robert Ancell",
+		"Philip Withnall",
 		NULL
 	};
-	const gchar *copyright = "Copyright \xc2\xa9 2016-2019 Richard Hughes, Matthias Clasen, Kalev Lember";
 	GtkAboutDialog *dialog;
+	g_autofree gchar *program_name_alloc = NULL;
+	const gchar *program_name;
 
 	dialog = GTK_ABOUT_DIALOG (gtk_about_dialog_new ());
 	gtk_about_dialog_set_authors (dialog, authors);
-	gtk_about_dialog_set_copyright (dialog, copyright);
+	gtk_about_dialog_set_copyright (dialog, _("Copyright \xc2\xa9 2016–2021 GNOME Software contributors"));
 	gtk_about_dialog_set_license_type (dialog, GTK_LICENSE_GPL_2_0);
-	gtk_about_dialog_set_logo_icon_name (dialog, "org.gnome.Software");
+	gtk_about_dialog_set_logo_icon_name (dialog, APPLICATION_ID);
 	gtk_about_dialog_set_translator_credits (dialog, _("translator-credits"));
 	gtk_about_dialog_set_version (dialog, get_version());
-	gtk_about_dialog_set_program_name (dialog, g_get_application_name ());
+
+	if (g_strcmp0 (BUILD_PROFILE, "Devel") == 0) {
+		/* This isn’t translated as it’s never released */
+		program_name = program_name_alloc = g_strdup_printf ("%s (Development Snapshot)",
+								     g_get_application_name ());
+	} else {
+		program_name = g_get_application_name ();
+	}
+	gtk_about_dialog_set_program_name (dialog, program_name);
 
 	/* TRANSLATORS: this is the title of the about window */
 	gtk_window_set_title (GTK_WINDOW (dialog), _("About Software"));
@@ -363,7 +377,7 @@ about_activated (GSimpleAction *action,
 	gtk_about_dialog_set_comments (dialog, _("A nice way to manage the "
 						 "software on your system."));
 
-	gs_shell_modal_dialog_present (app->shell, GTK_DIALOG (dialog));
+	gs_shell_modal_dialog_present (app->shell, GTK_WINDOW (dialog));
 
 	/* just destroy */
 	g_signal_connect_swapped (dialog, "response",
@@ -412,42 +426,13 @@ offline_update_cb (GsPluginLoader *plugin_loader,
 		   GAsyncResult *res,
 		   GsApplication *app)
 {
-	g_autoptr(GDBusConnection) bus = NULL;
 	g_autoptr(GError) error = NULL;
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
 		g_warning ("Failed to trigger offline update: %s", error->message);
 		return;
 	}
 
-	/* trigger reboot */
-	bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
-	g_dbus_connection_call (bus,
-				"org.gnome.SessionManager",
-				"/org/gnome/SessionManager",
-				"org.gnome.SessionManager",
-				"Reboot",
-				NULL, NULL, G_DBUS_CALL_FLAGS_NONE,
-				G_MAXINT, NULL,
-				reboot_failed_cb,
-				app);
-}
-
-static void
-gs_application_reboot_failed_cb (GObject *source,
-				 GAsyncResult *res,
-				 gpointer user_data)
-{
-	g_autoptr(GError) error = NULL;
-	g_autoptr(GVariant) retval = NULL;
-
-	/* get result */
-	retval = g_dbus_connection_call_finish (G_DBUS_CONNECTION (source), res, &error);
-	if (retval != NULL)
-		return;
-	if (error != NULL) {
-		g_warning ("Calling org.gnome.SessionManager.Reboot failed: %s",
-			   error->message);
-	}
+	gs_utils_invoke_reboot_async (NULL, reboot_failed_cb, app);
 }
 
 static void
@@ -455,17 +440,7 @@ reboot_activated (GSimpleAction *action,
 		   GVariant      *parameter,
 		   gpointer       data)
 {
-	g_autoptr(GDBusConnection) bus = NULL;
-	bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
-	g_dbus_connection_call (bus,
-				"org.gnome.SessionManager",
-				"/org/gnome/SessionManager",
-				"org.gnome.SessionManager",
-				"Reboot",
-				NULL, NULL, G_DBUS_CALL_FLAGS_NONE,
-				G_MAXINT, NULL,
-				gs_application_reboot_failed_cb,
-				NULL);
+	gs_utils_invoke_reboot_async (NULL, NULL, NULL);
 }
 
 static void
@@ -597,6 +572,28 @@ _search_launchable_details_cb (GObject *source, GAsyncResult *res, gpointer user
 }
 
 static void
+gs_application_app_to_show_created_cb (GObject *source_object,
+				       GAsyncResult *result,
+				       gpointer user_data)
+{
+	GsApplication *gs_app = user_data;
+	g_autoptr(GsApp) app = NULL;
+	g_autoptr(GError) error = NULL;
+
+	app = gs_plugin_loader_app_create_finish (GS_PLUGIN_LOADER (source_object), result, &error);
+	if (app == NULL) {
+		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED) &&
+		    !g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+			g_warning ("Failed to create application: %s", error->message);
+	} else {
+		g_return_if_fail (GS_IS_APPLICATION (gs_app));
+
+		gs_shell_reset_state (gs_app->shell);
+		gs_shell_show_app (gs_app->shell, app);
+	}
+}
+
+static void
 details_activated (GSimpleAction *action,
 		   GVariant      *parameter,
 		   gpointer       data)
@@ -617,9 +614,8 @@ details_activated (GSimpleAction *action,
 		g_autoptr(GsPluginJob) plugin_job = NULL;
 		data_id = gs_utils_unique_id_compat_convert (id);
 		if (data_id != NULL) {
-			g_autoptr(GsApp) a = gs_plugin_loader_app_create (app->plugin_loader, data_id);
-			gs_shell_reset_state (app->shell);
-			gs_shell_show_app (app->shell, a);
+			gs_plugin_loader_app_create_async (app->plugin_loader, data_id, app->cancellable,
+				gs_application_app_to_show_created_cb, app);
 			return;
 		}
 
@@ -679,6 +675,41 @@ details_url_activated (GSimpleAction *action,
 	gs_shell_show_app (app->shell, a);
 }
 
+typedef struct {
+	GWeakRef gs_app_weakref;
+	gchar *data_id;
+	GsShellInteraction interaction;
+} InstallActivatedHelper;
+
+static void
+gs_application_app_to_install_created_cb (GObject *source_object,
+					  GAsyncResult *result,
+					  gpointer user_data)
+{
+	InstallActivatedHelper *helper = user_data;
+	g_autoptr(GsApp) app = NULL;
+	g_autoptr(GError) error = NULL;
+
+	app = gs_plugin_loader_app_create_finish (GS_PLUGIN_LOADER (source_object), result, &error);
+	if (app == NULL) {
+		if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED) &&
+		    !g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+			g_warning ("Failed to create application '%s': %s", helper->data_id, error->message);
+	} else {
+		g_autoptr(GsApplication) gs_app = NULL;
+
+		gs_app = g_weak_ref_get (&helper->gs_app_weakref);
+		if (gs_app != NULL) {
+			gs_shell_reset_state (gs_app->shell);
+			gs_shell_install (gs_app->shell, app, helper->interaction);
+		}
+	}
+
+	g_weak_ref_clear (&helper->gs_app_weakref);
+	g_free (helper->data_id);
+	g_slice_free (InstallActivatedHelper, helper);
+}
+
 static void
 install_activated (GSimpleAction *action,
 		   GVariant      *parameter,
@@ -687,6 +718,7 @@ install_activated (GSimpleAction *action,
 	GsApplication *app = GS_APPLICATION (data);
 	const gchar *id;
 	GsShellInteraction interaction;
+	InstallActivatedHelper *helper;
 	g_autoptr (GsApp) a = NULL;
 	g_autofree gchar *data_id = NULL;
 
@@ -700,14 +732,13 @@ install_activated (GSimpleAction *action,
 	if (interaction == GS_SHELL_INTERACTION_FULL)
 		gs_application_present_window (app, NULL);
 
-	a = gs_plugin_loader_app_create (app->plugin_loader, data_id);
-	if (a == NULL) {
-		g_warning ("Could not create app from data-id: %s", data_id);
-		return;
-	}
+	helper = g_slice_new0 (InstallActivatedHelper);
+	g_weak_ref_init (&helper->gs_app_weakref, app);
+	helper->data_id = g_strdup (data_id);
+	helper->interaction = interaction;
 
-	gs_shell_reset_state (app->shell);
-	gs_shell_install (app->shell, a, interaction);
+	gs_plugin_loader_app_create_async (app->plugin_loader, data_id, app->cancellable,
+		gs_application_app_to_install_created_cb, helper);
 }
 
 static GFile *
@@ -828,7 +859,7 @@ show_offline_updates_error (GSimpleAction *action,
 
 	gs_shell_reset_state (app->shell);
 	gs_shell_set_mode (app->shell, GS_SHELL_MODE_UPDATES);
-	gs_update_monitor_show_error (app->update_monitor, app->shell);
+	gs_update_monitor_show_error (app->update_monitor, app->main_window);
 }
 
 static void
@@ -1046,6 +1077,13 @@ gs_application_constructed (GObject *object)
 	GsApplication *self = GS_APPLICATION (object);
 
 	G_OBJECT_CLASS (gs_application_parent_class)->constructed (object);
+
+	/* This is needed when the the application's ID isn't
+	 * org.gnome.Software, e.g. for the development profile (when
+	 * `BUILD_PROFILE` is defined). Without this, icon resources can't
+	 * be loaded appropriately. */
+	g_application_set_resource_base_path (G_APPLICATION (self),
+					      "/org/gnome/Software");
 
 	/* Check on our construct-only properties */
 	g_assert (self->debug != NULL);
@@ -1319,7 +1357,7 @@ GsApplication *
 gs_application_new (GsDebug *debug)
 {
 	return g_object_new (GS_APPLICATION_TYPE,
-			     "application-id", "org.gnome.Software",
+			     "application-id", APPLICATION_ID,
 			     "flags", G_APPLICATION_HANDLES_OPEN,
 			     "inactivity-timeout", 12000,
 			     "debug", debug,

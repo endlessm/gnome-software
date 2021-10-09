@@ -67,10 +67,8 @@ gs_plugin_destroy (GsPlugin *plugin)
 static const gchar *
 gs_plugin_appstream_convert_component_kind (const gchar *kind)
 {
-	if (g_strcmp0 (kind, "web-application") == 0)
-		return "webapp";
-	if (g_strcmp0 (kind, "console-application") == 0)
-		return "console";
+	if (g_strcmp0 (kind, "webapp") == 0)
+		return "web-application";
 	return kind;
 }
 
@@ -107,10 +105,9 @@ gs_plugin_appstream_add_icons_cb (XbBuilderFixup *self,
 				  gpointer user_data,
 				  GError **error)
 {
-	GsPlugin *plugin = GS_PLUGIN (user_data);
 	if (g_strcmp0 (xb_builder_node_get_element (bn), "component") != 0)
 		return TRUE;
-	gs_appstream_component_add_extra_info (plugin, bn);
+	gs_appstream_component_add_extra_info (bn);
 	return TRUE;
 }
 
@@ -506,7 +503,6 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 				GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const gchar *locale;
 	const gchar *test_xml;
 	g_autofree gchar *blobfn = NULL;
 	g_autoptr(XbBuilder) builder = xb_builder_new ();
@@ -516,7 +512,8 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 	g_autoptr(GRWLockWriterLocker) writer_locker = NULL;
 	g_autoptr(GPtrArray) parent_appdata = g_ptr_array_new_with_free_func (g_free);
 	g_autoptr(GPtrArray) parent_appstream = g_ptr_array_new_with_free_func (g_free);
-
+	const gchar *const *locales = g_get_language_names ();
+	g_autoptr(GMainContext) old_thread_default = NULL;
 
 	reader_locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
 	/* everything is okay */
@@ -536,14 +533,8 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 	}
 
 	/* add current locales */
-	locale = g_getenv ("GS_SELF_TEST_LOCALE");
-	if (locale == NULL) {
-		const gchar *const *locales = g_get_language_names ();
-		for (guint i = 0; locales[i] != NULL; i++)
-			xb_builder_add_locale (builder, locales[i]);
-	} else {
-		xb_builder_add_locale (builder, locale);
-	}
+	for (guint i = 0; locales[i] != NULL; i++)
+		xb_builder_add_locale (builder, locales[i]);
 
 	/* only when in self test */
 	test_xml = g_getenv ("GS_SELF_TEST_APPSTREAM_XML");
@@ -648,26 +639,46 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 		return FALSE;
 	file = g_file_new_for_path (blobfn);
 	g_debug ("ensuring %s", blobfn);
+
+	/* FIXME: https://gitlab.gnome.org/GNOME/gnome-software/-/issues/1422 */
+	old_thread_default = g_main_context_ref_thread_default ();
+	if (old_thread_default == g_main_context_default ())
+		g_clear_pointer (&old_thread_default, g_main_context_unref);
+	if (old_thread_default != NULL)
+		g_main_context_pop_thread_default (old_thread_default);
+
 	priv->silo = xb_builder_ensure (builder, file,
 					XB_BUILDER_COMPILE_FLAG_IGNORE_INVALID |
 					XB_BUILDER_COMPILE_FLAG_SINGLE_LANG,
 					NULL, error);
-	if (priv->silo == NULL)
+	if (priv->silo == NULL) {
+		if (old_thread_default != NULL)
+			g_main_context_push_thread_default (old_thread_default);
 		return FALSE;
+	}
 
 	/* watch all directories too */
 	for (guint i = 0; i < parent_appstream->len; i++) {
 		const gchar *fn = g_ptr_array_index (parent_appstream, i);
 		g_autoptr(GFile) file_tmp = g_file_new_for_path (fn);
-		if (!xb_silo_watch_file (priv->silo, file_tmp, cancellable, error))
+		if (!xb_silo_watch_file (priv->silo, file_tmp, cancellable, error)) {
+			if (old_thread_default != NULL)
+				g_main_context_push_thread_default (old_thread_default);
 			return FALSE;
+		}
 	}
 	for (guint i = 0; i < parent_appdata->len; i++) {
 		const gchar *fn = g_ptr_array_index (parent_appdata, i);
 		g_autoptr(GFile) file_tmp = g_file_new_for_path (fn);
-		if (!xb_silo_watch_file (priv->silo, file_tmp, cancellable, error))
+		if (!xb_silo_watch_file (priv->silo, file_tmp, cancellable, error)) {
+			if (old_thread_default != NULL)
+				g_main_context_push_thread_default (old_thread_default);
 			return FALSE;
+		}
 	}
+
+	if (old_thread_default != NULL)
+		g_main_context_push_thread_default (old_thread_default);
 
 	/* test we found something */
 	n = xb_silo_query_first (priv->silo, "components/component", NULL);
@@ -699,36 +710,15 @@ gs_plugin_url_to_app (GsPlugin *plugin,
 		      GError **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	g_autofree gchar *path = NULL;
-	g_autofree gchar *scheme = NULL;
-	g_autofree gchar *xpath = NULL;
 	g_autoptr(GRWLockReaderLocker) locker = NULL;
-	g_autoptr(GsApp) app = NULL;
-	g_autoptr(XbNode) component = NULL;
 
 	/* check silo is valid */
 	if (!gs_plugin_appstream_check_silo (plugin, cancellable, error))
 		return FALSE;
 
-	/* not us */
-	scheme = gs_utils_get_url_scheme (url);
-	if (g_strcmp0 (scheme, "appstream") != 0)
-		return TRUE;
-
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
 
-	/* create app */
-	path = gs_utils_get_url_path (url);
-	xpath = g_strdup_printf ("components/component/id[text()='%s']", path);
-	component = xb_silo_query_first (priv->silo, xpath, NULL);
-	if (component == NULL)
-		return TRUE;
-	app = gs_appstream_create_app (plugin, priv->silo, component, error);
-	if (app == NULL)
-		return FALSE;
-	gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
-	gs_app_list_add (list, app);
-	return TRUE;
+	return gs_appstream_url_to_app (plugin, priv->silo, list, url, cancellable, error);
 }
 
 static void
@@ -1012,8 +1002,7 @@ gs_plugin_add_category_apps (GsPlugin *plugin,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
-	return gs_appstream_add_category_apps (plugin,
-					       priv->silo,
+	return gs_appstream_add_category_apps (priv->silo,
 					       category,
 					       list,
 					       cancellable,
@@ -1087,7 +1076,7 @@ gs_plugin_add_categories (GsPlugin *plugin,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
-	return gs_appstream_add_categories (plugin, priv->silo, list,
+	return gs_appstream_add_categories (priv->silo, list,
 					    cancellable, error);
 }
 
@@ -1104,7 +1093,7 @@ gs_plugin_add_popular (GsPlugin *plugin,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
-	return gs_appstream_add_popular (plugin, priv->silo, list, cancellable, error);
+	return gs_appstream_add_popular (priv->silo, list, cancellable, error);
 }
 
 gboolean
@@ -1120,7 +1109,7 @@ gs_plugin_add_featured (GsPlugin *plugin,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
-	return gs_appstream_add_featured (plugin, priv->silo, list, cancellable, error);
+	return gs_appstream_add_featured (priv->silo, list, cancellable, error);
 }
 
 gboolean
@@ -1155,7 +1144,7 @@ gs_plugin_add_alternates (GsPlugin *plugin,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&priv->silo_lock);
-	return gs_appstream_add_alternates (plugin, priv->silo, app, list,
+	return gs_appstream_add_alternates (priv->silo, app, list,
 					    cancellable, error);
 }
 

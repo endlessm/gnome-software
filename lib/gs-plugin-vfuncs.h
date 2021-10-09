@@ -382,27 +382,6 @@ gboolean	 gs_plugin_add_featured			(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
- * gs_plugin_add_unvoted_reviews:
- * @plugin: a #GsPlugin
- * @list: a #GsAppList
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Gets the list of unvoted reviews. Only applications should be returned where
- * there are reviews, and where the user has not previously moderated them.
- * This function is supposed to be used to display a moderation panel for
- * reviewers.
- *
- * Plugins are expected to add new apps using gs_app_list_add().
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_add_unvoted_reviews		(GsPlugin	*plugin,
-							 GsAppList	*list,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
  * gs_plugin_refine:
  * @plugin: a #GsPlugin
  * @list: a #GsAppList
@@ -718,121 +697,6 @@ gboolean	 gs_plugin_app_upgrade_trigger		(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
- * gs_plugin_review_submit:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @review: a #AsReview
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Submits a new end-user application review.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_review_submit		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 AsReview	*review,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_review_upvote:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @review: a #AsReview
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Upvote a specific review to indicate the review is helpful.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_review_upvote		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 AsReview	*review,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_review_downvote:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @review: a #AsReview
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Downvote a specific review to indicate the review is unhelpful.
- *
- * Plugins are expected to add new apps using gs_app_list_add().
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_review_downvote		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 AsReview	*review,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_review_report:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @review: a #AsReview
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Report a review that is not suitable in some way.
- * It is expected that this action flags a review to be checked by a moderator
- * and that the review won't be shown to any users until this happens.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_review_report		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 AsReview	*review,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_review_remove:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @review: a #AsReview
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Remove a review that the user wrote.
- * NOTE: Users should only be able to remove reviews with %AS_REVIEW_FLAG_SELF.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_review_remove		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 AsReview	*review,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_review_dismiss:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @review: a #AsReview
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Dismisses a review, i.e. hide it from future moderated views.
- * This action is useful when the moderator is unable to speak the language of
- * the review for example.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_review_dismiss		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 AsReview	*review,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
  * gs_plugin_refresh:
  * @plugin: a #GsPlugin
  * @cache_age: the acceptable cache age in seconds, or MAXUINT for "any"
@@ -843,7 +707,7 @@ gboolean	 gs_plugin_review_dismiss		(GsPlugin	*plugin,
  * there's enough metadata to start the application, for example lists of
  * available applications.
  *
- * All functions can block, but should sent progress notifications, e.g. using
+ * All functions can block, but should send progress notifications, e.g. using
  * gs_app_set_progress() if they will take more than tens of milliseconds
  * to complete.
  *
@@ -939,4 +803,134 @@ gboolean	 gs_plugin_add_langpacks		(GsPlugin	*plugin,
 							 GCancellable	*cancellable,
 							 GError		**error);
 
+/**
+ * gs_plugin_install_repo:
+ * @plugin: a #GsPlugin
+ * @repo: a #GsApp representing a repository
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Install the repository. This is a voluntary function, the plugin implements
+ * it only if it supports it. If implemented, its pair function gs_plugin_remove_repo()
+ * should be implemented as well.
+ *
+ * Plugins are expected to send progress notifications to the UI using
+ * gs_app_set_progress() using the passed in @repo.
+ *
+ * All functions can block, but should sent progress notifications, e.g. using
+ * gs_app_set_progress() if they will take more than tens of milliseconds
+ * to complete.
+ *
+ * On failure the error message returned will usually only be shown on the
+ * console, but they can also be retrieved using gs_plugin_loader_get_events().
+ *
+ * NOTE: Once the action is complete, the plugin must set the new state of @repo
+ * to either %GS_APP_STATE_INSTALLED or %GS_APP_STATE_AVAILABLE.
+ *
+ * Returns: %TRUE for success or if not relevant
+ *
+ * Since: 41
+ **/
+gboolean	 gs_plugin_install_repo			(GsPlugin	*plugin,
+							 GsApp		*repo,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+/**
+ * gs_plugin_remove_repo:
+ * @plugin: a #GsPlugin
+ * @repo: a #GsApp representing a repository
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Remove the repository. This is a voluntary function, the plugin implements
+ * it only if it supports it. If implemented, its pair function gs_plugin_install_repo()
+ * should be implemented as well.
+ *
+ * Plugins are expected to send progress notifications to the UI using
+ * gs_app_set_progress() using the passed in @app.
+ *
+ * All functions can block, but should sent progress notifications, e.g. using
+ * gs_app_set_progress() if they will take more than tens of milliseconds
+ * to complete.
+ *
+ * On failure the error message returned will usually only be shown on the
+ * console, but they can also be retrieved using gs_plugin_loader_get_events().
+ *
+ * NOTE: Once the action is complete, the plugin must set the new state of @app
+ * to %GS_APP_STATE_AVAILABLE or %GS_APP_STATE_UNKNOWN if not known.
+ *
+ * Returns: %TRUE for success or if not relevant
+ *
+ * Since: 41
+ **/
+gboolean	 gs_plugin_remove_repo			(GsPlugin	*plugin,
+							 GsApp		*repo,
+							 GCancellable	*cancellable,
+							 GError		**error);
+/**
+ * gs_plugin_enable_repo:
+ * @plugin: a #GsPlugin
+ * @repo: a #GsApp representing a repository
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Enable the repository. This is a voluntary function, the plugin implements
+ * it only if it supports it. If implemented, its pair function gs_plugin_disable_repo()
+ * should be implemented as well.
+ *
+ * Plugins are expected to send progress notifications to the UI using
+ * gs_app_set_progress() using the passed in @repo.
+ *
+ * All functions can block, but should sent progress notifications, e.g. using
+ * gs_app_set_progress() if they will take more than tens of milliseconds
+ * to complete.
+ *
+ * On failure the error message returned will usually only be shown on the
+ * console, but they can also be retrieved using gs_plugin_loader_get_events().
+ *
+ * NOTE: Once the action is complete, the plugin must set the new state of @repo
+ * to %GS_APP_STATE_INSTALLED.
+ *
+ * Returns: %TRUE for success or if not relevant
+ *
+ * Since: 41
+ **/
+gboolean	 gs_plugin_enable_repo			(GsPlugin	*plugin,
+							 GsApp		*repo,
+							 GCancellable	*cancellable,
+							 GError		**error);
+
+/**
+ * gs_plugin_disable_repo:
+ * @plugin: a #GsPlugin
+ * @repo: a #GsApp representing a repository
+ * @cancellable: a #GCancellable, or %NULL
+ * @error: a #GError, or %NULL
+ *
+ * Disable the repository. This is a voluntary function, the plugin implements
+ * it only if it supports it. If implemented, its pair function gs_plugin_enable_repo()
+ * should be implemented as well.
+ *
+ * Plugins are expected to send progress notifications to the UI using
+ * gs_app_set_progress() using the passed in @app.
+ *
+ * All functions can block, but should sent progress notifications, e.g. using
+ * gs_app_set_progress() if they will take more than tens of milliseconds
+ * to complete.
+ *
+ * On failure the error message returned will usually only be shown on the
+ * console, but they can also be retrieved using gs_plugin_loader_get_events().
+ *
+ * NOTE: Once the action is complete, the plugin must set the new state of @app
+ * to %GS_APP_STATE_AVAILABLE.
+ *
+ * Returns: %TRUE for success or if not relevant
+ *
+ * Since: 41
+ **/
+gboolean	 gs_plugin_disable_repo			(GsPlugin	*plugin,
+							 GsApp		*repo,
+							 GCancellable	*cancellable,
+							 GError		**error);
 G_END_DECLS

@@ -11,6 +11,16 @@
       <object class="GtkStack" id="stack_search">
         <property name="visible">True</property>
         <child>
+          <object class="HdyStatusPage">
+            <property name="visible">True</property>
+            <property name="icon_name">org.gnome.Software-symbolic</property>
+            <property name="title" translatable="yes">Search for Apps</property>
+          </object>
+          <packing>
+            <property name="name">no-search</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkSpinner" id="spinner_search">
             <property name="visible">True</property>
             <property name="width_request">32</property>
@@ -23,46 +33,10 @@
           </packing>
         </child>
         <child>
-          <object class="GtkGrid" id="noresults_grid_search">
+          <object class="HdyStatusPage" id="noresults_grid_search">
             <property name="visible">True</property>
-            <property name="hexpand">True</property>
-            <property name="vexpand">True</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="row-spacing">12</property>
-            <property name="column-spacing">12</property>
-            <style>
-              <class name="dim-label"/>
-            </style>
-            <child>
-              <object class="GtkImage" id="noresults_icon">
-                <property name="visible">True</property>
-                <property name="icon_name">org.gnome.Software-symbolic</property>
-                <property name="pixel-size">64</property>
-                <style>
-                  <class name="dim-label"/>
-                </style>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="noresults_label">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">No Application Found</property>
-                <property name="halign">start</property>
-                <property name="valign">center</property>
-                <attributes>
-                  <attribute name="scale" value="1.4"/>
-                </attributes>
-              </object>
-              <packing>
-                <property name="left-attach">1</property>
-                <property name="top-attach">0</property>
-              </packing>
-            </child>
+            <property name="icon_name">org.gnome.Software-symbolic</property>
+            <property name="title" translatable="yes">No Application Found</property>
           </object>
           <packing>
             <property name="name">no-results</property>
@@ -75,19 +49,23 @@
             <property name="hscrollbar_policy">never</property>
             <property name="vscrollbar_policy">automatic</property>
             <property name="shadow_type">none</property>
+            <style>
+              <class name="list-page"/>
+            </style>
             <child>
-              <object class="GsFixedSizeBin" id="gs_fixed_bin">
+              <object class="HdyClamp">
                 <property name="visible">True</property>
-                <property name="preferred-width">860</property>
-                <property name="valign">start</property>
-                <property name="border-width">24</property>
+                <property name="maximum-size">860</property>
+                <!-- ~⅔ of the maximum size. -->
+                <property name="tightening-threshold">576</property>
                 <child>
                   <object class="GtkListBox" id="list_box_search">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="selection_mode">none</property>
                     <style>
-                      <class name="full-page-app-list"/>
+                      <class name="section"/>
+                      <class name="content"/>
                     </style>
                   </object>
                 </child>

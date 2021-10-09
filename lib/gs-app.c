@@ -79,7 +79,7 @@ typedef struct
 	GPtrArray		*screenshots;
 	GPtrArray		*categories;
 	GArray			*key_colors;  /* (nullable) (element-type GdkRGBA) */
-	GHashTable		*urls;
+	GHashTable		*urls;  /* (element-type AsUrlKind utf8) (owned) (nullable) */
 	GHashTable		*launchables;
 	gchar			*url_missing;
 	gchar			*license;
@@ -103,6 +103,8 @@ typedef struct
 	GPtrArray		*provided; /* of AsProvided */
 	guint64			 size_installed;
 	guint64			 size_download;
+	guint64			 size_user_data;
+	guint64			 size_cache_data;
 	AsComponentKind		 kind;
 	GsAppSpecialKind	 special_kind;
 	GsAppState		 state;
@@ -130,11 +132,12 @@ typedef struct
 	GsAppPermissions         permissions;
 	gboolean		 is_update_downloaded;
 	GPtrArray		*version_history; /* (element-type AsRelease) (nullable) (owned) */
+	GPtrArray		*relations;  /* (nullable) (element-type AsRelation) (owned) */
+	gboolean		 has_translations;
 } GsAppPrivate;
 
-enum {
-	PROP_0,
-	PROP_ID,
+typedef enum {
+	PROP_ID = 1,
 	PROP_NAME,
 	PROP_VERSION,
 	PROP_SUMMARY,
@@ -151,11 +154,23 @@ enum {
 	PROP_PENDING_ACTION,
 	PROP_KEY_COLORS,
 	PROP_IS_UPDATE_DOWNLOADED,
+	PROP_URLS,
 	PROP_URL_MISSING,
-	PROP_LAST
-};
+	PROP_CONTENT_RATING,
+	PROP_LICENSE,
+	PROP_SIZE_CACHE_DATA,
+	PROP_SIZE_DOWNLOAD,
+	PROP_SIZE_DOWNLOAD_DEPENDENCIES,
+	PROP_SIZE_INSTALLED,
+	PROP_SIZE_INSTALLED_DEPENDENCIES,
+	PROP_SIZE_USER_DATA,
+	PROP_PERMISSIONS,
+	PROP_RELATIONS,
+	PROP_ORIGIN_UI,
+	PROP_HAS_TRANSLATIONS,
+} GsAppProperty;
 
-static GParamSpec *obj_props[PROP_LAST] = { NULL, };
+static GParamSpec *obj_props[PROP_HAS_TRANSLATIONS + 1] = { NULL, };
 
 G_DEFINE_TYPE_WITH_PRIVATE (GsApp, gs_app, G_TYPE_OBJECT)
 
@@ -240,6 +255,10 @@ gs_app_state_to_string (GsAppState state)
 		return "updatable-live";
 	if (state == GS_APP_STATE_UNAVAILABLE)
 		return "unavailable";
+	if (state == GS_APP_STATE_PENDING_INSTALL)
+		return "pending-install";
+	if (state == GS_APP_STATE_PENDING_REMOVE)
+		return "pending-remove";
 	return NULL;
 }
 
@@ -600,7 +619,7 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_lpad (str, "content-rating",
 				as_content_rating_get_kind (priv->content_rating));
 	}
-	tmp = g_hash_table_lookup (priv->urls, as_url_kind_to_string (AS_URL_KIND_HOMEPAGE));
+	tmp = gs_app_get_url (app, AS_URL_KIND_HOMEPAGE);
 	if (tmp != NULL)
 		gs_app_kv_lpad (str, "url{homepage}", tmp);
 	keys = g_hash_table_get_keys (priv->launchables);
@@ -665,8 +684,17 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	}
 	if (priv->size_installed != 0)
 		gs_app_kv_size (str, "size-installed", priv->size_installed);
+	if (gs_app_get_size_installed_dependencies (app) != 0)
+		gs_app_kv_size (str, "size-installed-dependencies", gs_app_get_size_installed_dependencies (app));
 	if (priv->size_download != 0)
 		gs_app_kv_size (str, "size-download", gs_app_get_size_download (app));
+	if (gs_app_get_size_download_dependencies (app) != 0)
+		gs_app_kv_size (str, "size-download-dependencies", gs_app_get_size_download_dependencies (app));
+	if (priv->size_cache_data != GS_APP_SIZE_UNKNOWABLE)
+		gs_app_kv_size (str, "size-cache-data", gs_app_get_size_cache_data (app));
+	if (priv->size_user_data != GS_APP_SIZE_UNKNOWABLE)
+		gs_app_kv_size (str, "size-user-data", gs_app_get_size_user_data (app));
+
 	for (i = 0; i < gs_app_list_length (priv->related); i++) {
 		GsApp *app_tmp = gs_app_list_index (priv->related, i);
 		const gchar *id = gs_app_get_unique_id (app_tmp);
@@ -715,6 +743,13 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_lpad (str, key, val_str);
 	}
 	g_list_free (keys);
+
+	for (i = 0; priv->relations != NULL && i < priv->relations->len; i++) {
+		AsRelation *relation = g_ptr_array_index (priv->relations, i);
+		gs_app_kv_printf (str, "relation", "%s, %s",
+				  as_relation_kind_to_string (as_relation_get_kind (relation)),
+				  as_relation_item_kind_to_string (as_relation_get_item_kind (relation)));
+	}
 
 	/* add subclassed info */
 	if (klass->to_string != NULL)
@@ -1033,7 +1068,9 @@ gs_app_set_state_internal (GsApp *app, GsAppState state)
 		    state == GS_APP_STATE_AVAILABLE_LOCAL ||
 		    state == GS_APP_STATE_UPDATABLE ||
 		    state == GS_APP_STATE_UPDATABLE_LIVE ||
-		    state == GS_APP_STATE_UNAVAILABLE)
+		    state == GS_APP_STATE_UNAVAILABLE ||
+		    state == GS_APP_STATE_PENDING_INSTALL ||
+		    state == GS_APP_STATE_PENDING_REMOVE)
 			state_change_ok = TRUE;
 		break;
 	case GS_APP_STATE_INSTALLED:
@@ -1064,7 +1101,8 @@ gs_app_set_state_internal (GsApp *app, GsAppState state)
 		    state == GS_APP_STATE_INSTALLED ||
 		    state == GS_APP_STATE_UPDATABLE ||
 		    state == GS_APP_STATE_UPDATABLE_LIVE ||
-		    state == GS_APP_STATE_AVAILABLE)
+		    state == GS_APP_STATE_AVAILABLE ||
+		    state == GS_APP_STATE_PENDING_INSTALL)
 			state_change_ok = TRUE;
 		break;
 	case GS_APP_STATE_REMOVING:
@@ -1072,7 +1110,8 @@ gs_app_set_state_internal (GsApp *app, GsAppState state)
 		if (state == GS_APP_STATE_UNKNOWN ||
 		    state == GS_APP_STATE_UNAVAILABLE ||
 		    state == GS_APP_STATE_AVAILABLE ||
-		    state == GS_APP_STATE_INSTALLED)
+		    state == GS_APP_STATE_INSTALLED ||
+		    state == GS_APP_STATE_PENDING_REMOVE)
 			state_change_ok = TRUE;
 		break;
 	case GS_APP_STATE_UPDATABLE:
@@ -1100,6 +1139,10 @@ gs_app_set_state_internal (GsApp *app, GsAppState state)
 		if (state == GS_APP_STATE_UNKNOWN ||
 		    state == GS_APP_STATE_INSTALLING)
 			state_change_ok = TRUE;
+		break;
+	case GS_APP_STATE_PENDING_INSTALL:
+	case GS_APP_STATE_PENDING_REMOVE:
+		state_change_ok = TRUE;
 		break;
 	default:
 		g_warning ("state %s unhandled",
@@ -1244,8 +1287,12 @@ gs_app_set_state (GsApp *app, GsAppState state)
 		 * actions that usually change the state, we assign it to the
 		 * appropriate action here */
 		GsPluginAction action = GS_PLUGIN_ACTION_UNKNOWN;
-		if (priv->state == GS_APP_STATE_QUEUED_FOR_INSTALL)
-			action = GS_PLUGIN_ACTION_INSTALL;
+		if (priv->state == GS_APP_STATE_QUEUED_FOR_INSTALL) {
+			if (priv->kind == AS_COMPONENT_KIND_REPOSITORY)
+				action = GS_PLUGIN_ACTION_INSTALL_REPO;
+			else
+				action = GS_PLUGIN_ACTION_INSTALL;
+		}
 		gs_app_set_pending_action_internal (app, action);
 
 		gs_app_queue_notify (app, obj_props[PROP_STATE]);
@@ -1436,7 +1483,7 @@ gs_app_set_name (GsApp *app, GsAppQuality quality, const gchar *name)
 		return;
 	priv->name_quality = quality;
 	if (_g_set_str (&priv->name, name))
-		g_object_notify_by_pspec (G_OBJECT (app), obj_props[PROP_NAME]);
+		gs_app_queue_notify (app, obj_props[PROP_NAME]);
 }
 
 /**
@@ -1864,7 +1911,10 @@ gs_app_get_icon_for_size (GsApp       *app,
 			return g_object_ref (icon);
 	}
 
-	if (fallback_icon_name != NULL) {
+	if (scale > 1) {
+		g_debug ("Retrying at scale 1");
+		return gs_app_get_icon_for_size (app, size, 1, fallback_icon_name);
+	} else if (fallback_icon_name != NULL) {
 		g_debug ("Using fallback icon %s", fallback_icon_name);
 		return g_themed_icon_new (fallback_icon_name);
 	} else {
@@ -1987,46 +2037,6 @@ gs_app_remove_all_icons (GsApp *app)
 }
 
 /**
- * gs_app_get_use_drop_shadow:
- * @app: a #GsApp
- *
- * Uses a heuristic to work out if the application pixbuf should have a drop
- * shadow applied.
- *
- * Returns: %TRUE if a drop shadow should be applied
- *
- * Since: 3.34
- **/
-gboolean
-gs_app_get_use_drop_shadow (GsApp *app)
-{
-	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	GIcon *icon;
-	const gchar * const *names;
-
-	g_return_val_if_fail (GS_IS_APP (app), FALSE);
-
-	/* guess */
-	if (priv->icons == NULL || priv->icons->len == 0)
-		return TRUE;
-
-	icon = g_ptr_array_index (priv->icons, 0);
-
-	/* Apply drop shadows to non-themed icons. */
-	if (!G_IS_THEMED_ICON (icon))
-		return TRUE;
-
-	/* Don’t apply drop shadows to symbolic icons. */
-	names = g_themed_icon_get_names (G_THEMED_ICON (icon));
-	for (gsize i = 0; names[i] != NULL; i++) {
-		if (g_str_has_suffix (names[i], "-symbolic"))
-			return FALSE;
-	}
-
-	return TRUE;
-}
-
-/**
  * gs_app_get_agreement:
  * @app: a #GsApp
  *
@@ -2137,7 +2147,8 @@ gs_app_set_content_rating (GsApp *app, AsContentRating *content_rating)
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
-	g_set_object (&priv->content_rating, content_rating);
+	if (g_set_object (&priv->content_rating, content_rating))
+		gs_app_queue_notify (app, obj_props[PROP_CONTENT_RATING]);
 }
 
 /**
@@ -2411,7 +2422,7 @@ gs_app_set_summary (GsApp *app, GsAppQuality quality, const gchar *summary)
 		return;
 	priv->summary_quality = quality;
 	if (_g_set_str (&priv->summary, summary))
-		g_object_notify_by_pspec (G_OBJECT (app), obj_props[PROP_SUMMARY]);
+		gs_app_queue_notify (app, obj_props[PROP_SUMMARY]);
 }
 
 /**
@@ -2465,7 +2476,7 @@ gs_app_set_description (GsApp *app, GsAppQuality quality, const gchar *descripti
  *
  * Gets a web address of a specific type.
  *
- * Returns: a string, or %NULL for unset
+ * Returns: (nullable): a string, or %NULL for unset
  *
  * Since: 40
  **/
@@ -2476,7 +2487,10 @@ gs_app_get_url (GsApp *app, AsUrlKind kind)
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
 	locker = g_mutex_locker_new (&priv->mutex);
-	return g_hash_table_lookup (priv->urls, as_url_kind_to_string (kind));
+
+	if (priv->urls == NULL)
+		return NULL;
+	return g_hash_table_lookup (priv->urls, GINT_TO_POINTER (kind));
 }
 
 /**
@@ -2496,9 +2510,16 @@ gs_app_set_url (GsApp *app, AsUrlKind kind, const gchar *url)
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (priv->urls == NULL)
+		priv->urls = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+						    NULL, g_free);
+
 	g_hash_table_insert (priv->urls,
-			     g_strdup (as_url_kind_to_string (kind)),
+			     GINT_TO_POINTER (kind),
 			     g_strdup (url));
+
+	gs_app_queue_notify (app, obj_props[PROP_URLS]);
 }
 
 /**
@@ -2665,7 +2686,8 @@ gs_app_set_license (GsApp *app, GsAppQuality quality, const gchar *license)
 
 	priv->license_is_free = as_license_is_free_license (license);
 
-	_g_set_str (&priv->license, license);
+	if (_g_set_str (&priv->license, license))
+		gs_app_queue_notify (app, obj_props[PROP_LICENSE]);
 }
 
 /**
@@ -3435,12 +3457,9 @@ gs_app_add_provided_item (GsApp *app, AsProvidedKind kind, const gchar *item)
  * gs_app_get_size_download:
  * @app: A #GsApp
  *
- * Gets the size of the total download needed to either install an available
- * application, or update an already installed one.
+ * Get the value of #GsApp:size-download.
  *
- * If there is a runtime not yet installed then this is also added.
- *
- * Returns: number of bytes, 0 for unknown, or %GS_APP_SIZE_UNKNOWABLE for invalid
+ * Returns: number of bytes, `0` for unknown, or %GS_APP_SIZE_UNKNOWABLE for invalid
  *
  * Since: 3.22
  **/
@@ -3448,26 +3467,10 @@ guint64
 gs_app_get_size_download (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	guint64 sz;
 
 	g_return_val_if_fail (GS_IS_APP (app), G_MAXUINT64);
 
-	/* this app */
-	sz = priv->size_download;
-
-	/* add the runtime if this is not installed */
-	if (priv->runtime != NULL) {
-		if (gs_app_get_state (priv->runtime) == GS_APP_STATE_AVAILABLE)
-			sz += gs_app_get_size_download (priv->runtime);
-	}
-
-	/* add related apps */
-	for (guint i = 0; i < gs_app_list_length (priv->related); i++) {
-		GsApp *app_related = gs_app_list_index (priv->related, i);
-		sz += gs_app_get_size_download (app_related);
-	}
-
-	return sz;
+	return priv->size_download;
 }
 
 /**
@@ -3488,16 +3491,51 @@ gs_app_set_size_download (GsApp *app, guint64 size_download)
 	if (size_download == priv->size_download)
 		return;
 	priv->size_download = size_download;
+	gs_app_queue_notify (app, obj_props[PROP_SIZE_DOWNLOAD]);
+}
+
+/**
+ * gs_app_get_size_download_dependencies:
+ * @app: A #GsApp
+ *
+ * Get the value of #GsApp:size-download-dependencies.
+ *
+ * Returns: number of bytes, `0` for unknown
+ *
+ * Since: 41
+ **/
+guint64
+gs_app_get_size_download_dependencies (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	guint64 sz = 0;
+
+	g_return_val_if_fail (GS_IS_APP (app), G_MAXUINT64);
+
+	/* add the runtime if this is not installed */
+	if (priv->runtime != NULL) {
+		if (gs_app_get_state (priv->runtime) == GS_APP_STATE_AVAILABLE)
+			sz += gs_app_get_size_download (priv->runtime) +
+			      gs_app_get_size_download_dependencies (priv->runtime);
+	}
+
+	/* add related apps */
+	for (guint i = 0; i < gs_app_list_length (priv->related); i++) {
+		GsApp *app_related = gs_app_list_index (priv->related, i);
+		sz += gs_app_get_size_download (app_related) +
+		      gs_app_get_size_download_dependencies (app_related);
+	}
+
+	return sz;
 }
 
 /**
  * gs_app_get_size_installed:
  * @app: a #GsApp
  *
- * Gets the size on disk, either for an existing application of one that could
- * be installed.
+ * Get the value of #GsApp:size-installed.
  *
- * Returns: size in bytes, 0 for unknown, or %GS_APP_SIZE_UNKNOWABLE for invalid.
+ * Returns: size in bytes, `0` for unknown, or %GS_APP_SIZE_UNKNOWABLE for invalid.
  *
  * Since: 3.22
  **/
@@ -3505,20 +3543,10 @@ guint64
 gs_app_get_size_installed (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
-	guint64 sz;
 
 	g_return_val_if_fail (GS_IS_APP (app), G_MAXUINT64);
 
-	/* this app */
-	sz = priv->size_installed;
-
-	/* add related apps */
-	for (guint i = 0; i < gs_app_list_length (priv->related); i++) {
-		GsApp *app_related = gs_app_list_index (priv->related, i);
-		sz += gs_app_get_size_installed (app_related);
-	}
-
-	return sz;
+	return priv->size_installed;
 }
 
 /**
@@ -3538,6 +3566,117 @@ gs_app_set_size_installed (GsApp *app, guint64 size_installed)
 	if (size_installed == priv->size_installed)
 		return;
 	priv->size_installed = size_installed;
+	gs_app_queue_notify (app, obj_props[PROP_SIZE_INSTALLED]);
+}
+
+/**
+ * gs_app_get_size_installed_dependencies:
+ * @app: a #GsApp
+ *
+ * Get the value of #GsApp:size-installed-dependencies.
+ *
+ * Returns: size in bytes, `0` for unknown.
+ *
+ * Since: 41
+ **/
+guint64
+gs_app_get_size_installed_dependencies (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	guint64 sz = 0;
+
+	g_return_val_if_fail (GS_IS_APP (app), G_MAXUINT64);
+
+	/* add related apps */
+	for (guint i = 0; i < gs_app_list_length (priv->related); i++) {
+		GsApp *app_related = gs_app_list_index (priv->related, i);
+		sz += gs_app_get_size_installed (app_related) +
+		      gs_app_get_size_installed_dependencies (app_related);
+	}
+
+	return sz;
+}
+
+/**
+ * gs_app_get_size_user_data:
+ * @app: A #GsApp
+ *
+ * Get the value of #GsApp:size-user-data.
+ *
+ * Returns: number of bytes, or %GS_APP_SIZE_UNKNOWABLE for unknown
+ *
+ * Since: 41
+ **/
+guint64
+gs_app_get_size_user_data (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
+	g_return_val_if_fail (GS_IS_APP (app), GS_APP_SIZE_UNKNOWABLE);
+
+	return priv->size_user_data;
+}
+
+/**
+ * gs_app_set_size_user_data:
+ * @app: a #GsApp
+ * @size_user_data: size in bytes, or %GS_APP_SIZE_UNKNOWABLE for unknown
+ *
+ * Sets the user data size of the @app.
+ *
+ * Since: 41
+ **/
+void
+gs_app_set_size_user_data (GsApp *app,
+			   guint64 size_user_data)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_if_fail (GS_IS_APP (app));
+	if (size_user_data == priv->size_user_data)
+		return;
+	priv->size_user_data = size_user_data;
+	gs_app_queue_notify (app, obj_props[PROP_SIZE_USER_DATA]);
+}
+
+/**
+ * gs_app_get_size_cache_data:
+ * @app: A #GsApp
+ *
+ * Get the value of #GsApp:size-cache-data.
+ *
+ * Returns: number of bytes, or %GS_APP_SIZE_UNKNOWABLE for unknown
+ *
+ * Since: 41
+ **/
+guint64
+gs_app_get_size_cache_data (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
+	g_return_val_if_fail (GS_IS_APP (app), GS_APP_SIZE_UNKNOWABLE);
+
+	return priv->size_cache_data;
+}
+
+/**
+ * gs_app_set_size_cache_data:
+ * @app: a #GsApp
+ * @size_cache_data: size in bytes, or %GS_APP_SIZE_UNKNOWABLE for unknown
+ *
+ * Sets the cache data size of the @app.
+ *
+ * Since: 41
+ **/
+void
+gs_app_set_size_cache_data (GsApp *app,
+			    guint64 size_cache_data)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_if_fail (GS_IS_APP (app));
+	if (size_cache_data == priv->size_cache_data)
+		return;
+	priv->size_cache_data = size_cache_data;
+	gs_app_queue_notify (app, obj_props[PROP_SIZE_CACHE_DATA]);
 }
 
 /**
@@ -3765,6 +3904,10 @@ gs_app_add_related (GsApp *app, GsApp *app2)
 		priv->state = priv2->state;
 
 	gs_app_list_add (priv->related, app2);
+
+	/* The related apps add to the main app’s sizes. */
+	gs_app_queue_notify (app, obj_props[PROP_SIZE_DOWNLOAD_DEPENDENCIES]);
+	gs_app_queue_notify (app, obj_props[PROP_SIZE_INSTALLED_DEPENDENCIES]);
 }
 
 /**
@@ -4645,7 +4788,7 @@ gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *
 	GsApp *app = GS_APP (object);
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 
-	switch (prop_id) {
+	switch ((GsAppProperty) prop_id) {
 	case PROP_ID:
 		g_value_set_string (value, priv->id);
 		break;
@@ -4697,8 +4840,47 @@ gs_app_get_property (GObject *object, guint prop_id, GValue *value, GParamSpec *
 	case PROP_IS_UPDATE_DOWNLOADED:
 		g_value_set_boolean (value, priv->is_update_downloaded);
 		break;
+	case PROP_URLS:
+		g_value_set_boxed (value, priv->urls);
+		break;
 	case PROP_URL_MISSING:
 		g_value_set_string (value, priv->url_missing);
+		break;
+	case PROP_CONTENT_RATING:
+		g_value_set_object (value, priv->content_rating);
+		break;
+	case PROP_LICENSE:
+		g_value_set_string (value, priv->license);
+		break;
+	case PROP_SIZE_CACHE_DATA:
+		g_value_set_uint64 (value, gs_app_get_size_cache_data (app));
+		break;
+	case PROP_SIZE_DOWNLOAD:
+		g_value_set_uint64 (value, gs_app_get_size_download (app));
+		break;
+	case PROP_SIZE_DOWNLOAD_DEPENDENCIES:
+		g_value_set_uint64 (value, gs_app_get_size_download_dependencies (app));
+		break;
+	case PROP_SIZE_INSTALLED:
+		g_value_set_uint64 (value, gs_app_get_size_installed (app));
+		break;
+	case PROP_SIZE_INSTALLED_DEPENDENCIES:
+		g_value_set_uint64 (value, gs_app_get_size_installed_dependencies (app));
+		break;
+	case PROP_SIZE_USER_DATA:
+		g_value_set_uint64 (value, gs_app_get_size_user_data (app));
+		break;
+	case PROP_PERMISSIONS:
+		g_value_set_flags (value, priv->permissions);
+		break;
+	case PROP_RELATIONS:
+		g_value_take_boxed (value, gs_app_get_relations (app));
+		break;
+	case PROP_ORIGIN_UI:
+		g_value_take_string (value, gs_app_get_origin_ui (app));
+		break;
+	case PROP_HAS_TRANSLATIONS:
+		g_value_set_boolean (value, gs_app_get_has_translations (app));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4712,7 +4894,7 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 	GsApp *app = GS_APP (object);
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 
-	switch (prop_id) {
+	switch ((GsAppProperty) prop_id) {
 	case PROP_ID:
 		gs_app_set_id (app, g_value_get_string (value));
 		break;
@@ -4771,8 +4953,48 @@ gs_app_set_property (GObject *object, guint prop_id, const GValue *value, GParam
 	case PROP_IS_UPDATE_DOWNLOADED:
 		gs_app_set_is_update_downloaded (app, g_value_get_boolean (value));
 		break;
+	case PROP_URLS:
+		/* Read only */
+		g_assert_not_reached ();
+		break;
 	case PROP_URL_MISSING:
 		gs_app_set_url_missing (app, g_value_get_string (value));
+		break;
+	case PROP_CONTENT_RATING:
+		gs_app_set_content_rating (app, g_value_get_object (value));
+		break;
+	case PROP_LICENSE:
+		/* Read-only */
+		g_assert_not_reached ();
+	case PROP_SIZE_CACHE_DATA:
+		gs_app_set_size_cache_data (app, g_value_get_uint64 (value));
+		break;
+	case PROP_SIZE_DOWNLOAD:
+		gs_app_set_size_download (app, g_value_get_uint64 (value));
+		break;
+	case PROP_SIZE_DOWNLOAD_DEPENDENCIES:
+		/* Read-only */
+		g_assert_not_reached ();
+	case PROP_SIZE_INSTALLED:
+		gs_app_set_size_installed (app, g_value_get_uint64 (value));
+		break;
+	case PROP_SIZE_INSTALLED_DEPENDENCIES:
+		/* Read-only */
+		g_assert_not_reached ();
+	case PROP_SIZE_USER_DATA:
+		gs_app_set_size_user_data (app, g_value_get_uint64 (value));
+		break;
+	case PROP_PERMISSIONS:
+		gs_app_set_permissions (app, g_value_get_flags (value));
+		break;
+	case PROP_RELATIONS:
+		gs_app_set_relations (app, g_value_get_boxed (value));
+		break;
+	case PROP_ORIGIN_UI:
+		gs_app_set_origin_ui (app, g_value_get_string (value));
+		break;
+	case PROP_HAS_TRANSLATIONS:
+		gs_app_set_has_translations (app, g_value_get_boolean (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -4797,6 +5019,7 @@ gs_app_dispose (GObject *object)
 	g_clear_pointer (&priv->provided, g_ptr_array_unref);
 	g_clear_pointer (&priv->icons, g_ptr_array_unref);
 	g_clear_pointer (&priv->version_history, g_ptr_array_unref);
+	g_clear_pointer (&priv->relations, g_ptr_array_unref);
 
 	G_OBJECT_CLASS (gs_app_parent_class)->dispose (object);
 }
@@ -4814,7 +5037,7 @@ gs_app_finalize (GObject *object)
 	g_free (priv->name);
 	g_free (priv->renamed_from);
 	g_free (priv->url_missing);
-	g_hash_table_unref (priv->urls);
+	g_clear_pointer (&priv->urls, g_hash_table_unref);
 	g_hash_table_unref (priv->launchables);
 	g_free (priv->license);
 	g_strfreev (priv->menu_path);
@@ -4840,12 +5063,9 @@ gs_app_finalize (GObject *object)
 	g_ptr_array_unref (priv->categories);
 	g_clear_pointer (&priv->key_colors, g_array_unref);
 	g_clear_object (&priv->cancellable);
-	if (priv->local_file != NULL)
-		g_object_unref (priv->local_file);
-	if (priv->content_rating != NULL)
-		g_object_unref (priv->content_rating);
-	if (priv->action_screenshot != NULL)
-		g_object_unref (priv->action_screenshot);
+	g_clear_object (&priv->local_file);
+	g_clear_object (&priv->content_rating);
+	g_clear_object (&priv->action_screenshot);
 
 	G_OBJECT_CLASS (gs_app_parent_class)->finalize (object);
 }
@@ -4864,42 +5084,42 @@ gs_app_class_init (GsAppClass *klass)
 	 */
 	obj_props[PROP_ID] = g_param_spec_string ("id", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:name:
 	 */
 	obj_props[PROP_NAME] = g_param_spec_string ("name", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:version:
 	 */
 	obj_props[PROP_VERSION] = g_param_spec_string ("version", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:summary:
 	 */
 	obj_props[PROP_SUMMARY] = g_param_spec_string ("summary", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:description:
 	 */
 	obj_props[PROP_DESCRIPTION] = g_param_spec_string ("description", NULL, NULL,
 				     NULL,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:rating:
 	 */
 	obj_props[PROP_RATING] = g_param_spec_int ("rating", NULL, NULL,
 				  -1, 100, -1,
-				  G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				  G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:kind:
@@ -4909,7 +5129,7 @@ gs_app_class_init (GsAppClass *klass)
 				   AS_COMPONENT_KIND_UNKNOWN,
 				   AS_COMPONENT_KIND_LAST,
 				   AS_COMPONENT_KIND_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:special-kind:
@@ -4930,7 +5150,7 @@ gs_app_class_init (GsAppClass *klass)
 	obj_props[PROP_STATE] = g_param_spec_enum ("state", NULL, NULL,
 				   GS_TYPE_APP_STATE,
 				   GS_APP_STATE_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:progress:
@@ -4942,21 +5162,21 @@ gs_app_class_init (GsAppClass *klass)
 	 */
 	obj_props[PROP_PROGRESS] = g_param_spec_uint ("progress", NULL, NULL,
 				   0, GS_APP_PROGRESS_UNKNOWN, GS_APP_PROGRESS_UNKNOWN,
-				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				   G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:allow-cancel:
 	 */
 	obj_props[PROP_CAN_CANCEL_INSTALLATION] =
 		g_param_spec_boolean ("allow-cancel", NULL, NULL, TRUE,
-				      G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				      G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:install-date:
 	 */
 	obj_props[PROP_INSTALL_DATE] = g_param_spec_uint64 ("install-date", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:release-date:
@@ -4968,34 +5188,51 @@ gs_app_class_init (GsAppClass *klass)
 	 */
 	obj_props[PROP_RELEASE_DATE] = g_param_spec_uint64 ("release-date", NULL, NULL,
 				     0, G_MAXUINT64, 0,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:quirk:
 	 */
 	obj_props[PROP_QUIRK] = g_param_spec_flags ("quirk", NULL, NULL,
 				     GS_TYPE_APP_QUIRK, GS_APP_QUIRK_NONE,
-				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+				     G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:pending-action:
 	 */
 	obj_props[PROP_PENDING_ACTION] = g_param_spec_enum ("pending-action", NULL, NULL,
 				     GS_TYPE_PLUGIN_ACTION, GS_PLUGIN_ACTION_UNKNOWN,
-				     G_PARAM_READABLE);
+				     G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:key-colors:
 	 */
 	obj_props[PROP_KEY_COLORS] = g_param_spec_boxed ("key-colors", NULL, NULL,
-				    G_TYPE_ARRAY, G_PARAM_READWRITE);
+				    G_TYPE_ARRAY, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:is-update-downloaded:
 	 */
 	obj_props[PROP_IS_UPDATE_DOWNLOADED] = g_param_spec_boolean ("is-update-downloaded", NULL, NULL,
 					       FALSE,
-					       G_PARAM_READWRITE);
+					       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:urls: (nullable) (element-type AsUrlKind utf8)
+	 *
+	 * The URLs associated with the app.
+	 *
+	 * This is %NULL if no URLs are available. If provided, it is a mapping
+	 * from #AsUrlKind to the URLs.
+	 *
+	 * This property is read-only: use gs_app_set_url() to set URLs.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_URLS] =
+		g_param_spec_boxed ("urls", NULL, NULL,
+				    G_TYPE_HASH_TABLE,
+				    G_PARAM_READABLE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
 
 	/**
 	 * GsApp:url-missing:
@@ -5007,9 +5244,202 @@ gs_app_class_init (GsAppClass *klass)
 	 */
 	obj_props[PROP_URL_MISSING] = g_param_spec_string ("url-missing", NULL, NULL,
 					NULL,
-					G_PARAM_READWRITE | G_PARAM_CONSTRUCT);
+					G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS);
 
-	g_object_class_install_properties (object_class, PROP_LAST, obj_props);
+	/**
+	 * GsApp:content-rating: (nullable)
+	 *
+	 * The content rating for the app, which gives information on how
+	 * suitable it is for different age ranges of user.
+	 *
+	 * This is %NULL if no content rating information is available.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_CONTENT_RATING] =
+		g_param_spec_object ("content-rating", NULL, NULL,
+				     /* FIXME: Use the get_type() function directly here to work
+				      * around https://github.com/ximion/appstream/pull/318 */
+				     as_content_rating_get_type (),
+				     G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:license: (nullable)
+	 *
+	 * The license for the app, which is typically its source code license.
+	 *
+	 * Use gs_app_set_license() to set this.
+	 *
+	 * This is %NULL if no licensing information is available.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_LICENSE] =
+		g_param_spec_string ("license", NULL, NULL,
+				     NULL,
+				     G_PARAM_READABLE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:size-cache-data
+	 *
+	 * The size on the disk for the cache data of the application.
+	 *
+	 * This is %GS_APP_SIZE_UNKNOWABLE if not known.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_SIZE_CACHE_DATA] =
+		g_param_spec_uint64 ("size-cache-data", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:size-download
+	 *
+	 * The size of the total download needed to either install or update
+	 * this application, in bytes. If the app is partially downloaded, this
+	 * is the number of bytes remaining to download.
+	 *
+	 * This is `0` if the download size is unknown, and
+	 * %GS_APP_SIZE_UNKNOWABLE if it’s not possible to know.
+	 *
+	 * To get the runtime or other dependencies download size,
+	 * use #GsApp:size-download-dependencies.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_SIZE_DOWNLOAD] =
+		g_param_spec_uint64 ("size-download", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:size-download-dependencies
+	 *
+	 * The size of the total download needed to either install or update
+	 * this application's dependencies, in bytes. If the dependencies are partially
+	 * downloaded, this is the number of bytes remaining to download.
+	 *
+	 * This is `0` if the download size is unknown.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_SIZE_DOWNLOAD_DEPENDENCIES] =
+		g_param_spec_uint64 ("size-download-dependencies", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READABLE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:size-installed
+	 *
+	 * The size of the application on disk, in bytes. If the application is
+	 * not yet installed, this is the size it would need, once installed.
+	 *
+	 * This is `0` if the download size is unknown, and
+	 * %GS_APP_SIZE_UNKNOWABLE if it’s not possible to know.
+	 *
+	 * To get the application runtime or extensions installed sizes,
+	 * use #GsApp:size-installed-dependencies.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_SIZE_INSTALLED] =
+		g_param_spec_uint64 ("size-installed", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:size-installed-dependencies
+	 *
+	 * The size of the application's dependencies on disk, in bytes. If the dependencies are
+	 * not yet installed, this is the size it would need, once installed.
+	 *
+	 * This is `0` if the download size is unknown.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_SIZE_INSTALLED_DEPENDENCIES] =
+		g_param_spec_uint64 ("size-installed-dependencies", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READABLE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:size-user-data
+	 *
+	 * The size on the disk for the user data of the application.
+	 *
+	 * This is %GS_APP_SIZE_UNKNOWABLE if not known.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_SIZE_USER_DATA] =
+		g_param_spec_uint64 ("size-user-data", NULL, NULL,
+				     0, G_MAXUINT64, 0,
+				     G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:permissions
+	 *
+	 * The permissions the app requires to run.
+	 *
+	 * This is %GS_APP_PERMISSIONS_UNKNOWN if the permissions are unknown.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_PERMISSIONS] =
+		g_param_spec_flags ("permissions", NULL, NULL,
+				    GS_TYPE_APP_PERMISSIONS, GS_APP_PERMISSIONS_UNKNOWN,
+				    G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:relations: (nullable) (element-type AsRelation)
+	 *
+	 * Relations between this app and other things. For example,
+	 * requirements or recommendations that the computer have certain input
+	 * devices to use the app (the app requires a touchscreen or gamepad),
+	 * or that the screen is a certain size.
+	 *
+	 * %NULL is equivalent to an empty array. Relations of kind
+	 * %AS_RELATION_KIND_REQUIRES are conjunctive, so each additional
+	 * relation further restricts the set of computers which can run the
+	 * app. Relations of kind %AS_RELATION_KIND_RECOMMENDS are disjunctive.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_RELATIONS] =
+		g_param_spec_boxed ("relations", NULL, NULL,
+				    G_TYPE_PTR_ARRAY,
+				    G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:origin-ui: (not nullable)
+	 *
+	 * The package origin, in a human readable format suitable for use in
+	 * the UI. For example ‘Local file (RPM)’ or ‘Flathub (Flatpak)’.
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_ORIGIN_UI] =
+		g_param_spec_string ("origin-ui", NULL, NULL,
+				     NULL,
+				     G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	/**
+	 * GsApp:has-translations
+	 *
+	 * Whether the app has any information about provided translations. If
+	 * this is %TRUE, the app provides information about the translations
+	 * it ships. If %FALSE, the app does not provide any information (but
+	 * might ship translations which aren’t mentioned).
+	 *
+	 * Since: 41
+	 */
+	obj_props[PROP_HAS_TRANSLATIONS] =
+		g_param_spec_boolean ("has-translations", NULL, NULL,
+				      FALSE,
+				      G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS);
+
+	g_object_class_install_properties (object_class, G_N_ELEMENTS (obj_props), obj_props);
 }
 
 static void
@@ -5030,15 +5460,13 @@ gs_app_init (GsApp *app)
 	                                        g_str_equal,
 	                                        g_free,
 	                                        (GDestroyNotify) g_variant_unref);
-	priv->urls = g_hash_table_new_full (g_str_hash,
-	                                    g_str_equal,
-	                                    g_free,
-	                                    g_free);
 	priv->launchables = g_hash_table_new_full (g_str_hash,
 	                                           g_str_equal,
 	                                           NULL,
 	                                           g_free);
 	priv->allow_cancel = TRUE;
+	priv->size_cache_data = GS_APP_SIZE_UNKNOWABLE;
+	priv->size_user_data = GS_APP_SIZE_UNKNOWABLE;
 	g_mutex_init (&priv->mutex);
 }
 
@@ -5141,9 +5569,10 @@ gs_app_new_from_unique_id (const gchar *unique_id)
  * gs_app_get_origin_ui:
  * @app: a #GsApp
  *
- * Gets the package origin that's suitable for UI use.
+ * Gets the package origin that's suitable for UI use. i.e. The value of
+ * #GsApp:origin-ui.
  *
- * Returns: The package origin for UI use
+ * Returns: (not nullable): The package origin for UI use
  *
  * Since: 3.32
  **/
@@ -5159,7 +5588,8 @@ gs_app_get_origin_ui (GsApp *app)
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
 
 	/* use the distro name for official packages */
-	if (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE)) {
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_PROVENANCE) &&
+	    gs_app_get_kind (app) != AS_COMPONENT_KIND_REPOSITORY) {
 		os_release = gs_os_release_new (NULL);
 		if (os_release != NULL)
 			origin_str = gs_os_release_get_name (os_release);
@@ -5196,6 +5626,13 @@ gs_app_get_origin_ui (GsApp *app)
 	return g_strdup (origin_str);
 }
 
+/**
+ * gs_app_set_origin_ui:
+ * @app: a #GsApp
+ * @origin_ui: (not nullable): the new origin UI
+ *
+ * Set the value of #GsApp:origin-ui.
+ */
 void
 gs_app_set_origin_ui (GsApp *app,
 		      const gchar *origin_ui)
@@ -5216,6 +5653,7 @@ gs_app_set_origin_ui (GsApp *app,
 
 	g_free (priv->origin_ui);
 	priv->origin_ui = g_strdup (origin_ui);
+	gs_app_queue_notify (app, obj_props[PROP_ORIGIN_UI]);
 }
 
 /**
@@ -5275,6 +5713,32 @@ gs_app_get_packaging_format (GsApp *app)
 }
 
 /**
+ * gs_app_get_packaging_format_raw:
+ * @app: a #GsApp
+ *
+ * Similar to gs_app_get_packaging_format(), but it does not return a newly
+ * allocated string and the value is not suitable for the UI. Depending on
+ * the plugin, it can be "deb", "flatpak", "package", "RPM", "snap", ....
+ *
+ * Returns: The raw value of the packaging format
+ *
+ * Since: 41
+ **/
+const gchar *
+gs_app_get_packaging_format_raw (GsApp *app)
+{
+	const gchar *packaging_format;
+
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	packaging_format = gs_app_get_metadata_item (app, "GnomeSoftware::PackagingFormat");
+	if (packaging_format != NULL)
+		return packaging_format;
+
+	return as_bundle_kind_to_string (gs_app_get_bundle_kind (app));
+}
+
+/**
  * gs_app_subsume_metadata:
  * @app: a #GsApp
  * @donor: another #GsApp
@@ -5315,7 +5779,11 @@ gs_app_set_permissions (GsApp *app, GsAppPermissions permissions)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_if_fail (GS_IS_APP (app));
+
+	if (priv->permissions == permissions)
+		return;
 	priv->permissions = permissions;
+	gs_app_queue_notify (app, obj_props[PROP_PERMISSIONS]);
 }
 
 GsAppPermissions
@@ -5432,4 +5900,138 @@ gs_app_ensure_icons_downloaded (GsApp *app,
 				 error_local->message);
 		}
 	}
+}
+
+/**
+ * gs_app_get_relations:
+ * @app: a #GsApp
+ *
+ * Gets the value of #GsApp:relations. %NULL is equivalent to an empty array.
+ *
+ * The returned array should not be modified.
+ *
+ * Returns: (transfer container) (element-type AsRelation) (nullable): the value of
+ *     #GsApp:relations, or %NULL
+ * Since: 41
+ */
+GPtrArray *
+gs_app_get_relations (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	g_return_val_if_fail (GS_IS_APP (app), NULL);
+
+	locker = g_mutex_locker_new (&priv->mutex);
+	return (priv->relations != NULL) ? g_ptr_array_ref (priv->relations) : NULL;
+}
+
+/**
+ * gs_app_add_relation:
+ * @app: a #GsApp
+ * @relation: (transfer none) (not nullable): a new #AsRelation to add to the app
+ *
+ * Adds @relation to #GsApp:relations. @relation must have all its properties
+ * set already.
+ *
+ * Since: 41
+ */
+void
+gs_app_add_relation (GsApp      *app,
+                     AsRelation *relation)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	g_return_if_fail (GS_IS_APP (app));
+	g_return_if_fail (AS_IS_RELATION (relation));
+
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (priv->relations == NULL)
+		priv->relations = g_ptr_array_new_with_free_func (g_object_unref);
+	g_ptr_array_add (priv->relations, g_object_ref (relation));
+
+	gs_app_queue_notify (app, obj_props[PROP_RELATIONS]);
+}
+
+/**
+ * gs_app_set_relations:
+ * @app: a #GsApp
+ * @relations: (element-type AsRelation) (nullable) (transfer none): a new set
+ *     of relations for #GsApp:relations; %NULL represents an empty array
+ *
+ * Set #GsApp:relations to @relations, replacing its previous value. %NULL is
+ * equivalent to an empty array.
+ *
+ * Since: 41
+ */
+void
+gs_app_set_relations (GsApp     *app,
+                      GPtrArray *relations)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_autoptr(GPtrArray) old_relations = NULL;
+
+	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (relations == NULL && priv->relations == NULL)
+		return;
+
+	if (priv->relations != NULL)
+		old_relations = g_steal_pointer (&priv->relations);
+
+	if (relations != NULL)
+		priv->relations = g_ptr_array_ref (relations);
+
+	gs_app_queue_notify (app, obj_props[PROP_RELATIONS]);
+}
+
+/**
+ * gs_app_get_has_translations:
+ * @app: a #GsApp
+ *
+ * Get the value of #GsApp:has-translations.
+ *
+ * Returns: %TRUE if the app has translation metadata, %FALSE otherwise
+ * Since: 41
+ */
+gboolean
+gs_app_get_has_translations (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+
+	g_return_val_if_fail (GS_IS_APP (app), FALSE);
+
+	return priv->has_translations;
+}
+
+/**
+ * gs_app_set_has_translations:
+ * @app: a #GsApp
+ * @has_translations: %TRUE if the app has translation metadata, %FALSE otherwise
+ *
+ * Set the value of #GsApp:has-translations.
+ *
+ * Since: 41
+ */
+void
+gs_app_set_has_translations (GsApp    *app,
+                             gboolean  has_translations)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+
+	g_return_if_fail (GS_IS_APP (app));
+
+	locker = g_mutex_locker_new (&priv->mutex);
+
+	if (priv->has_translations == has_translations)
+		return;
+
+	priv->has_translations = has_translations;
+	gs_app_queue_notify (app, obj_props[PROP_HAS_TRANSLATIONS]);
 }

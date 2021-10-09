@@ -14,6 +14,7 @@
 #include "gs-app.h"
 #include "gs-category.h"
 #include "gs-category-manager.h"
+#include "gs-odrs-provider.h"
 #include "gs-plugin-event.h"
 #include "gs-plugin-private.h"
 #include "gs-plugin-job.h"
@@ -69,9 +70,23 @@ GPtrArray	*gs_plugin_loader_get_events		(GsPluginLoader	*plugin_loader);
 GsPluginEvent	*gs_plugin_loader_get_event_default	(GsPluginLoader	*plugin_loader);
 void		 gs_plugin_loader_remove_events		(GsPluginLoader	*plugin_loader);
 
-GsApp		*gs_plugin_loader_app_create		(GsPluginLoader	*plugin_loader,
-							 const gchar	*unique_id);
-GsApp		*gs_plugin_loader_get_system_app	(GsPluginLoader	*plugin_loader);
+void		 gs_plugin_loader_app_create_async	(GsPluginLoader	*plugin_loader,
+							 const gchar	*unique_id,
+							 GCancellable	*cancellable,
+							 GAsyncReadyCallback callback,
+							 gpointer	 user_data);
+GsApp		*gs_plugin_loader_app_create_finish	(GsPluginLoader	*plugin_loader,
+							 GAsyncResult	*res,
+							 GError		**error);
+void		 gs_plugin_loader_get_system_app_async	(GsPluginLoader	*plugin_loader,
+							 GCancellable	*cancellable,
+							 GAsyncReadyCallback callback,
+							 gpointer	 user_data);
+GsApp		*gs_plugin_loader_get_system_app_finish	(GsPluginLoader	*plugin_loader,
+							 GAsyncResult	*res,
+							 GError		**error);
+SoupSession	*gs_plugin_loader_get_soup_session	(GsPluginLoader	*plugin_loader);
+GsOdrsProvider	*gs_plugin_loader_get_odrs_provider	(GsPluginLoader	*plugin_loader);
 
 /* only useful from the self tests */
 void		 gs_plugin_loader_setup_again		(GsPluginLoader	*plugin_loader);
@@ -80,8 +95,6 @@ GsPlugin	*gs_plugin_loader_find_plugin		(GsPluginLoader	*plugin_loader,
 							 const gchar	*plugin_name);
 void            gs_plugin_loader_set_max_parallel_ops  (GsPluginLoader *plugin_loader,
                                                         guint           max_ops);
-
-const gchar	*gs_plugin_loader_get_locale		(GsPluginLoader *plugin_loader);
 
 GsCategoryManager *gs_plugin_loader_get_category_manager (GsPluginLoader *plugin_loader);
 void		 gs_plugin_loader_claim_error		(GsPluginLoader *plugin_loader,

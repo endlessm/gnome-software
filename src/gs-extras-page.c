@@ -42,14 +42,14 @@ struct _GsExtrasPage
 	GsPage			  parent_instance;
 
 	GsPluginLoader		 *plugin_loader;
-	GtkBuilder		 *builder;
 	GCancellable		 *search_cancellable;
 	GsShell			 *shell;
 	GsExtrasPageState	  state;
 	GtkSizeGroup		 *sizegroup_image;
 	GtkSizeGroup		 *sizegroup_name;
 	GtkSizeGroup		 *sizegroup_desc;
-	GtkSizeGroup		 *sizegroup_button;
+	GtkSizeGroup		 *sizegroup_button_label;
+	GtkSizeGroup		 *sizegroup_button_image;
 	GPtrArray		 *array_search_data;
 	GsExtrasPageMode	  mode;
 	GsLanguage		 *language;
@@ -67,6 +67,11 @@ struct _GsExtrasPage
 };
 
 G_DEFINE_TYPE (GsExtrasPage, gs_extras_page, GS_TYPE_PAGE)
+
+typedef enum {
+	PROP_VADJUSTMENT = 1,
+	PROP_TITLE,
+} GsExtrasPageProperty;
 
 static void
 search_data_free (SearchData *search_data)
@@ -183,7 +188,6 @@ build_title (GsExtrasPage *self)
 static void
 gs_extras_page_update_ui_state (GsExtrasPage *self)
 {
-	GtkWidget *widget;
 	g_autofree gchar *title = NULL;
 
 	if (gs_shell_get_mode (self->shell) != GS_SHELL_MODE_EXTRAS)
@@ -198,23 +202,6 @@ gs_extras_page_update_ui_state (GsExtrasPage *self)
 	case GS_EXTRAS_PAGE_STATE_NO_RESULTS:
 	case GS_EXTRAS_PAGE_STATE_FAILED:
 		gs_stop_spinner (GTK_SPINNER (self->spinner));
-		break;
-	default:
-		g_assert_not_reached ();
-		break;
-	}
-
-	/* headerbar title */
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "application_details_header"));
-	switch (self->state) {
-	case GS_EXTRAS_PAGE_STATE_LOADING:
-	case GS_EXTRAS_PAGE_STATE_READY:
-		title = build_title (self);
-		gtk_label_set_label (GTK_LABEL (widget), title);
-		break;
-	case GS_EXTRAS_PAGE_STATE_NO_RESULTS:
-	case GS_EXTRAS_PAGE_STATE_FAILED:
-		gtk_label_set_label (GTK_LABEL (widget), _("Unable to Find Requested Software"));
 		break;
 	default:
 		g_assert_not_reached ();
@@ -270,7 +257,12 @@ static void
 gs_extras_page_set_state (GsExtrasPage *self,
                           GsExtrasPageState state)
 {
+	if (self->state == state)
+		return;
+
 	self->state = state;
+
+	g_object_notify (G_OBJECT (self), "title");
 	gs_extras_page_update_ui_state (self);
 	gs_extras_page_maybe_emit_installed_resources_done (self);
 }
@@ -329,7 +321,8 @@ gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, GsAppList *list, SearchD
 				    self->sizegroup_image,
 				    self->sizegroup_name,
 				    self->sizegroup_desc,
-				    self->sizegroup_button);
+				    self->sizegroup_button_label,
+				    self->sizegroup_button_image);
 	gtk_widget_show (app_row);
 }
 
@@ -536,7 +529,7 @@ show_search_results (GsExtrasPage *self)
 		g_debug ("extras: found one result, showing in details view");
 		g_assert (list != NULL);
 		app = gs_app_row_get_app (GS_APP_ROW (list->data));
-		gs_shell_change_mode (self->shell, GS_SHELL_MODE_DETAILS, app, TRUE);
+		gs_shell_show_app (self->shell, app);
 		if (gs_app_is_installed (app))
 			gs_extras_page_maybe_emit_installed_resources_done (self);
 	} else {
@@ -566,7 +559,7 @@ search_files_cb (GObject *source_object,
 			return;
 		}
 		g_warning ("failed to find any search results: %s", error->message);
-		str = g_strdup_printf ("%s: %s", _("Failed to find any search results"), error->message);
+		str = g_strdup_printf (_("Failed to find any search results: %s"), error->message);
 		gtk_label_set_label (GTK_LABEL (self->label_failed), str);
 		gs_extras_page_set_state (self, GS_EXTRAS_PAGE_STATE_FAILED);
 		return;
@@ -622,7 +615,7 @@ file_to_app_cb (GObject *source_object,
 			g_autofree gchar *str = NULL;
 
 			g_warning ("failed to find any search results: %s", error->message);
-			str = g_strdup_printf ("%s: %s", _("Failed to find any search results"), error->message);
+			str = g_strdup_printf (_("Failed to find any search results: %s"), error->message);
 			gtk_label_set_label (GTK_LABEL (self->label_failed), str);
 			gs_extras_page_set_state (self, GS_EXTRAS_PAGE_STATE_FAILED);
 			return;
@@ -661,7 +654,7 @@ get_search_what_provides_cb (GObject *source_object,
 			return;
 		}
 		g_warning ("failed to find any search results: %s", error->message);
-		str = g_strdup_printf ("%s: %s", _("Failed to find any search results"), error->message);
+		str = g_strdup_printf (_("Failed to find any search results: %s"), error->message);
 		gtk_label_set_label (GTK_LABEL (self->label_failed), str);
 		gs_extras_page_set_state (self, GS_EXTRAS_PAGE_STATE_FAILED);
 		return;
@@ -769,6 +762,9 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 		}
 		self->pending_search_cnt++;
 	}
+
+	/* the page title will have changed */
+	g_object_notify (G_OBJECT (self), "title");
 }
 
 static void
@@ -1038,7 +1034,14 @@ gs_extras_page_search (GsExtrasPage  *self,
                        const gchar   *desktop_id,
                        const gchar   *ident)
 {
+	GsExtrasPageMode old_mode;
+
+	old_mode = self->mode;
 	self->mode = gs_extras_page_mode_from_string (mode_str);
+
+	if (old_mode != self->mode)
+		g_object_notify (G_OBJECT (self), "title");
+
 	g_clear_pointer (&self->caller_app_name, g_free);
 	self->caller_app_name = gs_extras_page_get_app_name (desktop_id);
 	g_clear_pointer (&self->install_resources_ident, g_free);
@@ -1076,25 +1079,14 @@ gs_extras_page_search (GsExtrasPage  *self,
 }
 
 static void
-gs_extras_page_switch_to (GsPage *page,
-                          gboolean scroll_up)
+gs_extras_page_switch_to (GsPage *page)
 {
 	GsExtrasPage *self = GS_EXTRAS_PAGE (page);
-	GtkWidget *widget;
 
 	if (gs_shell_get_mode (self->shell) != GS_SHELL_MODE_EXTRAS) {
 		g_warning ("Called switch_to(codecs) when in mode %s",
 			   gs_shell_get_mode_string (self->shell));
 		return;
-	}
-
-	widget = GTK_WIDGET (gtk_builder_get_object (self->builder, "application_details_header"));
-	gtk_widget_show (widget);
-
-	if (scroll_up) {
-		GtkAdjustment *adj;
-		adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow));
-		gtk_adjustment_set_value (adj, gtk_adjustment_get_lower (adj));
 	}
 
 	gs_extras_page_update_ui_state (self);
@@ -1186,7 +1178,6 @@ static gboolean
 gs_extras_page_setup (GsPage *page,
                       GsShell *shell,
                       GsPluginLoader *plugin_loader,
-                      GtkBuilder *builder,
                       GCancellable *cancellable,
                       GError **error)
 {
@@ -1197,7 +1188,6 @@ gs_extras_page_setup (GsPage *page,
 	self->shell = shell;
 
 	self->plugin_loader = g_object_ref (plugin_loader);
-	self->builder = g_object_ref (builder);
 
 	g_signal_connect (self->list_box_results, "row-activated",
 			  G_CALLBACK (row_activated_cb), self);
@@ -1211,6 +1201,57 @@ gs_extras_page_setup (GsPage *page,
 }
 
 static void
+gs_extras_page_get_property (GObject    *object,
+                             guint       prop_id,
+                             GValue     *value,
+                             GParamSpec *pspec)
+{
+	GsExtrasPage *self = GS_EXTRAS_PAGE (object);
+
+	switch ((GsExtrasPageProperty) prop_id) {
+	case PROP_VADJUSTMENT:
+		g_value_set_object (value, gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow)));
+		break;
+	case PROP_TITLE:
+		switch (self->state) {
+		case GS_EXTRAS_PAGE_STATE_LOADING:
+		case GS_EXTRAS_PAGE_STATE_READY:
+			g_value_take_string (value, build_title (self));
+			break;
+		case GS_EXTRAS_PAGE_STATE_NO_RESULTS:
+		case GS_EXTRAS_PAGE_STATE_FAILED:
+			g_value_set_string (value, _("Unable to Find Requested Software"));
+			break;
+		default:
+			g_assert_not_reached ();
+			break;
+		}
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
+gs_extras_page_set_property (GObject      *object,
+                             guint         prop_id,
+                             const GValue *value,
+                             GParamSpec   *pspec)
+{
+	switch ((GsExtrasPageProperty) prop_id) {
+	case PROP_VADJUSTMENT:
+	case PROP_TITLE:
+		/* Read-only */
+		g_assert_not_reached ();
+		break;
+	default:
+		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+		break;
+	}
+}
+
+static void
 gs_extras_page_dispose (GObject *object)
 {
 	GsExtrasPage *self = GS_EXTRAS_PAGE (object);
@@ -1221,10 +1262,10 @@ gs_extras_page_dispose (GObject *object)
 	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
 	g_clear_object (&self->sizegroup_desc);
-	g_clear_object (&self->sizegroup_button);
+	g_clear_object (&self->sizegroup_button_label);
+	g_clear_object (&self->sizegroup_button_image);
 	g_clear_object (&self->language);
 	g_clear_object (&self->vendor);
-	g_clear_object (&self->builder);
 	g_clear_object (&self->plugin_loader);
 
 	g_clear_pointer (&self->array_search_data, g_ptr_array_unref);
@@ -1245,7 +1286,8 @@ gs_extras_page_init (GsExtrasPage *self)
 	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_button = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
+	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->vendor = gs_vendor_new ();
 
 	/* map ISO639 to language names */
@@ -1262,10 +1304,16 @@ gs_extras_page_class_init (GsExtrasPageClass *klass)
 	GsPageClass *page_class = GS_PAGE_CLASS (klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
+	object_class->get_property = gs_extras_page_get_property;
+	object_class->set_property = gs_extras_page_set_property;
 	object_class->dispose = gs_extras_page_dispose;
+
 	page_class->switch_to = gs_extras_page_switch_to;
 	page_class->reload = gs_extras_page_reload;
 	page_class->setup = gs_extras_page_setup;
+
+	g_object_class_override_property (object_class, PROP_VADJUSTMENT, "vadjustment");
+	g_object_class_override_property (object_class, PROP_TITLE, "title");
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-extras-page.ui");
 
