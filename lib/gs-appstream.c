@@ -44,15 +44,29 @@ gs_appstream_create_app (GsPlugin *plugin, XbSilo *silo, XbNode *component, GErr
 	return g_steal_pointer (&app_new);
 }
 
+/* Helper function to do the equivalent of
+ *  *node = xb_node_get_next (*node)
+ * but with correct reference counting, since xb_node_get_next() returns a new
+ * ref. */
+static void
+node_set_to_next (XbNode **node)
+{
+	g_autoptr(XbNode) next_node = NULL;
+
+	g_assert (node != NULL);
+	g_assert (*node != NULL);
+
+	next_node = xb_node_get_next (*node);
+	g_object_unref (*node);
+	*node = g_steal_pointer (&next_node);
+}
+
 static gchar *
 gs_appstream_format_description (XbNode *root, GError **error)
 {
 	g_autoptr(GString) str = g_string_new (NULL);
-	g_autoptr(XbNode) n = xb_node_get_child (root);
 
-	while (n != NULL) {
-		g_autoptr(XbNode) n2 = NULL;
-
+	for (g_autoptr(XbNode) n = xb_node_get_child (root); n != NULL; node_set_to_next (&n)) {
 		/* support <p>, <ul>, <ol> and <li>, ignore all else */
 		if (g_strcmp0 (xb_node_get_element (n), "p") == 0) {
 			const gchar *node_text = xb_node_get_text (n);
@@ -92,9 +106,6 @@ gs_appstream_format_description (XbNode *root, GError **error)
 			}
 			g_string_append (str, "\n");
 		}
-
-		n2 = xb_node_get_next (n);
-		g_set_object (&n, n2);
 	}
 
 	/* remove extra newlines */
@@ -760,7 +771,7 @@ gs_appstream_refine_app_relation (GsPlugin        *plugin,
 	 * more <id/>, <modalias/>, <kernel/>, <memory/>, <firmware/>,
 	 * <control/> or <display_length/> elements. For the moment, we only
 	 * support some of these. */
-	for (g_autoptr(XbNode) child = xb_node_get_child (relation_node); child != NULL; child = xb_node_get_next (child)) {
+	for (g_autoptr(XbNode) child = xb_node_get_child (relation_node); child != NULL; node_set_to_next (&child)) {
 		const gchar *item_kind = xb_node_get_element (child);
 		g_autoptr(AsRelation) relation = as_relation_new ();
 
@@ -1063,8 +1074,11 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	/* set id kind */
 	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_UNKNOWN ||
 	    gs_app_get_kind (app) == AS_COMPONENT_KIND_GENERIC) {
+		AsComponentKind kind;
 		tmp = xb_node_get_attr (component, "type");
-		gs_app_set_kind (app, as_component_kind_from_string (tmp));
+		kind = as_component_kind_from_string (tmp);
+		if (kind != AS_COMPONENT_KIND_UNKNOWN)
+			gs_app_set_kind (app, kind);
 	}
 
 	/* set the release date */
@@ -1338,6 +1352,24 @@ gs_appstream_search (GsPlugin *plugin,
 			g_debug ("add %s", gs_app_get_unique_id (app));
 			gs_app_set_match_value (app, match_value);
 			gs_app_list_add (list, app);
+
+			if (gs_app_get_kind (app) == AS_COMPONENT_KIND_ADDON) {
+				g_autoptr(GPtrArray) extends = NULL;
+
+				/* add the parent app as a wildcard, to be refined later */
+				extends = xb_node_query (component, "extends", 0, NULL);
+				for (guint jj = 0; extends && jj < extends->len; jj++) {
+					XbNode *extend = g_ptr_array_index (extends, jj);
+					g_autoptr(GsApp) app2 = NULL;
+					const gchar *tmp;
+					app2 = gs_app_new (xb_node_get_text (extend));
+					gs_app_add_quirk (app2, GS_APP_QUIRK_IS_WILDCARD);
+					tmp = xb_node_query_attr (extend, "../..", "origin", NULL);
+					if (gs_appstream_origin_valid (tmp))
+						gs_app_set_origin_appstream (app2, tmp);
+					gs_app_list_add (list, app2);
+				}
+			}
 		}
 	}
 	g_debug ("search took %fms", g_timer_elapsed (timer, NULL) * 1000);

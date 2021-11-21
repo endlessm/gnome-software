@@ -64,9 +64,9 @@ gs_updates_section_get_list (GsUpdatesSection *self)
 }
 
 static gboolean
-_listbox_keynav_failed_cb (GsAppRow *app_row, GtkDirectionType direction)
+_listbox_keynav_failed_cb (GsUpdatesSection *self, GtkDirectionType direction, GtkListBox *listbox)
 {
-	GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (app_row));
+	GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (listbox));
 
 	if (!toplevel)
 		return FALSE;
@@ -353,8 +353,20 @@ _perform_update_cb (GsPluginLoader *plugin_loader, GAsyncResult *res, gpointer u
 
 	/* get the results */
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
-			g_warning ("failed to perform update: %s", error->message);
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+			GsApp *app = NULL;
+
+			if (gs_app_list_length (self->list) == 1)
+				app = gs_app_list_index (self->list, 0);
+
+			gs_plugin_loader_claim_error (plugin_loader,
+						      NULL,
+						      GS_PLUGIN_ACTION_UPDATE,
+						      app,
+						      TRUE,
+						      error);
+		}
 		goto out;
 	}
 
@@ -384,7 +396,7 @@ out:
 }
 
 static void
-_button_cancel_clicked_cb (GtkButton *button, GsUpdatesSection *self)
+_button_cancel_clicked_cb (GsUpdatesSection *self)
 {
 	g_cancellable_cancel (self->cancellable);
 	_update_buttons (self);
@@ -449,6 +461,7 @@ _button_update_all_clicked_cb (GsUpdatesSection *self)
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE,
 					 "list", self->list,
 					 "interactive", TRUE,
+					 "propagate-error", TRUE,
 					 NULL);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,

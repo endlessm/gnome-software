@@ -646,7 +646,7 @@ expand_channel_name (const gchar *name)
 }
 
 static void
-add_channels (SnapdSnap *snap, GsAppList *list)
+add_channels (GsPlugin *plugin, SnapdSnap *snap, GsAppList *list)
 {
 	GStrv tracks;
 	GPtrArray *channels;
@@ -663,17 +663,14 @@ add_channels (SnapdSnap *snap, GsAppList *list)
 
 	for (guint i = 0; i < sorted_channels->len; i++) {
 		SnapdChannel *channel = g_ptr_array_index (sorted_channels, i);
-		g_autofree gchar *appstream_id = NULL;
-		g_autoptr(GsApp) a;
+		g_autoptr(GsApp) app = NULL;
 		g_autofree gchar *expanded_name = NULL;
 
-		appstream_id = get_appstream_id (snap);
-		a = gs_app_new (appstream_id);
-		gs_app_set_bundle_kind (a, AS_BUNDLE_KIND_SNAP);
-		gs_app_set_metadata (a, "snap::name", snapd_snap_get_name (snap));
+		app = snap_to_app (plugin, snap);
 		expanded_name = expand_channel_name (snapd_channel_get_name (channel));
-		gs_app_set_branch (a, expanded_name);
-		gs_app_list_add (list, a);
+		gs_app_set_branch (app, expanded_name);
+
+		gs_app_list_add (list, app);
 	}
 }
 
@@ -697,7 +694,7 @@ gs_plugin_add_alternates (GsPlugin *plugin,
 			return TRUE;
 		}
 
-		add_channels (snap, list);
+		add_channels (plugin, snap, list);
 	} else {
 		g_autoptr(GPtrArray) snaps = NULL;
 		guint i;
@@ -708,7 +705,7 @@ gs_plugin_add_alternates (GsPlugin *plugin,
 			SnapdSnap *store_snap;
 
 			store_snap = get_store_snap (plugin, snapd_snap_get_name (snap), TRUE, cancellable, NULL);
-			add_channels (store_snap, list);
+			add_channels (plugin, store_snap, list);
 		}
 		return TRUE;
 	}
@@ -858,13 +855,83 @@ load_icon (GsPlugin *plugin, SnapdClient *client, GsApp *app, const gchar *id, S
 	return FALSE;
 }
 
-static gchar *
-gs_plugin_snap_get_description_safe (SnapdSnap *snap)
+static void serialize_node (SnapdMarkdownNode *node, GString *text, guint indentation);
+
+static gboolean
+is_block_node (SnapdMarkdownNode *node)
 {
-	GString *str = g_string_new (snapd_snap_get_description (snap));
-	as_gstring_replace (str, "\r", "");
-	as_gstring_replace (str, "  ", " ");
-	return g_string_free (str, FALSE);
+	switch (snapd_markdown_node_get_node_type (node)) {
+	case SNAPD_MARKDOWN_NODE_TYPE_PARAGRAPH:
+	case SNAPD_MARKDOWN_NODE_TYPE_UNORDERED_LIST:
+	case SNAPD_MARKDOWN_NODE_TYPE_CODE_BLOCK:
+		return TRUE;
+	default:
+		return FALSE;
+	}
+}
+
+static void
+serialize_nodes (GPtrArray *nodes, GString *text, guint indentation)
+{
+	for (guint i = 0; i < nodes->len; i++) {
+		SnapdMarkdownNode *node = g_ptr_array_index (nodes, i);
+
+		if (i != 0) {
+			SnapdMarkdownNode *last_node = g_ptr_array_index (nodes, i - 1);
+			if (is_block_node (node) && is_block_node (last_node))
+				g_string_append (text, "\n");
+		}
+
+		serialize_node (node, text, indentation);
+	}
+}
+
+static void
+serialize_node (SnapdMarkdownNode *node, GString *text, guint indentation)
+{
+	GPtrArray *children = snapd_markdown_node_get_children (node);
+
+	switch (snapd_markdown_node_get_node_type (node)) {
+	case SNAPD_MARKDOWN_NODE_TYPE_TEXT:
+		g_string_append (text, snapd_markdown_node_get_text (node));
+		return;
+
+	case SNAPD_MARKDOWN_NODE_TYPE_PARAGRAPH:
+	case SNAPD_MARKDOWN_NODE_TYPE_UNORDERED_LIST:
+	case SNAPD_MARKDOWN_NODE_TYPE_CODE_BLOCK:
+		serialize_nodes (children, text, indentation);
+		g_string_append (text, "\n");
+		return;
+
+	case SNAPD_MARKDOWN_NODE_TYPE_LIST_ITEM:
+		for (guint i = 0; i < indentation; i++) {
+			g_string_append (text, "    ");
+		}
+		g_string_append_printf (text, " • ");
+		serialize_nodes (children, text, indentation + 1);
+		return;
+
+	case SNAPD_MARKDOWN_NODE_TYPE_CODE_SPAN:
+	case SNAPD_MARKDOWN_NODE_TYPE_EMPHASIS:
+	case SNAPD_MARKDOWN_NODE_TYPE_STRONG_EMPHASIS:
+	case SNAPD_MARKDOWN_NODE_TYPE_URL:
+		return serialize_nodes (children, text, indentation);
+
+	default:
+		g_assert_not_reached();
+	}
+}
+
+static gchar *
+gs_plugin_snap_get_description (SnapdSnap *snap)
+{
+	g_autoptr(SnapdMarkdownParser) parser = snapd_markdown_parser_new (SNAPD_MARKDOWN_VERSION_0);
+	g_autoptr(GPtrArray) nodes = NULL;
+	g_autoptr(GString) text = g_string_new ("");
+
+	nodes = snapd_markdown_parser_parse (parser, snapd_snap_get_description (snap));
+	serialize_nodes (nodes, text, 0);
+	return g_string_free (g_steal_pointer (&text), FALSE);
 }
 
 static void
@@ -936,7 +1003,7 @@ refine_app_with_client (GsPlugin             *plugin,
 			GError              **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const gchar *snap_name, *name, *version;
+	const gchar *snap_name, *name, *website, *contact, *version;
 	g_autofree gchar *channel = NULL;
 	g_autofree gchar *store_channel = NULL;
 	g_autofree gchar *tracking_channel = NULL;
@@ -1004,10 +1071,17 @@ refine_app_with_client (GsPlugin             *plugin,
 	if (name == NULL || g_strcmp0 (name, "") == 0)
 		name = snapd_snap_get_name (snap);
 	gs_app_set_name (app, GS_APP_QUALITY_NORMAL, name);
+	website = snapd_snap_get_website (snap);
+	if (g_strcmp0 (website, "") == 0)
+		website = NULL;
+	gs_app_set_url (app, AS_URL_KIND_HOMEPAGE, website);
+	contact = snapd_snap_get_contact (snap);
+	if (g_strcmp0 (contact, "") == 0)
+		contact = NULL;
+	gs_app_set_url (app, AS_URL_KIND_CONTACT, contact);
 	gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, snapd_snap_get_summary (snap));
-	description = gs_plugin_snap_get_description_safe (snap);
-	if (description != NULL)
-		gs_app_set_description (app, GS_APP_QUALITY_NORMAL, description);
+	description = gs_plugin_snap_get_description (snap);
+	gs_app_set_description (app, GS_APP_QUALITY_NORMAL, description);
 	gs_app_set_license (app, GS_APP_QUALITY_NORMAL, snapd_snap_get_license (snap));
 	developer_name = snapd_snap_get_publisher_display_name (snap);
 	if (developer_name == NULL)

@@ -161,6 +161,10 @@ gs_flatpak_claim_app_list (GsFlatpak *self,
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
 
+		/* Do not claim ownership of a wildcard app */
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_IS_WILDCARD))
+			continue;
+
 		if (gs_app_get_origin (app))
 			gs_flatpak_set_app_origin (self, app, gs_app_get_origin (app), NULL, NULL);
 
@@ -959,7 +963,7 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 	g_autoptr(GPtrArray) xremotes = NULL;
 	g_autoptr(GRWLockReaderLocker) reader_locker = NULL;
 	g_autoptr(GRWLockWriterLocker) writer_locker = NULL;
-	g_autoptr(XbBuilder) builder = xb_builder_new ();
+	g_autoptr(XbBuilder) builder = NULL;
 	g_autoptr(GMainContext) old_thread_default = NULL;
 
 	reader_locker = g_rw_lock_reader_locker_new (&self->silo_lock);
@@ -971,6 +975,17 @@ gs_flatpak_rescan_appstream_store (GsFlatpak *self,
 	/* drat! silo needs regenerating */
 	writer_locker = g_rw_lock_writer_locker_new (&self->silo_lock);
 	g_clear_object (&self->silo);
+
+	/* FIXME: https://gitlab.gnome.org/GNOME/gnome-software/-/issues/1422 */
+	old_thread_default = g_main_context_ref_thread_default ();
+	if (old_thread_default == g_main_context_default ())
+		g_clear_pointer (&old_thread_default, g_main_context_unref);
+	if (old_thread_default != NULL)
+		g_main_context_pop_thread_default (old_thread_default);
+	builder = xb_builder_new ();
+	if (old_thread_default != NULL)
+		g_main_context_push_thread_default (old_thread_default);
+	g_clear_pointer (&old_thread_default, g_main_context_unref);
 
 	/* verbose profiling */
 	if (g_getenv ("GS_XMLB_VERBOSE") != NULL) {
@@ -1608,9 +1623,16 @@ gs_flatpak_app_install_source (GsFlatpak *self,
 							   gs_app_get_id (app),
 							   cancellable, NULL);
 	if (xremote != NULL) {
-		/* if the remote already exists, just enable it */
-		g_debug ("enabling existing remote %s", flatpak_remote_get_name (xremote));
+		/* if the remote already exists, just enable it and update it */
+		g_debug ("modifying existing remote %s", flatpak_remote_get_name (xremote));
 		flatpak_remote_set_disabled (xremote, FALSE);
+		if (gs_flatpak_app_get_file_kind (app) == GS_FLATPAK_APP_FILE_KIND_REPO) {
+			#if FLATPAK_CHECK_VERSION(1, 4, 0)
+			flatpak_remote_set_filter (xremote, gs_flatpak_app_get_repo_filter (app));
+			flatpak_remote_set_description (xremote, gs_app_get_description (app));
+			#endif
+			flatpak_remote_set_title (xremote, gs_app_get_origin_ui (app));
+		}
 	} else if (!is_install) {
 		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_FAILED, "Cannot enable flatpak remote '%s', remote not found", gs_app_get_id (app));
 	} else {
@@ -1638,6 +1660,10 @@ gs_flatpak_app_install_source (GsFlatpak *self,
 
 	/* success */
 	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+
+	/* This can fail silently, it's only to update necessary caches, to provide
+	 * up-to-date information after the successful remote enable/install. */
+	gs_flatpak_refresh (self, 1, cancellable, NULL);
 
 	gs_plugin_repository_changed (self->plugin, app);
 
@@ -2691,7 +2717,7 @@ gs_flatpak_refine_appstream_from_bytes (GsFlatpak *self,
 {
 	const gchar *const *locales = g_get_language_names ();
 	g_autofree gchar *xpath = NULL;
-	g_autoptr(XbBuilder) builder = xb_builder_new ();
+	g_autoptr(XbBuilder) builder = NULL;
 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
 	g_autoptr(XbNode) component_node = NULL;
 	g_autoptr(XbNode) n = NULL;
@@ -2702,6 +2728,17 @@ gs_flatpak_refine_appstream_from_bytes (GsFlatpak *self,
 	g_autoptr(GInputStream) stream_gz = NULL;
 	g_autoptr(GZlibDecompressor) decompressor = NULL;
 	g_autoptr(GMainContext) old_thread_default = NULL;
+
+	/* FIXME: https://gitlab.gnome.org/GNOME/gnome-software/-/issues/1422 */
+	old_thread_default = g_main_context_ref_thread_default ();
+	if (old_thread_default == g_main_context_default ())
+		g_clear_pointer (&old_thread_default, g_main_context_unref);
+	if (old_thread_default != NULL)
+		g_main_context_pop_thread_default (old_thread_default);
+	builder = xb_builder_new ();
+	if (old_thread_default != NULL)
+		g_main_context_push_thread_default (old_thread_default);
+	g_clear_pointer (&old_thread_default, g_main_context_unref);
 
 	/* add current locales */
 	for (guint i = 0; locales[i] != NULL; i++)

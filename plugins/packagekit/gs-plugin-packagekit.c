@@ -698,6 +698,8 @@ gs_plugin_add_updates (GsPlugin *plugin,
 	g_autoptr(GsPackagekitHelper) helper = gs_packagekit_helper_new (plugin);
 	g_autoptr(PkResults) results = NULL;
 	g_autoptr(GPtrArray) array = NULL;
+	g_autoptr(GsApp) first_app = NULL;
+	gboolean all_downloaded = TRUE;
 
 	/* do sync call */
 	gs_plugin_status_update (plugin, NULL, GS_PLUGIN_STATUS_WAITING);
@@ -718,8 +720,24 @@ gs_plugin_add_updates (GsPlugin *plugin,
 		PkPackage *package = g_ptr_array_index (array, i);
 		g_autoptr(GsApp) app = NULL;
 		app = gs_plugin_packagekit_build_update_app (plugin, package);
+		all_downloaded = all_downloaded && !gs_app_get_size_download (app);
+		if (all_downloaded && first_app == NULL)
+			first_app = g_object_ref (app);
 		gs_app_list_add (list, app);
 	}
+	/* Having all packages downloaded doesn't mean the update is also prepared,
+	   because the 'prepared-update' file can be missing, thus verify it and
+	   if not found, then set one application as needed download, to have
+	   the update properly prepared. */
+	if (all_downloaded && first_app != NULL) {
+		g_auto(GStrv) prepared_ids = NULL;
+		/* It's an overhead to get all the package IDs, but there's no easier
+		   way to verify the prepared-update file exists. */
+		prepared_ids = pk_offline_get_prepared_ids (NULL);
+		if (prepared_ids == NULL || prepared_ids[0] == NULL)
+			gs_app_set_size_download (first_app, 1);
+	}
+
 	return TRUE;
 }
 
@@ -1680,8 +1698,10 @@ gs_plugin_setup (GsPlugin *plugin, GCancellable *cancellable, GError **error)
 	priv->connection_history = g_bus_get_sync (G_BUS_TYPE_SYSTEM,
 						   cancellable,
 						   error);
-	if (priv->connection_history == NULL)
+	if (priv->connection_history == NULL) {
+		gs_plugin_packagekit_error_convert (error);
 		return FALSE;
+	}
 
 	reload_proxy_settings (plugin, cancellable);
 
@@ -1726,6 +1746,7 @@ gs_plugin_packagekit_refine_history (GsPlugin      *plugin,
 					      cancellable,
 					      &error_local);
 	if (result == NULL) {
+		g_dbus_error_strip_remote_error (error_local);
 		if (g_error_matches (error_local,
 				     G_DBUS_ERROR,
 				     G_DBUS_ERROR_UNKNOWN_METHOD)) {
@@ -1901,8 +1922,10 @@ gs_plugin_packagekit_local_check_installed (GsPlugin *plugin,
 					 -1);
 	results = pk_client_resolve (PK_CLIENT (priv->task_local), filter, (gchar **) names,
 				     cancellable, NULL, NULL, error);
-	if (results == NULL)
+	if (results == NULL) {
+		gs_plugin_packagekit_error_convert (error);
 		return FALSE;
+	}
 	packages = pk_results_get_package_array (results);
 	if (packages->len > 0) {
 		gs_app_set_state (app, GS_APP_STATE_UNKNOWN);
@@ -2114,6 +2137,8 @@ gs_plugin_add_updates_historical (GsPlugin *plugin,
 			return TRUE;
 		}
 
+		gs_plugin_packagekit_error_convert (&error_local);
+
 		g_set_error (error,
 		             GS_PLUGIN_ERROR,
 		             GS_PLUGIN_ERROR_INVALID_FORMAT,
@@ -2124,8 +2149,10 @@ gs_plugin_add_updates_historical (GsPlugin *plugin,
 
 	/* get the mtime of the results */
 	mtime = pk_offline_get_results_mtime (error);
-	if (mtime == 0)
+	if (mtime == 0) {
+		gs_plugin_packagekit_error_convert (error);
 		return FALSE;
+	}
 
 	/* only return results if successful */
 	exit_code = pk_results_get_exit_code (results);
@@ -2563,6 +2590,38 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 	return TRUE;
 }
 
+static gboolean
+gs_plugin_packagekit_refresh (GsPlugin *plugin,
+			      GsApp *progress_app,
+			      guint cache_age,
+			      GCancellable *cancellable,
+			      GError **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	g_autoptr(GsPackagekitHelper) helper = gs_packagekit_helper_new (plugin);
+	g_autoptr(PkResults) results = NULL;
+
+	gs_packagekit_helper_set_progress_app (helper, progress_app);
+
+	g_mutex_lock (&priv->task_mutex);
+	/* cache age of 1 is user-initiated */
+	pk_client_set_background (PK_CLIENT (priv->task), cache_age > 1);
+	pk_client_set_interactive (PK_CLIENT (priv->task), gs_plugin_has_flags (plugin, GS_PLUGIN_FLAGS_INTERACTIVE));
+	pk_client_set_cache_age (PK_CLIENT (priv->task), cache_age);
+	/* refresh the metadata */
+	results = pk_client_refresh_cache (PK_CLIENT (priv->task),
+	                                   FALSE /* force */,
+	                                   cancellable,
+	                                   gs_packagekit_helper_cb, helper,
+	                                   error);
+	g_mutex_unlock (&priv->task_mutex);
+	if (!gs_plugin_packagekit_results_valid (results, error)) {
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 gboolean
 gs_plugin_enable_repo (GsPlugin *plugin,
 		       GsApp *repo,
@@ -2609,6 +2668,10 @@ gs_plugin_enable_repo (GsPlugin *plugin,
 
 	/* state is known */
 	gs_app_set_state (repo, GS_APP_STATE_INSTALLED);
+
+	/* This can fail silently, it's only to update necessary caches, to provide
+	 * up-to-date information after the successful repository enable/install. */
+	gs_plugin_packagekit_refresh (plugin, repo, 1, cancellable, NULL);
 
 	gs_plugin_repository_changed (plugin, repo);
 

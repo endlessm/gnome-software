@@ -505,7 +505,7 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	const gchar *test_xml;
 	g_autofree gchar *blobfn = NULL;
-	g_autoptr(XbBuilder) builder = xb_builder_new ();
+	g_autoptr(XbBuilder) builder = NULL;
 	g_autoptr(XbNode) n = NULL;
 	g_autoptr(GFile) file = NULL;
 	g_autoptr(GRWLockReaderLocker) reader_locker = NULL;
@@ -524,6 +524,17 @@ gs_plugin_appstream_check_silo (GsPlugin *plugin,
 	/* drat! silo needs regenerating */
 	writer_locker = g_rw_lock_writer_locker_new (&priv->silo_lock);
 	g_clear_object (&priv->silo);
+
+	/* FIXME: https://gitlab.gnome.org/GNOME/gnome-software/-/issues/1422 */
+	old_thread_default = g_main_context_ref_thread_default ();
+	if (old_thread_default == g_main_context_default ())
+		g_clear_pointer (&old_thread_default, g_main_context_unref);
+	if (old_thread_default != NULL)
+		g_main_context_pop_thread_default (old_thread_default);
+	builder = xb_builder_new ();
+	if (old_thread_default != NULL)
+		g_main_context_push_thread_default (old_thread_default);
+	g_clear_pointer (&old_thread_default, g_main_context_unref);
 
 	/* verbose profiling */
 	if (g_getenv ("GS_XMLB_VERBOSE") != NULL) {
@@ -1056,7 +1067,10 @@ gs_plugin_add_installed (GsPlugin *plugin,
 		g_autoptr(GsApp) app = gs_appstream_create_app (plugin, priv->silo, component, error);
 		if (app == NULL)
 			return FALSE;
-		gs_app_set_state (app, GS_APP_STATE_INSTALLED);
+		/* Can get cached gsApp, which has the state already updated */
+		if (gs_app_get_state (app) != GS_APP_STATE_UPDATABLE &&
+		    gs_app_get_state (app) != GS_APP_STATE_UPDATABLE_LIVE)
+			gs_app_set_state (app, GS_APP_STATE_INSTALLED);
 		gs_app_set_scope (app, AS_COMPONENT_SCOPE_SYSTEM);
 		gs_app_list_add (list, app);
 	}
