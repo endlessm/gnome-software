@@ -6,22 +6,24 @@
 # Andika Triwidada <andika@gmail.com>, 2013-2015,2017
 # Andika Triwidada <andika@gmail.com>, 2017-2018
 # Dirgita <dirgitadevina@gmail.com>, 2015
-# harsxv <harsxv@gmail.com>, 2018
+# Harry Suryapambagya <harsxv@gmail.com>, 2018
 # Hartono <hartono.s10@gmail.com>, 2017
 # Kukuh Syafaat <kukuhsyafaat@gnome.org>, 2017-2019
 # Kukuh Syafaat <syafaatkukuh@gmail.com>, 2017-2018
+# Kukuh Syafaat <syafaatkukuh@gmail.com>, 2021
 # Mazen Asef Ali <mazen@endlessm.com>, 2018
 # princeofgiri <princeofgiri@di.blankon.in>, 2017
 # Roddy Shuler <roddy@stanfordalumni.org>, 2016-2018
 # Septira Taruna <septira@endlessm.com>, 2017-2018
 # Will Thompson <wjt@endlessos.org>, 2019
+# Will Thompson <wjt@endlessos.org>, 2019
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-15 12:11+0000\n"
-"PO-Revision-Date: 2020-12-20 09:22+0000\n"
-"Last-Translator: endlessmobile_build <admin@endlessos.org>\n"
+"POT-Creation-Date: 2021-12-01 04:45+0000\n"
+"PO-Revision-Date: 2021-11-25 04:23+0000\n"
+"Last-Translator: Kukuh Syafaat <syafaatkukuh@gmail.com>\n"
 "Language-Team: Indonesian (http://www.transifex.com/endless-os/gnome-software/language/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -275,7 +277,7 @@ msgstr "Aktifkan repositori ekstensi GNOME Shell"
 
 #: data/org.gnome.software.gschema.xml:144
 msgid "Sorts the apps shown in the overview in alphabetical order"
-msgstr "Sortir aplikasi yang ditampilkan di ringkasan berdasarkan urutan abjad."
+msgstr "Sortir aplikasi yang ditampilkan di ringkasan berdasarkan urutan abjad"
 
 #: data/org.gnome.software.gschema.xml:151
 msgid "A string storing the gnome-online-account id used to login"
@@ -489,7 +491,7 @@ msgstr "Tampilkan nomor versi"
 
 #: src/gs-application.c:328
 msgid "translator-credits"
-msgstr "Andika Triwidada <andika@gmail.com>, 2013-2015, 2017, 2018.\nDirgita <dirgitadevina@gmail.com>, 2015.\nKukuh Syafaat <kukuhsyafaat@gnome.org>, 2017-2020."
+msgstr "Andika Triwidada <andika@gmail.com>, 2013-2015, 2017, 2018.\nDirgita <dirgitadevina@gmail.com>, 2015.\nKukuh Syafaat <kukuhsyafaat@gnome.org>, 2017-2021."
 
 #. TRANSLATORS: this is the title of the about window
 #. TRANSLATORS: this is the menu item that opens the about window
@@ -518,7 +520,7 @@ msgstr "Kunjungi situs web"
 #. * The ellipsis indicates that further steps are required
 #: src/gs-app-row.c:132
 msgid "Download…"
-msgstr ""
+msgstr "Mengunduh..."
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows to cancel a queued install of the application
@@ -531,7 +533,7 @@ msgstr "Batal"
 #. * allows the application to be easily installed
 #: src/gs-app-row.c:146
 msgid "Download"
-msgstr ""
+msgstr "Unduh"
 
 #. TRANSLATORS: this is a button in the updates panel
 #. * that allows the app to be easily updated live
@@ -550,7 +552,7 @@ msgstr "Hapus"
 #. * shows the status of an application being erased
 #: src/gs-app-row.c:178
 msgid "Uninstalling"
-msgstr ""
+msgstr "Menghapus pemasangan"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -567,7 +569,7 @@ msgstr "Membutuhkan izin tambahan"
 #: src/gs-app-row.c:468
 #, c-format
 msgid "Renamed from %s"
-msgstr ""
+msgstr "Ganti nama dari %s"
 
 #. TRANSLATORS: This is the name and state of an app for the ATK object
 #. TRANSLATORS: this refers to an app (by name) that is installed
@@ -809,13 +811,13 @@ msgstr "Rincian"
 #: src/gs-common.c:636
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
-msgstr[0] ""
+msgstr[0] "Pemutakhiran telah dipasang"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:641
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
-msgstr[0] ""
+msgstr[0] "Mulai ulang diperlukan agar perubahan diterapkan."
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:648 src/gs-update-monitor.c:123
@@ -1432,7 +1434,7 @@ msgstr "Masukkan USB untuk menyalin ke"
 
 #: src/gs-details-page.c:289
 msgid "Pending Copy"
-msgstr ""
+msgstr "Salinan tertunda"
 
 #: src/gs-details-page.c:416
 msgid "Removing…"
@@ -1492,7 +1494,7 @@ msgstr "Un_duh"
 #. * e.g. enabling software repositories or the like
 #: src/gs-details-page.c:1001
 msgid "_Download…"
-msgstr ""
+msgstr "Un_duh…"
 
 #. TRANSLATORS: A label for a button to execute the selected application.
 #: src/gs-details-page.c:1046
@@ -3264,14 +3266,14 @@ msgstr "Tilik"
 #, c-format
 msgid "%u Application Updated — Restart Required"
 msgid_plural "%u Applications Updated — Restart Required"
-msgstr[0] ""
+msgstr[0] "%u Aplikasi Dimutakhirkan — Mulai Ulang Diperlukan"
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:238
 #, c-format
 msgid "%u Application Updated"
 msgid_plural "%u Applications Updated"
-msgstr[0] ""
+msgstr[0] "%u Aplikasi Dimutakhirkan"
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:249
@@ -3295,7 +3297,7 @@ msgstr "%s dan %s telah dimutakhirkan."
 #, c-format
 msgid "%u application requires a restart."
 msgid_plural "%u applications require a restart."
-msgstr[0] ""
+msgstr[0] "%u aplikasi memerlukan mulai ulang"
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:278
