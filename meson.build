@@ -305,6 +305,9 @@ test_env = [
   # Similarly skip using Mogwai in the tests.
   # https://gitlab.gnome.org/GNOME/gnome-software/-/issues/825
   'GS_UNIT_TESTS_SKIP_MOGWAI=1',
+  # Make flatpak skip parental controls
+  # https://github.com/flatpak/flatpak/issues/2993
+  'FLATPAK_SYSTEM_HELPER_ON_SESSION=1',
 ]
 
 subdir('data')
