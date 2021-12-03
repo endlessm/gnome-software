@@ -237,9 +237,9 @@ test_env = [
   'GSETTINGS_BACKEND=memory',
   'MALLOC_CHECK_=2',
   'GS_UNIT_TESTS_SKIP_MOGWAI=1',
-  # FIXME: Use a mock service for parental controls
-  # https://phabricator.endlessm.com/T30645
-  'FLATPAK_SKIP_PARENTAL_CONTROLS_NO_SYSTEM_BUS=1',
+  # Make flatpak skip parental controls
+  # https://github.com/flatpak/flatpak/issues/2993
+  'FLATPAK_SYSTEM_HELPER_ON_SESSION=1',
 ]
 
 subdir('data')
