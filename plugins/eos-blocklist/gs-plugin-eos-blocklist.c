@@ -452,7 +452,6 @@ gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 	};
 
 	static const char *core_apps[] = {
-		"org.gnome.Calculator",
 		"org.gnome.Contacts",
 		"org.gnome.Evince",
 		"org.gnome.Evolution",
