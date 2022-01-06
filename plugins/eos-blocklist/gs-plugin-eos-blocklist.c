@@ -458,7 +458,6 @@ gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 		"org.gnome.Nautilus",
 		"org.gnome.clocks",
 		"org.gnome.eog",
-		"org.gnome.gedit",
 		NULL
 	};
 
