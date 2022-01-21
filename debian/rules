@@ -7,26 +7,24 @@ export DEB_LDFLAGS_MAINT_APPEND = -Wl,-O1 -Wl,--as-needed
 export DEB_LDFLAGS_MAINT_STRIP := -Wl,-Bsymbolic-functions
 
 GS_CONFIGURE_FLAGS = \
-	-Dgnome_desktop=true \
-	-Dodrs=true \
-	-Dmalcontent=false \
-	-Dostree=false \
+	-Dgsettings_desktop_schemas=enabled \
 	-Dpackagekit=true \
 	-Dpackagekit_autoremove=true \
 	-Drpm_ostree=false \
-	-Dubuntu_reviews=false \
+	-Dapt=true \
 
 # these are conditionally re-enabled later
 GS_CONFIGURE_FLAGS += \
 	-Dfwupd=false \
 	-Dflatpak=false \
 	-Dgudev=false \
+	-Dmalcontent=false \
 	-Dvalgrind=false
 
 ifeq ($(DEB_HOST_ARCH_OS), linux)
 	# Enable Flatpak support on supported architectures
 	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64))
-		GS_CONFIGURE_FLAGS += -Dflatpak=true
+		GS_CONFIGURE_FLAGS += -Dflatpak=true -Dmalcontent=true
 	endif
 
 	# Enable GUdev support on Linux
@@ -45,21 +43,6 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 		GS_CONFIGURE_FLAGS += -Dvalgrind=true
 	endif
 endif
-
-# EOS-specific configuration
-GS_CONFIGURE_FLAGS += \
-	-Deos_updater=true \
-	-Dexternal_appstream=true \
-	-Dfwupd=false \
-	-Dgudev=false \
-	-Dhardcoded_popular=false \
-	-Dmalcontent=true \
-	-Dmogwai=true \
-	-Dodrs=true \
-	-Dostree=true \
-	-Dpackagekit=false \
-	-Dsnap=false \
-	-Dtests=true
 
 DISTRO_ID = debian
 FREE_REPOS = \'@DISTRO@-*-main\'
@@ -80,30 +63,34 @@ endif
 override_dh_auto_configure:
 	dh_auto_configure -- $(GS_CONFIGURE_FLAGS)
 
-override_dh_auto_install:
-	dh_auto_install
-ifneq (yes,$(shell dpkg-vendor --derives-from Ubuntu && echo yes))
-	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_ubuntu*
-endif
+override_dh_installgsettings:
+	sed "s#@FREE_REPOS@#$(FREE_REPOS)#g" debian/gnome-software.gsettings-override.in > debian/gnome-software.gsettings-override
+	sed -i "s/@DISTRO@/$(DISTRO_ID)/g" debian/gnome-software.gsettings-override
+	sed -i "s/@URL@/$(FREE_URL)/g" debian/gnome-software.gsettings-override
+	dh_installgsettings
 
-override_dh_install-arch:
+override_dh_install:
 	# Remove unused files
-	rm -f debian/tmp/usr/lib/*/gs-plugins-*/*.a
-	rm -f debian/tmp/usr/lib/*/gs-plugins-*/*.la
-	rm -f debian/tmp/usr/lib/*/gs-plugins-*/libgs_plugin_fedora*
+	rm -f debian/tmp/usr/lib/*/gnome-software/plugins-*/libgs_plugin_fedora*
 	dh_install
 
 override_dh_missing:
 	dh_missing --fail-missing
 
 	# These files are split out to separate packages
-	rm -f debian/gnome-software/usr/lib/*/gs-plugins-*/libgs_plugin_flatpak*
-	rm -f debian/gnome-software/usr/lib/*/gs-plugins-*/libgs_plugin_snap*
+	rm -f debian/gnome-software/usr/lib/*/gnome-software/plugins-*/libgs_plugin_flatpak*
+	rm -f debian/gnome-software/usr/lib/*/gnome-software/plugins-*/libgs_plugin_snap*
 	rm -f debian/gnome-software/usr/share/metainfo/org.gnome.Software.Plugin.Flatpak.metainfo.xml
 	rm -f debian/gnome-software/usr/share/metainfo/org.gnome.Software.Plugin.Snap.metainfo.xml
 
 override_dh_makeshlibs:
 	dh_makeshlibs -Xlibgs_plugin
+
+override_dh_shlibdeps:
+	dh_shlibdeps -l/usr/lib/$(DEB_HOST_MULTIARCH)/gnome-software/
+
+# DISABLED
+override_dh_auto_test:
 
 override_dh_gencontrol:
 ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
@@ -111,3 +98,7 @@ ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
 else
 	dh_gencontrol -- -Vplugin:Suggests='gnome-software-plugin-snap [linux-any]'
 endif
+
+override_dh_clean:
+	rm -f debian/gnome-software.gsettings-override
+	dh_clean

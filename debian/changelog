@@ -1,55 +1,124 @@
-gnome-software (3.38.0-1endless1) eos; urgency=medium
+gnome-software (41.2-1) unstable; urgency=medium
 
-  * Drop Discovery Feed support (T30294)
+  * New upstream release
 
- -- Philip Withnall <pwithnall@endlessos.org>  Thu, 17 Sep 2020 16:10:00 +0100
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 06 Dec 2021 21:13:27 -0500
 
-gnome-software (3.38.0-1endless0) eos; urgency=medium
+gnome-software (41.1-1) unstable; urgency=medium
 
-  * Rebase on 3.38.0 (T30171)
-    - Install libgnomesoftware.a in gnome-software-dev
+  * Team upload
+  * New upstream release
+  * Tweak of d/copyright including a lintian override
 
- -- Philip Withnall <withnall@endlessm.com>  Tue, 15 Sep 2020 11:27:00 +0100
+ -- Gunnar Hjalmarsson <gunnarhj@debian.org>  Sun, 21 Nov 2021 14:10:19 +0100
 
-gnome-software (3.36.0-1endless4) master; urgency=medium
+gnome-software (41.0-1) unstable; urgency=medium
 
-  * Enable unit tests (T21809)
+  * New upstream release
+  * debian/control.in: Adjust the build-dependencies
+  * d/p/01_details-Use-custom-icon-for-verified-developers.patch: Refreshed
+  * debian/rules: Odrs support is not an optional plugin anymore, remove the
+    option
+  * Fix installation and dependency detection of libgnomesoftware private
+    library
+  * debian/control.in: Bump Standards-Version to 4.6.0 (no further changes)
 
- -- Phaedrus Leeds <matthew.leeds@endlessm.com>  Wed, 19 Aug 2020 12:52:00 -0700
+ -- Laurent Bigonville <bigon@debian.org>  Sat, 09 Oct 2021 09:57:51 +0200
 
-gnome-software (3.36.0-1endless3) master; urgency=medium
+gnome-software (40.4-1) unstable; urgency=medium
 
-  * Bump flatpak dependency to ensure use of backported related-ops APIs in
-    flatpak (T29774)
+  [ Gunnar Hjalmarsson ]
+  * Drop appstream from Build-Depends
+    - This prevents that irrelevant translatable strings are extracted
+      when building for Ubuntu (LP: #1927149).
 
- -- Philip Withnall <withnall@endlessm.com>  Tue, 19 May 2020 12:08:00 +0100
+  [ Adrian Bunk ]
+  * Add mipsel to the gnome-software-plugin-flatpak architecture list
 
-gnome-software (3.36.0-1endless2) master; urgency=medium
+  [ Laurent Bigonville ]
+  * debian/watch: Update the URL to follow the new version scheme
+  * New upstream release
+    - Adjust the build-dependencies
+    - Fix the installation paths of the plugins, they have moved to another
+      directory. Also remove deprecated rules and options
+    - Install the new libgnomesoftware private library in the main package
+  * debian/rules: Enable the apt URL handler in the .desktop file
 
-  * Add dependency on eos-metrics-0-dev for downstream metrics (T28742)
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 13 Sep 2021 10:09:53 +0200
 
- -- Philip Withnall <withnall@endlessm.com>  Mon, 23 Mar 2020 17:40:00 +0000
+gnome-software (3.38.1-1) unstable; urgency=medium
 
-gnome-software (3.36.0-1endless1) master; urgency=medium
+  * Team upload
+  * New upstream release
+    - Fix package details not found for some packages
+    - Ignore harmless warnings when using unusual fwupd versions
+    - Translation updates
+  * Drop patch that was applied upstream
 
-  * Rebase on GNOME 3.36 (T28771)
-    - Disable snap support
-    - Disable packagekit support
-    - Enable malcontent plugin by default
-    - Enable external-appstream support
-    - Delete irrelevant GSettings overrides
-    - Install eos-discovery-feed files
-  * Drop Debian-specific dependencies (T25367)
-    - libgtk3-perl: Needed for debconf
-    - software-properties-gtk: Debian-specific apt repository configuration tool
-  * Drop fwupd `recommends` line (T25367)
-    - We already dropped the build dependency, so keeping the `recommends` is
-      just confusing.
-  * Drop `apt-config-icons` dependency (T25367)
-    - Our apt repositories don’t support it, and the majority of our apps are
-      packaged in flatpak.
+ -- Simon McVittie <smcv@debian.org>  Thu, 18 Feb 2021 15:08:20 +0000
 
- -- Philip Withnall <withnall@endlessm.com>  Thu, 12 Mar 2020 16:18:00 +0000
+gnome-software (3.38.0-3) unstable; urgency=medium
+
+  * Add an upstream patch to fix offline updates (Closes: #972506)
+
+ -- Laurent Bigonville <bigon@debian.org>  Wed, 23 Dec 2020 09:33:29 +0100
+
+gnome-software (3.38.0-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Gunnar Hjalmarsson ]
+  * d/control changes needed for Ubuntu's language packs:
+    - Set X-Ubuntu-Use-Langpack header
+    - Add policykit-1 to Build-Depends to make xgettext able to handle
+      org.gnome.software.external-appstream.policy.in.in
+
+  [ Simon McVittie ]
+  * d/rules: Remove unused files even in purely arch-indep builds.
+    This fixes FTBFS (from dh_missing --fail-missing) when only building
+    the arch-indep packages.
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 05 Oct 2020 18:42:42 +0100
+
+gnome-software (3.38.0-1) unstable; urgency=medium
+
+  * New upstream release
+  * Bump debhelper-compat to 13
+  * debian/rules: Remove libgnomesoftware.a
+
+ -- Gunnar Hjalmarsson <gunnarhj@ubuntu.com>  Mon, 05 Oct 2020 12:25:03 +0200
+
+gnome-software (3.36.1-2) unstable; urgency=medium
+
+  * Enable malcontent on supported architectures
+
+ -- Laurent Bigonville <bigon@debian.org>  Sun, 05 Jul 2020 18:24:31 +0200
+
+gnome-software (3.36.1-1) unstable; urgency=medium
+
+  * New upstream release
+    - Drop patches that were cherry-picked from upstream
+
+ -- Laurent Bigonville <bigon@debian.org>  Sun, 07 Jun 2020 11:25:25 +0200
+
+gnome-software (3.36.0-3) unstable; urgency=medium
+
+  * Fix missing icons in the store, patch from upstream.
+    Thanks to Matthias Klumpp <matthias@tenstral.net>
+  * Do not fail to load the appstream plugin if any of the metadata
+    directories doesn't exist (Closes: #958915)
+
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 27 Apr 2020 15:13:57 +0200
+
+gnome-software (3.36.0-2) unstable; urgency=medium
+
+  * Add fix-appstream-featured-data.patch
+    - This restores a regression fix that was accidentally reverted
+      in the 3.36.0 release. The issue caused invalid AppStream data to
+      be added to the global metadata pool, resulting in a confusing
+      warning to people using APT or an AppStream cache (Closes: #932747)
+
+ -- Matthias Klumpp <mak@debian.org>  Thu, 02 Apr 2020 18:16:58 +0200
 
 gnome-software (3.36.0-1) unstable; urgency=medium
 
