@@ -43,6 +43,18 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	endif
 endif
 
+# EOS-specific configuration
+GS_CONFIGURE_FLAGS += \
+	-Deos_updater=true \
+	-Dexternal_appstream=true \
+	-Dfwupd=false \
+	-Dgudev=false \
+	-Dhardcoded_curated=false \
+	-Dmalcontent=true \
+	-Dmogwai=true \
+	-Dpackagekit=false \
+	-Dsoup2=true
+
 DISTRO_ID = debian
 FREE_REPOS = \'@DISTRO@-*-main\'
 FREE_URL = https:\/\/www.debian.org\/social_contract\#guidelines
