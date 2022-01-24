@@ -51,18 +51,18 @@ X-Ubuntu-Use-Langpack: yes
 Package: gnome-software
 Architecture: any
 Depends: appstream,
-         apt-config-icons,
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.18),
-         libgtk3-perl,
-         packagekit (>= 1.1.11),
-         software-properties-gtk,
          ${misc:Depends},
          ${shlibs:Depends}
 Conflicts: sessioninstaller
 Recommends: fwupd [linux-any], ${plugin:Recommends}
-Suggests: apt-config-icons-hidpi,
+Suggests: apt-config-icons,
+          apt-config-icons-hidpi,
           gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
+          libgtk3-perl,
+          packagekit (>= 1.1.11),
+          software-properties-gtk,
           ${plugin:Suggests}
 Description: Software Center for GNOME
  Software lets you install and update applications and system extensions.
