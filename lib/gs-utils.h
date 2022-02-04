@@ -152,4 +152,6 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC (GsMainContextPusher, gs_main_context_pusher_free)
 #define gs_main_context_pusher_free g_main_context_pusher_free
 #endif
 
+gchar		*gs_utils_get_upgrade_background (const gchar		*version);
+
 G_END_DECLS
