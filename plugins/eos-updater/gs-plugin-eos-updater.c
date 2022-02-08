@@ -496,6 +496,8 @@ gs_plugin_setup (GsPlugin *plugin,
 	g_autofree gchar *name_owner = NULL;
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GIcon) ic = NULL;
+	g_autofree gchar *background_filename = NULL;
+	g_autofree gchar *css = NULL;
 	g_autoptr(GMutexLocker) locker = NULL;
 
 	g_debug ("%s", G_STRFUNC);
@@ -553,6 +555,13 @@ gs_plugin_setup (GsPlugin *plugin,
 	/* use stock icon */
 	ic = g_themed_icon_new ("system-component-addon");
 
+	/* Check for a background image in the standard location. */
+	background_filename = gs_utils_get_upgrade_background (NULL);
+
+	if (background_filename != NULL)
+		css = g_strconcat ("background: url('file://", background_filename, "');"
+				   "background-size: 100% 100%;", NULL);
+
 	/* create the OS upgrade */
 	app = gs_app_new ("com.endlessm.EOS.upgrade");
 	gs_app_add_icon (app, ic);
@@ -570,9 +579,7 @@ gs_plugin_setup (GsPlugin *plugin,
 	gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_REVIEWABLE);
 	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
-	gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css",
-			     "background: url('" DATADIR "/gnome-software/upgrade-bg.png');"
-			     "background-size: 100% 100%;");
+	gs_app_set_metadata (app, "GnomeSoftware::UpgradeBanner-css", css);
 
 	priv->os_upgrade = g_steal_pointer (&app);
 
