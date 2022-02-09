@@ -1,3 +1,12 @@
+gnome-software (41.3-1endless0) eos; urgency=medium
+
+  * Drop usr/share/gnome-software installed files as upgrade banner backgrounds
+    are no longer being installed (T33015)
+     - This can be dropped when we rebase on 42, as backgrounds will have been
+       dropped upstream in that release
+
+ -- Philip Withnall <pwithnall@endlessos.org>  Wed, 09 Feb 2022 12:35:00 +0000
+
 gnome-software (41.3-1) eos; urgency=medium
 
   * Rebase EOS on GNOME 41.3 release
