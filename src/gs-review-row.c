@@ -1,28 +1,14 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016 Canonical Ltd.
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
 
 #include <glib/gi18n.h>
-#include <gtk/gtk.h>
 
 #include "gs-review-row.h"
 #include "gs-star-widget.h"
@@ -69,12 +55,14 @@ gs_review_row_refresh (GsReviewRow *row)
 	reviewer = as_review_get_reviewer_name (priv->review);
 	if (reviewer == NULL) {
 		/* TRANSLATORS: this is when a user doesn't specify a name */
-		reviewer = _("Unknown");
+		reviewer = C_("Reviewer name", "Unknown");
 	}
 	gtk_label_set_text (GTK_LABEL (priv->author_label), reviewer);
 	date = as_review_get_date (priv->review);
 	if (date != NULL)
-		text = g_date_time_format (date, "%e %B %Y");
+		/* TRANSLATORS: This is the date string with: day number, month name, year.
+		i.e. "25 May 2012" */
+		text = g_date_time_format (date, _("%e %B %Y"));
 	else
 		text = g_strdup ("");
 	gtk_label_set_text (GTK_LABEL (priv->date_label), text);
@@ -88,23 +76,23 @@ gs_review_row_refresh (GsReviewRow *row)
 		priv->actions = 0;
 
 	/* set actions up */
-	if ((priv->actions & (1 << GS_PLUGIN_ACTION_REVIEW_UPVOTE |
-			1 << GS_PLUGIN_ACTION_REVIEW_DOWNVOTE |
-			1 << GS_PLUGIN_ACTION_REVIEW_DISMISS)) == 0) {
+	if ((priv->actions & (1 << GS_REVIEW_ACTION_UPVOTE |
+			1 << GS_REVIEW_ACTION_DOWNVOTE |
+			1 << GS_REVIEW_ACTION_DISMISS)) == 0) {
 		gtk_widget_set_visible (priv->box_voting, FALSE);
 	} else {
 		gtk_widget_set_visible (priv->box_voting, TRUE);
 		gtk_widget_set_visible (priv->button_yes,
-					priv->actions & 1 << GS_PLUGIN_ACTION_REVIEW_UPVOTE);
+					priv->actions & 1 << GS_REVIEW_ACTION_UPVOTE);
 		gtk_widget_set_visible (priv->button_no,
-					priv->actions & 1 << GS_PLUGIN_ACTION_REVIEW_DOWNVOTE);
+					priv->actions & 1 << GS_REVIEW_ACTION_DOWNVOTE);
 		gtk_widget_set_visible (priv->button_dismiss,
-					priv->actions & 1 << GS_PLUGIN_ACTION_REVIEW_DISMISS);
+					priv->actions & 1 << GS_REVIEW_ACTION_DISMISS);
 	}
 	gtk_widget_set_visible (priv->button_remove,
-				priv->actions & 1 << GS_PLUGIN_ACTION_REVIEW_REMOVE);
+				priv->actions & 1 << GS_REVIEW_ACTION_REMOVE);
 	gtk_widget_set_visible (priv->button_report,
-				priv->actions & 1 << GS_PLUGIN_ACTION_REVIEW_REPORT);
+				priv->actions & 1 << GS_REVIEW_ACTION_REPORT);
 
 	/* mark insensitive if no network */
 	if (priv->network_available) {
@@ -201,14 +189,14 @@ static void
 gs_review_row_button_clicked_upvote_cb (GtkButton *button, GsReviewRow *row)
 {
 	g_signal_emit (row, signals[SIGNAL_BUTTON_CLICKED], 0,
-		       GS_PLUGIN_ACTION_REVIEW_UPVOTE);
+		       GS_REVIEW_ACTION_UPVOTE);
 }
 
 static void
 gs_review_row_button_clicked_downvote_cb (GtkButton *button, GsReviewRow *row)
 {
 	g_signal_emit (row, signals[SIGNAL_BUTTON_CLICKED], 0,
-		       GS_PLUGIN_ACTION_REVIEW_DOWNVOTE);
+		       GS_REVIEW_ACTION_DOWNVOTE);
 }
 
 static void
@@ -216,7 +204,7 @@ gs_review_row_confirm_cb (GtkDialog *dialog, gint response_id, GsReviewRow *row)
 {
 	if (response_id == GTK_RESPONSE_YES) {
 		g_signal_emit (row, signals[SIGNAL_BUTTON_CLICKED], 0,
-			       GS_PLUGIN_ACTION_REVIEW_REPORT);
+			       GS_REVIEW_ACTION_REPORT);
 	}
 	gtk_widget_destroy (GTK_WIDGET (dialog));
 }
@@ -270,14 +258,14 @@ static void
 gs_review_row_button_clicked_dismiss_cb (GtkButton *button, GsReviewRow *row)
 {
 	g_signal_emit (row, signals[SIGNAL_BUTTON_CLICKED], 0,
-		       GS_PLUGIN_ACTION_REVIEW_DISMISS);
+		       GS_REVIEW_ACTION_DISMISS);
 }
 
 static void
 gs_review_row_button_clicked_remove_cb (GtkButton *button, GsReviewRow *row)
 {
 	g_signal_emit (row, signals[SIGNAL_BUTTON_CLICKED], 0,
-		       GS_PLUGIN_ACTION_REVIEW_REMOVE);
+		       GS_REVIEW_ACTION_REMOVE);
 }
 
 AsReview *
@@ -336,5 +324,3 @@ gs_review_row_new (AsReview *review)
 
 	return GTK_WIDGET (row);
 }
-
-/* vim: set noexpandtab: */

@@ -1,3 +1,14 @@
+.details-page {
+  margin: 24px 0px;
+}
+
+/* The equivalent of libhandy’s .content class, but applicable to a plain GtkBox */
+.content-box {
+	border-radius: 8px;
+	border: 1px solid shade(@theme_bg_color, 0.9);
+	background-color: @theme_base_color;
+}
+
 .installed-overlay-box {
 	font-size: smaller;
 	background-color: @theme_selected_bg_color;
@@ -5,9 +16,10 @@
 	color: @theme_selected_fg_color;
 	text-shadow: 0 1px 0 rgba(0,0,0,0.5);
 }
-  .installed-overlay-box:backdrop label {
-        color: @theme_selected_fg_color;
-  }
+
+.installed-overlay-box:backdrop label {
+    color: @theme_selected_fg_color;
+}
 
 .installed-icon {
 	color: @theme_selected_bg_color;
@@ -20,18 +32,17 @@
 	color: @theme_selected_fg_color;
 	text-shadow: none;
 }
-  .popular-installed-overlay-box:backdrop label {
+
+.popular-installed-overlay-box:backdrop label {
 	color: @theme_selected_fg_color;
-  }
+}
 
 .index-title-alignment-software {
 	font-weight: bold;
 	font-size: 125%;
-	color: #f6f6f6;
 }
 
 .app-row-installed-label {
-	color: @theme_selected_bg_color;
 	font-size: smaller;
 }
 
@@ -39,10 +50,31 @@
 	font-size: x-small;
 }
 
-.needs-attention {
+/* Adapted from Adwaita’s .needs-attention class for stacksidebar */
+sidebar row.needs-attention > box > label {
+	animation: needs_attention 150ms ease-in;
+	background-image: -gtk-gradient(radial,
+					center center, 0,
+					center center, 0.5,
+					to(@theme_selected_bg_color),
+					to(transparent)),
+			  -gtk-gradient(radial,
+					center center, 0,
+					center center, 0.5,
+					to(alpha(@theme_text_color, 0.5)),
+					to(transparent));
+	background-size: 6px 6px, 0 0;
+	background-repeat: no-repeat;
+	background-position: right 3px, right 4px;
+}
+
+sidebar row.needs-attention > box > label:dir(rtl) {
+	background-position: left 3px, left 4px;
+}
+
+sidebar row.needs-attention:selected > box > label {
+	animation: needs_attention 150ms ease-out;
 	background-image: none;
-	background-color: shade(@theme_selected_bg_color, 1.1);
-	border-radius: 1px;
 }
 
 .toolbar-primary-buttons-software {
@@ -52,56 +84,7 @@
 
 .round-button {
 	border-radius: 16px;
-}
-
-.details-license-free,
-.details-license-nonfree,
-.details-license-unknown,
-.details-license-free:backdrop,
-.details-license-nonfree:backdrop,
-.details-license-unknown:backdrop {
-	outline-offset: 0;
-	background-image: none;
-	border-image: none;
-	border-radius: 4px;
-	border-width: 0px;
-	padding: 1px 9px;
-	box-shadow: none;
-	text-shadow: none;
-	color: #ffffff;
-}
-
-.content-rating {
-	outline-offset: 0;
-	background-image: none;
-	background-color: #dbdbdb;
-	border-image: none;
-	border-radius: 4px;
-	border-width: 0px;
-	padding: 1px 9px;
-	box-shadow: none;
-	text-shadow: none;
-}
-
-.details-license-free, 
-.details-license-free label,
-.details-license-free:backdrop label {
-	color: #ffffff;
-	background-color: #4e9a06;
-}
-
-.details-license-nonfree,
-.details-license-nonfree label,
-.details-license-nonfree:backdrop label {
-	color: #ffffff;
-	background-color: #ee2222;
-}
-
-.details-license-unknown, 
-.details-license-unknown label,
-.details-license-unknown:backdrop label {
-  color: #000000;
-	background-color: #dbdbdb;
+	-gtk-outline-radius: 16px;
 }
 
 .kudo-pill {
@@ -127,12 +110,21 @@
 	opacity: 0.25;
 }
 
-.screenshot-image, .screenshot-image-thumb {
-	background-image: none;
-	background-color: shade(@theme_bg_color, 0.9);
+screenshot-carousel > box {
+	border-width: 1px 0;
+	padding: 12px 0;
 }
-.screenshot-image { border-radius: 5px; }
-.screenshot-image-thumb { border-radius: 3px; }
+
+screenshot-carousel button {
+	margin: 12px;
+}
+
+.screenshot-image-main .image1, .screenshot-image-main .image2 {
+	margin-top: 6px;
+	margin-bottom: 12px;
+	margin-left: 6px;
+	margin-right: 6px;
+}
 
 .app-tile-label {
 	font-size: 105%;
@@ -151,60 +143,199 @@
 	padding: 6px;
 }
 
-.view.tile {
-	padding: 0;
-	box-shadow: inset 0 1px @theme_base_color, 0 1px 1px alpha(black,0.4);
-	border: 1px solid mix(@theme_base_color,@theme_fg_color,0.3);
+@define-color gs_tile_bg_color mix(@theme_base_color,@theme_bg_color,0.3);
+
+summary-tile {
+	border-radius: 6px;
+	min-width: 280px;
+}
+
+/* This mimicks the style of list and row from Adwaita, and of list.content from
+ * Libhandy. */
+
+.view.tile, .category-tile.category-tile-iconless {
+  background-color: @theme_base_color;
+  border-radius: 8px;
+  border: solid 1px alpha(@borders, 0.7);
+  box-shadow: none;
+  -gtk-outline-radius: 7px;
+  transition: 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.view.tile:hover, .category-tile.category-tile-iconless:hover {
+  background-color: mix(@theme_fg_color, @theme_base_color, 0.95);
+}
+
+.view.tile:backdrop:hover, .category-tile.category-tile-iconless:backdrop:hover {
+  background-color: transparent;
+}
+
+.view.tile:active, .category-tile.category-tile-iconless:active {
+  box-shadow: inset 0 2px 2px -2px mix(black, transparent, 0.8);
+}
+
+.view.tile:hover:active, .category-tile.category-tile-iconless:hover:active {
+  background-color: mix(@theme_fg_color, @theme_base_color, 0.9);
+}
+
+.category-tile {
+	/* We have to remove the padding: 160px - 2*10px = 140px */
+	min-width: 140px;
+	padding: 20px 10px;
+	border-radius: 8px;
+	-gtk-outline-radius: 7px;
+	font-weight: 900;
+	text-shadow: none;
+	border: none;
+	box-shadow: inset 0 0 0 1px alpha(black, 0.13);
+	transition: 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+clamp.medium .category-tile:not(.category-tile-iconless) {
+	font-size: large;
+}
+
+clamp.large .category-tile:not(.category-tile-iconless) {
+	font-size: larger;
+}
+
+.category-tile.category-tile-iconless {
+	font-weight: normal;
+	padding: 10px 15px;
 	background-image: none;
-	background-color: mix(@theme_base_color,@theme_bg_color,0.3);
+}
+
+/* Disable highlight on hover as it doesn’t make these icons look good */
+.category-tile:hover { -gtk-icon-effect: none }
+
+/* Styling for specific category buttons. */
+.category-tile.category-create {
+	background: linear-gradient(180deg, #ce8cd7 0%, #2861c6 100%);
+	color: white;
+}
+.category-tile.category-create:hover {
+	background: linear-gradient(180deg, shade(#ce8cd7, 1.07) 0%, shade(#2861c6, 1.1) 100%);
+}
+.category-tile.category-create:active {
+	background: linear-gradient(180deg, shade(#ce8cd7, .95) 0%, shade(#2861c6, .95) 100%);
+	box-shadow: inset 0 0 0 1px alpha(black, 0.13),
+		    inset 0 4px 2px -2px mix(black, transparent, 0.8);
+}
+
+.category-tile.category-develop {
+	background: #5e5c64;
+	color: white;
+}
+.category-tile.category-develop:hover {
+	background: shade(#5e5c64, 1.2);
+}
+.category-tile.category-develop:active {
+	background-color: shade(#5e5c64, .95);
+	box-shadow: inset 0 0 0 1px alpha(black, 0.13),
+		    inset 0 4px 2px -2px mix(black, transparent, 0.8);
+}
+
+.category-tile.category-learn {
+	background: linear-gradient(180deg, #2ec27e 30%, #27a66c 100%);
+	color: white;
+}
+.category-tile.category-learn:hover {
+	background: linear-gradient(180deg, shade(#2ec27e, 1.06) 30%, shade(#27a66c, 1.06) 100%);
+}
+.category-tile.category-learn:active {
+	background: linear-gradient(180deg, shade(#2ec27e, .95) 30%, shade(#27a66c, .95) 100%);
+	box-shadow: inset 0 0 0 1px alpha(black, 0.13),
+		    inset 0 4px 2px -2px mix(black, transparent, 0.8);
+}
+
+.category-tile.category-play {
+	background: linear-gradient(75deg, #f9e2a7 0%, #eb5ec3 50%, #6d53e0 100%);
+	color: #393484;
+}
+.category-tile.category-play:hover {
+	background: linear-gradient(75deg, shade(#f9e2a7, 1.07) 0%, shade(#eb5ec3, 1.07) 50%, shade(#6d53e0, 1.07) 100%);
+}
+.category-tile.category-play:active {
+	background: linear-gradient(75deg, shade(#f9e2a7, .97) 0%, shade(#eb5ec3, .95) 50%, shade(#6d53e0, 1.07) 100%);
+	box-shadow: inset 0 0 0 1px alpha(black, 0.13),
+		    inset 0 4px 2px -2px mix(black, transparent, 0.8);
+}
+
+.category-tile.category-socialize {
+	background: linear-gradient(90deg, #ef4e9b 0%, #f77466 100%);
+	color: alpha(black, 0.7);
+}
+.category-tile.category-socialize:hover {
+	background: linear-gradient(90deg, shade(#ef4e9b, 1.08) 0%, shade(#f77466, 1.08) 100%);
+}
+.category-tile.category-socialize:active {
+	background: linear-gradient(90deg, shade(#ef4e9b, .95) 0%, shade(#f77466, .95) 100%);
+	box-shadow: inset 0 0 0 1px alpha(black, 0.13),
+		    inset 0 4px 2px -2px mix(black, transparent, 0.8);
+}
+
+.category-tile.category-work {
+	box-shadow: inset 0 0 0 1px #efd185;
+	color: #1c71d8;
+	background-color:#fdf8d7;
+	background-image: linear-gradient(#deddda 1px, transparent 1px),
+			  linear-gradient(90deg, #deddda 1px, transparent 1px);
+	background-size: 10px 10px, 10px 10px;
+	background-position: -1px -4px, center -1px;
+}
+.category-tile.category-work:hover {
+	box-shadow: inset 0 0 0 1px shade(#efd185, 1.08);
+	background-color: shade(#fdf8d7, 1.03);
+	background-image: linear-gradient(shade(#deddda, 1.04) 1px, transparent 1px),
+			  linear-gradient(90deg, shade(#deddda, 1.04) 1px, transparent 1px);
+}
+.category-tile.category-work:active {
+	background-color: shade(#fdf8d7, .93);
+	background-image: linear-gradient(shade(#deddda, .97) 1px, transparent 1px),
+			  linear-gradient(90deg, shade(#deddda, .97) 1px, transparent 1px);
+	box-shadow: inset 0 0 0 1px shade(#efd185, 1.08),
+		    inset 0 4px 2px -2px mix(black, transparent, 0.8);
 }
 
 .app-list {
 	background-color: @theme_base_color;
 }
 
-.view.tile:hover {
-	background-color: @theme_base_color;
-}
-
-.view.tile:active {
-	border-color: @theme_selected_bg_color;
-	box-shadow: none;
-	color: @theme_selected_bg_color;
-}
-
-.view.tile:backdrop {
-	box-shadow: none;
-	border-color: @unfocused_borders;
-}
-
 /* The rest of the featured-tile CSS is loaded at runtime in gs-feature-tile.c */
 .featured-tile {
 	all: unset;
 	padding: 0;
-	border-radius: 0;
-	border-width: 1px;
-	border-image: none;
-	/* box-shadow: inset 0 0 0 1px alpha(@theme_fg_color,0.3), 0 0 1px alpha(black,0.4); */
+	box-shadow: none;
+	color: @theme_fg_color;
 }
-  .featured-tile:backdrop label {
-    color: inherit;
-    text-shadow: none;
-  }
+
+.featured-tile:backdrop label {
+	color: inherit;
+	text-shadow: none;
+}
+
+.featured-tile label.title-1 {
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+
+.featured-tile.narrow label.title-1 {
+	font-size: 16pt;  /* 80% of .title-1 */
+}
 
 .application-details-infobar.info {
-	background-color: #d3d7cf;
+	background-color: shade(@theme_bg_color, 0.9);
 	color: @theme_fg_color;
-	border-color: darker(#d3d7cf);
+	border-color: darker(shade(@theme_bg_color, 0.9));
 	border-style: solid;
 	border-width: 1px;
 	text-shadow: none;
 }
 
 .application-details-infobar {
-	background-color: #d3d7cf;
+	background-color: shade(@theme_bg_color, 0.9);
 	color: @theme_fg_color;
-	border-color: darker(#d3d7cf);
+	border-color: darker(shade(@theme_bg_color, 0.9));
 	border-style: solid;
 	border-width: 1px;
 	padding: 12px;
@@ -213,32 +344,36 @@
 
 .application-details-infobar.warning {
 	background-color: #fcaf3e;
-	color: @theme_fg_color;
+	color: #2e3436;
 	border-color: darker(#fcaf3e);
 	border-style: solid;
 	border-width: 1px;
 	text-shadow: none;
 }
 
-.application-details-title {
-	font-weight: bold;
-	font-size: 125%;
-}
-
 .application-details-webapp-warning {
 	font-weight: bold;
 }
 
-.application-details-summary {
+.application-details-description {
 }
 
-.application-details-description {
+@keyframes install-progress-unknown-move {
+	0% { background-position: 0%; }
+	50% { background-position: 100%; }
+	100% { background-position: 0%; }
+}
+
+.application-details-description .button {
+	padding-left:24px;
+	padding-right:24px;
 }
 
 .install-progress {
 	background-image: linear-gradient(to top, @theme_selected_bg_color 2px, alpha(@theme_selected_bg_color, 0) 2px);
 	background-repeat: no-repeat;
 	background-position: 0 bottom;
+	background-size: 0;
 	transition: none;
 }
 
@@ -270,23 +405,22 @@
 	border-image: linear-gradient(to top, @unfocused_borders, @unfocused_borders) 0 0 0 1 / 5px 0 5px 1px;
 }
 
-.reviewbar {
+review-bar {
 	background-image: none;
-	background-color: #babdb6;
-	color: #555753;
+	background-color: @unfocused_insensitive_color;
+	color: @insensitive_fg_color;
+}
+
+.review-histogram star-image {
+	color: @insensitive_fg_color;
 }
 
 .error-label {
 	text-shadow: none;
 }
 
-.folder-label {
-	font-size: smaller;
-        font-weight: bold;
-	background-color: #999999;
-	border-radius: 2px;
-	padding: 2px 8px;
-	color: white;
+.version-arrow-label {
+	font-size: x-small;
 }
 
 .overview-more-button {
@@ -298,16 +432,25 @@
 	font-size: smaller;
 }
 
-.fake-header-bar {
-	all: unset;
+.app-listbox-header {
+	padding: 6px;
+	background-image: none;
+	border-bottom: 1px solid @theme_bg_color;
 }
 
-.header-label {
-        font-size: 100%;
-        font-weight: bold;
-	padding: 6px 6px 6px 10px;
-	background-image: none;
-	background-color: shade(@theme_bg_color, 0.9);
+.app-listbox-header:dir(ltr) { padding-left: 10px; }
+
+.app-listbox-header:dir(rtl) { padding-right: 10px; }
+
+.app-updates-section {
+	border-radius: 4px;
+	border: 1px solid darker(@theme_bg_color);
+	-gtk-outline-radius: 50%;
+}
+
+.app-listbox-header-title {
+	font-size: 100%;
+	font-weight: bold;
 }
 
 .image-list {
@@ -336,20 +479,9 @@ flowboxchild {
 	padding: 0px;
 }
 
-/* for the review dialog */
-.star-enabled {
-	color: @theme_selected_bg_color;
-}
-.star-disabled {
-	color: shade(@theme_bg_color, 0.8);
-}
-
-/* for the app details shell */
-.star-enabled:disabled {
-	color: #555753;
-}
-.star-disabled:disabled {
-	color: shade(@theme_bg_color, 0.8);
+star-image {
+	color: #e5a50a;
+	-GsStarImage-star-bg: #deddda;
 }
 
 .counter-label {
@@ -398,122 +530,318 @@ flowboxchild {
 }
 
 .upgrade-banner {
-	background-color: #1c5288;
 	padding: 0px;
-	color: @theme_selected_fg_color;
+	border-radius: 8px;
+	border: none;
+}
+
+.upgrade-banner-background {
+	background: linear-gradient(180deg, shade(@theme_bg_color, 1.0) 0%, shade(@theme_bg_color, 0.9) 100%);
+	color: @theme_fg_color;
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+	border: 1px solid darker(@theme_bg_color);
+}
+
+.upgrade-banner-bottom-box {
+	border: 1px solid darker(@theme_bg_color);
+	border-width: 0 1px 1px 1px;
+	border-radius: 0 0 8px 8px;
 }
 
 .upgrade-buttons {
-	padding: 18px;
+	border-bottom-left-radius: 8px;
+	border-bottom-right-radius: 8px;
+}
+
+.upgrade-buttons #button_upgrades_install {
+	padding-left: 16px;
+	padding-right: 16px;
 }
 
 .upgrade-progressbar {
 	box-shadow: none
 }
 
-.sidefilter row:hover {
-	background-color: @theme_bg_color;
+.updates-top-bar {
+	padding: 12px;
+	color: #5d5d5d;
+	background: @theme_bg_color;
 }
 
-.sidefilter row:selected {
-	background-color: @theme_bg_color;
-	border-bottom: 1px #000;
+.eol-box {
+	background-color: @theme_selected_bg_color;
+	border: 1px solid shade(@theme_selected_bg_color, 0.8);
+	color: @theme_selected_fg_color;
 }
 
-.sidefilter row {
-	border: 0;
-	border-radius: 0;
-	outline: 0;
+.category_page_header_filter_box .radio, .category_page_header_filter_box .radio:hover {
+	background-color: transparent; background-image: none;
 	box-shadow: none;
-	-gtk-outline-radius: 0;
-	padding: 0;
-	font-size: 18px;
-}
-
-.sidefilter row box.filter-left-border {
-	background-color: transparent;
-	opacity: 0;
-}
-
-.sidefilter row:selected box.filter-left-border,
-.sidefilter row:active box.filter-left-border,
-.sidefilter row:hover box.filter-left-border {
-	opacity: 1;
-}
-
-.sidefilter_scrolledwindow {
-	border: 0;
-}
-
-.image-tile, .image-tile .main-image {
-	border-radius: 3%;
-	border: 0;
-	padding: 0;
-}
-
-.image-tile .app-info {
-	background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.6));
-	transition-duration: 500ms;
-	border-radius: 3%;
-	border: 0;
-}
-
-.image-tile:hover .app-info {
-	background: rgba(255, 255, 255, 0.8);
-	transition-duration: 0;
-}
-
-.image-tile .app-info *, .image-tile .fallback-icon {
-	opacity: 1;
-	transition-duration: 500ms;
-}
-
-.image-tile:hover .app-info *, .image-tile:hover .fallback-icon {
-	opacity: 0;
-	transition-duration: 0;
-}
-
-.image-tile .app-name {
-	font: 20px;
-}
-
-.image-tile .hover-app-info {
-	text-shadow: none;
-	-gtk-icon-shadow: none;
-}
-
-.image-tile .hover-app-info .app-name {
-	color: @theme_bg_color;
-}
-
-.image-tile .hover-app-info .app-arrow {
-	color: @theme_bg_color;
-	font: 40px;
-}
-
-.image-tile .app-installed-indicator {
-	font-size: 80%;
-	background-color: @theme_bg_color;
+	border: none;
 	border-radius: 0;
-	color: @theme_selected_fg_color;
-	text-shadow: none;
-	opacity: 0;
-	transition-duration: 300ms;
+	border-bottom: 4px solid transparent;
 }
 
-.image-tile .app-installed-indicator:backdrop label {
-	color: @theme_selected_fg_color;
+.category_page_header_filter_box .radio:hover {
+	border-bottom-color: @theme_selected_bg_color;
 }
 
-.image-tile:hover .app-installed-indicator {
-	opacity: 1;
-	transition-duration: 500ms;
+.category_page_header_filter_box .radio:checked {
+	border-bottom-color: @theme_selected_bg_color;
 }
 
-.image-tile .app-summary {
-	font-size: 80%;
+/* uses theme_bg_color and a shade with the ratio of the original color */
+.category_page_header_filter_box {
+	background-color: shade(@theme_bg_color, 0.9);
+	border-bottom: 1px solid darker(shade(@theme_bg_color, 0.9));
 }
 
-.application-details-website {
-	padding: 0;
+.switcher-label {
+	opacity: 0.5;
+}
+
+.featured-carousel rounded-bin {
+	border-radius: 8px;
+}
+
+.featured-button-left,
+.featured-button-right {
+	padding: 2px 5px;
+	border-radius: 50%;
+	-gtk-outline-radius: 50%;
+	color: @theme_fg_color;
+}
+
+.featured-carousel button.osd {
+	-gtk-icon-shadow: none;
+	border: none;
+}
+
+.featured-carousel button.osd:focus {
+	/* this is @theme_fg_color at 10% opacity, but we can’t use the variable
+	 * directly as rgba() requires 4 components */
+	background: rgba(46, 52, 54, 0.1);
+}
+
+.featured-carousel button.osd:hover {
+	/* this is @theme_fg_color at 20% opacity, but we can’t use the variable
+	 * directly as rgba() requires 4 components */
+	background: rgba(46, 52, 54, 0.2);
+}
+
+.featured-carousel button.osd:active {
+	/* this is @theme_fg_color at 35% opacity, but we can’t use the variable
+	 * directly as rgba() requires 4 components */
+	background: rgba(46, 52, 54, 0.35);
+}
+
+.featured-button-left:not(:hover),
+.featured-button-right:not(:hover) {
+	background: transparent;
+	border:transparent;
+	box-shadow: none;
+}
+
+/* these typographical classes will be provided in gtk eventually */
+.title-1{
+  font-weight: 800;
+  font-size: 20pt;
+}
+.caption{
+  font-weight: 400;
+  font-size: 10pt;
+}
+
+/* the loading page headerbar */
+overlay > headerbar {
+  background: none;
+  border: none;
+}
+
+/* The following style are taken from libhandy's HdyPreferencesPage style, which
+ * implements the style for titled lists of lists.
+ * FIXME: Drop these styles if the pages using it are ported to
+ * HdyPreferencesPage or its successor in Libadwaita, if their clamp size can be
+ * set as a property. */
+
+scrolledwindow.list-page > viewport > clamp {
+  margin: 0 12px; transition: margin-bottom 200ms ease;
+}
+
+scrolledwindow.list-page > viewport > clamp .section {
+  transition: margin-top 200ms ease;
+}
+
+scrolledwindow.list-page > viewport > clamp.small {
+  margin-bottom: 18px;
+}
+
+scrolledwindow.list-page > viewport > clamp.small .section {
+  margin-top: 18px;
+}
+
+scrolledwindow.list-page > viewport > clamp.medium {
+  margin-bottom: 24px;
+}
+
+scrolledwindow.list-page > viewport > clamp.medium .section {
+  margin-top: 24px;
+}
+
+scrolledwindow.list-page > viewport > clamp.large {
+  margin-bottom: 30px;
+}
+
+scrolledwindow.list-page > viewport > clamp.large .section {
+  margin-top: 30px;
+}
+
+/* Increase the spacing in the Update Preferences window between the label and
+ * the listbox. */
+
+.update-preferences preferencesgroup > box > box {
+  margin-top: 18px;
+}
+
+/* The following style is taken from libhandy's HdyPreferencesGroup style, which
+ * implements the style for titled and described sections with a list box.
+ * FIXME: Drop this style if we use the successor of HdyPreferencesGroup in
+ * Libadwaita when porting to GTK 4. */
+
+.section > label:not(:first-child) { margin-top: 6px; }
+
+.section > box:not(:first-child) { margin-top: 12px; }
+
+/* The following style is taken from libhandy's HdyStatusPage style.
+ * FIXME: Drop this style if HdyStatusPage or its GTK 4 successor allows setting
+ * a spinner and the updates spinner page can be ported to it. */
+
+clamp.status-page {
+  margin: 36px 12px;
+}
+
+clamp.status-page .icon {
+  color: alpha(@theme_fg_color, 0.5);
+  min-height: 128px;
+  min-width: 128px;
+}
+
+clamp.status-page .icon:backdrop {
+  color: alpha(@theme_unfocused_fg_color, 0.5);
+}
+
+clamp.status-page .icon:not(:last-child) {
+  margin-bottom: 36px;
+}
+
+clamp.status-page .title:not(:last-child) {
+  margin-bottom: 12px;
+}
+
+app-context-bar .context-tile {
+	border: 1px solid shade(@theme_bg_color, 0.9);
+	background-color: @theme_base_color;
+	border-radius: 0;
+	padding: 24px 12px 21px 12px;
+	border-right: 1px solid shade(@theme_bg_color, 0.9);
+}
+
+app-context-bar box:first-child .context-tile:first-child {
+	border-top-left-radius: 8px;
+	-gtk-outline-top-left-radius: 7px;
+}
+
+app-context-bar.horizontal box:last-child .context-tile:last-child,
+app-context-bar.vertical box:first-child .context-tile:last-child {
+	border-top-right-radius: 8px;
+	-gtk-outline-top-right-radius: 7px;
+}
+
+app-context-bar.horizontal box:first-child .context-tile:first-child,
+app-context-bar.vertical box:last-child .context-tile:first-child {
+	border-bottom-left-radius: 8px;
+	-gtk-outline-bottom-left-radius: 7px;
+}
+
+app-context-bar box:last-child .context-tile:last-child {
+	border-bottom-right-radius: 8px;
+	-gtk-outline-bottom-right-radius: 7px;
+}
+
+app-context-bar.horizontal box:not(:last-child) .context-tile,
+app-context-bar.horizontal box:last-child .context-tile:not(:last-child),
+app-context-bar.vertical .context-tile:not(:last-child) {
+	border-right: none;
+}
+
+app-context-bar.vertical box:not(:last-child) .context-tile {
+	border-bottom: none;
+}
+
+.context-tile-lozenge {
+	font-size: 18px;
+	font-weight: bold;
+	border-radius: 99999px;
+	padding: 9px 11px;
+	min-width: 18px;  /* 40px minus the left and right padding */
+	min-height: 22px;  /* 40px minus the top and bottom padding */
+}
+
+.context-tile-lozenge.large {
+	font-size: 24px;
+	padding: 15px 18px;
+	min-width: 24px;  /* 60px minus the left and right padding */
+	min-height: 30px;  /* 60px minus the top and bottom padding */
+}
+
+.context-tile-lozenge.wide-image image {
+	/* GtkImage always renders image square, so if we want an image which
+	 * is wide, but still the same height as all the others, we have to
+	 * use this hack to make it zero-height and vertically centred. The
+	 * vertical size group ensures that it does still actually have a
+	 * height. */
+	margin-top: -999px;
+	margin-bottom: -999px
+}
+
+.context-tile-title { font-weight: bold }
+.context-tile-lozenge image { -gtk-icon-style: symbolic; }
+app-context-bar .context-tile-description { font-size: smaller }
+
+.context-tile-lozenge.grey { background-color: #deddda; color: #5e5c64 }
+.context-tile-lozenge.green, .context-tile-lozenge.details-rating-0 { background-color: #b6f2c4; color: #208255 }
+.context-tile-lozenge.red, .context-tile-lozenge.details-rating-18 { background-color: #fbd3cf; color: #ab3342 }
+.context-tile-lozenge.details-rating-15 { background-color: #ffd7a5; color: #c75400 }
+.context-tile-lozenge.yellow, .context-tile-lozenge.details-rating-12 { background-color: #f7eb9f; color: #9c7107 }
+.context-tile-lozenge.blue, .context-tile-lozenge.details-rating-5 { background-color: #d1e4fb; color: #294d7a }
+
+window.toolbox button.titlebutton:not(:hover) {
+  background: @theme_bg_color;
+}
+
+window.narrow .app-title {
+   font-size: 16pt;
+}
+
+window.narrow .app-developer {
+   font-size: small;
+}
+
+.install-progress-label { font-size: smaller }
+
+/* FIXME: These are needed in the updates page until we can use HdyStatusPage
+ * again. See the note in gs-updates-page.ui. */
+scrolledwindow.fake-hdy-status-page > viewport > box { margin: 36px 12px; }
+scrolledwindow.fake-hdy-status-page > viewport > box > clamp:not(:last-child) > box { margin-bottom: 36px; }
+scrolledwindow.fake-hdy-status-page > viewport > box > clamp > box > .icon:not(:last-child) { margin-bottom: 36px; }
+scrolledwindow.fake-hdy-status-page > viewport > box > clamp > box > .title:not(:last-child) { margin-bottom: 12px; }
+
+statuspage.icon-dropshadow image.icon {
+  /* This copies the style of .icon-dropshadow from Adwaita. */
+  -gtk-icon-shadow: 0 1px 12px rgba(0,0,0,0.05),
+      0 -1px rgba(0,0,0,0.05),
+      1px 0 rgba(0,0,0,0.1),
+      0 1px rgba(0,0,0,0.3),
+      -1px 0 rgba(0,0,0,0.1);
 }

@@ -1,22 +1,9 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
- * Copyright (C) 2014 Kalev Lember <kalevlember@gmail.com>
+ * Copyright (C) 2014-2015 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -27,12 +14,41 @@
 
 struct _GsFirstRunDialog
 {
-	GtkDialog	 parent_instance;
+	HdyWindow	 parent_instance;
 
 	GtkWidget	*button;
 };
 
-G_DEFINE_TYPE (GsFirstRunDialog, gs_first_run_dialog, GTK_TYPE_DIALOG)
+G_DEFINE_TYPE (GsFirstRunDialog, gs_first_run_dialog, HDY_TYPE_WINDOW)
+
+static gboolean
+key_press_event_cb (GtkWidget            *sender,
+                    GdkEvent             *event,
+                    HdyPreferencesWindow *self)
+{
+	guint keyval;
+	GdkModifierType state;
+	GdkKeymap *keymap;
+	GdkEventKey *key_event = (GdkEventKey *) event;
+
+	gdk_event_get_state (event, &state);
+
+	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (sender));
+
+	gdk_keymap_translate_keyboard_state (keymap,
+					     key_event->hardware_keycode,
+					     state,
+					     key_event->group,
+					     &keyval, NULL, NULL, NULL);
+
+	if (keyval == GDK_KEY_Escape) {
+		gtk_window_close (GTK_WINDOW (self));
+
+		return GDK_EVENT_STOP;
+	}
+
+	return GDK_EVENT_PROPAGATE;
+}
 
 static void
 button_clicked_cb (GtkWidget *widget, GsFirstRunDialog *dialog)
@@ -62,14 +78,12 @@ gs_first_run_dialog_class_init (GsFirstRunDialogClass *klass)
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-first-run-dialog.ui");
 
 	gtk_widget_class_bind_template_child (widget_class, GsFirstRunDialog, button);
+
+	gtk_widget_class_bind_template_callback (widget_class, key_press_event_cb);
 }
 
 GtkWidget *
 gs_first_run_dialog_new (void)
 {
-	return GTK_WIDGET (g_object_new (GS_TYPE_FIRST_RUN_DIALOG,
-					 "use-header-bar", TRUE,
-					 NULL));
+	return GTK_WIDGET (g_object_new (GS_TYPE_FIRST_RUN_DIALOG, NULL));
 }
-
-/* vim: set noexpandtab: */

@@ -9,7 +9,7 @@
     <title>GNOME Software Reference Manual</title>
   </bookinfo>
 
-  <reference id="plugins">
+  <reference id="tutorial">
     <title>GNOME Software Plugin Tutorial</title>
     <partintro>
       <para>
@@ -76,6 +76,7 @@
  * Copyright (C) 2016 Richard Hughes
  */
 
+#include &lt;glib.h&gt;
 #include &lt;gnome-software.h&gt;
 
 void
@@ -91,11 +92,10 @@ gs_plugin_add_search (GsPlugin *plugin,
                       GCancellable *cancellable,
                       GError **error)
 {
-  guint i;
-  for (i = 0; values[i] != NULL; i++) {
+  for (gsize i = 0; values[i] != NULL; i++) {
     if (g_strcmp0 (values[i], "fotoshop") == 0) {
       g_autoptr(GsApp) app = gs_app_new ("gimp.desktop");
-      gs_app_add_quirk (app, AS_APP_QUIRK_MATCH_ANY_PREFIX);
+      gs_app_add_quirk (app, GS_APP_QUIRK_IS_WILDCARD);
       gs_app_list_add (list, app);
     }
   }
@@ -122,9 +122,9 @@ gs_plugin_add_search (GsPlugin *plugin,
         <informalexample>
           <programlisting>
 gcc -shared -o libgs_plugin_example.so gs-plugin-example.c -fPIC \
- `pkg-config --libs --cflags gnome-software` \
- -DI_KNOW_THE_GNOME_SOFTWARE_API_IS_SUBJECT_TO_CHANGE &amp;&amp;
- sudo cp libgs_plugin_example.so `pkg-config gnome-software --variable=plugindir`
+    $(pkg-config --libs --cflags gnome-software) \
+    -DI_KNOW_THE_GNOME_SOFTWARE_API_IS_SUBJECT_TO_CHANGE &amp;&amp; \
+cp libgs_plugin_example.so $(pkg-config gnome-software --variable=plugindir)
           </programlisting>
         </informalexample>
 
@@ -140,8 +140,8 @@ gcc -shared -o libgs_plugin_example.so gs-plugin-example.c -fPIC \
         <title>Distribution Specific Functionality</title>
         <para>
           Some plugins should only run on specific distributions, for instance
-          the <code>ubuntu-reviews</code> plugin should only be used on Ubuntu
-          systems.
+          the <code>fedora-pkgdb-collections</code> plugin should only be used on
+          Fedora systems.
           This can be achieved with a simple runtime check using the helper
           <code>gs_plugin_check_distro_id()</code> method or the <code>GsOsRelease</code>
           object where more complicated rules are required.
@@ -193,7 +193,7 @@ gs_plugin_add_installed (GsPlugin *plugin,
 {
   g_autofree gchar *fn = NULL;
   g_autoptr(GsApp) app = NULL;
-  g_autoptr(AsIcon) icon = NULL;
+  g_autoptr(GIcon) icon = NULL;
 
   /* check if the app exists */
   fn = g_build_filename (g_get_home_dir (), "chiron", NULL);
@@ -201,10 +201,10 @@ gs_plugin_add_installed (GsPlugin *plugin,
     return TRUE;
 
   /* the trigger exists, so create a fake app */
-  app = gs_app_new ("example:chiron.desktop");
+  app = gs_app_new ("chiron.desktop");
   gs_app_set_management_plugin (app, "example");
-  gs_app_set_kind (app, AS_APP_KIND_DESKTOP);
-  gs_app_set_state (app, AS_APP_STATE_INSTALLED);
+  gs_app_set_kind (app, AS_COMPONENT_KIND_DESKTOP_APP);
+  gs_app_set_state (app, GS_APP_STATE_INSTALLED);
   gs_app_set_name (app, GS_APP_QUALITY_NORMAL, "Chiron");
   gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, "A teaching application");
   gs_app_set_description (app, GS_APP_QUALITY_NORMAL,
@@ -215,16 +215,14 @@ gs_plugin_add_installed (GsPlugin *plugin,
   gs_app_set_version (app, "1.2.3");
   gs_app_set_size_installed (app, 2 * 1024 * 1024);
   gs_app_set_size_download (app, 3 * 1024 * 1024);
-  gs_app_set_origin_ui (app, "The example plugin");
+  gs_app_set_origin_hostname (app, "http://www.teaching-example.org/");
   gs_app_add_category (app, "Game");
   gs_app_add_category (app, "ActionGame");
   gs_app_add_kudo (app, GS_APP_KUDO_INSTALLS_USER_DOCS);
   gs_app_set_license (app, GS_APP_QUALITY_NORMAL, "GPL-2.0+ and LGPL-2.1+");
 
-  /* create a stock icon which will be loaded by the 'icons' plugin */
-  icon = as_icon_new ();
-  as_icon_set_kind (icon, AS_ICON_KIND_STOCK);
-  as_icon_set_name (icon, "input-gaming");
+  /* use a stock icon */
+  icon = g_themed_icon_new ("input-gaming");
   gs_app_add_icon (app, icon);
 
   /* return new app */
@@ -240,28 +238,19 @@ gs_plugin_add_installed (GsPlugin *plugin,
         <itemizedlist>
           <listitem>
             <para>
-              The application ID (<code>example:chiron.desktop</code>) has a
-              prefix of <code>example</code> which means we can co-exist with
-              any package or flatpak version of the Chiron application,
-              not setting the prefix would make the UI confused if more than
-              one <code>chiron.desktop</code> got added.
-            </para>
-          </listitem>
-          <listitem>
-            <para>
               Setting the management plugin means we can check for this string
               when working out if we can handle the install or remove action.
             </para>
           </listitem>
           <listitem>
             <para>
-              Most applications want a kind of <code>AS_APP_KIND_DESKTOP</code>
+              Most applications want a kind of <code>AS_COMPONENT_KIND_DESKTOP_APP</code>
               to be visible as an application.
             </para>
           </listitem>
           <listitem>
             <para>
-              The origin is where the application originated from -- usually
+              The origin is where the application originated from — usually
               this will be something like <emphasis>Fedora Updates</emphasis>.
             </para>
           </listitem>
@@ -274,15 +263,18 @@ gs_plugin_add_installed (GsPlugin *plugin,
           </listitem>
           <listitem>
             <para>
-              Setting the license means we don't get the non-free warning --
+              Setting the license means we don't get the non-free warning —
               removing the 3rd party warning can be done using
-              <code>AS_APP_QUIRK_PROVENANCE</code>
+              <code>GS_APP_QUIRK_PROVENANCE</code>
             </para>
           </listitem>
           <listitem>
             <para>
-              The <code>icons</code> plugin will take the stock icon and convert
-              it to a pixbuf of the correct size.
+              The icon will be loaded into a pixbuf of the correct size when
+              needed by the UI. You must ensure that icons are available at
+              common sizes. For icons of type <code>GsRemoteIcon</code>, the
+              <code>icons</code> plugin will download and cache the icon
+              locally.
             </para>
           </listitem>
         </itemizedlist>
@@ -302,7 +294,7 @@ gs_plugin_add_installed (GsPlugin *plugin,
 
         <para>
           By filling in the optional details (which can also be filled in using
-          <code>gs_plugin_refine_app()</code> you can also make the details
+          <code>gs_plugin_refine()</code> you can also make the details
           page a much more exciting place.
           Adding a set of screenshots is left as an exercise to the reader.
         </para>
@@ -344,18 +336,19 @@ gs_plugin_add_installed (GsPlugin *plugin,
           On fast connections we should only show that for a couple of seconds,
           but it's a good idea to try any avoid that if at all possible in the
           plugin.
-          Once per day the <code>gs_plugin_refresh()</code> method is called again,
-          but this time with <code>GS_PLUGIN_REFRESH_FLAGS_PAYLOAD</code> set.
+          Once per day the <code>gs_plugin_get_updates()</code> method is called,
+          and then <code>gs_plugin_download_app()</code> may be called if the
+          user has configured automatic updates.
           This is where the Flatpak plugin would download any ostree trees (but
           not doing the deploy step) so that the applications can be updated live
           in the details panel without having to wait for the download to complete.
           In a similar way, the fwupd plugin downloads the tiny LVFS metadata with
-          <code>GS_PLUGIN_REFRESH_FLAGS_METADATA</code> and then downloads the
-          large firmware files themselves only when the
-          <code>GS_PLUGIN_REFRESH_FLAGS_PAYLOAD</code> flag is set.
+          <code>gs_plugin_refresh()</code> and then downloads the large firmware
+          files themselves when <code>gs_plugin_download_app()</code> or
+          <code>gs_plugin_download_app()</code> is called.
         </para>
         <para>
-          If the <code>@app</code> parameter is set for
+          If the <code>app</code> parameter is set for
           <code>gs_plugin_download_file()</code> then the progress of the download
           is automatically proxied to the UI elements associated with the
           application, for instance the install button would show a progress bar
@@ -380,35 +373,25 @@ gs_plugin_add_installed (GsPlugin *plugin,
 gboolean
 gs_plugin_refresh (GsPlugin *plugin,
                    guint cache_age,
-                   GsPluginRefreshFlags flags,
                    GCancellable *cancellable,
                    GError **error)
 {
   const gchar *metadata_fn = "/var/cache/example/metadata.xml";
   const gchar *metadata_url = "http://www.example.com/new.xml";
+  g_autoptr(GFile) file = g_file_new_for_path (metadata_fn);
 
-  /* this is called at startup and once per day */
-  if (flags &amp; GS_PLUGIN_REFRESH_FLAGS_METADATA) {
-    g_autoptr(GFile) file = g_file_new_for_path (metadata_fn);
-
-    /* is the metadata missing or too old */
-    if (gs_utils_get_file_age (file) &gt; cache_age) {
-      if (!gs_plugin_download_file (plugin,
-                                    NULL,
-                                    metadata_url,
-                                    metadata_fn,
-                                    cancellable,
-                                    error)) {
-        /* it's okay to fail here */
-        return FALSE;
-      }
-      g_debug ("successfully downloaded new metadata");
+  /* is the metadata missing or too old */
+  if (gs_utils_get_file_age (file) &gt; cache_age) {
+    if (!gs_plugin_download_file (plugin,
+                                  NULL,
+                                  metadata_url,
+                                  metadata_fn,
+                                  cancellable,
+                                  error)) {
+      /* it's okay to fail here */
+      return FALSE;
     }
-  }
-
-  /* this is called when the session is idle */
-  if ((flags &amp; GS_PLUGIN_REFRESH_FLAGS_PAYLOAD) == 0) {
-    // FIXME: download any required updates now
+    g_debug ("successfully downloaded new metadata");
   }
   return TRUE;
 }
@@ -439,23 +422,27 @@ gs_plugin_refresh (GsPlugin *plugin,
           <title>Refine example</title>
           <programlisting>
 gboolean
-gs_plugin_refine_app (GsPlugin *plugin,
-                      GsApp *app,
-                      GsPluginRefineFlags flags,
-                      GCancellable *cancellable,
-                      GError **error)
+gs_plugin_refine (GsPlugin *plugin,
+                  GsAppList *list,
+                  GsPluginRefineFlags flags,
+                  GCancellable *cancellable,
+                  GError **error)
 {
   /* not required */
   if ((flags &amp; GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE) == 0)
     return TRUE;
 
-  /* already set */
-  if (gs_app_get_license (app) != NULL)
-    return TRUE;
+  for (guint i = 0; i &lt; gs_app_list_length (list); i++) {
+    GsApp *app = gs_app_list_index (list, i);
 
-  /* FIXME, not just hardcoded! */
-  if (g_strcmp0 (gs_app_get_id (app, "chiron.desktop") == 0))
-    gs_app_set_license (app, "GPL-2.0 and LGPL-2.0+");
+    /* already set */
+    if (gs_app_get_license (app) != NULL)
+      return TRUE;
+
+    /* FIXME, not just hardcoded! */
+    if (g_strcmp0 (gs_app_get_id (app, "chiron.desktop") == 0))
+      gs_app_set_license (app, "GPL-2.0 and LGPL-2.0+");
+  }
 
   return TRUE;
 }
@@ -530,9 +517,6 @@ gs_plugin_refine_app (GsPlugin *plugin,
           set, and allows the plugin to <emphasis>claim</emphasis> the
           application for itself so it can handle installation, removal and
           updating.
-          In the case of steam it could check the ID has a prefix of
-          <code>steam:</code> or could check some other plugin-specific metadata
-          using <code>gs_app_get_metadata_item()</code>.
         </para>
         <para>
           Another good example is the <code>fwupd</code> that wants to handle
@@ -548,7 +532,7 @@ gs_plugin_refine_app (GsPlugin *plugin,
 void
 gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
 {
-  if (gs_app_get_kind (app) == AS_APP_KIND_FIRMWARE)
+  if (gs_app_get_kind (app) == AS_COMPONENT_KIND_FIRMWARE)
     gs_app_set_management_plugin (app, "fwupd");
 }
           </programlisting>
@@ -624,7 +608,6 @@ gs_plugin_adopt_app (GsPlugin *plugin, GsApp *app)
     <xi:include href="xml/gs-app-list.xml"/>
     <xi:include href="xml/gs-app.xml"/>
     <xi:include href="xml/gs-category.xml"/>
-    <xi:include href="xml/gs-auth.xml"/>
     <xi:include href="xml/gs-os-release.xml"/>
     <xi:include href="xml/gs-plugin.xml"/>
     <xi:include href="xml/gs-plugin-event.xml"/>

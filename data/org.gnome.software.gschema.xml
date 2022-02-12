@@ -7,13 +7,18 @@
     </key>
     <key name="allow-updates" type="b">
       <default>true</default>
-      <summary>Whether to manage updates in GNOME Software</summary>
-      <description>If disabled, GNOME Software will hide the updates panel and not perform any automatic updates actions.</description>
+      <summary>Whether to manage updates and upgrades in GNOME Software</summary>
+      <description>If disabled, GNOME Software will hide the updates panel, not perform any automatic updates actions or prompt for upgrades.</description>
     </key>
     <key name="download-updates" type="b">
       <default>true</default>
-      <summary>Whether to automatically download updates</summary>
-      <description>If enabled, GNOME Software automatically downloads updates in the background and prompts the user to install them when ready.</description>
+      <summary>Automatically download and install updates</summary>
+      <description>If enabled, GNOME Software automatically downloads software updates in the background, also installing ones that do not require a reboot.</description>
+    </key>
+    <key name="download-updates-notify" type="b">
+      <default>true</default>
+      <summary>Notify the user about software updated in the background</summary>
+      <description>If enabled, GNOME Software notifies the user about updates that happened whilst the user was idle.</description>
     </key>
     <key name="refresh-when-metered" type="b">
       <default>false</default>
@@ -42,11 +47,6 @@
       <summary>A list of popular applications</summary>
       <description>A list of applications to use, overriding the system defined ones.</description>
     </key>
-    <key name="extra-sources" type="as">
-      <default>[]</default>
-      <summary>The list of extra sources that have been previously enabled</summary>
-      <description>The list of sources that have been previously enabled when installing third-party applications.</description>
-    </key>
     <key name="check-timestamp" type="x">
       <default>0</default>
       <summary>The last update check timestamp</summary>
@@ -55,6 +55,10 @@
       <default>0</default>
       <summary>The last upgrade notification timestamp</summary>
     </key>
+    <key name="update-notification-timestamp" type="x">
+      <default>0</default>
+      <summary>The last update notification timestamp</summary>
+    </key>
     <key name="security-timestamp" type="x">
       <default>0</default>
       <summary>The timestamp of the first security update, cleared after update</summary>
@@ -62,6 +66,10 @@
     <key name="install-timestamp" type="x">
       <default>0</default>
       <summary>The last update timestamp</summary>
+    </key>
+    <key name="online-updates-timestamp" type="x">
+      <default>0</default>
+      <summary>The last timestamp when the system was online and got any updates</summary>
     </key>
     <key name="screenshot-cache-age-maximum" type="u">
       <default>2592000</default>
@@ -82,15 +90,15 @@
       <summary>The minimum karma score for reviews</summary>
       <description>Reviews with karma less than this number will not be shown.</description>
     </key>
-    <key name="official-sources" type="as">
+    <key name="official-repos" type="as">
       <default>[]</default>
-      <summary>A list of official sources that should not be considered 3rd party</summary>
+      <summary>A list of official repositories that should not be considered 3rd party</summary>
     </key>
-    <key name="free-sources" type="as">
+    <key name="free-repos" type="as">
       <default>[]</default>
-      <summary>A list of official sources that should be considered free software</summary>
+      <summary>A list of official repositories that should be considered free software</summary>
     </key>
-    <key name="free-sources-url" type="s">
+    <key name="free-repos-url" type="s">
       <default>''</default>
       <summary>The licence URL to use when an application should be considered free software</summary>
     </key>
@@ -98,13 +106,9 @@
       <default>true</default>
       <summary>Install bundled applications for all users on the system where possible</summary>
     </key>
-    <key name="show-folder-management" type="b">
+    <key name="enable-repos-dialog" type="b">
       <default>true</default>
-      <summary>Show the folder management UI</summary>
-    </key>
-    <key name="enable-software-sources" type="b">
-      <default>true</default>
-      <summary>Allow access to the Software Sources dialog</summary>
+      <summary>Allow access to the Software Repositories dialog</summary>
     </key>
     <key name="show-upgrade-prerelease" type="b">
       <default>false</default>
@@ -114,29 +118,33 @@
       <default>true</default>
       <summary>Show some UI elements informing the user that an app is non-free</summary>
     </key>
-    <key name="show-nonfree-prompt" type="b">
-      <default>true</default>
-      <summary>Show the prompt to install nonfree software sources</summary>
-    </key>
-    <key name="show-nonfree-software" type="b">
-      <default>false</default>
-      <summary>Show non-free software in search results</summary>
-    </key>
     <key name="installed-page-show-size" type="b">
       <default>true</default>
       <summary>Show the installed size for apps in the list of installed applications</summary>
     </key>
     <key name="nonfree-software-uri" type="s">
-      <default>'https://en.wikipedia.org/wiki/Proprietary_software'</default>
+      <!-- Translators: Replace the link with a version in your language, e.g. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include ''. -->
+      <default l10n="messages">'https://en.wikipedia.org/wiki/Proprietary_software'</default>
       <summary>The URI that explains nonfree and proprietary software</summary>
-    </key>
-    <key name="nonfree-sources" type="as">
-      <default>[]</default>
-      <summary>A list of non-free sources that can be optionally enabled</summary>
     </key>
     <key name="external-appstream-urls" type="as">
       <default>[]</default>
       <summary>A list of URLs pointing to appstream files that will be downloaded into an app-info folder</summary>
+    </key>
+    <key name="external-appstream-system-wide" type="b">
+      <default>false</default>
+      <summary>Install the AppStream files to a system-wide location for all users</summary>
+    </key>
+    <key name="packaging-format-preference" type="as">
+      <default>['']</default>
+      <summary>Priority order of packaging formats to prefer, with more important formats listed first. An empty array means the default order. Omitted formats are assumed to be listed last.</summary>
+    </key>
+    <child name="auth" schema="org.gnome.software.auth"/>
+  </schema>
+  <schema id="org.gnome.software.auth" gettext-domain="gnome-software">
+    <key name="account-id" type="s">
+      <default>''</default>
+      <summary>A string storing the gnome-online-account id used to login</summary>
     </key>
   </schema>
 </schemalist>

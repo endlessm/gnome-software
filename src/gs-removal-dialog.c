@@ -1,27 +1,15 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
 
 #include "gs-removal-dialog.h"
+#include "gs-utils.h"
 
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
@@ -34,17 +22,6 @@ struct _GsRemovalDialog
 };
 
 G_DEFINE_TYPE (GsRemovalDialog, gs_removal_dialog, GTK_TYPE_MESSAGE_DIALOG)
-
-static void
-list_header_func (GtkListBoxRow *row,
-                  GtkListBoxRow *before,
-                  gpointer user_data)
-{
-	GtkWidget *header = NULL;
-	if (before != NULL)
-		header = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL);
-	gtk_list_box_row_set_header (row, header);
-}
 
 static gint
 list_sort_func (GtkListBoxRow *a,
@@ -64,6 +41,7 @@ add_app (GtkListBox *listbox, GsApp *app)
 	GtkWidget *box;
 	GtkWidget *widget;
 	GtkWidget *row;
+	g_autofree gchar *sort_key = NULL;
 
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 6);
 	gtk_widget_set_margin_top (box, 12);
@@ -73,12 +51,17 @@ add_app (GtkListBox *listbox, GsApp *app)
 
 	widget = gtk_label_new (gs_app_get_name (app));
 	gtk_widget_set_halign (widget, GTK_ALIGN_START);
+	gtk_widget_set_tooltip_text (widget, gs_app_get_name (app));
 	gtk_label_set_ellipsize (GTK_LABEL (widget), PANGO_ELLIPSIZE_END);
-	gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (box), widget);
+
+	if (gs_app_get_name (app) != NULL) {
+		sort_key = gs_utils_sort_key (gs_app_get_name (app));
+	}
 
 	g_object_set_data_full (G_OBJECT (box),
 	                        "sort",
-	                        g_utf8_casefold (gs_app_get_name (app), -1),
+	                        g_steal_pointer (&sort_key),
 	                        g_free);
 
 	gtk_list_box_prepend (listbox, box);
@@ -115,26 +98,25 @@ void
 gs_removal_dialog_show_upgrade_removals (GsRemovalDialog *self,
                                          GsApp *upgrade)
 {
-	GPtrArray *removals;
-	guint i;
+	GsAppList *removals;
 	g_autofree gchar *name_version = NULL;
 
 	name_version = g_strdup_printf ("%s %s",
 	                                gs_app_get_name (upgrade),
 	                                gs_app_get_version (upgrade));
-	/* TRANSLATORS: This is a text displayed during a distro upgrade. %s
-	   will be replaced by the name and version of distro, e.g. 'Fedora 23'. */
 	gtk_message_dialog_format_secondary_text (GTK_MESSAGE_DIALOG (self),
+	                                          /* TRANSLATORS: This is a text displayed during a distro upgrade. %s
+	                                             will be replaced by the name and version of distro, e.g. 'Fedora 23'. */
 	                                          _("Some of the currently installed software is not compatible with %s. "
 	                                            "If you continue, the following will be automatically removed during the upgrade:"),
 	                                          name_version);
 
 	removals = gs_app_get_related (upgrade);
-	for (i = 0; i < removals->len; i++) {
-		GsApp *app = g_ptr_array_index (removals, i);
+	for (guint i = 0; i < gs_app_list_length (removals); i++) {
+		GsApp *app = gs_app_list_index (removals, i);
 		g_autofree gchar *tmp = NULL;
 
-		if (gs_app_get_state (app) != AS_APP_STATE_UNAVAILABLE)
+		if (gs_app_get_state (app) != GS_APP_STATE_UNAVAILABLE)
 			continue;
 		tmp = gs_app_to_string (app);
 		g_debug ("removal %u: %s", i, tmp);
@@ -149,10 +131,6 @@ gs_removal_dialog_init (GsRemovalDialog *self)
 
 	insert_details_widget (GTK_MESSAGE_DIALOG (self), self->scrolledwindow);
 
-	gtk_list_box_set_header_func (GTK_LIST_BOX (self->listbox),
-	                              list_header_func,
-	                              self,
-	                              NULL);
 	gtk_list_box_set_sort_func (GTK_LIST_BOX (self->listbox),
 	                            list_sort_func,
 	                            self, NULL);
@@ -178,5 +156,3 @@ gs_removal_dialog_new (void)
 	                       NULL);
 	return GTK_WIDGET (dialog);
 }
-
-/* vim: set noexpandtab: */
