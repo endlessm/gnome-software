@@ -531,14 +531,6 @@ app_is_banned_for_product_or_personality (GsPlugin *plugin, GsApp *app)
 		NULL
 	};
 
-	static const char *google_apps[] = {
-		"com.google.Chrome",
-		"com.endlessm.translation",
-		"com.github.JannikHv.Gydl",
-		"org.tordini.flavio.Minitube",
-		NULL
-	};
-
 	/* do not ban apps based on personality if they are installed or
 	 * if they don't have a ref name (i.e. are not Flatpak apps) */
 	if (gs_app_is_installed (app) || app_name == NULL)
@@ -546,9 +538,6 @@ app_is_banned_for_product_or_personality (GsPlugin *plugin, GsApp *app)
 
 	return ((g_strcmp0 (priv->personality, "es_GT") == 0) &&
 	        g_strv_contains (restricted_apps, app_name)) ||
-	       ((g_strcmp0 (priv->personality, "zh_CN") == 0) &&
-	        (g_strv_contains (google_apps, app_name) ||
-	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia"))) ||
 	       ((g_strcmp0 (priv->product_name, "hack") == 0) &&
 	        g_strv_contains (restricted_apps, app_name)) ||
 	       ((g_strcmp0 (priv->product_name, "solutions") == 0) &&
