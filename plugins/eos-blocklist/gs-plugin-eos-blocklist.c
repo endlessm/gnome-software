@@ -458,15 +458,6 @@ gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 		NULL
 	};
 
-	/* Flatpak apps known not to be working properly */
-	static const char *buggy_apps[] = {
-		/* Missing lots of keys and defaults specified in eos-theme */
-		"ca.desrt.dconf-editor",
-		/* Requires kdeconnect on the host, which is not supported on Endless */
-		"com.github.bajoja.indicator-kdeconnect",
-		NULL
-	};
-
 	const char *hostname = NULL;
 	const char *app_name = NULL;
 
@@ -494,10 +485,6 @@ gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 			do_blocklist = TRUE;
 		} else if (g_strv_contains (core_apps, app_name)) {
 			g_debug ("Blocklisting '%s': app is in the core apps list",
-				 gs_app_get_unique_id (app));
-			do_blocklist = TRUE;
-		} else if (g_strv_contains (buggy_apps, app_name)) {
-			g_debug ("Blocklisting '%s': app is in the buggy list",
 				 gs_app_get_unique_id (app));
 			do_blocklist = TRUE;
 		}
