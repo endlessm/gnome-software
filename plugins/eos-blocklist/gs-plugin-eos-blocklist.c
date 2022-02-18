@@ -438,7 +438,6 @@ static gboolean
 gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 						  GsApp *app)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
 	gboolean do_blocklist = FALSE;
 
 	static const char *duplicated_apps[] = {
