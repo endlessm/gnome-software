@@ -438,7 +438,6 @@ static gboolean
 gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 						  GsApp *app)
 {
-	GsPluginData *priv = gs_plugin_get_data (plugin);
 	gboolean do_blocklist = FALSE;
 
 	static const char *duplicated_apps[] = {
@@ -455,15 +454,6 @@ gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 		"org.gnome.Nautilus",
 		"org.gnome.clocks",
 		"org.gnome.eog",
-		NULL
-	};
-
-	/* Flatpak apps known not to be working properly */
-	static const char *buggy_apps[] = {
-		/* Missing lots of keys and defaults specified in eos-theme */
-		"ca.desrt.dconf-editor",
-		/* Requires kdeconnect on the host, which is not supported on Endless */
-		"com.github.bajoja.indicator-kdeconnect",
 		NULL
 	};
 
@@ -494,10 +484,6 @@ gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 			do_blocklist = TRUE;
 		} else if (g_strv_contains (core_apps, app_name)) {
 			g_debug ("Blocklisting '%s': app is in the core apps list",
-				 gs_app_get_unique_id (app));
-			do_blocklist = TRUE;
-		} else if (g_strv_contains (buggy_apps, app_name)) {
-			g_debug ("Blocklisting '%s': app is in the buggy list",
 				 gs_app_get_unique_id (app));
 			do_blocklist = TRUE;
 		}
@@ -544,14 +530,6 @@ app_is_banned_for_product_or_personality (GsPlugin *plugin, GsApp *app)
 		NULL
 	};
 
-	static const char *google_apps[] = {
-		"com.google.Chrome",
-		"com.endlessm.translation",
-		"com.github.JannikHv.Gydl",
-		"org.tordini.flavio.Minitube",
-		NULL
-	};
-
 	/* do not ban apps based on personality if they are installed or
 	 * if they don't have a ref name (i.e. are not Flatpak apps) */
 	if (gs_app_is_installed (app) || app_name == NULL)
@@ -559,9 +537,6 @@ app_is_banned_for_product_or_personality (GsPlugin *plugin, GsApp *app)
 
 	return ((g_strcmp0 (priv->personality, "es_GT") == 0) &&
 	        g_strv_contains (restricted_apps, app_name)) ||
-	       ((g_strcmp0 (priv->personality, "zh_CN") == 0) &&
-	        (g_strv_contains (google_apps, app_name) ||
-	         g_str_has_prefix (app_name, "com.endlessm.encyclopedia"))) ||
 	       ((g_strcmp0 (priv->product_name, "hack") == 0) &&
 	        g_strv_contains (restricted_apps, app_name)) ||
 	       ((g_strcmp0 (priv->product_name, "solutions") == 0) &&
