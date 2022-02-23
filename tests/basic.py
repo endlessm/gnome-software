@@ -35,12 +35,12 @@ try:
     search_page = app.child('Search page')
     details_page = app.child('Details page')
     install_button = details_page.child('Install')
-    remove_button = details_page.child('Remove')
+    uninstall_button = details_page.child('Uninstall')
 
     search_page_listbox = search_page.child(roleName='list box')
 
     try:
-        shopping_button = app.child(name=u'Let\u2019s Go Shopping', retry=False)
+        shopping_button = app.child(name=u'Browse Software', retry=False)
         shopping_button.click()
     except tree.SearchError:
         print "not first-run, moving on"
@@ -108,7 +108,7 @@ try:
     assert (not updates_page.showing)
     assert (not search_page.showing)
     assert (details_page.showing)
-    assert (install_button.showing or remove_button.showing)
+    assert (install_button.showing or uninstall_button.showing)
     assert (back_button.showing)
     assert (root.application(app_name).child('Details page')
             .child(roleName='push button', name='History')
@@ -135,7 +135,7 @@ try:
     assert (not updates_page.showing)
     assert (search_page.showing)
     assert (not install_button.showing)
-    assert (not remove_button.showing)
+    assert (not uninstall_button.showing)
     assert (not back_button.showing)
 
     keyCombo("Escape")

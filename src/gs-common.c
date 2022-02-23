@@ -1,34 +1,24 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2013-2015 Richard Hughes <richard@hughsie.com>
+ * Copyright (C) 2016-2019 Kalev Lember <klember@redhat.com>
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
 
 #include <glib/gi18n.h>
 #include <gio/gdesktopappinfo.h>
-#include <errno.h>
-#include <fnmatch.h>
 
-#include "gs-app.h"
 #include "gs-common.h"
-#include "gs-plugin.h"
+
+#ifdef HAVE_GSETTINGS_DESKTOP_SCHEMAS
+#include <gdesktop-enums.h>
+#endif
+
+#include <langinfo.h>
 
 #define SPINNER_DELAY 500
 
@@ -130,23 +120,59 @@ void
 gs_app_notify_installed (GsApp *app)
 {
 	g_autofree gchar *summary = NULL;
+	const gchar *body = NULL;
 	g_autoptr(GNotification) n = NULL;
 
-	if (gs_app_get_kind (app) == AS_APP_KIND_OS_UPDATE) {
-		/* TRANSLATORS: this is the summary of a notification that OS updates
-		 * have been successfully installed */
-		summary = g_strdup (_("OS updates are now installed"));
-	} else {
+	switch (gs_app_get_kind (app)) {
+	case AS_COMPONENT_KIND_DESKTOP_APP:
 		/* TRANSLATORS: this is the summary of a notification that an application
 		 * has been successfully installed */
 		summary = g_strdup_printf (_("%s is now installed"), gs_app_get_name (app));
+		if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+			/* TRANSLATORS: an application has been installed, but
+			 * needs a reboot to complete the installation */
+			body = _("A restart is required for the changes to take effect.");
+		} else {
+			/* TRANSLATORS: this is the body of a notification that an application
+			 * has been successfully installed */
+			body = _("Application is ready to be used.");
+		}
+		break;
+	default:
+		if (gs_app_get_kind (app) == AS_COMPONENT_KIND_GENERIC &&
+		    gs_app_get_special_kind (app) == GS_APP_SPECIAL_KIND_OS_UPDATE) {
+			/* TRANSLATORS: this is the summary of a notification that OS updates
+			* have been successfully installed */
+			summary = g_strdup (_("OS updates are now installed"));
+			/* TRANSLATORS: this is the body of a notification that OS updates
+			* have been successfully installed */
+			body = _("Recently installed updates are available to review");
+		} else {
+			/* TRANSLATORS: this is the summary of a notification that a component
+			* has been successfully installed */
+			summary = g_strdup_printf (_("%s is now installed"), gs_app_get_name (app));
+			if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+				/* TRANSLATORS: an application has been installed, but
+				* needs a reboot to complete the installation */
+				body = _("A restart is required for the changes to take effect.");
+			}
+		}
+		break;
 	}
 	n = g_notification_new (summary);
-	if (gs_app_get_kind (app) == AS_APP_KIND_DESKTOP) {
+	if (body != NULL)
+		g_notification_set_body (n, body);
+
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT)) {
+		/* TRANSLATORS: button text */
+		g_notification_add_button_with_target (n, _("Restart"),
+						       "app.reboot", NULL);
+	} else if (gs_app_get_kind (app) == AS_COMPONENT_KIND_DESKTOP_APP) {
 		/* TRANSLATORS: this is button that opens the newly installed application */
 		g_notification_add_button_with_target (n, _("Launch"),
-						       "app.launch", "s",
-						       gs_app_get_id (app));
+						       "app.launch", "(ss)",
+						       gs_app_get_id (app),
+						       gs_app_get_management_plugin (app));
 	}
 	g_notification_set_default_action_and_target  (n, "app.details", "(ss)",
 						       gs_app_get_unique_id (app), "");
@@ -177,7 +203,6 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 		{ "Proprietary",	GS_APP_LICENSE_NONFREE },
 		{ NULL, 0 }
 	};
-	g_autofree gchar *origin_url = NULL;
 	g_autoptr(GSettings) settings = NULL;
 	g_autoptr(GString) body = NULL;
 	g_autoptr(GString) title = NULL;
@@ -207,7 +232,7 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 	} else {
 		g_string_append_printf (title, "<b>%s</b>",
 					/* TRANSLATORS: window title */
-					_("Enable Third-Party Software Source?"));
+					_("Enable Third-Party Software Repository?"));
 	}
 	dialog = gtk_message_dialog_new (parent,
 					 GTK_DIALOG_MODAL,
@@ -216,43 +241,40 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 					 NULL);
 	gtk_message_dialog_set_markup (GTK_MESSAGE_DIALOG (dialog), title->str);
 
-	/* FIXME: get the URL somehow... */
-	origin_url = g_strdup_printf ("<a href=\"\">%s</a>", gs_app_get_origin (app));
 	body = g_string_new ("");
 	if (hint & GS_APP_LICENSE_NONFREE) {
 		g_string_append_printf (body,
 					/* TRANSLATORS: the replacements are as follows:
 					 * 1. Application name, e.g. "Firefox"
-					 * 2. Software source name, e.g. fedora-optional
+					 * 2. Software repository name, e.g. fedora-optional
 					 */
 					_("%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-source_software\">"
 					  "free and open source software</a>, "
 					  "and is provided by “%s”."),
 					gs_app_get_name (app),
-					origin_url);
+					gs_app_get_origin (app));
 	} else {
 		g_string_append_printf (body,
 					/* TRANSLATORS: the replacements are as follows:
 					 * 1. Application name, e.g. "Firefox"
-					 * 2. Software source name, e.g. fedora-optional */
+					 * 2. Software repository name, e.g. fedora-optional */
 					_("%s is provided by “%s”."),
 					gs_app_get_name (app),
-					origin_url);
+					gs_app_get_origin (app));
 	}
 
 	/* tell the use what needs to be done */
 	if (!already_enabled) {
 		g_string_append (body, " ");
 		g_string_append (body,
-				/* TRANSLATORS: a software source is a repo */
-				_("This software source must be "
+				_("This software repository must be "
 				  "enabled to continue installation."));
 	}
 
 	/* be aware of patent clauses */
 	if (hint & GS_APP_LICENSE_PATENT_CONCERN) {
 		g_string_append (body, "\n\n");
-		if (gs_app_get_kind (app) != AS_APP_KIND_CODEC) {
+		if (gs_app_get_kind (app) != AS_COMPONENT_KIND_CODEC) {
 			g_string_append_printf (body,
 						/* TRANSLATORS: Laws are geographical, urgh... */
 						_("It may be illegal to install "
@@ -289,36 +311,6 @@ gs_app_notify_unavailable (GsApp *app, GtkWindow *parent)
 	return response;
 }
 
-void
-gs_app_show_url (GsApp *app, AsUrlKind kind)
-{
-	const gchar *url;
-	g_autoptr(GError) error = NULL;
-
-	url = gs_app_get_url (app, kind);
-	if (!gtk_show_uri (NULL, url, GDK_CURRENT_TIME, &error))
-		g_warning ("spawn of '%s' failed", url);
-}
-
-void
-gs_image_set_from_pixbuf_with_scale (GtkImage *image, const GdkPixbuf *pixbuf, gint scale)
-{
-	cairo_surface_t *surface;
-	surface = gdk_cairo_surface_create_from_pixbuf (pixbuf, scale, NULL);
-	if (surface == NULL)
-		return;
-	gtk_image_set_from_surface (image, surface);
-	cairo_surface_destroy (surface);
-}
-
-void
-gs_image_set_from_pixbuf (GtkImage *image, const GdkPixbuf *pixbuf)
-{
-	gint scale;
-	scale = gdk_pixbuf_get_width (pixbuf) / 64;
-	gs_image_set_from_pixbuf_with_scale (image, pixbuf, scale);
-}
-
 gboolean
 gs_utils_is_current_desktop (const gchar *name)
 {
@@ -343,105 +335,119 @@ gs_utils_widget_css_parsing_error_cb (GtkCssProvider *provider,
 		   error->message);
 }
 
-static void
-gs_utils_widget_set_css_internal (GtkWidget *widget,
-				  const gchar *class_name,
-				  const gchar *css)
+/**
+ * gs_utils_set_key_colors_in_css:
+ * @css: some CSS
+ * @app: a #GsApp to get the key colors from
+ *
+ * Replace placeholders in @css with the key colors from @app, returning a copy
+ * of the CSS with the key colors inlined as `rgb()` literals.
+ *
+ * The key color placeholders are of the form `@keycolor-XX@`, where `XX` is a
+ * two digit counter. The first counter (`00`) will be replaced with the first
+ * key color in @app, the second counter (`01`) with the second, etc.
+ *
+ * CSS may be %NULL, in which case %NULL is returned.
+ *
+ * Returns: (transfer full): a copy of @css with the key color placeholders
+ *     replaced, free with g_free()
+ * Since: 40
+ */
+gchar *
+gs_utils_set_key_colors_in_css (const gchar *css,
+                                GsApp       *app)
 {
-	GtkStyleContext *context;
-	g_autoptr(GtkCssProvider) provider = NULL;
+	GArray *key_colors;
+	g_autoptr(GString) css_new = NULL;
 
-	g_debug ("using custom CSS %s", css);
+	if (css == NULL)
+		return NULL;
 
-	/* set the custom CSS class */
-	context = gtk_widget_get_style_context (widget);
-	gtk_style_context_add_class (context, class_name);
+	key_colors = gs_app_get_key_colors (app);
 
-	/* set up custom provider and store on the widget */
-	provider = gtk_css_provider_new ();
-	g_signal_connect (provider, "parsing-error",
-			  G_CALLBACK (gs_utils_widget_css_parsing_error_cb), NULL);
-	gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
-						   GTK_STYLE_PROVIDER (provider),
-						   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	gtk_css_provider_load_from_data (provider, css, -1, NULL);
-	g_object_set_data_full (G_OBJECT (widget),
-				"GnomeSoftware::provider",
-				g_object_ref (provider),
-				g_object_unref);
+	/* Do we not need to do any replacements? */
+	if (key_colors->len == 0 ||
+	    g_strstr_len (css, -1, "@keycolor") == NULL)
+		return g_strdup (css);
+
+	/* replace key color values */
+	css_new = g_string_new (css);
+	for (guint j = 0; j < key_colors->len; j++) {
+		const GdkRGBA *color = &g_array_index (key_colors, GdkRGBA, j);
+		g_autofree gchar *key = NULL;
+		g_autofree gchar *value = NULL;
+		key = g_strdup_printf ("@keycolor-%02u@", j);
+		value = g_strdup_printf ("rgb(%.0f,%.0f,%.0f)",
+					 color->red * 255.f,
+					 color->green * 255.f,
+					 color->blue * 255.f);
+		as_gstring_replace (css_new, key, value);
+	}
+
+	return g_string_free (g_steal_pointer (&css_new), FALSE);
 }
 
+/**
+ * gs_utils_widget_set_css:
+ * @widget: a widget
+ * @provider: (inout) (transfer full) (not optional) (nullable): pointer to a
+ *    #GtkCssProvider to use
+ * @class_name: class name to use, without the leading `.`
+ * @css: (nullable): CSS to set on the widget, or %NULL to clear custom CSS
+ *
+ * Set custom CSS on the given @widget instance. This doesn’t affect any other
+ * instances of the same widget. The @class_name must be a static string to be
+ * used as a name for the @css. It doesn’t need to vary with @widget, but
+ * multiple values of @class_name can be used with the same @widget to control
+ * several independent snippets of custom CSS.
+ *
+ * @provider must be a pointer to a #GtkCssProvider pointer, typically within
+ * your widget’s private data struct. This function will return a
+ * #GtkCssProvider in the provided pointer, reusing any old @provider if
+ * possible. When your widget is destroyed, you must destroy the returned
+ * @provider. If @css is %NULL, this function will destroy the @provider.
+ */
 void
-gs_utils_widget_set_css_simple (GtkWidget *widget, const gchar *css)
+gs_utils_widget_set_css (GtkWidget *widget, GtkCssProvider **provider, const gchar *class_name, const gchar *css)
 {
-	g_autofree gchar *class_name = NULL;
+	GtkStyleContext *context;
 	g_autoptr(GString) str = NULL;
 
+	g_return_if_fail (GTK_IS_WIDGET (widget));
+	g_return_if_fail (provider != NULL);
+	g_return_if_fail (provider == NULL || *provider == NULL || GTK_IS_STYLE_PROVIDER (*provider));
+	g_return_if_fail (class_name != NULL);
+
+	context = gtk_widget_get_style_context (widget);
+
 	/* remove custom class if NULL */
-	class_name = g_strdup_printf ("themed-widget_%p", widget);
 	if (css == NULL) {
-		GtkStyleContext *context = gtk_widget_get_style_context (widget);
+		if (*provider != NULL)
+			gtk_style_context_remove_provider (context, GTK_STYLE_PROVIDER (*provider));
+		g_clear_object (provider);
 		gtk_style_context_remove_class (context, class_name);
 		return;
 	}
+
 	str = g_string_sized_new (1024);
 	g_string_append_printf (str, ".%s {\n", class_name);
 	g_string_append_printf (str, "%s\n", css);
 	g_string_append (str, "}");
 
-	gs_utils_widget_set_css_internal (widget, class_name, str->str);
-}
-
-void
-gs_utils_widget_set_css_app (GsApp *app,
-			     GtkWidget *widget,
-			     const gchar *metadata_css)
-{
-	GPtrArray *key_colors;
-	const gchar *css;
-	guint i;
-	g_autofree gchar *class_name = NULL;
-	g_autoptr(GString) css_str = NULL;
-	g_autoptr(GString) str = g_string_sized_new (1024);
-
-	g_return_if_fail (GS_IS_APP (app));
-
-	/* invalid */
-	css = gs_app_get_metadata_item (app, metadata_css);
-	if (css == NULL)
-		return;
-
-	/* replace any key colors */
-	css_str = g_string_new (css);
-	key_colors = gs_app_get_key_colors (app);
-	for (i = 0; i < key_colors->len; i++) {
-		GdkRGBA *color = g_ptr_array_index (key_colors, 1);
-		g_autofree gchar *key = NULL;
-		g_autofree gchar *value = NULL;
-		key = g_strdup_printf ("@keycolor-%02u@", i);
-		value = g_strdup_printf ("rgb(%.0f,%.0f,%.0f)",
-					 color->red * 255.f,
-					 color->green * 255.f,
-					 color->blue * 255.f);
-		as_utils_string_replace (css_str, key, value);
+	/* create a new provider if needed */
+	if (*provider == NULL) {
+		*provider = gtk_css_provider_new ();
+		g_signal_connect (*provider, "parsing-error",
+				  G_CALLBACK (gs_utils_widget_css_parsing_error_cb), NULL);
 	}
 
-	/* make into a proper CSS class */
-	class_name = g_strdup_printf ("themed-widget_%p", widget);
-	g_string_append_printf (str, ".%s {\n", class_name);
-	g_string_append_printf (str, "%s\n", css_str->str);
-	g_string_append (str, "}");
+	/* set the custom CSS class */
+	gtk_style_context_add_class (context, class_name);
 
-	g_string_append_printf (str, ".%s:hover {\n", class_name);
-	g_string_append (str, "  opacity: 0.9;\n");
-	g_string_append (str, "}\n");
-	gs_utils_widget_set_css_internal (widget, class_name, str->str);
-}
-
-const gchar *
-gs_user_agent (void)
-{
-	return PACKAGE_NAME "/" PACKAGE_VERSION;
+	/* set up custom provider and store on the widget */
+	gtk_css_provider_load_from_data (*provider, str->str, -1, NULL);
+	gtk_style_context_add_provider (context, GTK_STYLE_PROVIDER (*provider),
+					GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
 static void
@@ -507,7 +513,7 @@ insert_details_widget (GtkMessageDialog *dialog, const gchar *details)
 	label = gtk_label_new (_("Details"));
 	gtk_widget_set_halign (label, GTK_ALIGN_START);
 	gtk_widget_set_visible (label, TRUE);
-	gtk_box_pack_start (GTK_BOX (message_area), label, FALSE, FALSE, 0);
+	gtk_container_add (GTK_CONTAINER (message_area), label);
 
 	sw = gtk_scrolled_window_new (NULL, NULL);
 	gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (sw),
@@ -528,7 +534,9 @@ insert_details_widget (GtkMessageDialog *dialog, const gchar *details)
 	gtk_widget_set_visible (tv, TRUE);
 
 	gtk_container_add (GTK_CONTAINER (sw), tv);
-	gtk_box_pack_end (GTK_BOX (message_area), sw, TRUE, TRUE, 0);
+	gtk_widget_set_vexpand (sw, TRUE);
+	gtk_container_add (GTK_CONTAINER (message_area), sw);
+	gtk_container_child_set (GTK_CONTAINER (message_area), sw, "pack-type", GTK_PACK_END, NULL);
 
 	g_signal_connect (dialog, "map-event", G_CALLBACK (unset_focus), NULL);
 }
@@ -590,7 +598,7 @@ gs_utils_get_error_value (const GError *error)
 
 /**
  * gs_utils_build_unique_id_kind:
- * @kind: A #AsAppKind
+ * @kind: A #AsComponentKind
  * @id: An application ID
  *
  * Converts the ID valid into a wildcard unique ID of a specific kind.
@@ -599,20 +607,19 @@ gs_utils_get_error_value (const GError *error)
  * Returns: (transfer full): a unique ID, or %NULL
  */
 gchar *
-gs_utils_build_unique_id_kind (AsAppKind kind, const gchar *id)
+gs_utils_build_unique_id_kind (AsComponentKind kind, const gchar *id)
 {
-	if (as_utils_unique_id_valid (id))
+	if (as_utils_data_id_valid (id))
 		return g_strdup (id);
-	return as_utils_unique_id_build (AS_APP_SCOPE_UNKNOWN,
+	return gs_utils_build_unique_id (AS_COMPONENT_SCOPE_UNKNOWN,
 					 AS_BUNDLE_KIND_UNKNOWN,
 					 NULL,
-					 kind,
 					 id,
 					 NULL);
 }
 
 /**
- * gs_utils_list_has_app_fuzzy:
+ * gs_utils_list_has_component_fuzzy:
  * @list: A #GsAppList
  * @app: A #GsApp
  *
@@ -626,7 +633,7 @@ gs_utils_build_unique_id_kind (AsAppKind kind, const gchar *id)
  * Returns: %TRUE if the app is visually the "same"
  */
 gboolean
-gs_utils_list_has_app_fuzzy (GsAppList *list, GsApp *app)
+gs_utils_list_has_component_fuzzy (GsAppList *list, GsApp *app)
 {
 	guint i;
 	GsApp *tmp;
@@ -659,4 +666,225 @@ gs_utils_list_has_app_fuzzy (GsAppList *list, GsApp *app)
 	return FALSE;
 }
 
-/* vim: set noexpandtab: */
+void
+gs_utils_reboot_notify (GsAppList *list,
+			gboolean is_install)
+{
+	g_autoptr(GNotification) n = NULL;
+	g_autofree gchar *tmp = NULL;
+	const gchar *app_name = NULL;
+	const gchar *title;
+	const gchar *body;
+
+	if (gs_app_list_length (list) == 1) {
+		GsApp *app = gs_app_list_index (list, 0);
+		if (gs_app_get_kind (app) == AS_COMPONENT_KIND_DESKTOP_APP) {
+			app_name = gs_app_get_name (app);
+			if (!*app_name)
+				app_name = NULL;
+		}
+	}
+
+	if (is_install) {
+		if (app_name) {
+			/* TRANSLATORS: The '%s' is replaced with the application name */
+			tmp = g_strdup_printf ("An application “%s” has been installed", app_name);
+			title = tmp;
+		} else {
+			/* TRANSLATORS: we've just live-updated some apps */
+			title = ngettext ("An update has been installed",
+					  "Updates have been installed",
+					  gs_app_list_length (list));
+		}
+	} else if (app_name) {
+		/* TRANSLATORS: The '%s' is replaced with the application name */
+		tmp = g_strdup_printf ("An application “%s” has been removed", app_name);
+		title = tmp;
+	} else {
+		/* TRANSLATORS: we've just removed some apps */
+		title = ngettext ("An application has been removed",
+				  "Applications have been removed",
+				  gs_app_list_length (list));
+	}
+
+	/* TRANSLATORS: the new apps will not be run until we restart */
+	body = ngettext ("A restart is required for it to take effect.",
+	                 "A restart is required for them to take effect.",
+	                 gs_app_list_length (list));
+
+	n = g_notification_new (title);
+	g_notification_set_body (n, body);
+	/* TRANSLATORS: button text */
+	g_notification_add_button (n, _("Not Now"), "app.nop");
+	/* TRANSLATORS: button text */
+	g_notification_add_button_with_target (n, _("Restart"), "app.reboot", NULL);
+	g_notification_set_default_action_and_target (n, "app.set-mode", "s", "updates");
+	g_notification_set_priority (n, G_NOTIFICATION_PRIORITY_URGENT);
+	g_application_send_notification (g_application_get_default (), "restart-required", n);
+}
+
+/**
+ * gs_utils_split_time_difference:
+ * @unix_time_seconds: Time since the epoch in seconds
+ * @out_minutes_ago: (out) (nullable): how many minutes elapsed
+ * @out_hours_ago: (out) (nullable): how many hours elapsed
+ * @out_days_ago: (out) (nullable): how many days elapsed
+ * @out_weeks_ago: (out) (nullable): how many weeks elapsed
+ * @out_months_ago: (out) (nullable): how many months elapsed
+ * @out_years_ago: (out) (nullable): how many years elapsed
+ *
+ * Calculates the difference between the @unix_time_seconds and the current time
+ * and splits it into separate values.
+ *
+ * Returns: whether the out parameters had been set
+ *
+ * Since: 41
+ **/
+gboolean
+gs_utils_split_time_difference (gint64 unix_time_seconds,
+				gint *out_minutes_ago,
+				gint *out_hours_ago,
+				gint *out_days_ago,
+				gint *out_weeks_ago,
+				gint *out_months_ago,
+				gint *out_years_ago)
+{
+	gint minutes_ago, hours_ago, days_ago;
+	gint weeks_ago, months_ago, years_ago;
+	g_autoptr(GDateTime) date_time = NULL;
+	g_autoptr(GDateTime) now = NULL;
+	GTimeSpan timespan;
+
+	if (unix_time_seconds <= 0)
+		return FALSE;
+
+	date_time = g_date_time_new_from_unix_local (unix_time_seconds);
+	now = g_date_time_new_now_local ();
+	timespan = g_date_time_difference (now, date_time);
+
+	minutes_ago = (gint) (timespan / G_TIME_SPAN_MINUTE);
+	hours_ago = (gint) (timespan / G_TIME_SPAN_HOUR);
+	days_ago = (gint) (timespan / G_TIME_SPAN_DAY);
+	weeks_ago = days_ago / 7;
+	months_ago = days_ago / 30;
+	years_ago = weeks_ago / 52;
+
+	if (out_minutes_ago)
+		*out_minutes_ago = minutes_ago;
+	if (out_hours_ago)
+		*out_hours_ago = hours_ago;
+	if (out_days_ago)
+		*out_days_ago = days_ago;
+	if (out_weeks_ago)
+		*out_weeks_ago = weeks_ago;
+	if (out_months_ago)
+		*out_months_ago = months_ago;
+	if (out_years_ago)
+		*out_years_ago = years_ago;
+
+	return TRUE;
+}
+
+/**
+ * gs_utils_time_to_string:
+ * @unix_time_seconds: Time since the epoch in seconds
+ *
+ * Converts a time to a string such as "5 minutes ago" or "2 weeks ago"
+ *
+ * Returns: (transfer full): the time string, or %NULL if @unix_time_seconds is
+ *   not valid
+ */
+gchar *
+gs_utils_time_to_string (gint64 unix_time_seconds)
+{
+	gint minutes_ago, hours_ago, days_ago;
+	gint weeks_ago, months_ago, years_ago;
+
+	if (!gs_utils_split_time_difference (unix_time_seconds,
+		&minutes_ago, &hours_ago, &days_ago,
+		&weeks_ago, &months_ago, &years_ago))
+		return NULL;
+
+	if (minutes_ago < 5) {
+		/* TRANSLATORS: something happened less than 5 minutes ago */
+		return g_strdup (_("Just now"));
+	} else if (hours_ago < 1)
+		return g_strdup_printf (ngettext ("%d minute ago",
+						  "%d minutes ago", minutes_ago),
+					minutes_ago);
+	else if (days_ago < 1)
+		return g_strdup_printf (ngettext ("%d hour ago",
+						  "%d hours ago", hours_ago),
+					hours_ago);
+	else if (days_ago < 15)
+		return g_strdup_printf (ngettext ("%d day ago",
+						  "%d days ago", days_ago),
+					days_ago);
+	else if (weeks_ago < 8)
+		return g_strdup_printf (ngettext ("%d week ago",
+						  "%d weeks ago", weeks_ago),
+					weeks_ago);
+	else if (years_ago < 1)
+		return g_strdup_printf (ngettext ("%d month ago",
+						  "%d months ago", months_ago),
+					months_ago);
+	else
+		return g_strdup_printf (ngettext ("%d year ago",
+						  "%d years ago", years_ago),
+					years_ago);
+}
+
+static void
+gs_utils_reboot_call_done_cb (GObject *source,
+			      GAsyncResult *res,
+			      gpointer user_data)
+{
+	g_autoptr(GError) error = NULL;
+	g_autoptr(GVariant) retval = NULL;
+
+	/* get result */
+	retval = g_dbus_connection_call_finish (G_DBUS_CONNECTION (source), res, &error);
+	if (retval != NULL)
+		return;
+	if (error != NULL) {
+		g_warning ("Calling org.gnome.SessionManager.Reboot failed: %s",
+			   error->message);
+	}
+}
+
+/**
+ * gs_utils_invoke_reboot_async:
+ * @cancellable: (nullable): a %GCancellable for the call, or %NULL
+ * @ready_callback: (nullable): a callback to be called after the call is finished, or %NULL
+ * @user_data: user data for the @ready_callback
+ *
+ * Asynchronously invokes a reboot request using D-Bus. The @ready_callback should
+ * use g_dbus_connection_call_finish (G_DBUS_CONNECTION (source), result, &error);
+ * to get the result of the operation.
+ *
+ * When the @ready_callback is %NULL, a default callback is used, which shows
+ * a runtime warning (using g_warning) on the console when the call fails.
+ *
+ * Since: 41
+ **/
+void
+gs_utils_invoke_reboot_async (GCancellable *cancellable,
+			      GAsyncReadyCallback ready_callback,
+			      gpointer user_data)
+{
+	g_autoptr(GDBusConnection) bus = NULL;
+	bus = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+
+	if (!ready_callback)
+		ready_callback = gs_utils_reboot_call_done_cb;
+
+	g_dbus_connection_call (bus,
+				"org.gnome.SessionManager",
+				"/org/gnome/SessionManager",
+				"org.gnome.SessionManager",
+				"Reboot",
+				NULL, NULL, G_DBUS_CALL_FLAGS_NONE,
+				G_MAXINT, cancellable,
+				ready_callback,
+				user_data);
+}

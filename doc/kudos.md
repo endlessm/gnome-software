@@ -9,7 +9,6 @@ As part of this we also have access to the finished binary and libraries, and
 so can also run tools on them to get a metric of awesomeness. So far, the
 metrics of awesomeness (here-on known as "kudos") are:
 
- * `AppMenu` — has an application menu in line with the GNOME HIG
  * `HiDpiIcon` — installs a 128x128 or larger application icon
  * `HighContrast` — uses hicontrast or scalable icons for visually impaired users
  * `ModernToolkit` — uses a modern toolkit like Gtk-3 or QT-5
@@ -63,7 +62,7 @@ To do this, just add something like:
 
 Although, please bear in mind any application that is found cheating, i.e.
 adding kudos artificially will have **all** the kudos manually removed
-with a blacklist rule in the AppStream builder.
+with a blocklist rule in the AppStream builder.
 
 If you are a vendor, or a system distributor and just want to increase the
 number of kudos for your pet proprietary application that's essential to

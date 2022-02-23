@@ -8,53 +8,55 @@
       <class name="review-row"/>
     </style>
     <child>
-      <object class="GtkGrid" id="grid">
+      <object class="GtkBox">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
         <property name="margin_top">32</property>
-        <property name="row_spacing">6</property>
-        <property name="column_spacing">10</property>
+        <property name="spacing">6</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
         <child>
-          <object class="GtkLabel" id="summary_label">
+          <object class="GtkBox">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="halign">start</property>
-            <property name="label">Steep learning curve, but worth it</property>
-            <property name="ellipsize">end</property>
+            <property name="spacing">10</property>
             <property name="hexpand">True</property>
-            <property name="selectable">True</property>
-            <style>
-              <class name="review-summary"/>
-            </style>
+            <child>
+              <object class="GsStarWidget" id="stars">
+                <property name="visible">True</property>
+                <property name="halign">start</property>
+                <property name="sensitive">False</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="summary_label">
+                <property name="visible">True</property>
+                <property name="halign">start</property>
+                <property name="label">Steep learning curve, but worth it</property>
+                <property name="ellipsize">end</property>
+                <property name="hexpand">True</property>
+                <property name="selectable">True</property>
+                <style>
+                  <class name="review-summary"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="date_label">
+                <property name="visible">True</property>
+                <property name="halign">end</property>
+                <property name="label">3 January 2016</property>
+                <property name="hexpand">True</property>
+                <property name="selectable">True</property>
+                <style>
+                  <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
           </object>
-          <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="date_label">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="halign">end</property>
-            <property name="label">3 January 2016</property>
-            <property name="hexpand">True</property>
-            <property name="selectable">True</property>
-            <style>
-              <class name="dim-label"/>
-            </style>
-          </object>
-          <packing>
-            <property name="left_attach">2</property>
-            <property name="top_attach">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkLabel" id="author_label">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="label">Angela Avery</property>
             <property name="selectable">True</property>
@@ -62,16 +64,10 @@
               <class name="dim-label"/>
             </style>
           </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
-            <property name="width">3</property>
-          </packing>
         </child>
         <child>
           <object class="GtkLabel" id="text_label">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="halign">start</property>
             <property name="margin_top">10</property>
             <property name="margin_bottom">8</property>
@@ -82,50 +78,26 @@
             <property name="wrap-mode">word-char</property>
             <property name="selectable">True</property>
           </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">2</property>
-            <property name="width">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GsStarWidget" id="stars">
-            <property name="visible">True</property>
-            <property name="halign">start</property>
-            <property name="sensitive">False</property>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-          </packing>
         </child>
         <child>
           <object class="GtkBox" id="box_voting">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="spacing">9</property>
-            <property name="halign">start</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="label" translatable="yes" comments="Translators: Users can express their opinions about other users&apos; opinions about the apps.">Was this review useful to you?</property>
+                <property name="wrap">True</property>
+                <property name="xalign">0</property>
                 <style>
                   <class name="dim-label"/>
                 </style>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkBox" id="box_vote_buttons">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="spacing">0</property>
-                <property name="halign">start</property>
                 <style>
                   <class name="vote-buttons"/>
                 </style>
@@ -137,11 +109,6 @@
                     <property name="receives_default">True</property>
                     <property name="relief">none</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">0</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="button_no">
@@ -151,11 +118,6 @@
                     <property name="receives_default">True</property>
                     <property name="relief">none</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">1</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="button_dismiss">
@@ -165,32 +127,9 @@
                     <property name="receives_default">True</property>
                     <property name="relief">none</property>
                   </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">2</property>
-                  </packing>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">1</property>
-              </packing>
             </child>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">3</property>
-            <property name="width">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="box_action_buttons">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="spacing">9</property>
-            <property name="halign">end</property>
             <child>
               <object class="GtkButton" id="button_report">
                 <property name="label" translatable="yes">Report…</property>
@@ -201,9 +140,7 @@
                 <property name="relief">none</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="pack_type">end</property>
               </packing>
             </child>
             <child>
@@ -216,16 +153,10 @@
                 <property name="relief">none</property>
               </object>
               <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="pack_type">end</property>
               </packing>
             </child>
           </object>
-          <packing>
-            <property name="left_attach">2</property>
-            <property name="top_attach">3</property>
-          </packing>
         </child>
       </object>
     </child>

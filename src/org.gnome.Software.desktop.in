@@ -1,15 +1,18 @@
 [Desktop Entry]
-_Name=App Center
-_Comment=Add, remove or update software on this computer
-Icon=org.gnome.Software
+Name=App Center
+Comment=Add, remove or update software on this computer
+# Translators: Do NOT translate or transliterate this text (this is an icon file name)!
+Icon=@application_id@
 Exec=gnome-software %U
 Terminal=false
 Type=Application
 Categories=GNOME;GTK;System;PackageManager;
-_Keywords=Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;
+# Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+Keywords=Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;
 StartupNotify=true
-MimeType=x-scheme-handler/appstream;
+MimeType=x-scheme-handler/appstream;@apthandler@@snaphandler@
 X-GNOME-Bugzilla-Bugzilla=GNOME
 X-GNOME-Bugzilla-Product=gnome-software
 X-GNOME-Bugzilla-Component=gnome-software
 X-GNOME-UsesNotifications=true
+DBusActivatable=true

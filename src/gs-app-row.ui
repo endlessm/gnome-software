@@ -9,44 +9,32 @@
     <child>
       <object class="GtkBox" id="box">
         <property name="visible">True</property>
-        <property name="margin_top">16</property>
-        <property name="margin_bottom">16</property>
+        <property name="margin_top">12</property>
+        <property name="margin_bottom">12</property>
+        <property name="margin_left">12</property>
+        <property name="margin_right">18</property>
         <property name="orientation">horizontal</property>
-        <child>
-          <object class="GtkCheckButton" id="checkbox">
-            <property name="margin-start">12</property>
-            <property name="valign">center</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkImage" id="image">
             <property name="visible">True</property>
             <property name="pixel_size">64</property>
-            <property name="margin_start">24</property>
             <property name="valign">center</property>
+            <style>
+              <class name="icon-dropshadow"/>
+            </style>
           </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-          </packing>
         </child>
         <child>
           <object class="GtkBox" id="name_box">
             <property name="visible">True</property>
             <property name="orientation">vertical</property>
             <property name="margin-start">12</property>
-            <property name="margin-top">3</property>
-            <property name="spacing">3</property>
-            <property name="valign">fill</property>
+            <property name="spacing">6</property>
+            <property name="valign">center</property>
             <child>
               <object class="GtkLabel" id="name_label">
                 <property name="visible">True</property>
                 <property name="wrap">True</property>
-                <property name="max_width_chars">20</property>
                 <property name="xalign">0.0</property>
                 <property name="yalign">0.5</property>
                 <property name="ellipsize">end</property>
@@ -56,67 +44,65 @@
                   <attribute name="weight" value="bold"/>
                 </attributes>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-              </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="version_label">
+              <object class="GtkBox" id="version_box">
                 <property name="visible">True</property>
-                <property name="xalign">0.0</property>
-                <property name="yalign">0.5</property>
-                <property name="ellipsize">end</property>
+                <property name="orientation">horizontal</property>
+                <property name="spacing">4</property>
+                <child>
+                  <object class="GtkLabel" id="version_current_label">
+                    <property name="visible">True</property>
+                    <property name="xalign">0.0</property>
+                    <property name="yalign">0.5</property>
+                    <property name="ellipsize">end</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="version_arrow_label">
+                    <property name="visible">True</property>
+                    <property name="xalign">0.0</property>
+                    <property name="yalign">0.5</property>
+                    <property name="ellipsize">end</property>
+                    <property name="label">→</property>
+                    <style>
+                      <class name="version-arrow-label"/>
+                    </style>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="version_update_label">
+                    <property name="visible">True</property>
+                    <property name="xalign">0.0</property>
+                    <property name="yalign">0.5</property>
+                    <property name="ellipsize">end</property>
+                  </object>
+                </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-              </packing>
             </child>
             <child>
               <object class="GsStarWidget" id="star">
                 <property name="visible">False</property>
                 <property name="halign">start</property>
+                <property name="icon-size">12</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="folder_label">
-                <property name="visible">True</property>
-                <property name="margin_top">6</property>
-                <property name="xalign">0.0</property>
-                <property name="yalign">0.5</property>
-                <property name="halign">start</property>
-                <property name="ellipsize">end</property>
-                <style>
-                  <class name="folder-label"/>
-                </style>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-              </packing>
             </child>
           </object>
-          <packing>
-            <property name="fill">True</property>
-          </packing>
         </child>
         <child>
-          <object class="GtkBox" id="box_description">
+          <object class="GtkBox" id="description_box">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
             <property name="margin_top">3</property>
             <property name="orientation">vertical</property>
             <property name="spacing">3</property>
+            <property name="hexpand">True</property>
+            <property name="valign">center</property>
             <child>
               <object class="GtkLabel" id="description_label">
+                <property name="visible" bind-source="GsAppRow" bind-property="show-description" bind-flags="sync-create"/>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="valign">start</property>
+                <property name="vexpand">True</property>
                 <property name="margin_start">24</property>
                 <property name="margin_end">24</property>
                 <property name="wrap">True</property>
@@ -125,63 +111,39 @@
                 <property name="lines">2</property>
                 <property name="xalign">0</property>
               </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkBox" id="box_tag">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="spacing">4</property>
                 <property name="margin_left">24</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkLabel" id="label_warning">
-                    <property name="can_focus">False</property>
-                    <property name="label">warning-text</property>
-                    <property name="halign">start</property>
-                    <property name="ellipsize">middle</property>
-                    <attributes>
-                      <attribute name="weight" value="bold"/>
-                      <attribute name="foreground" value="#cccc00000000"/>
-                    </attributes>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkBox" id="box_desc">
                     <property name="visible">True</property>
-                    <property name="can_focus">False</property>
                     <property name="orientation">horizontal</property>
+                    <property name="vexpand">True</property>
                     <child>
                       <object class="GtkLabel" id="label_origin">
                         <property name="visible">True</property>
                         <property name="xalign">0.0</property>
                         <property name="yalign">1.0</property>
                         <property name="halign">start</property>
+                        <property name="hexpand">True</property>
                         <property name="ellipsize">end</property>
                         <style>
                           <class name="app-row-origin-text"/>
                           <class name="dim-label"/>
                         </style>
                       </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                      </packing>
                     </child>
 		    <child>
 		      <object class="GtkBox" id="label_installed">
+                        <property name="visible">False</property>
 			<property name="orientation">horizontal</property>
 			<property name="no_show_all">True</property>
 			<property name="halign">end</property>
+                        <property name="hexpand">True</property>
 			<property name="valign">end</property>
 			<property name="spacing">6</property>
 			<property name="margin-right">24</property>
@@ -190,7 +152,6 @@
 			    <property name="visible">True</property>
 			    <property name="halign">center</property>
 			    <property name="valign">center</property>
-			    <property name="margin-bottom">4</property>
 			    <property name="pixel-size">16</property>
 			    <property name="icon-name">software-installed-symbolic</property>
 			    <style>
@@ -198,48 +159,37 @@
 			      <class name="app-row-installed-icon"/>
 			    </style>
 			  </object>
-			  <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-			  </packing>
 			</child>
 			<child>
 			  <object class="GtkLabel" id="installed-label">
 			    <property name="visible">True</property>
+			    <property name="valign">center</property>
 			    <property name="label" translatable="yes">Installed</property>
 			    <style>
 			      <class name="app-row-installed-label"/>
 			    </style>
 			  </object>
-			  <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-			  </packing>
 			</child>
 		      </object>
-		      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                      </packing>
 		    </child>
                   </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label_warning">
+                    <property name="visible">False</property>
+                    <property name="label">warning-text</property>
+                    <property name="halign">start</property>
+                    <property name="wrap">True</property>
+                    <property name="xalign">0</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                      <attribute name="foreground" value="#cccc00000000"/>
+                    </attributes>
+                  </object>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-          </packing>
         </child>
         <child>
           <object class="GtkBox" id="vertical_box">
@@ -247,7 +197,6 @@
             <property name="orientation">vertical</property>
             <property name="halign">center</property>
             <property name="valign">center</property>
-	    <property name="margin-right">24</property>
             <child>
               <object class="GtkBox" id="button_box">
 		<property name="visible">True</property>
@@ -255,52 +204,54 @@
 		<property name="halign">end</property>
 		<property name="valign">center</property>
 		<child>
-		  <object class="GsProgressButton" id="button">
-                    <property name="width_request">100</property>
-                    <property name="halign">end</property>
+                  <object class="GtkRevealer" id="button_revealer">
+                    <property name="visible">True</property>
+                    <property name="reveal-child">True</property>
+                    <child>
+                      <object class="GsProgressButton" id="button">
+                        <property name="visible">False</property>
+                        <property name="halign">end</property>
+                        <property name="show-icon" bind-source="GsAppRow" bind-property="is-narrow" bind-flags="sync-create"/>
+                        <style>
+                          <class name="list-button"/>
+                        </style>
+                      </object>
+                    </child>
 		  </object>
 		  <packing>
                     <property name="pack_type">end</property>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
 		  </packing>
 		</child>
 		<child>
 		  <object class="GtkSpinner" id="spinner">
+                    <property name="visible">False</property>
                     <property name="margin_start">12</property>
                     <property name="margin_end">12</property>
                     <property name="halign">end</property>
 		  </object>
 		  <packing>
                     <property name="pack_type">end</property>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
 		  </packing>
 		</child>
 		<child>
 		  <object class="GtkLabel" id="label">
+                    <property name="visible">False</property>
                     <property name="margin_start">12</property>
                     <property name="margin_end">12</property>
                     <property name="halign">end</property>
 		  </object>
 		  <packing>
                     <property name="pack_type">end</property>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
 		  </packing>
 		</child>
               </object>
-              <packing>
-		<property name="pack_type">start</property>
-		<property name="expand">False</property>
-		<property name="fill">False</property>
-              </packing>
             </child>
 	    <child>
 	      <object class="GtkLabel" id="label_app_size">
                 <property name="visible">True</property>
                 <property name="halign">center</property>
                 <property name="valign">center</property>
+		<property name="vexpand">True</property>
 		<property name="label">150 MB</property>
 		<property name="margin-top">6</property>
                 <style>
@@ -310,8 +261,6 @@
               </object>
 	      <packing>
 		<property name="pack_type">end</property>
-		<property name="expand">True</property>
-		<property name="fill">True</property>
               </packing>
 	    </child>
 	  </object>

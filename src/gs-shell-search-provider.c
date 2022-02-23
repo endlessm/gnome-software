@@ -1,37 +1,25 @@
-/*
+/* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
+ *
  * gs-shell-search-provider.c - Implementation of a GNOME Shell
  *   search provider
  *
  * Copyright (C) 2013 Matthias Clasen
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <config.h>
 
 #include <gio/gio.h>
-#include <string.h>
 #include <glib/gi18n.h>
-
-#include "gs-app-list-private.h"
-#include "gs-plugin-loader-sync.h"
+#include <string.h>
 
 #include "gs-shell-search-provider-generated.h"
 #include "gs-shell-search-provider.h"
+#include "gs-common.h"
+
+#define GS_SHELL_SEARCH_PROVIDER_MAX_RESULTS	20
 
 typedef struct {
 	GsShellSearchProvider *provider;
@@ -46,6 +34,7 @@ struct _GsShellSearchProvider {
 	GCancellable *cancellable;
 
 	GHashTable *metas_cache;
+	GsAppList *search_results;
 };
 
 G_DEFINE_TYPE (GsShellSearchProvider, gs_shell_search_provider, G_TYPE_OBJECT)
@@ -81,7 +70,10 @@ search_done_cb (GObject *source,
 	GVariantBuilder builder;
 	g_autoptr(GsAppList) list = NULL;
 
-	list = gs_plugin_loader_search_finish (self->plugin_loader, res, NULL);
+	/* cache no longer valid */
+	gs_app_list_remove_all (self->search_results);
+
+	list = gs_plugin_loader_job_process_finish (self->plugin_loader, res, NULL);
 	if (list == NULL) {
 		g_dbus_method_invocation_return_value (search->invocation, g_variant_new ("(as)", NULL));
 		pending_search_free (search);
@@ -95,14 +87,59 @@ search_done_cb (GObject *source,
 	g_variant_builder_init (&builder, G_VARIANT_TYPE ("as"));
 	for (i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
-		if (gs_app_get_state (app) != AS_APP_STATE_AVAILABLE)
-			continue;
-		g_variant_builder_add (&builder, "s", gs_app_get_id (app));
+		g_variant_builder_add (&builder, "s", gs_app_get_unique_id (app));
+
+		/* cache this in case we need the app in GetResultMetas */
+		gs_app_list_add (self->search_results, app);
 	}
 	g_dbus_method_invocation_return_value (search->invocation, g_variant_new ("(as)", &builder));
 
 	pending_search_free (search);
 	g_application_release (g_application_get_default ());
+}
+
+static gchar *
+gs_shell_search_provider_get_app_sort_key (GsApp *app)
+{
+	GString *key = g_string_sized_new (64);
+
+	/* sort available apps before installed ones */
+	switch (gs_app_get_state (app)) {
+	case GS_APP_STATE_AVAILABLE:
+		g_string_append (key, "9:");
+		break;
+	default:
+		g_string_append (key, "1:");
+		break;
+	}
+
+	/* sort apps before runtimes and extensions */
+	switch (gs_app_get_kind (app)) {
+	case AS_COMPONENT_KIND_DESKTOP_APP:
+		g_string_append (key, "9:");
+		break;
+	default:
+		g_string_append (key, "1:");
+		break;
+	}
+
+	/* sort by the search key */
+	g_string_append_printf (key, "%05x:", gs_app_get_match_value (app));
+
+	/* tie-break with id */
+	g_string_append (key, gs_app_get_unique_id (app));
+
+	return g_string_free (key, FALSE);
+}
+
+static gint
+gs_shell_search_provider_sort_cb (GsApp *app1, GsApp *app2, gpointer user_data)
+{
+	g_autofree gchar *key1 = NULL;
+	g_autofree gchar *key2 = NULL;
+	key1 = gs_shell_search_provider_get_app_sort_key (app1);
+	key2 = gs_shell_search_provider_get_app_sort_key (app2);
+	return g_strcmp0 (key2, key1);
 }
 
 static void
@@ -111,14 +148,13 @@ execute_search (GsShellSearchProvider  *self,
 		gchar		 **terms)
 {
 	PendingSearch *pending_search;
-	g_autofree gchar *string = NULL;
+	g_autofree gchar *value = NULL;
+	g_autoptr(GsPluginJob) plugin_job = NULL;
 
-	string = g_strjoinv (" ", terms);
+	value = g_strjoinv (" ", terms);
 
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_clear_object (&self->cancellable);
-	}
+	g_cancellable_cancel (self->cancellable);
+	g_clear_object (&self->cancellable);
 
 	/* don't attempt searches for a single character */
 	if (g_strv_length (terms) == 1 &&
@@ -133,13 +169,20 @@ execute_search (GsShellSearchProvider  *self,
 
 	g_application_hold (g_application_get_default ());
 	self->cancellable = g_cancellable_new ();
-	gs_plugin_loader_search_async (self->plugin_loader,
-				       string,
-				       GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
-				       GS_PLUGIN_FAILURE_FLAGS_NONE,
-				       self->cancellable,
-				       search_done_cb,
-				       pending_search);
+
+	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
+					 "search", value,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+					                 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
+					 "max-results", GS_SHELL_SEARCH_PROVIDER_MAX_RESULTS,
+					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
+							 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
+					 NULL);
+	gs_plugin_job_set_sort_func (plugin_job, gs_shell_search_provider_sort_cb, self);
+	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
+					    self->cancellable,
+					    search_done_cb,
+					    pending_search);
 }
 
 static gboolean
@@ -178,42 +221,60 @@ handle_get_result_metas (GsShellSearchProvider2	*skeleton,
 	GsShellSearchProvider *self = user_data;
 	GVariantBuilder meta;
 	GVariant *meta_variant;
-	GdkPixbuf *pixbuf;
 	gint i;
 	GVariantBuilder builder;
-	GError *error = NULL;
 
 	g_debug ("****** GetResultMetas");
 
 	for (i = 0; results[i]; i++) {
-		g_autoptr(GsApp) app = NULL;
+		GsApp *app;
+		g_autoptr(GIcon) icon = NULL;
+		g_autofree gchar *description = NULL;
 
-		if (g_hash_table_lookup (self->metas_cache, results[i]))
+		/* already built */
+		if (g_hash_table_lookup (self->metas_cache, results[i]) != NULL)
 			continue;
 
-		/* find the application with this ID */
-		app = gs_plugin_loader_get_app_by_id (self->plugin_loader,
-						      results[i],
-						      GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
-						      GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION,
-						      NULL,
-						      &error);
+		/* get previously found app */
+		app = gs_app_list_lookup (self->search_results, results[i]);
 		if (app == NULL) {
-			g_warning ("failed to refine %s: %s",
-				   results[i], error->message);
-			g_clear_error (&error);
+			g_warning ("failed to refine find app %s in cache", results[i]);
 			continue;
 		}
 
 		g_variant_builder_init (&meta, G_VARIANT_TYPE ("a{sv}"));
-		g_variant_builder_add (&meta, "{sv}", "id", g_variant_new_string (gs_app_get_id (app)));
+		g_variant_builder_add (&meta, "{sv}", "id", g_variant_new_string (gs_app_get_unique_id (app)));
 		g_variant_builder_add (&meta, "{sv}", "name", g_variant_new_string (gs_app_get_name (app)));
-		pixbuf = gs_app_get_pixbuf (app);
-		if (pixbuf != NULL)
-			g_variant_builder_add (&meta, "{sv}", "icon", g_icon_serialize (G_ICON (pixbuf)));
-		g_variant_builder_add (&meta, "{sv}", "description", g_variant_new_string (gs_app_get_summary (app)));
+
+		/* ICON_SIZE is defined as 24px in js/ui/search.js in gnome-shell */
+		icon = gs_app_get_icon_for_size (app, 24, 1, NULL);
+		if (icon != NULL) {
+			g_autofree gchar *icon_str = g_icon_to_string (icon);
+			if (icon_str != NULL) {
+				g_variant_builder_add (&meta, "{sv}", "gicon", g_variant_new_string (icon_str));
+			} else {
+				g_autoptr(GVariant) icon_serialized = g_icon_serialize (icon);
+				g_variant_builder_add (&meta, "{sv}", "icon", icon_serialized);
+			}
+		}
+
+		if (gs_utils_list_has_component_fuzzy (self->search_results, app) &&
+		    gs_app_get_origin_hostname (app) != NULL) {
+			/* TRANSLATORS: this refers to where the app came from */
+			g_autofree gchar *source_text = g_strdup_printf (_("Source: %s"),
+			                                                 gs_app_get_origin_hostname (app));
+			description = g_strdup_printf ("%s     %s",
+			                               gs_app_get_summary (app),
+			                               source_text);
+		} else {
+			description = g_strdup (gs_app_get_summary (app));
+		}
+		g_variant_builder_add (&meta, "{sv}", "description", g_variant_new_string (description));
+
 		meta_variant = g_variant_builder_end (&meta);
-		g_hash_table_insert (self->metas_cache, g_strdup (gs_app_get_id (app)), g_variant_ref_sink (meta_variant));
+		g_hash_table_insert (self->metas_cache,
+				     g_strdup (gs_app_get_unique_id (app)),
+				     g_variant_ref_sink (meta_variant));
 
 	}
 
@@ -288,16 +349,15 @@ search_provider_dispose (GObject *obj)
 {
 	GsShellSearchProvider *self = GS_SHELL_SEARCH_PROVIDER (obj);
 
-	if (self->cancellable != NULL) {
-		g_cancellable_cancel (self->cancellable);
-		g_clear_object (&self->cancellable);
-	}
+	g_cancellable_cancel (self->cancellable);
+	g_clear_object (&self->cancellable);
 
 	if (self->metas_cache != NULL) {
 		g_hash_table_destroy (self->metas_cache);
 		self->metas_cache = NULL;
 	}
 
+	g_clear_object (&self->search_results);
 	g_clear_object (&self->plugin_loader);
 	g_clear_object (&self->skeleton);
 
@@ -307,9 +367,12 @@ search_provider_dispose (GObject *obj)
 static void
 gs_shell_search_provider_init (GsShellSearchProvider *self)
 {
-	self->metas_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
-						   g_free, (GDestroyNotify) g_variant_unref);
+	self->metas_cache = g_hash_table_new_full ((GHashFunc) as_utils_data_id_hash,
+						   (GEqualFunc) as_utils_data_id_equal,
+						   g_free,
+						   (GDestroyNotify) g_variant_unref);
 
+	self->search_results = gs_app_list_new ();
 	self->skeleton = gs_shell_search_provider2_skeleton_new ();
 
 	g_signal_connect (self->skeleton, "handle-get-initial-result-set",

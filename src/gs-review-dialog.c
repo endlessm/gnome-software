@@ -1,22 +1,9 @@
 /* -*- Mode: C; tab-width: 8; indent-tabs-mode: t; c-basic-offset: 8 -*-
+ * vi:set noexpandtab tabstop=8 shiftwidth=8:
  *
  * Copyright (C) 2016 Canonical Ltd.
  *
- * Licensed under the GNU General Public License Version 2
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #include "config.h"
@@ -24,8 +11,8 @@
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 
-#ifdef HAVE_GTKSPELL
-#include <gtkspell/gtkspell.h>
+#ifdef HAVE_GSPELL
+#include <gspell/gspell.h>
 #endif
 
 #include "gs-review-dialog.h"
@@ -46,9 +33,6 @@ struct _GsReviewDialog
 	GtkWidget	*summary_entry;
 	GtkWidget	*post_button;
 	GtkWidget	*text_view;
-#ifdef HAVE_GTKSPELL
-	GtkSpellChecker	*spell_checker;
-#endif
 	guint		 timer_id;
 };
 
@@ -161,7 +145,7 @@ gs_review_dialog_changed_cb (GsReviewDialog *dialog)
 	gtk_widget_set_tooltip_text (dialog->post_button, msg);
 
 	/* can the user submit this? */
-	gtk_widget_set_sensitive (dialog->post_button, all_okay);
+	gtk_dialog_set_response_sensitive (GTK_DIALOG (dialog), GTK_RESPONSE_OK, all_okay);
 }
 
 static gboolean
@@ -178,13 +162,19 @@ gs_review_dialog_init (GsReviewDialog *dialog)
 {
 	GtkTextBuffer *buffer;
 	gtk_widget_init_template (GTK_WIDGET (dialog));
-	gs_star_widget_set_icon_size (GS_STAR_WIDGET (dialog->star), 32);
 
-#ifdef HAVE_GTKSPELL
+#ifdef HAVE_GSPELL
 	/* allow checking spelling */
-	dialog->spell_checker = gtk_spell_checker_new ();
-	gtk_spell_checker_attach (dialog->spell_checker,
-				  GTK_TEXT_VIEW (dialog->text_view));
+	{
+		GspellEntry *gspell_entry;
+		GspellTextView *gspell_view;
+
+		gspell_entry = gspell_entry_get_from_gtk_entry (GTK_ENTRY (dialog->summary_entry));
+		gspell_entry_basic_setup (gspell_entry);
+
+		gspell_view = gspell_text_view_get_from_gtk_text_view (GTK_TEXT_VIEW (dialog->text_view));
+		gspell_text_view_basic_setup (gspell_view);
+	}
 #endif
 
 	/* require the user to spend at least 30 seconds on writing a review */
@@ -193,7 +183,6 @@ gs_review_dialog_init (GsReviewDialog *dialog)
 						  dialog);
 
 	/* update UI */
-	gs_star_widget_set_interactive (GS_STAR_WIDGET (dialog->star), TRUE);
 	g_signal_connect_swapped (dialog->star, "rating-changed",
 				  G_CALLBACK (gs_review_dialog_changed_cb), dialog);
 	g_signal_connect_swapped (dialog->summary_entry, "notify::text",
@@ -202,8 +191,7 @@ gs_review_dialog_init (GsReviewDialog *dialog)
 	g_signal_connect_swapped (buffer, "changed",
 				  G_CALLBACK (gs_review_dialog_changed_cb), dialog);
 
-	gtk_widget_set_sensitive (dialog->post_button, FALSE);
-
+	gtk_dialog_set_response_sensitive (GTK_DIALOG (dialog), GTK_RESPONSE_OK, FALSE);
 }
 
 static void
@@ -241,5 +229,3 @@ gs_review_dialog_new (void)
 					 "use-header-bar", TRUE,
 					 NULL));
 }
-
-/* vim: set noexpandtab: */
