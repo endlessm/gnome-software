@@ -29,7 +29,112 @@ struct _GsFeatureTile
 	GtkCssProvider	*subtitle_provider;  /* (owned) (nullable) */
 	GArray		*key_colors_cache;  /* (unowned) (nullable) */
 	gboolean	 narrow_mode;
+	guint		 refresh_id;
 };
+
+#define GS_TYPE_FEATURE_TILE_LAYOUT (gs_feature_tile_layout_get_type ())
+
+G_DECLARE_FINAL_TYPE (GsFeatureTileLayout, gs_feature_tile_layout, GS, FEATURE_TILE_LAYOUT, GtkLayoutManager)
+
+/* This is a copy of GtkBinLayout, because cannot derive from it */
+struct _GsFeatureTileLayout
+{
+	GtkLayoutManager parent_instance;
+};
+
+G_DEFINE_TYPE (GsFeatureTileLayout, gs_feature_tile_layout, GTK_TYPE_LAYOUT_MANAGER)
+
+static void
+gs_feature_tile_layout_measure (GtkLayoutManager *layout_manager,
+				GtkWidget        *widget,
+				GtkOrientation    orientation,
+				int               for_size,
+				int              *minimum,
+				int              *natural,
+				int              *minimum_baseline,
+				int              *natural_baseline)
+{
+	GtkWidget *child;
+
+	for (child = gtk_widget_get_first_child (widget);
+	     child != NULL;
+	     child = gtk_widget_get_next_sibling (child)) {
+		if (gtk_widget_should_layout (child)) {
+			int child_min = 0;
+			int child_nat = 0;
+			int child_min_baseline = -1;
+			int child_nat_baseline = -1;
+
+			gtk_widget_measure (child, orientation, for_size,
+					    &child_min, &child_nat,
+					    &child_min_baseline, &child_nat_baseline);
+
+			*minimum = MAX (*minimum, child_min);
+			*natural = MAX (*natural, child_nat);
+
+			if (child_min_baseline > -1)
+				*minimum_baseline = MAX (*minimum_baseline, child_min_baseline);
+			if (child_nat_baseline > -1)
+				*natural_baseline = MAX (*natural_baseline, child_nat_baseline);
+		}
+	}
+}
+
+static void gs_feature_tile_refresh (GsAppTile *self);
+
+static gboolean
+gs_feature_tile_refresh_idle_cb (gpointer user_data)
+{
+	GsFeatureTile *tile = user_data;
+
+	tile->refresh_id = 0;
+
+	gs_feature_tile_refresh (GS_APP_TILE (tile));
+
+	return G_SOURCE_REMOVE;
+}
+
+static void
+gs_feature_tile_layout_allocate (GtkLayoutManager *layout_manager,
+				 GtkWidget        *widget,
+				 int               width,
+				 int               height,
+				 int               baseline)
+{
+	GsFeatureTile *tile = GS_FEATURE_TILE (widget);
+	GtkWidget *child;
+	gboolean narrow_mode;
+
+	for (child = gtk_widget_get_first_child (widget);
+	     child != NULL;
+	     child = gtk_widget_get_next_sibling (child)) {
+		if (child && gtk_widget_should_layout (child))
+			gtk_widget_allocate (child, width, height, baseline, NULL);
+	}
+
+	/* Engage ‘narrow mode’ if the allocation becomes too narrow. The exact
+	 * choice of width is arbitrary here. */
+	narrow_mode = (width < 600);
+	if (tile->narrow_mode != narrow_mode) {
+		tile->narrow_mode = narrow_mode;
+		if (!tile->refresh_id)
+			tile->refresh_id = g_idle_add (gs_feature_tile_refresh_idle_cb, tile);
+	}
+}
+
+static void
+gs_feature_tile_layout_class_init (GsFeatureTileLayoutClass *klass)
+{
+	GtkLayoutManagerClass *layout_manager_class = GTK_LAYOUT_MANAGER_CLASS (klass);
+
+	layout_manager_class->measure = gs_feature_tile_layout_measure;
+	layout_manager_class->allocate = gs_feature_tile_layout_allocate;
+}
+
+static void
+gs_feature_tile_layout_init (GsFeatureTileLayout *layout)
+{
+}
 
 /* A colour represented in hue, saturation, brightness form; with an additional
  * field for its contrast calculated with respect to some external colour.
@@ -37,10 +142,10 @@ struct _GsFeatureTile
  * See https://en.wikipedia.org/wiki/HSL_and_HSV */
 typedef struct
 {
-	gdouble hue;  /* [0.0, 1.0] */
-	gdouble saturation;  /* [0.0, 1.0] */
-	gdouble brightness;  /* [0.0, 1.0]; also known as lightness (HSL) or value (HSV) */
-	gdouble contrast;  /* [-1.0, ∞], may actually be `INF` */
+	gfloat hue;  /* [0.0, 1.0] */
+	gfloat saturation;  /* [0.0, 1.0] */
+	gfloat brightness;  /* [0.0, 1.0]; also known as lightness (HSL) or value (HSV) */
+	gfloat contrast;  /* (0.047, 21] */
 } GsHSBC;
 
 G_DEFINE_TYPE (GsFeatureTile, gs_feature_tile, GS_TYPE_APP_TILE)
@@ -50,6 +155,11 @@ gs_feature_tile_dispose (GObject *object)
 {
 	GsFeatureTile *tile = GS_FEATURE_TILE (object);
 
+	if (tile->refresh_id) {
+		g_source_remove (tile->refresh_id);
+		tile->refresh_id = 0;
+	}
+
 	g_clear_object (&tile->tile_provider);
 	g_clear_object (&tile->title_provider);
 	g_clear_object (&tile->subtitle_provider);
@@ -58,16 +168,13 @@ gs_feature_tile_dispose (GObject *object)
 }
 
 /* These are subjectively chosen. See below. */
-static const gdouble min_valid_saturation = 0.5;
-static const gdouble max_valid_saturation = 0.85;
+static const gfloat min_valid_saturation = 0.5;
+static const gfloat max_valid_saturation = 0.85;
 
-/* Subjectively chosen as the minimum absolute contrast ratio between the
- * foreground and background colours.
- *
- * Note that contrast is in the range [-1.0, ∞], so @min_abs_contrast always has
- * to be handled with positive and negative branches.
- */
-static const gdouble min_abs_contrast = 0.78;
+/* The minimum absolute contrast ratio between the foreground and background
+ * colours, from WCAG:
+ * https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html */
+static const gfloat min_abs_contrast = 4.5;
 
 /* Sort two candidate background colours for the feature tile, ranking them by
  * suitability for being chosen as the background colour, with the most suitable
@@ -88,7 +195,7 @@ static const gdouble min_abs_contrast = 0.78;
  */
 static gboolean
 saturation_is_valid (const GsHSBC *hsbc,
-                     gdouble      *distance_from_valid_range)
+                     gfloat       *distance_from_valid_range)
 {
 	*distance_from_valid_range = (hsbc->saturation > max_valid_saturation) ? hsbc->saturation - max_valid_saturation : min_valid_saturation - hsbc->saturation;
 	return (hsbc->saturation >= min_valid_saturation && hsbc->saturation <= max_valid_saturation);
@@ -100,7 +207,7 @@ colors_sort_cb (gconstpointer a,
 {
 	const GsHSBC *hsbc_a = a;
 	const GsHSBC *hsbc_b = b;
-	gdouble hsbc_a_distance_from_range, hsbc_b_distance_from_range;
+	gfloat hsbc_a_distance_from_range, hsbc_b_distance_from_range;
 	gboolean hsbc_a_saturation_in_range = saturation_is_valid (hsbc_a, &hsbc_a_distance_from_range);
 	gboolean hsbc_b_saturation_in_range = saturation_is_valid (hsbc_b, &hsbc_b_distance_from_range);
 
@@ -114,62 +221,99 @@ colors_sort_cb (gconstpointer a,
 		return ABS (hsbc_b->contrast) - ABS (hsbc_a->contrast);
 }
 
-/* Calculate the weber contrast between @foreground and @background. This is
- * only valid if the area covered by @foreground is significantly smaller than
- * that covered by @background.
- *
- * See https://en.wikipedia.org/wiki/Contrast_(vision)#Weber_contrast
- *
- * The return value is in the range [-1.0, ∞], and may actually be `INF`.
- */
-static gdouble
-weber_contrast (const GsHSBC *foreground,
-                const GsHSBC *background)
+static gint
+colors_sort_contrast_cb (gconstpointer a,
+                         gconstpointer b)
 {
-	/* Note that this may divide by zero, and that’s fine. However, in
-	 * IEEE 754, dividing ±0.0 by ±0.0 results in NAN, so avoid that. */
-	if (foreground->brightness == background->brightness)
-		return 0.0;
+	const GsHSBC *hsbc_a = a;
+	const GsHSBC *hsbc_b = b;
 
-	return (foreground->brightness - background->brightness) / background->brightness;
+	return hsbc_b->contrast - hsbc_a->contrast;
 }
 
-/* Inverse of the Weber contrast function which finds a brightness (luminance)
- * level for the background which gives an absolute contrast of at least
- * @desired_abs_contrast against @foreground. The same validity restrictions
- * apply as for weber_contrast().
+/* Calculate the relative luminance of @colour. This is [0.0, 1.0], where 0.0 is
+ * the darkest black, and 1.0 is the lightest white.
+ *
+ * https://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef */
+static gfloat
+relative_luminance (const GsHSBC *colour)
+{
+	gfloat red, green, blue;
+	gfloat r, g, b;
+	gfloat luminance;
+
+	/* Convert to sRGB */
+	gtk_hsv_to_rgb (colour->hue, colour->saturation, colour->brightness,
+			&red, &green, &blue);
+
+	r = (red <= 0.03928) ? red / 12.92 : pow ((red + 0.055) / 1.055, 2.4);
+	g = (green <= 0.03928) ? green / 12.92 : pow ((green + 0.055) / 1.055, 2.4);
+	b = (blue <= 0.03928) ? blue / 12.92 : pow ((blue + 0.055) / 1.055, 2.4);
+
+	luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	g_assert (luminance >= 0.0 && luminance <= 1.0);
+	return luminance;
+}
+
+/* Calculate the WCAG contrast ratio between the two colours. The returned ratio
+ * is in the range (0.047, 21].
+ *
+ * https://www.w3.org/TR/UNDERSTANDING-WCAG20/visual-audio-contrast-contrast.html#contrast-ratiodef */
+static gfloat
+wcag_contrast (const GsHSBC *foreground,
+               const GsHSBC *background)
+{
+	const GsHSBC *lighter, *darker;
+	gfloat ratio;
+
+	if (foreground->brightness >= background->brightness) {
+		lighter = foreground;
+		darker = background;
+	} else {
+		lighter = background;
+		darker = foreground;
+	}
+
+	ratio = (relative_luminance (lighter) + 0.05) / (relative_luminance (darker) + 0.05);
+	g_assert (ratio > 0.047 && ratio <= 21);
+	return ratio;
+}
+
+/* Calculate a new brightness value for @background which improves its contrast
+ * (as calculated using wcag_contrast()) with @foreground to at least
+ * @desired_contrast.
  *
  * The return value is in the range [0.0, 1.0].
  */
-static gdouble
-weber_contrast_find_brightness (const GsHSBC *foreground,
-                                gdouble       desired_abs_contrast)
+static gfloat
+wcag_contrast_find_brightness (const GsHSBC *foreground,
+                               const GsHSBC *background,
+                               gfloat        desired_contrast)
 {
-	g_assert (desired_abs_contrast >= 0.0);
+	GsHSBC modified_background;
 
-	/* There are two solutions to solving
-	 *    |(I - I_B) / I_B| ≥ C
-	 * in the general case, although given that I (`foreground->brightness`)
-	 * and I_B (the return value) are only valid in the range [0.0, 1.0],
-	 * there are many cases where only one solution is valid.
+	g_assert (desired_contrast > 0.047 && desired_contrast <= 21);
+
+	/* This is an optimisation problem of modifying @background until
+	 * the WCAG contrast is at least @desired_contrast. There might be a
+	 * closed-form solution to this but I can’t be bothered to work it out
+	 * right now. An optimisation loop should work.
 	 *
-	 * Solutions are:
-	 *    I_B ≤ I / (1 + C)
-	 *    I_B ≥ I / (1 - C)
-	 *
-	 * When given a choice, prefer the solution which gives a higher
-	 * brightness.
-	 *
-	 * In the case I == 0.0, and value of I_B is valid (as per the second
-	 * solution), so arbitrarily choose 0.5 as a solution.
-	 */
-	if (foreground->brightness == 0.0)
-		return 0.5;
-	else if (foreground->brightness <= 1.0 - desired_abs_contrast &&
-		 desired_abs_contrast < 1.0)
-		return foreground->brightness / (1.0 - desired_abs_contrast);
-	else
-		return foreground->brightness / (1.0 + desired_abs_contrast);
+	 * wcag_contrast() compares the lightest and darkest of the two colours,
+	 * so ensure the background brightness is modified in the correct
+	 * direction (increased or decreased) depending on whether the
+	 * foreground colour is originally the brighter. This gives the largest
+	 * search space for the background colour brightness, and ensures the
+	 * optimisation works with dark and light themes. */
+	for (modified_background = *background;
+	     modified_background.brightness >= 0.0 &&
+	     modified_background.brightness <= 1.0 &&
+	     wcag_contrast (foreground, &modified_background) < desired_contrast;
+	     modified_background.brightness += ((foreground->brightness > 0.5) ? -0.1 : 0.1)) {
+		/* Nothing to do here */
+	}
+
+	return CLAMP (modified_background.brightness, 0.0, 1.0);
 }
 
 static void
@@ -177,7 +321,6 @@ gs_feature_tile_refresh (GsAppTile *self)
 {
 	GsFeatureTile *tile = GS_FEATURE_TILE (self);
 	GsApp *app = gs_app_tile_get_app (self);
-	AtkObject *accessible;
 	const gchar *markup = NULL;
 	g_autofree gchar *name = NULL;
 	GtkStyleContext *context;
@@ -214,7 +357,7 @@ gs_feature_tile_refresh (GsAppTile *self)
 	}
 
 	if (icon != NULL) {
-		gtk_image_set_from_gicon (GTK_IMAGE (tile->image), icon, GTK_ICON_SIZE_INVALID);
+		gtk_image_set_from_gicon (GTK_IMAGE (tile->image), icon);
 		gtk_image_set_pixel_size (GTK_IMAGE (tile->image), icon_size);
 		gtk_widget_show (tile->image);
 	} else {
@@ -225,7 +368,7 @@ gs_feature_tile_refresh (GsAppTile *self)
 	gtk_label_set_label (GTK_LABEL (tile->title), gs_app_get_name (app));
 	gtk_label_set_label (GTK_LABEL (tile->subtitle), gs_app_get_summary (app));
 
-	gtk_label_set_line_wrap (GTK_LABEL (tile->subtitle), tile->narrow_mode);
+	gtk_label_set_wrap (GTK_LABEL (tile->subtitle), tile->narrow_mode);
 	gtk_label_set_lines (GTK_LABEL (tile->subtitle), tile->narrow_mode ? 2 : 1);
 
 	/* perhaps set custom css; cache it so that images don’t get reloaded
@@ -270,6 +413,9 @@ gs_feature_tile_refresh (GsAppTile *self)
 			GdkRGBA fg_rgba;
 			gboolean fg_rgba_valid;
 			GsHSBC fg_hsbc;
+			const GsHSBC *chosen_hsbc;
+			GsHSBC chosen_hsbc_modified;
+			gboolean use_chosen_hsbc = FALSE;
 
 			/* Look up the foreground colour for the feature tile,
 			 * which is the colour of the text. This should always
@@ -314,7 +460,7 @@ gs_feature_tile_refresh (GsAppTile *self)
 
 				gtk_rgb_to_hsv (rgba->red, rgba->green, rgba->blue,
 						&hsbc.hue, &hsbc.saturation, &hsbc.brightness);
-				hsbc.contrast = weber_contrast (&fg_hsbc, &hsbc);
+				hsbc.contrast = wcag_contrast (&fg_hsbc, &hsbc);
 				g_array_append_val (colors, hsbc);
 
 				g_debug (" • RGB: (%f, %f, %f), HSB: (%f, %f, %f), contrast: %f",
@@ -327,33 +473,55 @@ gs_feature_tile_refresh (GsAppTile *self)
 			 * most appropriate one. */
 			g_array_sort (colors, colors_sort_cb);
 
-			/* Take the top colour. If it’s not good enough, modify
+			/* If the developer/distro has provided override colours,
+			 * use them. If there’s more than one override colour,
+			 * use the one with the highest contrast with the
+			 * foreground colour, unmodified. If there’s only one,
+			 * modify it as below.
+			 *
+			 * If there are no override colours, take the top colour
+			 * after sorting above. If it’s not good enough, modify
 			 * its brightness to improve the contrast, and clamp its
-			 * saturation to the valid range. */
-			if (colors != NULL && colors->len > 0) {
-				const GsHSBC *chosen_hsbc = &g_array_index (colors, GsHSBC, 0);
+			 * saturation to the valid range.
+			 *
+			 * If there are no colours, fall through and leave @css
+			 * as %NULL. */
+			if (gs_app_get_user_key_colors (app) &&
+			    colors != NULL &&
+			    colors->len > 1) {
+				g_array_sort (colors, colors_sort_contrast_cb);
+
+				chosen_hsbc = &g_array_index (colors, GsHSBC, 0);
+				chosen_hsbc_modified = *chosen_hsbc;
+
+				use_chosen_hsbc = TRUE;
+			} else if (colors != NULL && colors->len > 0) {
+				chosen_hsbc = &g_array_index (colors, GsHSBC, 0);
+				chosen_hsbc_modified = *chosen_hsbc;
+
+				chosen_hsbc_modified.saturation = CLAMP (chosen_hsbc->saturation, min_valid_saturation, max_valid_saturation);
+
+				if (chosen_hsbc->contrast >= -min_abs_contrast &&
+				    chosen_hsbc->contrast <= min_abs_contrast)
+					chosen_hsbc_modified.brightness = wcag_contrast_find_brightness (&fg_hsbc, &chosen_hsbc_modified, min_abs_contrast);
+
+				use_chosen_hsbc = TRUE;
+			}
+
+			if (use_chosen_hsbc) {
 				GdkRGBA chosen_rgba;
-				gdouble modified_saturation, modified_brightness;
 
-				modified_saturation = CLAMP (chosen_hsbc->saturation, min_valid_saturation, max_valid_saturation);
-
-				if (chosen_hsbc->contrast < -min_abs_contrast ||
-				    chosen_hsbc->contrast > min_abs_contrast)
-					modified_brightness = chosen_hsbc->brightness;
-				else
-					modified_brightness = weber_contrast_find_brightness (&fg_hsbc, min_abs_contrast);
-
-				gtk_hsv_to_rgb (chosen_hsbc->hue,
-						modified_saturation,
-						modified_brightness,
+				gtk_hsv_to_rgb (chosen_hsbc_modified.hue,
+						chosen_hsbc_modified.saturation,
+						chosen_hsbc_modified.brightness,
 						&chosen_rgba.red, &chosen_rgba.green, &chosen_rgba.blue);
 
 				g_debug ("Chosen background colour for %s (saturation %s, brightness %s): RGB: (%f, %f, %f), HSB: (%f, %f, %f)",
 					 gs_app_get_id (app),
-					 (modified_saturation == chosen_hsbc->saturation) ? "not modified" : "modified",
-					 (modified_brightness == chosen_hsbc->brightness) ? "not modified" : "modified",
+					 (chosen_hsbc_modified.saturation == chosen_hsbc->saturation) ? "not modified" : "modified",
+					 (chosen_hsbc_modified.brightness == chosen_hsbc->brightness) ? "not modified" : "modified",
 					 chosen_rgba.red, chosen_rgba.green, chosen_rgba.blue,
-					 chosen_hsbc->hue, modified_saturation, modified_brightness);
+					 chosen_hsbc_modified.hue, chosen_hsbc_modified.saturation, chosen_hsbc_modified.brightness);
 
 				css = g_strdup_printf ("background-color: rgb(%.0f,%.0f,%.0f);",
 						       chosen_rgba.red * 255.f,
@@ -368,8 +536,6 @@ gs_feature_tile_refresh (GsAppTile *self)
 			tile->key_colors_cache = key_colors;
 		}
 	}
-
-	accessible = gtk_widget_get_accessible (GTK_WIDGET (tile));
 
 	switch (gs_app_get_state (app)) {
 	case GS_APP_STATE_INSTALLED:
@@ -387,9 +553,11 @@ gs_feature_tile_refresh (GsAppTile *self)
 		break;
 	}
 
-	if (GTK_IS_ACCESSIBLE (accessible) && name != NULL) {
-		atk_object_set_name (accessible, name);
-		atk_object_set_description (accessible, gs_app_get_summary (app));
+	if (name != NULL) {
+		gtk_accessible_update_property (GTK_ACCESSIBLE (tile),
+						GTK_ACCESSIBLE_PROPERTY_LABEL, name,
+						GTK_ACCESSIBLE_PROPERTY_DESCRIPTION, gs_app_get_summary (app),
+						-1);
 	}
 }
 
@@ -402,7 +570,8 @@ gs_feature_tile_direction_changed (GtkWidget *widget, GtkTextDirection previous_
 }
 
 static void
-gs_feature_tile_style_updated (GtkWidget *widget)
+gs_feature_tile_css_changed (GtkWidget         *widget,
+                             GtkCssStyleChange *css_change)
 {
 	GsFeatureTile *tile = GS_FEATURE_TILE (widget);
 
@@ -412,31 +581,13 @@ gs_feature_tile_style_updated (GtkWidget *widget)
 	tile->key_colors_cache = NULL;
 
 	gs_feature_tile_refresh (GS_APP_TILE (tile));
-}
 
-static void
-gs_feature_tile_size_allocate (GtkWidget     *widget,
-                               GtkAllocation *allocation)
-{
-	GsFeatureTile *tile = GS_FEATURE_TILE (widget);
-	gboolean narrow_mode;
-
-	/* Chain up. */
-	GTK_WIDGET_CLASS (gs_feature_tile_parent_class)->size_allocate (widget, allocation);
-
-	/* Engage ‘narrow mode’ if the allocation becomes too narrow. The exact
-	 * choice of width is arbitrary here. */
-	narrow_mode = (allocation->width < 600);
-	if (tile->narrow_mode != narrow_mode) {
-		tile->narrow_mode = narrow_mode;
-		gs_feature_tile_refresh (GS_APP_TILE (tile));
-	}
+	GTK_WIDGET_CLASS (gs_feature_tile_parent_class)->css_changed (widget, css_change);
 }
 
 static void
 gs_feature_tile_init (GsFeatureTile *tile)
 {
-	gtk_widget_set_has_window (GTK_WIDGET (tile), FALSE);
 	gtk_widget_init_template (GTK_WIDGET (tile));
 }
 
@@ -449,9 +600,8 @@ gs_feature_tile_class_init (GsFeatureTileClass *klass)
 
 	object_class->dispose = gs_feature_tile_dispose;
 
+	widget_class->css_changed = gs_feature_tile_css_changed;
 	widget_class->direction_changed = gs_feature_tile_direction_changed;
-	widget_class->style_updated = gs_feature_tile_style_updated;
-	widget_class->size_allocate = gs_feature_tile_size_allocate;
 
 	app_tile_class->refresh = gs_feature_tile_refresh;
 
@@ -461,6 +611,9 @@ gs_feature_tile_class_init (GsFeatureTileClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsFeatureTile, image);
 	gtk_widget_class_bind_template_child (widget_class, GsFeatureTile, title);
 	gtk_widget_class_bind_template_child (widget_class, GsFeatureTile, subtitle);
+
+	gtk_widget_class_set_css_name (widget_class, "feature-tile");
+	gtk_widget_class_set_layout_manager_type (widget_class, GS_TYPE_FEATURE_TILE_LAYOUT);
 }
 
 GtkWidget *

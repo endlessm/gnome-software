@@ -28,11 +28,11 @@
 
 #include "config.h"
 
+#include <adwaita.h>
 #include <glib.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include <handy.h>
 #include <locale.h>
 
 #include "gs-app.h"
@@ -42,7 +42,7 @@
 
 struct _GsSafetyContextDialog
 {
-	HdyWindow		 parent_instance;
+	GsInfoWindow		 parent_instance;
 
 	GsApp			*app;  /* (nullable) (owned) */
 	gulong			 app_notify_handler_permissions;
@@ -61,10 +61,11 @@ struct _GsSafetyContextDialog
 	GtkLabel		*source_label;
 	GBinding		*source_label_binding;  /* (owned) (nullable) */
 	GtkLabel		*sdk_label;
+	GtkImage		*sdk_eol_image;
 	GtkWidget		*sdk_row;
 };
 
-G_DEFINE_TYPE (GsSafetyContextDialog, gs_safety_context_dialog, HDY_TYPE_WINDOW)
+G_DEFINE_TYPE (GsSafetyContextDialog, gs_safety_context_dialog, GS_TYPE_INFO_WINDOW)
 
 typedef enum {
 	PROP_APP = 1,
@@ -99,7 +100,7 @@ add_permission_row (GtkListBox                   *list_box,
 					 has_permission ? item_rating : GS_CONTEXT_DIALOG_ROW_IMPORTANCE_UNIMPORTANT,
 					 has_permission ? title_with_permission : title_without_permission,
 					 has_permission ? description_with_permission : description_without_permission);
-	gtk_list_box_insert (list_box, GTK_WIDGET (row), -1);
+	gtk_list_box_append (list_box, GTK_WIDGET (row));
 }
 
 static void
@@ -117,7 +118,7 @@ update_permissions_list (GsSafetyContextDialog *self)
 	 * based on app properties. */
 	chosen_rating = GS_CONTEXT_DIALOG_ROW_IMPORTANCE_UNIMPORTANT;
 
-	gs_container_remove_all (GTK_CONTAINER (self->permissions_list));
+	gs_widget_remove_all (GTK_WIDGET (self->permissions_list), (GsRemoveFunc) gtk_list_box_remove);
 
 	/* UI state is undefined if app is not set. */
 	if (self->app == NULL)
@@ -321,6 +322,18 @@ update_permissions_list (GsSafetyContextDialog *self)
 			    _("The developer of this app has been verified to be who they say they are"),
 			    NULL, NULL, NULL);
 
+	add_permission_row (self->permissions_list, &chosen_rating,
+			    gs_app_get_metadata_item (self->app, "GnomeSoftware::EolReason") != NULL || (
+			    gs_app_get_runtime (self->app) != NULL &&
+			    gs_app_get_metadata_item (gs_app_get_runtime (self->app), "GnomeSoftware::EolReason") != NULL),
+			    GS_CONTEXT_DIALOG_ROW_IMPORTANCE_IMPORTANT,
+			    "dialog-warning-symbolic",
+			    /* Translators: This indicates an app uses an outdated SDK.
+			     * It’s used in a context tile, so should be short. */
+			    _("Insecure Dependencies"),
+			    _("Software or its dependencies are no longer supported and may be insecure"),
+			    NULL, NULL, NULL);
+
 	/* Update the UI. */
 	switch (chosen_rating) {
 	case GS_CONTEXT_DIALOG_ROW_IMPORTANCE_UNIMPORTANT:
@@ -348,7 +361,7 @@ update_permissions_list (GsSafetyContextDialog *self)
 		g_assert_not_reached ();
 	}
 
-	gtk_image_set_from_icon_name (GTK_IMAGE (self->icon), icon_name, GTK_ICON_SIZE_LARGE_TOOLBAR);
+	gtk_image_set_from_icon_name (GTK_IMAGE (self->icon), icon_name);
 	gtk_label_set_text (self->title, title);
 
 	context = gtk_widget_get_style_context (self->lozenge);
@@ -382,8 +395,10 @@ update_sdk (GsSafetyContextDialog *self)
 	runtime = gs_app_get_runtime (self->app);
 
 	if (runtime != NULL) {
+		GtkStyleContext *context;
 		g_autofree gchar *label = NULL;
 		const gchar *version = gs_app_get_version_ui (runtime);
+		gboolean is_eol = gs_app_get_metadata_item (runtime, "GnomeSoftware::EolReason") != NULL;
 
 		if (version != NULL) {
 			/* Translators: The first placeholder is an app runtime
@@ -396,6 +411,18 @@ update_sdk (GsSafetyContextDialog *self)
 		}
 
 		gtk_label_set_label (self->sdk_label, label);
+
+		context = gtk_widget_get_style_context (GTK_WIDGET (self->sdk_label));
+
+		if (is_eol) {
+			gtk_style_context_add_class (context, "eol-red");
+			gtk_style_context_remove_class (context, "dim-label");
+		} else {
+			gtk_style_context_add_class (context, "dim-label");
+			gtk_style_context_remove_class (context, "eol-red");
+		}
+
+		gtk_widget_set_visible (GTK_WIDGET (self->sdk_eol_image), is_eol);
 	}
 
 	/* Only show the row if a runtime was found. */
@@ -410,35 +437,6 @@ app_notify_related_cb (GObject    *obj,
 	GsSafetyContextDialog *self = GS_SAFETY_CONTEXT_DIALOG (user_data);
 
 	update_sdk (self);
-}
-
-static gboolean
-key_press_event_cb (GtkWidget            *sender,
-                    GdkEvent             *event,
-                    HdyPreferencesWindow *self)
-{
-	guint keyval;
-	GdkModifierType state;
-	GdkKeymap *keymap;
-	GdkEventKey *key_event = (GdkEventKey *) event;
-
-	gdk_event_get_state (event, &state);
-
-	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (sender));
-
-	gdk_keymap_translate_keyboard_state (keymap,
-					     key_event->hardware_keycode,
-					     state,
-					     key_event->group,
-					     &keyval, NULL, NULL, NULL);
-
-	if (keyval == GDK_KEY_Escape) {
-		gtk_window_close (GTK_WINDOW (self));
-
-		return GDK_EVENT_STOP;
-	}
-
-	return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -529,9 +527,8 @@ gs_safety_context_dialog_class_init (GsSafetyContextDialogClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsSafetyContextDialog, license_label);
 	gtk_widget_class_bind_template_child (widget_class, GsSafetyContextDialog, source_label);
 	gtk_widget_class_bind_template_child (widget_class, GsSafetyContextDialog, sdk_label);
+	gtk_widget_class_bind_template_child (widget_class, GsSafetyContextDialog, sdk_eol_image);
 	gtk_widget_class_bind_template_child (widget_class, GsSafetyContextDialog, sdk_row);
-
-	gtk_widget_class_bind_template_callback (widget_class, key_press_event_cb);
 }
 
 /**

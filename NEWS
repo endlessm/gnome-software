@@ -1,62 +1,126 @@
-Version 41.5
+Version 42.0
 ~~~~~~~~~~~~
 Released: 2022-03-18
 
 This is a stable release with the following changes:
- * Disable scroll-by-mouse-wheel on featured carousel
- * Ensure details page shows app provided on command line
+ * Various fixes related to changed threading model
  * Added several appstream-related fixes
 
-This release also updates translation:
+This release also updates translations:
+ * Basque
+ * Bokmål, Norwegian
+ * Bulgarian
  * Catalan
+ * Chinese (China)
+ * Danish
+ * Finnish
+ * French
+ * German
+ * Hebrew
+ * Hungarian
+ * Japanese
+ * Kazakh
+ * Lithuanian
+ * Occitan (post 1500)
+ * Persian
+ * Polish
+ * Russian
+ * Serbian
+ * Slovenian
+ * Swedish
 
-Version 41.4
-~~~~~~~~~~~~
+Version 42.rc
+~~~~~~~~~~~~~
+Released: 2022-03-04
+
+This is the third unstable release for GNOME 42.
+ * Cancel ongoing update downloads when system power is low
+ * Numerous small user interface fixes and tweaks
+ * Prioritize full matches in search results
+ * Improvements in dark mode
+ * Fix disabling flatpak remotes from the ‘Software Repositories’ dialog
+ * Threading and performance improvements which should reduce the number of user interface freezes
+ * Update some icons
+ * Check for updates when moving from a metered to a non-metered network connection
+
+This release also updates translations:
+ * Basque
+ * Catalan
+ * Chinese (China)
+ * Croatian
+ * Czech
+ * Danish
+ * Friulian
+ * Galician
+ * Hebrew
+ * Indonesian
+ * Korean
+ * Lithuanian
+ * Persian
+ * Portuguese
+ * Portuguese (Brazil)
+ * Russian
+ * Slovenian
+ * Spanish
+ * Turkish
+ * Ukrainian
+
+Version 42.beta
+~~~~~~~~~~~~~~~
 Released: 2022-02-10
 
-This is a stable release which only updates translations:
+This is the second unstable release for GNOME 42.
+ * Allow --verbose to be enabled at runtime
+ * Condense the rows in the age rating context dialog
+ * Update the UI for ratings and reviews of apps
+ * Improve the appearance of the category page loading screen
+ * Drop the first run dialog
+ * Improvements to dark theming
+ * Support viewing a specific metainfo file using --show-metainfo
+ * Several more threading improvements
+ * Icon updates
+ * Drop the hardcoded-popular plugin in favour of an appstream file
+ * The background image for upgrades is now looked for using several well-known (and
+   distribution-specific) names in ${DATADIR}/gnome-software/backgrounds, and the previous
+   Fedora-specific default background image is no longer distributed. Similarly, the
+   upgrade-background-uri GSettings key has been removed. Distributions may need to update how
+   they ship background images. See doc/vendor-customisation.md.
+
+This release also updates translations:
+ * Chinese (China)
+ * Galician
+ * Hebrew
  * Icelandic
+ * Indonesian
  * Japanese
  * Occitan (post 1500)
+ * Portuguese
+ * Portuguese (Brazil)
+ * Russian
+ * Slovenian
+ * Spanish
+ * Ukrainian
 
-Version 41.3
-~~~~~~~~~~~~
+Version 42.alpha
+~~~~~~~~~~~~~~~~
 Released: 2022-01-07
 
-This is a stable release with the following change:
+This is the first unstable release for GNOME 42.
+ * Various UI parts updated
+ * Support more markup in the application description
+ * Ask about package signature with PackageKit on signing issue
+ * Show better System Update progress
  * Remove various cultural sensitivity badges
-
-Version 41.2
-~~~~~~~~~~~~
-Released: 2021-12-03
-
-This is a stable release with the following changes:
  * Fix a crash when processing age ratings
  * Reload application details only when not installing/removing the application
  * Do not follow symlinks when calculating disk size usage
  * Fix addons section, which could show addons for different application
-
-This release also updates translations:
- * Bulgarian
- * Catalan
- * Croatian
- * English (United Kingdom)
- * German
- * Latvian
- * Occitan (post 1500)
-
-Version 41.1
-~~~~~~~~~~~~
-Released: 2021-10-28
-
-This is a stable release with the following changes:
  * Fix showing a ‘transaction in progress’ error when using the rpm-ostree plugin
  * Don’t recommend a reboot if firmware updates fail
  * Fix flathub repo being considered present on Fedora 35 with filtered flathub
  * Allow searching for extensions
  * Fix translation of main button on updates page
  * Fix codec installation process
- * Various minor UI tweaks and fixes
  * Add new GNOME Circle apps to the featured carousel
  * Improve metadata support for snaps
  * Fix update checks being missed across suspend/hibernation
@@ -64,14 +128,26 @@ This is a stable release with the following changes:
    disabled/removed
 
 This release also updates translations:
+ * Basque
  * Belarusian
+ * Bulgarian
+ * Catalan
  * Chinese (China)
  * Croatian
  * Dutch
+ * English (United Kingdom)
  * Friulian
+ * Galician
+ * German
  * Hebrew
  * Icelandic
+ * Indonesian
+ * Latvian
+ * Lithuanian
+ * Occitan (post 1500)
  * Persian
+ * Portuguese
+ * Portuguese (Brazil)
  * Russian
  * Serbian
  * Slovak
@@ -79,6 +155,7 @@ This release also updates translations:
  * Spanish
  * Swedish
  * Turkish
+ * Ukrainian
  * Vietnamese
 
 Version 41.0
@@ -305,8 +382,8 @@ This is an unstable release with the following changes:
  * UI elements for displaying app add-ons have been tweaked to more closely match the designs.
  * Installed icons and the badge showing the number of updates available were changed back to blue
    from green.
- * The dropdown showing the available sources of an application includes the packaging format (e.g.
-   Flatpak vs RPM).
+ * The dropdown showing the available sources of an application includes the packaging format
+   (e.g. Flatpak vs RPM).
  * A bug was fixed that prevented installation of .flatpakref files
 
 Translation updates:
@@ -597,8 +674,8 @@ cycle. Next release will be 3.32.0!
  * Sort the items in the Source drop down
  * Don't show error notifications for background download and refresh errors
  * Fix an issue that could cause an explosion of "A restart is required" notifications
- * Various flatpak plugin fixes to make it correctly match the data when multiple flatpak repos are
-   available
+ * Various flatpak plugin fixes to make it correctly match the data when multiple flatpak repos
+   are available
  * Fix the rpm-ostree plugin to correctly convert remote dbus errors
 
 This release also updates translations.
@@ -694,8 +771,8 @@ This is an unstable release in the 3.31 development series, with the following i
  * Add a source selection drop down to details pages
  * Move the search button to the left side in the header bar
  * Various other minor UI tweaks
- * GtkBuilder UI file changes to pave the way for an eventual GTK4 port (please file issues for any
-   UI layout regressions if you notice any!)
+ * GtkBuilder UI file changes to pave the way for an eventual GTK4 port (please file issues for
+   any UI layout regressions if you notice any!)
  * Various internal plugin loader fixes and cleanups
  * Remove the steam plugin
  * Simplify the details page loading
@@ -847,8 +924,8 @@ cycle. Next release will be 3.28.0!
    were unable to remove shell extension packages
  * Category page rewrite that landed earlier this cycle went through UI review and got a number of
    fixes
- * Package version comparison in the updates dialog was fixed and should no longer incorrectly show
-   updates as downgrades
+ * Package version comparison in the updates dialog was fixed and should no longer incorrectly
+   show updates as downgrades
  * Distro upgrade notifications are now rate limited to once per week
  * Install buttons in codec install view that got lost in the 3.22 cycle are now back
  * Various paper cuts with distro upgrades were fixed
@@ -940,7 +1017,8 @@ Version 3.26.2
 Released: 2017-11-09
 
 This is a stable release with the following changes:
- * Various fixes to cancellable handling, making it more robust to cancel install/remove operations
+ * Various fixes to cancellable handling, making it more robust to cancel install/remove
+   operations
  * Fix a common crash in Fedora distro upgrades plugin
  * Fix showing N+2 Fedora upgrades
  * Fix flatpak updates inadvertently triggering a reboot

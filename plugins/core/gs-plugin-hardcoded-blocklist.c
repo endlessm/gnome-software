@@ -11,16 +11,27 @@
 #include <fnmatch.h>
 #include <gnome-software.h>
 
+#include "gs-plugin-hardcoded-blocklist.h"
+
 /*
  * SECTION:
  * Blocklists some applications based on a hardcoded list.
+ *
+ * This plugin executes entirely in the main thread.
  */
 
-void
-gs_plugin_initialize (GsPlugin *plugin)
+struct _GsPluginHardcodedBlocklist
+{
+	GsPlugin		 parent;
+};
+
+G_DEFINE_TYPE (GsPluginHardcodedBlocklist, gs_plugin_hardcoded_blocklist, GS_TYPE_PLUGIN)
+
+static void
+gs_plugin_hardcoded_blocklist_init (GsPluginHardcodedBlocklist *self)
 {
 	/* need ID */
-	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
+	gs_plugin_add_rule (GS_PLUGIN (self), GS_PLUGIN_RULE_RUN_AFTER, "appstream");
 }
 
 static gboolean
@@ -61,18 +72,50 @@ refine_app (GsPlugin             *plugin,
 	return TRUE;
 }
 
-gboolean
-gs_plugin_refine (GsPlugin             *plugin,
-		  GsAppList            *list,
-		  GsPluginRefineFlags   flags,
-		  GCancellable         *cancellable,
-		  GError              **error)
+static void
+gs_plugin_hardcoded_blocklist_refine_async (GsPlugin            *plugin,
+                                            GsAppList           *list,
+                                            GsPluginRefineFlags  flags,
+                                            GCancellable        *cancellable,
+                                            GAsyncReadyCallback  callback,
+                                            gpointer             user_data)
 {
+	g_autoptr(GTask) task = NULL;
+	g_autoptr(GError) local_error = NULL;
+
+	task = g_task_new (plugin, cancellable, callback, user_data);
+	g_task_set_source_tag (task, gs_plugin_hardcoded_blocklist_refine_async);
+
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
 		GsApp *app = gs_app_list_index (list, i);
-		if (!refine_app (plugin, app, flags, cancellable, error))
-			return FALSE;
+		if (!refine_app (plugin, app, flags, cancellable, &local_error)) {
+			g_task_return_error (task, g_steal_pointer (&local_error));
+			return;
+		}
 	}
 
-	return TRUE;
+	g_task_return_boolean (task, TRUE);
+}
+
+static gboolean
+gs_plugin_hardcoded_blocklist_refine_finish (GsPlugin      *plugin,
+                                             GAsyncResult  *result,
+                                             GError       **error)
+{
+	return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
+gs_plugin_hardcoded_blocklist_class_init (GsPluginHardcodedBlocklistClass *klass)
+{
+	GsPluginClass *plugin_class = GS_PLUGIN_CLASS (klass);
+
+	plugin_class->refine_async = gs_plugin_hardcoded_blocklist_refine_async;
+	plugin_class->refine_finish = gs_plugin_hardcoded_blocklist_refine_finish;
+}
+
+GType
+gs_plugin_query_type (void)
+{
+	return GS_TYPE_PLUGIN_HARDCODED_BLOCKLIST;
 }

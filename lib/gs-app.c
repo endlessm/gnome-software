@@ -48,13 +48,12 @@
 #include "gs-key-colors.h"
 #include "gs-os-release.h"
 #include "gs-plugin.h"
+#include "gs-plugin-private.h"
 #include "gs-remote-icon.h"
 #include "gs-utils.h"
 
 typedef struct
 {
-	GObject			 parent_instance;
-
 	GMutex			 mutex;
 	gchar			*id;
 	gchar			*unique_id;
@@ -79,6 +78,7 @@ typedef struct
 	GPtrArray		*screenshots;
 	GPtrArray		*categories;
 	GArray			*key_colors;  /* (nullable) (element-type GdkRGBA) */
+	gboolean		 user_key_colors;
 	GHashTable		*urls;  /* (element-type AsUrlKind utf8) (owned) (nullable) */
 	GHashTable		*launchables;
 	gchar			*url_missing;
@@ -91,10 +91,10 @@ typedef struct
 	gchar			*origin_hostname;
 	gchar			*update_version;
 	gchar			*update_version_ui;
-	gchar			*update_details;
+	gchar			*update_details_markup;
 	AsUrgencyKind		 update_urgency;
 	GsAppPermissions         update_permissions;
-	gchar			*management_plugin;
+	GWeakRef		 management_plugin_weak;  /* (element-type GsPlugin) */
 	guint			 match_value;
 	guint			 priority;
 	gint			 rating;
@@ -308,8 +308,6 @@ _as_component_quirk_flag_to_string (GsAppQuirk quirk)
 		return "needs-reboot";
 	case GS_APP_QUIRK_NOT_REVIEWABLE:
 		return "not-reviewable";
-	case GS_APP_QUIRK_HAS_SHORTCUT:
-		return "has-shortcut";
 	case GS_APP_QUIRK_NOT_LAUNCHABLE:
 		return "not-launchable";
 	case GS_APP_QUIRK_NEEDS_USER_ACTION:
@@ -459,8 +457,6 @@ gs_app_kudos_to_string (guint64 kudos)
 		g_ptr_array_add (array, "has-keywords");
 	if ((kudos & GS_APP_KUDO_HAS_SCREENSHOTS) > 0)
 		g_ptr_array_add (array, "has-screenshots");
-	if ((kudos & GS_APP_KUDO_POPULAR) > 0)
-		g_ptr_array_add (array, "popular");
 	if ((kudos & GS_APP_KUDO_HIGH_CONTRAST) > 0)
 		g_ptr_array_add (array, "high-contrast");
 	if ((kudos & GS_APP_KUDO_HI_DPI_ICON) > 0)
@@ -489,10 +485,11 @@ gs_app_kudos_to_string (guint64 kudos)
 gchar *
 gs_app_to_string (GsApp *app)
 {
-	GString *str = g_string_new ("GsApp:");
+	GString *str;
 
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
 
+	str = g_string_new ("GsApp:");
 	gs_app_to_string_append (app, str);
 	if (str->len > 0)
 		g_string_truncate (str, str->len - 1);
@@ -517,6 +514,7 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	GList *keys;
 	const gchar *tmp;
 	guint i;
+	g_autoptr(GsPlugin) management_plugin = NULL;
 
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (str != NULL);
@@ -562,8 +560,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 	}
 	if (priv->match_value != 0)
 		gs_app_kv_printf (str, "match-value", "%05x", priv->match_value);
-	if (priv->priority != 0)
-		gs_app_kv_printf (str, "priority", "%u", priv->priority);
+	if (gs_app_get_priority (app) != 0)
+		gs_app_kv_printf (str, "priority", "%u", gs_app_get_priority (app));
 	if (priv->version != NULL)
 		gs_app_kv_lpad (str, "version", priv->version);
 	if (priv->version_ui != NULL)
@@ -572,8 +570,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_lpad (str, "update-version", priv->update_version);
 	if (priv->update_version_ui != NULL)
 		gs_app_kv_lpad (str, "update-version-ui", priv->update_version_ui);
-	if (priv->update_details != NULL)
-		gs_app_kv_lpad (str, "update-details", priv->update_details);
+	if (priv->update_details_markup != NULL)
+		gs_app_kv_lpad (str, "update-details-markup", priv->update_details_markup);
 	if (priv->update_urgency != AS_URGENCY_KIND_UNKNOWN) {
 		gs_app_kv_printf (str, "update-urgency", "%u",
 				  priv->update_urgency);
@@ -635,8 +633,9 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		gs_app_kv_lpad (str, "license-is-free",
 				gs_app_get_license_is_free (app) ? "yes" : "no");
 	}
-	if (priv->management_plugin != NULL)
-		gs_app_kv_lpad (str, "management-plugin", priv->management_plugin);
+	management_plugin = g_weak_ref_get (&priv->management_plugin_weak);
+	if (management_plugin != NULL)
+		gs_app_kv_lpad (str, "management-plugin", gs_plugin_get_name (management_plugin));
 	if (priv->summary_missing != NULL)
 		gs_app_kv_lpad (str, "summary-missing", priv->summary_missing);
 	if (priv->menu_path != NULL &&
@@ -710,6 +709,8 @@ gs_app_to_string_append (GsApp *app, GString *str)
 		tmp = g_ptr_array_index (priv->categories, i);
 		gs_app_kv_lpad (str, "category", tmp);
 	}
+	if (priv->user_key_colors)
+		gs_app_kv_lpad (str, "user-key-colors", "yes");
 	for (i = 0; priv->key_colors != NULL && i < priv->key_colors->len; i++) {
 		GdkRGBA *color = &g_array_index (priv->key_colors, GdkRGBA, i);
 		g_autofree gchar *key = NULL;
@@ -1885,10 +1886,19 @@ gs_app_get_icon_for_size (GsApp       *app,
 		GIcon *icon = priv->icons->pdata[i];
 		g_autofree gchar *icon_str = g_icon_to_string (icon);
 		guint icon_width = gs_icon_get_width (icon);
+		guint icon_height = gs_icon_get_height (icon);
 		guint icon_scale = gs_icon_get_scale (icon);
 
 		g_debug ("\tConsidering icon of type %s (%s), width %u×%u",
 			 G_OBJECT_TYPE_NAME (icon), icon_str, icon_width, icon_scale);
+
+		/* Appstream only guarantees the 64x64@1 cached icon is present, ignore other icons that aren't installed. */
+		if (G_IS_FILE_ICON (icon) && !(icon_width == 64 && icon_height == 64 && icon_scale == 1)) {
+			GFile *file = g_file_icon_get_file (G_FILE_ICON (icon));
+			if (!g_file_query_exists (file, NULL)) {
+				continue;
+			}
+		}
 
 		/* Ignore icons with unknown width and skip over ones which
 		 * are too small. */
@@ -2956,7 +2966,7 @@ gs_app_set_origin_hostname (GsApp *app, const gchar *origin_hostname)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
-	g_autoptr(SoupURI) uri = NULL;
+	g_autoptr(GUri) uri = NULL;
 	guint i;
 	const gchar *prefixes[] = { "download.", "mirrors.", NULL };
 
@@ -2969,10 +2979,10 @@ gs_app_set_origin_hostname (GsApp *app, const gchar *origin_hostname)
 		return;
 	g_free (priv->origin_hostname);
 
-	/* use libsoup to convert a URL */
-	uri = soup_uri_new (origin_hostname);
+	/* convert a URL */
+	uri = g_uri_parse (origin_hostname, SOUP_HTTP_URI_FLAGS, NULL);
 	if (uri != NULL)
-		origin_hostname = soup_uri_get_host (uri);
+		origin_hostname = g_uri_get_host (uri);
 
 	/* remove some common prefixes */
 	for (i = 0; prefixes[i] != NULL; i++) {
@@ -3100,40 +3110,72 @@ gs_app_set_update_version (GsApp *app, const gchar *update_version)
 }
 
 /**
- * gs_app_get_update_details:
+ * gs_app_get_update_details_markup:
  * @app: a #GsApp
  *
- * Gets the multi-line description for the update.
+ * Gets the multi-line description for the update as a Pango markup.
  *
  * Returns: a string, or %NULL for unset
  *
- * Since: 3.22
+ * Since: 42.0
  **/
 const gchar *
-gs_app_get_update_details (GsApp *app)
+gs_app_get_update_details_markup (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	return priv->update_details;
+	return priv->update_details_markup;
 }
 
 /**
- * gs_app_set_update_details:
+ * gs_app_set_update_details_markup:
  * @app: a #GsApp
- * @update_details: a string
+ * @markup: a Pango markup
  *
- * Sets the multi-line description for the update.
+ * Sets the multi-line description for the update as markup.
  *
- * Since: 3.22
+ * See: gs_app_set_update_details_text()
+ *
+ * Since: 42.0
  **/
 void
-gs_app_set_update_details (GsApp *app, const gchar *update_details)
+gs_app_set_update_details_markup (GsApp *app,
+				  const gchar *markup)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
 	g_return_if_fail (GS_IS_APP (app));
 	locker = g_mutex_locker_new (&priv->mutex);
-	_g_set_str (&priv->update_details, update_details);
+	_g_set_str (&priv->update_details_markup, markup);
+}
+
+/**
+ * gs_app_set_update_details_text:
+ * @app: a #GsApp
+ * @text: a text without Pango markup
+ *
+ * Sets the multi-line description for the update as text,
+ * escaping the @text to be safe for a Pango markup.
+ *
+ * See: gs_app_set_update_details_markup()
+ *
+ * Since: 42.0
+ **/
+void
+gs_app_set_update_details_text (GsApp *app,
+				const gchar *text)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_autoptr(GMutexLocker) locker = NULL;
+	g_return_if_fail (GS_IS_APP (app));
+	locker = g_mutex_locker_new (&priv->mutex);
+	if (text == NULL) {
+		_g_set_str (&priv->update_details_markup, NULL);
+	} else {
+		gchar *markup = g_markup_escape_text (text, -1);
+		g_free (priv->update_details_markup);
+		priv->update_details_markup = markup;
+	}
 }
 
 /**
@@ -3174,48 +3216,70 @@ gs_app_set_update_urgency (GsApp *app, AsUrgencyKind update_urgency)
 }
 
 /**
- * gs_app_get_management_plugin:
+ * gs_app_dup_management_plugin:
  * @app: a #GsApp
  *
  * Gets the management plugin.
- * This is some metadata about the application which is used to work out
- * which plugin should handle the install, remove or upgrade actions.
  *
- * Typically plugins will just set this to the plugin name using
- * gs_plugin_get_name().
+ * This is some metadata about the application which gives which plugin should
+ * handle the install, remove or upgrade actions.
  *
- * Returns: a string, or %NULL for unset
+ * Returns: (nullable) (transfer full): the management plugin, or %NULL for unset
  *
- * Since: 3.22
+ * Since: 42
  **/
-const gchar *
-gs_app_get_management_plugin (GsApp *app)
+GsPlugin *
+gs_app_dup_management_plugin (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), NULL);
-	return priv->management_plugin;
+	return g_weak_ref_get (&priv->management_plugin_weak);
+}
+
+/**
+ * gs_app_has_management_plugin:
+ * @app: a #GsApp
+ * @plugin: (nullable) (transfer none): a #GsPlugin to check against, or %NULL
+ *
+ * Check whether the management plugin for @app is set to @plugin.
+ *
+ * If @plugin is %NULL, %TRUE is returned only if the @app has no management
+ * plugin set.
+ *
+ * Returns: %TRUE if @plugin is the management plugin for @app, %FALSE otherwise
+ * Since: 42
+ */
+gboolean
+gs_app_has_management_plugin (GsApp    *app,
+                              GsPlugin *plugin)
+{
+	g_autoptr(GsPlugin) app_plugin = gs_app_dup_management_plugin (app);
+	return (app_plugin == plugin);
 }
 
 /**
  * gs_app_set_management_plugin:
  * @app: a #GsApp
- * @management_plugin: a string, or %NULL, e.g. "fwupd"
+ * @management_plugin: (nullable) (transfer none): a plugin, or %NULL
  *
  * The management plugin is the plugin that can handle doing install and remove
  * operations on the #GsApp.
- * Typical values include "packagekit" and "flatpak"
  *
  * It is an error to attempt to change the management plugin once it has been
  * previously set or to try to use this function on a wildcard application.
  *
- * Since: 3.22
+ * Since: 42
  **/
 void
-gs_app_set_management_plugin (GsApp *app, const gchar *management_plugin)
+gs_app_set_management_plugin (GsApp    *app,
+                              GsPlugin *management_plugin)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_autoptr(GMutexLocker) locker = NULL;
+	g_autoptr(GsPlugin) old_plugin = NULL;
+
 	g_return_if_fail (GS_IS_APP (app));
+	g_return_if_fail (management_plugin == NULL || GS_IS_PLUGIN (management_plugin));
 
 	locker = g_mutex_locker_new (&priv->mutex);
 
@@ -3224,26 +3288,27 @@ gs_app_set_management_plugin (GsApp *app, const gchar *management_plugin)
 		g_warning ("plugins should not set the management plugin on "
 			   "%s to %s -- create a new GsApp in refine()!",
 			   gs_app_get_unique_id_unlocked (app),
-			   management_plugin);
+			   (management_plugin != NULL) ? gs_plugin_get_name (management_plugin) : "(null)");
 		return;
 	}
 
 	/* same */
-	if (g_strcmp0 (priv->management_plugin, management_plugin) == 0)
+	old_plugin = g_weak_ref_get (&priv->management_plugin_weak);
+
+	if (old_plugin == management_plugin)
 		return;
 
 	/* trying to change */
-	if (priv->management_plugin != NULL && management_plugin != NULL) {
+	if (old_plugin != NULL && management_plugin != NULL) {
 		g_warning ("automatically prevented from changing "
 			   "management plugin on %s from %s to %s!",
 			   gs_app_get_unique_id_unlocked (app),
-			   priv->management_plugin,
-			   management_plugin);
+			   gs_plugin_get_name (old_plugin),
+			   gs_plugin_get_name (management_plugin));
 		return;
 	}
 
-	g_free (priv->management_plugin);
-	priv->management_plugin = g_strdup (management_plugin);
+	g_weak_ref_set (&priv->management_plugin_weak, management_plugin);
 }
 
 /**
@@ -4237,6 +4302,7 @@ calculate_key_colors (GsApp *app)
 	/* Lazily create the array */
 	if (priv->key_colors == NULL)
 		priv->key_colors = g_array_new (FALSE, FALSE, sizeof (GdkRGBA));
+	priv->user_key_colors = FALSE;
 
 	/* Look for an override first. Parse and use it if possible. This is
 	 * typically specified in the appdata for an app as:
@@ -4273,6 +4339,8 @@ calculate_key_colors (GsApp *app)
 				g_array_append_val (priv->key_colors, rgba);
 			}
 
+			priv->user_key_colors = TRUE;
+
 			return;
 		} else {
 			g_warning ("Invalid value for GnomeSoftware::key-colors for %s: %s",
@@ -4291,11 +4359,13 @@ calculate_key_colors (GsApp *app)
 		g_autoptr(GInputStream) icon_stream = g_loadable_icon_load (G_LOADABLE_ICON (icon_small), 32, NULL, NULL, NULL);
 		pb_small = gdk_pixbuf_new_from_stream_at_scale (icon_stream, 32, 32, TRUE, NULL, NULL);
 	} else if (G_IS_THEMED_ICON (icon_small)) {
+		g_autoptr(GtkIconPaintable) icon_paintable = NULL;
 		g_autoptr(GtkIconTheme) theme = NULL;
-		g_autoptr(GtkIconInfo) icon_info = NULL;
+		GdkDisplay *display;
 
-		if (gdk_screen_get_default () != NULL) {
-			theme = g_object_ref (gtk_icon_theme_get_default ());
+		display = gdk_display_get_default ();
+		if (display != NULL) {
+			theme = g_object_ref (gtk_icon_theme_get_for_display (display));
 		} else {
 			const gchar *test_search_path;
 
@@ -4308,16 +4378,51 @@ calculate_key_colors (GsApp *app)
 			test_search_path = g_getenv ("GS_SELF_TEST_ICON_THEME_PATH");
 			if (test_search_path != NULL) {
 				g_auto(GStrv) dirs = g_strsplit (test_search_path, ":", -1);
+				gtk_icon_theme_set_search_path (theme, (const char * const *)dirs);
 
-				/* This prepends, so we have to iterate in reverse to preserve order */
-				for (gsize i = g_strv_length (dirs); i > 0; i--)
-					gtk_icon_theme_prepend_search_path (theme, dirs[i - 1]);
 			}
 		}
 
-		icon_info = gtk_icon_theme_lookup_by_gicon (theme, icon_small, 32, GTK_ICON_LOOKUP_USE_BUILTIN);
-		if (icon_info != NULL)
-			pb_small = gtk_icon_info_load_icon (icon_info, NULL);
+		icon_paintable = gtk_icon_theme_lookup_by_gicon (theme, icon_small,
+								 32, 1,
+								 gtk_get_locale_direction (),
+								 0);
+		if (icon_paintable != NULL) {
+			g_autoptr(GFile) file = NULL;
+			g_autofree gchar *path = NULL;
+
+			file = gtk_icon_paintable_get_file (icon_paintable);
+			if (file != NULL)
+				path = g_file_get_path (file);
+
+			if (path != NULL) {
+				pb_small = gdk_pixbuf_new_from_file_at_size (path, 32, 32, NULL);
+			} else {
+				g_autoptr(GskRenderNode) render_node = NULL;
+				g_autoptr(GtkSnapshot) snapshot = NULL;
+				cairo_surface_t *surface;
+				cairo_t *cr;
+
+				surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, 32, 32);
+				cr = cairo_create (surface);
+
+				/* TODO: this can be done entirely on the GPU using shaders */
+				snapshot = gtk_snapshot_new ();
+				gdk_paintable_snapshot (GDK_PAINTABLE (icon_paintable),
+							GDK_SNAPSHOT (snapshot),
+							32.0,
+							32.0);
+
+				render_node = gtk_snapshot_free_to_node (g_steal_pointer (&snapshot));
+				gsk_render_node_draw (render_node, cr);
+
+				pb_small = gdk_pixbuf_get_from_surface (surface, 0, 0, 32, 32);
+
+				cairo_surface_destroy (surface);
+				cairo_destroy (cr);
+			}
+		}
+
 	} else {
 		g_debug ("unsupported pixbuf, so no key colors");
 		return;
@@ -4372,6 +4477,7 @@ gs_app_set_key_colors (GsApp *app, GArray *key_colors)
 	g_return_if_fail (GS_IS_APP (app));
 	g_return_if_fail (key_colors != NULL);
 	locker = g_mutex_locker_new (&priv->mutex);
+	priv->user_key_colors = FALSE;
 	if (_g_set_array (&priv->key_colors, key_colors))
 		gs_app_queue_notify (app, obj_props[PROP_KEY_COLORS]);
 }
@@ -4396,8 +4502,29 @@ gs_app_add_key_color (GsApp *app, GdkRGBA *key_color)
 	if (priv->key_colors == NULL)
 		priv->key_colors = g_array_new (FALSE, FALSE, sizeof (GdkRGBA));
 
+	priv->user_key_colors = FALSE;
 	g_array_append_val (priv->key_colors, *key_color);
 	gs_app_queue_notify (app, obj_props[PROP_KEY_COLORS]);
+}
+
+/**
+ * gs_app_get_user_key_colors:
+ * @app: a #GsApp
+ *
+ * Returns whether the key colors provided by gs_app_get_key_colors()
+ * are set by the user (using `GnomeSoftware::key-colors`). %FALSE
+ * means the colors have been calculated from the @app icon.
+ *
+ * Returns: whether the key colors have been provided by the user.
+ *
+ * Since: 42
+ **/
+gboolean
+gs_app_get_user_key_colors (GsApp *app)
+{
+	GsAppPrivate *priv = gs_app_get_instance_private (app);
+	g_return_val_if_fail (GS_IS_APP (app), FALSE);
+	return priv->user_key_colors;
 }
 
 /**
@@ -4517,10 +4644,6 @@ gs_app_get_kudos_percentage (GsApp *app)
 		percentage += 20;
 	if ((priv->kudos & GS_APP_KUDO_SANDBOXED_SECURE) > 0)
 		percentage += 20;
-
-	/* popular apps should be at *least* 50% */
-	if ((priv->kudos & GS_APP_KUDO_POPULAR) > 0)
-		percentage = MAX (percentage, 50);
 
 	return MIN (percentage, 100);
 }
@@ -4712,6 +4835,15 @@ gs_app_get_priority (GsApp *app)
 {
 	GsAppPrivate *priv = gs_app_get_instance_private (app);
 	g_return_val_if_fail (GS_IS_APP (app), 0);
+
+	/* If the priority hasn’t been explicitly set, fetch it from the app’s
+	 * management plugin. */
+	if (priv->priority == 0) {
+		g_autoptr(GsPlugin) plugin = gs_app_dup_management_plugin (app);
+		if (plugin != NULL)
+			return gs_plugin_get_priority (plugin);
+	}
+
 	return priv->priority;
 }
 
@@ -5022,6 +5154,7 @@ gs_app_dispose (GObject *object)
 	g_clear_pointer (&priv->icons, g_ptr_array_unref);
 	g_clear_pointer (&priv->version_history, g_ptr_array_unref);
 	g_clear_pointer (&priv->relations, g_ptr_array_unref);
+	g_weak_ref_clear (&priv->management_plugin_weak);
 
 	G_OBJECT_CLASS (gs_app_parent_class)->dispose (object);
 }
@@ -5059,8 +5192,7 @@ gs_app_finalize (GObject *object)
 	g_free (priv->description);
 	g_free (priv->update_version);
 	g_free (priv->update_version_ui);
-	g_free (priv->update_details);
-	g_free (priv->management_plugin);
+	g_free (priv->update_details_markup);
 	g_hash_table_unref (priv->metadata);
 	g_ptr_array_unref (priv->categories);
 	g_clear_pointer (&priv->key_colors, g_array_unref);

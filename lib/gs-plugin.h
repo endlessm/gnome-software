@@ -12,7 +12,6 @@
 #include <glib-object.h>
 #include <gmodule.h>
 #include <gio/gio.h>
-#include <libsoup/soup.h>
 
 #include "gs-app.h"
 #include "gs-app-list.h"
@@ -26,6 +25,50 @@ G_BEGIN_DECLS
 
 G_DECLARE_DERIVABLE_TYPE (GsPlugin, gs_plugin, GS, PLUGIN, GObject)
 
+/**
+ * GsPluginClass:
+ * @setup_async: (nullable): Setup method for the plugin. This is called after
+ *   the #GsPlugin object is constructed, before it’s used for anything. It
+ *   should do any long-running setup operations which the plugin needs, such as
+ *   file or network access. It may be %NULL if the plugin doesn’t need to be
+ *   explicitly shut down. It is not called if the plugin is disabled during
+ *   construction.
+ * @setup_finish: (nullable): Finish method for @setup_async. Must be
+ *   implemented if @setup_async is implemented. If this returns an error, the
+ *   plugin will be disabled.
+ * @shutdown_async: (nullable): Shutdown method for the plugin. This is called
+ *   by the #GsPluginLoader when the process is terminating or the
+ *   #GsPluginLoader is being destroyed. It should be used to cancel or stop any
+ *   ongoing operations or threads in the plugin. It may be %NULL if the plugin
+ *   doesn’t need to be explicitly shut down.
+ * @shutdown_finish: (nullable): Finish method for @shutdown_async. Must be
+ *   implemented if @shutdown_async is implemented.
+ * @refine_async: (nullable): Refining looks up and adds data to #GsApps. The
+ *   apps to refine are provided in a list, and the flags specify what data to
+ *   look up and add. Refining certain kinds of data can be very expensive (for
+ *   example, requiring network requests), which is why it’s not all loaded by
+ *   default. By refining multiple applications at once, data requests can be
+ *   batched by the plugin where possible.
+ * @refine_finish: (nullable): Finish method for @refine_async. Must be
+ *   implemented if @refine_async is implemented.
+ * @list_installed_apps_async: (nullable): Get the list of installed apps
+ *   belonging to this plugin.
+ * @list_installed_apps_finish: (nullable): Finish method for
+ *   @list_installed_apps_async. Must be implemented if
+ *   @list_installed_apps_async is implemented.
+ * @refresh_metadata_async: (nullable): Refresh plugin metadata.
+ * @refresh_metadata_finish: (nullable): Finish method for
+ *   @refresh_metadata_async. Must be implemented if @refresh_metadata_async is
+ *   implemented.
+ * @list_distro_upgrades_async: (nullable): List available distro upgrades.
+ * @list_distro_upgrades_finish: (nullable): Finish method for
+ *   @list_distro_upgrades_async. Must be implemented if
+ *   @list_distro_upgrades_async is implemented.
+ *
+ * The class structure for a #GsPlugin. Virtual methods here should be
+ * implemented by plugin implementations derived from #GsPlugin to provide their
+ * plugin-specific behaviour.
+ */
 struct _GsPluginClass
 {
 	GObjectClass		 parent_class;
@@ -45,10 +88,68 @@ struct _GsPluginClass
 							 gpointer	 user_data);
 	void			(*repository_changed)	(GsPlugin	*plugin,
 							 GsApp		*repository);
-	gpointer		 padding[24];
-};
+	gboolean		(*ask_untrusted)	(GsPlugin	*plugin,
+							 const gchar	*title,
+							 const gchar	*msg,
+							 const gchar	*details,
+							 const gchar	*accept_label);
 
-typedef struct	GsPluginData	GsPluginData;
+	void			(*setup_async)		(GsPlugin		*plugin,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+	gboolean		(*setup_finish)		(GsPlugin		*plugin,
+							 GAsyncResult		*result,
+							 GError			**error);
+
+	void			(*shutdown_async)	(GsPlugin		*plugin,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+	gboolean		(*shutdown_finish)	(GsPlugin		*plugin,
+							 GAsyncResult		*result,
+							 GError			**error);
+
+	void			(*refine_async)		(GsPlugin		*plugin,
+							 GsAppList		*list,
+							 GsPluginRefineFlags	 flags,
+							 GCancellable		*cancellable,
+							 GAsyncReadyCallback	 callback,
+							 gpointer		 user_data);
+	gboolean		(*refine_finish)	(GsPlugin		*plugin,
+							 GAsyncResult		*result,
+							 GError			**error);
+
+	void			(*list_installed_apps_async)	(GsPlugin		*plugin,
+								 GsPluginListInstalledAppsFlags flags,
+								 GCancellable		*cancellable,
+								 GAsyncReadyCallback	 callback,
+								 gpointer		 user_data);
+	GsAppList *		(*list_installed_apps_finish)	(GsPlugin		*plugin,
+								 GAsyncResult		*result,
+								 GError			**error);
+
+	void			(*refresh_metadata_async)	(GsPlugin		*plugin,
+								 guint64		 cache_age_secs,
+								 GsPluginRefreshMetadataFlags flags,
+								 GCancellable		*cancellable,
+								 GAsyncReadyCallback	 callback,
+								 gpointer		 user_data);
+	gboolean		(*refresh_metadata_finish)	(GsPlugin		*plugin,
+								 GAsyncResult		*result,
+								 GError			**error);
+
+	void			(*list_distro_upgrades_async)	(GsPlugin		*plugin,
+								 GsPluginListDistroUpgradesFlags flags,
+								 GCancellable		*cancellable,
+								 GAsyncReadyCallback	 callback,
+								 gpointer		 user_data);
+	GsAppList *		(*list_distro_upgrades_finish)	(GsPlugin		*plugin,
+								 GAsyncResult		*result,
+								 GError			**error);
+
+	gpointer		 padding[23];
+};
 
 /* helpers */
 #define	GS_PLUGIN_ERROR					gs_plugin_error_quark ()
@@ -56,9 +157,6 @@ typedef struct	GsPluginData	GsPluginData;
 GQuark		 gs_plugin_error_quark			(void);
 
 /* public getters and setters */
-GsPluginData	*gs_plugin_alloc_data			(GsPlugin	*plugin,
-							 gsize		 sz);
-GsPluginData	*gs_plugin_get_data			(GsPlugin	*plugin);
 const gchar	*gs_plugin_get_name			(GsPlugin	*plugin);
 const gchar	*gs_plugin_get_appstream_id		(GsPlugin	*plugin);
 void		 gs_plugin_set_appstream_id		(GsPlugin	*plugin,
@@ -74,19 +172,11 @@ void		 gs_plugin_remove_flags			(GsPlugin	*plugin,
 							 GsPluginFlags	 flags);
 guint		 gs_plugin_get_scale			(GsPlugin	*plugin);
 const gchar	*gs_plugin_get_language			(GsPlugin	*plugin);
-SoupSession	*gs_plugin_get_soup_session		(GsPlugin	*plugin);
-void		 gs_plugin_set_soup_session		(GsPlugin	*plugin,
-							 SoupSession	*soup_session);
 void		 gs_plugin_add_rule			(GsPlugin	*plugin,
 							 GsPluginRule	 rule,
 							 const gchar	*name);
 
 /* helpers */
-GBytes		*gs_plugin_download_data		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 const gchar	*uri,
-							 GCancellable	*cancellable,
-							 GError		**error);
 gboolean	 gs_plugin_download_file		(GsPlugin	*plugin,
 							 GsApp		*app,
 							 const gchar	*uri,
@@ -138,5 +228,10 @@ void		gs_plugin_update_cache_state_for_repository
 							 GsApp *repository);
 gboolean	gs_plugin_get_action_supported		(GsPlugin	*plugin,
 							 GsPluginAction	 action);
+gboolean	gs_plugin_ask_untrusted			(GsPlugin	*plugin,
+							 const gchar	*title,
+							 const gchar	*msg,
+							 const gchar	*details,
+							 const gchar	*accept_label);
 
 G_END_DECLS

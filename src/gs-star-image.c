@@ -12,8 +12,8 @@
  *
  * Depending on the #GsStarImage:fraction property, the star image can be
  * drawn as filled only partially or fully or not at all. This is accomplished
- * by using a `color` style property for the filled part and a
- * `star-bg` style property for the unfilled part of the star.
+ * by using a `color` style property for the filled part. The unfilled part of
+ * the star currently uses a hardcoded colour.
  * The `background` style property controls the area outside the star.
  *
  * Since: 41
@@ -22,6 +22,8 @@
 #include "config.h"
 
 #include "gs-star-image.h"
+
+#include <adwaita.h>
 
 struct _GsStarImage
 {
@@ -137,11 +139,12 @@ gs_star_image_set_property (GObject *object,
 	}
 }
 
-static gboolean
-gs_star_image_draw (GtkWidget *widget,
-		    cairo_t *cr)
+static void
+gs_star_image_snapshot (GtkWidget   *widget,
+                        GtkSnapshot *snapshot)
 {
 	GtkAllocation allocation;
+	cairo_t *cr;
 	gdouble fraction;
 	gint radius;
 
@@ -151,28 +154,30 @@ gs_star_image_draw (GtkWidget *widget,
 
 	radius = MIN (allocation.width, allocation.height) / 2;
 
+	cr = gtk_snapshot_append_cairo (snapshot,
+					&GRAPHENE_RECT_INIT (0, 0,
+							     gtk_widget_get_width (widget),
+							     gtk_widget_get_height (widget)));
+
 	if (radius > 0) {
 		GtkStyleContext *style_context;
-		GdkRGBA *star_bg = NULL;
+		GdkRGBA star_bg = { 1, 1, 1, 1 };
 		GdkRGBA star_fg;
 		gint min_x = -radius, max_x = radius;
 
-		gtk_widget_style_get (widget,
-			"star-bg", &star_bg,
-			NULL);
-
 		style_context = gtk_widget_get_style_context (widget);
-		gtk_style_context_get_color (style_context,
-					     gtk_style_context_get_state (style_context),
-					     &star_fg);
+		gtk_style_context_get_color (style_context, &star_fg);
+
+		gtk_style_context_lookup_color (style_context, "card_fg_color", &star_bg);
+		if (adw_style_manager_get_high_contrast (adw_style_manager_get_default ()))
+			star_bg.alpha *= 0.4;
+		else
+			star_bg.alpha *= 0.2;
 
 		cairo_save (cr);
 		gs_star_image_outline_star (cr, allocation.x, allocation.y, radius, &min_x, &max_x);
 		cairo_clip (cr);
-		if (star_bg)
-			gdk_cairo_set_source_rgba (cr, star_bg);
-		else
-			cairo_set_source_rgb (cr, 0xde / 255.0, 0xdd / 255.0, 0xda / 255.0);
+		gdk_cairo_set_source_rgba (cr, &star_bg);
 		cairo_rectangle (cr, -radius, -radius, 2 * radius, 2 * radius);
 		cairo_fill (cr);
 
@@ -183,11 +188,9 @@ gs_star_image_draw (GtkWidget *widget,
 			cairo_rectangle (cr, min_x, -radius, (max_x - min_x) * fraction, 2 * radius);
 		cairo_fill (cr);
 		cairo_restore (cr);
-
-		g_clear_pointer (&star_bg, gdk_rgba_free);
 	}
 
-	return FALSE;
+	cairo_destroy (cr);
 }
 
 static void
@@ -201,18 +204,13 @@ gs_star_image_class_init (GsStarImageClass *klass)
 	object_class->set_property = gs_star_image_set_property;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
-	widget_class->draw = gs_star_image_draw;
+	widget_class->snapshot = gs_star_image_snapshot;
 
 	g_object_class_install_property (object_class,
 					 PROP_FRACTION,
 					 g_param_spec_double ("fraction", NULL, NULL,
 							      0.0, 1.0, 1.0,
 							      G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY));
-
-	gtk_widget_class_install_style_property (widget_class,
-					 g_param_spec_boxed ("star-bg", NULL, NULL,
-							     GDK_TYPE_RGBA,
-							     G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
 	gtk_widget_class_set_css_name (widget_class, "star-image");
 }
@@ -222,7 +220,6 @@ gs_star_image_init (GsStarImage *self)
 {
 	self->fraction = 1.0;
 
-	gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
 	gtk_widget_set_size_request (GTK_WIDGET (self), 16, 16);
 }
 

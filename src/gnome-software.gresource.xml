@@ -5,6 +5,7 @@
   <file preprocess="xml-stripblanks">gs-app-addon-row.ui</file>
   <file preprocess="xml-stripblanks">gs-app-context-bar.ui</file>
   <file preprocess="xml-stripblanks">gs-app-details-page.ui</file>
+  <file preprocess="xml-stripblanks">gs-app-reviews-dialog.ui</file>
   <file preprocess="xml-stripblanks">gs-app-version-history-dialog.ui</file>
   <file preprocess="xml-stripblanks">gs-app-version-history-row.ui</file>
   <file preprocess="xml-stripblanks">gs-app-row.ui</file>
@@ -17,9 +18,9 @@
   <file preprocess="xml-stripblanks">gs-extras-page.ui</file>
   <file preprocess="xml-stripblanks">gs-feature-tile.ui</file>
   <file preprocess="xml-stripblanks">gs-featured-carousel.ui</file>
-  <file preprocess="xml-stripblanks">gs-first-run-dialog.ui</file>
   <file preprocess="xml-stripblanks">gs-hardware-support-context-dialog.ui</file>
   <file preprocess="xml-stripblanks">gs-info-bar.ui</file>
+  <file preprocess="xml-stripblanks">gs-info-window.ui</file>
   <file preprocess="xml-stripblanks">gs-installed-page.ui</file>
   <file preprocess="xml-stripblanks">gs-license-tile.ui</file>
   <file preprocess="xml-stripblanks">gs-loading-page.ui</file>
@@ -49,10 +50,10 @@
   <file preprocess="xml-stripblanks">gs-updates-section.ui</file>
   <file preprocess="xml-stripblanks">gs-upgrade-banner.ui</file>
   <file preprocess="xml-stripblanks">org.freedesktop.PackageKit.xml</file>
-  <file>gtk-style.css</file>
-  <file>gtk-style-hc.css</file>
+  <file>style.css</file>
+  <file>style-dark.css</file>
+  <file>style-hc.css</file>
   <file preprocess="xml-stripblanks" alias="up-to-date.svg">../data/assets/up-to-date.svg</file>
-  <file alias="work-category-background.png">../data/assets/work-category-background.png</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/apps/system-component-addon.svg">../data/icons/system-component-addon.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/apps/system-component-application.svg">../data/icons/system-component-application.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/apps/system-component-codecs.svg">../data/icons/system-component-codecs.svg</file>
@@ -73,13 +74,15 @@
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/chat-symbolic.svg">../data/icons/chat-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/cigarette-none-symbolic.svg">../data/icons/cigarette-none-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/cigarette-symbolic.svg">../data/icons/cigarette-symbolic.svg</file>
+  <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/community-symbolic.svg">../data/icons/community-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/devices/desktop-symbolic.svg">../data/icons/desktop-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/devices/emblem-synchronizing-symbolic.svg">../data/icons/emblem-synchronizing-symbolic.svg</file>
-  <file preprocess="xml-stripblanks" alias="icons/scalable/devices/explore2-symbolic.svg">../data/icons/explore2-symbolic.svg</file>
+  <file preprocess="xml-stripblanks" alias="icons/scalable/devices/explore-symbolic.svg">../data/icons/explore-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/devices/external-link-symbolic.svg">../data/icons/external-link-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/flag-outline-thin-symbolic.svg">../data/icons/flag-outline-thin-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/graveyard-symbolic.svg">../data/icons/graveyard-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/devices/heart-filled-symbolic.svg">../data/icons/heart-filled-symbolic.svg</file>
+  <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/help-link-symbolic.svg">../data/icons/help-link-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/money-none-symbolic.svg">../data/icons/money-none-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/money-symbolic.svg">../data/icons/money-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/nudity-none-symbolic.svg">../data/icons/nudity-none-symbolic.svg</file>
@@ -88,6 +91,7 @@
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/padlock-open-symbolic.svg">../data/icons/padlock-open-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/devices/phone-symbolic.svg">../data/icons/phone-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/pub-symbolic.svg">../data/icons/pub-symbolic.svg</file>
+  <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/review-symbolic.svg">../data/icons/review-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/safety-symbolic.svg">../data/icons/safety-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/devices/sign-language-symbolic.svg">../data/icons/sign-language-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/strong-language-none-symbolic.svg">../data/icons/strong-language-none-symbolic.svg</file>
@@ -95,5 +99,6 @@
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/test-pass-symbolic.svg">../data/icons/test-pass-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/violence-none-symbolic.svg">../data/icons/violence-none-symbolic.svg</file>
   <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/violence-symbolic.svg">../data/icons/violence-symbolic.svg</file>
+  <file preprocess="xml-stripblanks" alias="icons/scalable/emblems/webpage-symbolic.svg">../data/icons/webpage-symbolic.svg</file>
  </gresource>
 </gresources>

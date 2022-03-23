@@ -10,7 +10,7 @@
 
 #include <glib-object.h>
 
-#include "gs-app-list-private.h"
+#include "gs-app-list.h"
 #include "gs-category.h"
 #include "gs-plugin-types.h"
 
@@ -18,12 +18,26 @@ G_BEGIN_DECLS
 
 #define GS_TYPE_PLUGIN_JOB (gs_plugin_job_get_type ())
 
-G_DECLARE_FINAL_TYPE (GsPluginJob, gs_plugin_job, GS, PLUGIN_JOB, GObject)
+G_DECLARE_DERIVABLE_TYPE (GsPluginJob, gs_plugin_job, GS, PLUGIN_JOB, GObject)
+
+#include "gs-plugin-loader.h"
+
+struct _GsPluginJobClass
+{
+	GObjectClass parent_class;
+
+	void (*run_async) (GsPluginJob         *self,
+	                   GsPluginLoader      *plugin_loader,
+	                   GCancellable        *cancellable,
+	                   GAsyncReadyCallback  callback,
+	                   gpointer             user_data);
+	gboolean (*run_finish) (GsPluginJob   *self,
+	                        GAsyncResult  *result,
+	                        GError       **error);
+};
 
 void		 gs_plugin_job_set_refine_flags		(GsPluginJob	*self,
 							 GsPluginRefineFlags refine_flags);
-void		 gs_plugin_job_set_filter_flags		(GsPluginJob	*self,
-							 GsPluginRefineFlags filter_flags);
 void		 gs_plugin_job_set_dedupe_flags		(GsPluginJob	*self,
 							 GsAppListFilterFlags dedupe_flags);
 void		 gs_plugin_job_set_interactive		(GsPluginJob	*self,
@@ -55,5 +69,9 @@ void		 gs_plugin_job_set_review		(GsPluginJob	*self,
 							 AsReview	*review);
 
 #define		 gs_plugin_job_newv(a,...)		GS_PLUGIN_JOB(g_object_new(GS_TYPE_PLUGIN_JOB, "action", a, __VA_ARGS__))
+
+#define		 GS_PLUGIN_JOB_DEDUPE_FLAGS_DEFAULT	(GS_APP_LIST_FILTER_FLAG_KEY_ID | \
+							 GS_APP_LIST_FILTER_FLAG_KEY_SOURCE | \
+							 GS_APP_LIST_FILTER_FLAG_KEY_VERSION)
 
 G_END_DECLS

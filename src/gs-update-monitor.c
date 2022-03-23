@@ -518,7 +518,8 @@ get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* get result */
 	apps = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
 	if (apps == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get updates: %s", error->message);
 		return;
 	}
@@ -568,7 +569,7 @@ get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 		g_debug ("Getting updates");
 		gs_plugin_loader_job_process_async (monitor->plugin_loader,
 						    plugin_job,
-						    monitor->cancellable,
+						    monitor->refresh_cancellable,
 						    download_finished_cb,
 						    monitor);
 	} else {
@@ -604,7 +605,7 @@ get_updates_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 			g_debug ("Getting %u online updates", gs_app_list_length (update_online));
 			gs_plugin_loader_job_process_async (monitor->plugin_loader,
 							    plugin_job,
-							    monitor->cancellable,
+							    monitor->refresh_cancellable,
 							    download_finished_cb,
 							    monitor);
 		}
@@ -636,7 +637,8 @@ get_system_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	/* get result */
 	app = gs_plugin_loader_get_system_app_finish (plugin_loader, res, &error);
 	if (app == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get system: %s", error->message);
 		return;
 	}
@@ -652,7 +654,7 @@ get_system_finished_cb (GObject *object, GAsyncResult *res, gpointer data)
 	if (gs_app_get_state (app) != GS_APP_STATE_UNAVAILABLE)
 		return;
 
-	/* TRANSLATORS: this is when the current OS version goes end-of-life */
+	/* TRANSLATORS: this is when the current operating system version goes end-of-life */
 	n = g_notification_new (_("Operating System Updates Unavailable"));
 	/* TRANSLATORS: this is the message dialog for the distro EOL notice */
 	g_notification_set_body (n, _("Upgrade to continue receiving security updates."));
@@ -676,7 +678,8 @@ get_upgrades_finished_cb (GObject *object,
 	/* get result */
 	apps = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
 	if (apps == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_warning ("failed to get upgrades: %s",
 				   error->message);
 		}
@@ -769,8 +772,8 @@ get_upgrades (GsUpdateMonitor *monitor)
 	 * AppStream data being up to date, either by the appstream-data
 	 * package being up-to-date, or the metadata being auto-downloaded */
 	g_debug ("Getting upgrades");
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_DISTRO_UPDATES,
-					 NULL);
+	plugin_job = gs_plugin_job_list_distro_upgrades_new (GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_NONE,
+							     GS_PLUGIN_REFINE_FLAGS_NONE);
 	gs_plugin_loader_job_process_async (monitor->plugin_loader,
 					    plugin_job,
 					    monitor->cancellable,
@@ -798,7 +801,8 @@ refresh_cache_finished_cb (GObject *object,
 	g_autoptr(GError) error = NULL;
 
 	if (!gs_plugin_loader_job_action_finish (GS_PLUGIN_LOADER (object), res, &error)) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to refresh the cache: %s", error->message);
 		return;
 	}
@@ -828,7 +832,8 @@ install_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
 	g_autoptr(WithAppData) with_app_data = data;
 
 	if (!gs_plugin_loader_job_action_finish (GS_PLUGIN_LOADER (object), res, &error)) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_debug ("failed to install language pack: %s", error->message);
 		return;
 	} else {
@@ -847,7 +852,8 @@ get_language_pack_cb (GObject *object, GAsyncResult *res, gpointer data)
 
 	app_list = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
 	if (app_list == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_debug ("failed to find language pack: %s", error->message);
 		return;
 	}
@@ -984,9 +990,8 @@ check_updates (GsUpdateMonitor *monitor)
 	}
 
 	g_debug ("Daily update check due");
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) (60 * 60 * 24),
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (60 * 60 * 24,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	gs_plugin_loader_job_process_async (monitor->plugin_loader, plugin_job,
 					    monitor->refresh_cancellable,
 					    refresh_cache_finished_cb,
@@ -1113,7 +1118,7 @@ get_updates_historical_cb (GObject *object, GAsyncResult *res, gpointer data)
 		/* TRANSLATORS: title when we offline updates have failed */
 		notification = g_notification_new (_("Software Updates Failed"));
 		/* TRANSLATORS: message when we offline updates have failed */
-		g_notification_set_body (notification, _("An important OS update failed to be installed."));
+		g_notification_set_body (notification, _("An important operating system update failed to be installed."));
 		g_notification_add_button (notification, _("Show Details"), "app.show-offline-update-error");
 		g_notification_set_default_action (notification, "app.show-offline-update-error");
 		g_application_send_notification (monitor->application, "offline-updates", notification);
@@ -1152,8 +1157,8 @@ get_updates_historical_cb (GObject *object, GAsyncResult *res, gpointer data)
 				  "Software Updates Installed",
 				  gs_app_list_length (apps));
 		/* TRANSLATORS: message when we've done offline updates */
-		message = ngettext ("An important OS update has been installed.",
-				    "Important OS updates have been installed.",
+		message = ngettext ("An important operating system update has been installed.",
+				    "Important operating system updates have been installed.",
 				    gs_app_list_length (apps));
 
 		notification = g_notification_new (title);
@@ -1214,43 +1219,37 @@ gs_update_monitor_show_error (GsUpdateMonitor *monitor, GtkWindow *window)
 	/* TRANSLATORS: this is when the offline update failed */
 	title = _("Failed To Update");
 
-	switch (monitor->last_offline_error->code) {
-	case GS_PLUGIN_ERROR_NOT_SUPPORTED:
+	if (g_error_matches (monitor->last_offline_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED)) {
 		/* TRANSLATORS: the user must have updated manually after
 		 * the updates were prepared */
 		msg = _("The system was already up to date.");
 		show_detailed_error = TRUE;
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
+	} else if (g_error_matches (monitor->last_offline_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (monitor->last_offline_error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 		/* TRANSLATORS: the user aborted the update manually */
 		msg = _("The update was cancelled.");
 		show_detailed_error = FALSE;
-		break;
-	case GS_PLUGIN_ERROR_NO_NETWORK:
+	} else if (g_error_matches (monitor->last_offline_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_NETWORK)) {
 		/* TRANSLATORS: the package manager needed to download
 		 * something with no network available */
 		msg = _("Internet access was required but wasn’t available. "
 			"Please make sure that you have internet access and try again.");
 		show_detailed_error = FALSE;
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (monitor->last_offline_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		/* TRANSLATORS: if the package is not signed correctly */
 		msg = _("There were security issues with the update. "
 			"Please consult your software provider for more details.");
 		show_detailed_error = TRUE;
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (monitor->last_offline_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		/* TRANSLATORS: we ran out of disk space */
 		msg = _("There wasn’t enough disk space. Please free up some space and try again.");
 		show_detailed_error = FALSE;
-		break;
-	default:
+	} else {
 		/* TRANSLATORS: We didn't handle the error type */
 		msg = _("We’re sorry: the update failed to install. "
 			"Please wait for another update and try again. "
 			"If the problem persists, contact your software provider.");
 		show_detailed_error = TRUE;
-		break;
 	}
 
 	gs_utils_show_error_dialog (window,
@@ -1285,6 +1284,9 @@ gs_update_monitor_network_changed_cb (GNetworkMonitor *network_monitor,
 		g_cancellable_cancel (monitor->refresh_cancellable);
 		g_object_unref (monitor->refresh_cancellable);
 		monitor->refresh_cancellable = g_cancellable_new ();
+	} else {
+		/* Else, it might be time to check for updates */
+		check_updates (monitor);
 	}
 }
 
@@ -1297,10 +1299,14 @@ gs_update_monitor_power_profile_changed_cb (GObject    *object,
 	GsUpdateMonitor *self = GS_UPDATE_MONITOR (user_data);
 
 	if (g_power_profile_monitor_get_power_saver_enabled (self->power_profile_monitor)) {
-		/* Cancel an ongoing refresh if we’re now in power saving mode. */
+		/* Cancel ongoing jobs, if we’re now in power saving mode. */
 		g_cancellable_cancel (self->refresh_cancellable);
 		g_object_unref (self->refresh_cancellable);
 		self->refresh_cancellable = g_cancellable_new ();
+
+		g_cancellable_cancel (self->cancellable);
+		g_object_unref (self->cancellable);
+		self->cancellable = g_cancellable_new ();
 	} else {
 		/* Else, it might be time to check for updates */
 		check_updates (self);
@@ -1402,7 +1408,7 @@ gs_update_monitor_dispose (GObject *object)
 		g_signal_handlers_disconnect_by_func (monitor->plugin_loader,
 						      network_available_notify_cb,
 						      monitor);
-		monitor->plugin_loader = NULL;
+		g_clear_object (&monitor->plugin_loader);
 	}
 	g_clear_object (&monitor->settings);
 	g_clear_object (&monitor->proxy_upower);
@@ -1430,7 +1436,8 @@ gs_update_monitor_class_init (GsUpdateMonitorClass *klass)
 }
 
 GsUpdateMonitor *
-gs_update_monitor_new (GsApplication *application)
+gs_update_monitor_new (GsApplication  *application,
+                       GsPluginLoader *plugin_loader)
 {
 	GsUpdateMonitor *monitor;
 
@@ -1438,7 +1445,7 @@ gs_update_monitor_new (GsApplication *application)
 	monitor->application = G_APPLICATION (application);
 	g_application_hold (monitor->application);
 
-	monitor->plugin_loader = gs_application_get_plugin_loader (application);
+	monitor->plugin_loader = g_object_ref (plugin_loader);
 	g_signal_connect (monitor->plugin_loader, "notify::allow-updates",
 			  G_CALLBACK (allow_updates_notify_cb), monitor);
 	g_signal_connect (monitor->plugin_loader, "notify::network-available",

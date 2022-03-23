@@ -94,8 +94,8 @@ typedef enum {
 
 /**
  * GsPluginRefineFlags:
- * @GS_PLUGIN_REFINE_FLAGS_DEFAULT:			No explicit flags set
- * @GS_PLUGIN_REFINE_FLAGS_USE_HISTORY:			Get the historical view (unused)
+ * @GS_PLUGIN_REFINE_FLAGS_NONE:			No explicit flags set
+ * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_ID:			Require the app’s ID; this is the minimum possible requirement
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE:		Require the license
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_URL:			Require the URL
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION:		Require the long description
@@ -114,6 +114,9 @@ typedef enum {
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE:		Require the provenance
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS:		Require user-reviews
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS:	Require user-ratings
+ * @GS_PLUGIN_REFINE_FLAGS_DISABLE_FILTERING:		Normally the results of a refine are
+ * 	filtered to remove non-valid apps; if this flag is set, that won’t happen.
+ * 	This is intended to be used by internal #GsPluginLoader code. (Since: 42)
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON:		Require the icon to be loaded
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS:		Require the needed permissions
  * @GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME:	Require the origin hostname
@@ -131,8 +134,8 @@ typedef enum {
  * The refine flags.
  **/
 typedef enum {
-	GS_PLUGIN_REFINE_FLAGS_DEFAULT			= 0,
-	GS_PLUGIN_REFINE_FLAGS_USE_HISTORY		= 1 << 0, /* unused, TODO: perhaps ->STATE */
+	GS_PLUGIN_REFINE_FLAGS_NONE			= 0,
+	GS_PLUGIN_REFINE_FLAGS_REQUIRE_ID		= 1 << 0,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE		= 1 << 1,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_URL		= 1 << 2,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION	= 1 << 3,
@@ -152,7 +155,7 @@ typedef enum {
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE	= 1 << 17,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS		= 1 << 18,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEW_RATINGS	= 1 << 19,
-	/* 1 << 20 is currently unused; was previously REQUIRE_KEY_COLORS */
+	GS_PLUGIN_REFINE_FLAGS_DISABLE_FILTERING	= 1 << 20,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON		= 1 << 21,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS	= 1 << 22,
 	GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME	= 1 << 23,
@@ -168,6 +171,48 @@ typedef enum {
 } GsPluginRefineFlags;
 
 /**
+ * GsPluginListInstalledAppsFlags:
+ * @GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_NONE: No flags set.
+ * @GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_INTERACTIVE: User initiated the job.
+ *
+ * Flags for an operation to list installed apps.
+ *
+ * Since: 42
+ */
+typedef enum {
+	GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_NONE = 0,
+	GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_INTERACTIVE = 1 << 0,
+} GsPluginListInstalledAppsFlags;
+
+/**
+ * GsPluginRefreshMetadataFlags:
+ * @GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE: No flags set.
+ * @GS_PLUGIN_REFRESH_METADATA_FLAGS_INTERACTIVE: User initiated the job.
+ *
+ * Flags for an operation to refresh metadata.
+ *
+ * Since: 42
+ */
+typedef enum {
+	GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE = 0,
+	GS_PLUGIN_REFRESH_METADATA_FLAGS_INTERACTIVE = 1 << 0,
+} GsPluginRefreshMetadataFlags;
+
+/**
+ * GsPluginListDistroUpgradesFlags:
+ * @GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_NONE: No flags set.
+ * @GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_INTERACTIVE: User initiated the job.
+ *
+ * Flags for an operation to list available distro upgrades.
+ *
+ * Since: 42
+ */
+typedef enum {
+	GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_NONE = 0,
+	GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_INTERACTIVE = 1 << 0,
+} GsPluginListDistroUpgradesFlags;
+
+/**
  * GsPluginRule:
  * @GS_PLUGIN_RULE_CONFLICTS:		The plugin conflicts with another
  * @GS_PLUGIN_RULE_RUN_AFTER:		Order the plugin after another
@@ -175,7 +220,8 @@ typedef enum {
  * @GS_PLUGIN_RULE_BETTER_THAN:		Results are better than another
  *
  * The rules used for ordering plugins.
- * Plugins are expected to add rules in gs_plugin_initialize().
+ * Plugins are expected to add rules in the init function for their #GsPlugin
+ * subclass.
  **/
 typedef enum {
 	GS_PLUGIN_RULE_CONFLICTS,
@@ -188,21 +234,15 @@ typedef enum {
 /**
  * GsPluginAction:
  * @GS_PLUGIN_ACTION_UNKNOWN:			Action is unknown
- * @GS_PLUGIN_ACTION_SETUP:			Plugin setup (internal)
  * @GS_PLUGIN_ACTION_INSTALL:			Install an application
  * @GS_PLUGIN_ACTION_REMOVE:			Remove an application
  * @GS_PLUGIN_ACTION_UPDATE:			Update an application
- * @GS_PLUGIN_ACTION_SET_RATING:		Set rating on an application
  * @GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD:		Download a distro upgrade
  * @GS_PLUGIN_ACTION_UPGRADE_TRIGGER:		Trigger a distro upgrade
  * @GS_PLUGIN_ACTION_LAUNCH:			Launch an application
  * @GS_PLUGIN_ACTION_UPDATE_CANCEL:		Cancel the update
- * @GS_PLUGIN_ACTION_ADD_SHORTCUT:		Add a shortcut to an application
- * @GS_PLUGIN_ACTION_REMOVE_SHORTCUT:		Remove a shortcut to an application
  * @GS_PLUGIN_ACTION_GET_UPDATES:		Get the list of updates
- * @GS_PLUGIN_ACTION_GET_DISTRO_UPDATES:	Get the list of distro updates
  * @GS_PLUGIN_ACTION_GET_SOURCES:		Get the list of sources
- * @GS_PLUGIN_ACTION_GET_INSTALLED:		Get the list of installed applications
  * @GS_PLUGIN_ACTION_GET_POPULAR:		Get the list of popular applications
  * @GS_PLUGIN_ACTION_GET_FEATURED:		Get the list of featured applications
  * @GS_PLUGIN_ACTION_SEARCH:			Get the search results for a query
@@ -210,14 +250,10 @@ typedef enum {
  * @GS_PLUGIN_ACTION_SEARCH_PROVIDES:		Get the search results for a provide query
  * @GS_PLUGIN_ACTION_GET_CATEGORIES:		Get the list of categories
  * @GS_PLUGIN_ACTION_GET_CATEGORY_APPS:		Get the apps for a specific category
- * @GS_PLUGIN_ACTION_REFINE:			Refine the application
- * @GS_PLUGIN_ACTION_REFRESH:			Refresh all the sources
  * @GS_PLUGIN_ACTION_FILE_TO_APP:		Convert the file to an application
  * @GS_PLUGIN_ACTION_URL_TO_APP:		Convert the URI to an application
  * @GS_PLUGIN_ACTION_GET_RECENT:		Get the apps recently released
  * @GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL:    Get the list of historical updates
- * @GS_PLUGIN_ACTION_INITIALIZE:		Initialize the plugin
- * @GS_PLUGIN_ACTION_DESTROY:			Destroy the plugin
  * @GS_PLUGIN_ACTION_DOWNLOAD:			Download an application
  * @GS_PLUGIN_ACTION_GET_ALTERNATES:		Get the alternates for a specific application
  * @GS_PLUGIN_ACTION_GET_LANGPACKS:		Get appropriate language pack
@@ -230,21 +266,15 @@ typedef enum {
  **/
 typedef enum {
 	GS_PLUGIN_ACTION_UNKNOWN,
-	GS_PLUGIN_ACTION_SETUP,
 	GS_PLUGIN_ACTION_INSTALL,
 	GS_PLUGIN_ACTION_REMOVE,
 	GS_PLUGIN_ACTION_UPDATE,
-	GS_PLUGIN_ACTION_SET_RATING,
 	GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD,
 	GS_PLUGIN_ACTION_UPGRADE_TRIGGER,
 	GS_PLUGIN_ACTION_LAUNCH,
 	GS_PLUGIN_ACTION_UPDATE_CANCEL,
-	GS_PLUGIN_ACTION_ADD_SHORTCUT,
-	GS_PLUGIN_ACTION_REMOVE_SHORTCUT,
 	GS_PLUGIN_ACTION_GET_UPDATES,
-	GS_PLUGIN_ACTION_GET_DISTRO_UPDATES,
 	GS_PLUGIN_ACTION_GET_SOURCES,
-	GS_PLUGIN_ACTION_GET_INSTALLED,
 	GS_PLUGIN_ACTION_GET_POPULAR,
 	GS_PLUGIN_ACTION_GET_FEATURED,
 	GS_PLUGIN_ACTION_SEARCH,
@@ -252,14 +282,10 @@ typedef enum {
 	GS_PLUGIN_ACTION_SEARCH_PROVIDES,
 	GS_PLUGIN_ACTION_GET_CATEGORIES,
 	GS_PLUGIN_ACTION_GET_CATEGORY_APPS,
-	GS_PLUGIN_ACTION_REFINE,
-	GS_PLUGIN_ACTION_REFRESH,
 	GS_PLUGIN_ACTION_FILE_TO_APP,
 	GS_PLUGIN_ACTION_URL_TO_APP,
 	GS_PLUGIN_ACTION_GET_RECENT,
 	GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL,
-	GS_PLUGIN_ACTION_INITIALIZE,
-	GS_PLUGIN_ACTION_DESTROY,
 	GS_PLUGIN_ACTION_DOWNLOAD,
 	GS_PLUGIN_ACTION_GET_ALTERNATES,
 	GS_PLUGIN_ACTION_GET_LANGPACKS,

@@ -17,6 +17,13 @@
 
 #include "gs-test.h"
 
+const gchar * const allowlist[] = {
+	"appstream",
+	"flatpak",
+	"icons",
+	NULL
+};
+
 static gboolean
 gs_flatpak_test_write_repo_file (const gchar *fn, const gchar *testdir, GFile **file_out, GError **error)
 {
@@ -56,7 +63,7 @@ gs_flatpak_test_write_ref_file (const gchar *filename, const gchar *url, const g
 	g_string_append (str, "Name=org.test.Chiron\n");
 	g_string_append (str, "Branch=master\n");
 	g_string_append_printf (str, "Url=%s\n", url);
-	g_string_append (str, "IsRuntime=False\n");
+	g_string_append (str, "IsRuntime=false\n");
 	g_string_append (str, "Comment=Single line synopsis\n");
 	g_string_append (str, "Description=A Testing Application\n");
 	g_string_append (str, "Icon=https://getfedora.org/static/images/fedora-logotext.png\n");
@@ -116,6 +123,7 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	g_autoptr(GIcon) icon = NULL;
+	g_autoptr(GsPlugin) management_plugin = NULL;
 
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
@@ -143,7 +151,9 @@ gs_plugins_flatpak_repo_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_REPOSITORY);
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "example");
-	g_assert_cmpstr (gs_app_get_management_plugin (app), ==, "flatpak");
+	management_plugin = gs_app_dup_management_plugin (app);
+	g_assert_nonnull (management_plugin);
+	g_assert_cmpstr (gs_plugin_get_name (management_plugin), ==, "flatpak");
 	g_assert_cmpstr (gs_app_get_origin_hostname (app), ==, "localhost");
 	g_assert_cmpstr (gs_app_get_url (app, AS_URL_KIND_HOMEPAGE), ==, "http://foo.bar");
 	g_assert_cmpstr (gs_app_get_name (app), ==, "foo-bar");
@@ -267,10 +277,11 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	gulong signal_id;
 	gboolean seen_unknown;
+	GsPlugin *plugin;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
@@ -305,7 +316,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 		return;
 	testdir_repourl = g_strdup_printf ("file://%s/repo", testdir);
 	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
-	gs_app_set_management_plugin (app_source, "flatpak");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "flatpak");
+	gs_app_set_management_plugin (app_source, plugin);
 	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, testdir_repourl);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL_REPO,
@@ -338,9 +350,8 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) G_MAXUINT,
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (G_MAXUINT64,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -386,7 +397,7 @@ gs_plugins_flatpak_app_with_runtime_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpstr (gs_app_get_origin_hostname (app), ==, "localhost");
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
-	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
+	g_assert_cmpstr (gs_app_get_update_details_markup (app), ==, NULL);
 	g_assert_cmpint (gs_app_get_update_urgency (app), ==, AS_URGENCY_KIND_UNKNOWN);
 
 	/* check runtime */
@@ -545,10 +556,11 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app_source = NULL;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsPlugin *plugin;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
@@ -569,7 +581,8 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 		return;
 	testdir_repourl = g_strdup_printf ("file://%s/repo", testdir);
 	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
-	gs_app_set_management_plugin (app_source, "flatpak");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "flatpak");
+	gs_app_set_management_plugin (app_source, plugin);
 	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, testdir_repourl);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL_REPO,
@@ -583,9 +596,8 @@ gs_plugins_flatpak_app_missing_runtime_func (GsPluginLoader *plugin_loader)
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) G_MAXUINT,
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (G_MAXUINT64,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -696,7 +708,7 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* write a flatpakrepo file */
 	testdir = gs_test_get_filename (TESTDATADIR, "only-runtime");
@@ -727,7 +739,7 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
 	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
-	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
 	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
 			"user/flatpak/*/org.test.Chiron/master"));
@@ -735,8 +747,8 @@ gs_plugins_flatpak_runtime_repo_func (GsPluginLoader *plugin_loader)
 
 	/* get runtime */
 	runtime = gs_app_get_runtime (app);
-	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/*/org.test.Runtime/master");
-	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpstr (gs_app_get_unique_id (runtime), ==, "user/flatpak/test/org.test.Runtime/master");
+	g_assert_cmpint (gs_app_get_state (runtime), ==, GS_APP_STATE_AVAILABLE);
 
 	/* check the number of sources */
 	g_object_unref (plugin_job);
@@ -831,7 +843,7 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* write a flatpakrepo file */
 	testdir = gs_test_get_filename (TESTDATADIR, "only-runtime");
@@ -890,7 +902,7 @@ gs_plugins_flatpak_runtime_repo_redundant_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
 	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
-	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
 	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
 			"user/flatpak/*/org.test.Chiron/master"));
@@ -983,10 +995,11 @@ gs_plugins_flatpak_broken_remote_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsApp) app_source = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsPlugin *plugin;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
@@ -998,7 +1011,8 @@ gs_plugins_flatpak_broken_remote_func (GsPluginLoader *plugin_loader)
 	if (testdir == NULL)
 		return;
 	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
-	gs_app_set_management_plugin (app_source, "flatpak");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "flatpak");
+	gs_app_set_management_plugin (app_source, plugin);
 	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, "file:///wont/work");
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL_REPO,
@@ -1035,15 +1049,10 @@ gs_plugins_flatpak_broken_remote_func (GsPluginLoader *plugin_loader)
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
 	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
-	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
+	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
-#if FLATPAK_CHECK_VERSION(1,1,2)
 	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
-			"user/flatpak/chiron-origin/org.test.Chiron/master"));
-#else
-	g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
-			"user/flatpak/org.test.Chiron-origin/org.test.Chiron/master"));
-#endif
+			"user/flatpak/test/org.test.Chiron/master"));
 	g_assert_cmpstr (gs_app_get_url (app, AS_URL_KIND_HOMEPAGE), ==, "http://127.0.0.1/");
 	g_assert_cmpstr (gs_app_get_name (app), ==, "Chiron");
 	g_assert_cmpstr (gs_app_get_summary (app), ==, "Single line synopsis");
@@ -1082,10 +1091,11 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	g_autoptr(GsAppList) search2 = NULL;
 	g_autoptr(GsAppList) sources = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsPlugin *plugin;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
@@ -1098,7 +1108,8 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 		return;
 	testdir_repourl = g_strdup_printf ("file://%s/repo", testdir);
 	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
-	gs_app_set_management_plugin (app_source, "flatpak");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "flatpak");
+	gs_app_set_management_plugin (app_source, plugin);
 	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	gs_flatpak_app_set_repo_url (app_source, testdir_repourl);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL_REPO,
@@ -1111,9 +1122,8 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) 0,
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (0,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -1150,7 +1160,7 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 		fn = gs_test_get_filename (TESTDATADIR, "chiron.flatpak");
 		g_assert_true (fn != NULL);
 		file = g_file_new_for_path (fn);
-		refine_flags = GS_PLUGIN_REFINE_FLAGS_DEFAULT;
+		refine_flags = GS_PLUGIN_REFINE_FLAGS_NONE;
 	} else {
 		const gchar *fn_repo = "test.flatpakrepo";
 		g_autoptr(GFile) fn_repo_file = NULL;
@@ -1181,6 +1191,10 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 					   GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME;
 	}
 
+	/* Wait for the flatpak changes to be delivered through the file
+	   monitor notifications, which will cleanup plugin cache. */
+	g_usleep (G_USEC_PER_SEC);
+
 	/* convert it to a GsApp */
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_FILE_TO_APP,
@@ -1191,7 +1205,6 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	g_assert_no_error (error);
 	g_assert_true (app != NULL);
 	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
-	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.test.Chiron");
 	g_assert_cmpstr (gs_app_get_name (app), ==, "Chiron");
 	g_assert_cmpstr (gs_app_get_summary (app), ==, "Single line synopsis");
@@ -1204,15 +1217,12 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
 				"user/flatpak/flatpak/org.test.Chiron/master"));
 		g_assert_true (gs_flatpak_app_get_file_kind (app) == GS_FLATPAK_APP_FILE_KIND_BUNDLE);
+		g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE_LOCAL);
 	} else {
-#if FLATPAK_CHECK_VERSION(1,1,2)
 		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
-				"user/flatpak/chiron-origin/org.test.Chiron/master"));
-#else
-		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app),
-				"user/flatpak/org.test.Chiron-origin/org.test.Chiron/master"));
-#endif
+				"user/flatpak/test/org.test.Chiron/master"));
 		g_assert_true (gs_flatpak_app_get_file_kind (app) == GS_FLATPAK_APP_FILE_KIND_REF);
+		g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_AVAILABLE);
 		g_assert_cmpstr (gs_app_get_url (app, AS_URL_KIND_HOMEPAGE), ==, "http://127.0.0.1/");
 		g_assert_cmpstr (gs_app_get_description (app), ==, "Long description.");
 	}
@@ -1233,7 +1243,7 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
-	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
+	g_assert_cmpstr (gs_app_get_update_details_markup (app), ==, NULL);
 
 	/* search for the application */
 	g_object_unref (plugin_job);
@@ -1261,13 +1271,8 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 	g_assert_true (app2 != NULL);
 	g_assert_cmpint (gs_app_get_state (app2), ==, GS_APP_STATE_INSTALLED);
 	if (is_bundle) {
-#if FLATPAK_CHECK_VERSION(1,1,2)
 		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app2),
 				"user/flatpak/chiron-origin/org.test.Chiron/master"));
-#else
-		g_assert_true (as_utils_data_id_equal (gs_app_get_unique_id (app2),
-				"user/flatpak/org.test.Chiron-origin/org.test.Chiron/master"));
-#endif
 	} else {
 		/* Note: the origin is now test-1 because that remote was created from the
 		 * RuntimeRepo= setting
@@ -1307,7 +1312,8 @@ flatpak_bundle_or_ref_helper (GsPluginLoader *plugin_loader,
 		/* remove remote added by RuntimeRepo= in flatpakref */
 		g_autoptr(GsApp) runtime_source = gs_flatpak_app_new ("test-1");
 		gs_app_set_kind (runtime_source, AS_COMPONENT_KIND_REPOSITORY);
-		gs_app_set_management_plugin (runtime_source, "flatpak");
+		plugin = gs_plugin_loader_find_plugin (plugin_loader, "flatpak");
+		gs_app_set_management_plugin (runtime_source, plugin);
 		gs_app_set_state (runtime_source, GS_APP_STATE_INSTALLED);
 		g_object_unref (plugin_job);
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REMOVE_REPO,
@@ -1384,10 +1390,11 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GMainLoop) loop = g_main_loop_new (NULL, FALSE);
 	g_autofree gchar *repo_path = NULL;
 	g_autofree gchar *repo_url = NULL;
+	GsPlugin *plugin;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* no flatpak, abort */
 	if (!gs_plugin_loader_get_enabled (plugin_loader, "flatpak"))
@@ -1415,7 +1422,8 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	/* add a remote */
 	app_source = gs_flatpak_app_new ("test");
 	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
-	gs_app_set_management_plugin (app_source, "flatpak");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "flatpak");
+	gs_app_set_management_plugin (app_source, plugin);
 	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	repo_url = g_strdup_printf ("file://%s", repo_path);
 	gs_flatpak_app_set_repo_url (app_source, repo_url);
@@ -1430,9 +1438,8 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) G_MAXUINT,
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (G_MAXUINT64,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -1468,7 +1475,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
-	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
+	g_assert_cmpstr (gs_app_get_update_details_markup (app), ==, NULL);
 
 	/* switch to the new repo */
 	g_assert_true (unlink (repo_path) == 0);
@@ -1476,9 +1483,8 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) 0, /* force now */
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (0,  /* force now */
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -1511,7 +1517,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	app = gs_app_list_lookup (list_updates, "*/flatpak/test/org.test.Chiron/*");
 	g_assert_nonnull (app);
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE_LIVE);
-	g_assert_cmpstr (gs_app_get_update_details (app), ==, "Version 1.2.4:\nThis is best.\n\nVersion 1.2.3:\nThis is better.");
+	g_assert_cmpstr (gs_app_get_update_details_markup (app), ==, "Version 1.2.4:\nThis is best.");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, "1.2.4");
 
 	/* care about signals */
@@ -1546,7 +1552,7 @@ gs_plugins_flatpak_app_update_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.4");
 	g_assert_cmpstr (gs_app_get_update_version (app), ==, NULL);
-	g_assert_cmpstr (gs_app_get_update_details (app), ==, NULL);
+	g_assert_cmpstr (gs_app_get_update_details_markup (app), ==, NULL);
 	g_assert_true (gs_app_get_progress (app) == GS_APP_PROGRESS_UNKNOWN ||
 		       gs_app_get_progress (app) == 100);
 	g_assert_true (got_progress_installing);
@@ -1637,10 +1643,11 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GMainLoop) loop = g_main_loop_new (NULL, FALSE);
 	g_autofree gchar *repo_path = NULL;
 	g_autofree gchar *repo_url = NULL;
+	GsPlugin *plugin;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* no flatpak, abort */
 	g_assert_true (gs_plugin_loader_get_enabled (plugin_loader, "flatpak"));
@@ -1666,7 +1673,8 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	/* add a remote */
 	app_source = gs_flatpak_app_new ("test");
 	gs_app_set_kind (app_source, AS_COMPONENT_KIND_REPOSITORY);
-	gs_app_set_management_plugin (app_source, "flatpak");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "flatpak");
+	gs_app_set_management_plugin (app_source, plugin);
 	gs_app_set_state (app_source, GS_APP_STATE_AVAILABLE);
 	repo_url = g_strdup_printf ("file://%s", repo_path);
 	gs_flatpak_app_set_repo_url (app_source, repo_url);
@@ -1681,9 +1689,8 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) G_MAXUINT,
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (G_MAXUINT64,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -1734,9 +1741,8 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 
 	/* refresh the appstream metadata */
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "age", (guint64) 0, /* force now */
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (0,  /* force now */
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	g_assert_no_error (error);
 	g_assert_true (ret);
@@ -1795,14 +1801,8 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 					    loop);
 	g_main_loop_run (loop);
 	gs_test_flush_main_context ();
-#if !FLATPAK_CHECK_VERSION(1,7,3)
-	/* Older flatpak versions don't have the API we use to propagate state
-	 * between extension and app
-	 */
-	gs_app_set_state (app, GS_APP_STATE_INSTALLED);
-#else
+
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_INSTALLED);
-#endif
 	g_assert_cmpstr (gs_app_get_version (app), ==, "1.2.3");
 	g_assert_true (got_progress_installing);
 	g_assert_cmpint (pending_app_changed_cnt, ==, 0);
@@ -1830,8 +1830,7 @@ gs_plugins_flatpak_runtime_extension_func (GsPluginLoader *plugin_loader)
 	g_object_unref (plugin_job);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
 					 "search", "Bingo",
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_DEFAULT |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME,
+					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RUNTIME,
 					 NULL);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
@@ -1892,30 +1891,17 @@ main (int argc, char **argv)
 	g_autofree gchar *xml = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
-	const gchar *allowlist[] = {
-		"appstream",
-		"flatpak",
-		"icons",
-		NULL
-	};
 
 	/* While we use %G_TEST_OPTION_ISOLATE_DIRS to create temporary directories
 	 * for each of the tests, we want to use the system MIME registry, assuming
 	 * that it exists and correctly has shared-mime-info installed. */
-#if GLIB_CHECK_VERSION(2, 60, 0)
 	g_content_type_set_mime_dirs (NULL);
-#endif
 
 	/* Similarly, add the system-wide icon theme path before it’s
 	 * overwritten by %G_TEST_OPTION_ISOLATE_DIRS. */
 	gs_test_expose_icon_theme_paths ();
 
-	g_test_init (&argc, &argv,
-#if GLIB_CHECK_VERSION(2, 60, 0)
-		     G_TEST_OPTION_ISOLATE_DIRS,
-#endif
-		     NULL);
-	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	gs_test_init (&argc, &argv);
 	g_setenv ("GS_XMLB_VERBOSE", "1", TRUE);
 	g_setenv ("GS_SELF_TEST_PLUGIN_ERROR_FAIL_HARD", "1", TRUE);
 
@@ -1940,15 +1926,12 @@ main (int argc, char **argv)
 		"</components>\n");
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
 
-	/* only critical and error are fatal */
-	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
-
 	/* we can only load this once per process */
 	plugin_loader = gs_plugin_loader_new ();
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR_CORE);
 	ret = gs_plugin_loader_setup (plugin_loader,
-				      (gchar**) allowlist,
+				      allowlist,
 				      NULL,
 				      NULL,
 				      &error);

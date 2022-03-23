@@ -41,6 +41,7 @@
 #endif
 
 #include "gs-app-list-private.h"
+#include "gs-download-utils.h"
 #include "gs-enums.h"
 #include "gs-os-release.h"
 #include "gs-plugin-private.h"
@@ -52,9 +53,7 @@ typedef struct
 	GHashTable		*cache;
 	GMutex			 cache_mutex;
 	GModule			*module;
-	GsPluginData		*data;			/* for gs-plugin-{name}.c */
 	GsPluginFlags		 flags;
-	SoupSession		*soup_session;
 	GPtrArray		*rules[GS_PLUGIN_RULE_LAST];
 	GHashTable		*vfuncs;		/* string:pointer */
 	GMutex			 vfuncs_mutex;
@@ -72,7 +71,7 @@ typedef struct
 	GNetworkMonitor		*network_monitor;
 } GsPluginPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (GsPlugin, gs_plugin, G_TYPE_OBJECT)
+G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE (GsPlugin, gs_plugin, G_TYPE_OBJECT)
 
 G_DEFINE_QUARK (gs-plugin-error-quark, gs_plugin_error)
 
@@ -90,6 +89,7 @@ enum {
 	SIGNAL_ALLOW_UPDATES,
 	SIGNAL_BASIC_AUTH_START,
 	SIGNAL_REPOSITORY_CHANGED,
+	SIGNAL_ASK_UNTRUSTED,
 	SIGNAL_LAST
 };
 
@@ -165,6 +165,9 @@ gs_plugin_create (const gchar *filename, GError **error)
 	GsPlugin *plugin = NULL;
 	GsPluginPrivate *priv;
 	g_autofree gchar *basename = NULL;
+	GModule *module = NULL;
+	GType (*query_type_function) (void) = NULL;
+	GType plugin_type;
 
 	/* get the plugin name from the basename */
 	basename = g_path_get_basename (filename);
@@ -179,17 +182,26 @@ gs_plugin_create (const gchar *filename, GError **error)
 	g_strdelimit (basename, ".", '\0');
 
 	/* create new plugin */
-	plugin = gs_plugin_new ();
-	priv = gs_plugin_get_instance_private (plugin);
-	priv->module = g_module_open (filename, 0);
-	if (priv->module == NULL) {
+	module = g_module_open (filename, 0);
+	if (module == NULL ||
+	    !g_module_symbol (module, "gs_plugin_query_type", (gpointer *) &query_type_function)) {
 		g_set_error (error,
 			     GS_PLUGIN_ERROR,
 			     GS_PLUGIN_ERROR_FAILED,
 			     "failed to open plugin %s: %s",
 			     filename, g_module_error ());
+		if (module != NULL)
+			g_module_close (module);
 		return NULL;
 	}
+
+	plugin_type = query_type_function ();
+	g_assert (g_type_is_a (plugin_type, GS_TYPE_PLUGIN));
+
+	plugin = g_object_new (plugin_type, NULL);
+	priv = gs_plugin_get_instance_private (plugin);
+	priv->module = g_steal_pointer (&module);
+
 	gs_plugin_set_name (plugin, basename + 13);
 	return plugin;
 }
@@ -208,10 +220,7 @@ gs_plugin_finalize (GObject *object)
 		g_source_remove (priv->timer_id);
 	g_free (priv->name);
 	g_free (priv->appstream_id);
-	g_free (priv->data);
 	g_free (priv->language);
-	if (priv->soup_session != NULL)
-		g_object_unref (priv->soup_session);
 	if (priv->network_monitor != NULL)
 		g_object_unref (priv->network_monitor);
 	g_hash_table_unref (priv->cache);
@@ -226,63 +235,6 @@ gs_plugin_finalize (GObject *object)
 #endif
 
 	G_OBJECT_CLASS (gs_plugin_parent_class)->finalize (object);
-}
-
-/**
- * gs_plugin_get_data:
- * @plugin: a #GsPlugin
- *
- * Gets the private data for the plugin if gs_plugin_alloc_data() has
- * been called.
- *
- * Returns: the #GsPluginData, or %NULL
- *
- * Since: 3.22
- **/
-GsPluginData *
-gs_plugin_get_data (GsPlugin *plugin)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_assert (priv->data != NULL);
-	return priv->data;
-}
-
-/**
- * gs_plugin_alloc_data:
- * @plugin: a #GsPlugin
- * @sz: the size of data to allocate, e.g. `sizeof(FooPluginPrivate)`
- *
- * Allocates a private data area for the plugin which can be retrieved
- * using gs_plugin_get_data().
- * This is normally called in gs_plugin_initialize() and the data should
- * not be manually freed.
- *
- * Returns: the #GsPluginData, cleared to NUL bytes
- *
- * Since: 3.22
- **/
-GsPluginData *
-gs_plugin_alloc_data (GsPlugin *plugin, gsize sz)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_assert (priv->data == NULL);
-	priv->data = g_malloc0 (sz);
-	return priv->data;
-}
-
-/**
- * gs_plugin_clear_data:
- * @plugin: a #GsPlugin
- *
- * Clears and resets the private data. Only run this from the self tests.
- **/
-void
-gs_plugin_clear_data (GsPlugin *plugin)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	if (priv->data == NULL)
-		return;
-	g_clear_pointer (&priv->data, g_free);
 }
 
 /**
@@ -344,7 +296,7 @@ gs_plugin_get_enabled (GsPlugin *plugin)
  * @enabled: the enabled state
  *
  * Enables or disables a plugin.
- * This is normally only called from gs_plugin_initialize().
+ * This is normally only called from the init function for a #GsPlugin instance.
  *
  * Since: 3.22
  **/
@@ -568,39 +520,6 @@ gs_plugin_set_language (GsPlugin *plugin, const gchar *language)
 }
 
 /**
- * gs_plugin_get_soup_session:
- * @plugin: a #GsPlugin
- *
- * Gets the soup session that this plugin can use when downloading.
- *
- * Returns: the #SoupSession
- *
- * Since: 3.22
- **/
-SoupSession *
-gs_plugin_get_soup_session (GsPlugin *plugin)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	return priv->soup_session;
-}
-
-/**
- * gs_plugin_set_soup_session:
- * @plugin: a #GsPlugin
- * @soup_session: a #SoupSession
- *
- * Sets the soup session that this plugin will use when downloading.
- *
- * Since: 3.22
- **/
-void
-gs_plugin_set_soup_session (GsPlugin *plugin, SoupSession *soup_session)
-{
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	g_set_object (&priv->soup_session, soup_session);
-}
-
-/**
  * gs_plugin_set_network_monitor:
  * @plugin: a #GsPlugin
  * @monitor: a #GNetworkMonitor
@@ -764,24 +683,38 @@ gs_plugin_check_distro_id (GsPlugin *plugin, const gchar *distro_id)
 }
 
 typedef struct {
-	GsPlugin	*plugin;
-	GsApp		*app;
+	GWeakRef	 plugin_weak;  /* (element-type GsPlugin) */
+	GsApp		*app;  /* (owned) */
 	GsPluginStatus	 status;
 	guint		 percentage;
 } GsPluginStatusHelper;
+
+static void
+gs_plugin_status_helper_free (GsPluginStatusHelper *helper)
+{
+	g_weak_ref_clear (&helper->plugin_weak);
+	g_clear_object (&helper->app);
+	g_slice_free (GsPluginStatusHelper, helper);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (GsPluginStatusHelper, gs_plugin_status_helper_free)
 
 static gboolean
 gs_plugin_status_update_cb (gpointer user_data)
 {
 	GsPluginStatusHelper *helper = (GsPluginStatusHelper *) user_data;
-	g_signal_emit (helper->plugin,
-		       signals[SIGNAL_STATUS_CHANGED], 0,
-		       helper->app,
-		       helper->status);
-	if (helper->app != NULL)
-		g_object_unref (helper->app);
-	g_slice_free (GsPluginStatusHelper, helper);
-	return FALSE;
+	g_autoptr(GsPlugin) plugin = NULL;
+
+	/* Does the plugin still exist? */
+	plugin = g_weak_ref_get (&helper->plugin_weak);
+
+	if (plugin != NULL)
+		g_signal_emit (plugin,
+			       signals[SIGNAL_STATUS_CHANGED], 0,
+			       helper->app,
+			       helper->status);
+
+	return G_SOURCE_REMOVE;
 }
 
 /**
@@ -797,16 +730,17 @@ gs_plugin_status_update_cb (gpointer user_data)
 void
 gs_plugin_status_update (GsPlugin *plugin, GsApp *app, GsPluginStatus status)
 {
-	GsPluginStatusHelper *helper;
+	g_autoptr(GsPluginStatusHelper) helper = NULL;
 	g_autoptr(GSource) idle_source = NULL;
 
 	helper = g_slice_new0 (GsPluginStatusHelper);
-	helper->plugin = plugin;
+	g_weak_ref_init (&helper->plugin_weak, plugin);
 	helper->status = status;
 	if (app != NULL)
 		helper->app = g_object_ref (app);
+
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, gs_plugin_status_update_cb, helper, NULL);
+	g_source_set_callback (idle_source, gs_plugin_status_update_cb, g_steal_pointer (&helper), (GDestroyNotify) gs_plugin_status_helper_free);
 	g_source_attach (idle_source, NULL);
 }
 
@@ -881,7 +815,7 @@ gs_plugin_app_launch_cb (gpointer user_data)
 	if (!g_app_info_launch (appinfo, NULL, context, &error))
 		g_warning ("Failed to launch: %s", error->message);
 
-	return FALSE;
+	return G_SOURCE_REMOVE;
 }
 
 /**
@@ -929,12 +863,35 @@ gs_plugin_app_launch (GsPlugin *plugin, GsApp *app, GError **error)
 	return TRUE;
 }
 
+static void
+weak_ref_free (GWeakRef *weak)
+{
+	g_weak_ref_clear (weak);
+	g_free (weak);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (GWeakRef, weak_ref_free)
+
+/* @obj is a gpointer rather than a GObject* to avoid the need for casts */
+static GWeakRef *
+weak_ref_new (gpointer obj)
+{
+	g_autoptr(GWeakRef) weak = g_new0 (GWeakRef, 1);
+	g_weak_ref_init (weak, obj);
+	return g_steal_pointer (&weak);
+}
+
 static gboolean
 gs_plugin_updates_changed_cb (gpointer user_data)
 {
-	GsPlugin *plugin = GS_PLUGIN (user_data);
-	g_signal_emit (plugin, signals[SIGNAL_UPDATES_CHANGED], 0);
-	return FALSE;
+	GWeakRef *plugin_weak = user_data;
+	g_autoptr(GsPlugin) plugin = NULL;
+
+	plugin = g_weak_ref_get (plugin_weak);
+	if (plugin != NULL)
+		g_signal_emit (plugin, signals[SIGNAL_UPDATES_CHANGED], 0);
+
+	return G_SOURCE_REMOVE;
 }
 
 /**
@@ -949,15 +906,21 @@ gs_plugin_updates_changed_cb (gpointer user_data)
 void
 gs_plugin_updates_changed (GsPlugin *plugin)
 {
-	g_idle_add (gs_plugin_updates_changed_cb, plugin);
+	g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, gs_plugin_updates_changed_cb,
+			 weak_ref_new (plugin), (GDestroyNotify) weak_ref_free);
 }
 
 static gboolean
 gs_plugin_reload_cb (gpointer user_data)
 {
-	GsPlugin *plugin = GS_PLUGIN (user_data);
-	g_signal_emit (plugin, signals[SIGNAL_RELOAD], 0);
-	return FALSE;
+	GWeakRef *plugin_weak = user_data;
+	g_autoptr(GsPlugin) plugin = NULL;
+
+	plugin = g_weak_ref_get (plugin_weak);
+	if (plugin != NULL)
+		g_signal_emit (plugin, signals[SIGNAL_RELOAD], 0);
+
+	return G_SOURCE_REMOVE;
 }
 
 /**
@@ -976,133 +939,46 @@ void
 gs_plugin_reload (GsPlugin *plugin)
 {
 	g_debug ("emitting ::reload in idle");
-	g_idle_add (gs_plugin_reload_cb, plugin);
+	g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, gs_plugin_reload_cb,
+			 weak_ref_new (plugin), (GDestroyNotify) weak_ref_free);
 }
 
 typedef struct {
 	GsPlugin	*plugin;
 	GsApp		*app;
-	GCancellable	*cancellable;
 } GsPluginDownloadHelper;
 
 static void
-gs_plugin_download_chunk_cb (SoupMessage *msg, SoupBuffer *chunk,
-			     GsPluginDownloadHelper *helper)
+download_file_progress_cb (gsize    total_written_bytes,
+                           gsize    total_download_size,
+                           gpointer user_data)
 {
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (helper->plugin);
+	GsPluginDownloadHelper *helper = user_data;
 	guint percentage;
-	goffset header_size;
-	goffset body_length;
 
-	/* cancelled? */
-	if (g_cancellable_is_cancelled (helper->cancellable)) {
-		g_debug ("cancelling download of %s",
-			 gs_app_get_id (helper->app));
-		soup_session_cancel_message (priv->soup_session,
-					     msg,
-					     SOUP_STATUS_CANCELLED);
-		return;
-	}
+	if (total_download_size > 0)
+		percentage = (guint) ((100 * total_written_bytes) / total_download_size);
+	else
+		percentage = 0;
 
-	/* if it's returning "Found" or an error, ignore the percentage */
-	if (msg->status_code != SOUP_STATUS_OK) {
-		g_debug ("ignoring status code %u (%s)",
-			 msg->status_code, msg->reason_phrase);
-		return;
-	}
-
-	/* get data */
-	body_length = msg->response_body->length;
-	header_size = soup_message_headers_get_content_length (msg->response_headers);
-
-	/* size is not known */
-	if (header_size < body_length)
-		return;
-
-	/* calculate percentage */
-	percentage = (guint) ((100 * body_length) / header_size);
 	g_debug ("%s progress: %u%%", gs_app_get_id (helper->app), percentage);
 	gs_app_set_progress (helper->app, percentage);
 	gs_plugin_status_update (helper->plugin,
 				 helper->app,
 				 GS_PLUGIN_STATUS_DOWNLOADING);
+
 }
 
-/**
- * gs_plugin_download_data:
- * @plugin: a #GsPlugin
- * @app: a #GsApp, or %NULL
- * @uri: a remote URI
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Downloads data.
- *
- * Returns: the downloaded data, or %NULL
- *
- * Since: 3.22
- **/
-GBytes *
-gs_plugin_download_data (GsPlugin *plugin,
-			 GsApp *app,
-			 const gchar *uri,
-			 GCancellable *cancellable,
-			 GError **error)
+static void
+async_result_cb (GObject      *source_object,
+                 GAsyncResult *result,
+                 gpointer      user_data)
 {
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
-	GsPluginDownloadHelper helper;
-	guint status_code;
-	g_autoptr(SoupMessage) msg = NULL;
+	GAsyncResult **result_out = user_data;
 
-	g_return_val_if_fail (GS_IS_PLUGIN (plugin), NULL);
-	g_return_val_if_fail (uri != NULL, NULL);
-	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
-
-	/* local */
-	if (g_str_has_prefix (uri, "file://")) {
-		gsize length = 0;
-		g_autofree gchar *contents = NULL;
-		g_autoptr(GError) error_local = NULL;
-		g_debug ("copying %s from plugin %s", uri, priv->name);
-		if (!g_file_get_contents (uri + 7, &contents, &length, &error_local)) {
-			g_set_error (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
-				     "failed to copy %s: %s",
-				     uri, error_local->message);
-			return NULL;
-		}
-		return g_bytes_new (contents, length);
-	}
-
-	/* remote */
-	g_debug ("downloading %s from plugin %s", uri, priv->name);
-	msg = soup_message_new (SOUP_METHOD_GET, uri);
-	if (app != NULL) {
-		helper.plugin = plugin;
-		helper.app = app;
-		helper.cancellable = cancellable;
-		g_signal_connect (msg, "got-chunk",
-				  G_CALLBACK (gs_plugin_download_chunk_cb),
-				  &helper);
-	}
-	status_code = soup_session_send_message (priv->soup_session, msg);
-	if (status_code != SOUP_STATUS_OK) {
-		g_autoptr(GString) str = g_string_new (NULL);
-		g_string_append (str, soup_status_get_phrase (status_code));
-		if (msg->response_body->data != NULL) {
-			g_string_append (str, ": ");
-			g_string_append (str, msg->response_body->data);
-		}
-		g_set_error (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
-			     "failed to download %s: %s",
-			     uri, str->str);
-		return NULL;
-	}
-	return g_bytes_new (msg->response_body->data,
-			    (gsize) msg->response_body->length);
+	g_assert (*result_out == NULL);
+	*result_out = g_object_ref (result);
+	g_main_context_wakeup (g_main_context_get_thread_default ());
 }
 
 /**
@@ -1128,87 +1004,37 @@ gs_plugin_download_file (GsPlugin *plugin,
 			 GCancellable *cancellable,
 			 GError **error)
 {
-	GsPluginPrivate *priv = gs_plugin_get_instance_private (plugin);
+	g_autoptr(SoupSession) soup_session = NULL;
+	g_autoptr(GFile) output_file = NULL;
+	g_autoptr(GAsyncResult) result = NULL;
+	g_autoptr(GMainContext) context = g_main_context_new ();
+	g_autoptr(GMainContextPusher) context_pusher = g_main_context_pusher_new (context);
 	GsPluginDownloadHelper helper;
-	guint status_code;
-	g_autoptr(GError) error_local = NULL;
-	g_autoptr(SoupMessage) msg = NULL;
+	g_autoptr(GError) local_error = NULL;
 
-	g_return_val_if_fail (GS_IS_PLUGIN (plugin), FALSE);
-	g_return_val_if_fail (uri != NULL, FALSE);
-	g_return_val_if_fail (filename != NULL, FALSE);
-	g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+	helper.plugin = plugin;
+	helper.app = app;
 
-	/* local */
-	if (g_str_has_prefix (uri, "file://")) {
-		gsize length = 0;
-		g_autofree gchar *contents = NULL;
-		g_debug ("copying %s from plugin %s", uri, priv->name);
-		if (!g_file_get_contents (uri + 7, &contents, &length, &error_local)) {
-			g_set_error (error,
+	soup_session = gs_build_soup_session ();
+
+	/* Do the download. */
+	output_file = g_file_new_for_path (filename);
+	gs_download_file_async (soup_session, uri, output_file,
+				G_PRIORITY_LOW,
+				download_file_progress_cb, &helper,
+				cancellable, async_result_cb, &result);
+
+	while (result == NULL)
+		g_main_context_iteration (context, TRUE);
+
+	if (!gs_download_file_finish (soup_session, result, &local_error)) {
+		g_set_error_literal (error,
 				     GS_PLUGIN_ERROR,
 				     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
-				     "failed to copy %s: %s",
-				     uri, error_local->message);
-			return FALSE;
-		}
-		if (!g_file_set_contents (filename, contents, length, &error_local)) {
-			g_set_error (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_WRITE_FAILED,
-				     "Failed to save file: %s",
-				     error_local->message);
-			return FALSE;
-		}
-		return TRUE;
+				     local_error->message);
+		return FALSE;
 	}
 
-	/* remote */
-	g_debug ("downloading %s to %s from plugin %s", uri, filename, priv->name);
-	msg = soup_message_new (SOUP_METHOD_GET, uri);
-	if (msg == NULL) {
-		g_set_error (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
-			     "failed to parse URI %s", uri);
-		return FALSE;
-	}
-	if (app != NULL) {
-		helper.plugin = plugin;
-		helper.app = app;
-		helper.cancellable = cancellable;
-		g_signal_connect (msg, "got-chunk",
-				  G_CALLBACK (gs_plugin_download_chunk_cb),
-				  &helper);
-	}
-	status_code = soup_session_send_message (priv->soup_session, msg);
-	if (status_code != SOUP_STATUS_OK) {
-		g_autoptr(GString) str = g_string_new (NULL);
-		g_string_append (str, soup_status_get_phrase (status_code));
-		if (msg->response_body->data != NULL) {
-			g_string_append (str, ": ");
-			g_string_append (str, msg->response_body->data);
-		}
-		g_set_error (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_DOWNLOAD_FAILED,
-			     "failed to download %s: %s",
-			     uri, str->str);
-		return FALSE;
-	}
-	if (!gs_mkdir_parent (filename, error))
-		return FALSE;
-	if (!g_file_set_contents (filename,
-				  msg->response_body->data,
-				  msg->response_body->length,
-				  &error_local)) {
-		g_set_error (error,
-			     GS_PLUGIN_ERROR,
-			     GS_PLUGIN_ERROR_WRITE_FAILED,
-			     "Failed to save file: %s",
-			     error_local->message);
-		return FALSE;
-	}
 	return TRUE;
 }
 
@@ -1320,7 +1146,7 @@ gs_plugin_download_rewrite_resource (GsPlugin *plugin,
 									   error);
 			if (cachefn == NULL)
 				return NULL;
-			g_string_append_printf (str, "'%s'", cachefn);
+			g_string_append_printf (str, "'file://%s'", cachefn);
 			g_string_append_c (str, resource[i]);
 			start = 0;
 		}
@@ -1580,14 +1406,10 @@ gs_plugin_error_to_string (GsPluginError error)
 const gchar *
 gs_plugin_action_to_function_name (GsPluginAction action)
 {
-	if (action == GS_PLUGIN_ACTION_REFRESH)
-		return "gs_plugin_refresh";
 	if (action == GS_PLUGIN_ACTION_INSTALL)
 		return "gs_plugin_app_install";
 	if (action == GS_PLUGIN_ACTION_REMOVE)
 		return "gs_plugin_app_remove";
-	if (action == GS_PLUGIN_ACTION_SET_RATING)
-		return "gs_plugin_app_set_rating";
 	if (action == GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD)
 		return "gs_plugin_app_upgrade_download";
 	if (action == GS_PLUGIN_ACTION_UPGRADE_TRIGGER)
@@ -1596,12 +1418,6 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_launch";
 	if (action == GS_PLUGIN_ACTION_UPDATE_CANCEL)
 		return "gs_plugin_update_cancel";
-	if (action == GS_PLUGIN_ACTION_ADD_SHORTCUT)
-		return "gs_plugin_add_shortcut";
-	if (action == GS_PLUGIN_ACTION_REMOVE_SHORTCUT)
-		return "gs_plugin_remove_shortcut";
-	if (action == GS_PLUGIN_ACTION_REFINE)
-		return "gs_plugin_refine";
 	if (action == GS_PLUGIN_ACTION_UPDATE)
 		return "gs_plugin_update";
 	if (action == GS_PLUGIN_ACTION_DOWNLOAD)
@@ -1610,12 +1426,8 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_file_to_app";
 	if (action == GS_PLUGIN_ACTION_URL_TO_APP)
 		return "gs_plugin_url_to_app";
-	if (action == GS_PLUGIN_ACTION_GET_DISTRO_UPDATES)
-		return "gs_plugin_add_distro_upgrades";
 	if (action == GS_PLUGIN_ACTION_GET_SOURCES)
 		return "gs_plugin_add_sources";
-	if (action == GS_PLUGIN_ACTION_GET_INSTALLED)
-		return "gs_plugin_add_installed";
 	if (action == GS_PLUGIN_ACTION_GET_FEATURED)
 		return "gs_plugin_add_featured";
 	if (action == GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL)
@@ -1636,12 +1448,6 @@ gs_plugin_action_to_function_name (GsPluginAction action)
 		return "gs_plugin_add_category_apps";
 	if (action == GS_PLUGIN_ACTION_GET_CATEGORIES)
 		return "gs_plugin_add_categories";
-	if (action == GS_PLUGIN_ACTION_SETUP)
-		return "gs_plugin_setup";
-	if (action == GS_PLUGIN_ACTION_INITIALIZE)
-		return "gs_plugin_initialize";
-	if (action == GS_PLUGIN_ACTION_DESTROY)
-		return "gs_plugin_destroy";
 	if (action == GS_PLUGIN_ACTION_GET_ALTERNATES)
 		return "gs_plugin_add_alternates";
 	if (action == GS_PLUGIN_ACTION_GET_LANGPACKS)
@@ -1670,8 +1476,6 @@ gs_plugin_action_to_string (GsPluginAction action)
 {
 	if (action == GS_PLUGIN_ACTION_UNKNOWN)
 		return "unknown";
-	if (action == GS_PLUGIN_ACTION_SETUP)
-		return "setup";
 	if (action == GS_PLUGIN_ACTION_INSTALL)
 		return "install";
 	if (action == GS_PLUGIN_ACTION_DOWNLOAD)
@@ -1680,8 +1484,6 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "remove";
 	if (action == GS_PLUGIN_ACTION_UPDATE)
 		return "update";
-	if (action == GS_PLUGIN_ACTION_SET_RATING)
-		return "set-rating";
 	if (action == GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD)
 		return "upgrade-download";
 	if (action == GS_PLUGIN_ACTION_UPGRADE_TRIGGER)
@@ -1690,18 +1492,10 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "launch";
 	if (action == GS_PLUGIN_ACTION_UPDATE_CANCEL)
 		return "update-cancel";
-	if (action == GS_PLUGIN_ACTION_ADD_SHORTCUT)
-		return "add-shortcut";
-	if (action == GS_PLUGIN_ACTION_REMOVE_SHORTCUT)
-		return "remove-shortcut";
 	if (action == GS_PLUGIN_ACTION_GET_UPDATES)
 		return "get-updates";
-	if (action == GS_PLUGIN_ACTION_GET_DISTRO_UPDATES)
-		return "get-distro-updates";
 	if (action == GS_PLUGIN_ACTION_GET_SOURCES)
 		return "get-sources";
-	if (action == GS_PLUGIN_ACTION_GET_INSTALLED)
-		return "get-installed";
 	if (action == GS_PLUGIN_ACTION_GET_POPULAR)
 		return "get-popular";
 	if (action == GS_PLUGIN_ACTION_GET_FEATURED)
@@ -1716,10 +1510,6 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "get-categories";
 	if (action == GS_PLUGIN_ACTION_GET_CATEGORY_APPS)
 		return "get-category-apps";
-	if (action == GS_PLUGIN_ACTION_REFINE)
-		return "refine";
-	if (action == GS_PLUGIN_ACTION_REFRESH)
-		return "refresh";
 	if (action == GS_PLUGIN_ACTION_FILE_TO_APP)
 		return "file-to-app";
 	if (action == GS_PLUGIN_ACTION_URL_TO_APP)
@@ -1728,10 +1518,6 @@ gs_plugin_action_to_string (GsPluginAction action)
 		return "get-recent";
 	if (action == GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL)
 		return "get-updates-historical";
-	if (action == GS_PLUGIN_ACTION_INITIALIZE)
-		return "initialize";
-	if (action == GS_PLUGIN_ACTION_DESTROY)
-		return "destroy";
 	if (action == GS_PLUGIN_ACTION_GET_ALTERNATES)
 		return "get-alternates";
 	if (action == GS_PLUGIN_ACTION_GET_LANGPACKS)
@@ -1760,8 +1546,6 @@ gs_plugin_action_to_string (GsPluginAction action)
 GsPluginAction
 gs_plugin_action_from_string (const gchar *action)
 {
-	if (g_strcmp0 (action, "setup") == 0)
-		return GS_PLUGIN_ACTION_SETUP;
 	if (g_strcmp0 (action, "install") == 0)
 		return GS_PLUGIN_ACTION_INSTALL;
 	if (g_strcmp0 (action, "download") == 0)
@@ -1770,8 +1554,6 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_REMOVE;
 	if (g_strcmp0 (action, "update") == 0)
 		return GS_PLUGIN_ACTION_UPDATE;
-	if (g_strcmp0 (action, "set-rating") == 0)
-		return GS_PLUGIN_ACTION_SET_RATING;
 	if (g_strcmp0 (action, "upgrade-download") == 0)
 		return GS_PLUGIN_ACTION_UPGRADE_DOWNLOAD;
 	if (g_strcmp0 (action, "upgrade-trigger") == 0)
@@ -1780,18 +1562,10 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_LAUNCH;
 	if (g_strcmp0 (action, "update-cancel") == 0)
 		return GS_PLUGIN_ACTION_UPDATE_CANCEL;
-	if (g_strcmp0 (action, "add-shortcut") == 0)
-		return GS_PLUGIN_ACTION_ADD_SHORTCUT;
-	if (g_strcmp0 (action, "remove-shortcut") == 0)
-		return GS_PLUGIN_ACTION_REMOVE_SHORTCUT;
 	if (g_strcmp0 (action, "get-updates") == 0)
 		return GS_PLUGIN_ACTION_GET_UPDATES;
-	if (g_strcmp0 (action, "get-distro-updates") == 0)
-		return GS_PLUGIN_ACTION_GET_DISTRO_UPDATES;
 	if (g_strcmp0 (action, "get-sources") == 0)
 		return GS_PLUGIN_ACTION_GET_SOURCES;
-	if (g_strcmp0 (action, "get-installed") == 0)
-		return GS_PLUGIN_ACTION_GET_INSTALLED;
 	if (g_strcmp0 (action, "get-popular") == 0)
 		return GS_PLUGIN_ACTION_GET_POPULAR;
 	if (g_strcmp0 (action, "get-featured") == 0)
@@ -1806,10 +1580,6 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_GET_CATEGORIES;
 	if (g_strcmp0 (action, "get-category-apps") == 0)
 		return GS_PLUGIN_ACTION_GET_CATEGORY_APPS;
-	if (g_strcmp0 (action, "refine") == 0)
-		return GS_PLUGIN_ACTION_REFINE;
-	if (g_strcmp0 (action, "refresh") == 0)
-		return GS_PLUGIN_ACTION_REFRESH;
 	if (g_strcmp0 (action, "file-to-app") == 0)
 		return GS_PLUGIN_ACTION_FILE_TO_APP;
 	if (g_strcmp0 (action, "url-to-app") == 0)
@@ -1818,10 +1588,6 @@ gs_plugin_action_from_string (const gchar *action)
 		return GS_PLUGIN_ACTION_GET_RECENT;
 	if (g_strcmp0 (action, "get-updates-historical") == 0)
 		return GS_PLUGIN_ACTION_GET_UPDATES_HISTORICAL;
-	if (g_strcmp0 (action, "initialize") == 0)
-		return GS_PLUGIN_ACTION_INITIALIZE;
-	if (g_strcmp0 (action, "destroy") == 0)
-		return GS_PLUGIN_ACTION_DESTROY;
 	if (g_strcmp0 (action, "get-alternates") == 0)
 		return GS_PLUGIN_ACTION_GET_ALTERNATES;
 	if (g_strcmp0 (action, "get-langpacks") == 0)
@@ -1851,8 +1617,8 @@ gs_plugin_refine_flags_to_string (GsPluginRefineFlags refine_flags)
 	g_autoptr(GPtrArray) cstrs = g_ptr_array_new ();
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_USE_HISTORY)
-		g_ptr_array_add (cstrs, "use-history");
+	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_ID)
+		g_ptr_array_add (cstrs, "require-id");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE)
 		g_ptr_array_add (cstrs, "require-license");
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_URL)
@@ -2011,6 +1777,13 @@ gs_plugin_class_init (GsPluginClass *klass)
 			      G_STRUCT_OFFSET (GsPluginClass, repository_changed),
 			      NULL, NULL, g_cclosure_marshal_generic,
 			      G_TYPE_NONE, 1, GS_TYPE_APP);
+
+	signals [SIGNAL_ASK_UNTRUSTED] =
+		g_signal_new ("ask-untrusted",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      G_STRUCT_OFFSET (GsPluginClass, ask_untrusted),
+			      NULL, NULL, g_cclosure_marshal_generic,
+			      G_TYPE_BOOLEAN, 4, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
 }
 
 static void
@@ -2054,21 +1827,33 @@ gs_plugin_new (void)
 }
 
 typedef struct {
-	GsPlugin *plugin;
-	GsApp	 *repository;
+	GWeakRef  plugin_weak;  /* (owned) (element-type GsPlugin) */
+	GsApp	 *repository;  /* (owned) */
 } GsPluginRepositoryChangedHelper;
+
+static void
+gs_plugin_repository_changed_helper_free (GsPluginRepositoryChangedHelper *helper)
+{
+	g_clear_object (&helper->repository);
+	g_weak_ref_clear (&helper->plugin_weak);
+	g_slice_free (GsPluginRepositoryChangedHelper, helper);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC (GsPluginRepositoryChangedHelper, gs_plugin_repository_changed_helper_free)
 
 static gboolean
 gs_plugin_repository_changed_cb (gpointer user_data)
 {
 	GsPluginRepositoryChangedHelper *helper = user_data;
-	g_signal_emit (helper->plugin,
-		       signals[SIGNAL_REPOSITORY_CHANGED], 0,
-		       helper->repository);
-	g_clear_object (&helper->repository);
-	g_clear_object (&helper->plugin);
-	g_slice_free (GsPluginRepositoryChangedHelper, helper);
-	return FALSE;
+	g_autoptr(GsPlugin) plugin = NULL;
+
+	plugin = g_weak_ref_get (&helper->plugin_weak);
+	if (plugin != NULL)
+		g_signal_emit (plugin,
+			       signals[SIGNAL_REPOSITORY_CHANGED], 0,
+			       helper->repository);
+
+	return G_SOURCE_REMOVE;
 }
 
 /**
@@ -2084,18 +1869,18 @@ void
 gs_plugin_repository_changed (GsPlugin *plugin,
 			      GsApp *repository)
 {
-	GsPluginRepositoryChangedHelper *helper;
+	g_autoptr(GsPluginRepositoryChangedHelper) helper = NULL;
 	g_autoptr(GSource) idle_source = NULL;
 
 	g_return_if_fail (GS_IS_PLUGIN (plugin));
 	g_return_if_fail (GS_IS_APP (repository));
 
 	helper = g_slice_new0 (GsPluginRepositoryChangedHelper);
-	helper->plugin = g_object_ref (plugin);
+	g_weak_ref_init (&helper->plugin_weak, plugin);
 	helper->repository = g_object_ref (repository);
 
 	idle_source = g_idle_source_new ();
-	g_source_set_callback (idle_source, gs_plugin_repository_changed_cb, helper, NULL);
+	g_source_set_callback (idle_source, gs_plugin_repository_changed_cb, g_steal_pointer (&helper), (GDestroyNotify) gs_plugin_repository_changed_helper_free);
 	g_source_attach (idle_source, NULL);
 }
 
@@ -2168,4 +1953,39 @@ gs_plugin_get_action_supported (GsPlugin *plugin,
 	g_return_val_if_fail (function_name != NULL, FALSE);
 
 	return gs_plugin_get_symbol (plugin, function_name) != NULL;
+}
+
+/**
+ * gs_plugin_ask_untrusted:
+ * @plugin: a #GsPlugin
+ * @title: the title for the question
+ * @msg: the message for the question
+ * @details: (nullable): the detailed error message, or %NULL for none
+ * @accept_label: (nullable): a label of the 'accept' button, or %NULL to use 'Accept'
+ *
+ * Asks the user whether he/she accepts an untrusted package install/download/update,
+ * as described by @title and @msg, eventually with the @details.
+ *
+ * Note: This is a blocking call and can be called only from the main/GUI thread.
+ *
+ * Returns: whether the user accepted the question
+ *
+ * Since: 42
+ **/
+gboolean
+gs_plugin_ask_untrusted (GsPlugin *plugin,
+			 const gchar *title,
+			 const gchar *msg,
+			 const gchar *details,
+			 const gchar *accept_label)
+{
+	gboolean accepts = FALSE;
+	g_signal_emit (plugin,
+		       signals[SIGNAL_ASK_UNTRUSTED], 0,
+		       title,
+		       msg,
+		       details,
+		       accept_label,
+		       &accepts);
+	return accepts;
 }

@@ -20,8 +20,8 @@
 
 #include "config.h"
 
+#include <adwaita.h>
 #include <glib/gi18n.h>
-#include <handy.h>
 
 #include "gs-os-update-page.h"
 #include "gs-common.h"
@@ -36,6 +36,7 @@ typedef enum {
 
 typedef enum {
 	PROP_APP = 1,
+	PROP_TITLE,
 } GsOsUpdatePageProperty;
 
 enum {
@@ -43,7 +44,7 @@ enum {
 	SIGNAL_LAST
 };
 
-static GParamSpec *obj_props[PROP_APP + 1] = { NULL, };
+static GParamSpec *obj_props[PROP_TITLE + 1] = { NULL, };
 
 static guint signals[SIGNAL_LAST] = { 0 };
 
@@ -54,6 +55,7 @@ struct _GsOsUpdatePage
 	GtkWidget	*box;
 	GtkWidget	*group;
 	GtkWidget	*header_bar;
+	AdwWindowTitle	*window_title;
 
 	GsApp		*app;  /* (owned) (nullable) */
 	GtkWidget	*list_boxes[GS_OS_UPDATE_PAGE_SECTION_LAST];
@@ -68,7 +70,7 @@ row_activated_cb (GtkListBox *list_box,
 {
 	GsApp *app;
 
-	app = GS_APP (g_object_get_data (G_OBJECT (gtk_bin_get_child (GTK_BIN (row))), "app"));
+	app = GS_APP (g_object_get_data (G_OBJECT (gtk_list_box_row_get_child (row)), "app"));
 	g_assert (app != NULL);
 
 	g_signal_emit (page, signals[SIGNAL_APP_ACTIVATED], 0, app);
@@ -145,7 +147,7 @@ create_app_row (GsApp *app)
 	gtk_widget_set_halign (label, GTK_ALIGN_START);
 	gtk_widget_set_hexpand (label, TRUE);
 	gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-	gtk_container_add (GTK_CONTAINER (row), label);
+	gtk_box_append (GTK_BOX (row), label);
 	if (gs_app_get_state (app) == GS_APP_STATE_UPDATABLE ||
 	    gs_app_get_state (app) == GS_APP_STATE_UPDATABLE_LIVE) {
 		g_autofree gchar *verstr = format_version_update (app, gtk_widget_get_direction (row));
@@ -163,8 +165,7 @@ create_app_row (GsApp *app)
 	              NULL);
 	gtk_widget_set_halign (label, GTK_ALIGN_END);
 	gtk_widget_set_valign (label, GTK_ALIGN_CENTER);
-	gtk_container_add (GTK_CONTAINER (row), label);
-	gtk_widget_show_all (row);
+	gtk_box_append (GTK_BOX (row), label);
 
 	return row;
 }
@@ -174,32 +175,11 @@ is_downgrade (const gchar *evr1,
               const gchar *evr2)
 {
 	gint rc;
-	g_autofree gchar *epoch1 = NULL;
-	g_autofree gchar *epoch2 = NULL;
-	g_autofree gchar *version1 = NULL;
-	g_autofree gchar *version2 = NULL;
-	g_autofree gchar *release1 = NULL;
-	g_autofree gchar *release2 = NULL;
 
 	if (evr1 == NULL || evr2 == NULL)
 		return FALSE;
 
-	/* split into epoch-version-release */
-	if (!gs_utils_parse_evr (evr1, &epoch1, &version1, &release1))
-		return FALSE;
-	if (!gs_utils_parse_evr (evr2, &epoch2, &version2, &release2))
-		return FALSE;
-
-	/* ignore epoch here as it's a way to make downgrades happen and not
-	 * part of the semantic version */
-
-	/* check version */
-	rc = as_vercmp_simple (version1, version2);
-	if (rc != 0)
-		return rc > 0;
-
-	/* check release */
-	rc = as_vercmp_simple (release1, release2);
+	rc = as_vercmp (evr1, evr2, AS_VERCMP_FLAG_IGNORE_EPOCH);
 	if (rc != 0)
 		return rc > 0;
 
@@ -221,6 +201,7 @@ get_app_section (GsApp *app)
 		section = GS_OS_UPDATE_PAGE_SECTION_ADDITIONS;
 		break;
 	case GS_APP_STATE_UNAVAILABLE:
+	case GS_APP_STATE_INSTALLED:
 		section = GS_OS_UPDATE_PAGE_SECTION_REMOVALS;
 		break;
 	case GS_APP_STATE_UPDATABLE:
@@ -247,8 +228,8 @@ os_updates_sort_func (GtkListBoxRow *a,
 		      GtkListBoxRow *b,
 		      gpointer user_data)
 {
-	GObject *o1 = G_OBJECT (gtk_bin_get_child (GTK_BIN (a)));
-	GObject *o2 = G_OBJECT (gtk_bin_get_child (GTK_BIN (b)));
+	GObject *o1 = G_OBJECT (gtk_list_box_row_get_child (a));
+	GObject *o2 = G_OBJECT (gtk_list_box_row_get_child (b));
 	GsApp *a1 = g_object_get_data (o1, "app");
 	GsApp *a2 = g_object_get_data (o2, "app");
 	const gchar *key1 = gs_app_get_source_default (a1);
@@ -260,7 +241,6 @@ os_updates_sort_func (GtkListBoxRow *a,
 static GtkWidget *
 get_section_header (GsOsUpdatePage *page, GsOsUpdatePageSection section)
 {
-	GtkStyleContext *context;
 	GtkWidget *header;
 	GtkWidget *label;
 
@@ -287,17 +267,14 @@ get_section_header (GsOsUpdatePage *page, GsOsUpdatePageSection section)
 
 	/* create header */
 	header = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
-	context = gtk_widget_get_style_context (header);
-	gtk_style_context_add_class (context, "app-listbox-header");
+	gtk_widget_add_css_class (header, "app-listbox-header");
 
 	/* put label into the header */
 	gtk_widget_set_hexpand (label, TRUE);
-	gtk_container_add (GTK_CONTAINER (header), label);
-	gtk_widget_set_visible (label, TRUE);
-	gtk_widget_set_margin_start (label, 6);
+	gtk_box_append (GTK_BOX (header), label);
+	gtk_widget_set_margin_start (label, 16);
 	gtk_label_set_xalign (GTK_LABEL (label), 0.0);
-	context = gtk_widget_get_style_context (label);
-	gtk_style_context_add_class (context, "app-listbox-header-title");
+	gtk_widget_add_css_class (label, "heading");
 
 	/* success */
 	return header;
@@ -309,7 +286,7 @@ list_header_func (GtkListBoxRow *row,
 		  gpointer user_data)
 {
 	GsOsUpdatePage *page = (GsOsUpdatePage *) user_data;
-	GObject *o = G_OBJECT (gtk_bin_get_child (GTK_BIN (row)));
+	GObject *o = G_OBJECT (gtk_list_box_row_get_child (row));
 	GsApp *app = g_object_get_data (o, "app");
 	GtkWidget *header = NULL;
 
@@ -323,7 +300,7 @@ list_header_func (GtkListBoxRow *row,
 static void
 create_section (GsOsUpdatePage *page, GsOsUpdatePageSection section)
 {
-	GtkStyleContext *context;
+	GtkWidget *previous = NULL;
 
 	page->list_boxes[section] = gtk_list_box_new ();
 	gtk_list_box_set_selection_mode (GTK_LIST_BOX (page->list_boxes[section]),
@@ -336,22 +313,22 @@ create_section (GsOsUpdatePage *page, GsOsUpdatePageSection section)
 				      page, NULL);
 	g_signal_connect (GTK_LIST_BOX (page->list_boxes[section]), "row-activated",
 			  G_CALLBACK (row_activated_cb), page);
-	gtk_widget_set_visible (page->list_boxes[section], TRUE);
-	gtk_widget_set_vexpand (page->list_boxes[section], TRUE);
-	gtk_container_add (GTK_CONTAINER (page->box), page->list_boxes[section]);
+	gtk_box_append (GTK_BOX (page->box), page->list_boxes[section]);
 	gtk_widget_set_margin_top (page->list_boxes[section], 24);
 
 	/* reorder the children */
 	for (guint i = 0; i < GS_OS_UPDATE_PAGE_SECTION_LAST; i++) {
 		if (page->list_boxes[i] == NULL)
 			continue;
-		gtk_box_reorder_child (GTK_BOX (page->box),
-				       page->list_boxes[i], i);
+		gtk_box_reorder_child_after (GTK_BOX (page->box),
+					     page->list_boxes[i],
+					     previous);
+		previous = page->list_boxes[i];
 	}
 
 	/* make rounded edges */
-	context = gtk_widget_get_style_context (page->list_boxes[section]);
-	gtk_style_context_add_class (context, "app-updates-section");
+	gtk_widget_set_overflow (page->list_boxes[section], GTK_OVERFLOW_HIDDEN);
+	gtk_widget_add_css_class (page->list_boxes[section], "card");
 }
 
 /**
@@ -400,13 +377,12 @@ gs_os_update_page_set_app (GsOsUpdatePage *page, GsApp *app)
 	for (guint i = 0; i < GS_OS_UPDATE_PAGE_SECTION_LAST; i++) {
 		if (page->list_boxes[i] == NULL)
 			continue;
-		gs_container_remove_all (GTK_CONTAINER (page->list_boxes[i]));
+		gs_widget_remove_all (page->list_boxes[i], (GsRemoveFunc) gtk_list_box_remove);
 	}
 
 	if (app) {
-		hdy_header_bar_set_title (HDY_HEADER_BAR (page->header_bar),
-					  gs_app_get_name (app));
-		hdy_preferences_group_set_description (HDY_PREFERENCES_GROUP (page->group),
+		adw_window_title_set_title (page->window_title, gs_app_get_name (app));
+		adw_preferences_group_set_description (ADW_PREFERENCES_GROUP (page->group),
 						       gs_app_get_description (app));
 
 		/* add new apps */
@@ -419,14 +395,15 @@ gs_os_update_page_set_app (GsOsUpdatePage *page, GsApp *app)
 				create_section (page, section);
 
 			row = create_app_row (app_related);
-			gtk_list_box_insert (GTK_LIST_BOX (page->list_boxes[section]), row, -1);
+			gtk_list_box_append (GTK_LIST_BOX (page->list_boxes[section]), row);
 		}
 	} else {
-		hdy_header_bar_set_title (HDY_HEADER_BAR (page->header_bar), NULL);
-		hdy_preferences_group_set_description (HDY_PREFERENCES_GROUP (page->group), NULL);
+		adw_window_title_set_title (page->window_title, NULL);
+		adw_preferences_group_set_description (ADW_PREFERENCES_GROUP (page->group), NULL);
 	}
 
 	g_object_notify_by_pspec (G_OBJECT (page), obj_props[PROP_APP]);
+	g_object_notify_by_pspec (G_OBJECT (page), obj_props[PROP_TITLE]);
 }
 
 static void
@@ -447,6 +424,9 @@ gs_os_update_page_get_property (GObject *object, guint prop_id, GValue *value, G
 	switch ((GsOsUpdatePageProperty) prop_id) {
 	case PROP_APP:
 		g_value_set_object (value, gs_os_update_page_get_app (page));
+		break;
+	case PROP_TITLE:
+		g_value_set_string (value, adw_window_title_get_title (page->window_title));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -497,6 +477,18 @@ gs_os_update_page_class_init (GsOsUpdatePageClass *klass)
 				     GS_TYPE_APP,
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
+	/**
+	 * GsOsUpdatePage:title
+	 *
+	 * Read-only window title.
+	 *
+	 * Since: 42
+	 */
+	obj_props[PROP_TITLE] =
+		g_param_spec_string ("title", NULL, NULL,
+				     NULL,
+				     G_PARAM_READABLE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+
 	g_object_class_install_properties (object_class, G_N_ELEMENTS (obj_props), obj_props);
 
 	/**
@@ -520,6 +512,7 @@ gs_os_update_page_class_init (GsOsUpdatePageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, box);
 	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, group);
 	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, header_bar);
+	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, window_title);
 }
 
 /**

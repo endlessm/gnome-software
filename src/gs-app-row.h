@@ -43,9 +43,7 @@ void		 gs_app_row_set_show_update		(GsAppRow	*app_row,
 							 gboolean	 show_update);
 GsApp		*gs_app_row_get_app			(GsAppRow	*app_row);
 void		 gs_app_row_set_size_groups		(GsAppRow	*app_row,
-							 GtkSizeGroup	*image,
 							 GtkSizeGroup	*name,
-							 GtkSizeGroup	*desc,
 							 GtkSizeGroup	*button_label,
 							 GtkSizeGroup	*button_image);
 void		 gs_app_row_set_show_installed_size	(GsAppRow	*app_row,

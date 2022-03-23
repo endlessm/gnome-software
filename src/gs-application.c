@@ -16,15 +16,6 @@
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 #include <gio/gdesktopappinfo.h>
-#include <handy.h>
-#include <libsoup/soup.h>
-
-#ifdef GDK_WINDOWING_X11
-#include <gdk/gdkx.h>
-#endif
-#ifdef GDK_WINDOWING_WAYLAND
-#include <gdk/gdkwayland.h>
-#endif
 
 #ifdef HAVE_PACKAGEKIT
 #include "gs-dbus-helper.h"
@@ -33,18 +24,15 @@
 #include "gs-build-ident.h"
 #include "gs-common.h"
 #include "gs-debug.h"
-#include "gs-first-run-dialog.h"
 #include "gs-shell.h"
 #include "gs-update-monitor.h"
 #include "gs-shell-search-provider.h"
-#include "gs-folders.h"
 
 #define ENABLE_REPOS_DIALOG_CONF_KEY "enable-repos-dialog"
 
 struct _GsApplication {
-	GtkApplication	 parent;
+	AdwApplication	 parent;
 	GCancellable	*cancellable;
-	GtkCssProvider	*provider;
 	GsPluginLoader	*plugin_loader;
 	gint		 pending_apps;
 	GtkWindow	*main_window;
@@ -60,7 +48,7 @@ struct _GsApplication {
 	GsDebug		*debug;  /* (owned) (not nullable) */
 };
 
-G_DEFINE_TYPE (GsApplication, gs_application, GTK_TYPE_APPLICATION);
+G_DEFINE_TYPE (GsApplication, gs_application, ADW_TYPE_APPLICATION);
 
 typedef enum {
 	PROP_DEBUG = 1,
@@ -111,12 +99,6 @@ gs_activation_helper_free (GsActivationHelper *helper)
 	g_slice_free (GsActivationHelper, helper);
 }
 
-GsPluginLoader *
-gs_application_get_plugin_loader (GsApplication *application)
-{
-	return application->plugin_loader;
-}
-
 gboolean
 gs_application_has_active_window (GsApplication *application)
 {
@@ -150,6 +132,8 @@ gs_application_init (GsApplication *application)
 		{ "interaction", '\0', 0, G_OPTION_ARG_STRING, NULL,
 		  _("The kind of interaction expected for this action: either "
 		    "‘none’, ‘notify’, or ‘full’"), NULL },
+		{ "show-metainfo", '\0', 0, G_OPTION_ARG_FILENAME, NULL,
+		  _("Show a local metainfo or appdata file"), _("FILENAME") },
 		{ "verbose", '\0', 0, G_OPTION_ARG_NONE, NULL,
 		  _("Show verbose debugging information"), NULL },
 		{ "autoupdate", 0, 0, G_OPTION_ARG_NONE, NULL,
@@ -166,45 +150,6 @@ gs_application_init (GsApplication *application)
 	};
 
 	g_application_add_main_option_entries (G_APPLICATION (application), options);
-}
-
-static void
-gs_application_initialize_plugins (GsApplication *app)
-{
-	static gboolean initialized = FALSE;
-	g_auto(GStrv) plugin_blocklist = NULL;
-	g_auto(GStrv) plugin_allowlist = NULL;
-	g_autoptr(GError) error = NULL;
-	const gchar *tmp;
-
-	if (initialized)
-		return;
-
-	initialized = TRUE;
-
-	/* allow for debugging */
-	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_BLOCKLIST");
-	if (tmp != NULL)
-		plugin_blocklist = g_strsplit (tmp, ",", -1);
-	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_ALLOWLIST");
-	if (tmp != NULL)
-		plugin_allowlist = g_strsplit (tmp, ",", -1);
-
-	app->plugin_loader = gs_plugin_loader_new ();
-	if (g_file_test (LOCALPLUGINDIR, G_FILE_TEST_EXISTS))
-		gs_plugin_loader_add_location (app->plugin_loader, LOCALPLUGINDIR);
-	if (!gs_plugin_loader_setup (app->plugin_loader,
-				     plugin_allowlist,
-				     plugin_blocklist,
-				     NULL,
-				     &error)) {
-		g_warning ("Failed to setup plugins: %s", error->message);
-		exit (1);
-	}
-
-	/* show the priority of each plugin */
-	gs_plugin_loader_dump_state (app->plugin_loader);
-
 }
 
 static gboolean
@@ -232,72 +177,10 @@ gs_application_dbus_unregister (GApplication    *application,
 }
 
 static void
-gs_application_show_first_run_dialog (GsApplication *app)
-{
-	GtkWidget *dialog;
-
-	if (g_settings_get_boolean (app->settings, "first-run") == TRUE) {
-		dialog = gs_first_run_dialog_new ();
-		gs_shell_modal_dialog_present (app->shell, GTK_WINDOW (dialog));
-		g_settings_set_boolean (app->settings, "first-run", FALSE);
-	}
-}
-
-static void
-theme_changed (GtkSettings *settings, GParamSpec *pspec, GsApplication *app)
-{
-	g_autoptr(GFile) file = NULL;
-	g_autofree gchar *theme = NULL;
-
-	g_object_get (settings, "gtk-theme-name", &theme, NULL);
-	if (g_strcmp0 (theme, "HighContrast") == 0) {
-		file = g_file_new_for_uri ("resource:///org/gnome/Software/gtk-style-hc.css");
-	} else {
-		file = g_file_new_for_uri ("resource:///org/gnome/Software/gtk-style.css");
-	}
-	gtk_css_provider_load_from_file (app->provider, file, NULL);
-}
-
-static void
 gs_application_shell_loaded_cb (GsShell *shell, GsApplication *app)
 {
 	g_signal_handler_disconnect (app->shell, app->shell_loaded_handler_id);
 	app->shell_loaded_handler_id = 0;
-}
-
-static void
-gs_application_initialize_ui (GsApplication *app)
-{
-	static gboolean initialized = FALSE;
-
-	if (initialized)
-		return;
-
-	initialized = TRUE;
-
-	/* get CSS */
-	app->provider = gtk_css_provider_new ();
-	gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
-						   GTK_STYLE_PROVIDER (app->provider),
-						   GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
-	g_signal_connect (gtk_settings_get_default (), "notify::gtk-theme-name",
-			  G_CALLBACK (theme_changed), app);
-	theme_changed (gtk_settings_get_default (), NULL, app);
-
-	gs_application_initialize_plugins (app);
-
-	/* setup UI */
-	app->shell = gs_shell_new ();
-	app->cancellable = g_cancellable_new ();
-
-	app->shell_loaded_handler_id = g_signal_connect (app->shell, "loaded",
-							 G_CALLBACK (gs_application_shell_loaded_cb),
-							 app);
-
-	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
-	app->main_window = GTK_WINDOW (app->shell);
-	gtk_application_add_window (GTK_APPLICATION (app), app->main_window);
 }
 
 static void
@@ -355,7 +238,7 @@ about_activated (GSimpleAction *action,
 
 	dialog = GTK_ABOUT_DIALOG (gtk_about_dialog_new ());
 	gtk_about_dialog_set_authors (dialog, authors);
-	gtk_about_dialog_set_copyright (dialog, _("Copyright \xc2\xa9 2016–2021 GNOME Software contributors"));
+	gtk_about_dialog_set_copyright (dialog, _("Copyright \xc2\xa9 2016–2022 GNOME Software contributors"));
 	gtk_about_dialog_set_license_type (dialog, GTK_LICENSE_GPL_2_0);
 	gtk_about_dialog_set_logo_icon_name (dialog, APPLICATION_ID);
 	gtk_about_dialog_set_translator_credits (dialog, _("translator-credits"));
@@ -378,10 +261,6 @@ about_activated (GSimpleAction *action,
 						 "software on your system."));
 
 	gs_shell_modal_dialog_present (app->shell, GTK_WINDOW (dialog));
-
-	/* just destroy */
-	g_signal_connect_swapped (dialog, "response",
-				  G_CALLBACK (gtk_widget_destroy), dialog);
 }
 
 static void
@@ -422,20 +301,6 @@ reboot_failed_cb (GObject *source, GAsyncResult *res, gpointer user_data)
 }
 
 static void
-offline_update_cb (GsPluginLoader *plugin_loader,
-		   GAsyncResult *res,
-		   GsApplication *app)
-{
-	g_autoptr(GError) error = NULL;
-	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
-		g_warning ("Failed to trigger offline update: %s", error->message);
-		return;
-	}
-
-	gs_utils_invoke_reboot_async (NULL, reboot_failed_cb, app);
-}
-
-static void
 reboot_activated (GSimpleAction *action,
 		   GVariant      *parameter,
 		   gpointer       data)
@@ -452,6 +317,10 @@ shutdown_activated (GSimpleAction *action,
 	g_application_quit (G_APPLICATION (app));
 }
 
+static void offline_update_cb (GsPluginLoader *plugin_loader,
+                               GAsyncResult   *res,
+                               GsApplication  *app);
+
 static void
 reboot_and_install (GSimpleAction *action,
 		    GVariant      *parameter,
@@ -459,12 +328,26 @@ reboot_and_install (GSimpleAction *action,
 {
 	GsApplication *app = GS_APPLICATION (data);
 	g_autoptr(GsPluginJob) plugin_job = NULL;
-	gs_application_initialize_plugins (app);
+
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE, NULL);
 	gs_plugin_loader_job_process_async (app->plugin_loader, plugin_job,
 					    app->cancellable,
 					    (GAsyncReadyCallback) offline_update_cb,
 					    app);
+}
+
+static void
+offline_update_cb (GsPluginLoader *plugin_loader,
+		   GAsyncResult *res,
+		   GsApplication *app)
+{
+	g_autoptr(GError) error = NULL;
+	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
+		g_warning ("Failed to trigger offline update: %s", error->message);
+		return;
+	}
+
+	gs_utils_invoke_reboot_async (NULL, reboot_failed_cb, app);
 }
 
 static void
@@ -640,16 +523,19 @@ details_pkg_activated (GSimpleAction *action,
 {
 	GsApplication *app = GS_APPLICATION (data);
 	const gchar *name;
-	const gchar *plugin;
+	const gchar *plugin_name;
 	g_autoptr (GsApp) a = NULL;
 
 	gs_application_present_window (app, NULL);
 
-	g_variant_get (parameter, "(&s&s)", &name, &plugin);
+	g_variant_get (parameter, "(&s&s)", &name, &plugin_name);
 	a = gs_app_new (NULL);
 	gs_app_add_source (a, name);
-	if (strcmp (plugin, "") != 0)
+	if (strcmp (plugin_name, "") != 0) {
+		GsPlugin *plugin = gs_plugin_loader_find_plugin (app->plugin_loader, plugin_name);
 		gs_app_set_management_plugin (a, plugin);
+	}
+
 	gs_shell_reset_state (app->shell);
 	gs_shell_show_app (app->shell, a);
 }
@@ -798,20 +684,38 @@ filename_activated (GSimpleAction *action,
 }
 
 static void
+show_metainfo_activated (GSimpleAction *action,
+			 GVariant      *parameter,
+			 gpointer       data)
+{
+	GsApplication *app = GS_APPLICATION (data);
+	const gchar *filename;
+	g_autoptr(GFile) file = NULL;
+
+	g_variant_get (parameter, "(^&ay)", &filename);
+
+	file = g_file_new_for_path (filename);
+
+	gs_shell_reset_state (app->shell);
+	gs_shell_show_metainfo (app->shell, file);
+}
+
+static void
 launch_activated (GSimpleAction *action,
 		  GVariant      *parameter,
 		  gpointer       data)
 {
 	GsApplication *self = GS_APPLICATION (data);
 	GsApp *app = NULL;
-	const gchar *id, *management_plugin;
+	const gchar *id, *management_plugin_name;
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) search_job = NULL;
 	g_autoptr(GsPluginJob) launch_job = NULL;
 	g_autoptr(GError) error = NULL;
 	guint ii, len;
+	GsPlugin *management_plugin;
 
-	g_variant_get (parameter, "(&s&s)", &id, &management_plugin);
+	g_variant_get (parameter, "(&s&s)", &id, &management_plugin_name);
 
 	search_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
 					 "search", id,
@@ -821,21 +725,23 @@ launch_activated (GSimpleAction *action,
 					 NULL);
 	list = gs_plugin_loader_job_process (self->plugin_loader, search_job, self->cancellable, &error);
 	if (!list) {
-		g_warning ("Failed to search for application '%s' (from '%s'): %s", id, management_plugin, error ? error->message : "Unknown error");
+		g_warning ("Failed to search for application '%s' (from '%s'): %s", id, management_plugin_name, error ? error->message : "Unknown error");
 		return;
 	}
+
+	management_plugin = gs_plugin_loader_find_plugin (self->plugin_loader, management_plugin_name);
 
 	len = gs_app_list_length (list);
 	for (ii = 0; ii < len && !app; ii++) {
 		GsApp *list_app = gs_app_list_index (list, ii);
 
 		if (gs_app_is_installed (list_app) &&
-		    g_strcmp0 (gs_app_get_management_plugin (list_app), management_plugin) == 0)
+		    gs_app_has_management_plugin (list_app, management_plugin))
 			app = list_app;
 	}
 
 	if (!app) {
-		g_warning ("Did not find application '%s' from '%s'", id, management_plugin);
+		g_warning ("Did not find application '%s' from '%s'", id, management_plugin_name);
 		return;
 	}
 
@@ -877,7 +783,6 @@ install_resources_activated (GSimpleAction *action,
                              gpointer       data)
 {
 	GsApplication *app = GS_APPLICATION (data);
-	GdkDisplay *display;
 	const gchar *mode;
 	const gchar *startup_id;
 	const gchar *desktop_id;
@@ -886,26 +791,19 @@ install_resources_activated (GSimpleAction *action,
 
 	g_variant_get (parameter, "(&s^a&s&s&s&s)", &mode, &resources, &startup_id, &desktop_id, &ident);
 
-	display = gdk_display_get_default ();
-#ifdef GDK_WINDOWING_X11
-	if (GDK_IS_X11_DISPLAY (display)) {
-		if (startup_id != NULL && startup_id[0] != '\0')
-			gdk_x11_display_set_startup_notification_id (display,
-			                                             startup_id);
-	}
-#endif
-#ifdef GDK_WINDOWING_WAYLAND
-	if (GDK_IS_WAYLAND_DISPLAY (display)) {
-		if (startup_id != NULL && startup_id[0] != '\0')
-			gdk_wayland_display_set_startup_notification_id (display,
-			                                                 startup_id);
-	}
-#endif
-
 	gs_application_present_window (app, startup_id);
 
 	gs_shell_reset_state (app->shell);
 	gs_shell_show_extras_search (app->shell, mode, resources, desktop_id, ident);
+}
+
+static void
+verbose_activated (GSimpleAction *action,
+		   GVariant      *parameter,
+		   gpointer       data)
+{
+	GsApplication *app = GS_APPLICATION (data);
+	gs_debug_set_verbose (app->debug, TRUE);
 }
 
 static GActionEntry actions[] = {
@@ -917,6 +815,7 @@ static GActionEntry actions[] = {
 	{ "launch", launch_activated, "(ss)", NULL, NULL },
 	{ "show-offline-update-error", show_offline_updates_error, NULL, NULL, NULL },
 	{ "autoupdate", autoupdate_activated, NULL, NULL, NULL },
+	{ "verbose", verbose_activated, NULL, NULL, NULL },
 	{ "nop", NULL, NULL, NULL }
 };
 
@@ -931,6 +830,7 @@ static GActionEntry actions_after_loading[] = {
 	{ "install", install_activated, "(su)", NULL, NULL },
 	{ "filename", filename_activated, "(s)", NULL, NULL },
 	{ "install-resources", install_resources_activated, "(sassss)", NULL, NULL },
+	{ "show-metainfo", show_metainfo_activated, "(ay)", NULL, NULL },
 	{ "nop", NULL, NULL, NULL }
 };
 
@@ -956,14 +856,6 @@ gs_application_settings_changed_cb (GApplication *self,
 	if (g_strcmp0 (key, ENABLE_REPOS_DIALOG_CONF_KEY) == 0) {
 		gs_application_update_software_sources_presence (self);
 	}
-}
-
-static void
-gs_application_setup_search_provider (GsApplication *app)
-{
-	gs_application_initialize_plugins (app);
-	if (app->search_provider)
-		gs_shell_search_provider_setup (app->search_provider, app->plugin_loader);
 }
 
 static void
@@ -1023,14 +915,21 @@ gs_application_add_wrapper_actions (GApplication *application)
 	}
 }
 
+static void startup_cb (GObject      *source_object,
+                        GAsyncResult *result,
+                        gpointer      user_data);
+
 static void
 gs_application_startup (GApplication *application)
 {
 	GSettings *settings;
 	GsApplication *app = GS_APPLICATION (application);
-	G_APPLICATION_CLASS (gs_application_parent_class)->startup (application);
+	g_auto(GStrv) plugin_blocklist = NULL;
+	g_auto(GStrv) plugin_allowlist = NULL;
+	const gchar *tmp;
+	g_autoptr(GAsyncResult) setup_result = NULL;
 
-	hdy_init ();
+	G_APPLICATION_CLASS (gs_application_parent_class)->startup (application);
 
 	gs_application_add_wrapper_actions (application);
 
@@ -1038,7 +937,19 @@ gs_application_startup (GApplication *application)
 					 actions, G_N_ELEMENTS (actions),
 					 application);
 
-	gs_application_setup_search_provider (GS_APPLICATION (application));
+	/* allow for debugging */
+	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_BLOCKLIST");
+	if (tmp != NULL)
+		plugin_blocklist = g_strsplit (tmp, ",", -1);
+	tmp = g_getenv ("GNOME_SOFTWARE_PLUGINS_ALLOWLIST");
+	if (tmp != NULL)
+		plugin_allowlist = g_strsplit (tmp, ",", -1);
+
+	app->plugin_loader = gs_plugin_loader_new ();
+	if (g_file_test (LOCALPLUGINDIR, G_FILE_TEST_EXISTS))
+		gs_plugin_loader_add_location (app->plugin_loader, LOCALPLUGINDIR);
+
+	gs_shell_search_provider_setup (app->search_provider, app->plugin_loader);
 
 #ifdef HAVE_PACKAGEKIT
 	GS_APPLICATION (application)->dbus_helper = gs_dbus_helper_new ();
@@ -1049,13 +960,48 @@ gs_application_startup (GApplication *application)
 				  G_CALLBACK (gs_application_settings_changed_cb),
 				  application);
 
-	gs_application_initialize_ui (app);
+	/* setup UI */
+	app->shell = gs_shell_new ();
+	app->cancellable = g_cancellable_new ();
 
-	GS_APPLICATION (application)->update_monitor =
-		gs_update_monitor_new (GS_APPLICATION (application));
-	gs_folders_convert ();
+	app->shell_loaded_handler_id = g_signal_connect (app->shell, "loaded",
+							 G_CALLBACK (gs_application_shell_loaded_cb),
+							 app);
+
+	gs_shell_setup (app->shell, app->plugin_loader, app->cancellable);
+	app->main_window = GTK_WINDOW (app->shell);
+	gtk_application_add_window (GTK_APPLICATION (app), app->main_window);
+
+	app->update_monitor = gs_update_monitor_new (app, app->plugin_loader);
 
 	gs_application_update_software_sources_presence (application);
+
+	/* Set up the plugins. */
+	gs_plugin_loader_setup_async (app->plugin_loader,
+				      (const gchar * const *) plugin_allowlist,
+				      (const gchar * const *) plugin_blocklist,
+				      NULL,
+				      startup_cb,
+				      app);
+}
+
+static void
+startup_cb (GObject      *source_object,
+            GAsyncResult *result,
+            gpointer      user_data)
+{
+	GsPluginLoader *plugin_loader = GS_PLUGIN_LOADER (source_object);
+	g_autoptr(GError) local_error = NULL;
+
+	if (!gs_plugin_loader_setup_finish (plugin_loader,
+					    result,
+					    &local_error)) {
+		g_warning ("Failed to setup plugins: %s", local_error->message);
+		exit (1);
+	}
+
+	/* show the priority of each plugin */
+	gs_plugin_loader_dump_state (plugin_loader);
 }
 
 static void
@@ -1067,8 +1013,6 @@ gs_application_activate (GApplication *application)
 		gs_shell_set_mode (app->shell, GS_SHELL_MODE_OVERVIEW);
 
 	gs_shell_activate (GS_APPLICATION (application)->shell);
-
-	gs_application_show_first_run_dialog (GS_APPLICATION (application));
 }
 
 static void
@@ -1137,7 +1081,6 @@ gs_application_dispose (GObject *object)
 
 	g_clear_object (&app->plugin_loader);
 	g_clear_object (&app->shell);
-	g_clear_object (&app->provider);
 	g_clear_object (&app->update_monitor);
 #ifdef HAVE_PACKAGEKIT
 	g_clear_object (&app->dbus_helper);
@@ -1206,6 +1149,12 @@ gs_application_handle_local_options (GApplication *app, GVariantDict *options)
 		return 0;
 	}
 
+	if (g_variant_dict_contains (options, "verbose")) {
+		g_action_group_activate_action (G_ACTION_GROUP (app),
+						"verbose",
+						NULL);
+	}
+
 	if (g_variant_dict_lookup (options, "mode", "&s", &mode)) {
 		g_action_group_activate_action (G_ACTION_GROUP (app),
 						"set-mode",
@@ -1248,6 +1197,16 @@ gs_application_handle_local_options (GApplication *app, GVariantDict *options)
 		g_action_group_activate_action (G_ACTION_GROUP (app),
 						"filename",
 						g_variant_new ("(s)", absolute_filename));
+		rc = 0;
+	} else if (g_variant_dict_lookup (options, "show-metainfo", "^&ay", &local_filename)) {
+		g_autoptr(GFile) file = NULL;
+		g_autofree gchar *absolute_filename = NULL;
+
+		file = g_file_new_for_path (local_filename);
+		absolute_filename = g_file_get_path (file);
+		g_action_group_activate_action (G_ACTION_GROUP (app),
+						"show-metainfo",
+						g_variant_new ("(^ay)", absolute_filename));
 		rc = 0;
 	}
 

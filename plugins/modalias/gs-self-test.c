@@ -48,19 +48,14 @@ main (int argc, char **argv)
 	g_autofree gchar *xml = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
-	const gchar *allowlist[] = {
+	const gchar * const allowlist[] = {
 		"appstream",
 		"dummy",
 		"modalias",
 		NULL
 	};
 
-	g_test_init (&argc, &argv,
-#if GLIB_CHECK_VERSION(2, 60, 0)
-		     G_TEST_OPTION_ISOLATE_DIRS,
-#endif
-		     NULL);
-	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	gs_test_init (&argc, &argv);
 	g_setenv ("GS_SELF_TEST_DUMMY_ENABLE", "1", TRUE);
 
 	xml = g_strdup_printf ("<?xml version=\"1.0\"?>\n"
@@ -86,16 +81,13 @@ main (int argc, char **argv)
 	g_assert (tmp_root != NULL);
 	g_setenv ("GS_SELF_TEST_CACHEDIR", tmp_root, TRUE);
 
-	/* only critical and error are fatal */
-	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
-
 	/* we can only load this once per process */
 	plugin_loader = gs_plugin_loader_new ();
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR_CORE);
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR_DUMMY);
 	ret = gs_plugin_loader_setup (plugin_loader,
-				      (gchar**) allowlist,
+				      allowlist,
 				      NULL,
 				      NULL,
 				      &error);

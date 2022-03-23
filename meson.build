@@ -1,8 +1,8 @@
 project('gnome-software', 'c',
-  version : '41.5',
+  version : '42.0',
   license : 'GPL-2.0+',
   default_options : ['warning_level=1', 'c_std=c11'],
-  meson_version : '>=0.47.0'
+  meson_version : '>=0.55.0'
 )
 
 conf = configuration_data()
@@ -23,7 +23,7 @@ conf.set_quoted('APPLICATION_ID', application_id)
 
 # this refers to the gnome-software plugin API version
 # this is not in any way related to a package or soname version
-gs_plugin_api_version = '16'
+gs_plugin_api_version = '17'
 conf.set_quoted('GS_PLUGIN_API_VERSION', gs_plugin_api_version)
 
 # private subdirectory of libdir for the private shared libgnomesoftware to live in
@@ -125,23 +125,37 @@ gdk_pixbuf = dependency('gdk-pixbuf-2.0', version : '>= 2.32.0')
 libxmlb = dependency('xmlb', version : '>= 0.1.7', fallback : ['libxmlb', 'libxmlb_dep'])
 gio_unix = dependency('gio-unix-2.0', version : '>= 2.56.0')
 gmodule = dependency('gmodule-2.0')
-gtk = dependency('gtk+-3.0', version : '>= 3.22.4')
-glib = dependency('glib-2.0', version : '>= 2.55.0')
-json_glib = dependency('json-glib-1.0', version : '>= 1.2.0')
-libm = cc.find_library('m', required: false)
-libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')
-libhandy = dependency('libhandy-1',
-  version: '>=1.2.0',
-  fallback: ['libhandy', 'libhandy_dep'],
+gtk = dependency('gtk4',
+  version : '>= 4.6',
+  fallback: ['gtk', 'gtk_dep'],
   default_options: [
-      'examples=false',
-      'glade_catalog=disabled',
+      'build-examples=false',
+      'build-tests=false',
       'introspection=disabled',
-      'static=true',
-      'tests=false',
-      'vapi=false',
+      'demos=false',
     ]
   )
+glib = dependency('glib-2.0', version : '>= 2.66.0')
+json_glib = dependency('json-glib-1.0', version : '>= 1.6.0')
+libm = cc.find_library('m', required: false)
+if get_option('soup2')
+  libsoup = dependency('libsoup-2.4', version : '>= 2.52.0')
+  libsoupapiversion = '2.4'
+  conf.set('SOUP_HTTP_URI_FLAGS', '(G_URI_FLAGS_HAS_PASSWORD | G_URI_FLAGS_ENCODED_PATH | G_URI_FLAGS_ENCODED_QUERY | G_URI_FLAGS_ENCODED_FRAGMENT | G_URI_FLAGS_SCHEME_NORMALIZE)')
+else
+  libsoup = dependency('libsoup-3.0', version : '>= 3.0')
+  libsoupapiversion = '3.0'
+endif
+libadwaita = dependency('libadwaita-1',
+  version: '>=1.0.1',
+  fallback: ['libadwaita', 'libadwaita_dep'],
+  default_options: [
+    'examples=false',
+    'introspection=disabled',
+    'tests=false',
+    'vapi=false',
+  ]
+)
 
 libsysprof_capture_dep = dependency('sysprof-capture-4',
   required: get_option('sysprof'),
@@ -174,11 +188,6 @@ endif
 gsettings_desktop_schemas = dependency('gsettings-desktop-schemas', version : '>= 3.18.0', required: get_option('gsettings_desktop_schemas'))
 if gsettings_desktop_schemas.found()
   conf.set('HAVE_GSETTINGS_DESKTOP_SCHEMAS', 1)
-endif
-
-if get_option('gspell')
-  gspell = dependency('gspell-1')
-  conf.set('HAVE_GSPELL', 1)
 endif
 
 if get_option('polkit')
@@ -214,12 +223,20 @@ if get_option('eos_updater')
 endif
 
 if get_option('fwupd')
-  fwupd = dependency('fwupd', version : '>= 1.0.3')
+  fwupd = dependency('fwupd', version : '>= 1.5.6')
 endif
 
 if get_option('flatpak')
-  flatpak = dependency('flatpak', version : '>= 1.0.4')
+  flatpak = dependency('flatpak', version : '>= 1.9.1')
   ostree = dependency('ostree-1')
+
+  flatpak_soupapiversion = flatpak.get_pkgconfig_variable('soupapiversion')
+  if flatpak_soupapiversion == ''
+    flatpak_soupapiversion = '2.4' # Pre libsoup3 support
+  endif
+  if flatpak_soupapiversion != libsoupapiversion
+    error('flatpak was built against a different API of libsoup. @0@ instead of @1@.'.format(flatpak_soupapiversion, libsoupapiversion))
+  endif
 endif
 
 if get_option('malcontent')
@@ -281,6 +298,10 @@ test_env = [
   'GSETTINGS_SCHEMA_DIR=@0@/data/'.format(meson.build_root()),
   'GSETTINGS_BACKEND=memory',
   'MALLOC_CHECK_=2',
+
+  # Make flatpak skip parental controls since it requires the system bus.
+  # https://github.com/flatpak/flatpak/issues/2993
+  'FLATPAK_SYSTEM_HELPER_ON_SESSION=1',
 ]
 
 subdir('data')

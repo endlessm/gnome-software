@@ -65,6 +65,7 @@ typedef gboolean (*GsAppListFilterFunc)		(GsApp		*app,
 						 gpointer	 user_data);
 
 GsAppList	*gs_app_list_new		(void);
+GsAppList	*gs_app_list_copy		(GsAppList	*list);
 void		 gs_app_list_add		(GsAppList	*list,
 						 GsApp		*app);
 void		 gs_app_list_add_list		(GsAppList	*list,
@@ -82,5 +83,7 @@ void		 gs_app_list_sort		(GsAppList	*list,
 void		 gs_app_list_filter		(GsAppList	*list,
 						 GsAppListFilterFunc func,
 						 gpointer	 user_data);
+void		 gs_app_list_override_progress	(GsAppList	*list,
+						 guint		 progress);
 
 G_END_DECLS

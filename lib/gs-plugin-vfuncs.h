@@ -29,26 +29,21 @@
 G_BEGIN_DECLS
 
 /**
- * gs_plugin_initialize:
- * @plugin: a #GsPlugin
+ * gs_plugin_query_type:
  *
- * Checks if the plugin should run, and if initializes it. If the plugin should
- * not be run then gs_plugin_set_enabled() should be called.
- * This is also the place to call gs_plugin_alloc_data() if private data is
- * required for the plugin.
+ * Returns the #GType for a subclass of #GsPlugin provided by this plugin
+ * module. It should not do any other computation.
  *
- * NOTE: Do not do any failable actions in this function; use gs_plugin_setup()
- * instead.
- **/
-void		 gs_plugin_initialize			(GsPlugin	*plugin);
-
-/**
- * gs_plugin_destroy:
- * @plugin: a #GsPlugin
+ * The init function for that type should initialize the plugin. If the plugin
+ * should not be run then gs_plugin_set_enabled() should be called from the
+ * init function.
  *
- * Called when the plugin should destroy any private data.
- **/
-void		 gs_plugin_destroy			(GsPlugin	*plugin);
+ * NOTE: Do not do any failable actions in the plugin class’ init function; use
+ * #GsPluginClass.setup_async instead.
+ *
+ * Since: 42
+ */
+GType		 gs_plugin_query_type			(void);
 
 /**
  * gs_plugin_adopt_app:
@@ -152,45 +147,6 @@ gboolean	 gs_plugin_add_alternates		(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
- * gs_plugin_setup:
- * @plugin: a #GsPlugin
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Called when the plugin should set up the initial state, and with the write
- * lock held.
- *
- * All functions can block, but should sent progress notifications, e.g. using
- * gs_app_set_progress() if they will take more than tens of milliseconds
- * to complete.
- *
- * This function will also not be called if gs_plugin_initialize() self-disabled.
- *
- * Returns: %TRUE for success
- **/
-gboolean	 gs_plugin_setup			(GsPlugin	*plugin,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_add_installed:
- * @plugin: a #GsPlugin
- * @list: a #GsAppList
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Get the list of installed applications.
- *
- * Plugins are expected to add new apps using gs_app_list_add().
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_add_installed		(GsPlugin	*plugin,
-							 GsAppList	*list,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
  * gs_plugin_add_updates:
  * @plugin: a #GsPlugin
  * @list: a #GsAppList
@@ -207,26 +163,6 @@ gboolean	 gs_plugin_add_installed		(GsPlugin	*plugin,
  * Returns: %TRUE for success or if not relevant
  **/
 gboolean	 gs_plugin_add_updates			(GsPlugin	*plugin,
-							 GsAppList	*list,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_add_distro_upgrades:
- * @plugin: a #GsPlugin
- * @list: a #GsAppList
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Get the list of distribution upgrades. Due to the download size, these
- * should not be downloaded until the user has explicitly opted-in.
- *
- * Plugins are expected to add new apps using gs_app_list_add() of type
- * %AS_COMPONENT_KIND_OPERATING_SYSTEM.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_add_distro_upgrades		(GsPlugin	*plugin,
 							 GsAppList	*list,
 							 GCancellable	*cancellable,
 							 GError		**error);
@@ -382,53 +318,6 @@ gboolean	 gs_plugin_add_featured			(GsPlugin	*plugin,
 							 GError		**error);
 
 /**
- * gs_plugin_refine:
- * @plugin: a #GsPlugin
- * @list: a #GsAppList
- * @flags: a #GsPluginRefineFlags, e.g. %GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Adds required information to a list of #GsApp's. It allows requests to be
- * batched up, which allows better performance than individual calls per app.
- *
- * An example for when this is useful would be in the PackageKit plugin where
- * we want to do one transaction of GetDetails with multiple source-ids rather
- * than scheduling a large number of pending requests.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_refine			(GsPlugin	*plugin,
-							 GsAppList	*list,
-							 GsPluginRefineFlags flags,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_refine_wildcard:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @list: a #GsAppList
- * @flags: a #GsPluginRefineFlags, e.g. %GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Adds applications that match the wildcard specified in @app.
- *
- * The general idea is that plugins create and add *new* applications rather
- * than all trying to fight over the wildcard application.
- * This allows the plugin loader to filter using the #GsApp priority value.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_refine_wildcard		(GsPlugin	*plugin,
-							 GsApp		*app,
-							 GsAppList	*list,
-							 GsPluginRefineFlags flags,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
  * gs_plugin_launch:
  * @plugin: a #GsPlugin
  * @app: a #GsApp
@@ -444,38 +333,6 @@ gboolean	 gs_plugin_refine_wildcard		(GsPlugin	*plugin,
  * Returns: %TRUE for success or if not relevant
  **/
 gboolean	 gs_plugin_launch			(GsPlugin	*plugin,
-							 GsApp		*app,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_add_shortcut:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Adds a shortcut for the application in a desktop-defined location.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_add_shortcut			(GsPlugin	*plugin,
-							 GsApp		*app,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_remove_shortcut:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Removes a shortcut for the application in a desktop-defined location.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_remove_shortcut		(GsPlugin	*plugin,
 							 GsApp		*app,
 							 GCancellable	*cancellable,
 							 GError		**error);
@@ -550,24 +407,6 @@ gboolean	 gs_plugin_app_install			(GsPlugin	*plugin,
  * Returns: %TRUE for success or if not relevant
  **/
 gboolean	 gs_plugin_app_remove			(GsPlugin	*plugin,
-							 GsApp		*app,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_app_set_rating:
- * @plugin: a #GsPlugin
- * @app: a #GsApp
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Gets any ratings for the applications.
- *
- * Plugins are expected to call gs_app_set_rating() on @app.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_app_set_rating		(GsPlugin	*plugin,
 							 GsApp		*app,
 							 GCancellable	*cancellable,
 							 GError		**error);
@@ -693,28 +532,6 @@ gboolean	 gs_plugin_app_upgrade_download		(GsPlugin	*plugin,
  **/
 gboolean	 gs_plugin_app_upgrade_trigger		(GsPlugin	*plugin,
 							 GsApp		*app,
-							 GCancellable	*cancellable,
-							 GError		**error);
-
-/**
- * gs_plugin_refresh:
- * @plugin: a #GsPlugin
- * @cache_age: the acceptable cache age in seconds, or MAXUINT for "any"
- * @cancellable: a #GCancellable, or %NULL
- * @error: a #GError, or %NULL
- *
- * Refreshes the state of all the plugins. Plugins should make sure
- * there's enough metadata to start the application, for example lists of
- * available applications.
- *
- * All functions can block, but should send progress notifications, e.g. using
- * gs_app_set_progress() if they will take more than tens of milliseconds
- * to complete.
- *
- * Returns: %TRUE for success or if not relevant
- **/
-gboolean	 gs_plugin_refresh			(GsPlugin	*plugin,
-							 guint		 cache_age,
 							 GCancellable	*cancellable,
 							 GError		**error);
 

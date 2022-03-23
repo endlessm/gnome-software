@@ -53,7 +53,6 @@ struct _GsUpdatesPage
 	gboolean		 cache_valid;
 	guint			 action_cnt;
 	GsShell			*shell;
-	GsPluginStatus		 last_status;
 	GsUpdatesPageState	 state;
 	GsUpdatesPageFlags	 result_flags;
 	GtkWidget		*button_refresh;
@@ -74,12 +73,10 @@ struct _GsUpdatesPage
 	GtkWidget		*spinner_updates;
 	GtkWidget		*stack_updates;
 	GtkWidget		*upgrade_banner;
-	GtkWidget		*box_end_of_life;
+	GtkWidget		*infobar_end_of_life;
 	GtkWidget		*label_end_of_life;
 
-	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
-	GtkSizeGroup		*sizegroup_desc;
 	GtkSizeGroup		*sizegroup_button_label;
 	GtkSizeGroup		*sizegroup_button_image;
 	GtkSizeGroup		*sizegroup_header;
@@ -305,8 +302,7 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 	switch (self->state) {
 	case GS_UPDATES_PAGE_STATE_ACTION_REFRESH:
 	case GS_UPDATES_PAGE_STATE_ACTION_GET_UPDATES:
-		gtk_image_set_from_icon_name (GTK_IMAGE (gtk_button_get_image (GTK_BUTTON (self->button_refresh))),
-					      "media-playback-stop-symbolic", GTK_ICON_SIZE_MENU);
+		gtk_button_set_icon_name (GTK_BUTTON (self->button_refresh), "media-playback-stop-symbolic");
 		gtk_widget_show (self->button_refresh);
 		break;
 	case GS_UPDATES_PAGE_STATE_STARTUP:
@@ -314,8 +310,7 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		gtk_widget_hide (self->button_refresh);
 		break;
 	case GS_UPDATES_PAGE_STATE_IDLE:
-		gtk_image_set_from_icon_name (GTK_IMAGE (gtk_button_get_image (GTK_BUTTON (self->button_refresh))),
-					      "view-refresh-symbolic", GTK_ICON_SIZE_MENU);
+		gtk_button_set_icon_name (GTK_BUTTON (self->button_refresh), "view-refresh-symbolic");
 		if (self->result_flags != GS_UPDATES_PAGE_FLAG_NONE) {
 			gtk_widget_show (self->button_refresh);
 		} else {
@@ -326,8 +321,7 @@ gs_updates_page_update_ui_state (GsUpdatesPage *self)
 		}
 		break;
 	case GS_UPDATES_PAGE_STATE_FAILED:
-		gtk_image_set_from_icon_name (GTK_IMAGE (gtk_button_get_image (GTK_BUTTON (self->button_refresh))),
-					      "view-refresh-symbolic", GTK_ICON_SIZE_MENU);
+		gtk_button_set_icon_name (GTK_BUTTON (self->button_refresh), "view-refresh-symbolic");
 		gtk_widget_show (self->button_refresh);
 		break;
 	default:
@@ -451,9 +445,10 @@ gs_updates_page_get_updates_cb (GsPluginLoader *plugin_loader,
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
 		gs_updates_page_clear_flag (self, GS_UPDATES_PAGE_FLAG_HAS_UPDATES);
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("updates-shell: failed to get updates: %s", error->message);
-		hdy_status_page_set_description (HDY_STATUS_PAGE (self->updates_failed_page),
+		adw_status_page_set_description (ADW_STATUS_PAGE (self->updates_failed_page),
 						 error->message);
 		gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_FAILED);
 		refresh_headerbar_updates_counter (self);
@@ -496,7 +491,8 @@ gs_updates_page_get_upgrades_cb (GObject *source_object,
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
 		gs_updates_page_clear_flag (self, GS_UPDATES_PAGE_FLAG_HAS_UPGRADES);
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_warning ("updates-shell: failed to get upgrades: %s",
 				   error->message);
 		}
@@ -558,14 +554,15 @@ gs_updates_page_refine_system_finished_cb (GObject *source_object,
 
 	/* get result */
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("Failed to refine system: %s", error->message);
 		return;
 	}
 
 	/* show or hide the end of life notification */
 	if (gs_app_get_state (app) != GS_APP_STATE_UNAVAILABLE) {
-		gtk_widget_set_visible (self->box_end_of_life, FALSE);
+		gtk_info_bar_set_revealed (GTK_INFO_BAR (self->infobar_end_of_life), FALSE);
 		return;
 	}
 
@@ -577,8 +574,7 @@ gs_updates_page_refine_system_finished_cb (GObject *source_object,
 					gs_app_get_name (app),
 					gs_app_get_version (app));
 	} else {
-		/* TRANSLATORS: OS refers to operating system, e.g. Fedora */
-		g_string_append (str, _("Your OS is no longer supported."));
+		g_string_append (str, _("Your operating system is no longer supported."));
 	}
 	g_string_append (str, " ");
 
@@ -590,7 +586,7 @@ gs_updates_page_refine_system_finished_cb (GObject *source_object,
 	g_string_append (str, _("It is recommended that you upgrade to a more recent version."));
 
 	gtk_label_set_label (GTK_LABEL (self->label_end_of_life), str->str);
-	gtk_widget_set_visible (self->box_end_of_life, TRUE);
+	gtk_info_bar_set_revealed (GTK_INFO_BAR (self->infobar_end_of_life), TRUE);
 
 }
 
@@ -609,7 +605,8 @@ gs_updates_page_get_system_finished_cb (GObject *source_object,
 
 	app = gs_plugin_loader_get_system_app_finish (plugin_loader, res, &error);
 	if (app == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("Failed to get system: %s", error->message);
 		return;
 	}
@@ -622,11 +619,8 @@ gs_updates_page_get_system_finished_cb (GObject *source_object,
 		       GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION;
 
 	helper = gs_page_helper_new (self, app);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "interactive", TRUE,
-					 "app", app,
-					 "refine-flags", refine_flags,
-					 NULL);
+	plugin_job = gs_plugin_job_refine_new_for_app (app, refine_flags);
+	gs_plugin_job_set_interactive (plugin_job, TRUE);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
 					    gs_updates_page_refine_system_finished_cb,
@@ -671,10 +665,8 @@ gs_updates_page_load (GsUpdatesPage *self)
 	if ((self->result_flags & GS_UPDATES_PAGE_FLAG_HAS_UPGRADES) == 0) {
 		refine_flags |= GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPGRADE_REMOVED;
 		g_object_unref (plugin_job);
-		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_DISTRO_UPDATES,
-						 "interactive", TRUE,
-						 "refine-flags", refine_flags,
-						 NULL);
+		plugin_job = gs_plugin_job_list_distro_upgrades_new (GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_INTERACTIVE,
+								     refine_flags);
 		gs_plugin_loader_job_process_async (self->plugin_loader,
 						    plugin_job,
 						    self->cancellable,
@@ -744,14 +736,13 @@ gs_updates_page_refresh_cb (GsPluginLoader *plugin_loader,
 	ret = gs_plugin_loader_job_action_finish (plugin_loader, res, &error);
 	if (!ret) {
 		/* user cancel */
-		if (g_error_matches (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_CANCELLED)) {
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_IDLE);
 			return;
 		}
 		g_warning ("failed to refresh: %s", error->message);
-		hdy_status_page_set_description (HDY_STATUS_PAGE (self->updates_failed_page),
+		adw_status_page_set_description (ADW_STATUS_PAGE (self->updates_failed_page),
 						 error->message);
 		gs_updates_page_set_state (self, GS_UPDATES_PAGE_STATE_FAILED);
 		return;
@@ -780,10 +771,8 @@ gs_updates_page_get_new_updates (GsUpdatesPage *self)
 	g_clear_object (&self->cancellable_refresh);
 	self->cancellable_refresh = g_cancellable_new ();
 
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "interactive", TRUE,
-					 "age", (guint64) 1,
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (1,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_INTERACTIVE);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable_refresh,
 					    (GAsyncReadyCallback) gs_updates_page_refresh_cb,
@@ -804,7 +793,7 @@ gs_updates_page_refresh_confirm_cb (GtkDialog *dialog,
                                     GsUpdatesPage *self)
 {
 	/* unmap the dialog */
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	gtk_window_destroy (GTK_WINDOW (dialog));
 
 	switch (response_type) {
 	case GTK_RESPONSE_REJECT:
@@ -929,7 +918,8 @@ upgrade_download_finished_cb (GObject *source,
 	g_autoptr(GError) error = NULL;
 
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
-		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			return;
 		g_warning ("failed to upgrade-download: %s", error->message);
 	}
@@ -1069,7 +1059,7 @@ gs_updates_page_upgrade_confirm_cb (GtkDialog *dialog,
                                     GsUpdatesPage *self)
 {
 	/* unmap the dialog */
-	gtk_widget_destroy (GTK_WIDGET (dialog));
+	gtk_window_destroy (GTK_WINDOW (dialog));
 
 	switch (response_type) {
 	case GTK_RESPONSE_ACCEPT:
@@ -1197,7 +1187,6 @@ gs_updates_page_status_changed_cb (GsPluginLoader *plugin_loader,
 		break;
 	}
 
-	self->last_status = status;
 	gs_updates_page_update_ui_state (self);
 }
 
@@ -1229,7 +1218,6 @@ gs_updates_page_setup (GsPage *page,
                        GError **error)
 {
 	GsUpdatesPage *self = GS_UPDATES_PAGE (page);
-	AtkObject *accessible;
 	GtkWidget *widget;
 
 	g_return_val_if_fail (GS_IS_UPDATES_PAGE (self), TRUE);
@@ -1237,9 +1225,7 @@ gs_updates_page_setup (GsPage *page,
 	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++) {
 		self->sections[i] = gs_updates_section_new (i, plugin_loader, page);
 		gs_updates_section_set_size_groups (self->sections[i],
-						    self->sizegroup_image,
 						    self->sizegroup_name,
-						    self->sizegroup_desc,
 						    self->sizegroup_button_label,
 						    self->sizegroup_button_image,
 						    self->sizegroup_header);
@@ -1247,7 +1233,7 @@ gs_updates_page_setup (GsPage *page,
 		g_object_bind_property (G_OBJECT (self), "is-narrow",
 					self->sections[i], "is-narrow",
 					G_BINDING_SYNC_CREATE);
-		gtk_container_add (GTK_CONTAINER (self->updates_box), GTK_WIDGET (self->sections[i]));
+		gtk_box_append (GTK_BOX (self->updates_box), GTK_WIDGET (self->sections[i]));
 	}
 
 	self->shell = shell;
@@ -1283,35 +1269,31 @@ gs_updates_page_setup (GsPage *page,
 	gs_page_set_header_start_widget (GS_PAGE (self), self->header_start_box);
 
 	/* This label indicates that the update check is in progress */
-	self->header_checking_label = hdy_squeezer_new ();
-	hdy_squeezer_set_xalign (HDY_SQUEEZER (self->header_checking_label), 0);
-	hdy_squeezer_set_transition_type (HDY_SQUEEZER (self->header_checking_label), HDY_SQUEEZER_TRANSITION_TYPE_CROSSFADE);
+	self->header_checking_label = adw_squeezer_new ();
+	adw_squeezer_set_xalign (ADW_SQUEEZER (self->header_checking_label), 0);
+	adw_squeezer_set_transition_type (ADW_SQUEEZER (self->header_checking_label), ADW_SQUEEZER_TRANSITION_TYPE_CROSSFADE);
 
 	widget = gtk_label_new (_("Checking…"));
 	gtk_widget_show (widget);
-	gtk_container_add (GTK_CONTAINER (self->header_checking_label), widget);
+	adw_squeezer_add (ADW_SQUEEZER (self->header_checking_label), widget);
 
 	/* FIXME: This box is just a 0x0 widget the squeezer will show when it
 	 * hasn't enough space to show the label. In GTK 4, we will be able to
 	 * use AdwSqueezer:allow-none instead. */
 	widget = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_widget_show (widget);
-	gtk_container_add (GTK_CONTAINER (self->header_checking_label), widget);
+	adw_squeezer_add (ADW_SQUEEZER (self->header_checking_label), widget);
 
-	gtk_container_add (GTK_CONTAINER (self->header_start_box), self->header_checking_label);
-	gtk_container_child_set(GTK_CONTAINER (self->header_start_box), self->header_checking_label,
-				"pack-type", GTK_PACK_END, NULL);
+	gtk_box_prepend (GTK_BOX (self->header_start_box), self->header_checking_label);
 	self->header_spinner_start = gtk_spinner_new ();
-	gtk_container_add (GTK_CONTAINER (self->header_start_box), self->header_spinner_start);
-	gtk_container_child_set (GTK_CONTAINER (self->header_start_box), self->header_spinner_start,
-				 "pack-type", GTK_PACK_END, NULL);
+	gtk_box_prepend (GTK_BOX (self->header_start_box), self->header_spinner_start);
 
 	/* setup update details window */
-	self->button_refresh = gtk_button_new_from_icon_name ("view-refresh-symbolic", GTK_ICON_SIZE_MENU);
-	accessible = gtk_widget_get_accessible (self->button_refresh);
-	if (accessible != NULL)
-		atk_object_set_name (accessible, _("Check for updates"));
-	gtk_container_add (GTK_CONTAINER (self->header_start_box), self->button_refresh);
+	self->button_refresh = gtk_button_new_from_icon_name ("view-refresh-symbolic");
+	gtk_accessible_update_property (GTK_ACCESSIBLE (self->button_refresh),
+					GTK_ACCESSIBLE_PROPERTY_LABEL, _("Check for updates"),
+					-1);
+	gtk_box_prepend (GTK_BOX (self->header_start_box), self->button_refresh);
 	g_signal_connect (self->button_refresh, "clicked",
 			  G_CALLBACK (gs_updates_page_button_refresh_cb),
 			  self);
@@ -1322,14 +1304,6 @@ gs_updates_page_setup (GsPage *page,
 	g_signal_connect (self->button_updates_offline, "clicked",
 			  G_CALLBACK (gs_updates_page_button_network_settings_cb),
 			  self);
-
-	/* visually aligned */
-	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_header = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);
 
 	/* set initial state */
 	if (!gs_plugin_loader_get_allow_updates (self->plugin_loader))
@@ -1402,7 +1376,7 @@ gs_updates_page_dispose (GObject *object)
 
 	for (guint i = 0; i < GS_UPDATES_SECTION_KIND_LAST; i++) {
 		if (self->sections[i] != NULL) {
-			gtk_widget_destroy (GTK_WIDGET (self->sections[i]));
+			gtk_widget_unparent (GTK_WIDGET (self->sections[i]));
 			self->sections[i] = NULL;
 		}
 	}
@@ -1412,9 +1386,7 @@ gs_updates_page_dispose (GObject *object)
 	g_clear_object (&self->settings);
 	g_clear_object (&self->desktop_settings);
 
-	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
-	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button_label);
 	g_clear_object (&self->sizegroup_button_image);
 	g_clear_object (&self->sizegroup_header);
@@ -1471,7 +1443,7 @@ gs_updates_page_class_init (GsUpdatesPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, spinner_updates);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, stack_updates);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, upgrade_banner);
-	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, box_end_of_life);
+	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, infobar_end_of_life);
 	gtk_widget_class_bind_template_child (widget_class, GsUpdatesPage, label_end_of_life);
 }
 
@@ -1484,9 +1456,7 @@ gs_updates_page_init (GsUpdatesPage *self)
 	self->settings = g_settings_new ("org.gnome.software");
 	self->desktop_settings = g_settings_new ("org.gnome.desktop.interface");
 
-	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_header = gtk_size_group_new (GTK_SIZE_GROUP_VERTICAL);

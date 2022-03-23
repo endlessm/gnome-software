@@ -45,9 +45,7 @@ struct _GsExtrasPage
 	GCancellable		 *search_cancellable;
 	GsShell			 *shell;
 	GsExtrasPageState	  state;
-	GtkSizeGroup		 *sizegroup_image;
 	GtkSizeGroup		 *sizegroup_name;
-	GtkSizeGroup		 *sizegroup_desc;
 	GtkSizeGroup		 *sizegroup_button_label;
 	GtkSizeGroup		 *sizegroup_button_image;
 	GPtrArray		 *array_search_data;
@@ -292,18 +290,23 @@ app_row_button_clicked_cb (GsAppRow *app_row,
 static void
 gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, GsAppList *list, SearchData *search_data)
 {
-	GtkWidget *app_row;
-	g_autoptr(GList) existing_apps = NULL;
+	GtkWidget *app_row, *child;
 
 	/* Don't add same app twice */
-	existing_apps = gtk_container_get_children (GTK_CONTAINER (self->list_box_results));
-	for (GList *l = existing_apps; l != NULL; l = l->next) {
+	for (child = gtk_widget_get_first_child (self->list_box_results);
+	     child != NULL;
+	     child = gtk_widget_get_next_sibling (child)) {
 		GsApp *existing_app;
 
-		existing_app = gs_app_row_get_app (GS_APP_ROW (l->data));
-		if (app == existing_app)
-			gtk_container_remove (GTK_CONTAINER (self->list_box_results),
-			                      GTK_WIDGET (l->data));
+		/* Might be a separator from list_header_func(). */
+		if (!GS_IS_APP_ROW (child))
+			continue;
+
+		existing_app = gs_app_row_get_app (GS_APP_ROW (child));
+		if (app == existing_app) {
+			gtk_list_box_remove (GTK_LIST_BOX (self->list_box_results), child);
+			break;
+		}
 	}
 
 	app_row = gs_app_row_new (app);
@@ -316,11 +319,9 @@ gs_extras_page_add_app (GsExtrasPage *self, GsApp *app, GsAppList *list, SearchD
 	                  G_CALLBACK (app_row_button_clicked_cb),
 	                  self);
 
-	gtk_container_add (GTK_CONTAINER (self->list_box_results), app_row);
+	gtk_list_box_append (GTK_LIST_BOX (self->list_box_results), app_row);
 	gs_app_row_set_size_groups (GS_APP_ROW (app_row),
-				    self->sizegroup_image,
 				    self->sizegroup_name,
-				    self->sizegroup_desc,
 				    self->sizegroup_button_label,
 				    self->sizegroup_button_image);
 	gtk_widget_show (app_row);
@@ -452,22 +453,24 @@ static gchar *
 build_no_results_label (GsExtrasPage *self)
 {
 	GsApp *app = NULL;
-	guint num;
+	guint num = 0;
 	g_autofree gchar *codec_titles = NULL;
 	g_autofree gchar *url = NULL;
-	g_autoptr(GList) list = NULL;
 	g_autoptr(GPtrArray) array = NULL;
-
-	list = gtk_container_get_children (GTK_CONTAINER (self->list_box_results));
-	num = g_list_length (list);
-
-	g_assert (num > 0);
+	GtkWidget *child;
 
 	array = g_ptr_array_new ();
-	for (GList *l = list; l != NULL; l = l->next) {
-		app = gs_app_row_get_app (GS_APP_ROW (l->data));
+	for (child = gtk_widget_get_first_child (self->list_box_results);
+	     child != NULL;
+	     child = gtk_widget_get_next_sibling (child)) {
+		/* Might be a separator from list_header_func(). */
+		if (!GS_IS_APP_ROW (child))
+			continue;
+
+		app = gs_app_row_get_app (GS_APP_ROW (child));
 		g_ptr_array_add (array,
-		                 g_object_get_data (G_OBJECT (l->data), "missing-title"));
+		                 g_object_get_data (G_OBJECT (child), "missing-title"));
+		num++;
 	}
 	g_ptr_array_add (array, NULL);
 
@@ -499,21 +502,26 @@ build_no_results_label (GsExtrasPage *self)
 static void
 show_search_results (GsExtrasPage *self)
 {
+	GtkWidget *first_child, *child;
 	GsApp *app;
 	guint n_children;
 	guint n_missing;
-	g_autoptr(GList) list = NULL;
-
-	list = gtk_container_get_children (GTK_CONTAINER (self->list_box_results));
-	n_children = g_list_length (list);
 
 	/* count the number of rows with missing codecs */
-	n_missing = 0;
-	for (GList *l = list; l != NULL; l = l->next) {
-		app = gs_app_row_get_app (GS_APP_ROW (l->data));
+	n_children = n_missing = 0;
+	first_child = gtk_widget_get_first_child (self->list_box_results);
+	for (child = first_child;
+	     child != NULL;
+	     child = gtk_widget_get_next_sibling (child)) {
+		/* Might be a separator from list_header_func(). */
+		if (!GS_IS_APP_ROW (child))
+			continue;
+
+		app = gs_app_row_get_app (GS_APP_ROW (child));
 		if (g_strcmp0 (gs_app_get_id (app), "missing-codec") == 0) {
 			n_missing++;
 		}
+		n_children++;
 	}
 
 	if (n_children == 0 || n_children == n_missing) {
@@ -532,8 +540,8 @@ show_search_results (GsExtrasPage *self)
 		if (n_children == 1) {
 			/* switch directly to details view */
 			g_debug ("extras: found one result, showing in details view");
-			g_assert (list != NULL);
-			app = gs_app_row_get_app (GS_APP_ROW (list->data));
+			g_assert (first_child != NULL);
+			app = gs_app_row_get_app (GS_APP_ROW (first_child));
 			gs_shell_show_app (self->shell, app);
 			if (gs_app_is_installed (app))
 				gs_extras_page_maybe_emit_installed_resources_done (self);
@@ -556,7 +564,8 @@ search_files_cb (GObject *source_object,
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
 		g_autofree gchar *str = NULL;
-		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_debug ("extras: search files cancelled");
 			return;
 		}
@@ -604,7 +613,8 @@ file_to_app_cb (GObject *source_object,
 
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
-		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_debug ("extras: search what provides cancelled");
 			return;
 		}
@@ -651,7 +661,8 @@ get_search_what_provides_cb (GObject *source_object,
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
 		g_autofree gchar *str = NULL;
-		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_debug ("extras: search what provides cancelled");
 			return;
 		}
@@ -704,7 +715,7 @@ gs_extras_page_load (GsExtrasPage *self, GPtrArray *array_search_data)
 	self->pending_search_cnt = 0;
 
 	/* remove old entries */
-	gs_container_remove_all (GTK_CONTAINER (self->list_box_results));
+	gs_widget_remove_all (self->list_box_results, (GsRemoveFunc) gtk_list_box_remove);
 
 	/* set state as loading */
 	self->state = GS_EXTRAS_PAGE_STATE_LOADING;
@@ -1261,9 +1272,7 @@ gs_extras_page_dispose (GObject *object)
 	g_cancellable_cancel (self->search_cancellable);
 	g_clear_object (&self->search_cancellable);
 
-	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
-	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button_label);
 	g_clear_object (&self->sizegroup_button_image);
 	g_clear_object (&self->language);
@@ -1285,9 +1294,7 @@ gs_extras_page_init (GsExtrasPage *self)
 	gtk_widget_init_template (GTK_WIDGET (self));
 
 	self->state = GS_EXTRAS_PAGE_STATE_LOADING;
-	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->vendor = gs_vendor_new ();

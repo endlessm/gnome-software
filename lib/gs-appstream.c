@@ -24,12 +24,13 @@ gs_appstream_create_app (GsPlugin *plugin, XbSilo *silo, XbNode *component, GErr
 
 	/* refine enough to get the unique ID */
 	if (!gs_appstream_refine_app (plugin, app_new, silo, component,
-				      GS_PLUGIN_REFINE_FLAGS_DEFAULT,
+				      GS_PLUGIN_REFINE_FLAGS_REQUIRE_ID,
 				      error))
 		return NULL;
 
-	/* never add wildcard apps to the plugin cache */
-	if (gs_app_has_quirk (app_new, GS_APP_QUIRK_IS_WILDCARD))
+	/* never add wildcard apps to the plugin cache, and only add to
+	 * the cache if it’s available */
+	if (gs_app_has_quirk (app_new, GS_APP_QUIRK_IS_WILDCARD) || plugin == NULL)
 		return g_steal_pointer (&app_new);
 
 	/* look for existing object */
@@ -61,33 +62,78 @@ node_set_to_next (XbNode **node)
 	*node = g_steal_pointer (&next_node);
 }
 
+/* Returns escaped text */
+static gchar *
+gs_appstream_format_description_text (XbNode *node)
+{
+	g_autoptr(GString) str = g_string_new (NULL);
+	const gchar *node_text;
+
+	if (node == NULL)
+		return NULL;
+
+	node_text = xb_node_get_text (node);
+	if (node_text != NULL && *node_text != '\0') {
+		g_autofree gchar *escaped = g_markup_escape_text (node_text, -1);
+		g_string_append (str, escaped);
+	}
+
+	for (g_autoptr(XbNode) n = xb_node_get_child (node); n != NULL; node_set_to_next (&n)) {
+		const gchar *start_elem = "", *end_elem = "";
+		g_autofree gchar *text = NULL;
+		if (g_strcmp0 (xb_node_get_element (n), "em") == 0) {
+			start_elem = "<i>";
+			end_elem = "</i>";
+		} else if (g_strcmp0 (xb_node_get_element (n), "code") == 0) {
+			start_elem = "<tt>";
+			end_elem = "</tt>";
+		}
+
+		/* These can be nested */
+		text = gs_appstream_format_description_text (n);
+		if (text != NULL) {
+			g_string_append_printf (str, "%s%s%s", start_elem, text, end_elem);
+		}
+
+		node_text = xb_node_get_tail (n);
+		if (node_text != NULL && *node_text != '\0') {
+			g_autofree gchar *escaped = g_markup_escape_text (node_text, -1);
+			g_string_append (str, escaped);
+		}
+	}
+
+	if (str->len == 0)
+		return NULL;
+
+	return g_string_free (g_steal_pointer (&str), FALSE);
+}
+
 static gchar *
 gs_appstream_format_description (XbNode *root, GError **error)
 {
 	g_autoptr(GString) str = g_string_new (NULL);
 
 	for (g_autoptr(XbNode) n = xb_node_get_child (root); n != NULL; node_set_to_next (&n)) {
-		/* support <p>, <ul>, <ol> and <li>, ignore all else */
+		/* support <p>, <em>, <code>, <ul>, <ol> and <li>, ignore all else */
 		if (g_strcmp0 (xb_node_get_element (n), "p") == 0) {
-			const gchar *node_text = xb_node_get_text (n);
-
+			g_autofree gchar *escaped = gs_appstream_format_description_text (n);
 			/* Treat a self-closing paragraph (`<p/>`) as
 			 * nonexistent. This is consistent with Firefox. */
-			if (node_text != NULL)
-				g_string_append_printf (str, "%s\n\n", node_text);
+			if (escaped != NULL)
+				g_string_append_printf (str, "%s\n\n", escaped);
 		} else if (g_strcmp0 (xb_node_get_element (n), "ul") == 0) {
 			g_autoptr(GPtrArray) children = xb_node_get_children (n);
 
 			for (guint i = 0; i < children->len; i++) {
 				XbNode *nc = g_ptr_array_index (children, i);
 				if (g_strcmp0 (xb_node_get_element (nc), "li") == 0) {
-					const gchar *node_text = xb_node_get_text (nc);
+					g_autofree gchar *escaped = gs_appstream_format_description_text (nc);
 
 					/* Treat a self-closing `<li/>` as an empty
 					 * list element (equivalent to `<li></li>`).
 					 * This is consistent with Firefox. */
 					g_string_append_printf (str, " • %s\n",
-								(node_text != NULL) ? node_text : "");
+								(escaped != NULL) ? escaped : "");
 				}
 			}
 			g_string_append (str, "\n");
@@ -96,12 +142,12 @@ gs_appstream_format_description (XbNode *root, GError **error)
 			for (guint i = 0; i < children->len; i++) {
 				XbNode *nc = g_ptr_array_index (children, i);
 				if (g_strcmp0 (xb_node_get_element (nc), "li") == 0) {
-					const gchar *node_text = xb_node_get_text (nc);
+					g_autofree gchar *escaped = gs_appstream_format_description_text (nc);
 
 					/* Treat self-closing elements as with `<ul>` above. */
 					g_string_append_printf (str, " %u. %s\n",
 								i + 1,
-								(node_text != NULL) ? node_text : "");
+								(escaped != NULL) ? escaped : "");
 				}
 			}
 			g_string_append (str, "\n");
@@ -159,6 +205,7 @@ gs_appstream_build_icon_prefix (XbNode *component)
 	return g_strjoinv ("/", path);
 }
 
+/* This function is designed to do no disk or network I/O. */
 static AsIcon *
 gs_appstream_new_icon (XbNode *component, XbNode *n, AsIconKind icon_kind, guint sz)
 {
@@ -199,7 +246,8 @@ app_add_icon (GsApp  *app,
               AsIcon *as_icon)
 {
 	g_autoptr(GIcon) icon = gs_icon_new_for_appstream_icon (as_icon);
-	gs_app_add_icon (app, icon);
+	if (icon != NULL)
+		gs_app_add_icon (app, icon);
 }
 
 static void
@@ -212,6 +260,11 @@ gs_appstream_refine_icon (GsApp *app, XbNode *component)
 	if (icons == NULL)
 		return;
 
+	/* This code deliberately does *not* check that the icon files or theme
+	 * icons exist, as that would mean doing disk I/O for all the apps in
+	 * the appstream file, regardless of whether the calling code is
+	 * actually going to use the icons. Better to add all the possible icons
+	 * and let the calling code check which ones exist, if it needs to. */
 	for (guint i = 0; i < icons->len; i++) {
 		XbNode *icon_node = g_ptr_array_index (icons, i);
 		g_autoptr(AsIcon) icon = NULL;
@@ -546,15 +599,21 @@ gs_appstream_refine_app_updates (GsApp *app,
 		g_autofree gchar *desc = NULL;
 		n = xb_node_query_first (release, "description", NULL);
 		desc = gs_appstream_format_description (n, NULL);
-		gs_app_set_update_details (app, desc);
+		gs_app_set_update_details_markup (app, desc);
 
 	/* get the descriptions with a version prefix */
 	} else if (updates_list->len > 1) {
+		const gchar *version = gs_app_get_version (app);
 		g_autoptr(GString) update_desc = g_string_new ("");
 		for (guint i = 0; i < updates_list->len; i++) {
 			XbNode *release = g_ptr_array_index (updates_list, i);
+			const gchar *release_version = xb_node_get_attr (release, "version");
 			g_autofree gchar *desc = NULL;
 			g_autoptr(XbNode) n = NULL;
+
+			/* skip the currently installed version and all below it */
+			if (version != NULL && as_vercmp_simple (version, release_version) >= 0)
+				continue;
 
 			n = xb_node_query_first (release, "description", NULL);
 			desc = gs_appstream_format_description (n, NULL);
@@ -567,7 +626,8 @@ gs_appstream_refine_app_updates (GsApp *app,
 		/* remove trailing newlines */
 		if (update_desc->len > 2)
 			g_string_truncate (update_desc, update_desc->len - 2);
-		gs_app_set_update_details (app, update_desc->str);
+		if (update_desc->len > 0)
+			gs_app_set_update_details_markup (app, update_desc->str);
 	}
 
 	/* if there is no already set update version use the newest */
@@ -761,8 +821,7 @@ gs_appstream_refine_app_content_ratings (GsApp *app,
 }
 
 static gboolean
-gs_appstream_refine_app_relation (GsPlugin        *plugin,
-                                  GsApp           *app,
+gs_appstream_refine_app_relation (GsApp           *app,
                                   XbNode          *relation_node,
                                   AsRelationKind   kind,
                                   GError         **error)
@@ -813,8 +872,7 @@ gs_appstream_refine_app_relation (GsPlugin        *plugin,
 }
 
 static gboolean
-gs_appstream_refine_app_relations (GsPlugin  *plugin,
-                                   GsApp     *app,
+gs_appstream_refine_app_relations (GsApp     *app,
                                    XbNode    *component,
                                    GError   **error)
 {
@@ -835,7 +893,7 @@ gs_appstream_refine_app_relations (GsPlugin  *plugin,
 
 	for (guint i = 0; i < recommends->len; i++) {
 		XbNode *recommend = g_ptr_array_index (recommends, i);
-		if (!gs_appstream_refine_app_relation (plugin, app, recommend, AS_RELATION_KIND_RECOMMENDS, error))
+		if (!gs_appstream_refine_app_relation (app, recommend, AS_RELATION_KIND_RECOMMENDS, error))
 			return FALSE;
 	}
 
@@ -852,7 +910,7 @@ gs_appstream_refine_app_relations (GsPlugin  *plugin,
 
 	for (guint i = 0; i < requires->len; i++) {
 		XbNode *require = g_ptr_array_index (requires, i);
-		if (!gs_appstream_refine_app_relation (plugin, app, require, AS_RELATION_KIND_REQUIRES, error))
+		if (!gs_appstream_refine_app_relation (app, require, AS_RELATION_KIND_REQUIRES, error))
 			return FALSE;
 	}
 
@@ -972,7 +1030,7 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	 * are the permissions. It would be good to eliminate refine flags at
 	 * some point in the future. */
 	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_PERMISSIONS) {
-		if (!gs_appstream_refine_app_relations (plugin, app, component, error))
+		if (!gs_appstream_refine_app_relations (app, component, error))
 			return FALSE;
 	}
 
@@ -1156,7 +1214,8 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	}
 
 	/* set addons */
-	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS) {
+	if ((refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS) != 0 &&
+	    plugin != NULL && silo != NULL) {
 		if (!gs_appstream_refine_add_addons (plugin, app, silo, error))
 			return FALSE;
 	}
@@ -1227,7 +1286,8 @@ gs_appstream_refine_app (GsPlugin *plugin,
 	}
 
 	/* is there any update information */
-	if (refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS) {
+	if ((refine_flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS) != 0 &&
+	    silo != NULL) {
 		if (!gs_appstream_refine_app_updates (app,
 						      silo,
 						      component,
@@ -1352,7 +1412,12 @@ gs_appstream_search (GsPlugin *plugin,
 				continue;
 			}
 			g_debug ("add %s", gs_app_get_unique_id (app));
-			gs_app_set_match_value (app, match_value);
+
+			/* The match value is used for prioritising results.
+			 * Drop the ID token from it as it’s the highest
+			 * numeric value but isn’t visible to the user in the
+			 * UI, which leads to confusing results ordering. */
+			gs_app_set_match_value (app, match_value & (~AS_SEARCH_TOKEN_MATCH_ID));
 			gs_app_list_add (list, app);
 
 			if (gs_app_get_kind (app) == AS_COMPONENT_KIND_ADDON) {
@@ -1555,7 +1620,7 @@ gs_appstream_add_recent (GsPlugin *plugin,
 	/* use predicate conditions to the max */
 	xpath = g_strdup_printf ("components/component/releases/"
 				 "release[@timestamp>%" G_GUINT64_FORMAT "]/../..",
-				 now - (30 * 24 * 60 * 60));
+				 now - age);
 	array = xb_silo_query (silo, xpath, 0, &error_local);
 	if (array == NULL) {
 		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
@@ -1568,8 +1633,13 @@ gs_appstream_add_recent (GsPlugin *plugin,
 	for (guint i = 0; i < array->len; i++) {
 		XbNode *component = g_ptr_array_index (array, i);
 		g_autoptr(GsApp) app = gs_appstream_create_app (plugin, silo, component, error);
+		guint64 timestamp;
 		if (app == NULL)
 			return FALSE;
+		/* set the release date */
+		timestamp = component_get_release_timestamp (component);
+		if (timestamp != G_MAXUINT64)
+			gs_app_set_release_date (app, timestamp);
 		gs_app_list_add (list, app);
 	}
 	return TRUE;

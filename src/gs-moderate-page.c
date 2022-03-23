@@ -26,9 +26,7 @@ struct _GsModeratePage
 
 	GsPluginLoader		*plugin_loader;
 	GCancellable		*cancellable;
-	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
-	GtkSizeGroup		*sizegroup_desc;
 	GtkSizeGroup		*sizegroup_button_label;
 	GtkSizeGroup		*sizegroup_button_image;
 	GsShell			*shell;
@@ -51,25 +49,25 @@ static GParamSpec *obj_props[PROP_ODRS_PROVIDER + 1]  = { NULL, };
 static void
 gs_moderate_page_perhaps_hide_app_row (GsModeratePage *self, GsApp *app)
 {
+	GtkWidget *child;
 	GsAppRow *app_row = NULL;
 	gboolean is_visible = FALSE;
-	g_autoptr(GList) children = NULL;
 
-	children = gtk_container_get_children (GTK_CONTAINER (self->list_box_install));
-	for (GList *l = children; l != NULL; l = l->next) {
-		GtkWidget *w = GTK_WIDGET (l->data);
-		if (!gtk_widget_get_visible (w))
+	for (child = gtk_widget_get_first_child (self->list_box_install);
+	     child != NULL;
+	     child = gtk_widget_get_next_sibling (child)) {
+		if (!gtk_widget_get_visible (child))
 			continue;
-		if (GS_IS_APP_ROW (w)) {
-			GsApp *app_tmp = gs_app_row_get_app (GS_APP_ROW (w));
+		if (GS_IS_APP_ROW (child)) {
+			GsApp *app_tmp = gs_app_row_get_app (GS_APP_ROW (child));
 			if (g_strcmp0 (gs_app_get_id (app),
 				       gs_app_get_id (app_tmp)) == 0) {
-				app_row = GS_APP_ROW (w);
+				app_row = GS_APP_ROW (child);
 				continue;
 			}
 		}
-		if (GS_IS_REVIEW_ROW (w)) {
-			GsApp *app_tmp = g_object_get_data (G_OBJECT (w), "GsApp");
+		if (GS_IS_REVIEW_ROW (child)) {
+			GsApp *app_tmp = g_object_get_data (G_OBJECT (child), "GsApp");
 			if (g_strcmp0 (gs_app_get_id (app),
 				       gs_app_get_id (app_tmp)) == 0) {
 				is_visible = TRUE;
@@ -158,11 +156,9 @@ gs_moderate_page_add_app (GsModeratePage *self, GsApp *app)
 	/* add top level app */
 	app_row = gs_app_row_new (app);
 	gs_app_row_set_show_buttons (GS_APP_ROW (app_row), TRUE);
-	gtk_container_add (GTK_CONTAINER (self->list_box_install), app_row);
+	gtk_list_box_append (GTK_LIST_BOX (self->list_box_install), app_row);
 	gs_app_row_set_size_groups (GS_APP_ROW (app_row),
-				    self->sizegroup_image,
 				    self->sizegroup_name,
-				    self->sizegroup_desc,
 				    self->sizegroup_button_label,
 				    self->sizegroup_button_image);
 
@@ -183,7 +179,7 @@ gs_moderate_page_add_app (GsModeratePage *self, GsApp *app)
 		g_object_set_data_full (G_OBJECT (row), "GsApp",
 					g_object_ref (app),
 					(GDestroyNotify) g_object_unref);
-		gtk_container_add (GTK_CONTAINER (self->list_box_install), row);
+		gtk_list_box_append (GTK_LIST_BOX (self->list_box_install), row);
 	}
 	gtk_widget_show (app_row);
 }
@@ -207,7 +203,8 @@ gs_moderate_page_refine_unvoted_reviews_cb (GObject      *source_object,
 							    res,
 							    &error);
 	if (list == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get moderate apps: %s", error->message);
 		return;
 	}
@@ -233,27 +230,26 @@ gs_moderate_page_load (GsModeratePage *self)
 	g_autoptr(GError) local_error = NULL;
 
 	/* remove old entries */
-	gs_container_remove_all (GTK_CONTAINER (self->list_box_install));
+	gs_widget_remove_all (self->list_box_install, (GsRemoveFunc) gtk_list_box_remove);
 
 	/* get unvoted reviews as apps */
 	if (!gs_odrs_provider_add_unvoted_reviews (self->odrs_provider, list,
 						   self->cancellable, &local_error)) {
-		if (!g_error_matches (local_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (local_error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (local_error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get moderate apps: %s", local_error->message);
 		return;
 	}
 
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "list", list,
-					 "interactive", TRUE,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS,
-					 NULL);
+	plugin_job = gs_plugin_job_refine_new (list,
+					       GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+					       GS_PLUGIN_REFINE_FLAGS_REQUIRE_SETUP_ACTION |
+					       GS_PLUGIN_REFINE_FLAGS_REQUIRE_VERSION |
+					       GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE |
+					       GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
+					       GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
+					       GS_PLUGIN_REFINE_FLAGS_REQUIRE_REVIEWS);
+	gs_plugin_job_set_interactive (plugin_job, TRUE);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
 					    gs_moderate_page_refine_unvoted_reviews_cb,
@@ -363,9 +359,7 @@ gs_moderate_page_dispose (GObject *object)
 {
 	GsModeratePage *self = GS_MODERATE_PAGE (object);
 
-	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
-	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button_label);
 	g_clear_object (&self->sizegroup_button_image);
 
@@ -424,9 +418,7 @@ gs_moderate_page_init (GsModeratePage *self)
 	g_signal_connect (self->list_box_install, "row-activated",
 			  G_CALLBACK (gs_moderate_page_selection_changed_cb), self);
 
-	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 }

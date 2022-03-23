@@ -76,9 +76,9 @@ gs_mkdir_parent (const gchar *path, GError **error)
  *
  * Gets a file age.
  *
- * Returns: The time in seconds since the file was modified, or %G_MAXUINT for error
+ * Returns: The time in seconds since the file was modified, or %G_MAXUINT64 for error
  */
-guint
+guint64
 gs_utils_get_file_age (GFile *file)
 {
 	guint64 now;
@@ -91,13 +91,13 @@ gs_utils_get_file_age (GFile *file)
 				  NULL,
 				  NULL);
 	if (info == NULL)
-		return G_MAXUINT;
+		return G_MAXUINT64;
 	mtime = g_file_info_get_attribute_uint64 (info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
 	now = (guint64) g_get_real_time () / G_USEC_PER_SEC;
 	if (mtime > now)
-		return G_MAXUINT;
-	if (now - mtime > G_MAXUINT)
-		return G_MAXUINT;
+		return G_MAXUINT64;
+	if (now - mtime > G_MAXUINT64)
+		return G_MAXUINT64;
 	return (guint) (now - mtime);
 }
 
@@ -110,7 +110,7 @@ gs_utils_filename_array_return_newest (GPtrArray *array)
 	for (i = 0; i < array->len; i++) {
 		const gchar *fn = g_ptr_array_index (array, i);
 		g_autoptr(GFile) file = g_file_new_for_path (fn);
-		guint age_tmp = gs_utils_get_file_age (file);
+		guint64 age_tmp = gs_utils_get_file_age (file);
 		if (age_tmp < age_lowest) {
 			age_lowest = age_tmp;
 			filename_best = fn;
@@ -157,11 +157,23 @@ gs_utils_get_cache_filename (const gchar *kind,
 	g_autofree gchar *cachedir = NULL;
 	g_autoptr(GFile) cachedir_file = NULL;
 	g_autoptr(GPtrArray) candidates = g_ptr_array_new_with_free_func (g_free);
+	g_autoptr(GError) local_error = NULL;
 
 	/* in the self tests */
 	tmp = g_getenv ("GS_SELF_TEST_CACHEDIR");
-	if (tmp != NULL)
-		return g_build_filename (tmp, kind, resource, NULL);
+	if (tmp != NULL) {
+		cachedir = g_build_filename (tmp, kind, NULL);
+		cachedir_file = g_file_new_for_path (cachedir);
+
+		if ((flags & GS_UTILS_CACHE_FLAG_CREATE_DIRECTORY) &&
+		    !g_file_make_directory_with_parents (cachedir_file, NULL, &local_error) &&
+		    !g_error_matches (local_error, G_IO_ERROR, G_IO_ERROR_EXISTS)) {
+			g_propagate_error (error, g_steal_pointer (&local_error));
+			return NULL;
+		}
+
+		return g_build_filename (cachedir, resource, NULL);;
+	}
 
 	/* get basename */
 	if (flags & GS_UTILS_CACHE_FLAG_USE_HASH) {
@@ -272,6 +284,61 @@ gs_utils_get_permission (const gchar *id, GCancellable *cancellable, GError **er
 		     GS_PLUGIN_ERROR_NOT_SUPPORTED,
 		     "no PolicyKit, so can't return GPermission for %s", id);
 	return NULL;
+#endif
+}
+
+/**
+ * gs_utils_get_permission_async:
+ * @id: a polkit action ID, for example `org.freedesktop.packagekit.trigger-offline-update`
+ * @cancellable: (nullable): a #GCancellable, or %NULL
+ * @callback: callback for when the asynchronous operation is complete
+ * @user_data: data to pass to @callback
+ *
+ * Asynchronously gets a #GPermission object representing the given polkit
+ * action @id.
+ *
+ * Since: 42
+ */
+void
+gs_utils_get_permission_async (const gchar         *id,
+                               GCancellable        *cancellable,
+                               GAsyncReadyCallback  callback,
+                               gpointer             user_data)
+{
+	g_return_if_fail (id != NULL);
+	g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+#ifdef HAVE_POLKIT
+	polkit_permission_new (id, NULL, cancellable, callback, user_data);
+#else
+	g_task_report_new_error (NULL, callback, user_data, gs_utils_get_permission_async,
+				 GS_PLUGIN_ERROR,
+				 GS_PLUGIN_ERROR_NOT_SUPPORTED,
+				 "no PolicyKit, so can't return GPermission for %s", id);
+#endif
+}
+
+/**
+ * gs_utils_get_permission_finish:
+ * @result: result of the asynchronous operation
+ * @error: return location for a #GError, or %NULL
+ *
+ * Finish an asynchronous operation started with gs_utils_get_permission_async().
+ *
+ * Returns: (transfer full): a #GPermission representing the given action ID
+ * Since: 42
+ */
+GPermission *
+gs_utils_get_permission_finish (GAsyncResult  *result,
+                                GError       **error)
+{
+	g_return_val_if_fail (G_IS_ASYNC_RESULT (result), NULL);
+	g_return_val_if_fail (error == NULL || *error == NULL, NULL);
+
+#ifdef HAVE_POLKIT
+	return polkit_permission_new_finish (result, error);
+#else
+	return g_task_propagate_pointer (G_TASK (result), error);
 #endif
 }
 
@@ -910,38 +977,6 @@ gs_utils_error_convert_gdk_pixbuf (GError **perror)
 }
 
 /**
- * gs_utils_error_convert_json_glib:
- * @perror: a pointer to a #GError, or %NULL
- *
- * Converts the #JsonParserError to an error with a GsPluginError domain.
- *
- * Returns: %TRUE if the error was converted, or already correct
- **/
-gboolean
-gs_utils_error_convert_json_glib (GError **perror)
-{
-	GError *error = perror != NULL ? *perror : NULL;
-
-	/* not set */
-	if (error == NULL)
-		return FALSE;
-	if (error->domain == GS_PLUGIN_ERROR)
-		return TRUE;
-	if (error->domain != JSON_PARSER_ERROR)
-		return FALSE;
-	switch (error->code) {
-	case JSON_PARSER_ERROR_UNKNOWN:
-		error->code = GS_PLUGIN_ERROR_FAILED;
-		break;
-	default:
-		error->code = GS_PLUGIN_ERROR_INVALID_FORMAT;
-		break;
-	}
-	error->domain = GS_PLUGIN_ERROR;
-	return TRUE;
-}
-
-/**
  * gs_utils_error_convert_appstream:
  * @perror: a pointer to a #GError, or %NULL
  *
@@ -1015,19 +1050,19 @@ gs_utils_error_convert_appstream (GError **perror)
 gchar *
 gs_utils_get_url_scheme	(const gchar *url)
 {
-	g_autoptr(SoupURI) uri = NULL;
+	g_autoptr(GUri) uri = NULL;
 
 	/* no data */
 	if (url == NULL)
 		return NULL;
 
 	/* create URI from URL */
-	uri = soup_uri_new (url);
-	if (!SOUP_URI_IS_VALID (uri))
+	uri = g_uri_parse (url, SOUP_HTTP_URI_FLAGS, NULL);
+	if (!uri)
 		return NULL;
 
 	/* success */
-	return g_strdup (soup_uri_get_scheme (uri));
+	return g_strdup (g_uri_get_scheme (uri));
 }
 
 /**
@@ -1041,19 +1076,19 @@ gs_utils_get_url_scheme	(const gchar *url)
 gchar *
 gs_utils_get_url_path (const gchar *url)
 {
-	g_autoptr(SoupURI) uri = NULL;
+	g_autoptr(GUri) uri = NULL;
 	const gchar *host;
 	const gchar *path;
 
-	uri = soup_uri_new (url);
-	if (!SOUP_URI_IS_VALID (uri))
+	uri = g_uri_parse (url, SOUP_HTTP_URI_FLAGS, NULL);
+	if (!uri)
 		return NULL;
 
 	/* foo://bar -> scheme: foo, host: bar, path: / */
 	/* foo:bar -> scheme: foo, host: (empty string), path: /bar */
-	host = soup_uri_get_host (uri);
-	path = soup_uri_get_path (uri);
-	if (host != NULL && (strlen (host) > 0))
+	host = g_uri_get_host (uri);
+	path = g_uri_get_path (uri);
+	if (host != NULL && *host != '\0')
 		path = host;
 
 	/* trim any leading slashes */
@@ -1124,69 +1159,6 @@ gs_utils_get_memory_total (void)
 #else
 #error "Please implement gs_utils_get_memory_total for your system."
 #endif
-}
-
-/**
- * gs_utils_parse_evr:
- * @evr: an EVR version string
- * @out_epoch: (out): return location for the epoch string
- * @out_version: (out): return location for the version string
- * @out_release: (out): return location for the release string
- *
- * Splits EVR into epoch-version-release strings.
- *
- * Returns: %TRUE for success
- **/
-gboolean
-gs_utils_parse_evr (const gchar *evr,
-                    gchar **out_epoch,
-                    gchar **out_version,
-                    gchar **out_release)
-{
-	const gchar *version_release;
-	g_auto(GStrv) split_colon = NULL;
-	g_auto(GStrv) split_dash = NULL;
-
-	/* split on : to get epoch */
-	split_colon = g_strsplit (evr, ":", -1);
-	switch (g_strv_length (split_colon)) {
-	case 1:
-		/* epoch is 0 when not set */
-		*out_epoch = g_strdup ("0");
-		version_release = split_colon[0];
-		break;
-	case 2:
-		/* epoch set */
-		*out_epoch = g_strdup (split_colon[0]);
-		version_release = split_colon[1];
-		break;
-	default:
-		/* error */
-		return FALSE;
-	}
-
-	/* split on - to get version and release */
-	split_dash = g_strsplit (version_release, "-", -1);
-	switch (g_strv_length (split_dash)) {
-	case 1:
-		/* all of the string is version */
-		*out_version = g_strdup (split_dash[0]);
-		*out_release = g_strdup ("0");
-		break;
-	case 2:
-		/* both version and release set */
-		*out_version = g_strdup (split_dash[0]);
-		*out_release = g_strdup (split_dash[1]);
-		break;
-	default:
-		/* error */
-		return FALSE;
-	}
-
-	g_assert (*out_epoch != NULL);
-	g_assert (*out_version != NULL);
-	g_assert (*out_release != NULL);
-	return TRUE;
 }
 
 /**
@@ -1301,7 +1273,7 @@ gs_pixbuf_blur_private (GdkPixbuf *src, GdkPixbuf *dest, guint radius, guint8 *d
 	gint width, height, src_rowstride, dest_rowstride, n_channels;
 	guchar *p_src, *p_dest, *c1, *c2;
 	gint x, y, i, i1, i2, width_minus_1, height_minus_1, radius_plus_1;
-	gint r, g, b, a;
+	gint r, g, b;
 	guchar *p_dest_row, *p_dest_col;
 
 	width = gdk_pixbuf_get_width (src);
@@ -1318,7 +1290,7 @@ gs_pixbuf_blur_private (GdkPixbuf *src, GdkPixbuf *dest, guint radius, guint8 *d
 	for (y = 0; y < height; y++) {
 
 		/* calc the initial sums of the kernel */
-		r = g = b = a = 0;
+		r = g = b = 0;
 		for (i = -radius; i <= (gint) radius; i++) {
 			c1 = p_src + (CLAMP (i, 0, width_minus_1) * n_channels);
 			r += c1[0];
@@ -1365,7 +1337,7 @@ gs_pixbuf_blur_private (GdkPixbuf *src, GdkPixbuf *dest, guint radius, guint8 *d
 	for (x = 0; x < width; x++) {
 
 		/* calc the initial sums of the kernel */
-		r = g = b = a = 0;
+		r = g = b = 0;
 		for (i = -radius; i <= (gint) radius; i++) {
 			c1 = p_src + (CLAMP (i, 0, height_minus_1) * src_rowstride);
 			r += c1[0];
@@ -1516,4 +1488,125 @@ gs_utils_get_file_size (const gchar *filename,
 	return size;
 }
 
-/* vim: set noexpandtab: */
+#define METADATA_ETAG_ATTRIBUTE "xattr::gnome-software::etag"
+
+/**
+ * gs_utils_get_file_etag:
+ * @file: a file to get the ETag for
+ * @cancellable: (nullable): an optional #GCancellable or %NULL
+ *
+ * Gets the ETag for the @file, previously stored by
+ * gs_utils_set_file_etag().
+ *
+ * Returns: (nullable) (transfer full): The ETag stored for the @file,
+ *    or %NULL, when the file does not exist, no ETag is stored for it
+ *    or other error occurs.
+ *
+ * Since: 42
+ **/
+gchar *
+gs_utils_get_file_etag (GFile        *file,
+                        GCancellable *cancellable)
+{
+	g_autoptr(GFileInfo) info = NULL;
+	g_autoptr(GError) local_error = NULL;
+
+	g_return_val_if_fail (G_IS_FILE (file), NULL);
+	g_return_val_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable), NULL);
+
+	info = g_file_query_info (file, METADATA_ETAG_ATTRIBUTE, G_FILE_QUERY_INFO_NONE, cancellable, &local_error);
+
+	if (info == NULL) {
+		g_debug ("Error getting attribute ‘%s’ for file ‘%s’: %s",
+			 METADATA_ETAG_ATTRIBUTE, g_file_peek_path (file), local_error->message);
+		return NULL;
+	}
+
+	return g_strdup (g_file_info_get_attribute_string (info, METADATA_ETAG_ATTRIBUTE));
+}
+
+/**
+ * gs_utils_set_file_etag:
+ * @file: a file to get the ETag for
+ * @etag: (nullable): an ETag to set
+ * @cancellable: (nullable): an optional #GCancellable or %NULL
+ *
+ * Sets the ETag for the @file. When the @etag is %NULL or an empty
+ * string, then unsets the ETag for the @file. The ETag can be read
+ * back with gs_utils_get_file_etag().
+ *
+ * The @file should exist, otherwise the function fails.
+ *
+ * Returns: whether succeeded.
+ *
+ * Since: 42
+ **/
+gboolean
+gs_utils_set_file_etag (GFile        *file,
+                        const gchar  *etag,
+                        GCancellable *cancellable)
+{
+	g_autoptr(GError) local_error = NULL;
+
+	g_return_val_if_fail (G_IS_FILE (file), FALSE);
+	g_return_val_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable), FALSE);
+
+	if (etag == NULL || *etag == '\0') {
+		if (!g_file_set_attribute (file, METADATA_ETAG_ATTRIBUTE, G_FILE_ATTRIBUTE_TYPE_INVALID,
+					   NULL, G_FILE_QUERY_INFO_NONE, cancellable, &local_error)) {
+			g_debug ("Error clearing attribute ‘%s’ on file ‘%s’: %s",
+				 METADATA_ETAG_ATTRIBUTE, g_file_peek_path (file), local_error->message);
+			return FALSE;
+		}
+
+		return TRUE;
+	}
+
+	if (!g_file_set_attribute_string (file, METADATA_ETAG_ATTRIBUTE, etag, G_FILE_QUERY_INFO_NONE, cancellable, &local_error)) {
+		g_debug ("Error setting attribute ‘%s’ to ‘%s’ on file ‘%s’: %s",
+			 METADATA_ETAG_ATTRIBUTE, etag, g_file_peek_path (file), local_error->message);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * gs_utils_get_upgrade_background:
+ * @version: (nullable): version string of the upgrade (which must be non-empty
+ *   if provided), or %NULL if unknown
+ *
+ * Get the path to a background image to display as the background for a banner
+ * advertising an upgrade to the given @version.
+ *
+ * If a path is returned, it’s guaranteed to exist on the file system.
+ *
+ * Vendors can drop their customised backgrounds in this directory for them to
+ * be used by gnome-software. See `doc/vendor-customisation.md`.
+ *
+ * Returns: (transfer full) (type filename) (nullable): path to an upgrade
+ *   background image to use, or %NULL if a suitable one didn’t exist
+ * Since: 42
+*/
+gchar *
+gs_utils_get_upgrade_background (const gchar *version)
+{
+	g_autofree gchar *filename = NULL;
+	g_autofree gchar *os_id = g_get_os_info (G_OS_INFO_KEY_ID);
+
+	g_return_val_if_fail (version == NULL || *version != '\0', NULL);
+
+	if (version != NULL) {
+		filename = g_strdup_printf (DATADIR "/gnome-software/backgrounds/%s-%s.png", os_id, version);
+		if (g_file_test (filename, G_FILE_TEST_EXISTS))
+			return g_steal_pointer (&filename);
+		g_clear_pointer (&filename, g_free);
+	}
+
+	filename = g_strdup_printf (DATADIR "/gnome-software/backgrounds/%s.png", os_id);
+	if (g_file_test (filename, G_FILE_TEST_EXISTS))
+		return g_steal_pointer (&filename);
+	g_clear_pointer (&filename, g_free);
+
+	return NULL;
+}

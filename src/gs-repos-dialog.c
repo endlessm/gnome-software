@@ -22,7 +22,7 @@
 
 struct _GsReposDialog
 {
-	HdyWindow	 parent_instance;
+	AdwWindow	 parent_instance;
 	GSettings	*settings;
 	GsFedoraThirdParty *third_party;
 	gboolean	 third_party_enabled;
@@ -37,7 +37,7 @@ struct _GsReposDialog
 	GtkWidget	*stack;
 };
 
-G_DEFINE_TYPE (GsReposDialog, gs_repos_dialog, HDY_TYPE_WINDOW)
+G_DEFINE_TYPE (GsReposDialog, gs_repos_dialog, ADW_TYPE_WINDOW)
 
 static void reload_third_party_repos (GsReposDialog *dialog);
 
@@ -59,35 +59,6 @@ install_remove_data_free (InstallRemoveData *data)
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(InstallRemoveData, install_remove_data_free);
 
-static gboolean
-key_press_event_cb (GtkWidget            *sender,
-                    GdkEvent             *event,
-                    HdyPreferencesWindow *self)
-{
-	guint keyval;
-	GdkModifierType state;
-	GdkKeymap *keymap;
-	GdkEventKey *key_event = (GdkEventKey *) event;
-
-	gdk_event_get_state (event, &state);
-
-	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (sender));
-
-	gdk_keymap_translate_keyboard_state (keymap,
-					     key_event->hardware_keycode,
-					     state,
-					     key_event->group,
-					     &keyval, NULL, NULL, NULL);
-
-	if (keyval == GDK_KEY_Escape) {
-		gtk_window_close (GTK_WINDOW (self));
-
-		return GDK_EVENT_STOP;
-	}
-
-	return GDK_EVENT_PROPAGATE;
-}
-
 static void
 repo_enabled_cb (GObject *source,
                  GAsyncResult *res,
@@ -105,7 +76,8 @@ repo_enabled_cb (GObject *source,
 		gs_repo_row_unmark_busy (row);
 
 	if (!gs_plugin_loader_job_action_finish (plugin_loader, res, &error)) {
-		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_debug ("repo %s cancelled", action_str);
 			return;
 		}
@@ -141,7 +113,7 @@ enable_repo_response_cb (GtkDialog *confirm_dialog,
 	g_autoptr(InstallRemoveData) install_data = (InstallRemoveData *) user_data;
 
 	/* unmap the dialog */
-	gtk_widget_destroy (GTK_WIDGET (confirm_dialog));
+	gtk_window_destroy (GTK_WINDOW (confirm_dialog));
 
 	/* not agreed */
 	if (response != GTK_RESPONSE_OK) {
@@ -222,7 +194,7 @@ remove_repo_response_cb (GtkDialog *confirm_dialog,
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* unmap the dialog */
-	gtk_widget_destroy (GTK_WIDGET (confirm_dialog));
+	gtk_window_destroy (GTK_WINDOW (confirm_dialog));
 
 	/* not agreed */
 	if (response != GTK_RESPONSE_OK) {
@@ -262,7 +234,7 @@ remove_confirm_repo (GsReposDialog *dialog,
 	g_weak_ref_init (&remove_data->row_weakref, row);
 
 	/* TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora Modular - x86_64" */
-	message = g_strdup_printf (_("Software that has been installed from “%s” will cease receive updates."),
+	message = g_strdup_printf (_("Software that has been installed from “%s” will cease to receive updates."),
 			gs_app_get_name (repo));
 
 	/* ask for confirmation */
@@ -367,10 +339,13 @@ static gboolean
 is_third_party_repo (GsReposDialog *dialog,
 		     GsApp *repo)
 {
+	g_autoptr(GsPlugin) plugin = gs_app_dup_management_plugin (repo);
+	const gchar *plugin_name = (plugin != NULL) ? gs_plugin_get_name (plugin) : NULL;
+
 	return gs_app_get_scope (repo) == AS_COMPONENT_SCOPE_SYSTEM &&
 	       gs_fedora_third_party_util_is_third_party_repo (dialog->third_party_repos,
 							       gs_app_get_id (repo),
-							       gs_app_get_management_plugin (repo));
+							       plugin_name);
 }
 
 static void
@@ -402,12 +377,15 @@ add_repo (GsReposDialog *dialog,
 	origin_ui = gs_app_get_origin_ui (repo);
 	if (!origin_ui)
 		origin_ui = gs_app_get_packaging_format (repo);
-	if (!origin_ui)
-		origin_ui = g_strdup (gs_app_get_management_plugin (repo));
+	if (!origin_ui) {
+		g_autoptr(GsPlugin) plugin = gs_app_dup_management_plugin (repo);
+		origin_ui = (plugin != NULL) ? g_strdup (gs_plugin_get_name (plugin)) : NULL;
+	}
+
 	section = g_hash_table_lookup (dialog->sections, origin_ui);
 	if (section == NULL) {
-		section = gs_repos_section_new (dialog->plugin_loader, FALSE);
-		hdy_preferences_group_set_title (HDY_PREFERENCES_GROUP (section),
+		section = gs_repos_section_new (FALSE);
+		adw_preferences_group_set_title (ADW_PREFERENCES_GROUP (section),
 						 origin_ui);
 		g_signal_connect_object (section, "remove-clicked",
 					 G_CALLBACK (repo_section_remove_clicked_cb), dialog, 0);
@@ -439,8 +417,8 @@ repos_dialog_compare_sections_cb (gconstpointer aa,
 	if (res != 0)
 		return res;
 
-	title_sort_key_a = gs_utils_sort_key (hdy_preferences_group_get_title (HDY_PREFERENCES_GROUP (section_a)));
-	title_sort_key_b = gs_utils_sort_key (hdy_preferences_group_get_title (HDY_PREFERENCES_GROUP (section_b)));
+	title_sort_key_a = gs_utils_sort_key (adw_preferences_group_get_title (ADW_PREFERENCES_GROUP (section_a)));
+	title_sort_key_b = gs_utils_sort_key (adw_preferences_group_get_title (ADW_PREFERENCES_GROUP (section_b)));
 
 	return g_strcmp0 (title_sort_key_a, title_sort_key_b);
 }
@@ -455,13 +433,14 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GSList) other_repos = NULL;
 	g_autoptr(GList) sections = NULL;
+	AdwPreferencesGroup *added_section;
+	GHashTableIter iter;
 
 	/* get the results */
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
-		if (g_error_matches (error,
-				     GS_PLUGIN_ERROR,
-				     GS_PLUGIN_ERROR_CANCELLED)) {
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_debug ("get sources cancelled");
 			return;
 		} else {
@@ -472,8 +451,12 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 	}
 
 	/* remove previous */
-	g_hash_table_remove_all (dialog->sections);
-	gs_container_remove_all (GTK_CONTAINER (dialog->content_page));
+	g_hash_table_iter_init (&iter, dialog->sections);
+	while (g_hash_table_iter_next (&iter, NULL, (gpointer *)&added_section)) {
+		adw_preferences_page_remove (ADW_PREFERENCES_PAGE (dialog->content_page),
+					     added_section);
+		g_hash_table_iter_remove (&iter);
+	}
 
 	/* stop the spinner */
 	gs_stop_spinner (GTK_SPINNER (dialog->spinner));
@@ -495,8 +478,8 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 	sections = g_hash_table_get_values (dialog->sections);
 	sections = g_list_sort (sections, repos_dialog_compare_sections_cb);
 	for (GList *link = sections; link; link = g_list_next (link)) {
-		GtkWidget *section = link->data;
-		gtk_container_add (GTK_CONTAINER (dialog->content_page), section);
+		AdwPreferencesGroup *section = link->data;
+		adw_preferences_page_add (ADW_PREFERENCES_PAGE (dialog->content_page), section);
 	}
 
 	gtk_widget_set_visible (dialog->content_page, sections != NULL);
@@ -507,6 +490,7 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 		GtkWidget *row;
 		g_autofree gchar *anchor = NULL;
 		g_autofree gchar *hint = NULL;
+		g_autofree gchar *section_id = NULL;
 
 		widget = gtk_switch_new ();
 		gtk_widget_set_valign (widget, GTK_ALIGN_CENTER);
@@ -515,15 +499,15 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 					 G_CALLBACK (fedora_third_party_repos_switch_notify_cb), dialog, 0);
 		gtk_widget_show (widget);
 
-		row = hdy_action_row_new ();
-		hdy_preferences_row_set_title (HDY_PREFERENCES_ROW (row), _("Enable New Repositories"));
-		hdy_action_row_set_subtitle (HDY_ACTION_ROW (row), _("Turn on new repositories when they are added."));
-		hdy_action_row_set_activatable_widget (HDY_ACTION_ROW (row), widget);
-		gtk_container_add (GTK_CONTAINER (row), widget);
+		row = adw_action_row_new ();
+		adw_preferences_row_set_title (ADW_PREFERENCES_ROW (row), _("Enable New Repositories"));
+		adw_action_row_set_subtitle (ADW_ACTION_ROW (row), _("Turn on new repositories when they are added."));
+		adw_action_row_set_activatable_widget (ADW_ACTION_ROW (row), widget);
+		adw_action_row_add_suffix (ADW_ACTION_ROW (row), widget);
 		gtk_widget_show (row);
 
 		anchor = g_strdup_printf ("<a href=\"%s\">%s</a>",
-	                        "https://fedoraproject.org/wiki/Workstation/Third_Party_Software_Repositories",
+	                        "https://docs.fedoraproject.org/en-US/workstation-working-group/third-party-repos/",
 	                        /* TRANSLATORS: this is the clickable
 	                         * link on the third party repositories info bar */
 	                        _("more information"));
@@ -534,22 +518,22 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 				_("Additional repositories from selected third parties — %s."),
 				anchor);
 
-		widget = hdy_preferences_group_new ();
-		hdy_preferences_group_set_title (HDY_PREFERENCES_GROUP (widget),
+		widget = adw_preferences_group_new ();
+		adw_preferences_group_set_title (ADW_PREFERENCES_GROUP (widget),
 						 _("Fedora Third Party Repositories"));
-/* HdyPreferencesGroup:use-markup doesn't exist before 1.3.90, configurations
- * where GNOME 41 will be used and Libhandy 1.3.90 won't be available are
- * unlikely, so let's just ignore the description in such cases. */
-#if HDY_CHECK_VERSION(1, 3, 90)
-		hdy_preferences_group_set_description (HDY_PREFERENCES_GROUP (widget), hint);
-		hdy_preferences_group_set_use_markup (HDY_PREFERENCES_GROUP (widget), TRUE);
-#endif
+
+		adw_preferences_group_set_description (ADW_PREFERENCES_GROUP (widget), hint);
 
 		gtk_widget_show (widget);
-		gtk_container_add (GTK_CONTAINER (widget), row);
-		gtk_container_add (GTK_CONTAINER (dialog->content_page), widget);
+		adw_preferences_group_add (ADW_PREFERENCES_GROUP (widget), row);
+		adw_preferences_page_add (ADW_PREFERENCES_PAGE (dialog->content_page),
+					  ADW_PREFERENCES_GROUP (widget));
 
-		section = GS_REPOS_SECTION (gs_repos_section_new (dialog->plugin_loader, TRUE));
+		/* use something unique, not clashing with the other section names */
+		section_id = g_strdup_printf ("fedora-third-party::1::%p", widget);
+		g_hash_table_insert (dialog->sections, g_steal_pointer (&section_id), widget);
+
+		section = GS_REPOS_SECTION (gs_repos_section_new (TRUE));
 		gs_repos_section_set_sort_key (section, "900");
 		g_signal_connect_object (section, "switch-clicked",
 					 G_CALLBACK (repo_section_switch_clicked_cb), dialog, 0);
@@ -560,7 +544,12 @@ get_sources_cb (GsPluginLoader *plugin_loader,
 			gs_repos_section_add_repo (section, repo);
 		}
 
-		gtk_container_add (GTK_CONTAINER (dialog->content_page), GTK_WIDGET (section));
+		/* use something unique, not clashing with the other section names */
+		section_id = g_strdup_printf ("fedora-third-party::2::%p", section);
+		g_hash_table_insert (dialog->sections, g_steal_pointer (&section_id), section);
+
+		adw_preferences_page_add (ADW_PREFERENCES_PAGE (dialog->content_page),
+					  ADW_PREFERENCES_GROUP (section));
 	}
 }
 
@@ -733,7 +722,7 @@ gs_repos_dialog_init (GsReposDialog *dialog)
 	   %s gets replaced by the name of the actual distro, e.g. Fedora. */
 	label_empty_text = g_strdup_printf (_("These repositories supplement the default software provided by %s."),
 	                                    os_name);
-	hdy_status_page_set_description (HDY_STATUS_PAGE (dialog->status_empty), label_empty_text);
+	adw_status_page_set_description (ADW_STATUS_PAGE (dialog->status_empty), label_empty_text);
 }
 
 static void
@@ -751,7 +740,7 @@ gs_repos_dialog_class_init (GsReposDialogClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, spinner);
 	gtk_widget_class_bind_template_child (widget_class, GsReposDialog, stack);
 
-	gtk_widget_class_bind_template_callback (widget_class, key_press_event_cb);
+	gtk_widget_class_add_binding_action (widget_class, GDK_KEY_Escape, 0, "window.close", NULL);
 }
 
 GtkWidget *

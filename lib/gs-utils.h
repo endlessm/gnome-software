@@ -35,7 +35,7 @@ typedef enum {
 	GS_UTILS_CACHE_FLAG_LAST  /*< skip >*/
 } GsUtilsCacheFlags;
 
-guint		 gs_utils_get_file_age		(GFile		*file);
+guint64		 gs_utils_get_file_age		(GFile		*file);
 gchar		*gs_utils_get_content_type	(GFile		*file,
 						 GCancellable	*cancellable,
 						 GError		**error);
@@ -53,6 +53,12 @@ gchar		*gs_utils_get_cache_filename	(const gchar	*kind,
 gchar		*gs_utils_get_user_hash		(GError		**error);
 GPermission	*gs_utils_get_permission	(const gchar	*id,
 						 GCancellable	*cancellable,
+						 GError		**error);
+void		 gs_utils_get_permission_async	(const gchar		*id,
+						 GCancellable		*cancellable,
+						 GAsyncReadyCallback	 callback,
+						 gpointer		 user_data);
+GPermission	*gs_utils_get_permission_finish	(GAsyncResult	*result,
 						 GError		**error);
 gboolean	 gs_utils_strv_fnmatch		(gchar		**strv,
 						 const gchar	*str);
@@ -77,7 +83,6 @@ gboolean	 gs_utils_error_convert_gio	(GError		**perror);
 gboolean	 gs_utils_error_convert_gresolver (GError	**perror);
 gboolean	 gs_utils_error_convert_gdbus	(GError		**perror);
 gboolean	 gs_utils_error_convert_gdk_pixbuf(GError	**perror);
-gboolean	 gs_utils_error_convert_json_glib (GError	**perror);
 gboolean	 gs_utils_error_convert_appstream (GError	**perror);
 
 gchar		*gs_utils_get_url_scheme	(const gchar	*url);
@@ -128,28 +133,12 @@ guint64		 gs_utils_get_file_size		(const gchar		*filename,
 						 GsFileSizeIncludeFunc	 include_func,
 						 gpointer		 user_data,
 						 GCancellable		*cancellable);
+gchar *		 gs_utils_get_file_etag		(GFile			*file,
+						 GCancellable		*cancellable);
+gboolean	 gs_utils_set_file_etag		(GFile			*file,
+						 const gchar		*etag,
+						 GCancellable		*cancellable);
 
-#if !GLIB_CHECK_VERSION(2, 64, 0)
-typedef void GsMainContextPusher;
-
-static inline GsMainContextPusher *
-gs_main_context_pusher_new (GMainContext *main_context)
-{
-  g_main_context_push_thread_default (main_context);
-  return (GsMainContextPusher *) main_context;
-}
-
-static inline void
-gs_main_context_pusher_free (GsMainContextPusher *pusher)
-{
-  g_main_context_pop_thread_default ((GMainContext *) pusher);
-}
-
-G_DEFINE_AUTOPTR_CLEANUP_FUNC (GsMainContextPusher, gs_main_context_pusher_free)
-#else
-#define GsMainContextPusher GMainContextPusher
-#define gs_main_context_pusher_new g_main_context_pusher_new
-#define gs_main_context_pusher_free g_main_context_pusher_free
-#endif
+gchar		*gs_utils_get_upgrade_background (const gchar		*version);
 
 G_END_DECLS

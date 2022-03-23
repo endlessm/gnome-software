@@ -11,9 +11,20 @@
 #include <glib/gi18n.h>
 #include <gnome-software.h>
 
-void
-gs_plugin_initialize (GsPlugin *plugin)
+#include "gs-plugin-generic-updates.h"
+
+struct _GsPluginGenericUpdates
 {
+	GsPlugin		 parent;
+};
+
+G_DEFINE_TYPE (GsPluginGenericUpdates, gs_plugin_generic_updates, GS_TYPE_PLUGIN)
+
+static void
+gs_plugin_generic_updates_init (GsPluginGenericUpdates *self)
+{
+	GsPlugin *plugin = GS_PLUGIN (self);
+
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "appstream");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "packagekit");
 	gs_plugin_add_rule (plugin, GS_PLUGIN_RULE_RUN_AFTER, "rpm-ostree");
@@ -46,19 +57,19 @@ gs_plugin_generic_updates_get_os_update (GsPlugin *plugin)
 	/* create new */
 	app = gs_app_new (id);
 	gs_app_add_quirk (app, GS_APP_QUIRK_IS_PROXY);
-	gs_app_set_management_plugin (app, "");
+	gs_app_set_management_plugin (app, plugin);
 	gs_app_set_special_kind (app, GS_APP_SPECIAL_KIND_OS_UPDATE);
 	gs_app_set_state (app, GS_APP_STATE_UPDATABLE_LIVE);
 	gs_app_set_name (app,
 			 GS_APP_QUALITY_NORMAL,
 			 /* TRANSLATORS: this is a group of updates that are not
 			  * packages and are not shown in the main list */
-			 _("OS Updates"));
+			 _("System Updates"));
 	gs_app_set_summary (app,
 			    GS_APP_QUALITY_NORMAL,
 			    /* TRANSLATORS: this is a longer description of the
-			     * "OS Updates" string */
-			    _("Includes performance, stability and security improvements."));
+			     * "System Updates" string */
+			    _("General system updates, such as security or bug fixes, and performance improvements."));
 	gs_app_set_description (app,
 				GS_APP_QUALITY_NORMAL,
 				gs_app_get_summary (app));
@@ -67,19 +78,26 @@ gs_plugin_generic_updates_get_os_update (GsPlugin *plugin)
 	return app;
 }
 
-gboolean
-gs_plugin_refine (GsPlugin *plugin,
-		  GsAppList *list,
-		  GsPluginRefineFlags flags,
-		  GCancellable *cancellable,
-		  GError **error)
+static void
+gs_plugin_generic_updates_refine_async (GsPlugin            *plugin,
+                                        GsAppList           *list,
+                                        GsPluginRefineFlags  flags,
+                                        GCancellable        *cancellable,
+                                        GAsyncReadyCallback  callback,
+                                        gpointer             user_data)
 {
+	g_autoptr(GTask) task = NULL;
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsAppList) os_updates = gs_app_list_new ();
 
+	task = g_task_new (plugin, cancellable, callback, user_data);
+	g_task_set_source_tag (task, gs_plugin_generic_updates_refine_async);
+
 	/* not from get_updates() */
-	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS) == 0)
-		return TRUE;
+	if ((flags & GS_PLUGIN_REFINE_FLAGS_REQUIRE_UPDATE_DETAILS) == 0) {
+		g_task_return_boolean (task, TRUE);
+		return;
+	}
 
 	/* do we have any packages left that are not apps? */
 	for (guint i = 0; i < gs_app_list_length (list); i++) {
@@ -89,8 +107,10 @@ gs_plugin_refine (GsPlugin *plugin,
 		if (gs_plugin_generic_updates_merge_os_update (app_tmp))
 			gs_app_list_add (os_updates, app_tmp);
 	}
-	if (gs_app_list_length (os_updates) == 0)
-		return TRUE;
+	if (gs_app_list_length (os_updates) == 0) {
+		g_task_return_boolean (task, TRUE);
+		return;
+	}
 
 	/* create new meta object */
 	app = gs_plugin_generic_updates_get_os_update (plugin);
@@ -100,5 +120,29 @@ gs_plugin_refine (GsPlugin *plugin,
 		gs_app_list_remove (list, app_tmp);
 	}
 	gs_app_list_add (list, app);
-	return TRUE;
+
+	g_task_return_boolean (task, TRUE);
+}
+
+static gboolean
+gs_plugin_generic_updates_refine_finish (GsPlugin      *plugin,
+                                         GAsyncResult  *result,
+                                         GError       **error)
+{
+	return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
+gs_plugin_generic_updates_class_init (GsPluginGenericUpdatesClass *klass)
+{
+	GsPluginClass *plugin_class = GS_PLUGIN_CLASS (klass);
+
+	plugin_class->refine_async = gs_plugin_generic_updates_refine_async;
+	plugin_class->refine_finish = gs_plugin_generic_updates_refine_finish;
+}
+
+GType
+gs_plugin_query_type (void)
+{
+	return GS_TYPE_PLUGIN_GENERIC_UPDATES;
 }

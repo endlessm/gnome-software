@@ -15,11 +15,11 @@ G_BEGIN_DECLS
 
 #define GS_TYPE_PAGE (gs_page_get_type ())
 
-G_DECLARE_DERIVABLE_TYPE (GsPage, gs_page, GS, PAGE, GtkBin)
+G_DECLARE_DERIVABLE_TYPE (GsPage, gs_page, GS, PAGE, GtkWidget)
 
 struct _GsPageClass
 {
-	GtkBinClass	 parent_class;
+	GtkWidgetClass	 parent_class;
 
 	void		(*app_installed)	(GsPage		 *page,
 						 GsApp		 *app);
@@ -54,12 +54,6 @@ void		 gs_page_update_app			(GsPage		*page,
 							 GsApp		*app,
 							 GCancellable	*cancellable);
 void		 gs_page_launch_app			(GsPage		*page,
-							 GsApp		*app,
-							 GCancellable	*cancellable);
-void		 gs_page_shortcut_add			(GsPage		*page,
-							 GsApp		*app,
-							 GCancellable	*cancellable);
-void		 gs_page_shortcut_remove		(GsPage		*page,
 							 GsApp		*app,
 							 GCancellable	*cancellable);
 void		 gs_page_switch_to			(GsPage		*page);

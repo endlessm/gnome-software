@@ -10,6 +10,7 @@
         "nightly"
     ],
     "finish-args": [
+        "--device=dri",
         "--share=ipc",
         "--socket=x11",
         "--socket=wayland",
@@ -59,6 +60,20 @@
             ]
         },
         {
+            "name": "libxmlb",
+            "buildsystem": "meson",
+            "config-opts": [
+                "-Dgtkdoc=false"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://github.com/hughsie/libxmlb.git",
+                    "branch": "main"
+                }
+            ]
+        },
+        {
             "name": "appstream",
             "buildsystem": "meson",
             "config-opts": [
@@ -69,19 +84,6 @@
                 {
                     "type": "git",
                     "url": "https://github.com/ximion/appstream.git"
-                }
-            ]
-        },
-        {
-            "name": "libxmlb",
-            "buildsystem": "meson",
-            "config-opts": [
-                "-Dgtkdoc=false"
-            ],
-            "sources": [
-                {
-                    "type": "git",
-                    "url": "https://github.com/hughsie/libxmlb.git"
                 }
             ]
         },
@@ -113,11 +115,13 @@
         {
             "name": "polkit",
             "buildsystem": "meson",
+            "config-opts": [
+                "-Djs_engine=mozjs"
+            ],
             "sources": [
                 {
                     "type": "git",
-                    "url": "https://gitlab.freedesktop.org/polkit/polkit.git",
-                    "commit": "6ac355e7073c6b7581ea6dac291edc2e15f13d39"
+                    "url": "https://gitlab.freedesktop.org/polkit/polkit.git"
                 }
             ]
         },
@@ -181,9 +185,9 @@
             "name": "gnome-software",
             "config-opts": [
                 "--libdir=/app/lib",
-                "-Dgspell=false",
                 "-Dpackagekit=false",
                 "-Dpackagekit_autoremove=false",
+                "-Dsoup2=true",
                 "-Dfwupd=false",
                 "-Dflatpak=true",
                 "-Dmalcontent=false",

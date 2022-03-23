@@ -15,6 +15,17 @@
 
 #include "gs-test.h"
 
+const gchar * const allowlist[] = {
+	"appstream",
+	"dummy",
+	"generic-updates",
+	"hardcoded-blocklist",
+	"icons",
+	"provenance",
+	"provenance-license",
+	NULL
+};
+
 static guint _status_changed_cnt = 0;
 
 typedef struct {
@@ -56,10 +67,12 @@ gs_plugins_dummy_install_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	g_autoptr(GError) error = NULL;
+	GsPlugin *plugin;
 
 	/* install */
 	app = gs_app_new ("chiron.desktop");
-	gs_app_set_management_plugin (app, "dummy");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "dummy");
+	gs_app_set_management_plugin (app, plugin);
 	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_INSTALL,
 					 "app", app,
@@ -92,14 +105,16 @@ gs_plugins_dummy_error_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GsPluginEvent) event = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsPlugin *plugin;
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* update, which should cause an error to be emitted */
 	app = gs_app_new ("chiron.desktop");
-	gs_app_set_management_plugin (app, "dummy");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "dummy");
+	gs_app_set_management_plugin (app, plugin);
 	gs_app_set_state (app, GS_APP_STATE_AVAILABLE);
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_UPDATE,
 					 "app", app,
@@ -133,16 +148,16 @@ gs_plugins_dummy_refine_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsPlugin *plugin;
 
 	/* get the extra bits */
 	app = gs_app_new ("chiron.desktop");
-	gs_app_set_management_plugin (app, "dummy");
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_URL,
-					 NULL);
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "dummy");
+	gs_app_set_management_plugin (app, plugin);
+	plugin_job = gs_plugin_job_refine_new_for_app (app,
+						       GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION |
+						       GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
+						       GS_PLUGIN_REFINE_FLAGS_REQUIRE_URL);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -160,14 +175,13 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
+	GsPlugin *plugin;
 
 	/* get the extra bits */
 	app = gs_app_new ("chiron.desktop");
-	gs_app_set_management_plugin (app, "dummy");
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION,
-					 NULL);
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "dummy");
+	gs_app_set_management_plugin (app, plugin);
+	plugin_job = gs_plugin_job_refine_new_for_app (app, GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -182,10 +196,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", "true");
 
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION,
-					 NULL);
+	plugin_job = gs_plugin_job_refine_new_for_app (app, GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -197,10 +208,7 @@ gs_plugins_dummy_metadata_quirks (GsPluginLoader *plugin_loader)
 	gs_app_set_metadata (app, "GnomeSoftware::quirks::not-launchable", "false");
 
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION,
-					 NULL);
+	plugin_job = gs_plugin_job_refine_new_for_app (app, GS_PLUGIN_REFINE_FLAGS_REQUIRE_DESCRIPTION);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -221,16 +229,14 @@ gs_plugins_dummy_key_colors_func (GsPluginLoader *plugin_loader)
 
 	/* get the extra bits */
 	app = gs_app_new ("chiron.desktop");
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
-					 NULL);
+	plugin_job = gs_plugin_job_refine_new_for_app (app, GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
 	g_assert (ret);
 	array = gs_app_get_key_colors (app);
-	g_assert_cmpint (array->len, >=, 3);
+	g_assert_cmpint (array->len, <=, 3);
+	g_assert_cmpint (array->len, >, 0);
 
 	/* check values are in range */
 	for (i = 0; i < array->len; i++) {
@@ -270,14 +276,14 @@ gs_plugins_dummy_updates_func (GsPluginLoader *plugin_loader)
 	g_assert_cmpstr (gs_app_get_id (app), ==, "chiron.desktop");
 	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_DESKTOP_APP);
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE_LIVE);
-	g_assert_cmpstr (gs_app_get_update_details (app), ==, "Do not crash when using libvirt.");
+	g_assert_cmpstr (gs_app_get_update_details_markup (app), ==, "Do not crash when using libvirt.");
 	g_assert_cmpint (gs_app_get_update_urgency (app), ==, AS_URGENCY_KIND_HIGH);
 
 	/* get the virtual non-apps OS update */
 	app = gs_app_list_index (list, 2);
 	g_assert_cmpstr (gs_app_get_id (app), ==, "org.gnome.Software.OsUpdate");
-	g_assert_cmpstr (gs_app_get_name (app), ==, "OS Updates");
-	g_assert_cmpstr (gs_app_get_summary (app), ==, "Includes performance, stability and security improvements.");
+	g_assert_cmpstr (gs_app_get_name (app), ==, "System Updates");
+	g_assert_cmpstr (gs_app_get_summary (app), ==, "General system updates, such as security or bug fixes, and performance improvements.");
 	g_assert_cmpint (gs_app_get_kind (app), ==, AS_COMPONENT_KIND_GENERIC);
 	g_assert_cmpint (gs_app_get_special_kind (app), ==, GS_APP_SPECIAL_KIND_OS_UPDATE);
 	g_assert_cmpint (gs_app_get_state (app), ==, GS_APP_STATE_UPDATABLE);
@@ -301,7 +307,8 @@ gs_plugins_dummy_distro_upgrades_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* get the updates list */
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_DISTRO_UPDATES, NULL);
+	plugin_job = gs_plugin_job_list_distro_upgrades_new (GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_NONE,
+							     GS_PLUGIN_REFINE_FLAGS_NONE);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -351,17 +358,19 @@ gs_plugins_dummy_installed_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsAppList) list = NULL;
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 	g_autoptr(GIcon) icon = NULL;
+	GsPluginRefineFlags refine_flags;
 
 	/* get installed packages */
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_INSTALLED,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
-							 GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE,
-					 NULL);
+	refine_flags = (GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN |
+			GS_PLUGIN_REFINE_FLAGS_REQUIRE_ADDONS |
+			GS_PLUGIN_REFINE_FLAGS_REQUIRE_LICENSE |
+			GS_PLUGIN_REFINE_FLAGS_REQUIRE_KUDOS |
+			GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
+			GS_PLUGIN_REFINE_FLAGS_REQUIRE_CATEGORIES |
+			GS_PLUGIN_REFINE_FLAGS_REQUIRE_PROVENANCE);
+
+	plugin_job = gs_plugin_job_list_installed_apps_new (refine_flags, 0, GS_PLUGIN_JOB_DEDUPE_FLAGS_DEFAULT,
+							    GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_NONE);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -475,7 +484,7 @@ gs_plugins_dummy_hang_func (GsPluginLoader *plugin_loader)
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* get search result based on addon keyword */
 	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_SEARCH,
@@ -535,7 +544,8 @@ gs_plugins_dummy_plugin_cache_func (GsPluginLoader *plugin_loader)
 	g_autoptr(GsPluginJob) plugin_job = NULL;
 
 	/* ensure we get the same results back from calling the methods twice */
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_DISTRO_UPDATES, NULL);
+	plugin_job = gs_plugin_job_list_distro_upgrades_new (GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_NONE,
+							     GS_PLUGIN_REFINE_FLAGS_NONE);
 	list1 = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -544,7 +554,8 @@ gs_plugins_dummy_plugin_cache_func (GsPluginLoader *plugin_loader)
 	app1 = gs_app_list_index (list1, 0);
 
 	g_object_unref (plugin_job);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_DISTRO_UPDATES, NULL);
+	plugin_job = gs_plugin_job_list_distro_upgrades_new (GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_NONE,
+							     GS_PLUGIN_REFINE_FLAGS_NONE);
 	list2 = gs_plugin_loader_job_process (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -617,6 +628,7 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
         GsApp *app1 = NULL;
 	g_autoptr(GsApp) app2 = NULL;
 	g_autoptr(GsApp) app3 = NULL;
+	GsPlugin *plugin;
 	g_autoptr(GsPluginJob) plugin_job1 = NULL;
 	g_autoptr(GsPluginJob) plugin_job2 = NULL;
 	g_autoptr(GsPluginJob) plugin_job3 = NULL;
@@ -627,10 +639,11 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 
 	/* drop all caches */
 	gs_utils_rmtree (g_getenv ("GS_SELF_TEST_CACHEDIR"), NULL);
-	gs_plugin_loader_setup_again (plugin_loader);
+	gs_test_reinitialise_plugin_loader (plugin_loader, allowlist, NULL);
 
 	/* get the updates list */
-	plugin_job1 = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_DISTRO_UPDATES, NULL);
+	plugin_job1 = gs_plugin_job_list_distro_upgrades_new (GS_PLUGIN_LIST_DISTRO_UPGRADES_FLAGS_NONE,
+							      GS_PLUGIN_REFINE_FLAGS_NONE);
 	list = gs_plugin_loader_job_process (plugin_loader, plugin_job1, NULL, &helper3->error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (helper3->error);
@@ -645,12 +658,13 @@ gs_plugins_dummy_limit_parallel_ops_func (GsPluginLoader *plugin_loader)
 	gs_plugin_loader_set_max_parallel_ops (plugin_loader, 1);
 
 	app2 = gs_app_new ("chiron.desktop");
-	gs_app_set_management_plugin (app2, "dummy");
+	plugin = gs_plugin_loader_find_plugin (plugin_loader, "dummy");
+	gs_app_set_management_plugin (app2, plugin);
 	gs_app_set_state (app2, GS_APP_STATE_AVAILABLE);
 
 	/* use "proxy" prefix so the update function succeeds... */
 	app3 = gs_app_new ("proxy-zeus.desktop");
-	gs_app_set_management_plugin (app3, "dummy");
+	gs_app_set_management_plugin (app3, plugin);
 	gs_app_set_state (app3, GS_APP_STATE_UPDATABLE_LIVE);
 
 	context = g_main_context_new ();
@@ -724,34 +738,20 @@ main (int argc, char **argv)
 	g_autofree gchar *xml = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
-	const gchar *allowlist[] = {
-		"appstream",
-		"dummy",
-		"generic-updates",
-		"hardcoded-blocklist",
-		"icons",
-		"provenance",
-		"provenance-license",
-		NULL
-	};
 
 	/* While we use %G_TEST_OPTION_ISOLATE_DIRS to create temporary directories
 	 * for each of the tests, we want to use the system MIME registry, assuming
 	 * that it exists and correctly has shared-mime-info installed. */
-#if GLIB_CHECK_VERSION(2, 60, 0)
 	g_content_type_set_mime_dirs (NULL);
-#endif
+
+	/* Force the GTK resources to be registered, needed for fallback icons. */
+	gtk_init_check ();
 
 	/* Similarly, add the system-wide icon theme path before it’s
 	 * overwritten by %G_TEST_OPTION_ISOLATE_DIRS. */
 	gs_test_expose_icon_theme_paths ();
 
-	g_test_init (&argc, &argv,
-#if GLIB_CHECK_VERSION(2, 60, 0)
-		     G_TEST_OPTION_ISOLATE_DIRS,
-#endif
-		     NULL);
-	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	gs_test_init (&argc, &argv);
 	g_setenv ("GS_XMLB_VERBOSE", "1", TRUE);
 
 	/* set all the things required as a dummy test harness */
@@ -822,9 +822,6 @@ main (int argc, char **argv)
 		"</components>\n");
 	g_setenv ("GS_SELF_TEST_APPSTREAM_XML", xml, TRUE);
 
-	/* only critical and error are fatal */
-	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
-
 	/* we can only load this once per process */
 	plugin_loader = gs_plugin_loader_new ();
 	g_signal_connect (plugin_loader, "status-changed",
@@ -832,7 +829,7 @@ main (int argc, char **argv)
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR_CORE);
 	ret = gs_plugin_loader_setup (plugin_loader,
-				      (gchar**) allowlist,
+				      allowlist,
 				      NULL,
 				      NULL,
 				      &error);

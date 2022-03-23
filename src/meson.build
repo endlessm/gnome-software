@@ -25,6 +25,7 @@ enums = gnome.mkenums_simple('gs-enums',
 gnome_software_sources = [
   'gs-age-rating-context-dialog.c',
   'gs-app-addon-row.c',
+  'gs-app-reviews-dialog.c',
   'gs-app-version-history-dialog.c',
   'gs-app-version-history-row.c',
   'gs-application.c',
@@ -44,10 +45,9 @@ gnome_software_sources = [
   'gs-extras-page.c',
   'gs-feature-tile.c',
   'gs-featured-carousel.c',
-  'gs-first-run-dialog.c',
-  'gs-folders.c',
   'gs-hardware-support-context-dialog.c',
   'gs-info-bar.c',
+  'gs-info-window.c',
   'gs-installed-page.c',
   'gs-language.c',
   'gs-license-tile.c',
@@ -59,7 +59,6 @@ gnome_software_sources = [
   'gs-origin-popover-row.c',
   'gs-os-update-page.c',
   'gs-page.c',
-  'gs-picture.c',
   'gs-prefs-dialog.c',
   'gs-progress-button.c',
   'gs-removal-dialog.c',
@@ -70,7 +69,6 @@ gnome_software_sources = [
   'gs-review-dialog.c',
   'gs-review-histogram.c',
   'gs-review-row.c',
-  'gs-rounded-bin.c',
   'gs-safety-context-dialog.c',
   'gs-screenshot-carousel.c',
   'gs-screenshot-image.c',
@@ -81,6 +79,7 @@ gnome_software_sources = [
   'gs-star-widget.c',
   'gs-storage-context-dialog.c',
   'gs-summary-tile.c',
+  'gs-summary-tile-layout.c',
   'gs-update-dialog.c',
   'gs-update-list.c',
   'gs-update-monitor.c',
@@ -98,7 +97,7 @@ gnome_software_dependencies = [
   gtk,
   json_glib,
   libgnomesoftware_dep,
-  libhandy,
+  libadwaita,
   libm,
   libsoup,
   libxmlb,
@@ -125,10 +124,6 @@ endif
 
 if gsettings_desktop_schemas.found()
   gnome_software_dependencies += [gsettings_desktop_schemas]
-endif
-
-if get_option('gspell')
-  gnome_software_dependencies += [gspell]
 endif
 
 if get_option('mogwai')
@@ -187,14 +182,6 @@ configure_file(
   input : 'org.gnome.Software.service.in',
   output : application_id + '.service',
   install_dir: join_paths(get_option('datadir'), 'dbus-1/services'),
-  configuration : cdata
-)
-
-# replace @bindir@
-configure_file(
-  input : 'gnome-software-service.desktop.in',
-  output : 'gnome-software-service.desktop',
-  install_dir: join_paths(get_option('sysconfdir'), 'xdg/autostart'),
   configuration : cdata
 )
 

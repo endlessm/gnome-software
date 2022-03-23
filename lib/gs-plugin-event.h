@@ -19,6 +19,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GsPluginEvent, gs_plugin_event, GS, PLUGIN_EVENT, GObject)
 
+typedef struct _GsPluginJob GsPluginJob;
+
 /**
  * GsPluginEventFlag:
  * @GS_PLUGIN_EVENT_FLAG_NONE:		No special flags set
@@ -38,22 +40,15 @@ typedef enum {
 	GS_PLUGIN_EVENT_FLAG_LAST  /*< skip >*/
 } GsPluginEventFlag;
 
-GsPluginEvent		*gs_plugin_event_new		(void);
+GsPluginEvent		*gs_plugin_event_new		(const gchar		*first_property_name,
+							 ...) G_GNUC_NULL_TERMINATED;
 
 const gchar		*gs_plugin_event_get_unique_id	(GsPluginEvent		*event);
 
-void			 gs_plugin_event_set_app	(GsPluginEvent		*event,
-							 GsApp			*app);
 GsApp			*gs_plugin_event_get_app	(GsPluginEvent		*event);
-void			 gs_plugin_event_set_origin	(GsPluginEvent		*event,
-							 GsApp			*origin);
 GsApp			*gs_plugin_event_get_origin	(GsPluginEvent		*event);
-void			 gs_plugin_event_set_action	(GsPluginEvent		*event,
-							 GsPluginAction		 action);
 GsPluginAction		 gs_plugin_event_get_action	(GsPluginEvent		*event);
-
-void			 gs_plugin_event_set_error	(GsPluginEvent		*event,
-							 const GError		*error);
+GsPluginJob		*gs_plugin_event_get_job	(GsPluginEvent		*event);
 const GError		*gs_plugin_event_get_error	(GsPluginEvent		*event);
 
 void			 gs_plugin_event_add_flag	(GsPluginEvent		*event,

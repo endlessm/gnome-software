@@ -27,7 +27,8 @@
 #define MAX_COLLAPSED_LINES 4
 
 struct _GsDescriptionBox {
-	GtkBox parent;
+	GtkWidget parent;
+	GtkWidget *box;
 	GtkLabel *label;
 	GtkButton *button;
 	gchar *text;
@@ -35,9 +36,10 @@ struct _GsDescriptionBox {
 	gboolean needs_recalc;
 	gint last_width;
 	gint last_height;
+	guint idle_update_id;
 };
 
-G_DEFINE_TYPE (GsDescriptionBox, gs_description_box, GTK_TYPE_BOX)
+G_DEFINE_TYPE (GsDescriptionBox, gs_description_box, GTK_TYPE_WIDGET)
 
 static void
 gs_description_box_update_content (GsDescriptionBox *box)
@@ -68,7 +70,7 @@ gs_description_box_update_content (GsDescriptionBox *box)
 	if (g_strcmp0 (text, gtk_button_get_label (box->button)) != 0)
 		gtk_button_set_label (box->button, text);
 
-	gtk_label_set_text (box->label, box->text);
+	gtk_label_set_markup (box->label, box->text);
 	gtk_label_set_lines (box->label, -1);
 	gtk_label_set_ellipsize (box->label, PANGO_ELLIPSIZE_NONE);
 
@@ -80,11 +82,40 @@ gs_description_box_update_content (GsDescriptionBox *box)
 	if (box->is_collapsed && n_lines > MAX_COLLAPSED_LINES) {
 		PangoLayoutLine *line;
 		GString *str;
+		GSList *opened_markup = NULL;
+		gint start_index, line_index, in_markup = 0;
 
 		line = pango_layout_get_line_readonly (layout, MAX_COLLAPSED_LINES);
 
-		str = g_string_sized_new (line->start_index);
-		g_string_append_len (str, box->text, line->start_index);
+		line_index = line->start_index;
+
+		/* Pango does not count markup in the text, thus calculate the position manually */
+		for (start_index = 0; box->text[start_index] && line_index > 0; start_index++) {
+			if (box->text[start_index] == '<') {
+				if (box->text[start_index + 1] == '/') {
+					g_autofree gchar *value = opened_markup->data;
+					opened_markup = g_slist_remove (opened_markup, value);
+				} else {
+					const gchar *end = strchr (box->text + start_index, '>');
+					opened_markup = g_slist_prepend (opened_markup, g_strndup (box->text + start_index + 1, end - (box->text + start_index) - 1));
+				}
+				in_markup++;
+			} else if (box->text[start_index] == '>') {
+				g_warn_if_fail (in_markup > 0);
+				in_markup--;
+			} else if (!in_markup) {
+				/* Encoded characters count as one */
+				if (box->text[start_index] == '&') {
+					const gchar *end = strchr (box->text + start_index, ';');
+					if (end)
+						start_index += end - box->text - start_index;
+				}
+
+				line_index--;
+			}
+		}
+		str = g_string_sized_new (start_index);
+		g_string_append_len (str, box->text, start_index);
 
 		/* Cut white spaces from the end of the string, thus it doesn't look bad when it's ellipsized. */
 		while (str->len > 0 && strchr ("\r\n\t ", str->str[str->len - 1])) {
@@ -93,10 +124,17 @@ gs_description_box_update_content (GsDescriptionBox *box)
 
 		str->str[str->len] = '\0';
 
+		/* Close any opened tags after cutting the text */
+		for (GSList *link = opened_markup; link; link = g_slist_next (link)) {
+			const gchar *tag = link->data;
+			g_string_append_printf (str, "</%s>", tag);
+		}
+
 		gtk_label_set_lines (box->label, MAX_COLLAPSED_LINES);
 		gtk_label_set_ellipsize (box->label, PANGO_ELLIPSIZE_END);
-		gtk_label_set_text (box->label, str->str);
+		gtk_label_set_markup (box->label, str->str);
 
+		g_slist_free_full (opened_markup, g_free);
 		g_string_free (str, TRUE);
 	}
 }
@@ -115,15 +153,73 @@ gs_description_box_read_button_clicked_cb (GtkButton *button,
 	gs_description_box_update_content (box);
 }
 
+static gboolean
+update_description_in_idle_cb (gpointer data)
+{
+	GsDescriptionBox *box = GS_DESCRIPTION_BOX (data);
+
+	gs_description_box_update_content (box);
+	box->idle_update_id = 0;
+
+	return G_SOURCE_REMOVE;
+}
+
 static void
-gs_description_box_size_allocate (GtkWidget *widget,
-				  GtkAllocation *allocation)
+gs_description_box_measure (GtkWidget      *widget,
+                            GtkOrientation  orientation,
+                            gint            for_size,
+                            gint           *minimum,
+                            gint           *natural,
+                            gint           *minimum_baseline,
+                            gint           *natural_baseline)
 {
 	GsDescriptionBox *box = GS_DESCRIPTION_BOX (widget);
 
-	GTK_WIDGET_CLASS (gs_description_box_parent_class)->size_allocate (widget, allocation);
+	gtk_widget_measure (box->box, orientation,
+			    for_size,
+			    minimum, natural,
+			    minimum_baseline,
+			    natural_baseline);
 
-	gs_description_box_update_content (box);
+	if (!box->idle_update_id)
+		box->idle_update_id = g_idle_add (update_description_in_idle_cb, box);
+}
+
+static void
+gs_description_box_size_allocate (GtkWidget *widget,
+                                  int        width,
+                                  int        height,
+                                  int        baseline)
+{
+	GsDescriptionBox *box = GS_DESCRIPTION_BOX (widget);
+	GtkAllocation allocation;
+
+	allocation.x = 0;
+	allocation.y = 0;
+	allocation.width = width;
+	allocation.height = height;
+
+	gtk_widget_size_allocate (box->box, &allocation, baseline);
+
+	if (!box->idle_update_id)
+		box->idle_update_id = g_idle_add (update_description_in_idle_cb, box);
+}
+
+static GtkSizeRequestMode
+gs_description_box_get_request_mode (GtkWidget *widget)
+{
+	return gtk_widget_get_request_mode (GS_DESCRIPTION_BOX (widget)->box);
+}
+
+static void
+gs_description_box_dispose (GObject *object)
+{
+	GsDescriptionBox *box = GS_DESCRIPTION_BOX (object);
+
+	g_clear_handle_id (&box->idle_update_id, g_source_remove);
+	g_clear_pointer (&box->box, gtk_widget_unparent);
+
+	G_OBJECT_CLASS (gs_description_box_parent_class)->dispose (object);
 }
 
 static void
@@ -144,6 +240,9 @@ gs_description_box_init (GsDescriptionBox *box)
 
 	box->is_collapsed = TRUE;
 
+	box->box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 24);
+	gtk_widget_set_parent (GTK_WIDGET (box->box), GTK_WIDGET (box));
+
 	style_context = gtk_widget_get_style_context (GTK_WIDGET (box));
 	gtk_style_context_add_class (style_context, "application-details-description");
 
@@ -154,14 +253,13 @@ gs_description_box_init (GsDescriptionBox *box)
 		"vexpand", FALSE,
 		"valign", GTK_ALIGN_START,
 		"visible", TRUE,
-		"can-focus", FALSE,
 		"max-width-chars", 40,
 		"selectable", TRUE,
 		"wrap", TRUE,
 		"xalign", 0.0,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (box), widget, TRUE, TRUE, 0);
+	gtk_box_append (GTK_BOX (box->box), widget);
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_class (style_context, "label");
@@ -178,7 +276,7 @@ gs_description_box_init (GsDescriptionBox *box)
 		"visible", TRUE,
 		NULL);
 
-	gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 0);
+	gtk_box_append (GTK_BOX (box->box), widget);
 
 	style_context = gtk_widget_get_style_context (widget);
 	gtk_style_context_add_class (style_context, "button");
@@ -197,19 +295,19 @@ gs_description_box_class_init (GsDescriptionBoxClass *klass)
 	GtkWidgetClass *widget_class;
 
 	object_class = G_OBJECT_CLASS (klass);
+	object_class->dispose = gs_description_box_dispose;
 	object_class->finalize = gs_description_box_finalize;
 
 	widget_class = GTK_WIDGET_CLASS (klass);
+	widget_class->get_request_mode = gs_description_box_get_request_mode;
+	widget_class->measure = gs_description_box_measure;
 	widget_class->size_allocate = gs_description_box_size_allocate;
 }
 
 GtkWidget *
 gs_description_box_new (void)
 {
-	return g_object_new (GS_TYPE_DESCRIPTION_BOX,
-		"orientation", GTK_ORIENTATION_VERTICAL,
-		"spacing", 24,
-		NULL);
+	return g_object_new (GS_TYPE_DESCRIPTION_BOX, NULL);
 }
 
 const gchar *

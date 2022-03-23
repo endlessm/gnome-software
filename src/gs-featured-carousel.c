@@ -24,11 +24,11 @@
 
 #include "config.h"
 
+#include <adwaita.h>
 #include <glib.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include <handy.h>
 
 #include "gs-app-list.h"
 #include "gs-common.h"
@@ -44,11 +44,9 @@ struct _GsFeaturedCarousel
 	GsAppList	*apps;  /* (nullable) (owned) */
 	guint		 rotation_timer_id;
 
-	HdyCarousel	*carousel;
+	AdwCarousel	*carousel;
 	GtkButton	*next_button;
-	GtkImage	*next_button_image;
 	GtkButton	*previous_button;
-	GtkImage	*previous_button_image;
 };
 
 G_DEFINE_TYPE (GsFeaturedCarousel, gs_featured_carousel, GTK_TYPE_BOX)
@@ -61,39 +59,49 @@ static GParamSpec *obj_props[PROP_APPS + 1] = { NULL, };
 
 typedef enum {
 	SIGNAL_APP_CLICKED,
-	SIGNAL_CLICKED,
 } GsFeaturedCarouselSignal;
 
-static guint obj_signals[SIGNAL_CLICKED + 1] = { 0, };
+static guint obj_signals[SIGNAL_APP_CLICKED + 1] = { 0, };
+
+static GtkWidget *
+get_nth_page_widget (GsFeaturedCarousel *self,
+                     guint               page_number)
+{
+	GtkWidget *page = gtk_widget_get_first_child (GTK_WIDGET (self->carousel));
+	guint i = 0;
+
+	while (page && i++ < page_number)
+		page = gtk_widget_get_next_sibling (page);
+	return page;
+}
 
 static void
 show_relative_page (GsFeaturedCarousel *self,
                     gint                delta)
 {
-	gdouble current_page = hdy_carousel_get_position (self->carousel);
-	guint n_pages = hdy_carousel_get_n_pages (self->carousel);
+	gdouble current_page = adw_carousel_get_position (self->carousel);
+	guint n_pages = adw_carousel_get_n_pages (self->carousel);
 	gdouble new_page;
-	g_autoptr(GList) children = gtk_container_get_children (GTK_CONTAINER (self->carousel));
 	GtkWidget *new_page_widget;
-	gint64 animation_duration_ms = hdy_carousel_get_animation_duration (self->carousel);
+	gboolean animate = TRUE;
 
 	if (n_pages == 0)
 		return;
 
-	/* FIXME: This would be simpler if HdyCarousel had a way to scroll to
+	/* FIXME: This would be simpler if AdwCarousel had a way to scroll to
 	 * a page by index, rather than by GtkWidget pointer.
 	 * See https://gitlab.gnome.org/GNOME/libhandy/-/issues/413 */
 	new_page = ((guint) current_page + delta + n_pages) % n_pages;
-	new_page_widget = g_list_nth_data (children, new_page);
+	new_page_widget = get_nth_page_widget (self, new_page);
 	g_assert (new_page_widget != NULL);
 
 	/* Don’t animate if we’re wrapping from the last page back to the first
      * or from the first page to the last going backwards as it means rapidly
      * spooling through all the pages, which looks confusing. */
 	if ((new_page == 0.0 && delta > 0) || (new_page == n_pages - 1 && delta < 0))
-		animation_duration_ms = 0;
+		animate = FALSE;
 
-	hdy_carousel_scroll_to_full (self->carousel, new_page_widget, animation_duration_ms);
+	adw_carousel_scroll_to (self->carousel, new_page_widget, animate);
 }
 
 static gboolean
@@ -125,12 +133,11 @@ stop_rotation_timer (GsFeaturedCarousel *self)
 }
 
 static void
-image_set_icon_for_direction (GtkImage    *image,
-                              const gchar *ltr_icon_name,
-                              const gchar *rtl_icon_name)
+carousel_notify_position_cb (GsFeaturedCarousel *self)
 {
-	const gchar *icon_name = (gtk_widget_get_direction (GTK_WIDGET (image)) == GTK_TEXT_DIR_RTL) ? rtl_icon_name : ltr_icon_name;
-	gtk_image_set_from_icon_name (image, icon_name, GTK_ICON_SIZE_LARGE_TOOLBAR);
+	/* Reset the rotation timer in case it’s about to fire. */
+	stop_rotation_timer (self);
+	start_rotation_timer (self);
 }
 
 static void
@@ -140,18 +147,6 @@ next_button_clicked_cb (GtkButton *button,
 	GsFeaturedCarousel *self = GS_FEATURED_CAROUSEL (user_data);
 
 	show_relative_page (self, +1);
-
-	/* Reset the rotation timer in case it’s about to fire. */
-	stop_rotation_timer (self);
-	start_rotation_timer (self);
-}
-
-static void
-next_button_direction_changed_cb (GtkWidget        *widget,
-                                  GtkTextDirection  previous_direction,
-                                  gpointer          user_data)
-{
-	image_set_icon_for_direction (GTK_IMAGE (widget), "carousel-arrow-next-symbolic", "carousel-arrow-previous-symbolic");
 }
 
 static void
@@ -161,18 +156,6 @@ previous_button_clicked_cb (GtkButton *button,
 	GsFeaturedCarousel *self = GS_FEATURED_CAROUSEL (user_data);
 
 	show_relative_page (self, -1);
-
-	/* Reset the rotation timer in case it’s about to fire. */
-	stop_rotation_timer (self);
-	start_rotation_timer (self);
-}
-
-static void
-previous_button_direction_changed_cb (GtkWidget        *widget,
-                                      GtkTextDirection  previous_direction,
-                                      gpointer          user_data)
-{
-	image_set_icon_for_direction (GTK_IMAGE (widget), "carousel-arrow-previous-symbolic", "carousel-arrow-next-symbolic");
 }
 
 static void
@@ -189,18 +172,11 @@ app_tile_clicked_cb (GsAppTile *app_tile,
 static void
 gs_featured_carousel_init (GsFeaturedCarousel *self)
 {
-	gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
 	gtk_widget_init_template (GTK_WIDGET (self));
 
-#if HDY_CHECK_VERSION(1, 3, 0)
 	/* Disable scrolling through the carousel, as it’s typically used
-	 * in category pages which are themselves scrollable. */
-	hdy_carousel_set_allow_scroll_wheel (HDY_CAROUSEL (self->carousel), FALSE);
-#endif
-
-	/* Ensure the text directions are up to date */
-	next_button_direction_changed_cb (GTK_WIDGET (self->next_button_image), GTK_TEXT_DIR_NONE, self);
-	previous_button_direction_changed_cb (GTK_WIDGET (self->previous_button_image), GTK_TEXT_DIR_NONE, self);
+	 * in application pages which are themselves scrollable. */
+	adw_carousel_set_allow_scroll_wheel (self->carousel, FALSE);
 }
 
 static void
@@ -251,50 +227,29 @@ gs_featured_carousel_dispose (GObject *object)
 }
 
 static gboolean
-gs_featured_carousel_key_press_event (GtkWidget   *widget,
-                                      GdkEventKey *event)
+key_pressed_cb (GtkEventControllerKey *controller,
+                guint                  keyval,
+                guint                  keycode,
+                GdkModifierType        state,
+                GsFeaturedCarousel    *self)
 {
-	GsFeaturedCarousel *self = GS_FEATURED_CAROUSEL (widget);
-
 	if (gtk_widget_is_visible (GTK_WIDGET (self->previous_button)) &&
 	    gtk_widget_is_sensitive (GTK_WIDGET (self->previous_button)) &&
-	    ((gtk_widget_get_direction (GTK_WIDGET (self->previous_button)) == GTK_TEXT_DIR_LTR && event->keyval == GDK_KEY_Left) ||
-	     (gtk_widget_get_direction (GTK_WIDGET (self->previous_button)) == GTK_TEXT_DIR_RTL && event->keyval == GDK_KEY_Right))) {
+	    ((gtk_widget_get_direction (GTK_WIDGET (self->previous_button)) == GTK_TEXT_DIR_LTR && keyval == GDK_KEY_Left) ||
+	     (gtk_widget_get_direction (GTK_WIDGET (self->previous_button)) == GTK_TEXT_DIR_RTL && keyval == GDK_KEY_Right))) {
 		gtk_widget_activate (GTK_WIDGET (self->previous_button));
 		return GDK_EVENT_STOP;
 	}
 
 	if (gtk_widget_is_visible (GTK_WIDGET (self->next_button)) &&
 	    gtk_widget_is_sensitive (GTK_WIDGET (self->next_button)) &&
-	    ((gtk_widget_get_direction (GTK_WIDGET (self->next_button)) == GTK_TEXT_DIR_LTR && event->keyval == GDK_KEY_Right) ||
-	     (gtk_widget_get_direction (GTK_WIDGET (self->next_button)) == GTK_TEXT_DIR_RTL && event->keyval == GDK_KEY_Left))) {
+	    ((gtk_widget_get_direction (GTK_WIDGET (self->next_button)) == GTK_TEXT_DIR_LTR && keyval == GDK_KEY_Right) ||
+	     (gtk_widget_get_direction (GTK_WIDGET (self->next_button)) == GTK_TEXT_DIR_RTL && keyval == GDK_KEY_Left))) {
 		gtk_widget_activate (GTK_WIDGET (self->next_button));
 		return GDK_EVENT_STOP;
 	}
 
 	return GDK_EVENT_PROPAGATE;
-}
-
-static void
-carousel_clicked_cb (GsFeaturedCarousel *carousel,
-                     gpointer            user_data)
-{
-	GsFeaturedCarousel *self = GS_FEATURED_CAROUSEL (user_data);
-	GsAppTile *current_tile;
-	GsApp *app;
-	gdouble current_page;
-	g_autoptr(GList) children = NULL;
-
-	/* Get the currently visible tile. */
-	current_page = hdy_carousel_get_position (self->carousel);
-	children = gtk_container_get_children (GTK_CONTAINER (self->carousel));
-
-	current_tile = g_list_nth_data (children, current_page);
-	if (current_tile == NULL)
-		return;
-
-	app = gs_app_tile_get_app (current_tile);
-	g_signal_emit (self, obj_signals[SIGNAL_APP_CLICKED], 0, app);
 }
 
 static void
@@ -306,8 +261,6 @@ gs_featured_carousel_class_init (GsFeaturedCarouselClass *klass)
 	object_class->get_property = gs_featured_carousel_get_property;
 	object_class->set_property = gs_featured_carousel_set_property;
 	object_class->dispose = gs_featured_carousel_dispose;
-
-	widget_class->key_press_event = gs_featured_carousel_key_press_event;
 
 	/**
 	 * GsFeaturedCarousel:apps: (nullable)
@@ -344,34 +297,16 @@ gs_featured_carousel_class_init (GsFeaturedCarouselClass *klass)
 			      0, NULL, NULL, g_cclosure_marshal_VOID__OBJECT,
 			      G_TYPE_NONE, 1, GS_TYPE_APP);
 
-	/**
-	 * GsFeaturedCarousel::clicked:
-	 *
-	 * Emitted when the carousel is clicked, and typically emitted shortly
-	 * before #GsFeaturedCarousel::app-clicked is emitted. Most callers will
-	 * want to connect to #GsFeaturedCarousel::app-clicked instead.
-	 *
-	 * Since: 40
-	 */
-	obj_signals[SIGNAL_CLICKED] =
-		g_signal_new ("clicked",
-			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
-			      0, NULL, NULL, g_cclosure_marshal_VOID__VOID,
-			      G_TYPE_NONE, 0);
-	widget_class->activate_signal = obj_signals[SIGNAL_CLICKED];
-
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-featured-carousel.ui");
+	gtk_widget_class_set_accessible_role (widget_class, GTK_ACCESSIBLE_ROLE_GROUP);
 
 	gtk_widget_class_bind_template_child (widget_class, GsFeaturedCarousel, carousel);
 	gtk_widget_class_bind_template_child (widget_class, GsFeaturedCarousel, next_button);
-	gtk_widget_class_bind_template_child (widget_class, GsFeaturedCarousel, next_button_image);
 	gtk_widget_class_bind_template_child (widget_class, GsFeaturedCarousel, previous_button);
-	gtk_widget_class_bind_template_child (widget_class, GsFeaturedCarousel, previous_button_image);
+	gtk_widget_class_bind_template_callback (widget_class, carousel_notify_position_cb);
 	gtk_widget_class_bind_template_callback (widget_class, next_button_clicked_cb);
-	gtk_widget_class_bind_template_callback (widget_class, next_button_direction_changed_cb);
 	gtk_widget_class_bind_template_callback (widget_class, previous_button_clicked_cb);
-	gtk_widget_class_bind_template_callback (widget_class, previous_button_direction_changed_cb);
-	gtk_widget_class_bind_template_callback (widget_class, carousel_clicked_cb);
+	gtk_widget_class_bind_template_callback (widget_class, key_pressed_cb);
 }
 
 /**
@@ -428,23 +363,33 @@ gs_featured_carousel_set_apps (GsFeaturedCarousel *self,
 	g_return_if_fail (GS_IS_FEATURED_CAROUSEL (self));
 	g_return_if_fail (apps == NULL || GS_IS_APP_LIST (apps));
 
-	if (apps == self->apps)
+	/* Need to cleanup the content also after the widget is created,
+	 * thus always pass through for the NULL 'apps'. */
+	if (apps != NULL && apps == self->apps)
 		return;
 
 	stop_rotation_timer (self);
-	gs_container_remove_all (GTK_CONTAINER (self->carousel));
+	gs_widget_remove_all (GTK_WIDGET (self->carousel), (GsRemoveFunc) adw_carousel_remove);
 
 	g_set_object (&self->apps, apps);
 
-	for (guint i = 0; i < gs_app_list_length (apps); i++) {
-		GsApp *app = gs_app_list_index (apps, i);
-		GtkWidget *tile = gs_feature_tile_new (app);
+	if (apps != NULL) {
+		for (guint i = 0; i < gs_app_list_length (apps); i++) {
+			GsApp *app = gs_app_list_index (apps, i);
+			GtkWidget *tile = gs_feature_tile_new (app);
+			gtk_widget_set_hexpand (tile, TRUE);
+			gtk_widget_set_vexpand (tile, TRUE);
+			gtk_widget_set_can_focus (tile, FALSE);
+			g_signal_connect (tile, "clicked",
+					  G_CALLBACK (app_tile_clicked_cb), self);
+			adw_carousel_append (self->carousel, tile);
+		}
+	} else  {
+		GtkWidget *tile = gs_feature_tile_new (NULL);
 		gtk_widget_set_hexpand (tile, TRUE);
 		gtk_widget_set_vexpand (tile, TRUE);
 		gtk_widget_set_can_focus (tile, FALSE);
-		g_signal_connect (tile, "clicked",
-				  G_CALLBACK (app_tile_clicked_cb), self);
-		gtk_container_add (GTK_CONTAINER (self->carousel), tile);
+		adw_carousel_append (self->carousel, tile);
 	}
 
 	gtk_widget_set_visible (GTK_WIDGET (self->next_button), self->apps != NULL && gs_app_list_length (self->apps) > 1);

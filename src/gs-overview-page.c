@@ -9,8 +9,8 @@
 
 #include "config.h"
 
+#include <adwaita.h>
 #include <glib/gi18n.h>
-#include <handy.h>
 #include <math.h>
 
 #include "gs-shell.h"
@@ -39,6 +39,7 @@ struct _GsOverviewPage
 	gboolean		 loading_recent;
 	gboolean		 loading_categories;
 	gboolean		 empty;
+	gboolean		 featured_overwritten;
 	GHashTable		*category_hash;		/* id : GsCategory */
 	GsFedoraThirdParty	*third_party;
 	gboolean		 third_party_needs_question;
@@ -134,7 +135,8 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 	/* get popular apps */
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get popular apps: %s", error->message);
 		goto out;
 	}
@@ -150,14 +152,14 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 
 	gs_app_list_randomize (list);
 
-	gs_container_remove_all (GTK_CONTAINER (self->box_popular));
+	gs_widget_remove_all (self->box_popular, (GsRemoveFunc) gtk_flow_box_remove);
 
 	for (i = 0; i < gs_app_list_length (list) && i < N_TILES; i++) {
 		app = gs_app_list_index (list, i);
 		tile = gs_summary_tile_new (app);
 		g_signal_connect (tile, "clicked",
 			  G_CALLBACK (app_tile_clicked), self);
-		gtk_container_add (GTK_CONTAINER (self->box_popular), tile);
+		gtk_flow_box_insert (GTK_FLOW_BOX (self->box_popular), tile, -1);
 	}
 	gtk_widget_set_visible (self->box_popular, TRUE);
 	gtk_widget_set_visible (self->popular_heading, TRUE);
@@ -166,6 +168,18 @@ gs_overview_page_get_popular_cb (GObject *source_object,
 
 out:
 	gs_overview_page_decrement_action_cnt (self);
+}
+
+static gint
+gs_overview_page_sort_recent_cb (GsApp *app1,
+				 GsApp *app2,
+				 gpointer user_data)
+{
+	if (gs_app_get_release_date (app1) < gs_app_get_release_date (app2))
+		return 1;
+	if (gs_app_get_release_date (app1) == gs_app_get_release_date (app2))
+		return g_strcmp0 (gs_app_get_name (app1), gs_app_get_name (app2));
+	return -1;
 }
 
 static void
@@ -183,7 +197,8 @@ gs_overview_page_get_recent_cb (GObject *source_object, GAsyncResult *res, gpoin
 	/* get recent apps */
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get recent apps: %s", error->message);
 		goto out;
 	}
@@ -197,9 +212,9 @@ gs_overview_page_get_recent_cb (GObject *source_object, GAsyncResult *res, gpoin
 		goto out;
 	}
 
-	gs_app_list_randomize (list);
+	gs_app_list_sort (list, gs_overview_page_sort_recent_cb, NULL);
 
-	gs_container_remove_all (GTK_CONTAINER (self->box_recent));
+	gs_widget_remove_all (self->box_recent, (GsRemoveFunc) gtk_flow_box_remove);
 
 	for (i = 0; i < gs_app_list_length (list) && i < N_TILES; i++) {
 		app = gs_app_list_index (list, i);
@@ -213,8 +228,8 @@ gs_overview_page_get_recent_cb (GObject *source_object, GAsyncResult *res, gpoin
 		 */
 		gtk_widget_set_can_focus (child, FALSE);
 		gtk_widget_show (child);
-		gtk_container_add (GTK_CONTAINER (child), tile);
-		gtk_container_add (GTK_CONTAINER (self->box_recent), child);
+		gtk_flow_box_child_set_child (GTK_FLOW_BOX_CHILD (child), tile);
+		gtk_flow_box_insert (GTK_FLOW_BOX (self->box_recent), child, -1);
 	}
 	gtk_widget_set_visible (self->box_recent, TRUE);
 	gtk_widget_set_visible (self->recent_heading, TRUE);
@@ -252,8 +267,14 @@ gs_overview_page_get_featured_cb (GObject *source_object,
 	g_autoptr(GsAppList) list = NULL;
 
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
-	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+	    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 		goto out;
+
+	if (self->featured_overwritten) {
+		g_debug ("Skipping set of featured apps, because being overwritten");
+		goto out;
+	}
 
 	if (list == NULL || gs_app_list_length (list) == 0) {
 		g_warning ("failed to get featured apps: %s",
@@ -311,13 +332,14 @@ gs_overview_page_get_categories_cb (GObject *source_object,
 
 	list = gs_plugin_loader_job_get_categories_finish (plugin_loader, res, &error);
 	if (list == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get categories: %s", error->message);
 		goto out;
 	}
 
-	gs_container_remove_all (GTK_CONTAINER (self->flowbox_categories));
-	gs_container_remove_all (GTK_CONTAINER (self->flowbox_iconless_categories));
+	gs_widget_remove_all (self->flowbox_categories, (GsRemoveFunc) gtk_flow_box_remove);
+	gs_widget_remove_all (self->flowbox_iconless_categories, (GsRemoveFunc) gtk_flow_box_remove);
 
 	/* Add categories to the flowboxes. Categories with icons are deemed to
 	 * be visually important, and are listed near the top of the page.
@@ -508,13 +530,15 @@ gs_overview_page_load (GsOverviewPage *self)
 
 		self->loading_recent = TRUE;
 		plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_RECENT,
-						 "age", (guint64) (60 * 60 * 24 * 60),
-						 "max-results", 20,
+						 "age", (guint64) (60 * 60 * 24 * 30),
+						 /* To have large-enough set, in case filtering removes some non-applicable apps */
+						 "max-results", 3 * N_TILES,
 						 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_RATING |
 								 GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON,
 						 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_PREFER_INSTALLED |
 								 GS_APP_LIST_FILTER_FLAG_KEY_ID_PROVIDES,
 						 NULL);
+		gs_plugin_job_set_sort_func (plugin_job, gs_overview_page_sort_recent_cb, NULL);
 		gs_plugin_loader_job_process_async (self->plugin_loader,
 						    plugin_job,
 						    self->cancellable,
@@ -541,6 +565,7 @@ static void
 gs_overview_page_reload (GsPage *page)
 {
 	GsOverviewPage *self = GS_OVERVIEW_PAGE (page);
+	self->featured_overwritten = FALSE;
 	gs_overview_page_invalidate (self);
 	gs_overview_page_load (self);
 }
@@ -573,7 +598,8 @@ gs_overview_page_refresh_cb (GsPluginLoader *plugin_loader,
 
 	success = gs_plugin_loader_job_action_finish (plugin_loader, result, &error);
 	if (!success &&
-	    !g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+	    !g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+	    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 		g_warning ("failed to refresh: %s", error->message);
 
 	if (success)
@@ -595,10 +621,8 @@ third_party_response_cb (GtkInfoBar *info_bar,
 	self->third_party_needs_question = FALSE;
 	refresh_third_party_repo (self);
 
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFRESH,
-					 "interactive", FALSE,
-					 "age", (guint64) 1,
-					 NULL);
+	plugin_job = gs_plugin_job_refresh_metadata_new (1,
+							 GS_PLUGIN_REFRESH_METADATA_FLAGS_NONE);
 	gs_plugin_loader_job_process_async (self->plugin_loader, plugin_job,
 					    self->cancellable,
 					    (GAsyncReadyCallback) gs_overview_page_refresh_cb,
@@ -613,7 +637,6 @@ gs_overview_page_setup (GsPage *page,
                         GError **error)
 {
 	GsOverviewPage *self = GS_OVERVIEW_PAGE (page);
-	GtkAdjustment *adj;
 	GtkWidget *tile;
 	gint i;
 	g_autofree gchar *text = NULL;
@@ -628,7 +651,7 @@ gs_overview_page_setup (GsPage *page,
 						     g_free, (GDestroyNotify) g_object_unref);
 
 	link = g_strdup_printf ("<a href=\"%s\">%s</a>",
-	                        "https://fedoraproject.org/wiki/Workstation/Third_Party_Software_Repositories",
+	                        "https://docs.fedoraproject.org/en-US/workstation-working-group/third-party-repos/",
 	                        /* Translators: This is a clickable link on the third party repositories info bar. It's
 				   part of a constructed sentence: "Provides access to additional software from [selected external sources].
 				   Some proprietary software is included." */
@@ -650,17 +673,14 @@ gs_overview_page_setup (GsPage *page,
 	/* avoid a ref cycle */
 	self->shell = shell;
 
-	adj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (self->scrolledwindow_overview));
-	gtk_container_set_focus_vadjustment (GTK_CONTAINER (self->box_overview), adj);
-
 	for (i = 0; i < N_TILES; i++) {
 		tile = gs_summary_tile_new (NULL);
-		gtk_container_add (GTK_CONTAINER (self->box_popular), tile);
+		gtk_flow_box_insert (GTK_FLOW_BOX (self->box_popular), tile, -1);
 	}
 
 	for (i = 0; i < N_TILES; i++) {
 		tile = gs_summary_tile_new (NULL);
-		gtk_container_add (GTK_CONTAINER (self->box_recent), tile);
+		gtk_flow_box_insert (GTK_FLOW_BOX (self->box_recent), tile, -1);
 	}
 
 	return TRUE;
@@ -680,6 +700,8 @@ static void
 gs_overview_page_init (GsOverviewPage *self)
 {
 	gtk_widget_init_template (GTK_WIDGET (self));
+
+	gs_featured_carousel_set_apps (GS_FEATURED_CAROUSEL (self->featured_carousel), NULL);
 
 	g_signal_connect (self, "refreshed", G_CALLBACK (refreshed_cb), self);
 }
@@ -783,4 +805,20 @@ GsOverviewPage *
 gs_overview_page_new (void)
 {
 	return GS_OVERVIEW_PAGE (g_object_new (GS_TYPE_OVERVIEW_PAGE, NULL));
+}
+
+void
+gs_overview_page_override_featured (GsOverviewPage	*self,
+				    GsApp		*app)
+{
+	g_autoptr(GsAppList) list = NULL;
+
+	g_return_if_fail (GS_IS_OVERVIEW_PAGE (self));
+	g_return_if_fail (GS_IS_APP (app));
+
+	self->featured_overwritten = TRUE;
+
+	list = gs_app_list_new ();
+	gs_app_list_add (list, app);
+	gs_featured_carousel_set_apps (GS_FEATURED_CAROUSEL (self->featured_carousel), list);
 }

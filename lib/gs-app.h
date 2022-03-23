@@ -17,6 +17,9 @@
 
 G_BEGIN_DECLS
 
+/* Dependency loop means we can’t include the header. */
+typedef struct _GsPlugin GsPlugin;
+
 #define GS_TYPE_APP (gs_app_get_type ())
 
 G_DECLARE_DERIVABLE_TYPE (GsApp, gs_app, GS, APP, GObject)
@@ -95,7 +98,6 @@ typedef enum {
  * @GS_APP_KUDO_USES_NOTIFICATIONS:	Registers notifications
  * @GS_APP_KUDO_HAS_KEYWORDS:		Has at least 1 keyword
  * @GS_APP_KUDO_HAS_SCREENSHOTS:	Supplies screenshots
- * @GS_APP_KUDO_POPULAR:		Is popular
  * @GS_APP_KUDO_HIGH_CONTRAST:		Installs a high contrast icon
  * @GS_APP_KUDO_HI_DPI_ICON:		Installs a HiDPI icon
  * @GS_APP_KUDO_SANDBOXED:		Application is sandboxed
@@ -113,7 +115,6 @@ typedef enum {
 	GS_APP_KUDO_USES_NOTIFICATIONS		= 1 << 6,
 	GS_APP_KUDO_HAS_KEYWORDS		= 1 << 7,
 	GS_APP_KUDO_HAS_SCREENSHOTS		= 1 << 9,
-	GS_APP_KUDO_POPULAR			= 1 << 10,
 	GS_APP_KUDO_HIGH_CONTRAST		= 1 << 13,
 	GS_APP_KUDO_HI_DPI_ICON			= 1 << 14,
 	GS_APP_KUDO_SANDBOXED			= 1 << 15,
@@ -130,7 +131,6 @@ typedef enum {
  * @GS_APP_QUIRK_IS_WILDCARD:		Matches applications from any plugin
  * @GS_APP_QUIRK_NEEDS_REBOOT:		A reboot is required after the action
  * @GS_APP_QUIRK_NOT_REVIEWABLE:	The app is not reviewable
- * @GS_APP_QUIRK_HAS_SHORTCUT:		The app has a shortcut in the system
  * @GS_APP_QUIRK_NOT_LAUNCHABLE:	The app is not launchable (run-able)
  * @GS_APP_QUIRK_NEEDS_USER_ACTION:	The component requires some kind of user action
  * @GS_APP_QUIRK_IS_PROXY:		Is a proxy app that operates on other applications
@@ -153,7 +153,7 @@ typedef enum {
 	GS_APP_QUIRK_IS_WILDCARD	= 1 << 3,	/* Since: 3.32 */
 	GS_APP_QUIRK_NEEDS_REBOOT	= 1 << 4,	/* Since: 3.32 */
 	GS_APP_QUIRK_NOT_REVIEWABLE	= 1 << 5,	/* Since: 3.32 */
-	GS_APP_QUIRK_HAS_SHORTCUT	= 1 << 6,	/* Since: 3.32 */
+	/* there’s a hole here where GS_APP_QUIRK_HAS_SHORTCUT used to be */
 	GS_APP_QUIRK_NOT_LAUNCHABLE	= 1 << 7,	/* Since: 3.32 */
 	GS_APP_QUIRK_NEEDS_USER_ACTION	= 1 << 8,	/* Since: 3.32 */
 	GS_APP_QUIRK_IS_PROXY 		= 1 << 9,	/* Since: 3.32 */
@@ -351,15 +351,21 @@ const gchar	*gs_app_get_update_version	(GsApp		*app);
 const gchar	*gs_app_get_update_version_ui	(GsApp		*app);
 void		 gs_app_set_update_version	(GsApp		*app,
 						 const gchar	*update_version);
-const gchar	*gs_app_get_update_details	(GsApp		*app);
-void		 gs_app_set_update_details	(GsApp		*app,
-						 const gchar	*update_details);
+const gchar	*gs_app_get_update_details_markup
+						(GsApp		*app);
+void		 gs_app_set_update_details_markup
+						(GsApp		*app,
+						 const gchar	*markup);
+void		 gs_app_set_update_details_text	(GsApp		*app,
+						 const gchar	*text);
 AsUrgencyKind	 gs_app_get_update_urgency	(GsApp		*app);
 void		 gs_app_set_update_urgency	(GsApp		*app,
 						 AsUrgencyKind	 update_urgency);
-const gchar	*gs_app_get_management_plugin	(GsApp		*app);
+GsPlugin	*gs_app_dup_management_plugin	(GsApp		*app);
+gboolean	 gs_app_has_management_plugin	(GsApp		*app,
+						 GsPlugin	*plugin);
 void		 gs_app_set_management_plugin	(GsApp		*app,
-						 const gchar	*management_plugin);
+						 GsPlugin	*management_plugin);
 GIcon		*gs_app_get_icon_for_size	(GsApp		*app,
 						 guint		 size,
 						 guint		 scale,
@@ -440,6 +446,7 @@ void		 gs_app_set_key_colors		(GsApp		*app,
 						 GArray		*key_colors);
 void		 gs_app_add_key_color		(GsApp		*app,
 						 GdkRGBA	*key_color);
+gboolean	gs_app_get_user_key_colors	(GsApp		*app);
 void            gs_app_set_is_update_downloaded (GsApp         *app,
                                                  gboolean       is_update_downloaded);
 gboolean        gs_app_get_is_update_downloaded (GsApp         *app);

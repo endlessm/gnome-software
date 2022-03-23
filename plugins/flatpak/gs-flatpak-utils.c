@@ -72,10 +72,9 @@ gs_flatpak_app_new_from_remote (GsPlugin *plugin,
 {
 	g_autofree gchar *title = NULL;
 	g_autofree gchar *url = NULL;
-	#if FLATPAK_CHECK_VERSION(1, 4, 0)
 	g_autofree gchar *filter = NULL;
 	g_autofree gchar *description = NULL;
-	#endif
+	g_autofree gchar *comment = NULL;
 	g_autoptr(GsApp) app = NULL;
 
 	app = gs_flatpak_app_new (flatpak_remote_get_name (xremote));
@@ -86,7 +85,7 @@ gs_flatpak_app_new_from_remote (GsPlugin *plugin,
 	gs_app_set_name (app, GS_APP_QUALITY_LOWEST,
 			 flatpak_remote_get_name (xremote));
 	gs_app_set_size_download (app, GS_APP_SIZE_UNKNOWABLE);
-	gs_app_set_management_plugin (app, gs_plugin_get_name (plugin));
+	gs_app_set_management_plugin (app, plugin);
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_FLATPAK);
 	gs_app_set_scope (app, is_user ? AS_COMPONENT_SCOPE_USER : AS_COMPONENT_SCOPE_SYSTEM);
 
@@ -107,22 +106,22 @@ gs_flatpak_app_new_from_remote (GsPlugin *plugin,
 	 * not the remote title */
 	gs_app_set_origin_ui (app, _("Applications"));
 
-	#if FLATPAK_CHECK_VERSION(1, 4, 0)
 	description = flatpak_remote_get_description (xremote);
 	if (description != NULL)
 		gs_app_set_description (app, GS_APP_QUALITY_NORMAL, description);
-	#endif
 
 	/* url */
 	url = flatpak_remote_get_url (xremote);
 	if (url != NULL)
 		gs_app_set_url (app, AS_URL_KIND_HOMEPAGE, url);
 
-	#if FLATPAK_CHECK_VERSION(1, 4, 0)
 	filter = flatpak_remote_get_filter (xremote);
 	if (filter != NULL)
 		gs_flatpak_app_set_repo_filter (app, filter);
-	#endif
+
+	comment = flatpak_remote_get_comment (xremote);
+	if (comment != NULL)
+		gs_app_set_summary (app, GS_APP_QUALITY_NORMAL, comment);
 
 	/* success */
 	return g_steal_pointer (&app);
@@ -166,15 +165,20 @@ gs_flatpak_app_new_from_repo_file (GFile *file,
 
 	/* get the ID from the basename */
 	basename = g_file_get_basename (file);
-
-	/* ensure this is valid for flatpak */
-	repo_id = g_str_to_ascii (basename, NULL);
-	tmp = g_strrstr (repo_id, ".");
+	tmp = g_strrstr (basename, ".");
 	if (tmp != NULL)
 		*tmp = '\0';
-	for (guint i = 0; repo_id[i] != '\0'; i++) {
-		if (!g_ascii_isalnum (repo_id[i]))
-			repo_id[i] = '_';
+
+	/* ensure this is valid for flatpak */
+	if (ostree_validate_remote_name (basename, NULL)) {
+		repo_id = g_steal_pointer (&basename);
+	} else {
+		repo_id = g_str_to_ascii (basename, NULL);
+
+		for (guint i = 0; repo_id[i] != '\0'; i++) {
+			if (!g_ascii_isalnum (repo_id[i]))
+				repo_id[i] = '_';
+		}
 	}
 
 	/* create source */

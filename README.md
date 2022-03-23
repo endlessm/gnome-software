@@ -31,6 +31,14 @@ Bug reports and merge requests should be filed on [GNOME GitLab](https://gitlab.
 
 For development discussion, join us on `#gnome-software` on [irc.gnome.org](https://wiki.gnome.org/Community/GettingInTouch/IRC).
 
+# Documentation for app developers and vendors
+
+Specific documentation is available for application developers who wish to test
+how their applications appear in GNOME Software; and for distribution vendors
+who wish to customise how GNOME Software appears in their distribution:
+ * [Tools in GNOME Software for application developers](./doc/app-developers.md)
+ * [Vendor customisation of GNOME Software](./doc/vendor-customisation.md)
+
 # Running a nightly build
 
 A [flatpak bundle](https://docs.flatpak.org/en/latest/single-file-bundles.html)

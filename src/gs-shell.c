@@ -10,7 +10,8 @@
 
 #include "config.h"
 
-#include <handy.h>
+#include <adwaita.h>
+#include <malloc.h>
 #include <string.h>
 #include <glib/gi18n.h>
 
@@ -61,7 +62,7 @@ typedef struct {
 
 struct _GsShell
 {
-	HdyApplicationWindow	 parent_object;
+	AdwApplicationWindow	 parent_object;
 
 	GSettings		*settings;
 	GCancellable		*cancellable;
@@ -72,11 +73,11 @@ struct _GsShell
 	GQueue			*back_entry_stack;
 	GPtrArray		*modal_dialogs;
 	gchar			*events_info_uri;
-	HdyDeck			*main_deck;
-	HdyDeck			*details_deck;
-	GtkStack		*stack_loading;
-	GtkStack		*stack_main;
-	GtkStack		*stack_sub;
+	AdwLeaflet		*main_leaflet;
+	AdwLeaflet		*details_leaflet;
+	AdwViewStack		*stack_loading;
+	AdwViewStack		*stack_main;
+	AdwViewStack		*stack_sub;
 	GsPage			*page;
 
 	GBinding		*sub_page_header_title_binding;
@@ -112,7 +113,7 @@ struct _GsShell
 	GsPage			*pages[GS_SHELL_MODE_LAST];
 };
 
-G_DEFINE_TYPE (GsShell, gs_shell, HDY_TYPE_APPLICATION_WINDOW)
+G_DEFINE_TYPE (GsShell, gs_shell, ADW_TYPE_APPLICATION_WINDOW)
 
 typedef enum {
 	PROP_IS_NARROW = 1,
@@ -164,6 +165,7 @@ gs_shell_modal_dialog_present (GsShell *shell, GtkWindow *window)
 void
 gs_shell_activate (GsShell *shell)
 {
+	gtk_widget_show (GTK_WIDGET (shell));
 	gtk_window_present (GTK_WINDOW (shell));
 }
 
@@ -179,13 +181,13 @@ gs_shell_set_header_start_widget (GsShell *shell, GtkWidget *widget)
 
 	if (widget != NULL) {
 		g_object_ref (widget);
-		hdy_header_bar_pack_start (HDY_HEADER_BAR (shell->main_header), widget);
+		adw_header_bar_pack_start (ADW_HEADER_BAR (shell->main_header), widget);
 	}
 
 	shell->header_start_widget = widget;
 
 	if (old_widget != NULL) {
-		gtk_container_remove (GTK_CONTAINER (shell->main_header), old_widget);
+		adw_header_bar_remove (ADW_HEADER_BAR (shell->main_header), old_widget);
 		g_object_unref (old_widget);
 	}
 }
@@ -202,13 +204,13 @@ gs_shell_set_header_end_widget (GsShell *shell, GtkWidget *widget)
 
 	if (widget != NULL) {
 		g_object_ref (widget);
-		hdy_header_bar_pack_end (HDY_HEADER_BAR (shell->main_header), widget);
+		adw_header_bar_pack_end (ADW_HEADER_BAR (shell->main_header), widget);
 	}
 
 	shell->header_end_widget = widget;
 
 	if (old_widget != NULL) {
-		gtk_container_remove (GTK_CONTAINER (shell->main_header), old_widget);
+		adw_header_bar_remove (ADW_HEADER_BAR (shell->main_header), old_widget);
 		g_object_unref (old_widget);
 	}
 }
@@ -225,13 +227,13 @@ gs_shell_set_details_header_end_widget (GsShell *shell, GtkWidget *widget)
 
 	if (widget != NULL) {
 		g_object_ref (widget);
-		hdy_header_bar_pack_end (HDY_HEADER_BAR (shell->details_header), widget);
+		adw_header_bar_pack_end (ADW_HEADER_BAR (shell->details_header), widget);
 	}
 
 	shell->details_header_end_widget = widget;
 
 	if (old_widget != NULL) {
-		gtk_container_remove (GTK_CONTAINER (shell->details_header), old_widget);
+		adw_header_bar_remove (ADW_HEADER_BAR (shell->details_header), old_widget);
 		g_object_unref (old_widget);
 	}
 }
@@ -263,14 +265,10 @@ gs_shell_metered_updates_bar_response_cb (GtkInfoBar *info_bar,
 					  gpointer    user_data)
 {
 	GsShell *shell = GS_SHELL (user_data);
-	GtkDialog *dialog;
+	GtkWidget *dialog;
 
-	dialog = GTK_DIALOG (gs_metered_data_dialog_new (GTK_WINDOW (shell)));
+	dialog = gs_metered_data_dialog_new (GTK_WINDOW (shell));
 	gs_shell_modal_dialog_present (shell, GTK_WINDOW (dialog));
-
-	/* just destroy */
-	g_signal_connect_swapped (dialog, "response",
-				  G_CALLBACK (gtk_widget_destroy), dialog);
 }
 
 static void
@@ -412,7 +410,18 @@ gs_shell_basic_auth_start_cb (GsPluginLoader *plugin_loader,
 
 	/* just destroy */
 	g_signal_connect_swapped (dialog, "response",
-				  G_CALLBACK (gtk_widget_destroy), dialog);
+				  G_CALLBACK (gtk_window_destroy), dialog);
+}
+
+static gboolean
+gs_shell_ask_untrusted_cb (GsPluginLoader *plugin_loader,
+			   const gchar *title,
+			   const gchar *msg,
+			   const gchar *details,
+			   const gchar *accept_label,
+			   GsShell *shell)
+{
+	return gs_utils_ask_user_accepts (GTK_WINDOW (shell), title, msg, details, accept_label);
 }
 
 static void
@@ -456,7 +465,9 @@ gs_shell_get_mode_is_main (GsShellMode mode)
 	}
 }
 
-static void search_button_clicked_cb (GtkToggleButton *toggle_button, GsShell *shell);
+static void search_bar_search_mode_enabled_changed_cb (GtkSearchBar *search_bar,
+                                                       GParamSpec   *pspec,
+                                                       GsShell      *shell);
 static void gs_overview_page_button_cb (GtkWidget *widget, GsShell *shell);
 
 static void
@@ -465,13 +476,13 @@ update_header_widgets (GsShell *shell)
 	GsShellMode mode = gs_shell_get_mode (shell);
 
 	/* only show the search button in overview and search pages */
-	g_signal_handlers_block_by_func (shell->search_button, search_button_clicked_cb, shell);
+	g_signal_handlers_block_by_func (shell->search_bar, search_bar_search_mode_enabled_changed_cb, shell);
 
 	/* hide unless we're going to search */
-	hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (shell->search_bar),
+	gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (shell->search_bar),
 					mode == GS_SHELL_MODE_SEARCH);
 
-	g_signal_handlers_unblock_by_func (shell->search_button, search_button_clicked_cb, shell);
+	g_signal_handlers_unblock_by_func (shell->search_bar, search_bar_search_mode_enabled_changed_cb, shell);
 }
 
 static void
@@ -546,7 +557,7 @@ stack_notify_visible_child_cb (GObject    *object,
 	}
 
 	g_clear_object (&shell->sub_page_header_title_binding);
-	shell->sub_page_header_title_binding = g_object_bind_property (gtk_stack_get_visible_child (shell->stack_sub), "title",
+	shell->sub_page_header_title_binding = g_object_bind_property (adw_view_stack_get_visible_child (shell->stack_sub), "title",
 								       shell->sub_page_header_title, "label",
 								       G_BINDING_SYNC_CREATE);
 
@@ -571,6 +582,7 @@ stack_notify_visible_child_cb (GObject    *object,
 			g_signal_handlers_disconnect_by_func (dialog,
 							      modal_dialog_unmapped_cb,
 							      shell);
+			gtk_window_destroy (GTK_WINDOW (dialog));
 		}
 		g_ptr_array_set_size (shell->modal_dialogs, 0);
 	}
@@ -591,21 +603,21 @@ gs_shell_change_mode (GsShell *shell,
 
 	/* switch page */
 	if (mode == GS_SHELL_MODE_LOADING) {
-		gtk_stack_set_visible_child_name (shell->stack_loading, "loading");
+		adw_view_stack_set_visible_child_name (shell->stack_loading, "loading");
 		return;
 	}
 
-	gtk_stack_set_visible_child_name (shell->stack_loading, "main");
+	adw_view_stack_set_visible_child_name (shell->stack_loading, "main");
 	if (mode == GS_SHELL_MODE_DETAILS) {
-		hdy_deck_set_visible_child_name (shell->details_deck, "details");
+		adw_leaflet_set_visible_child_name (shell->details_leaflet, "details");
 	} else {
-		hdy_deck_set_visible_child_name (shell->details_deck, "main");
-		/* We only change the main deck when not reaching the details
+		adw_leaflet_set_visible_child_name (shell->details_leaflet, "main");
+		/* We only change the main leaflet when not reaching the details
 		 * page to preserve the navigation history in the UI's state.
-		 * First change the page, then the deck, to avoid load of
+		 * First change the page, then the leaflet, to avoid load of
 		 * the previously shown page, which will be changed shortly after. */
-		gtk_stack_set_visible_child_name (mode_is_main ? shell->stack_main : shell->stack_sub, page_name[mode]);
-		hdy_deck_set_visible_child_name (shell->main_deck, mode_is_main ? "main" : "sub");
+		adw_view_stack_set_visible_child_name (mode_is_main ? shell->stack_main : shell->stack_sub, page_name[mode]);
+		adw_leaflet_set_visible_child_name (shell->main_leaflet, mode_is_main ? "main" : "sub");
 	}
 
 	/* do any mode-specific actions */
@@ -613,11 +625,14 @@ gs_shell_change_mode (GsShell *shell,
 
 	if (mode == GS_SHELL_MODE_SEARCH) {
 		gs_search_page_set_text (GS_SEARCH_PAGE (page), data);
-		gtk_entry_set_text (GTK_ENTRY (shell->entry_search), data);
+		gtk_editable_set_text (GTK_EDITABLE (shell->entry_search), data);
 		gtk_editable_set_position (GTK_EDITABLE (shell->entry_search), -1);
 	} else if (mode == GS_SHELL_MODE_DETAILS) {
 		app = GS_APP (data);
-		if (gs_app_get_local_file (app) != NULL) {
+		if (gs_app_get_metadata_item (app, "GnomeSoftware::show-metainfo") != NULL) {
+			gs_details_page_set_metainfo (GS_DETAILS_PAGE (page),
+						      gs_app_get_local_file (app));
+		} else if (gs_app_get_local_file (app) != NULL) {
 			gs_details_page_set_local_file (GS_DETAILS_PAGE (page),
 			                                gs_app_get_local_file (app));
 		} else if (gs_app_get_metadata_item (app, "GnomeSoftware::from-url") != NULL) {
@@ -648,7 +663,7 @@ overlay_get_child_position_cb (GtkOverlay   *overlay,
 	 * to position it below the header bar. The overlay can’t easily be
 	 * moved in the widget hierarchy so it doesn’t have the header bar as
 	 * a child, since there are several header bars in different pages of
-	 * a HdyDeck. */
+	 * a AdwLeaflet. */
 	g_assert (gtk_widget_is_ancestor (self->main_header, GTK_WIDGET (overlay)));
 
 	gtk_widget_get_preferred_size (widget, NULL, &overlay_natural_size);
@@ -802,7 +817,7 @@ gs_shell_go_back (GsShell *shell)
 
 		/* set the text in the entry and move cursor to the end */
 		block_changed_signal (GTK_SEARCH_ENTRY (shell->entry_search));
-		gtk_entry_set_text (GTK_ENTRY (shell->entry_search), entry->search);
+		gtk_editable_set_text (GTK_EDITABLE (shell->entry_search), entry->search);
 		gtk_editable_set_position (GTK_EDITABLE (shell->entry_search), -1);
 		unblock_changed_signal (GTK_SEARCH_ENTRY (shell->entry_search));
 
@@ -842,6 +857,20 @@ gs_shell_reload_cb (GsPluginLoader *plugin_loader, GsShell *shell)
 		if (page != NULL)
 			gs_page_reload (page);
 	}
+}
+
+static void
+gs_shell_details_page_metainfo_loaded_cb (GtkWidget *details_page,
+					  GsApp *app,
+					  GsShell *self)
+{
+	g_return_if_fail (GS_IS_APP (app));
+	g_return_if_fail (GS_IS_SHELL (self));
+
+	/* If the user has manually loaded some metainfo to
+	 * preview, override the featured carousel with it too,
+	 * so they can see how it looks in the carousel. */
+	gs_overview_page_override_featured (GS_OVERVIEW_PAGE (self->pages[GS_SHELL_MODE_OVERVIEW]), app);
 }
 
 static gboolean
@@ -905,49 +934,48 @@ initial_refresh_done (GsLoadingPage *loading_page, gpointer data)
 }
 
 static gboolean
-window_keypress_handler (GtkWidget *window, GdkEvent *event, GsShell *shell)
+window_keypress_handler (GtkEventControllerKey *key_controller,
+                         guint                  keyval,
+                         guint                  keycode,
+                         GdkModifierType        state,
+                         GsShell               *shell)
 {
 	/* handle ctrl+f shortcut */
-	if (event->type == GDK_KEY_PRESS) {
-		GdkEventKey *e = (GdkEventKey *) event;
-		if ((e->state & GDK_CONTROL_MASK) > 0 &&
-		    e->keyval == GDK_KEY_f) {
-			if (!hdy_search_bar_get_search_mode (HDY_SEARCH_BAR (shell->search_bar))) {
-				GsShellMode mode = gs_shell_get_mode (shell);
+	if ((state & GDK_CONTROL_MASK) > 0 && keyval == GDK_KEY_f) {
+		if (!gtk_search_bar_get_search_mode (GTK_SEARCH_BAR (shell->search_bar))) {
+			GsShellMode mode = gs_shell_get_mode (shell);
 
-				hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (shell->search_bar), TRUE);
-				gtk_widget_grab_focus (shell->entry_search);
+			gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (shell->search_bar), TRUE);
+			gtk_widget_grab_focus (shell->entry_search);
 
-				/* If the mode doesn't have a search button,
-				 * switch to the search page right away,
-				 * otherwise we would show the search bar
-				 * without a button to toggle it. */
-				switch (mode) {
-				case GS_SHELL_MODE_OVERVIEW:
-				case GS_SHELL_MODE_INSTALLED:
-				case GS_SHELL_MODE_SEARCH:
-					break;
-				default:
-					gs_shell_show_search (shell, "");
-					break;
-				}
-			} else {
-				hdy_search_bar_set_search_mode (HDY_SEARCH_BAR (shell->search_bar), FALSE);
+			/* If the mode doesn't have a search button,
+			 * switch to the search page right away,
+			 * otherwise we would show the search bar
+			 * without a button to toggle it. */
+			switch (mode) {
+			case GS_SHELL_MODE_OVERVIEW:
+			case GS_SHELL_MODE_INSTALLED:
+			case GS_SHELL_MODE_SEARCH:
+				break;
+			default:
+				gs_shell_show_search (shell, "");
+				break;
 			}
-			return GDK_EVENT_STOP;
+		} else {
+			gtk_search_bar_set_search_mode (GTK_SEARCH_BAR (shell->search_bar), FALSE);
 		}
+		return GDK_EVENT_STOP;
 	}
 
-	/* pass to search bar */
-	return hdy_search_bar_handle_event (HDY_SEARCH_BAR (shell->search_bar), event);
+	return GDK_EVENT_PROPAGATE;
 }
 
 static void
 search_changed_handler (GObject *entry, GsShell *shell)
 {
-	const gchar *text;
+	g_autofree gchar *text = NULL;
 
-	text = gtk_entry_get_text (GTK_ENTRY (entry));
+	text = g_strdup (gtk_editable_get_text (GTK_EDITABLE (entry)));
 	if (strlen (text) >= 2) {
 		if (gs_shell_get_mode (shell) != GS_SHELL_MODE_SEARCH) {
 			save_back_entry (shell);
@@ -962,54 +990,61 @@ search_changed_handler (GObject *entry, GsShell *shell)
 }
 
 static void
-search_button_clicked_cb (GtkToggleButton *toggle_button, GsShell *shell)
+search_bar_search_mode_enabled_changed_cb (GtkSearchBar *search_bar,
+					   GParamSpec *pspec,
+					   GsShell *shell)
 {
 	/* go back when exiting the search view */
 	if (gs_shell_get_mode (shell) == GS_SHELL_MODE_SEARCH &&
-	    !gtk_toggle_button_get_active (toggle_button))
+	    !gtk_search_bar_get_search_mode (search_bar))
 		gs_shell_go_back (shell);
 }
 
-static gboolean
-window_key_press_event (GtkWidget *win, GdkEventKey *event, GsShell *shell)
+static void
+go_back (GsShell *shell)
 {
-	GdkKeymap *keymap;
-	GdkModifierType state;
-	gboolean is_rtl;
-
-	state = event->state;
-	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (win));
-	gdk_keymap_add_virtual_modifiers (keymap, &state);
-	state = state & gtk_accelerator_get_default_mod_mask ();
-	is_rtl = gtk_widget_get_direction (shell->button_back) == GTK_TEXT_DIR_RTL;
-
-	if ((!is_rtl && state == GDK_MOD1_MASK && event->keyval == GDK_KEY_Left) ||
-	    (is_rtl && state == GDK_MOD1_MASK && event->keyval == GDK_KEY_Right) ||
-	    event->keyval == GDK_KEY_Back) {
-		/* GTK will only actually activate the one which is visible */
-		gtk_widget_activate (shell->button_back);
+	if (adw_leaflet_get_adjacent_child (shell->details_leaflet,
+					    ADW_NAVIGATION_DIRECTION_BACK)) {
 		gtk_widget_activate (shell->button_back2);
+	} else {
+		gtk_widget_activate (shell->button_back);
+	}
+}
+
+static gboolean
+window_key_pressed_cb (GtkEventControllerKey *key_controller,
+                       guint                  keyval,
+                       guint                  keycode,
+                       GdkModifierType        state,
+                       GsShell               *shell)
+{
+	gboolean is_rtl = gtk_widget_get_direction (shell->button_back) == GTK_TEXT_DIR_RTL;
+	gboolean is_alt = (state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_ALT_MASK)) == GDK_ALT_MASK;
+
+	if ((!is_rtl && is_alt && keyval == GDK_KEY_Left) ||
+	    (is_rtl && is_alt && keyval == GDK_KEY_Right) ||
+	    keyval == GDK_KEY_Back) {
+		go_back (shell);
 		return GDK_EVENT_STOP;
 	}
 
 	return GDK_EVENT_PROPAGATE;
 }
 
-static gboolean
-window_button_press_event (GtkWidget *win, GdkEventButton *event, GsShell *shell)
+static void
+window_button_pressed_cb (GtkGestureClick *click_gesture,
+                          gint             n_press,
+                          gdouble          x,
+                          gdouble          y,
+                          GsShell         *shell)
 {
-	/* Mouse hardware back button is 8 */
-	if (event->button != 8)
-		return GDK_EVENT_PROPAGATE;
+	go_back (shell);
 
-	/* GTK will only actually activate the one which is visible */
-	gtk_widget_activate (shell->button_back);
-	gtk_widget_activate (shell->button_back2);
-	return GDK_EVENT_STOP;
+	gtk_gesture_set_state (GTK_GESTURE (click_gesture), GTK_EVENT_SEQUENCE_CLAIMED);
 }
 
 static gboolean
-main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
+main_window_closed_cb (GtkWidget *dialog, gpointer user_data)
 {
 	GsShell *shell = user_data;
 
@@ -1042,6 +1077,10 @@ main_window_closed_cb (GtkWidget *dialog, GdkEvent *event, gpointer user_data)
 
 	gs_shell_clean_back_entry_stack (shell);
 	gtk_widget_hide (dialog);
+
+	/* Free unused memory */
+	malloc_trim (0);
+
 	return TRUE;
 }
 
@@ -1068,18 +1107,21 @@ static void
 gs_shell_main_window_realized_cb (GtkWidget *widget, GsShell *shell)
 {
 	GdkRectangle geometry;
+	GdkSurface *surface;
 	GdkDisplay *display;
 	GdkMonitor *monitor;
 
 	display = gtk_widget_get_display (GTK_WIDGET (shell));
-	monitor = gdk_display_get_monitor_at_window (display,
-						     gtk_widget_get_window (GTK_WIDGET (shell)));
+	surface = gtk_native_get_surface (GTK_NATIVE (shell));
+	monitor = gdk_display_get_monitor_at_surface (display, surface);
 
 	/* adapt the window for low and medium resolution screens */
-	gdk_monitor_get_geometry (monitor, &geometry);
-	if (geometry.width < 800 || geometry.height < 600) {
-	} else if (geometry.width < 1366 || geometry.height < 768) {
-		gtk_window_set_default_size (GTK_WINDOW (shell), 1050, 600);
+	if (monitor != NULL) {
+		gdk_monitor_get_geometry (monitor, &geometry);
+		if (geometry.width < 800 || geometry.height < 600) {
+		} else if (geometry.width < 1366 || geometry.height < 768) {
+			gtk_window_set_default_size (GTK_WINDOW (shell), 1050, 600);
+		}
 	}
 }
 
@@ -1180,23 +1222,30 @@ gs_shell_get_title_from_app (GsApp *app)
 }
 
 static gchar *
-get_first_line (const gchar *str)
+get_first_lines (const gchar *str)
 {
-	g_auto(GStrv) lines = NULL;
-
-	lines = g_strsplit (str, "\n", 2);
-	if (lines != NULL && g_strv_length (lines) != 0)
-		return g_strdup (lines[0]);
-
-	return NULL;
+	const gchar *end = str;
+	/* Some errors can have an "introduction", thus pick few initial lines, not only the first. */
+	for (guint lines = 0; end != NULL && lines < 7; lines++) {
+		end = strchr (end, '\n');
+		if (end != NULL)
+			end++;
+	}
+	if (end != NULL) {
+		g_autofree gchar *tmp = g_strndup (str, end - str);
+		/* Translators: The '%s' is replaced with an error message, which had been shortened.
+		   The dots at the end are there to highlight that to the user. */
+		return g_strdup_printf (_("%s…"), tmp);
+	}
+	return g_strdup (str);
 }
 
 static void
 gs_shell_append_detailed_error (GsShell *shell, GString *str, const GError *error)
 {
-	g_autofree gchar *first_line = get_first_line (error->message);
-	if (first_line != NULL) {
-		g_autofree gchar *escaped = g_markup_escape_text (first_line, -1);
+	g_autofree gchar *text = get_first_lines (error->message);
+	if (text != NULL) {
+		g_autofree gchar *escaped = g_markup_escape_text (text, -1);
 		g_string_append_printf (str, ":\n%s", escaped);
 	}
 }
@@ -1215,8 +1264,7 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 	if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 		return FALSE;
 
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_DOWNLOAD_FAILED:
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_DOWNLOAD_FAILED)) {
 		if (origin != NULL) {
 			str_origin = gs_shell_get_title_from_origin (origin);
 			if (gs_app_get_bundle_kind (origin) == AS_BUNDLE_KIND_CABINET) {
@@ -1230,7 +1278,7 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 				 * where the %s is the source (e.g. "alt.fedoraproject.org") */
 				g_string_append_printf (str, _("Unable to download updates from %s"),
 							str_origin);
-				if (gs_app_get_management_plugin (origin) != NULL)
+				if (!gs_app_has_management_plugin (origin, NULL))
 					buttons |= GS_SHELL_EVENT_BUTTON_SOURCES;
 			}
 		} else {
@@ -1238,14 +1286,12 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 			g_string_append (str, _("Unable to download updates"));
 		}
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
-	case GS_PLUGIN_ERROR_NO_NETWORK:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_NETWORK)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to download updates: "
 				       "internet access was required but wasn’t available"));
 		buttons |= GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS;
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		if (origin != NULL) {
 			str_origin = gs_shell_get_title_from_origin (origin);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1259,25 +1305,22 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 					        "not enough disk space"));
 		}
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to download updates: "
 				        "authentication was required"));
-		break;
-	case GS_PLUGIN_ERROR_AUTH_INVALID:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to download updates: "
 				        "authentication was invalid"));
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to download updates: you do not have"
 				        " permission to install software"));
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		if (action == GS_PLUGIN_ACTION_DOWNLOAD) {
 			/* TRANSLATORS: failure text for the in-app notification */
 			g_string_append (str, _("Unable to download updates"));
@@ -1286,8 +1329,8 @@ gs_shell_show_event_refresh (GsShell *shell, GsPluginEvent *event)
 			g_string_append (str, _("Unable to get list of updates"));
 		}
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1318,8 +1361,8 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 	g_autoptr(GString) str = g_string_new (NULL);
 
 	str_app = gs_shell_get_title_from_app (app);
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_DOWNLOAD_FAILED:
+
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_DOWNLOAD_FAILED)) {
 		if (origin != NULL) {
 			str_origin = gs_shell_get_title_from_origin (origin);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1336,8 +1379,7 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 						str_app);
 		}
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
-	case GS_PLUGIN_ERROR_NOT_SUPPORTED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED)) {
 		if (origin != NULL) {
 			str_origin = gs_shell_get_title_from_origin (origin);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1354,69 +1396,61 @@ gs_shell_show_event_install (GsShell *shell, GsPluginEvent *event)
 						       "as not supported"),
 						str_app);
 		}
-		break;
-	case GS_PLUGIN_ERROR_NO_NETWORK:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_NETWORK)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to install: internet access was "
 				        "required but wasn’t available"));
 		buttons |= GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS;
-		break;
-	case GS_PLUGIN_ERROR_INVALID_FORMAT:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_INVALID_FORMAT)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to install: the application has an invalid format"));
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to install %s: "
 					       "not enough disk space"),
 					str_app);
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append_printf (str, _("Unable to install %s: "
 					       "authentication was required"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_AUTH_INVALID:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to install %s: "
 					       "authentication was invalid"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to install %s: "
 					       "you do not have permission to "
 					       "install software"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AC_POWER_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "Dell XPS 13") */
 		g_string_append_printf (str, _("Unable to install %s: "
 					       "AC power is required"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "Dell XPS 13") */
 		g_string_append_printf (str, _("Unable to install %s: "
 					       "The battery level is too low"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to install %s"), str_app);
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1450,8 +1484,7 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 	if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 		return FALSE;
 
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_DOWNLOAD_FAILED:
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_DOWNLOAD_FAILED)) {
 		if (app != NULL && origin != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			str_origin = gs_shell_get_title_from_origin (origin);
@@ -1480,15 +1513,13 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 			g_string_append_printf (str, _("Unable to install updates as download failed"));
 		}
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
-	case GS_PLUGIN_ERROR_NO_NETWORK:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_NETWORK)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Unable to update: "
 					"internet access was required but "
 					"wasn’t available"));
 		buttons |= GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS;
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		if (app != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1502,8 +1533,7 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 						       "not enough disk space"));
 		}
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_REQUIRED)) {
 		if (app != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1516,8 +1546,7 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 			g_string_append_printf (str, _("Unable to install updates: "
 						       "authentication was required"));
 		}
-		break;
-	case GS_PLUGIN_ERROR_AUTH_INVALID:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID)) {
 		if (app != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1530,8 +1559,7 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 			g_string_append_printf (str, _("Unable to install updates: "
 						       "authentication was invalid"));
 		}
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		if (app != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1546,8 +1574,7 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 						       "you do not have permission to "
 						       "update software"));
 		}
-		break;
-	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AC_POWER_REQUIRED)) {
 		if (app != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1561,8 +1588,7 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 			g_string_append_printf (str, _("Unable to install updates: "
 						       "AC power is required"));
 		}
-		break;
-	case GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW)) {
 		if (app != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1576,10 +1602,10 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 			g_string_append_printf (str, _("Unable to install updates: "
 						       "The battery level is too low"));
 		}
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		if (app != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1590,8 +1616,8 @@ gs_shell_show_event_update (GsShell *shell, GsPluginEvent *event)
 			g_string_append_printf (str, _("Unable to install updates"));
 		}
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1622,8 +1648,8 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 	g_autofree gchar *str_origin = NULL;
 
 	str_app = g_strdup_printf ("%s %s", gs_app_get_name (app), gs_app_get_version (app));
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_DOWNLOAD_FAILED:
+
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_DOWNLOAD_FAILED)) {
 		if (origin != NULL) {
 			str_origin = gs_shell_get_title_from_origin (origin);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1639,8 +1665,7 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 						str_app);
 		}
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
-	case GS_PLUGIN_ERROR_NO_NETWORK:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_NETWORK)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
@@ -1648,59 +1673,53 @@ gs_shell_show_event_upgrade (GsShell *shell, GsPluginEvent *event)
 					       "wasn’t available"),
 					str_app);
 		buttons |= GS_SHELL_EVENT_BUTTON_NETWORK_SETTINGS;
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
 					       "not enough disk space"),
 					str_app);
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
 					       "authentication was required"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_AUTH_INVALID:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
 					       "authentication was invalid"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
 					       "you do not have permission to upgrade"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AC_POWER_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
 					       "AC power is required"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s: "
 					       "The battery level is too low"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the distro name (e.g. "Fedora 25") */
 		g_string_append_printf (str, _("Unable to upgrade to %s"), str_app);
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1730,43 +1749,39 @@ gs_shell_show_event_remove (GsShell *shell, GsPluginEvent *event)
 	g_autofree gchar *str_app = NULL;
 
 	str_app = gs_shell_get_title_from_app (app);
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_AUTH_REQUIRED:
+
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s: authentication was required"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_AUTH_INVALID:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AUTH_INVALID)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s: authentication was invalid"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s: you do not have"
 					       " permission to remove software"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AC_POWER_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s: "
 					       "AC power is required"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW)) {
 		/* TRANSLATORS: failure text for the in-app notification,
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s: "
 					       "The battery level is too low"),
 					str_app);
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		/* non-interactive generic */
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 			return FALSE;
@@ -1774,8 +1789,8 @@ gs_shell_show_event_remove (GsShell *shell, GsPluginEvent *event)
 		 * where the %s is the application name (e.g. "GIMP") */
 		g_string_append_printf (str, _("Unable to remove %s"), str_app);
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1805,8 +1820,7 @@ gs_shell_show_event_launch (GsShell *shell, GsPluginEvent *event)
 	g_autofree gchar *str_app = NULL;
 	g_autofree gchar *str_origin = NULL;
 
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_NOT_SUPPORTED:
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED)) {
 		if (app != NULL && origin != NULL) {
 			str_app = gs_shell_get_title_from_app (app);
 			str_origin = gs_shell_get_title_from_origin (origin);
@@ -1818,24 +1832,23 @@ gs_shell_show_event_launch (GsShell *shell, GsPluginEvent *event)
 					        str_app,
 					        str_origin);
 		}
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Not enough disk space — free up some space "
 					"and try again"));
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		/* non-interactive generic */
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1861,32 +1874,29 @@ gs_shell_show_event_file_to_app (GsShell *shell, GsPluginEvent *event)
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autoptr(GString) str = g_string_new (NULL);
 
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_NOT_SUPPORTED:
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Failed to install file: not supported"));
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Failed to install file: authentication failed"));
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Not enough disk space — free up some space "
 					"and try again"));
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		/* non-interactive generic */
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1902,32 +1912,29 @@ gs_shell_show_event_url_to_app (GsShell *shell, GsPluginEvent *event)
 	const GError *error = gs_plugin_event_get_error (event);
 	g_autoptr(GString) str = g_string_new (NULL);
 
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_NOT_SUPPORTED:
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NOT_SUPPORTED)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Failed to install: not supported"));
-		break;
-	case GS_PLUGIN_ERROR_NO_SECURITY:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SECURITY)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Failed to install: authentication failed"));
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Not enough disk space — free up some space "
 					"and try again"));
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		/* non-interactive generic */
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -1945,8 +1952,7 @@ gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 	g_autoptr(GString) str = g_string_new (NULL);
 	g_autofree gchar *str_origin = NULL;
 
-	switch (error->code) {
-	case GS_PLUGIN_ERROR_DOWNLOAD_FAILED:
+	if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_DOWNLOAD_FAILED)) {
 		if (origin != NULL) {
 			str_origin = gs_shell_get_title_from_origin (origin);
 			/* TRANSLATORS: failure text for the in-app notification,
@@ -1955,37 +1961,33 @@ gs_shell_show_event_fallback (GsShell *shell, GsPluginEvent *event)
 			g_string_append_printf (str, _("Unable to contact %s"),
 					        str_origin);
 		}
-		break;
-	case GS_PLUGIN_ERROR_NO_SPACE:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE)) {
 		/* TRANSLATORS: failure text for the in-app notification */
 		g_string_append (str, _("Not enough disk space — free up some space "
 					"and try again"));
 		buttons |= GS_SHELL_EVENT_BUTTON_NO_SPACE;
-		break;
-	case GS_PLUGIN_ERROR_RESTART_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_RESTART_REQUIRED)) {
 		/* TRANSLATORS: failure text for the in-app notification, where the 'Software' means this application, aka 'GNOME Software'. */
 		g_string_append (str, _("Software needs to be restarted to use new plugins."));
 		buttons |= GS_SHELL_EVENT_BUTTON_RESTART_REQUIRED;
-		break;
-	case GS_PLUGIN_ERROR_AC_POWER_REQUIRED:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_AC_POWER_REQUIRED)) {
 		/* TRANSLATORS: need to be connected to the AC power */
 		g_string_append (str, _("AC power is required"));
-		break;
-	case GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_BATTERY_LEVEL_TOO_LOW)) {
 		/* TRANSLATORS: not enough juice to do this safely */
 		g_string_append (str, _("The battery level is too low"));
-		break;
-	case GS_PLUGIN_ERROR_CANCELLED:
-		break;
-	default:
+	} else if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		   g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		/* Do nothing. */
+	} else {
 		/* non-interactive generic */
 		if (!gs_plugin_event_has_flag (event, GS_PLUGIN_EVENT_FLAG_INTERACTIVE))
 			return FALSE;
 		/* TRANSLATORS: we failed to get a proper error code */
 		g_string_append (str, _("Sorry, something went wrong"));
 		gs_shell_append_detailed_error (shell, str, error);
-		break;
 	}
+
 	if (str->len == 0)
 		return FALSE;
 
@@ -2009,6 +2011,7 @@ gs_shell_show_event (GsShell *shell, GsPluginEvent *event)
 {
 	const GError *error;
 	GsPluginAction action;
+	GsPluginJob *job;
 
 	/* get error */
 	error = gs_plugin_event_get_error (event);
@@ -2022,10 +2025,13 @@ gs_shell_show_event (GsShell *shell, GsPluginEvent *event)
 		return TRUE;
 	}
 
+	job = gs_plugin_event_get_job (event);
+	if (GS_IS_PLUGIN_JOB_REFRESH_METADATA (job))
+		return gs_shell_show_event_refresh (shell, event);
+
 	/* split up the events by action */
 	action = gs_plugin_event_get_action (event);
 	switch (action) {
-	case GS_PLUGIN_ACTION_REFRESH:
 	case GS_PLUGIN_ACTION_DOWNLOAD:
 		return gs_shell_show_event_refresh (shell, event);
 	case GS_PLUGIN_ACTION_INSTALL:
@@ -2142,17 +2148,6 @@ gs_shell_add_about_menu_item (GsShell *shell)
 	g_menu_append_item (G_MENU (shell->primary_menu), menu_item);
 }
 
-static gboolean
-gs_shell_close_window_accel_cb (GtkAccelGroup *accel_group,
-				GObject *acceleratable,
-				guint keyval,
-				GdkModifierType modifier)
-{
-	gtk_window_close (GTK_WINDOW (acceleratable));
-
-	return TRUE;
-}
-
 static void
 updates_page_notify_counter_cb (GObject    *obj,
                                 GParamSpec *pspec,
@@ -2160,18 +2155,18 @@ updates_page_notify_counter_cb (GObject    *obj,
 {
 	GsPage *page = GS_PAGE (obj);
 	GsShell *shell = GS_SHELL (user_data);
+	AdwViewStackPage *stack_page;
 	gboolean needs_attention;
 
 	/* Update the needs-attention child property of the page in the
-	 * GtkStack. There’s no need to account for whether it’s the currently
+	 * AdwViewStack. There’s no need to account for whether it’s the currently
 	 * visible page, as the CSS rules do that for us. This can’t be a simple
 	 * property binding, though, as it’s a binding between an object
 	 * property and a child property. */
 	needs_attention = (gs_page_get_counter (page) > 0);
 
-	gtk_container_child_set (GTK_CONTAINER (shell->stack_main), GTK_WIDGET (page),
-				 "needs-attention", needs_attention,
-				 NULL);
+	stack_page = adw_view_stack_get_page (shell->stack_main, GTK_WIDGET (page));
+	adw_view_stack_page_set_needs_attention (stack_page, needs_attention);
 }
 
 static void
@@ -2187,8 +2182,6 @@ category_page_app_clicked_cb (GsCategoryPage *page,
 void
 gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *cancellable)
 {
-	g_autoptr(GtkAccelGroup) accel_group = NULL;
-	GClosure *closure;
 	GsOdrsProvider *odrs_provider;
 
 	g_return_if_fail (GS_IS_SHELL (shell));
@@ -2203,6 +2196,9 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	g_signal_connect_object (shell->plugin_loader, "basic-auth-start",
 				 G_CALLBACK (gs_shell_basic_auth_start_cb),
 				 shell, 0);
+	g_signal_connect_object (shell->plugin_loader, "ask-untrusted",
+				 G_CALLBACK (gs_shell_ask_untrusted_cb),
+				 shell, 0);
 
 	g_object_bind_property (shell->plugin_loader, "allow-updates",
 				shell->pages[GS_SHELL_MODE_UPDATES], "visible",
@@ -2211,12 +2207,6 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	shell->cancellable = g_object_ref (cancellable);
 
 	shell->settings = g_settings_new ("org.gnome.software");
-
-	/* get UI */
-	accel_group = gtk_accel_group_new ();
-	gtk_window_add_accel_group (GTK_WINDOW (shell), accel_group);
-	closure = g_cclosure_new (G_CALLBACK (gs_shell_close_window_accel_cb), NULL, NULL);
-	gtk_accel_group_connect (accel_group, GDK_KEY_q, GDK_CONTROL_MASK, GTK_ACCEL_LOCKED, closure);
 
 	/* set up pages */
 	gs_shell_setup_pages (shell);
@@ -2241,6 +2231,9 @@ gs_shell_setup (GsShell *shell, GsPluginLoader *plugin_loader, GCancellable *can
 	} else {
 		g_debug ("Skipped refresh of the repositories due to 'download-updates' disabled");
 		initial_refresh_done (GS_LOADING_PAGE (shell->pages[GS_SHELL_MODE_LOADING]), shell);
+
+		if (g_settings_get_boolean (shell->settings, "first-run"))
+			g_settings_set_boolean (shell->settings, "first-run", FALSE);
 	}
 }
 
@@ -2266,16 +2259,16 @@ gs_shell_get_mode (GsShell *shell)
 {
 	const gchar *name;
 
-	if (g_strcmp0 (gtk_stack_get_visible_child_name (shell->stack_loading), "loading") == 0)
+	if (g_strcmp0 (adw_view_stack_get_visible_child_name (shell->stack_loading), "loading") == 0)
 		return GS_SHELL_MODE_LOADING;
 
-	if (g_strcmp0 (hdy_deck_get_visible_child_name (shell->details_deck), "details") == 0)
+	if (g_strcmp0 (adw_leaflet_get_visible_child_name (shell->details_leaflet), "details") == 0)
 		return GS_SHELL_MODE_DETAILS;
 
-	if (g_strcmp0 (hdy_deck_get_visible_child_name (shell->main_deck), "main") == 0)
-		name = gtk_stack_get_visible_child_name (shell->stack_main);
+	if (g_strcmp0 (adw_leaflet_get_visible_child_name (shell->main_leaflet), "main") == 0)
+		name = adw_view_stack_get_visible_child_name (shell->stack_main);
 	else
-		name = gtk_stack_get_visible_child_name (shell->stack_sub);
+		name = adw_view_stack_get_visible_child_name (shell->stack_sub);
 
 	for (gsize i = 0; i < G_N_ELEMENTS (page_name); i++)
 		if (g_strcmp0 (page_name[i], name) == 0)
@@ -2374,6 +2367,34 @@ gs_shell_show_local_file (GsShell *shell, GFile *file)
 	gs_shell_activate (shell);
 }
 
+/**
+ * gs_shell_show_metainfo:
+ * @shell: a #GsShell
+ * @file: path to a metainfo file to display
+ *
+ * Open a metainfo file and display it on the details page as if it were
+ * published in a repository configured on the system.
+ *
+ * This is intended for app developers to be able to test their metainfo files
+ * locally.
+ *
+ * Since: 42
+ */
+void
+gs_shell_show_metainfo (GsShell *shell, GFile *file)
+{
+	g_autoptr(GsApp) app = gs_app_new (NULL);
+
+	g_return_if_fail (GS_IS_SHELL (shell));
+	g_return_if_fail (G_IS_FILE (file));
+	save_back_entry (shell);
+	gs_app_set_metadata (app, "GnomeSoftware::show-metainfo", "1");
+	gs_app_set_local_file (app, file);
+	gs_shell_change_mode (shell, GS_SHELL_MODE_DETAILS,
+			      (gpointer) app, TRUE);
+	gs_shell_activate (shell);
+}
+
 void
 gs_shell_show_search_result (GsShell *shell, const gchar *id, const gchar *search)
 {
@@ -2386,15 +2407,7 @@ gs_shell_show_search_result (GsShell *shell, const gchar *id, const gchar *searc
 void
 gs_shell_show_uri (GsShell *shell, const gchar *url)
 {
-	g_autoptr(GError) error = NULL;
-
-	if (!gtk_show_uri_on_window (GTK_WINDOW (shell),
-	                             url,
-	                             GDK_CURRENT_TIME,
-	                             &error)) {
-		g_warning ("failed to show URI %s: %s",
-		           url, error->message);
-	}
+	gtk_show_uri (GTK_WINDOW (shell), url, GDK_CURRENT_TIME);
 }
 
 /**
@@ -2513,11 +2526,17 @@ allocation_changed_cb (gpointer user_data)
 }
 
 static void
-gs_shell_size_allocate (GtkWidget *widget, GtkAllocation *allocation)
+gs_shell_size_allocate (GtkWidget *widget,
+                        gint       width,
+                        gint       height,
+                        gint       baseline)
 {
 	GsShell *shell = GS_SHELL (widget);
 
-	GTK_WIDGET_CLASS (gs_shell_parent_class)->size_allocate (widget, allocation);
+	GTK_WIDGET_CLASS (gs_shell_parent_class)->size_allocate (widget,
+								 width,
+								 height,
+								 baseline);
 
 	/* Delay updating is-narrow so children can adapt to it, which isn't
 	 * possible during the widget's allocation phase as it would break their
@@ -2564,9 +2583,9 @@ gs_shell_class_init (GsShellClass *klass)
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-shell.ui");
 
 	gtk_widget_class_bind_template_child (widget_class, GsShell, main_header);
-	gtk_widget_class_bind_template_child (widget_class, GsShell, main_deck);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, main_leaflet);
 	gtk_widget_class_bind_template_child (widget_class, GsShell, details_header);
-	gtk_widget_class_bind_template_child (widget_class, GsShell, details_deck);
+	gtk_widget_class_bind_template_child (widget_class, GsShell, details_leaflet);
 	gtk_widget_class_bind_template_child (widget_class, GsShell, stack_loading);
 	gtk_widget_class_bind_template_child (widget_class, GsShell, stack_main);
 	gtk_widget_class_bind_template_child (widget_class, GsShell, stack_sub);
@@ -2600,15 +2619,15 @@ gs_shell_class_init (GsShellClass *klass)
 	gtk_widget_class_bind_template_callback (widget_class, gs_shell_main_window_mapped_cb);
 	gtk_widget_class_bind_template_callback (widget_class, gs_shell_main_window_realized_cb);
 	gtk_widget_class_bind_template_callback (widget_class, main_window_closed_cb);
-	gtk_widget_class_bind_template_callback (widget_class, window_key_press_event);
+	gtk_widget_class_bind_template_callback (widget_class, window_key_pressed_cb);
 	gtk_widget_class_bind_template_callback (widget_class, window_keypress_handler);
-	gtk_widget_class_bind_template_callback (widget_class, window_button_press_event);
+	gtk_widget_class_bind_template_callback (widget_class, window_button_pressed_cb);
 	gtk_widget_class_bind_template_callback (widget_class, gs_shell_details_back_button_cb);
 	gtk_widget_class_bind_template_callback (widget_class, gs_shell_back_button_cb);
 	gtk_widget_class_bind_template_callback (widget_class, gs_overview_page_button_cb);
 	gtk_widget_class_bind_template_callback (widget_class, updates_page_notify_counter_cb);
 	gtk_widget_class_bind_template_callback (widget_class, category_page_app_clicked_cb);
-	gtk_widget_class_bind_template_callback (widget_class, search_button_clicked_cb);
+	gtk_widget_class_bind_template_callback (widget_class, search_bar_search_mode_enabled_changed_cb);
 	gtk_widget_class_bind_template_callback (widget_class, search_changed_handler);
 	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_events_sources_cb);
 	gtk_widget_class_bind_template_callback (widget_class, gs_shell_plugin_events_no_space_cb);
@@ -2620,6 +2639,9 @@ gs_shell_class_init (GsShellClass *klass)
 	gtk_widget_class_bind_template_callback (widget_class, stack_notify_visible_child_cb);
 	gtk_widget_class_bind_template_callback (widget_class, initial_refresh_done);
 	gtk_widget_class_bind_template_callback (widget_class, overlay_get_child_position_cb);
+	gtk_widget_class_bind_template_callback (widget_class, gs_shell_details_page_metainfo_loaded_cb);
+
+	gtk_widget_class_add_binding_action (widget_class, GDK_KEY_q, GDK_CONTROL_MASK, "window.close", NULL);
 }
 
 static void
@@ -2627,10 +2649,10 @@ gs_shell_init (GsShell *shell)
 {
 	gtk_widget_init_template (GTK_WIDGET (shell));
 
-	hdy_search_bar_connect_entry (HDY_SEARCH_BAR (shell->search_bar), GTK_ENTRY (shell->entry_search));
+	gtk_search_bar_connect_entry (GTK_SEARCH_BAR (shell->search_bar), GTK_EDITABLE (shell->entry_search));
 
 	shell->back_entry_stack = g_queue_new ();
-	shell->modal_dialogs = g_ptr_array_new_with_free_func ((GDestroyNotify) gtk_widget_destroy);
+	shell->modal_dialogs = g_ptr_array_new ();
 }
 
 GsShell *

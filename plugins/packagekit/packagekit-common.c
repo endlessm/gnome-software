@@ -105,6 +105,21 @@ gs_plugin_packagekit_error_convert (GError **error)
 		case PK_CLIENT_ERROR_NOT_SUPPORTED:
 			error_tmp->code = GS_PLUGIN_ERROR_NOT_SUPPORTED;
 			break;
+		#if PK_CHECK_VERSION(1, 2, 4)
+		case PK_CLIENT_ERROR_DECLINED_INTERACTION:
+			error_tmp->code = GS_PLUGIN_ERROR_CANCELLED;
+			break;
+		#else
+		case PK_CLIENT_ERROR_FAILED:
+			/* The text is not localized on the PackageKit side and it uses a generic error code
+			 * FIXME: This can be dropped when we depend on a
+			 * PackageKit version which includes https://github.com/PackageKit/PackageKit/pull/497 */
+			if (g_strcmp0 (error_tmp->message, "user declined interaction") == 0)
+				error_tmp->code = GS_PLUGIN_ERROR_CANCELLED;
+			else
+				error_tmp->code = GS_PLUGIN_ERROR_FAILED;
+			break;
+		#endif
 		/* this is working around a bug in libpackagekit-glib */
 		case PK_ERROR_ENUM_TRANSACTION_CANCELLED:
 			error_tmp->code = GS_PLUGIN_ERROR_CANCELLED;
@@ -248,7 +263,7 @@ gs_plugin_packagekit_add_results (GsPlugin *plugin,
 		if (app == NULL) {
 			app = gs_app_new (NULL);
 			gs_plugin_packagekit_set_packaging_format (plugin, app);
-			gs_app_set_management_plugin (app, "packagekit");
+			gs_app_set_management_plugin (app, plugin);
 			gs_app_add_source (app, pk_package_get_name (package));
 			gs_app_add_source_id (app, pk_package_get_id (package));
 			gs_plugin_cache_add (plugin, pk_package_get_id (package), app);
@@ -364,7 +379,7 @@ gs_plugin_packagekit_set_metadata_from_package (GsPlugin *plugin,
 	const gchar *data;
 
 	gs_plugin_packagekit_set_packaging_format (plugin, app);
-	gs_app_set_management_plugin (app, "packagekit");
+	gs_app_set_management_plugin (app, plugin);
 	gs_app_add_source (app, pk_package_get_name (package));
 	gs_app_add_source_id (app, pk_package_get_id (package));
 
@@ -475,6 +490,7 @@ gs_plugin_packagekit_details_array_to_hash (GPtrArray *array)
 void
 gs_plugin_packagekit_refine_details_app (GsPlugin *plugin,
 					 GHashTable *details_collection,
+					 GHashTable *prepared_updates,
 					 GsApp *app)
 {
 	GPtrArray *source_ids;
@@ -520,7 +536,11 @@ gs_plugin_packagekit_refine_details_app (GsPlugin *plugin,
 		install_size += pk_details_get_size (details);
 		#ifdef HAVE_PK_DETAILS_GET_DOWNLOAD_SIZE
 		download_sz = pk_details_get_download_size (details);
-		if (download_sz != G_MAXUINT64)
+
+		/* If the package is already prepared as part of an offline
+		 * update, no additional downloads need to be done. */
+		if (download_sz != G_MAXUINT64 &&
+		    !g_hash_table_contains (prepared_updates, package_id))
 			download_size += download_sz;
 		#endif
 	}

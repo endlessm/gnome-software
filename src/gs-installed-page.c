@@ -25,9 +25,7 @@ struct _GsInstalledPage
 
 	GsPluginLoader		*plugin_loader;
 	GCancellable		*cancellable;
-	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
-	GtkSizeGroup		*sizegroup_desc;
 	GtkSizeGroup		*sizegroup_button_label;
 	GtkSizeGroup		*sizegroup_button_image;
 	gboolean		 cache_valid;
@@ -36,6 +34,11 @@ struct _GsInstalledPage
 	GSettings		*settings;
 	guint			 pending_apps_counter;
 	gboolean		 is_narrow;
+
+	GtkWidget		*group_install_in_progress;
+	GtkWidget		*group_install_apps;
+	GtkWidget		*group_install_system_apps;
+	GtkWidget		*group_install_addons;
 
 	GtkWidget		*list_box_install_in_progress;
 	GtkWidget		*list_box_install_apps;
@@ -94,6 +97,19 @@ gs_installed_page_get_app_section (GsApp *app)
 	return GS_UPDATE_LIST_SECTION_ADDONS;
 }
 
+static void
+update_groups (GsInstalledPage *self)
+{
+	gtk_widget_set_visible (self->group_install_in_progress,
+				gtk_widget_get_first_child (self->list_box_install_in_progress) != NULL);
+	gtk_widget_set_visible (self->group_install_apps,
+				gtk_widget_get_first_child (self->list_box_install_apps) != NULL);
+	gtk_widget_set_visible (self->group_install_system_apps,
+				gtk_widget_get_first_child (self->list_box_install_system_apps) != NULL);
+	gtk_widget_set_visible (self->group_install_addons,
+				gtk_widget_get_first_child (self->list_box_install_addons) != NULL);
+}
+
 static GsInstalledPageSection
 gs_installed_page_get_row_section (GsInstalledPage *self,
 				   GsAppRow *app_row)
@@ -137,12 +153,15 @@ gs_installed_page_app_row_activated_cb (GtkListBox *list_box,
 static void
 row_unrevealed (GObject *row, GParamSpec *pspec, gpointer data)
 {
+	GsInstalledPage *self = GS_INSTALLED_PAGE (gtk_widget_get_ancestor (GTK_WIDGET (row),
+									    GS_TYPE_INSTALLED_PAGE));
 	GtkWidget *list;
 
 	list = gtk_widget_get_parent (GTK_WIDGET (row));
 	if (list == NULL)
 		return;
-	gtk_container_remove (GTK_CONTAINER (list), GTK_WIDGET (row));
+	gtk_list_box_remove (GTK_LIST_BOX (list), GTK_WIDGET (row));
+	update_groups (self);
 }
 
 static void
@@ -180,11 +199,10 @@ gs_installed_page_find_app_row (GsInstalledPage *self,
 	};
 
 	for (gsize i = 0; lists[i]; i++) {
-		g_autoptr(GList) children = NULL;
-
-		children = gtk_container_get_children (GTK_CONTAINER (lists[i]));
-		for (GList *l = children; l; l = l->next) {
-			GsAppRow *app_row = GS_APP_ROW (l->data);
+		for (GtkWidget *child = gtk_widget_get_first_child (lists[i]);
+		     child != NULL;
+		     child = gtk_widget_get_next_sibling (child)) {
+			GsAppRow *app_row = GS_APP_ROW (child);
 			if (gs_app_row_get_app (app_row) == app) {
 				return app_row;
 			}
@@ -228,7 +246,7 @@ gs_installed_page_maybe_move_app_row (GsInstalledPage *self,
 		GtkWidget *widget = GTK_WIDGET (app_row);
 
 		g_object_ref (app_row);
-		gtk_container_remove (GTK_CONTAINER (gtk_widget_get_parent (widget)), widget);
+		gtk_list_box_remove (GTK_LIST_BOX (gtk_widget_get_parent (widget)), widget);
 		switch (expected_section) {
 		case GS_UPDATE_LIST_SECTION_INSTALLING_AND_REMOVING:
 			widget = self->list_box_install_in_progress;
@@ -249,9 +267,10 @@ gs_installed_page_maybe_move_app_row (GsInstalledPage *self,
 		}
 
 		if (widget != NULL)
-			gtk_container_add (GTK_CONTAINER (widget), GTK_WIDGET (app_row));
+			gtk_list_box_append (GTK_LIST_BOX (widget), GTK_WIDGET (app_row));
 
 		g_object_unref (app_row);
+		update_groups (self);
 	}
 }
 
@@ -321,25 +340,25 @@ gs_installed_page_add_app (GsInstalledPage *self, GsAppList *list, GsApp *app)
 
 	switch (gs_installed_page_get_app_section (app)) {
 	case GS_UPDATE_LIST_SECTION_INSTALLING_AND_REMOVING:
-		gtk_container_add (GTK_CONTAINER (self->list_box_install_in_progress), app_row);
+		gtk_list_box_append (GTK_LIST_BOX (self->list_box_install_in_progress), app_row);
 		break;
 	case GS_UPDATE_LIST_SECTION_REMOVABLE_APPS:
-		gtk_container_add (GTK_CONTAINER (self->list_box_install_apps), app_row);
+		gtk_list_box_append (GTK_LIST_BOX (self->list_box_install_apps), app_row);
 		break;
 	case GS_UPDATE_LIST_SECTION_SYSTEM_APPS:
-		gtk_container_add (GTK_CONTAINER (self->list_box_install_system_apps), app_row);
+		gtk_list_box_append (GTK_LIST_BOX (self->list_box_install_system_apps), app_row);
 		break;
 	case GS_UPDATE_LIST_SECTION_ADDONS:
-		gtk_container_add (GTK_CONTAINER (self->list_box_install_addons), app_row);
+		gtk_list_box_append (GTK_LIST_BOX (self->list_box_install_addons), app_row);
 		break;
 	default:
 		g_assert_not_reached ();
 	}
 
+	update_groups (self);
+
 	gs_app_row_set_size_groups (GS_APP_ROW (app_row),
-				    self->sizegroup_image,
 				    self->sizegroup_name,
-				    self->sizegroup_desc,
 				    self->sizegroup_button_label,
 				    self->sizegroup_button_image);
 
@@ -370,7 +389,8 @@ gs_installed_page_get_installed_cb (GObject *source_object,
 						    res,
 						    &error);
 	if (list == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to get installed apps: %s", error->message);
 		goto out;
 	}
@@ -383,11 +403,9 @@ out:
 }
 
 static void
-gs_installed_page_remove_all_cb (GtkWidget *child,
-				 gpointer user_data)
+gs_installed_page_remove_all_cb (GtkWidget *container,
+				 GtkWidget *child)
 {
-	GtkContainer *container = user_data;
-
 	if (GS_IS_APP_ROW (child)) {
 		GsApp *app = gs_app_row_get_app (GS_APP_ROW (child));
 		if (app != NULL) {
@@ -398,14 +416,7 @@ gs_installed_page_remove_all_cb (GtkWidget *child,
 		g_warn_if_reached ();
 	}
 
-	gtk_container_remove (container, child);
-}
-
-static void
-gs_container_remove_all_with_cb (GtkContainer *container,
-				 GtkCallback callback)
-{
-	gtk_container_foreach (container, callback, container);
+	gtk_list_box_remove (GTK_LIST_BOX (container), child);
 }
 
 static void
@@ -419,10 +430,11 @@ gs_installed_page_load (GsInstalledPage *self)
 	self->waiting = TRUE;
 
 	/* remove old entries */
-	gs_container_remove_all_with_cb (GTK_CONTAINER (self->list_box_install_in_progress), gs_installed_page_remove_all_cb);
-	gs_container_remove_all_with_cb (GTK_CONTAINER (self->list_box_install_apps), gs_installed_page_remove_all_cb);
-	gs_container_remove_all_with_cb (GTK_CONTAINER (self->list_box_install_system_apps), gs_installed_page_remove_all_cb);
-	gs_container_remove_all_with_cb (GTK_CONTAINER (self->list_box_install_addons), gs_installed_page_remove_all_cb);
+	gs_widget_remove_all (self->list_box_install_in_progress, gs_installed_page_remove_all_cb);
+	gs_widget_remove_all (self->list_box_install_apps, gs_installed_page_remove_all_cb);
+	gs_widget_remove_all (self->list_box_install_system_apps, gs_installed_page_remove_all_cb);
+	gs_widget_remove_all (self->list_box_install_addons, gs_installed_page_remove_all_cb);
+	update_groups (self);
 
 	flags = GS_PLUGIN_REFINE_FLAGS_REQUIRE_ICON |
 		GS_PLUGIN_REFINE_FLAGS_REQUIRE_HISTORY |
@@ -440,10 +452,8 @@ gs_installed_page_load (GsInstalledPage *self)
 		flags |= GS_PLUGIN_REFINE_FLAGS_REQUIRE_SIZE;
 
 	/* get installed apps */
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_GET_INSTALLED,
-					 "refine-flags", flags,
-					 "dedupe-flags", GS_APP_LIST_FILTER_FLAG_NONE,
-					 NULL);
+	plugin_job = gs_plugin_job_list_installed_apps_new (flags, 0, GS_APP_LIST_FILTER_FLAG_NONE,
+							    GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_INTERACTIVE);
 	gs_plugin_loader_job_process_async (self->plugin_loader,
 					    plugin_job,
 					    self->cancellable,
@@ -576,12 +586,6 @@ gs_installed_page_sort_func (GtkListBoxRow *a,
 	g_autofree gchar *key1 = NULL;
 	g_autofree gchar *key2 = NULL;
 
-	/* check valid */
-	if (!GTK_IS_BIN(a) || !GTK_IS_BIN(b)) {
-		g_warning ("GtkListBoxRow not valid");
-		return 0;
-	}
-
 	a1 = gs_app_row_get_app (GS_APP_ROW (a));
 	a2 = gs_app_row_get_app (GS_APP_ROW (b));
 	key1 = gs_installed_page_get_app_sort_key (a1);
@@ -604,11 +608,10 @@ gs_installed_page_has_app (GsInstalledPage *self,
 	};
 
 	for (gsize i = 0; lists[i]; i++) {
-		g_autoptr(GList) children = NULL;
-
-		children = gtk_container_get_children (GTK_CONTAINER (lists[i]));
-		for (GList *l = children; l; l = l->next) {
-			GsAppRow *app_row = GS_APP_ROW (l->data);
+		for (GtkWidget *child = gtk_widget_get_first_child (lists[i]);
+		     child != NULL;
+		     child = gtk_widget_get_next_sibling (child)) {
+			GsAppRow *app_row = GS_APP_ROW (child);
 			if (gs_app_row_get_app (app_row) == app)
 				return TRUE;
 		}
@@ -739,9 +742,7 @@ gs_installed_page_dispose (GObject *object)
 {
 	GsInstalledPage *self = GS_INSTALLED_PAGE (object);
 
-	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
-	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button_label);
 	g_clear_object (&self->sizegroup_button_image);
 
@@ -750,17 +751,6 @@ gs_installed_page_dispose (GObject *object)
 	g_clear_object (&self->settings);
 
 	G_OBJECT_CLASS (gs_installed_page_parent_class)->dispose (object);
-}
-
-static void
-update_group_visibility_cb (GtkWidget *group,
-			    GtkWidget *widget,
-			    GtkWidget *list_box)
-{
-	g_autoptr(GList) children = NULL;
-
-	children = gtk_container_get_children (GTK_CONTAINER (list_box));
-	gtk_widget_set_visible (group, children != NULL);
 }
 
 static void
@@ -802,6 +792,10 @@ gs_installed_page_class_init (GsInstalledPageClass *klass)
 
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-installed-page.ui");
 
+	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, group_install_in_progress);
+	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, group_install_apps);
+	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, group_install_system_apps);
+	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, group_install_addons);
 	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, list_box_install_in_progress);
 	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, list_box_install_apps);
 	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, list_box_install_system_apps);
@@ -811,7 +805,6 @@ gs_installed_page_class_init (GsInstalledPageClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsInstalledPage, stack_install);
 
 	gtk_widget_class_bind_template_callback (widget_class, gs_installed_page_app_row_activated_cb);
-	gtk_widget_class_bind_template_callback (widget_class, update_group_visibility_cb);
 }
 
 static void
@@ -819,9 +812,7 @@ gs_installed_page_init (GsInstalledPage *self)
 {
 	gtk_widget_init_template (GTK_WIDGET (self));
 
-	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 

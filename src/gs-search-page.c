@@ -26,9 +26,7 @@ struct _GsSearchPage
 	GsPluginLoader		*plugin_loader;
 	GCancellable		*cancellable;
 	GCancellable		*search_cancellable;
-	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
-	GtkSizeGroup		*sizegroup_desc;
 	GtkSizeGroup		*sizegroup_button_label;
 	GtkSizeGroup		*sizegroup_button_image;
 	GsShell			*shell;
@@ -116,7 +114,8 @@ gs_search_page_get_search_cb (GObject *source_object,
 
 	list = gs_plugin_loader_job_process_finish (plugin_loader, res, &error);
 	if (list == NULL) {
-		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED)) {
+		if (g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) ||
+		    g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
 			g_debug ("search cancelled");
 			return;
 		}
@@ -140,7 +139,7 @@ gs_search_page_get_search_cb (GObject *source_object,
 	}
 
 	/* remove old entries */
-	gs_container_remove_all (GTK_CONTAINER (self->list_box_search));
+	gs_widget_remove_all (self->list_box_search, (GsRemoveFunc) gtk_list_box_remove);
 
 	gs_stop_spinner (GTK_SPINNER (self->spinner_search));
 	gtk_stack_set_visible_child_name (GTK_STACK (self->stack_search), "results");
@@ -151,11 +150,9 @@ gs_search_page_get_search_cb (GObject *source_object,
 		g_signal_connect (app_row, "button-clicked",
 				  G_CALLBACK (gs_search_page_app_row_clicked_cb),
 				  self);
-		gtk_container_add (GTK_CONTAINER (self->list_box_search), app_row);
+		gtk_list_box_append (GTK_LIST_BOX (self->list_box_search), app_row);
 		gs_app_row_set_size_groups (GS_APP_ROW (app_row),
-					    self->sizegroup_image,
 					    self->sizegroup_name,
-					    self->sizegroup_desc,
 					    self->sizegroup_button_label,
 					    self->sizegroup_button_image);
 		gtk_widget_show (app_row);
@@ -179,8 +176,8 @@ gs_search_page_get_search_cb (GObject *source_object,
 		gtk_widget_set_margin_start (w, 20);
 		gtk_widget_set_margin_end (w, 20);
 		context = gtk_widget_get_style_context (w);
-		gtk_style_context_add_class (context, GTK_STYLE_CLASS_DIM_LABEL);
-		gtk_container_add (GTK_CONTAINER (self->list_box_search), w);
+		gtk_style_context_add_class (context, "dim-label");
+		gtk_list_box_append (GTK_LIST_BOX (self->list_box_search), w);
 		gtk_widget_show (w);
 	} else {
 		/* reset to default */
@@ -476,9 +473,7 @@ gs_search_page_dispose (GObject *object)
 {
 	GsSearchPage *self = GS_SEARCH_PAGE (object);
 
-	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
-	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button_label);
 	g_clear_object (&self->sizegroup_button_image);
 
@@ -534,9 +529,7 @@ gs_search_page_init (GsSearchPage *self)
 {
 	gtk_widget_init_template (GTK_WIDGET (self));
 
-	self->sizegroup_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_name = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
-	self->sizegroup_desc = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_label = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 	self->sizegroup_button_image = gtk_size_group_new (GTK_SIZE_GROUP_HORIZONTAL);
 

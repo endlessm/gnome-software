@@ -8,17 +8,16 @@
 
 #pragma once
 
-#include <gtk/gtk.h>
+#include <adwaita.h>
 
 #include "gnome-software-private.h"
 #include "gs-debug.h"
 
 #define GS_APPLICATION_TYPE (gs_application_get_type ())
 
-G_DECLARE_FINAL_TYPE (GsApplication, gs_application, GS, APPLICATION, GtkApplication)
+G_DECLARE_FINAL_TYPE (GsApplication, gs_application, GS, APPLICATION, AdwApplication)
 
 GsApplication	*gs_application_new			(GsDebug *debug);
-GsPluginLoader	*gs_application_get_plugin_loader	(GsApplication *application);
 gboolean	 gs_application_has_active_window	(GsApplication *application);
 void		 gs_application_emit_install_resources_done
 							(GsApplication *application,

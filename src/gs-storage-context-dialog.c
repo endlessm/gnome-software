@@ -28,11 +28,11 @@
 
 #include "config.h"
 
+#include <adwaita.h>
 #include <glib.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
-#include <handy.h>
 #include <locale.h>
 
 #include "gs-app.h"
@@ -42,7 +42,7 @@
 
 struct _GsStorageContextDialog
 {
-	HdyWindow		 parent_instance;
+	GsInfoWindow		 parent_instance;
 
 	GsApp			*app;  /* (nullable) (owned) */
 	gulong			 app_notify_handler;
@@ -55,7 +55,7 @@ struct _GsStorageContextDialog
 	GtkLabel		*manage_storage_label;
 };
 
-G_DEFINE_TYPE (GsStorageContextDialog, gs_storage_context_dialog, HDY_TYPE_WINDOW)
+G_DEFINE_TYPE (GsStorageContextDialog, gs_storage_context_dialog, GS_TYPE_INFO_WINDOW)
 
 typedef enum {
 	PROP_APP = 1,
@@ -97,7 +97,7 @@ add_size_row (GtkListBox   *list_box,
 	row = gs_context_dialog_row_new_text (size_bytes_str, GS_CONTEXT_DIALOG_ROW_IMPORTANCE_NEUTRAL,
 					      title, description);
 	gs_context_dialog_row_set_size_groups (GS_CONTEXT_DIALOG_ROW (row), lozenge_size_group, NULL, NULL);
-	gtk_list_box_insert (list_box, GTK_WIDGET (row), -1);
+	gtk_list_box_append (list_box, GTK_WIDGET (row));
 }
 
 static void
@@ -108,7 +108,7 @@ update_sizes_list (GsStorageContextDialog *self)
 	const gchar *title;
 	gboolean cache_row_added = FALSE;
 
-	gs_container_remove_all (GTK_CONTAINER (self->sizes_list));
+	gs_widget_remove_all (GTK_WIDGET (self->sizes_list), (GsRemoveFunc) gtk_list_box_remove);
 
 	/* UI state is undefined if app is not set. */
 	if (self->app == NULL)
@@ -194,35 +194,6 @@ app_notify_cb (GObject    *obj,
 	    pspec_name_quark == g_quark_from_static_string ("size-cache-data") ||
 	    pspec_name_quark == g_quark_from_static_string ("size-user-data"))
 		update_sizes_list (self);
-}
-
-static gboolean
-key_press_event_cb (GtkWidget            *sender,
-                    GdkEvent             *event,
-                    HdyPreferencesWindow *self)
-{
-	guint keyval;
-	GdkModifierType state;
-	GdkKeymap *keymap;
-	GdkEventKey *key_event = (GdkEventKey *) event;
-
-	gdk_event_get_state (event, &state);
-
-	keymap = gdk_keymap_get_for_display (gtk_widget_get_display (sender));
-
-	gdk_keymap_translate_keyboard_state (keymap,
-					     key_event->hardware_keycode,
-					     state,
-					     key_event->group,
-					     &keyval, NULL, NULL, NULL);
-
-	if (keyval == GDK_KEY_Escape) {
-		gtk_window_close (GTK_WINDOW (self));
-
-		return GDK_EVENT_STOP;
-	}
-
-	return GDK_EVENT_PROPAGATE;
 }
 
 static gboolean
@@ -348,7 +319,6 @@ gs_storage_context_dialog_class_init (GsStorageContextDialogClass *klass)
 	gtk_widget_class_bind_template_child (widget_class, GsStorageContextDialog, sizes_list);
 	gtk_widget_class_bind_template_child (widget_class, GsStorageContextDialog, manage_storage_label);
 
-	gtk_widget_class_bind_template_callback (widget_class, key_press_event_cb);
 	gtk_widget_class_bind_template_callback (widget_class, manage_storage_activate_link_cb);
 }
 

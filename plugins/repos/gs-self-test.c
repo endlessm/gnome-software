@@ -24,10 +24,7 @@ gs_plugins_repos_func (GsPluginLoader *plugin_loader)
 	app = gs_app_new ("testrepos.desktop");
 	gs_app_set_origin (app, "utopia");
 	gs_app_set_bundle_kind (app, AS_BUNDLE_KIND_PACKAGE);
-	plugin_job = gs_plugin_job_newv (GS_PLUGIN_ACTION_REFINE,
-					 "app", app,
-					 "refine-flags", GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME,
-					 NULL);
+	plugin_job = gs_plugin_job_refine_new_for_app (app, GS_PLUGIN_REFINE_FLAGS_REQUIRE_ORIGIN_HOSTNAME);
 	ret = gs_plugin_loader_job_action (plugin_loader, plugin_job, NULL, &error);
 	gs_test_flush_main_context ();
 	g_assert_no_error (error);
@@ -42,31 +39,23 @@ main (int argc, char **argv)
 	g_autofree gchar *reposdir = NULL;
 	g_autoptr(GError) error = NULL;
 	g_autoptr(GsPluginLoader) plugin_loader = NULL;
-	const gchar *allowlist[] = {
+	const gchar * const allowlist[] = {
 		"repos",
 		NULL
 	};
 
-	g_test_init (&argc, &argv,
-#if GLIB_CHECK_VERSION(2, 60, 0)
-		     G_TEST_OPTION_ISOLATE_DIRS,
-#endif
-		     NULL);
-	g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
+	gs_test_init (&argc, &argv);
 
 	/* dummy data */
 	reposdir = gs_test_get_filename (TESTDATADIR, "yum.repos.d");
 	g_assert (reposdir != NULL);
 	g_setenv ("GS_SELF_TEST_REPOS_DIR", reposdir, TRUE);
 
-	/* only critical and error are fatal */
-	g_log_set_fatal_mask (NULL, G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL);
-
 	/* we can only load this once per process */
 	plugin_loader = gs_plugin_loader_new ();
 	gs_plugin_loader_add_location (plugin_loader, LOCALPLUGINDIR);
 	ret = gs_plugin_loader_setup (plugin_loader,
-				      (gchar**) allowlist,
+				      allowlist,
 				      NULL,
 				      NULL,
 				      &error);

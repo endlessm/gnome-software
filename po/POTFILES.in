@@ -10,6 +10,7 @@ src/gs-app-addon-row.c
 src/gs-app-addon-row.ui
 src/gs-app-details-page.c
 src/gs-app-details-page.ui
+src/gs-app-reviews-dialog.ui
 src/gs-app-version-history-dialog.ui
 src/gs-app-version-history-row.c
 src/gs-app-version-history-row.ui
@@ -40,7 +41,6 @@ src/gs-extras-page.ui
 src/gs-feature-tile.c
 src/gs-featured-carousel.c
 src/gs-featured-carousel.ui
-src/gs-first-run-dialog.ui
 src/gs-hardware-support-context-dialog.c
 src/gs-hardware-support-context-dialog.ui
 src/gs-installed-page.c
@@ -61,7 +61,6 @@ src/gs-overview-page.c
 src/gs-overview-page.ui
 lib/gs-plugin-loader.c
 src/gs-page.c
-src/gs-picture.c
 src/gs-prefs-dialog.ui
 src/gs-removal-dialog.c
 src/gs-removal-dialog.ui
@@ -79,6 +78,7 @@ src/gs-safety-context-dialog.c
 src/gs-safety-context-dialog.ui
 src/gs-screenshot-carousel.ui
 src/gs-screenshot-image.c
+src/gs-screenshot-image.ui
 src/gs-search-page.c
 src/gs-search-page.ui
 src/gs-shell.c
@@ -111,6 +111,7 @@ plugins/flatpak/gs-plugin-flatpak.c
 plugins/fwupd/gs-fwupd-app.c
 plugins/fwupd/gs-plugin-fwupd.c
 plugins/fwupd/org.gnome.Software.Plugin.Fwupd.metainfo.xml.in
+plugins/packagekit/gs-packagekit-task.c
 plugins/packagekit/gs-plugin-packagekit.c
 plugins/rpm-ostree/gs-plugin-rpm-ostree.c
 plugins/snap/gs-plugin-snap.c

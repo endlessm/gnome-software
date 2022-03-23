@@ -1,6 +1,6 @@
 %global glib2_version 2.61.1
 %global gtk3_version 3.22.4
-%global json_glib_version 1.2.0
+%global json_glib_version 1.6.0
 %global packagekit_version 1.1.1
 %global appstream_version 0.14.0
 %global libsoup_version 2.52.0
@@ -28,7 +28,6 @@ BuildRequires: desktop-file-utils
 BuildRequires: fwupd-devel >= %{fwupd_version}
 BuildRequires: glib2-devel >= %{glib2_version}
 BuildRequires: gsettings-desktop-schemas-devel >= %{gsettings_desktop_schemas_version}
-BuildRequires: gspell-devel
 BuildRequires: gtk3-devel >= %{gtk3_version}
 BuildRequires: gtk-doc
 BuildRequires: json-glib-devel >= %{json_glib_version}
@@ -141,8 +140,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{_mandir}/man1/gnome-software.1.gz
 %{_datadir}/icons/hicolor/*/apps/org.gnome.Software.svg
 %{_datadir}/icons/hicolor/symbolic/apps/org.gnome.Software-symbolic.svg
-%{_datadir}/icons/hicolor/scalable/actions/carousel-arrow-next-symbolic.svg
-%{_datadir}/icons/hicolor/scalable/actions/carousel-arrow-previous-symbolic.svg
 %{_datadir}/icons/hicolor/scalable/status/software-installed-symbolic.svg
 %{_datadir}/gnome-software/featured-*.svg
 %{_datadir}/gnome-software/featured-*.jpg
@@ -158,19 +155,15 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/*.desktop
 %{gs_plugin_dir}/libgs_plugin_fwupd.so
 %{gs_plugin_dir}/libgs_plugin_generic-updates.so
 %{gs_plugin_dir}/libgs_plugin_hardcoded-blocklist.so
-%{gs_plugin_dir}/libgs_plugin_hardcoded-popular.so
 %{gs_plugin_dir}/libgs_plugin_icons.so
 %{gs_plugin_dir}/libgs_plugin_modalias.so
 %{gs_plugin_dir}/libgs_plugin_os-release.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-refine-repos.so
-%{gs_plugin_dir}/libgs_plugin_packagekit-refresh.so
 %{gs_plugin_dir}/libgs_plugin_packagekit.so
 %{gs_plugin_dir}/libgs_plugin_provenance-license.so
 %{gs_plugin_dir}/libgs_plugin_provenance.so
 %{gs_plugin_dir}/libgs_plugin_repos.so
 %{gs_plugin_dir}/libgs_plugin_rewrite-resource.so
-%{gs_plugin_dir}/libgs_plugin_systemd-updates.so
-%{_sysconfdir}/xdg/autostart/gnome-software-service.desktop
+%{_sysconfdir}/xdg/autostart/org.gnome.Software.desktop
 %{_datadir}/app-info/xmls/org.gnome.Software.Featured.xml
 %{_datadir}/dbus-1/services/org.freedesktop.PackageKit.service
 %{_datadir}/dbus-1/services/org.gnome.Software.service

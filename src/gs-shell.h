@@ -9,8 +9,8 @@
 
 #pragma once
 
+#include <adwaita.h>
 #include <gtk/gtk.h>
-#include <handy.h>
 
 #include "gnome-software-private.h"
 
@@ -18,7 +18,7 @@ G_BEGIN_DECLS
 
 #define GS_TYPE_SHELL (gs_shell_get_type ())
 
-G_DECLARE_FINAL_TYPE (GsShell, gs_shell, GS, SHELL, HdyApplicationWindow)
+G_DECLARE_FINAL_TYPE (GsShell, gs_shell, GS, SHELL, AdwApplicationWindow)
 
 typedef enum {
 	GS_SHELL_MODE_UNKNOWN,
@@ -84,5 +84,7 @@ void		 gs_shell_setup			(GsShell	*shell,
 void		 gs_shell_show_notification	(GsShell	*shell,
 						 const gchar	*title);
 gboolean	 gs_shell_get_is_narrow		(GsShell	*shell);
+void		 gs_shell_show_metainfo		(GsShell	*shell,
+						 GFile		*file);
 
 G_END_DECLS

@@ -10,19 +10,15 @@
     <property name="height_request">400</property>
     <property name="use_header_bar">1</property>
     <child internal-child="headerbar">
-      <object class="HdyHeaderBar"/>
+      <object class="AdwHeaderBar"/>
     </child>
-    <child internal-child="vbox">
+    <child internal-child="content_area">
       <object class="GtkBox">
-        <property name="visible">True</property>
         <property name="orientation">vertical</property>
-        <property name="border_width">0</property>
         <child>
           <object class="GtkScrolledWindow">
-            <property name="visible">True</property>
             <child>
-              <object class="HdyClamp">
-                <property name="visible">True</property>
+              <object class="AdwClamp">
                 <property name="vexpand">True</property>
                 <property name="hexpand">False</property>
                 <property name="margin-start">12</property>
@@ -31,10 +27,10 @@
                 <property name="margin-top">18</property>
                 <child>
                   <object class="GtkListBox" id="listbox">
-                    <property name="visible">True</property>
                     <property name="selection-mode">none</property>
+                    <property name="valign">start</property>
                     <style>
-                      <class name="content"/>
+                      <class name="boxed-list"/>
                     </style>
                   </object>
                 </child>

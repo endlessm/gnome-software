@@ -40,9 +40,7 @@ struct _GsUpdatesSection
 	GCancellable		*cancellable;
 	GsPage			*page;
 	GsPluginLoader		*plugin_loader;
-	GtkSizeGroup		*sizegroup_image;
 	GtkSizeGroup		*sizegroup_name;
-	GtkSizeGroup		*sizegroup_desc;
 	GtkSizeGroup		*sizegroup_button_label;
 	GtkSizeGroup		*sizegroup_button_image;
 	GtkSizeGroup		*sizegroup_header;
@@ -66,15 +64,15 @@ gs_updates_section_get_list (GsUpdatesSection *self)
 static gboolean
 _listbox_keynav_failed_cb (GsUpdatesSection *self, GtkDirectionType direction, GtkListBox *listbox)
 {
-	GtkWidget *toplevel = gtk_widget_get_toplevel (GTK_WIDGET (listbox));
+	GtkRoot *root = gtk_widget_get_root (GTK_WIDGET (listbox));
 
-	if (!toplevel)
+	if (!root)
 		return FALSE;
 
 	if (direction != GTK_DIR_UP && direction != GTK_DIR_DOWN)
 		return FALSE;
 
-	return gtk_widget_child_focus (toplevel, direction == GTK_DIR_UP ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
+	return gtk_widget_child_focus (GTK_WIDGET (root), direction == GTK_DIR_UP ? GTK_DIR_TAB_BACKWARD : GTK_DIR_TAB_FORWARD);
 }
 
 static void
@@ -108,7 +106,7 @@ _row_unrevealed_cb (GObject *row, GParamSpec *pspec, gpointer data)
 
 	gs_app_list_remove (self->list, gs_app_row_get_app (GS_APP_ROW (row)));
 
-	gtk_widget_destroy (GTK_WIDGET (row));
+	gtk_list_box_remove (GTK_LIST_BOX (self->listbox), GTK_WIDGET (row));
 
 	if (!gs_app_list_length (self->list))
 		gtk_widget_hide (widget);
@@ -142,13 +140,11 @@ gs_updates_section_add_app (GsUpdatesSection *self, GsApp *app)
 	g_signal_connect (app_row, "button-clicked",
 			  G_CALLBACK (_app_row_button_clicked_cb),
 			  self);
-	gtk_container_add (GTK_CONTAINER (self), app_row);
+	gtk_list_box_append (GTK_LIST_BOX (self->listbox), app_row);
 	gs_app_list_add (self->list, app);
 
 	gs_app_row_set_size_groups (GS_APP_ROW (app_row),
-				    self->sizegroup_image,
 				    self->sizegroup_name,
-				    self->sizegroup_desc,
 				    self->sizegroup_button_label,
 				    self->sizegroup_button_image);
 	g_signal_connect_object (app, "notify::state",
@@ -163,15 +159,9 @@ gs_updates_section_add_app (GsUpdatesSection *self, GsApp *app)
 void
 gs_updates_section_remove_all (GsUpdatesSection *self)
 {
-	g_autoptr(GList) children = NULL;
-	children = gtk_container_get_children (GTK_CONTAINER (self));
-	for (GList *l = children; l != NULL; l = l->next) {
-		GtkWidget *w = GTK_WIDGET (l->data);
-		/* Destroying, rather than just removing, prevents the ::unrevealed
-		 * signal from being emitted, which would cause unfortunate reentrancy.
-		 */
-		gtk_widget_destroy (w);
-	}
+	GtkWidget *child;
+	while ((child = gtk_widget_get_first_child (self->listbox)) != NULL)
+		gtk_list_box_remove (GTK_LIST_BOX (self->listbox), child);
 	gs_app_list_remove_all (self->list);
 	gtk_widget_hide (GTK_WIDGET (self));
 }
@@ -331,13 +321,13 @@ _update_buttons (GsUpdatesSection *self)
 		gtk_widget_show (GTK_WIDGET (self->button_stack));
 		/* TRANSLATORS: This is the button for installing all
 		 * offline updates */
-		gtk_button_set_label (GTK_BUTTON (self->button_update), _("Restart & Update"));
+		gs_progress_button_set_label (GS_PROGRESS_BUTTON (self->button_update), _("Restart & Update"));
 	} else if (self->kind == GS_UPDATES_SECTION_KIND_ONLINE) {
 		gtk_stack_set_visible_child_name (GTK_STACK (self->button_stack), "update");
 		gtk_widget_show (GTK_WIDGET (self->button_stack));
 		/* TRANSLATORS: This is the button for upgrading all
 		 * online-updatable applications */
-		gtk_button_set_label (GTK_BUTTON (self->button_update), _("Update All"));
+		gs_progress_button_set_label (GS_PROGRESS_BUTTON (self->button_update), _("Update All"));
 	} else {
 		gtk_widget_hide (GTK_WIDGET (self->button_stack));
 	}
@@ -412,7 +402,8 @@ _download_finished_cb (GObject *object, GAsyncResult *res, gpointer user_data)
 	/* get result */
 	list = gs_plugin_loader_job_process_finish (GS_PLUGIN_LOADER (object), res, &error);
 	if (list == NULL) {
-		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED))
+		if (!g_error_matches (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_CANCELLED) &&
+		    !g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
 			g_warning ("failed to download updates: %s", error->message);
 	}
 
@@ -524,56 +515,6 @@ gs_updates_section_show (GtkWidget *widget)
 }
 
 static void
-gs_updates_section_forall (GtkContainer *container,
-			   gboolean include_internals,
-			   GtkCallback callback,
-			   gpointer callback_data)
-{
-	GsUpdatesSection *self = GS_UPDATES_SECTION (container);
-
-	if (include_internals) {
-		GTK_CONTAINER_CLASS (gs_updates_section_parent_class)->forall (GTK_CONTAINER (self), include_internals, callback, callback_data);
-
-		return;
-	}
-
-	if (self->listbox)
-		GTK_CONTAINER_GET_CLASS (self->listbox)->forall (GTK_CONTAINER (self->listbox), include_internals, callback, callback_data);
-}
-
-static void
-gs_updates_section_add (GtkContainer *container, GtkWidget *child)
-{
-	GsUpdatesSection *self = GS_UPDATES_SECTION (container);
-
-	if (self->section_header == NULL ||
-	    self->description == NULL ||
-	    self->listbox_box == NULL) {
-		/* Add internal children, used when building the widget. */
-		GTK_CONTAINER_CLASS (gs_updates_section_parent_class)->add (container, child);
-	} else {
-		/* Add external children to the listbox. */
-		gtk_container_add (GTK_CONTAINER (self->listbox), child);
-	}
-}
-
-static void
-gs_updates_section_remove (GtkContainer *container, GtkWidget *child)
-{
-	GsUpdatesSection *self = GS_UPDATES_SECTION (container);
-
-	if (child == self->section_header ||
-	    child == self->description ||
-	    child == self->listbox_box) {
-		/* Remove internal children, used when destroying the widget. */
-		GTK_CONTAINER_CLASS (gs_updates_section_parent_class)->remove (container, child);
-	} else {
-		/* Remove external children from the listbox. */
-		gtk_container_remove (GTK_CONTAINER (self->listbox), child);
-	}
-}
-
-static void
 gs_updates_section_get_property (GObject    *object,
                                  guint       prop_id,
                                  GValue     *value,
@@ -618,9 +559,7 @@ gs_updates_section_dispose (GObject *object)
 	g_clear_object (&self->list);
 	g_clear_object (&self->plugin_loader);
 	g_clear_object (&self->page);
-	g_clear_object (&self->sizegroup_image);
 	g_clear_object (&self->sizegroup_name);
-	g_clear_object (&self->sizegroup_desc);
 	g_clear_object (&self->sizegroup_button_label);
 	g_clear_object (&self->sizegroup_button_image);
 	g_clear_object (&self->sizegroup_header);
@@ -637,16 +576,11 @@ gs_updates_section_class_init (GsUpdatesSectionClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-	GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
 	object_class->get_property = gs_updates_section_get_property;
 	object_class->set_property = gs_updates_section_set_property;
 	object_class->dispose = gs_updates_section_dispose;
 	widget_class->show = gs_updates_section_show;
-
-	container_class->add = gs_updates_section_add;
-	container_class->remove = gs_updates_section_remove;
-	container_class->forall = gs_updates_section_forall;
 
 	/**
 	 * GsUpdatesSection:is-narrow:
@@ -686,18 +620,14 @@ gs_updates_section_class_init (GsUpdatesSectionClass *klass)
 
 void
 gs_updates_section_set_size_groups (GsUpdatesSection *self,
-				    GtkSizeGroup *image,
 				    GtkSizeGroup *name,
-				    GtkSizeGroup *desc,
 				    GtkSizeGroup *button_label,
 				    GtkSizeGroup *button_image,
 				    GtkSizeGroup *header)
 {
 	g_return_if_fail (GS_IS_UPDATES_SECTION (self));
 
-	g_set_object (&self->sizegroup_image, image);
 	g_set_object (&self->sizegroup_name, name);
-	g_set_object (&self->sizegroup_desc, desc);
 	g_set_object (&self->sizegroup_button_label, button_label);
 	g_set_object (&self->sizegroup_button_image, button_image);
 	g_set_object (&self->sizegroup_header, header);

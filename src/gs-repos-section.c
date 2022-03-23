@@ -15,15 +15,14 @@
 
 struct _GsReposSection
 {
-	HdyPreferencesGroup	 parent_instance;
+	AdwPreferencesGroup	 parent_instance;
 	GtkWidget		*title;
 	GtkListBox		*list;
-	GsPluginLoader		*plugin_loader;
 	gchar			*sort_key;
 	gboolean		 always_allow_enable_disable;
 };
 
-G_DEFINE_TYPE (GsReposSection, gs_repos_section, HDY_TYPE_PREFERENCES_GROUP)
+G_DEFINE_TYPE (GsReposSection, gs_repos_section, ADW_TYPE_PREFERENCES_GROUP)
 
 enum {
 	SIGNAL_REMOVE_CLICKED,
@@ -82,7 +81,6 @@ gs_repos_section_finalize (GObject *object)
 {
 	GsReposSection *self = GS_REPOS_SECTION (object);
 
-	g_clear_object (&self->plugin_loader);
 	g_free (self->sort_key);
 
 	G_OBJECT_CLASS (gs_repos_section_parent_class)->finalize (object);
@@ -123,9 +121,9 @@ gs_repos_section_init (GsReposSection *self)
 	gtk_list_box_set_sort_func (self->list, _list_sort_func, self, NULL);
 
 	style_context = gtk_widget_get_style_context (GTK_WIDGET (self->list));
-	gtk_style_context_add_class (style_context, "content");
+	gtk_style_context_add_class (style_context, "boxed-list");
 
-	gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (self->list));
+	adw_preferences_group_add (ADW_PREFERENCES_GROUP (self), GTK_WIDGET (self->list));
 
 	g_signal_connect (self->list, "row-activated",
 			  G_CALLBACK (gs_repos_section_row_activated_cb), self);
@@ -133,11 +131,10 @@ gs_repos_section_init (GsReposSection *self)
 
 /*
  * gs_repos_section_new:
- * @plugin_loader: a #GsPluginLoader
  * @always_allow_enable_disable: always allow enable/disable of the repos in this section
  *
- * Creates a new #GsReposSection. The %plugin_loader is passed
- * to each #GsRepoRow, the same as the @always_allow_enable_disable.
+ * Creates a new #GsReposSection. @always_allow_enable_disable is passed to each
+ * #GsRepoRow.
  *
  * The @always_allow_enable_disable, when %TRUE, means that every repo in this section
  * can be enabled/disabled by the user, if supported by the related plugin, regardless
@@ -146,16 +143,12 @@ gs_repos_section_init (GsReposSection *self)
  * Returns: (transfer full): a newly created #GsReposSection
  */
 GtkWidget *
-gs_repos_section_new (GsPluginLoader *plugin_loader,
-		      gboolean always_allow_enable_disable)
+gs_repos_section_new (gboolean always_allow_enable_disable)
 {
 	GsReposSection *self;
 
-	g_return_val_if_fail (GS_IS_PLUGIN_LOADER (plugin_loader), NULL);
-
 	self = g_object_new (GS_TYPE_REPOS_SECTION, NULL);
 
-	self->plugin_loader = g_object_ref (plugin_loader);
 	self->always_allow_enable_disable = always_allow_enable_disable;
 
 	return GTK_WIDGET (self);
@@ -176,7 +169,7 @@ gs_repos_section_add_repo (GsReposSection *self,
 	if (!self->sort_key)
 		self->sort_key = g_strdup (gs_app_get_metadata_item (repo, "GnomeSoftware::SortKey"));
 
-	row = gs_repo_row_new (self->plugin_loader, repo, self->always_allow_enable_disable);
+	row = gs_repo_row_new (repo, self->always_allow_enable_disable);
 
 	g_signal_connect (row, "remove-clicked",
 	                  G_CALLBACK (repo_remove_clicked_cb), self);

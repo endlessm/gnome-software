@@ -15,7 +15,6 @@
 
 typedef struct
 {
-	GsPluginLoader	*plugin_loader; /* owned */
 	GsApp		*repo;
 	GtkWidget	*name_label;
 	GtkWidget	*hostname_label;
@@ -44,10 +43,12 @@ static void
 refresh_ui (GsRepoRow *row)
 {
 	GsRepoRowPrivate *priv = gs_repo_row_get_instance_private (row);
+	GtkListBox *listbox;
 	gboolean active = FALSE;
 	gboolean state_sensitive = FALSE;
 	gboolean busy = priv->busy_counter> 0;
-	gboolean is_system_repo;
+	gboolean is_provenance;
+	gboolean is_compulsory;
 
 	if (priv->repo == NULL) {
 		gtk_widget_set_sensitive (priv->disable_switch, FALSE);
@@ -77,18 +78,21 @@ refresh_ui (GsRepoRow *row)
 		break;
 	case GS_APP_STATE_UNAVAILABLE:
 		g_signal_handler_unblock (priv->disable_switch, priv->switch_handler_id);
-		gtk_widget_destroy (GTK_WIDGET (row));
+		listbox = GTK_LIST_BOX (gtk_widget_get_parent (GTK_WIDGET (row)));
+		g_assert (listbox != NULL);
+		gtk_list_box_remove (listbox, GTK_WIDGET (row));
 		return;
 	default:
 		state_sensitive = TRUE;
 		break;
 	}
 
-	is_system_repo = gs_app_has_quirk (priv->repo, GS_APP_QUIRK_PROVENANCE);
+	is_provenance = gs_app_has_quirk (priv->repo, GS_APP_QUIRK_PROVENANCE);
+	is_compulsory = gs_app_has_quirk (priv->repo, GS_APP_QUIRK_COMPULSORY);
 
 	/* Disable for the system repos, if installed */
-	gtk_widget_set_sensitive (priv->disable_switch, priv->supports_enable_disable && (state_sensitive || !is_system_repo || priv->always_allow_enable_disable));
-	gtk_widget_set_visible (priv->remove_button, priv->supports_remove && !is_system_repo);
+	gtk_widget_set_sensitive (priv->disable_switch, priv->supports_enable_disable && (state_sensitive || !is_compulsory || priv->always_allow_enable_disable));
+	gtk_widget_set_visible (priv->remove_button, priv->supports_remove && !is_provenance && !is_compulsory);
 
 	/* Set only the 'state' to visually indicate the state is not saved yet */
 	if (busy)
@@ -191,7 +195,7 @@ static void
 gs_repo_row_set_repo (GsRepoRow *self, GsApp *repo)
 {
 	GsRepoRowPrivate *priv = gs_repo_row_get_instance_private (self);
-	GsPlugin *plugin;
+	g_autoptr(GsPlugin) plugin = NULL;
 	g_autofree gchar *comment = NULL;
 	const gchar *tmp;
 
@@ -202,7 +206,7 @@ gs_repo_row_set_repo (GsRepoRow *self, GsApp *repo)
 	                         G_CALLBACK (repo_state_changed_cb),
 	                         self, 0);
 
-	plugin = gs_plugin_loader_find_plugin (priv->plugin_loader, gs_app_get_management_plugin (repo));
+	plugin = gs_app_dup_management_plugin (repo);
 	priv->supports_remove = plugin != NULL && gs_plugin_get_action_supported (plugin, GS_PLUGIN_ACTION_REMOVE_REPO);
 	priv->supports_enable_disable = plugin != NULL &&
 		gs_plugin_get_action_supported (plugin, GS_PLUGIN_ACTION_ENABLE_REPO) &&
@@ -214,11 +218,11 @@ gs_repo_row_set_repo (GsRepoRow *self, GsApp *repo)
 
 	tmp = gs_app_get_url (repo, AS_URL_KIND_HOMEPAGE);
 	if (tmp != NULL && *tmp != '\0') {
-		g_autoptr(SoupURI) uri = NULL;
+		g_autoptr(GUri) uri = NULL;
 
-		uri = soup_uri_new (tmp);
-		if (uri && soup_uri_get_host (uri) != NULL && *soup_uri_get_host (uri) != '\0') {
-			gtk_label_set_label (GTK_LABEL (priv->hostname_label), soup_uri_get_host (uri));
+		uri = g_uri_parse (tmp, SOUP_HTTP_URI_FLAGS, NULL);
+		if (uri && g_uri_get_host (uri) != NULL && *g_uri_get_host (uri) != '\0') {
+			gtk_label_set_label (GTK_LABEL (priv->hostname_label), g_uri_get_host (uri));
 			gtk_widget_set_visible (priv->hostname_label, TRUE);
 		}
 	}
@@ -272,7 +276,7 @@ gs_repo_row_remove_button_clicked_cb (GtkWidget *button,
 }
 
 static void
-gs_repo_row_destroy (GtkWidget *object)
+gs_repo_row_dispose (GObject *object)
 {
 	GsRepoRow *self = GS_REPO_ROW (object);
 	GsRepoRowPrivate *priv = gs_repo_row_get_instance_private (self);
@@ -287,9 +291,7 @@ gs_repo_row_destroy (GtkWidget *object)
 		priv->refresh_idle_id = 0;
 	}
 
-	g_clear_object (&priv->plugin_loader);
-
-	GTK_WIDGET_CLASS (gs_repo_row_parent_class)->destroy (object);
+	G_OBJECT_CLASS (gs_repo_row_parent_class)->dispose (object);
 }
 
 static void
@@ -301,8 +303,8 @@ gs_repo_row_init (GsRepoRow *self)
 	gtk_widget_init_template (GTK_WIDGET (self));
 	priv->switch_handler_id = g_signal_connect (priv->disable_switch, "notify::active",
 						    G_CALLBACK (disable_switch_clicked_cb), self);
-	image = gtk_image_new_from_icon_name ("user-trash-symbolic", GTK_ICON_SIZE_BUTTON);
-	gtk_button_set_image (GTK_BUTTON (priv->remove_button), image);
+	image = gtk_image_new_from_icon_name ("user-trash-symbolic");
+	gtk_button_set_child (GTK_BUTTON (priv->remove_button), image);
 	g_signal_connect (priv->remove_button, "clicked",
 		G_CALLBACK (gs_repo_row_remove_button_clicked_cb), self);
 }
@@ -313,7 +315,7 @@ gs_repo_row_class_init (GsRepoRowClass *klass)
 	GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-	widget_class->destroy = gs_repo_row_destroy;
+	object_class->dispose = gs_repo_row_dispose;
 
 	signals [SIGNAL_REMOVE_CLICKED] =
 		g_signal_new ("remove-clicked",
@@ -340,12 +342,8 @@ gs_repo_row_class_init (GsRepoRowClass *klass)
 
 /*
  * gs_repo_row_new:
- * @plugin_loader: a #GsPluginLoader
  * @repo: a #GsApp to represent the repo in the new row
  * @always_allow_enable_disable: always allow enabled/disable of the @repo
- *
- * The @plugin_loader is used to check which operations the associated plugin
- * for the @repo can do and which not, to show only relevant buttons on the row.
  *
  * The @always_allow_enable_disable, when %TRUE, means that the @repo in this row
  * can be always enabled/disabled by the user, if supported by the related plugin,
@@ -354,13 +352,11 @@ gs_repo_row_class_init (GsRepoRowClass *klass)
  * Returns: (transfer full): a newly created #GsRepoRow
  */
 GtkWidget *
-gs_repo_row_new (GsPluginLoader	*plugin_loader,
-		 GsApp *repo,
+gs_repo_row_new (GsApp *repo,
 		 gboolean always_allow_enable_disable)
 {
 	GsRepoRow *row = g_object_new (GS_TYPE_REPO_ROW, NULL);
 	GsRepoRowPrivate *priv = gs_repo_row_get_instance_private (row);
-	priv->plugin_loader = g_object_ref (plugin_loader);
 	priv->always_allow_enable_disable = always_allow_enable_disable;
 	gs_repo_row_set_repo (row, repo);
 	return GTK_WIDGET (row);

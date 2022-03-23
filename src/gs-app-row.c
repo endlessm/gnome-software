@@ -16,7 +16,6 @@
 #include "gs-star-widget.h"
 #include "gs-progress-button.h"
 #include "gs-common.h"
-#include "gs-folders.h"
 
 typedef struct
 {
@@ -28,8 +27,8 @@ typedef struct
 	GtkWidget	*version_current_label;
 	GtkWidget	*version_arrow_label;
 	GtkWidget	*version_update_label;
+	GtkWidget	*system_updates_label; /* Only for "System Updates" app */
 	GtkWidget	*star;
-	GtkWidget	*description_box;
 	GtkWidget	*description_label;
 	GtkWidget	*button_box;
 	GtkWidget	*button_revealer;
@@ -86,7 +85,7 @@ gs_app_row_get_description (GsAppRow *app_row)
 
 	/* convert the markdown update description into PangoMarkup */
 	if (priv->show_update) {
-		tmp = gs_app_get_update_details (priv->app);
+		tmp = gs_app_get_update_details_markup (priv->app);
 		if (tmp != NULL && tmp[0] != '\0')
 			return g_string_new (tmp);
 	}
@@ -415,12 +414,19 @@ gs_app_row_actually_refresh (GsAppRow *app_row)
 		}
 	}
 
+	if (priv->show_update && gs_app_get_special_kind (priv->app) == GS_APP_SPECIAL_KIND_OS_UPDATE) {
+		gtk_label_set_label (GTK_LABEL (priv->system_updates_label), gs_app_get_summary (priv->app));
+		gtk_widget_show (priv->system_updates_label);
+	} else {
+		gtk_widget_hide (priv->system_updates_label);
+	}
+
 	/* pixbuf */
 	icon = gs_app_get_icon_for_size (priv->app,
 					 gtk_image_get_pixel_size (GTK_IMAGE (priv->image)),
 					 gtk_widget_get_scale_factor (priv->image),
 					 "system-component-application");
-	gtk_image_set_from_gicon (GTK_IMAGE (priv->image), icon, GTK_ICON_SIZE_DIALOG);
+	gtk_image_set_from_gicon (GTK_IMAGE (priv->image), icon);
 
 	context = gtk_widget_get_style_context (priv->image);
 	if (missing_search_result)
@@ -475,16 +481,6 @@ gs_app_row_actually_refresh (GsAppRow *app_row)
 	/* show the right size */
 	if (priv->show_installed_size) {
 		size = gs_app_get_size_installed (priv->app);
-	} else if (priv->show_update) {
-		switch (gs_app_get_state (priv->app)) {
-		case GS_APP_STATE_UPDATABLE:
-		case GS_APP_STATE_UPDATABLE_LIVE:
-		case GS_APP_STATE_INSTALLING:
-			size = gs_app_get_size_download (priv->app);
-			break;
-		default:
-			break;
-		}
 	}
 	if (size != GS_APP_SIZE_UNKNOWABLE && size != 0) {
 		g_autofree gchar *sizestr = NULL;
@@ -522,13 +518,6 @@ gs_app_row_actually_refresh (GsAppRow *app_row)
 				gtk_widget_get_visible (priv->label_installed) ||
 				gtk_widget_get_visible (priv->label_warning));
 
-	gtk_widget_set_visible (priv->description_box,
-				gtk_widget_get_visible (priv->box_tag) ||
-				gtk_widget_get_visible (priv->description_label));
-
-	gtk_widget_set_hexpand (priv->name_box,
-				!gtk_widget_get_visible (priv->description_box));
-
 	gtk_label_set_max_width_chars (GTK_LABEL (priv->name_label),
 				       gtk_widget_get_visible (priv->description_label) ? 20 : -1);
 }
@@ -557,7 +546,7 @@ gs_app_row_unreveal (GsAppRow *app_row)
 
 	g_return_if_fail (GS_IS_APP_ROW (app_row));
 
-	child = gtk_bin_get_child (GTK_BIN (app_row));
+	child = gtk_list_box_row_get_child (GTK_LIST_BOX_ROW (app_row));
 	gtk_widget_set_sensitive (child, FALSE);
 
 	revealer = gtk_revealer_new ();
@@ -565,11 +554,10 @@ gs_app_row_unreveal (GsAppRow *app_row)
 	gtk_widget_show (revealer);
 
 	g_object_ref (child);
-	gtk_container_remove (GTK_CONTAINER (app_row), child);
-	gtk_container_add (GTK_CONTAINER (revealer), child);
+	gtk_list_box_row_set_child (GTK_LIST_BOX_ROW (app_row), revealer);
+	gtk_revealer_set_child (GTK_REVEALER (revealer), child);
 	g_object_unref (child);
 
-	gtk_container_add (GTK_CONTAINER (app_row), revealer);
 	g_signal_connect (revealer, "notify::child-revealed",
 			  G_CALLBACK (child_unrevealed), app_row);
 	gtk_revealer_set_reveal_child (GTK_REVEALER (revealer), FALSE);
@@ -699,7 +687,7 @@ gs_app_row_set_property (GObject *object, guint prop_id, const GValue *value, GP
 }
 
 static void
-gs_app_row_destroy (GtkWidget *object)
+gs_app_row_dispose (GObject *object)
 {
 	GsAppRow *app_row = GS_APP_ROW (object);
 	GsAppRowPrivate *priv = gs_app_row_get_instance_private (app_row);
@@ -713,7 +701,7 @@ gs_app_row_destroy (GtkWidget *object)
 		priv->pending_refresh_id = 0;
 	}
 
-	GTK_WIDGET_CLASS (gs_app_row_parent_class)->destroy (object);
+	G_OBJECT_CLASS (gs_app_row_parent_class)->dispose (object);
 }
 
 static void
@@ -724,7 +712,7 @@ gs_app_row_class_init (GsAppRowClass *klass)
 
 	object_class->get_property = gs_app_row_get_property;
 	object_class->set_property = gs_app_row_set_property;
-	widget_class->destroy = gs_app_row_destroy;
+	object_class->dispose = gs_app_row_dispose;
 
 	/**
 	 * GsAppRow:app:
@@ -827,8 +815,8 @@ gs_app_row_class_init (GsAppRowClass *klass)
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_current_label);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_arrow_label);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, version_update_label);
+	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, system_updates_label);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, star);
-	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, description_box);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, description_label);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, button_box);
 	gtk_widget_class_bind_template_child_private (widget_class, GsAppRow, button_revealer);
@@ -855,7 +843,6 @@ gs_app_row_init (GsAppRow *app_row)
 
 	priv->show_description = TRUE;
 
-	gtk_widget_set_has_window (GTK_WIDGET (app_row), FALSE);
 	gtk_widget_init_template (GTK_WIDGET (app_row));
 
 	g_signal_connect (priv->button, "clicked",
@@ -864,20 +851,14 @@ gs_app_row_init (GsAppRow *app_row)
 
 void
 gs_app_row_set_size_groups (GsAppRow *app_row,
-			    GtkSizeGroup *image,
 			    GtkSizeGroup *name,
-			    GtkSizeGroup *desc,
 			    GtkSizeGroup *button_label,
 			    GtkSizeGroup *button_image)
 {
 	GsAppRowPrivate *priv = gs_app_row_get_instance_private (app_row);
 
-	if (image != NULL)
-		gtk_size_group_add_widget (image, priv->image);
 	if (name != NULL)
 		gtk_size_group_add_widget (name, priv->name_box);
-	if (desc != NULL)
-		gtk_size_group_add_widget (desc, priv->description_box);
 	gs_progress_button_set_size_groups (GS_PROGRESS_BUTTON (priv->button), button_label, button_image);
 }
 
