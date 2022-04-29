@@ -474,9 +474,8 @@ gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
 
 	/* We need to check for the app's origin, otherwise we'd be
 	 * blocklisting matching apps coming from any repo */
-	if (g_strcmp0 (hostname, "sdk.gnome.org") == 0 ||
-		   g_strcmp0 (hostname, "flathub.org") == 0 ||
-		   g_str_has_suffix (hostname, ".flathub.org")) {
+	if (g_strcmp0 (hostname, "flathub.org") == 0 ||
+	    g_str_has_suffix (hostname, ".flathub.org")) {
 
 		if (g_strv_contains (duplicated_apps, app_name)) {
 			g_debug ("Blocklisting '%s': app is in the duplicated list",
