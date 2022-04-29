@@ -434,66 +434,6 @@ gs_plugin_eos_blocklist_kapp_if_needed (GsPlugin *plugin, GsApp *app)
 	return FALSE;
 }
 
-static gboolean
-gs_plugin_eos_blocklist_app_for_remote_if_needed (GsPlugin *plugin,
-						  GsApp *app)
-{
-	gboolean do_blocklist = FALSE;
-
-	static const char *duplicated_apps[] = {
-		"com.google.Chrome",
-		"com.stencyl.Game",
-		"org.learningequality.KALite",
-		"org.snap4arduino.App",
-		NULL
-	};
-
-	static const char *core_apps[] = {
-		"org.gnome.Evince",
-		"org.gnome.Evolution",
-		"org.gnome.Nautilus",
-		"org.gnome.clocks",
-		"org.gnome.eog",
-		NULL
-	};
-
-	const char *hostname = NULL;
-	const char *app_name = NULL;
-
-	if (gs_app_get_scope (app) != AS_COMPONENT_SCOPE_SYSTEM ||
-	    gs_app_is_installed (app))
-		return FALSE;
-
-	hostname = gs_app_get_origin_hostname (app);
-	if (hostname == NULL)
-		return FALSE;
-
-	app_name = app_get_flatpak_ref_name (app);
-	if (app_name == NULL)
-		return FALSE;
-
-	/* We need to check for the app's origin, otherwise we'd be
-	 * blocklisting matching apps coming from any repo */
-	if (g_strcmp0 (hostname, "flathub.org") == 0 ||
-	    g_str_has_suffix (hostname, ".flathub.org")) {
-
-		if (g_strv_contains (duplicated_apps, app_name)) {
-			g_debug ("Blocklisting '%s': app is in the duplicated list",
-				 gs_app_get_unique_id (app));
-			do_blocklist = TRUE;
-		} else if (g_strv_contains (core_apps, app_name)) {
-			g_debug ("Blocklisting '%s': app is in the core apps list",
-				 gs_app_get_unique_id (app));
-			do_blocklist = TRUE;
-		}
-	}
-
-	if (do_blocklist)
-		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
-
-	return do_blocklist;
-}
-
 static void
 gs_plugin_eos_remove_blocklist_from_usb_if_needed (GsPlugin *plugin, GsApp *app)
 {
@@ -525,9 +465,6 @@ refine_app (GsPlugin             *plugin,
 		return TRUE;
 
 	if (gs_plugin_eos_blocklist_kapp_if_needed (plugin, app))
-		return TRUE;
-
-	if (gs_plugin_eos_blocklist_app_for_remote_if_needed (plugin, app))
 		return TRUE;
 
 	gs_plugin_eos_remove_blocklist_from_usb_if_needed (plugin, app);
