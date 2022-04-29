@@ -507,25 +507,6 @@ gs_plugin_eos_remove_blocklist_from_usb_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-gs_plugin_eos_blocklist_if_needed (GsPlugin *plugin, GsApp *app)
-{
-	gboolean blocklist_app = FALSE;
-	const char *id = gs_app_get_id (app);
-
-	if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
-		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
-		g_debug ("Blocklisting '%s': app is GNOME Software itself",
-			 gs_app_get_unique_id (app));
-		blocklist_app = TRUE;
-	}
-
-	if (blocklist_app)
-		gs_app_add_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE);
-
-	return blocklist_app;
-}
-
-static gboolean
 refine_app (GsPlugin             *plugin,
 	    GsApp                *app,
 	    GsPluginRefineFlags   flags,
@@ -539,9 +520,6 @@ refine_app (GsPlugin             *plugin,
 
 	/* If it’s already blocklisted, there is little we need to do here. */
 	if (gs_app_has_quirk (app, GS_APP_QUIRK_HIDE_EVERYWHERE))
-		return TRUE;
-
-	if (gs_plugin_eos_blocklist_if_needed (plugin, app))
 		return TRUE;
 
 	if (gs_app_get_kind (app) != AS_COMPONENT_KIND_DESKTOP_APP)
