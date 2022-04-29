@@ -512,13 +512,7 @@ gs_plugin_eos_blocklist_if_needed (GsPlugin *plugin, GsApp *app)
 	gboolean blocklist_app = FALSE;
 	const char *id = gs_app_get_id (app);
 
-	if (gs_app_get_kind (app) != AS_COMPONENT_KIND_DESKTOP_APP &&
-	    gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
-	    !gs_app_has_quirk (app, GS_APP_QUIRK_IS_PROXY)) {
-		g_debug ("Blocklisting '%s': it's a compulsory, non-desktop app",
-			 gs_app_get_unique_id (app));
-		blocklist_app = TRUE;
-	} else if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
+	if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
 		g_debug ("Blocklisting '%s': app is GNOME Software itself",
 			 gs_app_get_unique_id (app));
