@@ -507,45 +507,6 @@ gs_plugin_eos_remove_blocklist_from_usb_if_needed (GsPlugin *plugin, GsApp *app)
 }
 
 static gboolean
-app_is_banned_for_product_or_personality (GsPlugin *plugin, GsApp *app)
-{
-	GsPluginData *priv = gs_plugin_get_data (plugin);
-	const char *app_name = app_get_flatpak_ref_name (app);
-
-	static const char *restricted_apps[] = {
-		/* Adult Games */
-		"com.katawa_shoujo.KatawaShoujo",
-		"com.scoutshonour.dtipbijays",
-		/* Violent Games */
-		"com.grangerhub.Tremulous",
-		"com.moddb.TotalChaos",
-		"com.realm667.WolfenDoom_Blade_of_Agony",
-		"io.github.FreeDM",
-		"io.github.Freedoom-Phase-1",
-		"io.github.Freedoom-Phase-2",
-		"net.redeclipse.RedEclipse",
-		"org.sauerbraten.Sauerbraten",
-		"org.xonotic.Xonotic",
-		"ws.openarena.OpenArena",
-		NULL
-	};
-
-	/* do not ban apps based on personality if they are installed or
-	 * if they don't have a ref name (i.e. are not Flatpak apps) */
-	if (gs_app_is_installed (app) || app_name == NULL)
-		return FALSE;
-
-	return ((g_strcmp0 (priv->personality, "es_GT") == 0) &&
-	        g_strv_contains (restricted_apps, app_name)) ||
-	       ((g_strcmp0 (priv->product_name, "hack") == 0) &&
-	        g_strv_contains (restricted_apps, app_name)) ||
-	       ((g_strcmp0 (priv->product_name, "solutions") == 0) &&
-	        g_strv_contains (restricted_apps, app_name)) ||
-	       ((g_strcmp0 (priv->product_name, "spark") == 0) &&
-	        g_strv_contains (restricted_apps, app_name));
-}
-
-static gboolean
 gs_plugin_eos_blocklist_if_needed (GsPlugin *plugin, GsApp *app)
 {
 	gboolean blocklist_app = FALSE;
@@ -560,10 +521,6 @@ gs_plugin_eos_blocklist_if_needed (GsPlugin *plugin, GsApp *app)
 	} else if (gs_app_has_quirk (app, GS_APP_QUIRK_COMPULSORY) &&
 		   g_strcmp0 (id, "org.gnome.Software.desktop") == 0) {
 		g_debug ("Blocklisting '%s': app is GNOME Software itself",
-			 gs_app_get_unique_id (app));
-		blocklist_app = TRUE;
-	} else if (app_is_banned_for_product_or_personality (plugin, app)) {
-		g_debug ("Blocklisting '%s': app is banned for product/personality",
 			 gs_app_get_unique_id (app));
 		blocklist_app = TRUE;
 	}
