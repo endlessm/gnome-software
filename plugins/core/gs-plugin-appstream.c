@@ -10,6 +10,8 @@
 #include <config.h>
 
 #include <glib/gi18n.h>
+#include <glib/gstdio.h>
+#include <errno.h>
 #include <gnome-software.h>
 #include <xmlb.h>
 
@@ -255,8 +257,12 @@ gs_plugin_appstream_load_appdata (GsPluginAppstream  *self,
 	const gchar *fn;
 	g_autoptr(GDir) dir = NULL;
 	g_autoptr(GFile) parent = g_file_new_for_path (path);
-	if (!g_file_query_exists (parent, cancellable))
+	if (!g_file_query_exists (parent, cancellable)) {
+		g_debug ("appstream: Skipping appdata path '%s' as %s", path, g_cancellable_is_cancelled (cancellable) ? "cancelled" : "does not exist");
 		return TRUE;
+	}
+
+	g_debug ("appstream: Loading appdata path '%s'", path);
 
 	dir = g_dir_open (path, 0, error);
 	if (dir == NULL)
@@ -360,8 +366,12 @@ gs_plugin_appstream_load_desktop (GsPluginAppstream  *self,
 	const gchar *fn;
 	g_autoptr(GDir) dir = NULL;
 	g_autoptr(GFile) parent = g_file_new_for_path (path);
-	if (!g_file_query_exists (parent, cancellable))
+	if (!g_file_query_exists (parent, cancellable)) {
+		g_debug ("appstream: Skipping desktop path '%s' as %s", path, g_cancellable_is_cancelled (cancellable) ? "cancelled" : "does not exist");
 		return TRUE;
+	}
+
+	g_debug ("appstream: Loading desktop path '%s'", path);
 
 	dir = g_dir_open (path, 0, error);
 	if (dir == NULL)
@@ -470,7 +480,6 @@ gs_plugin_appstream_load_appstream_fn (GsPluginAppstream  *self,
 	g_autoptr(XbBuilderFixup) fixup4 = NULL;
 #endif
 	g_autoptr(XbBuilderFixup) fixup5 = NULL;
-	GString *media_baseurl = g_string_new (NULL);
 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
 
 	/* add support for DEP-11 files */
@@ -529,7 +538,7 @@ gs_plugin_appstream_load_appstream_fn (GsPluginAppstream  *self,
 	/* prepend media_baseurl to remote relative URLs */
 	fixup5 = xb_builder_fixup_new ("MediaBaseUrl",
 				       gs_plugin_appstream_media_baseurl_cb,
-				       media_baseurl,
+				       g_string_new (NULL),
 				       gs_plugin_appstream_media_baseurl_free);
 	xb_builder_fixup_set_max_depth (fixup5, 3);
 	xb_builder_source_add_fixup (source, fixup5);
@@ -551,8 +560,11 @@ gs_plugin_appstream_load_appstream (GsPluginAppstream  *self,
 	g_autoptr(GFile) parent = g_file_new_for_path (path);
 
 	/* parent path does not exist */
-	if (!g_file_query_exists (parent, cancellable))
+	if (!g_file_query_exists (parent, cancellable)) {
+		g_debug ("appstream: Skipping appstream path '%s' as %s", path, g_cancellable_is_cancelled (cancellable) ? "cancelled" : "does not exist");
 		return TRUE;
+	}
+	g_debug ("appstream: Loading appstream path '%s'", path);
 	dir = g_dir_open (path, 0, error);
 	if (dir == NULL)
 		return FALSE;
@@ -584,6 +596,51 @@ gs_plugin_appstream_load_appstream (GsPluginAppstream  *self,
 
 	/* success */
 	return TRUE;
+}
+
+static void
+gs_add_appstream_catalog_location (GPtrArray *locations, const gchar *root)
+{
+	g_autofree gchar *catalog_path = NULL;
+	g_autofree gchar *catalog_legacy_path = NULL;
+	gboolean ignore_legacy_path = FALSE;
+
+	catalog_path = g_build_filename (root, "swcatalog", NULL);
+	catalog_legacy_path = g_build_filename (root, "app-info", NULL);
+
+	/* ignore compatibility symlink if one exists, so we don't scan the same location twice */
+	if (g_file_test (catalog_legacy_path, G_FILE_TEST_IS_SYMLINK)) {
+		g_autofree gchar *link_target = g_file_read_link (catalog_legacy_path, NULL);
+		if (link_target != NULL) {
+			if (g_strcmp0 (link_target, catalog_path) == 0) {
+				ignore_legacy_path = TRUE;
+				g_debug ("Ignoring legacy AppStream catalog location '%s'.", catalog_legacy_path);
+			}
+		}
+	}
+
+	g_ptr_array_add (locations,
+			 g_build_filename (catalog_path, "xml", NULL));
+	g_ptr_array_add (locations,
+			 g_build_filename (catalog_path, "yaml", NULL));
+
+	if (!ignore_legacy_path) {
+		g_ptr_array_add (locations,
+				 g_build_filename (catalog_legacy_path, "xml", NULL));
+		g_ptr_array_add (locations,
+				 g_build_filename (catalog_legacy_path, "xmls", NULL));
+		g_ptr_array_add (locations,
+				 g_build_filename (catalog_legacy_path, "yaml", NULL));
+	}
+}
+
+static void
+gs_add_appstream_metainfo_location (GPtrArray *locations, const gchar *root)
+{
+	g_ptr_array_add (locations,
+			 g_build_filename (root, "metainfo", NULL));
+	g_ptr_array_add (locations,
+			 g_build_filename (root, "appdata", NULL));
 }
 
 static gboolean
@@ -657,30 +714,53 @@ gs_plugin_appstream_check_silo (GsPluginAppstream  *self,
 		xb_builder_source_add_fixup (source, fixup2);
 		xb_builder_import_source (builder, source);
 	} else {
+		g_autofree gchar *state_cache_dir = NULL;
+		g_autofree gchar *state_lib_dir = NULL;
+
 		/* add search paths */
-		g_ptr_array_add (parent_appstream,
-				 g_build_filename (DATADIR, "app-info", "xmls", NULL));
-		g_ptr_array_add (parent_appstream,
-				 g_build_filename (DATADIR, "app-info", "yaml", NULL));
-		g_ptr_array_add (parent_appdata,
-				 g_build_filename (DATADIR, "appdata", NULL));
-		g_ptr_array_add (parent_appdata,
-				 g_build_filename (DATADIR, "metainfo", NULL));
-		g_ptr_array_add (parent_appstream,
-				 g_build_filename (LOCALSTATEDIR, "cache", "app-info", "xmls", NULL));
-		g_ptr_array_add (parent_appstream,
-				 g_build_filename (LOCALSTATEDIR, "cache", "app-info", "yaml", NULL));
-		g_ptr_array_add (parent_appstream,
-				 g_build_filename (LOCALSTATEDIR, "lib", "app-info", "xmls", NULL));
-		g_ptr_array_add (parent_appstream,
-				 g_build_filename (LOCALSTATEDIR, "lib", "app-info", "yaml", NULL));
+		gs_add_appstream_catalog_location (parent_appstream, DATADIR);
+		gs_add_appstream_metainfo_location (parent_appdata, DATADIR);
+
+		state_cache_dir = g_build_filename (LOCALSTATEDIR, "cache", NULL);
+		gs_add_appstream_catalog_location (parent_appstream, state_cache_dir);
+		state_lib_dir = g_build_filename (LOCALSTATEDIR, "lib", NULL);
+		gs_add_appstream_catalog_location (parent_appstream, state_lib_dir);
+
 #ifdef ENABLE_EXTERNAL_APPSTREAM
 		/* check for the corresponding setting */
 		if (!g_settings_get_boolean (self->settings, "external-appstream-system-wide")) {
+			g_autofree gchar *user_catalog_path = NULL;
+			g_autofree gchar *user_catalog_old_path = NULL;
+
+			/* migrate data paths */
+			user_catalog_path = g_build_filename (g_get_user_data_dir (), "swcatalog", NULL);
+			user_catalog_old_path = g_build_filename (g_get_user_data_dir (), "app-info", NULL);
+			if (g_file_test (user_catalog_old_path, G_FILE_TEST_IS_DIR) &&
+			    !g_file_test (user_catalog_path, G_FILE_TEST_IS_DIR)) {
+				g_debug ("Migrating external AppStream user location.");
+				if (g_rename (user_catalog_old_path, user_catalog_path) == 0) {
+					g_autofree gchar *user_catalog_xml_path = NULL;
+					g_autofree gchar *user_catalog_xml_old_path = NULL;
+
+					user_catalog_xml_path = g_build_filename (user_catalog_path, "xml", NULL);
+					user_catalog_xml_old_path = g_build_filename (user_catalog_path, "xmls", NULL);
+					if (g_file_test (user_catalog_xml_old_path, G_FILE_TEST_IS_DIR)) {
+						if (g_rename (user_catalog_xml_old_path, user_catalog_xml_path) != 0)
+							g_warning ("Unable to migrate external XML data location from '%s' to '%s': %s",
+								user_catalog_xml_old_path, user_catalog_xml_path, g_strerror (errno));
+					}
+				} else {
+					g_warning ("Unable to migrate external data location from '%s' to '%s': %s",
+						   user_catalog_old_path, user_catalog_path, g_strerror (errno));
+				}
+
+			}
+
+			/* add modern locations only */
 			g_ptr_array_add (parent_appstream,
-					 g_build_filename (g_get_user_data_dir (), "app-info", "xmls", NULL));
+					g_build_filename (user_catalog_path, "xml", NULL));
 			g_ptr_array_add (parent_appstream,
-					 g_build_filename (g_get_user_data_dir (), "app-info", "yaml", NULL));
+					g_build_filename (user_catalog_path, "yaml", NULL));
 		}
 #endif
 
@@ -689,24 +769,12 @@ gs_plugin_appstream_check_silo (GsPluginAppstream  *self,
 		 * development builds. It’s useful to still list the system apps
 		 * during development. */
 		if (g_strcmp0 (DATADIR, "/usr/share") != 0) {
-			g_ptr_array_add (parent_appstream,
-					 g_build_filename ("/usr/share", "app-info", "xmls", NULL));
-			g_ptr_array_add (parent_appstream,
-					 g_build_filename ("/usr/share", "app-info", "yaml", NULL));
-			g_ptr_array_add (parent_appdata,
-					 g_build_filename ("/usr/share", "appdata", NULL));
-			g_ptr_array_add (parent_appdata,
-					 g_build_filename ("/usr/share", "metainfo", NULL));
+			gs_add_appstream_catalog_location (parent_appstream, "/usr/share");
+			gs_add_appstream_metainfo_location (parent_appdata, "/usr/share");
 		}
 		if (g_strcmp0 (LOCALSTATEDIR, "/var") != 0) {
-			g_ptr_array_add (parent_appstream,
-					 g_build_filename ("/var", "cache", "app-info", "xmls", NULL));
-			g_ptr_array_add (parent_appstream,
-					 g_build_filename ("/var", "cache", "app-info", "yaml", NULL));
-			g_ptr_array_add (parent_appstream,
-					 g_build_filename ("/var", "lib", "app-info", "xmls", NULL));
-			g_ptr_array_add (parent_appstream,
-					 g_build_filename ("/var", "lib", "app-info", "yaml", NULL));
+			gs_add_appstream_catalog_location (parent_appstream, "/var/cache");
+			gs_add_appstream_catalog_location (parent_appstream, "/var/lib");
 		}
 
 		/* import all files */
@@ -801,6 +869,12 @@ gs_plugin_appstream_check_silo (GsPluginAppstream  *self,
 
 	/* success */
 	return TRUE;
+}
+
+static gint
+get_priority_for_interactivity (gboolean interactive)
+{
+	return interactive ? G_PRIORITY_DEFAULT : G_PRIORITY_LOW;
 }
 
 static void setup_thread_cb (GTask        *task,
@@ -1117,12 +1191,13 @@ gs_plugin_appstream_refine_async (GsPlugin            *plugin,
 {
 	GsPluginAppstream *self = GS_PLUGIN_APPSTREAM (plugin);
 	g_autoptr(GTask) task = NULL;
+	gboolean interactive = gs_plugin_has_flags (GS_PLUGIN (self), GS_PLUGIN_FLAGS_INTERACTIVE);
 
 	task = gs_plugin_refine_data_new_task (plugin, list, flags, cancellable, callback, user_data);
 	g_task_set_source_tag (task, gs_plugin_appstream_refine_async);
 
 	/* Queue a job for the refine. */
-	gs_worker_thread_queue (self->worker, G_PRIORITY_DEFAULT,
+	gs_worker_thread_queue (self->worker, get_priority_for_interactivity (interactive),
 				refine_thread_cb, g_steal_pointer (&task));
 }
 
@@ -1282,7 +1357,8 @@ gs_plugin_add_category_apps (GsPlugin *plugin,
 		return FALSE;
 
 	locker = g_rw_lock_reader_locker_new (&self->silo_lock);
-	return gs_appstream_add_category_apps (self->silo,
+	return gs_appstream_add_category_apps (plugin,
+					       self->silo,
 					       category,
 					       list,
 					       cancellable,
@@ -1325,12 +1401,13 @@ gs_plugin_appstream_list_installed_apps_async (GsPlugin                       *p
 {
 	GsPluginAppstream *self = GS_PLUGIN_APPSTREAM (plugin);
 	g_autoptr(GTask) task = NULL;
+	gboolean interactive = (flags & GS_PLUGIN_LIST_INSTALLED_APPS_FLAGS_INTERACTIVE);
 
 	task = g_task_new (plugin, cancellable, callback, user_data);
 	g_task_set_source_tag (task, gs_plugin_appstream_list_installed_apps_async);
 
 	/* Queue a job to check the silo, which will cause it to be loaded. */
-	gs_worker_thread_queue (self->worker, G_PRIORITY_DEFAULT,
+	gs_worker_thread_queue (self->worker, get_priority_for_interactivity (interactive),
 				list_installed_apps_thread_cb, g_steal_pointer (&task));
 }
 
@@ -1491,12 +1568,13 @@ gs_plugin_appstream_refresh_metadata_async (GsPlugin                     *plugin
 {
 	GsPluginAppstream *self = GS_PLUGIN_APPSTREAM (plugin);
 	g_autoptr(GTask) task = NULL;
+	gboolean interactive = (flags & GS_PLUGIN_REFRESH_METADATA_FLAGS_INTERACTIVE);
 
 	task = g_task_new (plugin, cancellable, callback, user_data);
 	g_task_set_source_tag (task, gs_plugin_appstream_refresh_metadata_async);
 
 	/* Queue a job to check the silo, which will cause it to be refreshed if needed. */
-	gs_worker_thread_queue (self->worker, G_PRIORITY_DEFAULT,
+	gs_worker_thread_queue (self->worker, get_priority_for_interactivity (interactive),
 				refresh_metadata_thread_cb, g_steal_pointer (&task));
 }
 

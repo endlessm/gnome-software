@@ -36,11 +36,13 @@ typedef enum {
 
 typedef enum {
 	PROP_APP = 1,
+	PROP_SHOW_BACK_BUTTON,
 	PROP_TITLE,
 } GsOsUpdatePageProperty;
 
 enum {
 	SIGNAL_APP_ACTIVATED,
+	SIGNAL_BACK_CLICKED,
 	SIGNAL_LAST
 };
 
@@ -52,6 +54,7 @@ struct _GsOsUpdatePage
 {
 	GtkBox		 parent_instance;
 
+	GtkWidget	*back_button;
 	GtkWidget	*box;
 	GtkWidget	*group;
 	GtkWidget	*header_bar;
@@ -98,16 +101,12 @@ format_version_update (GsApp *app, GtkTextDirection direction)
 	    g_strcmp0 (version_current, version_update) != 0) {
 		switch (direction) {
 		case GTK_TEXT_DIR_RTL:
-			/* This might look the wrong way round, but that’s
-			 * because the #GtkLabel this is put in will reverse the
-			 * text order in RTL, but won’t swap ← for → or
-			 * vice-versa (the bidi mirroring property of those two
-			 * arrows is false). So we need to explicitly use ‘←’ in
-			 * RTL locales, but not change the text order.
+			/* ensure the arrow is the right way round for the text direction,
+			 * as arrows are not bidi-mirrored automatically
 			 * See section 2 of http://www.unicode.org/L2/L2017/17438-bidi-math-fdbk.html */
 			return g_strdup_printf ("%s ← %s",
-						version_current,
-						version_update);
+						version_update,
+						version_current);
 		case GTK_TEXT_DIR_NONE:
 		case GTK_TEXT_DIR_LTR:
 		default:
@@ -406,6 +405,55 @@ gs_os_update_page_set_app (GsOsUpdatePage *page, GsApp *app)
 	g_object_notify_by_pspec (G_OBJECT (page), obj_props[PROP_TITLE]);
 }
 
+/**
+ * gs_os_update_page_get_show_back_button:
+ * @page: a #GsOsUpdatePage
+ *
+ * Get the value of #GsOsUpdatePage:show-back-button.
+ *
+ * Returns: whether to show the back button
+ *
+ * Since: 42.1
+ */
+gboolean
+gs_os_update_page_get_show_back_button (GsOsUpdatePage *page)
+{
+	g_return_val_if_fail (GS_IS_OS_UPDATE_PAGE (page), FALSE);
+	return gtk_widget_get_visible (page->back_button);
+}
+
+/**
+ * gs_os_update_page_set_show_back_button:
+ * @page: a #GsOsUpdatePage
+ * @show_back_button: whether to show the back button
+ *
+ * Set the value of #GsOsUpdatePage:show-back-button.
+ *
+ * Since: 42.1
+ */
+void
+gs_os_update_page_set_show_back_button (GsOsUpdatePage *page,
+					gboolean show_back_button)
+{
+	g_return_if_fail (GS_IS_OS_UPDATE_PAGE (page));
+
+	show_back_button = !!show_back_button;
+
+	if (gtk_widget_get_visible (page->back_button) == show_back_button)
+		return;
+
+	gtk_widget_set_visible (page->back_button, show_back_button);
+
+	g_object_notify_by_pspec (G_OBJECT (page), obj_props[PROP_SHOW_BACK_BUTTON]);
+}
+
+static void
+back_clicked_cb (GtkWidget *widget,
+		 GsOsUpdatePage *page)
+{
+	g_signal_emit (page, signals[SIGNAL_BACK_CLICKED], 0);
+}
+
 static void
 gs_os_update_page_dispose (GObject *object)
 {
@@ -425,6 +473,9 @@ gs_os_update_page_get_property (GObject *object, guint prop_id, GValue *value, G
 	case PROP_APP:
 		g_value_set_object (value, gs_os_update_page_get_app (page));
 		break;
+	case PROP_SHOW_BACK_BUTTON:
+		g_value_set_boolean (value, gs_os_update_page_get_show_back_button (page));
+		break;
 	case PROP_TITLE:
 		g_value_set_string (value, adw_window_title_get_title (page->window_title));
 		break;
@@ -442,6 +493,9 @@ gs_os_update_page_set_property (GObject *object, guint prop_id, const GValue *va
 	switch ((GsOsUpdatePageProperty) prop_id) {
 	case PROP_APP:
 		gs_os_update_page_set_app (page, g_value_get_object (value));
+		break;
+	case PROP_SHOW_BACK_BUTTON:
+		gs_os_update_page_set_show_back_button (page, g_value_get_boolean (value));
 		break;
 	default:
 		G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -478,6 +532,18 @@ gs_os_update_page_class_init (GsOsUpdatePageClass *klass)
 				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
 
 	/**
+	 * GsOsUpdatePage:show-back-button
+	 *
+	 * Whether to show the back button.
+	 *
+	 * Since: 42.1
+	 */
+	obj_props[PROP_SHOW_BACK_BUTTON] =
+		g_param_spec_boolean ("show-back-button", NULL, NULL,
+				     FALSE,
+				     G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS | G_PARAM_EXPLICIT_NOTIFY);
+
+	/**
 	 * GsOsUpdatePage:title
 	 *
 	 * Read-only window title.
@@ -507,12 +573,29 @@ gs_os_update_page_class_init (GsOsUpdatePageClass *klass)
 			      0, NULL, NULL, g_cclosure_marshal_generic,
 			      G_TYPE_NONE, 1, GS_TYPE_APP);
 
+	/**
+	 * GsOsUpdatePage::back-clicked:
+	 * @self: a #GsOsUpdatePage
+	 *
+	 * Emitted when the back button got activated and the #GsUpdateDialog
+	 * containing this page is expected to go back.
+	 *
+	 * Since: 42.1
+	 */
+	signals[SIGNAL_BACK_CLICKED] =
+		g_signal_new ("back-clicked",
+			      G_TYPE_FROM_CLASS (object_class), G_SIGNAL_RUN_LAST,
+			      0, NULL, NULL, g_cclosure_marshal_generic,
+			      G_TYPE_NONE, 0);
+
 	gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/Software/gs-os-update-page.ui");
 
+	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, back_button);
 	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, box);
 	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, group);
 	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, header_bar);
 	gtk_widget_class_bind_template_child (widget_class, GsOsUpdatePage, window_title);
+	gtk_widget_class_bind_template_callback (widget_class, back_clicked_cb);
 }
 
 /**
