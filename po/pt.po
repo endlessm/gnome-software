@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-13 03:45+0000\n"
+"POT-Creation-Date: 2022-05-25 03:45+0000\n"
 "PO-Revision-Date: 2016-04-15 19:22+0000\n"
 "Last-Translator: Juliano Camargo <julianosc@pm.me>, 2020\n"
 "Language-Team: Portuguese (http://www.transifex.com/endless-os/gnome-software/language/pt/)\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pt\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 #: data/appdata/org.gnome.Software.appdata.xml.in:7
 msgid "GNOME Software"
@@ -804,6 +804,7 @@ msgid "An update has been installed"
 msgid_plural "Updates have been installed"
 msgstr[0] "Foi instalada uma atualização"
 msgstr[1] "Foram instaladas aplicações"
+msgstr[2] "Foram instaladas aplicações"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:641
@@ -811,6 +812,7 @@ msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
 msgstr[0] "É necessário reiniciar o dispositivo para que a mudança tenha efeito."
 msgstr[1] "É necessário reiniciar o dispositivo para que as mudanças tenham efeito."
+msgstr[2] "É necessário reiniciar o dispositivo para que as mudanças tenham efeito."
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:648 src/gs-update-monitor.c:123
@@ -1672,6 +1674,7 @@ msgid "Users are bound by the following license:"
 msgid_plural "Users are bound by the following licenses:"
 msgstr[0] "Os utilizadores são regidos pela seguinte licença:"
 msgstr[1] "Os utilizadores são regidos pelas seguintes licenças:"
+msgstr[2] "Os utilizadores são regidos pelas seguintes licenças:"
 
 #: src/gs-details-page.c:2713 src/gs-details-page.ui:1333
 msgid "More information"
@@ -1905,6 +1908,7 @@ msgid "Available fonts for the %s script"
 msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Tipos de letras disponíveis para a escrita %s"
 msgstr[1] "Tipos de letra disponíveis para as escritas %s"
+msgstr[2] "Tipos de letra disponíveis para as escritas %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -1914,6 +1918,7 @@ msgid "Available software for %s"
 msgid_plural "Available software for %s"
 msgstr[0] "Software disponível para o codec %s"
 msgstr[1] "Software disponível para os codecs %s"
+msgstr[2] "Software disponível para os codecs %s"
 
 #: src/gs-extras-page.c:214
 msgid "Unable to Find Requested Software"
@@ -2050,6 +2055,7 @@ msgid_plural ""
 "%s for more information."
 msgstr[0] "Infelizmente o %s que procura não foi encontrado. Por favor, veja %s para mais informação."
 msgstr[1] "Infelizmente o %s que procura não foi encontrado. Por favor, veja %s para mais informação."
+msgstr[2] "Infelizmente o %s que procura não foi encontrado. Por favor, veja %s para mais informação."
 
 #: src/gs-extras-page.c:527 src/gs-extras-page.c:583 src/gs-extras-page.c:622
 msgid "Failed to find any search results"
@@ -2339,6 +2345,7 @@ msgid "%u application installed"
 msgid_plural "%u applications installed"
 msgstr[0] "%u aplicação instalada"
 msgstr[1] "%u aplicações instaladas"
+msgstr[2] "%u aplicações instaladas"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -2348,6 +2355,7 @@ msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
 msgstr[0] "%u complemento instalado"
 msgstr[1] "%u complementos instalados"
+msgstr[2] "%u complementos instalados"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2358,6 +2366,7 @@ msgid "%u application"
 msgid_plural "%u applications"
 msgstr[0] "%u aplicação"
 msgstr[1] "%u aplicações"
+msgstr[2] "%u aplicações"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2368,6 +2377,7 @@ msgid "%u add-on"
 msgid_plural "%u add-ons"
 msgstr[0] "%u complemento"
 msgstr[1] "%u complementos"
+msgstr[2] "%u complementos"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -2379,6 +2389,7 @@ msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
 msgstr[0] "%s e %s instaladas"
 msgstr[1] "%s e %s instaladas"
+msgstr[2] "%s e %s instaladas"
 
 #. TRANSLATORS: this is a prompt message, and '%s' is a
 #. * repository name, e.g. 'GNOME Nightly'
@@ -2678,6 +2689,7 @@ msgid "%u more match"
 msgid_plural "%u more matches"
 msgstr[0] "Mais %u correspondência"
 msgstr[1] "Mais %u correspondências"
+msgstr[2] "Mais %u correspondências"
 
 #: src/gs-search-page.ui:7
 msgid "Search page"
@@ -3271,6 +3283,7 @@ msgid "%u Application Updated — Restart Required"
 msgid_plural "%u Applications Updated — Restart Required"
 msgstr[0] "%u aplicação foi atualizada — é necessário reiniciar o sistema"
 msgstr[1] "%u aplicações foram atualizadas — é necessário reiniciar o sistema"
+msgstr[2] "%u aplicações foram atualizadas — é necessário reiniciar o sistema"
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:238
@@ -3279,6 +3292,7 @@ msgid "%u Application Updated"
 msgid_plural "%u Applications Updated"
 msgstr[0] "%u aplicação atualizada"
 msgstr[1] "%u aplicações atualizadas"
+msgstr[2] "%u aplicações atualizadas"
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:249
@@ -3304,6 +3318,7 @@ msgid "%u application requires a restart."
 msgid_plural "%u applications require a restart."
 msgstr[0] "É necessário reiniciar %u aplicação."
 msgstr[1] "É necessário reiniciar %u aplicações."
+msgstr[2] "É necessário reiniciar %u aplicações."
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:278
@@ -3366,6 +3381,7 @@ msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Atualização de aplicação instalada"
 msgstr[1] "Atualizações de aplicações instaladas"
+msgstr[2] "Atualizações de aplicações instaladas"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1008
@@ -3373,6 +3389,7 @@ msgid "An important OS update has been installed."
 msgid_plural "Important OS updates have been installed."
 msgstr[0] "Foi instalada uma atualização importante do sistema operativo."
 msgstr[1] "Foram instaladas atualizações importantes do sistema operativo."
+msgstr[2] "Foram instaladas atualizações importantes do sistema operativo."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
