@@ -241,23 +241,42 @@ perms_from_metadata (GKeyFile *keyfile)
 	g_strfreev (strv);
 
 	strv = g_key_file_get_string_list (keyfile, "Context", "filesystems", NULL, NULL);
-	if (strv != NULL && (g_strv_contains ((const gchar * const *)strv, "home") ||
-	                     g_strv_contains ((const gchar * const *)strv, "home:rw")))
-		permissions |= GS_APP_PERMISSIONS_HOME_FULL;
-	else if (strv != NULL && g_strv_contains ((const gchar * const *)strv, "home:ro"))
-		permissions |= GS_APP_PERMISSIONS_HOME_READ;
-	if (strv != NULL && (g_strv_contains ((const gchar * const *)strv, "host") ||
-	                     g_strv_contains ((const gchar * const *)strv, "host:rw")))
-		permissions |= GS_APP_PERMISSIONS_FILESYSTEM_FULL;
-	else if (strv != NULL && g_strv_contains ((const gchar * const *)strv, "host:ro"))
-		permissions |= GS_APP_PERMISSIONS_FILESYSTEM_READ;
-	if (strv != NULL && (g_strv_contains ((const gchar * const *)strv, "xdg-download") ||
-	                     g_strv_contains ((const gchar * const *)strv, "xdg-download:rw")))
-		permissions |= GS_APP_PERMISSIONS_DOWNLOADS_FULL;
-	else if (strv != NULL && g_strv_contains ((const gchar * const *)strv, "xdg-download:ro"))
-		permissions |= GS_APP_PERMISSIONS_DOWNLOADS_READ;
-	if (strv != NULL && g_strv_contains ((const gchar * const *)strv, "xdg-data/flatpak/overrides:create"))
-		permissions |= GS_APP_PERMISSIONS_ESCAPE_SANDBOX;
+	if (strv != NULL) {
+		const struct {
+			const gchar *key;
+			GsAppPermissions perm;
+		} filesystems_access[] = {
+			/* Reference: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#idm45858571325264 */
+			{ "home", GS_APP_PERMISSIONS_HOME_FULL },
+			{ "home:rw", GS_APP_PERMISSIONS_HOME_FULL },
+			{ "home:ro", GS_APP_PERMISSIONS_HOME_READ },
+			{ "host", GS_APP_PERMISSIONS_FILESYSTEM_FULL },
+			{ "host:rw", GS_APP_PERMISSIONS_FILESYSTEM_FULL },
+			{ "host:ro", GS_APP_PERMISSIONS_FILESYSTEM_READ },
+			{ "xdg-download", GS_APP_PERMISSIONS_DOWNLOADS_FULL },
+			{ "xdg-download:rw", GS_APP_PERMISSIONS_DOWNLOADS_FULL },
+			{ "xdg-download:ro", GS_APP_PERMISSIONS_DOWNLOADS_READ },
+			{ "xdg-data/flatpak/overrides:create", GS_APP_PERMISSIONS_ESCAPE_SANDBOX }
+		};
+		guint filesystems_hits = 0;
+
+		for (guint i = 0; i < G_N_ELEMENTS (filesystems_access); i++) {
+			if (g_strv_contains ((const gchar * const *) strv, filesystems_access[i].key)) {
+				permissions |= filesystems_access[i].perm;
+				filesystems_hits++;
+			}
+		}
+
+		if ((permissions & GS_APP_PERMISSIONS_HOME_FULL) != 0)
+			permissions = permissions & ~GS_APP_PERMISSIONS_HOME_READ;
+		if ((permissions & GS_APP_PERMISSIONS_FILESYSTEM_FULL) != 0)
+			permissions = permissions & ~GS_APP_PERMISSIONS_FILESYSTEM_READ;
+		if ((permissions & GS_APP_PERMISSIONS_DOWNLOADS_FULL) != 0)
+			permissions = permissions & ~GS_APP_PERMISSIONS_DOWNLOADS_READ;
+
+		if (g_strv_length (strv) > filesystems_hits)
+			permissions |= GS_APP_PERMISSIONS_FILESYSTEM_OTHER;
+	}
 	g_strfreev (strv);
 
 	str = g_key_file_get_string (keyfile, "Session Bus Policy", "ca.desrt.dconf", NULL);
@@ -1324,8 +1343,10 @@ gs_flatpak_refresh_appstream (GsFlatpak     *self,
 	}
 
 	/* ensure the AppStream silo is up to date */
-	if (!gs_flatpak_rescan_appstream_store (self, interactive, cancellable, error))
+	if (!gs_flatpak_rescan_appstream_store (self, interactive, cancellable, error)) {
+		gs_flatpak_internal_data_changed (self);
 		return FALSE;
+	}
 
 	return TRUE;
 }
@@ -1995,10 +2016,6 @@ gs_flatpak_refresh (GsFlatpak *self,
 
 	/* update AppStream metadata */
 	if (!gs_flatpak_refresh_appstream (self, cache_age_secs, interactive, cancellable, error))
-		return FALSE;
-
-	/* ensure valid */
-	if (!gs_flatpak_rescan_appstream_store (self, interactive, cancellable, error))
 		return FALSE;
 
 	/* success */
@@ -3382,8 +3399,6 @@ gs_flatpak_refine_wildcard (GsFlatpak *self, GsApp *app,
 	components = xb_silo_query (self->silo, xpath, 0, &error_local);
 	if (components == NULL) {
 		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
-			return TRUE;
-		if (g_error_matches (error_local, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT))
 			return TRUE;
 		g_propagate_error (error, g_steal_pointer (&error_local));
 		return FALSE;
