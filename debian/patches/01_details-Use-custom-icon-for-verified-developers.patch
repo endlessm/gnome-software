@@ -29,27 +29,27 @@ index 0000000..57c0f11
 +</svg>
 \ No newline at end of file
 diff --git a/src/gnome-software.gresource.xml b/src/gnome-software.gresource.xml
-index 6e11870..14448e2 100644
+index 6b58f2e..7c13eea 100644
 --- a/src/gnome-software.gresource.xml
 +++ b/src/gnome-software.gresource.xml
-@@ -51,6 +51,7 @@
-   <file preprocess="xml-stripblanks">org.freedesktop.PackageKit.xml</file>
-   <file>gtk-style.css</file>
-   <file>gtk-style-hc.css</file>
-+  <file>developer-verified.svg</file>
+@@ -53,6 +53,7 @@
+   <file>style.css</file>
+   <file>style-dark.css</file>
+   <file>style-hc.css</file>
++  <file preprocess="xml-stripblanks">developer-verified.svg</file>
    <file preprocess="xml-stripblanks" alias="up-to-date.svg">../data/assets/up-to-date.svg</file>
-   <file alias="work-category-background.png">../data/assets/work-category-background.png</file>
    <file preprocess="xml-stripblanks" alias="icons/scalable/apps/system-component-addon.svg">../data/icons/system-component-addon.svg</file>
+   <file preprocess="xml-stripblanks" alias="icons/scalable/apps/system-component-application.svg">../data/icons/system-component-application.svg</file>
 diff --git a/src/gs-details-page.ui b/src/gs-details-page.ui
-index 4dfe505..5088b7a 100644
+index cda8392..aa88afe 100644
 --- a/src/gs-details-page.ui
 +++ b/src/gs-details-page.ui
-@@ -190,7 +190,7 @@
-                                               <object class="GtkImage" id="developer_verified_image">
-                                                 <property name="visible">True</property>
-                                                 <property name="pixel-size">16</property>
--                                                <property name="icon-name">emblem-ok-symbolic</property>
-+                                                <property name="icon-name">/org/gnome/Software/developer-verified.svg</property>
+@@ -173,7 +173,7 @@
+                                                 <child>
+                                                   <object class="GtkImage" id="developer_verified_image">
+                                                     <property name="pixel-size">16</property>
+-                                                    <property name="icon-name">emblem-ok-symbolic</property>
++                                                    <property name="resource">/org/gnome/Software/developer-verified.svg</property>
+                                                   </object>
+                                                 </child>
                                                </object>
-                                             </child>
-                                           </object>

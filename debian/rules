@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
-export DEB_LDFLAGS_MAINT_APPEND = -Wl,-O1 -Wl,--as-needed
+export DEB_LDFLAGS_MAINT_APPEND = -Wl,-O1 -Wl,-z,defs
 
 # Fix the Flatpak plugin: https://launchpad.net/bugs/1650783
 export DEB_LDFLAGS_MAINT_STRIP := -Wl,-Bsymbolic-functions
@@ -12,6 +12,7 @@ GS_CONFIGURE_FLAGS = \
 	-Dpackagekit_autoremove=true \
 	-Drpm_ostree=false \
 	-Dapt=true \
+	-Dsoup2=true \
 
 # these are conditionally re-enabled later
 GS_CONFIGURE_FLAGS += \
@@ -44,18 +45,6 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	endif
 endif
 
-# EOS-specific configuration
-GS_CONFIGURE_FLAGS += \
-	-Deos_updater=true \
-	-Dexternal_appstream=true \
-	-Dfwupd=false \
-	-Dgudev=false \
-	-Dhardcoded_popular=false \
-	-Dmalcontent=true \
-	-Dmogwai=true \
-	-Dpackagekit=false \
-	-Dtests=true
-
 DISTRO_ID = debian
 FREE_REPOS = \'@DISTRO@-*-main\'
 FREE_URL = https:\/\/www.debian.org\/social_contract\#guidelines
@@ -70,7 +59,7 @@ else ifeq (yes,$(shell dpkg-vendor --derives-from PureOS && echo yes))
 endif
 
 %:
-	dh $@ --with gnome
+	dh $@
 
 override_dh_auto_configure:
 	dh_auto_configure -- $(GS_CONFIGURE_FLAGS)
