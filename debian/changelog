@@ -1,8 +1,48 @@
-gnome-software (42.2-1endless0) eos; urgency=medium
+gnome-software (43.0-1) unstable; urgency=medium
 
-  * Rebase EOS on GNOME 42.2 release
+  * New upstream release
 
- -- Philip Withnall <pwithnall@endlessos.org>  Mon, 13 Jun 2022 17:06:00 +0100
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Fri, 16 Sep 2022 07:52:43 -0400
+
+gnome-software (43~rc-2) unstable; urgency=medium
+
+  * debian/control.in: Explicitly Build-Depend on libsoup
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Fri, 02 Sep 2022 21:51:20 -0400
+
+gnome-software (43~rc-1) unstable; urgency=medium
+
+  * New upstream release
+  * debian/control.in: Bump minimum glib to 2.70.0
+  * Drop libsoup3 patches: applied in new release
+  * Build for libsoup3 on Ubuntu because it has the new snapd-glib
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Fri, 02 Sep 2022 09:46:45 -0400
+
+gnome-software (43~beta-1) unstable; urgency=medium
+
+  * New upstream release
+  * Drop obsolete valgrind dependency
+  * Build-Depend on appstream for build tests
+  * debian/control.in: Build-Depend on libglib-testing-0-dev
+  * Update list of architectures where we try to build the Flatpak plugin
+  * Add patch to allow building the Flatpak plugin with libsoup3
+  * Add proposed patch to allow building the Snap plugin with libsoup3
+  * Keep building with libsoup2 until we are ready for the librest transition
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Wed, 24 Aug 2022 07:31:49 -0400
+
+gnome-software (42.4-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Fri, 05 Aug 2022 07:16:30 -0400
+
+gnome-software (42.3-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Wed, 13 Jul 2022 23:04:45 +0200
 
 gnome-software (42.2-1) unstable; urgency=medium
 

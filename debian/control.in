@@ -4,39 +4,39 @@ Priority: optional
 Maintainer: Debian GNOME Maintainers <pkg-gnome-maintainers@lists.alioth.debian.org>
 Uploaders: @GNOME_TEAM@
 Build-Depends: debhelper-compat (= 13),
+               appstream <!nocheck>,
                dh-sequence-gnome,
                docbook-xsl,
-               eos-metrics-0-dev (>= 0.5.0),
                gsettings-desktop-schemas-dev (>= 3.18),
                gtk-doc-tools,
                libadwaita-1-dev (>= 1.0.1),
                libappstream-dev (>= 0.14.0),
-               libflatpak-dev (>= 1.9.1) [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
+               libflatpak-dev (>= 1.14.0) [amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32],
                libfwupd-dev (>= 1.5.6) [linux-any],
-               libglib2.0-dev (>= 2.56.0),
-               libgnome-desktop-3-dev (>= 3.18.0),
+               libglib2.0-dev (>= 2.70.0),
+               libglib-testing-0-dev,
                libgtk-4-dev (>= 4.6),
                libgudev-1.0-dev [linux-any],
                libjson-glib-dev (>= 1.6.0),
-               libostree-dev [linux-any],
-               libmalcontent-0-dev [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
-               libmogwai-schedule-client-0-dev,
+               libostree-dev (>= 2022.5-2~) [linux-any],
+               libmalcontent-0-dev [amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32],
                libpackagekit-glib2-dev (>= 1.1.11),
                libpolkit-gobject-1-dev,
-               libsnapd-glib-dev (>= 1.54) [amd64 arm64 armel armhf i386 ppc64el s390x],
+               libsnapd-glib-dev (>= 1.60) [amd64 arm64 armel armhf i386 ppc64el s390x],
                libsoup2.4-dev (>= 2.52.0),
+               libsoup-3.0-dev,
                libxml2-utils,
                libxmlb-dev (>= 0.1.7),
                meson (>= 0.55.0),
                pkg-config,
                policykit-1,
-               valgrind [amd64 arm64 armhf i386 mips mips64 mips64el mipsel powerpc ppc64 ppc64el s390x],
                xsltproc
 Build-Depends-Indep: libgdk-pixbuf2.0-doc <!nodoc>,
                      libglib2.0-doc <!nodoc>,
                      libgtk-3-doc <!nodoc>,
                      libjson-glib-doc <!nodoc>,
-                     libsoup2.4-doc <!nodoc>
+                     libsoup2.4-doc <!nodoc>,
+                     libsoup-3.0-doc <!nodoc>
 Rules-Requires-Root: no
 Standards-Version: 4.6.0
 Vcs-Browser: https://salsa.debian.org/gnome-team/gnome-software
@@ -47,18 +47,18 @@ X-Ubuntu-Use-Langpack: yes
 Package: gnome-software
 Architecture: any
 Depends: appstream,
+         apt-config-icons,
          gnome-software-common (= ${source:Version}),
          gsettings-desktop-schemas (>= 3.18),
+         libgtk3-perl,
+         packagekit (>= 1.1.11),
+         software-properties-gtk,
          ${misc:Depends},
          ${shlibs:Depends}
 Conflicts: sessioninstaller
 Recommends: fwupd [linux-any], ${plugin:Recommends}
-Suggests: apt-config-icons,
-          apt-config-icons-hidpi,
-          gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mips mipsel mips64el ppc64el s390x hppa powerpc powerpcspe ppc64],
-          libgtk3-perl,
-          packagekit (>= 1.1.11),
-          software-properties-gtk,
+Suggests: apt-config-icons-hidpi,
+          gnome-software-plugin-flatpak [amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32],
           ${plugin:Suggests}
 Description: Software Center for GNOME
  Software lets you install and update applications and system extensions.
@@ -85,8 +85,8 @@ Description: Software Center for GNOME (common files)
  This package contains the architecture-independent files.
 
 Package: gnome-software-plugin-flatpak
-Architecture: amd64 arm64 armel armhf hppa i386 mips mipsel mips64el powerpc powerpcspe ppc64 ppc64el s390x
-Depends: flatpak,
+Architecture: amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32
+Depends: flatpak (>= 1.14.0),
          gnome-software (= ${binary:Version}),
          ${misc:Depends},
          ${shlibs:Depends}
@@ -126,13 +126,13 @@ Section: libdevel
 Architecture: any
 Multi-Arch: same
 Depends: libappstream-dev (>= 0.14.0),
-         libglib2.0-dev (>= 2.56.0),
+         libglib2.0-dev (>= 2.70.0),
          libgtk-4-dev (>= 4.6),
          libjson-glib-dev (>= 1.6.0),
          libpolkit-gobject-1-dev,
-         libsoup2.4-dev (>= 2.52.0),
+         libsoup2.4-dev,
+         libsoup-3.0-dev,
          libxmlb-dev (>= 0.1.7),
-         valgrind [amd64 arm64 armhf i386 mips mips64 mips64el mipsel powerpc ppc64 ppc64el s390x],
          ${misc:Depends}
 Suggests: gnome-software-doc
 Description: Software Center for GNOME - development files
