@@ -101,26 +101,6 @@ Description: Flatpak support for GNOME Software
  .
  This package contains the Flatpak plugin.
 
-Package: gnome-software-plugin-snap
-Architecture: amd64 arm64 armel armhf i386 ppc64el s390x
-Depends: gnome-software (= ${binary:Version}),
-         snapd [amd64 arm64 armel armhf i386 ppc64el],
-         ${misc:Depends},
-         ${shlibs:Depends}
-Recommends: snapd [s390x]
-Breaks: gnome-software (<< 3.22.3)
-Replaces: gnome-software (<< 3.22.3)
-Description: Snap support for GNOME Software
- Software lets you install and update applications and system extensions.
- .
- Software uses a plugin architecture to separate the frontend from the
- technologies that are used underneath. Currently, a PackageKit plugin provides
- data from a number of traditional packaging systems, such as rpm or apt. An
- appdata plugin provides additional metadata from locally installed data in the
- appdata format.
- .
- This package contains the Snap plugin.
-
 Package: gnome-software-dev
 Section: libdevel
 Architecture: any
