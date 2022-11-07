@@ -106,7 +106,8 @@ refine_core_app (GsApp *app)
 	    (gs_app_get_scope (app) == AS_COMPONENT_SCOPE_UNKNOWN))
 		return;
 
-	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_OPERATING_SYSTEM)
+	if (gs_app_get_kind (app) == AS_COMPONENT_KIND_OPERATING_SYSTEM ||
+	    gs_app_get_kind (app) == AS_COMPONENT_KIND_WEB_APP)
 		return;
 
 	/* Hide non-installed apt packages, as they can’t actually be installed.
