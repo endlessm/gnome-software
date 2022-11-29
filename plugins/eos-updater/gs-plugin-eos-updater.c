@@ -559,7 +559,7 @@ gs_plugin_setup (GsPlugin *plugin,
 	/* use stock icon */
 	ic = as_icon_new ();
 	as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-	as_icon_set_name (ic, "application-x-addon");
+	as_icon_set_name (ic, "software-update-available-symbolic");
 
 	/* create the OS upgrade */
 	app = gs_app_new ("com.endlessm.EOS.upgrade");
