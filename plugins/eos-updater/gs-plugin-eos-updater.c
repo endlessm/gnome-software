@@ -55,7 +55,14 @@
  *
  * This plugin follows the state transitions signalled by the daemon, and
  * updates the state of a single #GsApp instance (`os_upgrade`) to reflect the
- * OS upgrade in the UI.
+ * OS update or upgrade in the UI.
+ *
+ * The #GsApp instance is returned by
+ * `gs_plugin_eos_updater_list_distro_upgrades_async()` or
+ * `gs_plugin_add_updates()` depending on whether it contains significant
+ * user visible changes, as determined by the `update-is-user-visible` property
+ * on the proxy. (This in turn is set from information on the release OSTree
+ * commit.) The #GsApp will be returned by at most one of these vfuncs.
  *
  * Calling gs_plugin_refresh() will result in this plugin calling the `Poll()`
  * method on the `eos-updater` daemon to check for a new update.
@@ -198,7 +205,7 @@ struct GsPluginData
 	/* These members are only set once in gs_plugin_setup(), and are
 	 * internally thread-safe, so can be accessed without holding @mutex: */
 	GsEosUpdater *updater_proxy;  /* (owned) */
-	GsApp *os_upgrade;  /* (owned) */
+	GsApp *os_upgrade;  /* (owned); represents both large upgrades and small updates */
 	GCancellable *cancellable;  /* (owned) */
 	gulong cancelled_id;
 
@@ -223,7 +230,7 @@ os_upgrade_cancelled_cb (GCancellable *cancellable,
 }
 
 static gboolean
-should_add_os_upgrade (AsAppState state)
+should_add_os_update_or_upgrade (AsAppState state)
 {
 	switch (state) {
 	case AS_APP_STATE_AVAILABLE:
@@ -242,6 +249,24 @@ should_add_os_upgrade (AsAppState state)
 	}
 }
 
+static gboolean
+should_add_os_upgrade (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	return (should_add_os_update_or_upgrade (gs_app_get_state (priv->os_upgrade)) &&
+	        gs_app_has_quirk (priv->os_upgrade, GS_APP_QUIRK_IS_PROXY));
+}
+
+static gboolean
+should_add_os_update (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	return (should_add_os_update_or_upgrade (gs_app_get_state (priv->os_upgrade)) &&
+	        !gs_app_has_quirk (priv->os_upgrade, GS_APP_QUIRK_IS_PROXY));
+}
+
 /* Wrapper around gs_app_set_state() which ensures we also notify of update
  * changes if we change between non-upgradable and upgradable states, so that
  * the app is notified to appear in the UI. */
@@ -257,8 +282,8 @@ app_set_state (GsPlugin   *plugin,
 
 	gs_app_set_state (app, new_state);
 
-	if (should_add_os_upgrade (old_state) !=
-	    should_add_os_upgrade (new_state)) {
+	if (should_add_os_update_or_upgrade (old_state) !=
+	    should_add_os_update_or_upgrade (new_state)) {
 		g_debug ("%s: Calling gs_plugin_updates_changed()", G_STRFUNC);
 		gs_plugin_updates_changed (plugin);
 	}
@@ -268,6 +293,32 @@ static gboolean
 eos_updater_error_is_cancelled (const gchar *error_name)
 {
 	return (g_strcmp0 (error_name, "com.endlessm.Updater.Error.Cancelled") == 0);
+}
+
+static void
+app_set_update_is_user_visible (GsApp    *app,
+                                gboolean  update_is_user_visible)
+{
+	g_debug ("%s: Setting OS update as %s", G_STRFUNC,
+		 update_is_user_visible ? "containing significant user visible changes" : "only containing non-user visible changes");
+
+	/* If the update contains significant user visible changes, we want to
+	 * show it using the OS upgrade banner (#GsUpgradeBanner), which means
+	 * it needs a certain set of metadata set on it.
+	 *
+	 * If it doesn’t contain significant user visible changes, we want to
+	 * show it as a normal update row (a row in a #GsUpdatesSection), which
+	 * means it needs different metadata.
+	 *
+	 * Other parts of the code in this plugin use the presence of
+	 * #GS_APP_QUIRK_IS_PROXY to distinguish these two states. */
+	if (update_is_user_visible) {
+		gs_app_add_quirk (app, GS_APP_QUIRK_IS_PROXY);
+		gs_app_set_kind (app, AS_APP_KIND_OS_UPGRADE);
+	} else {
+		gs_app_remove_quirk (app, GS_APP_QUIRK_IS_PROXY);
+		gs_app_set_kind (app, AS_APP_KIND_OS_UPDATE);
+	}
 }
 
 /* This will be invoked in the main thread. */
@@ -309,6 +360,18 @@ updater_version_changed (GsPlugin *plugin)
 	 * of the version, for use in error messages. */
 	if (version != NULL)
 		gs_app_set_version (priv->os_upgrade, version);
+}
+
+/* This will be invoked in the main thread, but doesn’t currently need to hold
+ * `mutex` since it only accesses `priv->updater_proxy` and `priv->os_upgrade`,
+ * both of which are internally thread-safe. */
+static void
+updater_update_is_user_visible_changed (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	gboolean update_is_user_visible = gs_eos_updater_get_update_is_user_visible (priv->updater_proxy);
+
+	app_set_update_is_user_visible (priv->os_upgrade, update_is_user_visible);
 }
 
 /* This will be invoked in the main thread, but doesn’t currently need to hold
@@ -380,6 +443,7 @@ sync_state_from_updater_unlocked (GsPlugin *plugin)
 	} case EOS_UPDATER_STATE_UPDATE_AVAILABLE: {
 		guint64 total_size;
 
+		app_set_update_is_user_visible (app, gs_eos_updater_get_update_is_user_visible (priv->updater_proxy));
 		app_set_state (plugin, app, AS_APP_STATE_AVAILABLE);
 
 		total_size = gs_eos_updater_get_download_size (priv->updater_proxy);
@@ -483,8 +547,8 @@ sync_state_from_updater_unlocked (GsPlugin *plugin)
 
 	/* if the state changed from or to 'unknown', we need to notify that a
 	 * new update should be shown */
-	if (should_add_os_upgrade (previous_app_state) !=
-	    should_add_os_upgrade (current_app_state)) {
+	if (should_add_os_update_or_upgrade (previous_app_state) !=
+	    should_add_os_update_or_upgrade (current_app_state)) {
 		g_debug ("%s: Calling gs_plugin_updates_changed()", G_STRFUNC);
 		gs_plugin_updates_changed (plugin);
 	}
@@ -553,6 +617,9 @@ gs_plugin_setup (GsPlugin *plugin,
 	g_signal_connect_object (priv->updater_proxy, "notify::version",
 				 G_CALLBACK (updater_version_changed),
 				 plugin, G_CONNECT_SWAPPED);
+	g_signal_connect_object (priv->updater_proxy, "notify::update-is-user-visible",
+				 G_CALLBACK (updater_update_is_user_visible_changed),
+				 plugin, G_CONNECT_SWAPPED);
 
 	/* prepare EOS upgrade app + sync initial state */
 
@@ -574,6 +641,8 @@ gs_plugin_setup (GsPlugin *plugin,
 	/* ensure that the version doesn't appear as (NULL) in the banner, it
 	 * should be changed to the right value when it changes in the eos-updater */
 	gs_app_set_version (app, "");
+	/* default to minor updates */
+	app_set_update_is_user_visible (app, FALSE);
 	gs_app_add_quirk (app, GS_APP_QUIRK_NEEDS_REBOOT);
 	gs_app_add_quirk (app, GS_APP_QUIRK_PROVENANCE);
 	gs_app_add_quirk (app, GS_APP_QUIRK_NOT_REVIEWABLE);
@@ -615,6 +684,9 @@ gs_plugin_destroy (GsPlugin *plugin)
 						      plugin);
 		g_signal_handlers_disconnect_by_func (priv->updater_proxy,
 						      G_CALLBACK (updater_version_changed),
+						      plugin);
+		g_signal_handlers_disconnect_by_func (priv->updater_proxy,
+						      G_CALLBACK (updater_update_is_user_visible_changed),
 						      plugin);
 	}
 
@@ -749,12 +821,45 @@ gs_plugin_add_distro_upgrades (GsPlugin *plugin,
 		return TRUE;
 	}
 
-	if (should_add_os_upgrade (gs_app_get_state (priv->os_upgrade))) {
-		g_debug ("Adding EOS upgrade: %s",
+	if (should_add_os_upgrade (plugin)) {
+		g_debug ("Adding EOS upgrade as user visible OS upgrade: %s",
 			 gs_app_get_unique_id (priv->os_upgrade));
 		gs_app_list_add (list, priv->os_upgrade);
 	} else {
-		g_debug ("Not adding EOS upgrade");
+		g_debug ("Not adding EOS upgrade as user visible OS upgrade");
+	}
+
+	return TRUE;
+}
+
+/* This is called in a #GTask worker thread.
+ *
+ * It’s used to check for non-significant or non-user-visible updates, in
+ * contrast to the significant user visible updates checked for by
+ * gs_plugin_eos_updater_list_distro_upgrades_async(). The polling process is
+ * the same in either case, though. */
+gboolean
+gs_plugin_add_updates (GsPlugin      *plugin,
+                       GsAppList     *list,
+                       GCancellable  *cancellable,
+                       GError       **error)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+
+	g_debug ("%s", G_STRFUNC);
+
+	/* check if the OS upgrade has been disabled */
+	if (priv->updater_proxy == NULL) {
+		g_debug ("%s: Updater disabled", G_STRFUNC);
+		return TRUE;
+	}
+
+	if (should_add_os_update (plugin)) {
+		g_debug ("Adding EOS upgrade as non-user visible OS update: %s",
+			 gs_app_get_unique_id (priv->os_upgrade));
+		gs_app_list_add (list, priv->os_upgrade);
+	} else {
+		g_debug ("Not adding EOS upgrade as non-user visible OS update");
 	}
 
 	return TRUE;
@@ -1020,12 +1125,29 @@ gs_plugin_eos_updater_app_upgrade_download (GsPlugin      *plugin,
 }
 
 /* Called in a #GTask worker thread, and it needs to hold `priv->mutex` due to
- * synchronising on state with the main thread. */
+ * synchronising on state with the main thread.
+ *
+ * It’s used to download the update if it’s been listed in the UI as a major
+ * upgrade. The download process is the same. */
 gboolean
 gs_plugin_app_upgrade_download (GsPlugin *plugin,
 				GsApp *app,
 			        GCancellable *cancellable,
 				GError **error)
+{
+	return gs_plugin_eos_updater_app_upgrade_download (plugin, app, cancellable, error);
+}
+
+/* Called in a #GTask worker thread, and it needs to hold `priv->mutex` due to
+ * synchronising on state with the main thread.
+ *
+ * It’s used to download the update if it’s been listed in the UI as a minor
+ * update. The download process is the same. */
+gboolean
+gs_plugin_download_app (GsPlugin      *plugin,
+                        GsApp         *app,
+                        GCancellable  *cancellable,
+                        GError       **error)
 {
 	return gs_plugin_eos_updater_app_upgrade_download (plugin, app, cancellable, error);
 }
