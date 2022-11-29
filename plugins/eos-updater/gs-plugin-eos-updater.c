@@ -807,11 +807,11 @@ cancelled_cb (GCancellable *ui_cancellable,
 
 /* Called in a #GTask worker thread, and it needs to hold `priv->mutex` due to
  * synchronising on state with the main thread. */
-gboolean
-gs_plugin_app_upgrade_download (GsPlugin *plugin,
-				GsApp *app,
-			        GCancellable *cancellable,
-				GError **error)
+static gboolean
+gs_plugin_eos_updater_app_upgrade_download (GsPlugin      *plugin,
+                                            GsApp         *app,
+                                            GCancellable  *cancellable,
+                                            GError       **error)
 {
 	GsPluginData *priv = gs_plugin_get_data (plugin);
 	gulong cancelled_id = 0;
@@ -1017,6 +1017,17 @@ gs_plugin_app_upgrade_download (GsPlugin *plugin,
 	}
 
 	return TRUE;
+}
+
+/* Called in a #GTask worker thread, and it needs to hold `priv->mutex` due to
+ * synchronising on state with the main thread. */
+gboolean
+gs_plugin_app_upgrade_download (GsPlugin *plugin,
+				GsApp *app,
+			        GCancellable *cancellable,
+				GError **error)
+{
+	return gs_plugin_eos_updater_app_upgrade_download (plugin, app, cancellable, error);
 }
 
 /* Called in a #GTask worker thread, but it can run without holding
