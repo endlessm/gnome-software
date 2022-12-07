@@ -15,8 +15,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software master\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-software/issues\n"
-"POT-Creation-Date: 2022-10-21 17:04+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-12-19 16:07+0000\n"
 "PO-Revision-Date: 2022-11-12 16:54+0300\n"
 "Last-Translator: Sabri Ünal <libreajans@gmail.com>\n"
 "Language-Team: Turkish <gnometurk@gnome.org>\n"
@@ -29,7 +29,6 @@ msgstr ""
 "X-POOTLE-MTIME: 1433975102.000000\n"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:7 src/gs-shell.ui:21
-#: src/org.gnome.Software.desktop.in:3
 msgid "Software"
 msgstr "Yazılımlar"
 
@@ -79,8 +78,7 @@ msgstr "Güncellemeler bölmesi"
 msgid "The update details"
 msgstr "Güncelleme ayrıntıları"
 
-#: data/metainfo/org.gnome.Software.metainfo.xml.in:2076
-#: src/gs-application.c:256
+#: data/metainfo/org.gnome.Software.metainfo.xml.in:89 src/gs-application.c:256
 msgid "The GNOME Project"
 msgstr "GNOME Projesi"
 
@@ -2200,12 +2198,12 @@ msgstr "Kaldırılıyor…"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:870 src/gs-details-page.c:896
+#: src/gs-details-page.c:873 src/gs-details-page.c:899
 #: src/gs-details-page.ui:228 plugins/packagekit/gs-packagekit-task.c:150
 msgid "_Install"
 msgstr "_Kur"
 
-#: src/gs-details-page.c:886
+#: src/gs-details-page.c:889
 msgid "_Restart"
 msgstr "_Yeniden Başlat"
 
@@ -2213,22 +2211,22 @@ msgstr "_Yeniden Başlat"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
-#: src/gs-details-page.c:910
+#: src/gs-details-page.c:913
 msgid "_Install…"
 msgstr "_Kur…"
 
 #. Translators: the '%s' is replaced with a developer name or a project group
-#: src/gs-details-page.c:1187
+#: src/gs-details-page.c:1190
 #, c-format
 msgid "Other Apps by %s"
 msgstr "Diğer %s Uygulamaları"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1570
+#: src/gs-details-page.c:1573
 msgid "You need internet access to write a review"
 msgstr "Değerlendirme yazmanız için İnternet erişimi gerekiyor"
 
-#: src/gs-details-page.c:1734 src/gs-details-page.c:1750
+#: src/gs-details-page.c:1737 src/gs-details-page.c:1753
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "“%s” bulunamıyor"
@@ -2840,8 +2838,8 @@ msgid ""
 "\n"
 "You can contribute and help make it even better."
 msgstr ""
-"Bu yazılım, gönüllü topluluğunca açık olarak geliştirilmiş ve <a href=\"%s\">"
-"%s lisansıyla</a> dağıtılmıştır.\n"
+"Bu yazılım, gönüllü topluluğunca açık olarak geliştirilmiş ve <a "
+"href=\"%s\">%s lisansıyla</a> dağıtılmıştır.\n"
 "\n"
 "Katkıda bulunarak daha iyi olmasını sağlayabilirsiniz."
 
@@ -2974,12 +2972,12 @@ msgstr "Sürüm Düşürmeler"
 #. Translators: This is a clickable link on the third party repositories info bar. It's
 #. part of a constructed sentence: "Provides access to additional software from [selected external sources].
 #. Some proprietary software is included."
-#: src/gs-overview-page.c:876
+#: src/gs-overview-page.c:879
 msgid "selected external sources"
 msgstr "Seçili dış kaynaklardan"
 
 #. Translators: This is the third party repositories info bar. The %s is replaced with "selected external sources" link.
-#: src/gs-overview-page.c:878
+#: src/gs-overview-page.c:881
 #, c-format
 msgid ""
 "Provides access to additional software from %s. Some proprietary software is "
@@ -2988,13 +2986,13 @@ msgstr "%s ek yazılıma erişim sağlar. Bazı sahipli yazılımları içerir."
 
 #. TRANSLATORS: button to turn on third party software repositories
 #. TRANSLATORS: button to accept the agreement
-#: src/gs-overview-page.c:887 src/gs-repos-dialog.c:173
+#: src/gs-overview-page.c:890 src/gs-repos-dialog.c:173
 msgid "Enable"
 msgstr "Etkinleştir"
 
 #. Translators: This is the title of the main page of the UI.
 #. Translators: A label for a button to show all available software.
-#: src/gs-overview-page.c:946 src/gs-shell.ui:294
+#: src/gs-overview-page.c:949 src/gs-shell.ui:294
 msgid "Explore"
 msgstr "Keşfet"
 
@@ -3015,7 +3013,7 @@ msgstr "Diğer Kategoriler"
 msgid "No Application Data Found"
 msgstr "Uygulama Verisi Bulunamadı"
 
-#: lib/gs-plugin-loader.c:2829
+#: lib/gs-plugin-loader.c:2833
 msgctxt "Distribution name"
 msgid "Unknown"
 msgstr "Bilinmeyen"
@@ -3334,13 +3332,13 @@ msgstr ""
 
 #: src/gs-review-dialog.ui:156
 msgid ""
-"Find what data is sent in our <a href=\"https://odrs.gnome.org/privacy"
-"\">privacy policy</a>. The full name attached to your account will be shown "
-"publicly."
+"Find what data is sent in our <a href=\"https://odrs.gnome.org/"
+"privacy\">privacy policy</a>. The full name attached to your account will be "
+"shown publicly."
 msgstr ""
-"Ne verisinin gönderildiğini <a href=\"https://odrs.gnome.org/privacy"
-"\">gizlilik ilkemizde</a> bulabilirsiniz. Hesabınıza ilişik tam adınız "
-"açıkça gösterilecektir."
+"Ne verisinin gönderildiğini <a href=\"https://odrs.gnome.org/"
+"privacy\">gizlilik ilkemizde</a> bulabilirsiniz. Hesabınıza ilişik tam "
+"adınız açıkça gösterilecektir."
 
 #: src/gs-review-histogram.c:72
 #, c-format
@@ -4229,7 +4227,7 @@ msgstr "Diski İncele"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-shell.ui:108 src/gs-updates-page.c:881
+#: src/gs-shell.ui:108 src/gs-updates-page.c:926
 msgid "Network Settings"
 msgstr "Ağ Ayarları"
 
@@ -4441,62 +4439,62 @@ msgid "Includes %s, %s and %s."
 msgstr "%s, %s ve %s içerir."
 
 #. TRANSLATORS: this is when the current operating system version goes end-of-life
-#: src/gs-update-monitor.c:671 src/gs-updates-page.ui:20
+#: src/gs-update-monitor.c:669 src/gs-updates-page.ui:52
 msgid "Operating System Updates Unavailable"
 msgstr "İşletim Sistemi Güncellemeleri Kullanılamaz"
 
 #. TRANSLATORS: this is the message dialog for the distro EOL notice
-#: src/gs-update-monitor.c:673
+#: src/gs-update-monitor.c:671
 msgid "Upgrade to continue receiving security updates."
 msgstr "Güvenlik güncellemelerini almayı sürdürmek için yükselt."
 
 #. TRANSLATORS: this is a distro upgrade, the replacement would be the
 #. * distro name, e.g. 'Fedora'
-#: src/gs-update-monitor.c:728
+#: src/gs-update-monitor.c:726
 #, c-format
 msgid "A new version of %s is available to install"
 msgstr "%s dağıtımının yeni sürümü kuruluma hazır"
 
 #. TRANSLATORS: this is a distro upgrade
-#: src/gs-update-monitor.c:732
+#: src/gs-update-monitor.c:730
 msgid "Software Upgrade Available"
 msgstr "Yazılım Yükseltmesi Var"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:1137
+#: src/gs-update-monitor.c:1135
 msgid "Software Updates Failed"
 msgstr "Yazılım Güncellemeleri Başarısız Oldu"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:1139
+#: src/gs-update-monitor.c:1137
 msgid "An important operating system update failed to be installed."
 msgstr "Önemli işletim sistemi güncellemesi kurulumu başarısız oldu."
 
-#: src/gs-update-monitor.c:1140
+#: src/gs-update-monitor.c:1138
 msgid "Show Details"
 msgstr "Ayrıntıları Göster"
 
 #. TRANSLATORS: Notification title when we've done a distro upgrade
-#: src/gs-update-monitor.c:1162
+#: src/gs-update-monitor.c:1160
 msgid "System Upgrade Complete"
 msgstr "Sistem Yükseltmesi Tamamlandı"
 
 #. TRANSLATORS: This is the notification body when we've done a
 #. * distro upgrade. First %s is the distro name and the 2nd %s
 #. * is the version, e.g. "Welcome to Fedora 28!"
-#: src/gs-update-monitor.c:1167
+#: src/gs-update-monitor.c:1165
 #, c-format
 msgid "Welcome to %s %s!"
 msgstr "%s %s’a Hoş Geldiniz!"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1173
+#: src/gs-update-monitor.c:1171
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Yazılım Güncellemeleri Kuruldu"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1177
+#: src/gs-update-monitor.c:1175
 msgid "An important operating system update has been installed."
 msgid_plural "Important operating system updates have been installed."
 msgstr[0] "Önemli işletim sistemi güncellemeleri kuruldu."
@@ -4506,30 +4504,30 @@ msgstr[0] "Önemli işletim sistemi güncellemeleri kuruldu."
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1188
+#: src/gs-update-monitor.c:1186
 msgctxt "updates"
 msgid "Review"
 msgstr "Gözden Geçir"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1237
+#: src/gs-update-monitor.c:1235
 msgid "Failed To Update"
 msgstr "Güncelleme Başarısız Oldu"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1242
+#: src/gs-update-monitor.c:1240
 msgid "The system was already up to date."
 msgstr "Sistem zaten güncel."
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1247
+#: src/gs-update-monitor.c:1245
 msgid "The update was cancelled."
 msgstr "Güncelleme iptal edildi."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1252
+#: src/gs-update-monitor.c:1250
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you "
 "have internet access and try again."
@@ -4538,7 +4536,7 @@ msgstr ""
 "erişiminiz olduğuna emin olun ve yeniden deneyin."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1257
+#: src/gs-update-monitor.c:1255
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
@@ -4547,14 +4545,14 @@ msgstr ""
 "sağlayıcınızla iletişime geçin."
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1262
+#: src/gs-update-monitor.c:1260
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr ""
 "Yeterince boş disk alanı yok. Lütfen biraz yer açın ve yeniden deneyin."
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1266
+#: src/gs-update-monitor.c:1264
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -4562,41 +4560,51 @@ msgstr ""
 "Özür dileriz: güncelleme kurma başarısız. Lütfen başka güncelleme bekleyin "
 "ve yeniden deneyin. Eğer sorun sürerse yazılım sağlayıcınızla görüşün."
 
+#: src/gs-updates-page.c:249
+#, fuzzy
+msgid "automatic updates on"
+msgstr "Kendiliğinden Güncellemeler"
+
+#: src/gs-updates-page.c:252
+#, fuzzy
+msgid "automatic updates off"
+msgstr "Kendiliğinden Güncellemeler"
+
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:247
+#: src/gs-updates-page.c:288
 #, c-format
 msgid "Last checked: %s"
 msgstr "Son denetim: %s"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:559
+#: src/gs-updates-page.c:602
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "%s %s artık desteklenmiyor."
 
-#: src/gs-updates-page.c:563
+#: src/gs-updates-page.c:606
 msgid "Your operating system is no longer supported."
 msgstr "İşletim sisteminiz artık desteklenmiyor."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:568
+#: src/gs-updates-page.c:611
 msgid "This means that it does not receive security updates."
 msgstr "Bu, güvenlik güncelleştirmeleri almayacağı anlamına gelir."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:572
+#: src/gs-updates-page.c:615
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "Daha yeni sürüme yükseltmeniz önerilmektedir."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:849
+#: src/gs-updates-page.c:894
 msgid "Charges May Apply"
 msgstr "Ücret Uygulanabilir"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:853
+#: src/gs-updates-page.c:898
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -4606,26 +4614,26 @@ msgstr ""
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:857
+#: src/gs-updates-page.c:902
 msgid "Check _Anyway"
 msgstr "Yine de _Denetle"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:873
+#: src/gs-updates-page.c:918
 msgid "No Network"
 msgstr "Ağ Yok"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:877
+#: src/gs-updates-page.c:922
 msgid "Internet access is required to check for updates."
 msgstr "Güncellemeleri denetlemek için İnternet erişimi gerekir."
 
-#: src/gs-updates-page.c:1250
+#: src/gs-updates-page.c:1355
 msgid "Check for updates"
 msgstr "Güncellemeleri denetle"
 
-#: src/gs-updates-page.c:1286
+#: src/gs-updates-page.c:1398
 msgctxt "Apps to be updated"
 msgid "Updates"
 msgstr "Güncellemeler"
@@ -4635,25 +4643,25 @@ msgid "Updates page"
 msgstr "Güncellemeler sayfası"
 
 #. TRANSLATORS: the updates panel is starting up.
-#: src/gs-updates-page.ui:82
+#: src/gs-updates-page.ui:114
 msgid "Loading Updates…"
 msgstr "Güncellemeler Yükleniyor…"
 
 #. TRANSLATORS: the updates panel is starting up.
-#: src/gs-updates-page.ui:95
+#: src/gs-updates-page.ui:127
 msgid "This could take a while."
 msgstr "Biraz uzun sürebilir."
 
 #. TRANSLATORS: This means all software (plural) installed on this system is up to date.
-#: src/gs-updates-page.ui:203
+#: src/gs-updates-page.ui:235
 msgid "Up to Date"
 msgstr "Güncel"
 
-#: src/gs-updates-page.ui:242
+#: src/gs-updates-page.ui:274
 msgid "Use Mobile Data?"
 msgstr "Mobil Veri Kullan?"
 
-#: src/gs-updates-page.ui:243
+#: src/gs-updates-page.ui:275
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges."
@@ -4661,27 +4669,27 @@ msgstr ""
 "Mobil geniş bant kullanırken güncellemeleri denetlemek ek masrafa neden "
 "olabilir."
 
-#: src/gs-updates-page.ui:246
+#: src/gs-updates-page.ui:278
 msgid "_Check Anyway"
 msgstr "Yine de _Denetle"
 
-#: src/gs-updates-page.ui:262
+#: src/gs-updates-page.ui:294
 msgid "No Connection"
 msgstr "Bağlantı Yok"
 
-#: src/gs-updates-page.ui:263
+#: src/gs-updates-page.ui:295
 msgid "Go online to check for updates."
 msgstr "Güncellemeleri denetlemek için çevrim içi ol."
 
-#: src/gs-updates-page.ui:266
+#: src/gs-updates-page.ui:298
 msgid "_Network Settings"
 msgstr "_Ağ Ayarları"
 
-#: src/gs-updates-page.ui:295
+#: src/gs-updates-page.ui:327
 msgid "Error"
 msgstr "Hata"
 
-#: src/gs-updates-page.ui:296
+#: src/gs-updates-page.ui:328
 msgid "Updates are automatically managed."
 msgstr "Güncellemeler kendiliğinden yönetilir."
 
@@ -4776,6 +4784,10 @@ msgstr "_Yeniden Başlat ve Yükselt"
 msgid "Remember to back up data and files before upgrading."
 msgstr "Yükseltmeden önce verinizi ve dosyalarınızı yedeklemeyi unutmayın."
 
+#: src/org.gnome.Software.desktop.in:3
+msgid "App Center"
+msgstr ""
+
 #: src/org.gnome.Software.desktop.in:4
 msgid "Add, remove or update software on this computer"
 msgstr "Bu bilgisayara yazılım ekle, kaldır ya da güncelle"
@@ -4810,13 +4822,18 @@ msgstr ""
 msgid "Downloading featured images…"
 msgstr "Vitrin resimleri indiriliyor…"
 
+#: plugins/eos/gs-plugin-eos.c:173
+#, fuzzy, c-format
+msgid "Could not launch this application."
+msgstr "Uygulama seç:"
+
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
-#: plugins/eos-updater/gs-plugin-eos-updater.c:637
+#: plugins/eos-updater/gs-plugin-eos-updater.c:639
 #, c-format
 msgid "%s update with new features and fixes."
 msgstr "Yeni özellikler ve düzeltmeler içeren %s güncellemesi."
 
-#: plugins/eos-updater/gs-plugin-eos-updater.c:970
+#: plugins/eos-updater/gs-plugin-eos-updater.c:1019
 msgid "EOS update service could not fetch and apply the update."
 msgstr "EOS güncelleme servisi güncelleme alamadı ve uygulayamadı."
 
@@ -4866,135 +4883,135 @@ msgstr "Flatpak, Linux’taki masaüstü uygulamaları için çerçevedir"
 # Paths:
 # plugins/fwupd/gs-fwupd-app.c:141
 #. Reference: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#idm45858571325264
-#: plugins/flatpak/gs-flatpak.c:313
+#: plugins/flatpak/gs-flatpak.c:324
 #, c-format
 msgid "System folder %s"
 msgstr "Sistem klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:314 plugins/flatpak/gs-flatpak.c:315
+#: plugins/flatpak/gs-flatpak.c:325 plugins/flatpak/gs-flatpak.c:326
 #, c-format
 msgid "Home subfolder %s"
 msgstr "Ev alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:316
+#: plugins/flatpak/gs-flatpak.c:327
 msgid "Host system folders"
 msgstr "Ana makine sistem klasörleri"
 
-#: plugins/flatpak/gs-flatpak.c:317
+#: plugins/flatpak/gs-flatpak.c:328
 msgid "Host system configuration from /etc"
 msgstr "/etc dizininden ana makine sistem yapılandırması"
 
-#: plugins/flatpak/gs-flatpak.c:318
+#: plugins/flatpak/gs-flatpak.c:329
 msgid "Desktop folder"
 msgstr "Masaüstü klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:318
+#: plugins/flatpak/gs-flatpak.c:329
 #, c-format
 msgid "Desktop subfolder %s"
 msgstr "Masaüstü alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:319
+#: plugins/flatpak/gs-flatpak.c:330
 msgid "Documents folder"
 msgstr "Belgeler klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:319
+#: plugins/flatpak/gs-flatpak.c:330
 #, c-format
 msgid "Documents subfolder %s"
 msgstr "Belgeler alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:320
+#: plugins/flatpak/gs-flatpak.c:331
 msgid "Music folder"
 msgstr "Müzik klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:320
+#: plugins/flatpak/gs-flatpak.c:331
 #, c-format
 msgid "Music subfolder %s"
 msgstr "Müzik alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:321
+#: plugins/flatpak/gs-flatpak.c:332
 msgid "Pictures folder"
 msgstr "Resimler klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:321
+#: plugins/flatpak/gs-flatpak.c:332
 #, c-format
 msgid "Pictures subfolder %s"
 msgstr "Resimler alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:322
+#: plugins/flatpak/gs-flatpak.c:333
 msgid "Public Share folder"
 msgstr "Paylaşılanlar klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:322
+#: plugins/flatpak/gs-flatpak.c:333
 #, c-format
 msgid "Public Share subfolder %s"
 msgstr "Paylaşılanlar alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:323
+#: plugins/flatpak/gs-flatpak.c:334
 msgid "Videos folder"
 msgstr "Videolar klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:323
+#: plugins/flatpak/gs-flatpak.c:334
 #, c-format
 msgid "Videos subfolder %s"
 msgstr "Videolar alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:324
+#: plugins/flatpak/gs-flatpak.c:335
 msgid "Templates folder"
 msgstr "Şablonlar klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:324
+#: plugins/flatpak/gs-flatpak.c:335
 #, c-format
 msgid "Templates subfolder %s"
 msgstr "Şablonlar alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:325
+#: plugins/flatpak/gs-flatpak.c:336
 msgid "User cache folder"
 msgstr "Kullanıcı ön bellek klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:325
+#: plugins/flatpak/gs-flatpak.c:336
 #, c-format
 msgid "User cache subfolder %s"
 msgstr "Kullanıcı ön bellek alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:326
+#: plugins/flatpak/gs-flatpak.c:337
 msgid "User configuration folder"
 msgstr "Kullanıcı yapılandırma klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:326
+#: plugins/flatpak/gs-flatpak.c:337
 #, c-format
 msgid "User configuration subfolder %s"
 msgstr "Kullanıcı yapılandırma alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:327
+#: plugins/flatpak/gs-flatpak.c:338
 msgid "User data folder"
 msgstr "Kullanıcı veri klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:327
+#: plugins/flatpak/gs-flatpak.c:338
 #, c-format
 msgid "User data subfolder %s"
 msgstr "Kullanıcı verisi alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:328
+#: plugins/flatpak/gs-flatpak.c:339
 msgid "User runtime folder"
 msgstr "Kullanıcı çalışma zamanı klasörü"
 
-#: plugins/flatpak/gs-flatpak.c:328
+#: plugins/flatpak/gs-flatpak.c:339
 #, c-format
 msgid "User runtime subfolder %s"
 msgstr "Kullanıcı çalışma zamanı alt klasörü %s"
 
-#: plugins/flatpak/gs-flatpak.c:386
+#: plugins/flatpak/gs-flatpak.c:397
 #, c-format
 msgid "Filesystem access to %s"
 msgstr "Dosya sistemi erişimi %s"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:1403
+#: plugins/flatpak/gs-flatpak.c:1414
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "%s için flatpak üst verisi alınıyor…"
 
-#: plugins/flatpak/gs-flatpak.c:3580
+#: plugins/flatpak/gs-flatpak.c:3643
 #, c-format
 msgid "Failed to refine addon ‘%s’: %s"
 msgstr "‘%s’ eklentisi arıtılamadı: %s"
@@ -5007,17 +5024,32 @@ msgstr "Kullanıcı Kurulumu"
 msgid "System Installation"
 msgstr "Sistem Kurulumu"
 
-#: plugins/flatpak/gs-plugin-flatpak.c:1038
+#: plugins/flatpak/gs-plugin-flatpak.c:1070
+#: plugins/flatpak/gs-plugin-flatpak.c:1533
+#, c-format
+msgid ""
+"You don’t have enough space to update these apps. Please remove apps or "
+"documents to create more space."
+msgstr ""
+
+#: plugins/flatpak/gs-plugin-flatpak.c:1162
 #, c-format
 msgid "Failed to add to install for addon ‘%s’: %s"
 msgstr "‘%s’ eklentisi için kurulum eklenemedi: %s"
 
-#: plugins/flatpak/gs-plugin-flatpak.c:1052
+#: plugins/flatpak/gs-plugin-flatpak.c:1176
 #, c-format
 msgid "Failed to add to uninstall for addon ‘%s’: %s"
 msgstr "‘%s’ eklentisi için kaldırma eklenemedi: %s"
 
-#: plugins/flatpak/gs-plugin-flatpak.c:1318
+#: plugins/flatpak/gs-plugin-flatpak.c:1351
+#, c-format
+msgid ""
+"You don’t have enough space to install %s. Please remove apps or documents "
+"to create more space."
+msgstr ""
+
+#: plugins/flatpak/gs-plugin-flatpak.c:1453
 #, c-format
 msgid ""
 "Remote “%s” doesn't allow install of “%s”, possibly due to its filter. "
@@ -5240,7 +5272,7 @@ msgstr ""
 msgid "Packages"
 msgstr "Paketler"
 
-#: plugins/rpm-ostree/gs-plugin-rpm-ostree.c:2690
+#: plugins/rpm-ostree/gs-plugin-rpm-ostree.c:2696
 msgid "Operating System (OSTree)"
 msgstr "İşletim Sistemi (OSTree)"
 

@@ -4,8 +4,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/GNOME/gnome-software/issues\n"
-"POT-Creation-Date: 2022-08-26 11:43+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-12-19 16:07+0000\n"
 "PO-Revision-Date: 2022-09-03 11:32+0300\n"
 "Last-Translator: Rūdolfs Mazurs <rudolfs.mazurs@gmail.com>\n"
 "Language-Team: Latvian <lata-l10n@googlegroups.com>\n"
@@ -13,17 +13,15 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 :"
-" 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n != 0 ? 1 : "
+"2);\n"
 "X-Generator: Lokalize 21.12.3\n"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:7 src/gs-shell.ui:21
-#: src/org.gnome.Software.desktop.in:3
 msgid "Software"
 msgstr "Programmatūra"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:8
-#| msgid "Installed Updates"
 msgid "Install and update apps"
 msgstr "Instalēt un atjaunināt lietotnes"
 
@@ -36,11 +34,6 @@ msgstr ""
 "paplašinājumus, kā arī izņemt jau instalētās lietotnes."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:14
-#| msgid ""
-#| "GNOME Software showcases featured and popular applications with useful "
-#| "descriptions and multiple screenshots per application. Applications can "
-#| "be found either through browsing the list of categories or by searching. "
-#| "It also allows you to update your system using an offline update."
 msgid ""
 "Software showcases featured and popular applications with useful "
 "descriptions and multiple screenshots per application. Applications can be "
@@ -74,8 +67,7 @@ msgstr "Atjauninājumu rūts"
 msgid "The update details"
 msgstr "Atjauninājumu informācija"
 
-#: data/metainfo/org.gnome.Software.metainfo.xml.in:1980
-#: src/gs-application.c:256
+#: data/metainfo/org.gnome.Software.metainfo.xml.in:89 src/gs-application.c:256
 msgid "The GNOME Project"
 msgstr "GNOME projekts"
 
@@ -236,8 +228,6 @@ msgstr ""
 "puses krātuvēm"
 
 #: data/org.gnome.software.gschema.xml:94
-#| msgid ""
-#| "A list of official repositories that should not be considered 3rd party"
 msgid "A list of required repositories that cannot be disabled or removed"
 msgstr "Saraksts ar nepieciešamajām krātuvēm, kuras nevar izslēgt vai izņemt"
 
@@ -283,9 +273,6 @@ msgid "The URI that explains nonfree and proprietary software"
 msgstr "URI, kur izskaidro nebrīvu un īpašnieku programmatūru"
 
 #: data/org.gnome.software.gschema.xml:131
-#| msgid ""
-#| "A list of URLs pointing to appstream files that will be downloaded into "
-#| "an app-info folder"
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "swcatalog folder"
@@ -294,21 +281,16 @@ msgstr ""
 "swcatalog mapē"
 
 #: data/org.gnome.software.gschema.xml:135
-#| msgid "Install the AppStream files to a system-wide location for all users"
 msgid ""
 "Install the AppStream files to a system-wide location for all users. If "
 "false, files are installed in non-standard $XDG_DATA_HOME/swcatalog/xml "
 "directory"
 msgstr ""
-"Instalēt AppStream datnes sistēmas atrašanās vietā visiem lietotājiem. Ja"
-" aplams, datnes tiek instalētas nestandarta direktorijā"
-" $XDG_DATA_HOME/swcatalog/xml"
+"Instalēt AppStream datnes sistēmas atrašanās vietā visiem lietotājiem. Ja "
+"aplams, datnes tiek instalētas nestandarta direktorijā $XDG_DATA_HOME/"
+"swcatalog/xml"
 
 #: data/org.gnome.software.gschema.xml:139
-#| msgid ""
-#| "Priority order of packaging formats to prefer, with more important "
-#| "formats listed first. An empty array means the default order. Omitted "
-#| "formats are assumed to be listed last."
 msgid ""
 "Priority order of packaging formats to prefer, with more important formats "
 "listed first. An empty array means the default order. Omitted formats are "
@@ -317,43 +299,41 @@ msgid ""
 msgstr ""
 "Vēlamo pakošanas formātu prioritāšu secība, kur svarīgākie formāti ir "
 "uzskaitīti pirmie. Tukšs masīvs nozīmē noklusējuma secību. Tiek pieņemts, ka "
-"izlaistie formāti ir saraksta beigās. Piemēra pakotņu formāti: deb, flatpak,"
-" rpm, "
-"snap."
+"izlaistie formāti ir saraksta beigās. Piemēra pakotņu formāti: deb, flatpak, "
+"rpm, snap."
 
 #: data/org.gnome.software.gschema.xml:146
 msgid "A string storing the gnome-online-account id used to login"
 msgstr "Virkne, kurā ir gnome-online-account id, kuru izmanto, lai ierakstītos"
 
 #. TRANSLATORS: tool that is used when moving profiles system-wide
-#: gs-install-appstream/gs-install-appstream.c:143
+#: gs-install-appstream/gs-install-appstream.c:185
 msgid "GNOME Software AppStream system-wide installer"
 msgstr "GNOME Software AppStream sistēmas mēroga instalētājs"
 
-#: gs-install-appstream/gs-install-appstream.c:145
+#: gs-install-appstream/gs-install-appstream.c:187
 msgid "Failed to parse command line arguments"
 msgstr "Neizdevās parsēt komandrindas argumentus"
 
 #. TRANSLATORS: user did not specify a valid filename
-#: gs-install-appstream/gs-install-appstream.c:152
+#: gs-install-appstream/gs-install-appstream.c:194
 msgid "You need to specify exactly one filename"
 msgstr "Jums jānorāda tieši vienu datnes nosaukumu"
 
 #. TRANSLATORS: only able to install files as root
-#: gs-install-appstream/gs-install-appstream.c:159
+#: gs-install-appstream/gs-install-appstream.c:201
 msgid "This program can only be used by the root user"
 msgstr "Šo programmu var lietot tikai root lietotājs"
 
 #. TRANSLATORS: error details
-#: gs-install-appstream/gs-install-appstream.c:167
+#: gs-install-appstream/gs-install-appstream.c:209
 #, c-format
 msgid "Failed to validate content type: %s"
 msgstr "Neizdevās validēt satura tipu: %s"
 
 #. TRANSLATORS: error details
-#: gs-install-appstream/gs-install-appstream.c:178
+#: gs-install-appstream/gs-install-appstream.c:220
 #, c-format
-#| msgid "Failed to copy: %s"
 msgid "Failed to move: %s"
 msgstr "Neizdevās pārvietot: %s"
 
@@ -428,7 +408,6 @@ msgstr "Alkohols"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:186
-#| msgid "No references to alcohol"
 msgid "No information regarding references to alcohol"
 msgstr "Nav informācijas par norādēm uz alkoholiskiem dzērieniem"
 
@@ -439,7 +418,6 @@ msgstr "Narkotikas"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:196
-#| msgid "No references to illicit drugs"
 msgid "No information regarding references to illicit drugs"
 msgstr "Nav informācijas par norādēm uz nelegālām narkotikām"
 
@@ -450,7 +428,6 @@ msgstr "Tabaka"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:206
-#| msgid "No references to tobacco products"
 msgid "No information regarding references to tobacco products"
 msgstr "Nav informācijas par norādēm uz tabakas produktiem"
 
@@ -462,7 +439,6 @@ msgstr "Kailums"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:216
-#| msgid "No nudity of any sort"
 msgid "No information regarding nudity of any sort"
 msgstr "Nav informācijas par jebkāda veida kailumu"
 
@@ -473,7 +449,6 @@ msgstr "Seksuāli motīvi"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:226
-#| msgid "No references to or depictions of sexual nature"
 msgid "No information regarding references to or depictions of sexual nature"
 msgstr "Nav informācijas par seksuālas dabas norādēm vai atainojumiem"
 
@@ -484,7 +459,6 @@ msgstr "Rupjības"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:236
-#| msgid "No profanity of any kind"
 msgid "No information regarding profanity of any kind"
 msgstr "Nav informācijas par jebkāda veida rupjībām"
 
@@ -505,7 +479,6 @@ msgstr "Diskriminācija"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:256
-#| msgid "No discriminatory language of any kind"
 msgid "No information regarding discriminatory language of any kind"
 msgstr "Nav informācijas par jebkāda veida diskriminējošu valodu"
 
@@ -516,7 +489,6 @@ msgstr "Reklamēšana"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:266
-#| msgid "No advertising of any kind"
 msgid "No information regarding advertising of any kind"
 msgstr "Nav informācijas par jebkāda veida reklāmām"
 
@@ -527,7 +499,6 @@ msgstr "Azartspēles"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:276
-#| msgid "No gambling of any kind"
 msgid "No information regarding gambling of any kind"
 msgstr "Nav informācijas par jebkāda veida azartspēlēm"
 
@@ -538,7 +509,6 @@ msgstr "Pirkšana"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:286
-#| msgid "No ability to spend money"
 msgid "No information regarding the ability to spend money"
 msgstr "Nav informācijas par iespējām tērēt naudu"
 
@@ -549,7 +519,6 @@ msgstr "Tērzēšana starp lietotājiem"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:296
-#| msgid "No way to chat with other users"
 msgid "No information regarding ways to chat with other users"
 msgstr "Nav informācijas par tērzēšanas iespējām ar citiem lietotājiem"
 
@@ -560,7 +529,6 @@ msgstr "Audio tērzēšana starp lietotājiem"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:306
-#| msgid "No way to talk with other users"
 msgid "No information regarding ways to talk with other users"
 msgstr "Nav informācijas par sarunāšanās iespējām ar citiem lietotājiem"
 
@@ -571,13 +539,12 @@ msgstr "Kontakta informācija"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:316
-#| msgid "No sharing of social network usernames or email addresses"
 msgid ""
 "No information regarding sharing of social network usernames or email "
 "addresses"
 msgstr ""
-"Nav informācijas par dalīšanos ar sociālo tīklu lietotājvārdiem vai e-pasta"
-" adresēm"
+"Nav informācijas par dalīšanos ar sociālo tīklu lietotājvārdiem vai e-pasta "
+"adresēm"
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:324
@@ -586,7 +553,6 @@ msgstr "Identitātes informācija"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:326
-#| msgid "No sharing of user information with third parties"
 msgid "No information regarding sharing of user information with third parties"
 msgstr ""
 "Nav informācijas par dalīšanos ar lietotāju informāciju ar trešajām pusēm"
@@ -598,11 +564,10 @@ msgstr "Dalīšanās ar atrašanās vietu"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:336
-#| msgid "No sharing of physical location with other users"
 msgid "No information regarding sharing of physical location with other users"
 msgstr ""
-"Nav informācijas par dalīšanos ar fizisko atrašanās vietu ar citiem"
-" lietotājiem"
+"Nav informācijas par dalīšanos ar fizisko atrašanās vietu ar citiem "
+"lietotājiem"
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:360
@@ -611,7 +576,6 @@ msgstr "Homoseksualitāte"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:362
-#| msgid "No references to homosexuality"
 msgid "No information regarding references to homosexuality"
 msgstr "Nav informācijas par norādēm uz homoseksualitāti"
 
@@ -622,7 +586,6 @@ msgstr "Prostitūcija"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:372
-#| msgid "No references to prostitution"
 msgid "No information regarding references to prostitution"
 msgstr "Nav informācijas par norādēm uz prostitūciju"
 
@@ -633,7 +596,6 @@ msgstr "Laulības pārkāpšana"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:382
-#| msgid "No references to adultery"
 msgid "No information regarding references to adultery"
 msgstr "Nav informācijas par norādēm uz laulības pārkāpšanu"
 
@@ -654,7 +616,6 @@ msgstr "Apraksts"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:402
-#| msgid "No references to desecration"
 msgid "No information regarding references to desecration"
 msgstr "Nav informācijas par norādēm uz apgānīšanu"
 
@@ -665,7 +626,6 @@ msgstr "Cilvēku mirstīgās atliekas"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:412
-#| msgid "No visible dead human remains"
 msgid "No information regarding visible dead human remains"
 msgstr "Nav informācijas par redzamām cilvēku mirstīgajām atliekām"
 
@@ -676,12 +636,10 @@ msgstr "Verdzība"
 
 #. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:422
-#| msgid "No references to slavery"
 msgid "No information regarding references to slavery"
 msgstr "Nav informācijas par norādēm uz verdzību"
 
 #: src/gs-age-rating-context-dialog.c:494
-#| msgid "No references to illicit drugs"
 msgid "Does not include references to drugs"
 msgstr "Nav norāžu uz nelegālām narkotikām"
 
@@ -699,12 +657,10 @@ msgid "Does not include sex or nudity"
 msgstr "Nesatur seksu vai kailumu"
 
 #: src/gs-age-rating-context-dialog.c:502
-#| msgid "Uncontrolled chat functionality between users"
 msgid "Does not include uncontrolled chat functionality"
 msgstr "Nesatur nekontrolētu tērzēšanas funkcionalitāti"
 
 #: src/gs-age-rating-context-dialog.c:504
-#| msgid "Realistic Violence"
 msgid "Does not include violence"
 msgstr "Nesatur vardarbību"
 
@@ -713,8 +669,6 @@ msgid "Drugs"
 msgstr "Narkotikas"
 
 #: src/gs-age-rating-context-dialog.c:539
-#| msgctxt "Menu of Education & Science"
-#| msgid "Languages"
 msgid "Strong Language"
 msgstr "Rupjības"
 
@@ -723,12 +677,10 @@ msgid "Money"
 msgstr "Nauda"
 
 #: src/gs-age-rating-context-dialog.c:545
-#| msgid "Socialize"
 msgid "Social"
 msgstr "Sociāls"
 
 #: src/gs-age-rating-context-dialog.c:547
-#| msgid "Sexual Violence"
 msgid "Violence"
 msgstr "Vardarbība"
 
@@ -737,15 +689,12 @@ msgstr "Vardarbība"
 #. * ratings for apps. The order of the items does not matter.
 #: src/gs-age-rating-context-dialog.c:658
 #, c-format
-#| msgctxt "repo-row"
-#| msgid "%s • %s"
 msgid "%s • %s"
 msgstr "%s • %s"
 
 #. Translators: The app is considered suitable to be run by all ages of people.
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-age-rating-context-dialog.c:936
-#| msgid "All"
 msgctxt "Age rating"
 msgid "All"
 msgstr "Visiem"
@@ -813,11 +762,10 @@ msgstr "Vecuma vērtējums"
 #: src/gs-age-rating-context-dialog.ui:68
 #: src/gs-hardware-support-context-dialog.ui:71
 #: src/gs-safety-context-dialog.ui:221
-#| msgid "How to add missing information"
 msgid "How to contribute missing information"
 msgstr "Kā papildināt trūkstošo informāciju"
 
-#: lib/gs-app.c:6167
+#: lib/gs-app.c:6178
 msgid "Local file"
 msgstr "Lokālā datne"
 
@@ -826,12 +774,12 @@ msgstr "Lokālā datne"
 #. Example string: "Local file (RPM)"
 #. Translators: The first placeholder is an app runtime
 #. * name, the second is its version number.
-#: lib/gs-app.c:6186 src/gs-safety-context-dialog.c:439
+#: lib/gs-app.c:6197 src/gs-safety-context-dialog.c:439
 #, c-format
 msgid "%s (%s)"
 msgstr "%s (%s)"
 
-#: lib/gs-app.c:6263
+#: lib/gs-app.c:6274
 msgid "Package"
 msgstr "Pakotne"
 
@@ -849,7 +797,6 @@ msgstr "Izņemšana gaida"
 
 #: src/gs-app-addon-row.c:111 src/gs-app-row.ui:197 src/gs-app-tile.ui:50
 #: src/gs-feature-tile.c:535
-#| msgid "Installed"
 msgctxt "Single app"
 msgid "Installed"
 msgstr "Instalēts"
@@ -950,7 +897,6 @@ msgstr "Var izkļūt no smilškastes un apiet citus ierobežojumus"
 #. FIXME support app == NULL
 #. set window title
 #: src/gs-app-details-page.c:166
-#| msgid "The update details"
 msgid "Update Details"
 msgstr "Atjauninājumu informācija"
 
@@ -975,12 +921,10 @@ msgid "Reviews"
 msgstr "Atsauksmes"
 
 #: src/gs-app-reviews-dialog.ui:25
-#| msgid "Sorry! There are no details for that application."
 msgid "No reviews were found for this application."
 msgstr "Nav atrastas atsauksmes par šo lietotni."
 
 #: src/gs-app-reviews-dialog.ui:27
-#| msgid "Reviews"
 msgid "No Reviews"
 msgstr "Nav atsauksmju"
 
@@ -1047,7 +991,6 @@ msgid "Install the application (using application ID)"
 msgstr "Instalēt lietotni (izmantojot lietotnes ID)"
 
 #: src/gs-application.c:134
-#| msgid "Install the application (using application ID)"
 msgid "Uninstall the application (using application ID)"
 msgstr "Atinstalēt lietotni (izmantojot lietotnes ID)"
 
@@ -1096,7 +1039,6 @@ msgid "Show version number"
 msgstr "Rādīt versijas numuru"
 
 #: src/gs-application.c:261 src/gs-application.c:269
-#| msgid "Copyright © 2016–2021 GNOME Software contributors"
 msgid "Copyright © 2016–2022 GNOME Software contributors"
 msgstr "Autortiesības © 2016–2022 GNOME “Programmatūras” veidotāji"
 
@@ -1106,7 +1048,7 @@ msgstr "Rūdolfs Mazurs <rudolfs.mazurs@gmail.com>"
 
 #. TRANSLATORS: this is the title of the about window
 #. TRANSLATORS: this is the menu item that opens the about window
-#: src/gs-application.c:277 src/gs-shell.c:2147
+#: src/gs-application.c:277 src/gs-shell.c:2156
 msgid "About Software"
 msgstr "Par “Programmatūru”"
 
@@ -1230,7 +1172,6 @@ msgstr "Var lasīt visas jūsu lejupielādes"
 #. Translators: This indicates an app can access data in the system unknown to the Software.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:359
-#| msgid "Can access hardware devices"
 msgid "Can access arbitrary files"
 msgstr "Var piekļūt patvaļīgām datnēm"
 
@@ -1287,7 +1228,6 @@ msgstr "Programmatūras izstrādātājs ir pārbaudīts"
 #. Translators: This indicates an app or its runtime reached its end of life.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:447
-#| msgid "Your OS is no longer supported."
 msgid "Software no longer supported"
 msgstr "Programmatūra vairs netiek atbalstīta"
 
@@ -1538,7 +1478,6 @@ msgstr "Citas"
 #. TRANSLATORS: this is a subcategory matching all the
 #. * different apps in the parent category, e.g. "Games"
 #: lib/gs-category.c:214
-#| msgid "All"
 msgctxt "Category"
 msgid "All"
 msgstr "Visas"
@@ -1975,7 +1914,6 @@ msgstr "Lietotne ir gatava lietošanai."
 #. TRANSLATORS: this is the summary of a notification that OS updates
 #. * have been successfully installed
 #: src/gs-common.c:84
-#| msgid "OS updates are now installed"
 msgid "System updates are now installed"
 msgstr "Sistēmas atjauninājumi tagad ir uzinstalēti"
 
@@ -2014,8 +1952,8 @@ msgid ""
 "%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
 "source_software\">free and open source software</a>, and is provided by “%s”."
 msgstr ""
-"%s nav <a href=\"https://en.wikipedia.org/wiki/Free_and_open-source_software"
-"\">brīva un atvērta programmatūra</a>, un to nodrošina “%s”."
+"%s nav <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
+"source_software\">brīva un atvērta programmatūra</a>, un to nodrošina “%s”."
 
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
@@ -2154,7 +2092,7 @@ msgstr[2] "Pirms %d gadiem"
 #. * the unit is drawn with a smaller font. If you need to flip the order, then you can use "%2$s %1$s".
 #. * Make sure you'll preserve the no break space between the values.
 #. * Example result: "13.0 MB"
-#: src/gs-common.c:1246
+#: src/gs-common.c:1255
 #, c-format
 msgctxt "format-size"
 msgid "%s %s"
@@ -2221,7 +2159,7 @@ msgid "Additional Packages Required"
 msgstr "Nepieciešama papildu pakotnes"
 
 #. TRANSLATORS: this is a button that launches gnome-software
-#: src/gs-dbus-helper.c:332
+#: src/gs-dbus-helper.c:338
 msgid "Find in Software"
 msgstr "Meklēt programmatūrā"
 
@@ -2271,12 +2209,12 @@ msgstr "Atinstalē…"
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
 #. * can be live-installed
-#: src/gs-details-page.c:857 src/gs-details-page.c:883
+#: src/gs-details-page.c:873 src/gs-details-page.c:899
 #: src/gs-details-page.ui:228 plugins/packagekit/gs-packagekit-task.c:150
 msgid "_Install"
 msgstr "_Instalēt"
 
-#: src/gs-details-page.c:873
+#: src/gs-details-page.c:889
 msgid "_Restart"
 msgstr "Pā_rstartēt"
 
@@ -2284,22 +2222,22 @@ msgstr "Pā_rstartēt"
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
 #. * e.g. enabling software repositories or the like
-#: src/gs-details-page.c:897
+#: src/gs-details-page.c:913
 msgid "_Install…"
 msgstr "_Instalēt…"
 
 #. Translators: the '%s' is replaced with a developer name or a project group
-#: src/gs-details-page.c:1174
+#: src/gs-details-page.c:1190
 #, c-format
 msgid "Other Apps by %s"
 msgstr "Citas lietotnes no %s"
 
 #. TRANSLATORS: we need a remote server to process
-#: src/gs-details-page.c:1557
+#: src/gs-details-page.c:1573
 msgid "You need internet access to write a review"
 msgstr "Jums vajadzīga interneta piekļuve, lai rakstītu apskatu"
 
-#: src/gs-details-page.c:1708 src/gs-details-page.c:1724
+#: src/gs-details-page.c:1737 src/gs-details-page.c:1753
 #, c-format
 msgid "Unable to find “%s”"
 msgstr "Nevar atrast “%s”"
@@ -2431,19 +2369,17 @@ msgid "_Help"
 msgstr "_Palīdzība"
 
 #. Translators: Button opening a dialog where the users can write and publish their opinions about the apps.
-#: src/gs-details-page.ui:908
-#| msgid "_Write a Review"
+#: src/gs-details-page.ui:907
 msgid "_Write Review"
 msgstr "_Rakstīt atsauksmi"
 
 #. Translators: Button opening a dialog showing all reviews for an app.
-#: src/gs-details-page.ui:945
-#| msgid "Reviews"
+#: src/gs-details-page.ui:944
 msgid "All Reviews"
 msgstr "Visas atsauksmes"
 
 #. TRANSLATORS: status text when downloading
-#: lib/gs-external-appstream-utils.c:216
+#: lib/gs-external-appstream-utils.c:272
 msgid "Downloading extra metadata files…"
 msgstr "Lejupielādē papildu metadatu datnes…"
 
@@ -2884,7 +2820,6 @@ msgstr "Aparatūras atbalsts"
 #. Translators: This is in the context of a list of apps which are installed on the system.
 #. Translators: A label for a button to show only software which is already installed.
 #: src/gs-installed-page.c:812 src/gs-shell.ui:307
-#| msgid "Installed"
 msgctxt "List of installed apps"
 msgid "Installed"
 msgstr "Instalētās"
@@ -2904,7 +2839,6 @@ msgid "Applications"
 msgstr "Lietotnes"
 
 #: src/gs-installed-page.ui:95
-#| msgid "Applications"
 msgid "Web Applications"
 msgstr "Tīmekļa lietotnes"
 
@@ -2923,11 +2857,6 @@ msgstr "_Piedalīties"
 #. Translators: The first placeholder here is a link to information about the license, and the second placeholder here is the name of a software license.
 #: src/gs-license-tile.c:114
 #, c-format
-#| msgid ""
-#| "This software is developed in the open by a community of volunteers, and "
-#| "released under the %s license.\n"
-#| "\n"
-#| "You can contribute and help make it even better."
 msgid ""
 "This software is developed in the open by a community of volunteers, and "
 "released under the <a href=\"%s\">%s license</a>.\n"
@@ -2958,18 +2887,10 @@ msgid "Proprietary"
 msgstr "Īpašnieka"
 
 #: src/gs-license-tile.c:133
-#| msgid "Learn"
 msgid "_Learn More"
 msgstr "_Uzzināt vairāk"
 
 #: src/gs-license-tile.c:135
-#| msgid ""
-#| "This software is not developed in the open, so only its developers know "
-#| "how it works. There may be restrictions on its use, and it may be harder "
-#| "to tell if the software is insecure.\n"
-#| "\n"
-#| "You may not be able to contribute to this software or influence its "
-#| "development."
 msgid ""
 "This software is not developed in the open, so only its developers know how "
 "it works. It may be insecure in ways that are hard to detect, and it may "
@@ -2978,14 +2899,13 @@ msgid ""
 "You may not be able to contribute to this software."
 msgstr ""
 "Šī programmatūra nav izstrādāta atvērtā formā un tikai tās izstrādātāji "
-"zina, kā tā darbojas. Tajā varētu būt grūti atklāt drošības problēmas un tā"
-" varētu tikt mainīta bez pārraudzības.\n"
+"zina, kā tā darbojas. Tajā varētu būt grūti atklāt drošības problēmas un tā "
+"varētu tikt mainīta bez pārraudzības.\n"
 "\n"
 "Jūs nevarēsiet dot savu ieguldījumu šīs programmatūras attīstībā."
 
 #. TRANSLATORS: initial start
 #: src/gs-loading-page.c:56
-#| msgid "Downloading featured images…"
 msgid "Downloading software catalog"
 msgstr "Lejupielādē programmatūras katalogu"
 
@@ -3035,8 +2955,7 @@ msgstr "Moderācijas lapa"
 msgid "There are no reviews to moderate"
 msgstr "Nav atsauksmju, ko pārbaudīt"
 
-#: src/gs-origin-popover-row.c:104
-#| msgid "Unknown"
+#: src/gs-origin-popover-row.c:105
 msgid "Unknown source"
 msgstr "Nezināms avots"
 
@@ -3047,7 +2966,6 @@ msgstr "Beta"
 
 #. Translators: It's an origin scope, 'User' or 'System' installation
 #: src/gs-origin-popover-row.ui:138
-#| msgid "_User"
 msgid "User"
 msgstr "Lietotājs"
 
@@ -3066,7 +2984,6 @@ msgstr "Izņemtās"
 #. TRANSLATORS: This is the header for package updates during
 #. * a system update
 #: src/gs-os-update-page.c:258
-#| msgid "Updates"
 msgctxt "Packages to be updated during a system upgrade"
 msgid "Updates"
 msgstr "Atjauninājumi"
@@ -3080,12 +2997,12 @@ msgstr "Pazeminājumi"
 #. Translators: This is a clickable link on the third party repositories info bar. It's
 #. part of a constructed sentence: "Provides access to additional software from [selected external sources].
 #. Some proprietary software is included."
-#: src/gs-overview-page.c:876
+#: src/gs-overview-page.c:879
 msgid "selected external sources"
 msgstr "izvēlētie ārējie avoti"
 
 #. Translators: This is the third party repositories info bar. The %s is replaced with "selected external sources" link.
-#: src/gs-overview-page.c:878
+#: src/gs-overview-page.c:881
 #, c-format
 msgid ""
 "Provides access to additional software from %s. Some proprietary software is "
@@ -3096,13 +3013,13 @@ msgstr ""
 
 #. TRANSLATORS: button to turn on third party software repositories
 #. TRANSLATORS: button to accept the agreement
-#: src/gs-overview-page.c:887 src/gs-repos-dialog.c:173
+#: src/gs-overview-page.c:890 src/gs-repos-dialog.c:173
 msgid "Enable"
 msgstr "Ieslēgt"
 
 #. Translators: This is the title of the main page of the UI.
 #. Translators: A label for a button to show all available software.
-#: src/gs-overview-page.c:946 src/gs-shell.ui:294
+#: src/gs-overview-page.c:949 src/gs-shell.ui:294
 msgid "Explore"
 msgstr "Pārskatīt"
 
@@ -3123,7 +3040,7 @@ msgstr "Citas kategorijas"
 msgid "No Application Data Found"
 msgstr "Nav atrastu lietotņu datu"
 
-#: lib/gs-plugin-loader.c:2824
+#: lib/gs-plugin-loader.c:2833
 msgctxt "Distribution name"
 msgid "Unknown"
 msgstr "Nezināma"
@@ -3224,8 +3141,6 @@ msgstr "_Turpināt"
 #. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora Modular - x86_64"
 #: src/gs-repos-dialog.c:239
 #, c-format
-#| msgid ""
-#| "Software that has been installed from “%s” will cease receive updates."
 msgid ""
 "Software that has been installed from “%s” will cease to receive updates."
 msgstr ""
@@ -3455,17 +3370,14 @@ msgid "What do you think of the app? Try to give reasons for your views."
 msgstr "Ko jūs domājat par šo lietotni? Mēģiniet pamatot savu viedokli."
 
 #: src/gs-review-dialog.ui:156
-#| msgid ""
-#| "Find what data is sent in our <a href=\"https://odrs.gnome.org/privacy"
-#| "\">privacy policy</a>."
 msgid ""
-"Find what data is sent in our <a href=\"https://odrs.gnome.org/privacy"
-"\">privacy policy</a>. The full name attached to your account will be shown "
-"publicly."
+"Find what data is sent in our <a href=\"https://odrs.gnome.org/"
+"privacy\">privacy policy</a>. The full name attached to your account will be "
+"shown publicly."
 msgstr ""
 "Mūsu <a href=\"https://odrs.gnome.org/privacy\">privātuma politikā</a> varat "
-"uzzināt, kādi dati tiek nosūtīti. Jūsu vārds, kas ir saistīts ar jūsu kontu,"
-" būs publiski redzams."
+"uzzināt, kādi dati tiek nosūtīti. Jūsu vārds, kas ir saistīts ar jūsu kontu, "
+"būs publiski redzams."
 
 #: src/gs-review-histogram.c:72
 #, c-format
@@ -3686,12 +3598,10 @@ msgid "Can read all data in your downloads directory"
 msgstr "Var lasīt visus datus jūsu lejupielāžu direktorijā"
 
 #: src/gs-safety-context-dialog.c:299
-#| msgid "Can read and write all data in your home directory"
 msgid "Can read and write all data in the directory"
 msgstr "Var lasīt un rakstīt visus datus direktorijā"
 
 #: src/gs-safety-context-dialog.c:310
-#| msgid "Can read all data in your home directory"
 msgid "Can read all data in the directory"
 msgstr "Var lasīt visus datus direktorijā"
 
@@ -3743,7 +3653,6 @@ msgstr "Ir pārbaudīts, ka šīs lietotnes izstrādātājs ir tas, par ko uzdod
 #. Translators: This indicates an app uses an outdated SDK.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-safety-context-dialog.c:366
-#| msgid "Required Dependencies"
 msgid "Insecure Dependencies"
 msgstr "Nedrošas atkarības"
 
@@ -3813,7 +3722,7 @@ msgstr "Ekrānattēls nav nodrošināts"
 #. TRANSLATORS: this is when we try to download a screenshot and
 #. * we get back 404
 #: src/gs-screenshot-image.c:362 src/gs-screenshot-image.c:419
-#: src/gs-screenshot-image.c:622
+#: src/gs-screenshot-image.c:623
 msgid "Screenshot not found"
 msgstr "Ekrānattēls nav atrasts"
 
@@ -3824,24 +3733,24 @@ msgstr "Neizdevās ielādēt attēlu"
 
 #. TRANSLATORS: this is when we request a screenshot size that
 #. * the generator did not create or the parser did not add
-#: src/gs-screenshot-image.c:650
+#: src/gs-screenshot-image.c:651
 msgid "Screenshot size not found"
 msgstr "Ekrānattēla izmērs nav atrasts"
 
 #. TRANSLATORS: this is when we try create the cache directory
 #. * but we were out of space or permission was denied
-#: src/gs-screenshot-image.c:732
+#: src/gs-screenshot-image.c:733
 msgid "Could not create cache"
 msgstr "Neizdevās izveidot kešu"
 
 #. TRANSLATORS: this is when we try to download a screenshot
 #. * that was not a valid URL
-#: src/gs-screenshot-image.c:746
+#: src/gs-screenshot-image.c:747
 msgid "Screenshot not valid"
 msgstr "Ekrānattēls nav derīgs"
 
 #. TRANSLATORS: this is when networking is not available
-#: src/gs-screenshot-image.c:796
+#: src/gs-screenshot-image.c:797
 msgid "Screenshot not available"
 msgstr "Ekrānattēls nav pieejams"
 
@@ -3851,7 +3760,7 @@ msgstr "Ekrānattēls"
 
 #. TRANSLATORS: this is when there are too many search results
 #. * to show in in the search page
-#: src/gs-search-page.c:169
+#: src/gs-search-page.c:180
 #, c-format
 msgid "%u more match"
 msgid_plural "%u more matches"
@@ -3879,41 +3788,40 @@ msgstr "Nav atrastu lietotņu"
 #. TRANSLATORS: this is part of the in-app notification,
 #. * where the %s is a multi-word localised app name
 #. * e.g. 'Getting things GNOME!"
-#: src/gs-shell.c:1197 src/gs-shell.c:1202 src/gs-shell.c:1217
-#: src/gs-shell.c:1221
+#: src/gs-shell.c:1199 src/gs-shell.c:1204 src/gs-shell.c:1219
+#: src/gs-shell.c:1223
 #, c-format
 msgid "“%s”"
 msgstr "“%s”"
 
 #. Translators: The '%s' is replaced with an error message, which had been shortened.
 #. The dots at the end are there to highlight that to the user.
-#: src/gs-shell.c:1238
+#: src/gs-shell.c:1240
 #, c-format
-#| msgid "“%s”"
 msgid "%s…"
 msgstr "%s…"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:1273
+#: src/gs-shell.c:1275
 #, c-format
 msgid "Unable to download firmware updates from %s"
 msgstr "Nevar lejupielādēt aparātprogrammatūras atjauninājumus no %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:1279
+#: src/gs-shell.c:1281
 #, c-format
 msgid "Unable to download updates from %s"
 msgstr "Nevar lejupielādēt atjauninājumus no %s"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1286 src/gs-shell.c:1326
+#: src/gs-shell.c:1288 src/gs-shell.c:1328
 msgid "Unable to download updates"
 msgstr "Nevar lejupielādēt atjauninājumus"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1291
+#: src/gs-shell.c:1293
 msgid ""
 "Unable to download updates: internet access was required but wasn’t available"
 msgstr ""
@@ -3922,49 +3830,49 @@ msgstr ""
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
-#: src/gs-shell.c:1299
+#: src/gs-shell.c:1301
 #, c-format
 msgid "Unable to download updates from %s: not enough disk space"
 msgstr "Nevar lejupielādēt atjauninājumus no %s: nepietiek diska vietas"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1304
+#: src/gs-shell.c:1306
 msgid "Unable to download updates: not enough disk space"
 msgstr "Nevar lejupielādēt atjauninājumus: nepietiek diska vietas"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1310
+#: src/gs-shell.c:1312
 msgid "Unable to download updates: authentication was required"
 msgstr "Nevar lejupielādēt atjauninājumus: bija vajadzīga autentifikācija"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1314
+#: src/gs-shell.c:1316
 msgid "Unable to download updates: authentication was invalid"
 msgstr "Nevar lejupielādēt atjauninājumus: autentifikācija bija nederīga"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1318
+#: src/gs-shell.c:1320
 msgid ""
 "Unable to download updates: you do not have permission to install software"
 msgstr ""
 "Nevar lejupielādēt atjauninājumus: jums nav atļaujas instalēt programmatūru"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1329
+#: src/gs-shell.c:1331
 msgid "Unable to get list of updates"
 msgstr "Nevar iegūt atjauninājumu sarakstu"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the application name (e.g. "GIMP") and
 #. * the second %s is the origin, e.g. "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1371
+#: src/gs-shell.c:1373
 #, c-format
 msgid "Unable to install %s as download failed from %s"
 msgstr "Nevar instalēt %s, jo neizdevās lejupielādēt no %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1377
+#: src/gs-shell.c:1379
 #, c-format
 msgid "Unable to install %s as download failed"
 msgstr "Nevar instalēt %s, jo neizdevās lejupielādēt"
@@ -3973,73 +3881,73 @@ msgstr "Nevar instalēt %s, jo neizdevās lejupielādēt"
 #. * where the first %s is the application name (e.g. "GIMP")
 #. * and the second %s is the name of the runtime, e.g.
 #. * "GNOME SDK [flatpak.gnome.org]"
-#: src/gs-shell.c:1389
+#: src/gs-shell.c:1391
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
 msgstr "Nevar instalēt %s, jo izpildlaiks %s nav pieejams"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1395
+#: src/gs-shell.c:1397
 #, c-format
 msgid "Unable to install %s as not supported"
 msgstr "Nevar instalēt %s, jo nav atbalstīta"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1401
+#: src/gs-shell.c:1403
 msgid "Unable to install: internet access was required but wasn’t available"
 msgstr ""
 "Nevar instalēt: bija nepieciešama pieeja internetam, bet tā nebija pieejama"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1406
+#: src/gs-shell.c:1408
 msgid "Unable to install: the application has an invalid format"
 msgstr "Nevar instalēt: lietotnei ir nederīgs formāts"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1410
+#: src/gs-shell.c:1412
 #, c-format
 msgid "Unable to install %s: not enough disk space"
 msgstr "Nevar instalēt %s: nepietiek diska vietas"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1416
+#: src/gs-shell.c:1418
 #, c-format
 msgid "Unable to install %s: authentication was required"
 msgstr "Nevar instalēt %s: bija vajadzīga autentifikācija"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1422
+#: src/gs-shell.c:1424
 #, c-format
 msgid "Unable to install %s: authentication was invalid"
 msgstr "Nevar instalēt %s: autentifikācija bija nederīga"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1428
+#: src/gs-shell.c:1430
 #, c-format
 msgid "Unable to install %s: you do not have permission to install software"
 msgstr "Nevar instalēt %s: jums nav atļaujas instalēt programmatūru"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1435
+#: src/gs-shell.c:1437
 #, c-format
 msgid "Unable to install %s: AC power is required"
 msgstr "Nevar instalēt %s: ir vajadzīgs maiņstrāvas pieslēgums"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1441
+#: src/gs-shell.c:1443
 #, c-format
 msgid "Unable to install %s: The battery level is too low"
 msgstr "Nevar instalēt %s: baterijā ir pārāk maz enerģijas"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1450
+#: src/gs-shell.c:1452
 #, c-format
 msgid "Unable to install %s"
 msgstr "Nevar instalēt %s"
@@ -4048,14 +3956,14 @@ msgstr "Nevar instalēt %s"
 #. * where the first %s is the app name (e.g. "GIMP") and
 #. * the second %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1495
+#: src/gs-shell.c:1497
 #, c-format
 msgid "Unable to update %s from %s as download failed"
 msgstr "Nevar atjaunināt %s no %s, jo neizdevās lejupielādēt"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1502
+#: src/gs-shell.c:1504
 #, c-format
 msgid "Unable to update %s as download failed"
 msgstr "Nevar atjaunināt %s, jo neizdevās lejupielādēt"
@@ -4063,71 +3971,71 @@ msgstr "Nevar atjaunināt %s, jo neizdevās lejupielādēt"
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1509
+#: src/gs-shell.c:1511
 #, c-format
 msgid "Unable to install updates from %s as download failed"
 msgstr "Nevar instalēt atjauninājumus no %s, jo neizdevās lejupielādēt"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1513
+#: src/gs-shell.c:1515
 #, c-format
 msgid "Unable to install updates as download failed"
 msgstr "Nevar instalēt atjauninājumus, jo neizdevās lejupielādēt"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1518
+#: src/gs-shell.c:1520
 msgid "Unable to update: internet access was required but wasn’t available"
 msgstr ""
 "Nevar atjaunināt: bija nepieciešama pieeja internetam, bet tā nebija pieejama"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1527
+#: src/gs-shell.c:1529
 #, c-format
 msgid "Unable to update %s: not enough disk space"
 msgstr "Nevar atjaunināt %s: nepietiek diska vietas"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1532
+#: src/gs-shell.c:1534
 #, c-format
 msgid "Unable to install updates: not enough disk space"
 msgstr "Nevar instalēt atjauninājumus: nepietiek vietas uz diska"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1541
+#: src/gs-shell.c:1543
 #, c-format
 msgid "Unable to update %s: authentication was required"
 msgstr "Nevar atjaunināt %s: bija vajadzīga autentifikācija"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1546
+#: src/gs-shell.c:1548
 #, c-format
 msgid "Unable to install updates: authentication was required"
 msgstr "Nevar instalēt atjauninājumus: bija vajadzīga autentifikācija"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1554
+#: src/gs-shell.c:1556
 #, c-format
 msgid "Unable to update %s: authentication was invalid"
 msgstr "Nevar atjaunināt %s: autentifikācija bija nederīga"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1559
+#: src/gs-shell.c:1561
 #, c-format
 msgid "Unable to install updates: authentication was invalid"
 msgstr "Nevar instalēt atjauninājumus: autentifikācija bija nederīga"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1567
+#: src/gs-shell.c:1569
 #, c-format
 msgid "Unable to update %s: you do not have permission to update software"
 msgstr "Nevar atjaunināt %s: jums nav atļaujas atjaunināt programmatūru"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1573
+#: src/gs-shell.c:1575
 #, c-format
 msgid ""
 "Unable to install updates: you do not have permission to update software"
@@ -4136,41 +4044,41 @@ msgstr ""
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1582
+#: src/gs-shell.c:1584
 #, c-format
 msgid "Unable to update %s: AC power is required"
 msgstr "Nevar atjaunināt %s: ir vajadzīgs maiņstrāvas pieslēgums"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1588
+#: src/gs-shell.c:1590
 #, c-format
 msgid "Unable to install updates: AC power is required"
 msgstr "Nevar instalēt atjauninājumus: ir vajadzīgs maiņstrāvas pieslēgums"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1596
+#: src/gs-shell.c:1598
 #, c-format
 msgid "Unable to update %s: The battery level is too low"
 msgstr "Nevar atjaunināt %s: baterijā ir pārāk maz enerģijas"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
-#: src/gs-shell.c:1602
+#: src/gs-shell.c:1604
 #, c-format
 msgid "Unable to install updates: The battery level is too low"
 msgstr "Nevar instalēt atjauninājumus: baterijā ir pārāk maz enerģijas"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1613
+#: src/gs-shell.c:1615
 #, c-format
 msgid "Unable to update %s"
 msgstr "Nevar atjaunināt %s"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1616
+#: src/gs-shell.c:1618
 #, c-format
 msgid "Unable to install updates"
 msgstr "Nevar instalēt atjauninājumus"
@@ -4178,21 +4086,21 @@ msgstr "Nevar instalēt atjauninājumus"
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the first %s is the distro name (e.g. "Fedora 25") and
 #. * the second %s is the origin, e.g. "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1658
+#: src/gs-shell.c:1660
 #, c-format
 msgid "Unable to upgrade to %s from %s"
 msgstr "Nevar uzlabot uz %s no %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the app name (e.g. "GIMP")
-#: src/gs-shell.c:1663
+#: src/gs-shell.c:1665
 #, c-format
 msgid "Unable to upgrade to %s as download failed"
 msgstr "Nevar uzlabot uz %s, jo neizdevās lejupielādēt"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1671
+#: src/gs-shell.c:1673
 #, c-format
 msgid ""
 "Unable to upgrade to %s: internet access was required but wasn’t available"
@@ -4202,91 +4110,91 @@ msgstr ""
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1679
+#: src/gs-shell.c:1681
 #, c-format
 msgid "Unable to upgrade to %s: not enough disk space"
 msgstr "Nevar uzlabot uz %s: nepietiek diska vietas"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1686
+#: src/gs-shell.c:1688
 #, c-format
 msgid "Unable to upgrade to %s: authentication was required"
 msgstr "Nevar uzlabot uz %s: bija vajadzīga autentifikācija"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1692
+#: src/gs-shell.c:1694
 #, c-format
 msgid "Unable to upgrade to %s: authentication was invalid"
 msgstr "Nevar uzlabot uz %s: autentifikācija bija nederīga"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1698
+#: src/gs-shell.c:1700
 #, c-format
 msgid "Unable to upgrade to %s: you do not have permission to upgrade"
 msgstr "Nevar uzlabot uz %s: jums nav atļaujas uzlabot"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1704
+#: src/gs-shell.c:1706
 #, c-format
 msgid "Unable to upgrade to %s: AC power is required"
 msgstr "Nevar uzlabot uz %s: ir vajadzīgs maiņstrāvas pieslēgums"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1710
+#: src/gs-shell.c:1712
 #, c-format
 msgid "Unable to upgrade to %s: The battery level is too low"
 msgstr "Nevar uzlabot %s: baterijā ir pārāk maz enerģijas"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
-#: src/gs-shell.c:1719
+#: src/gs-shell.c:1721
 #, c-format
 msgid "Unable to upgrade to %s"
 msgstr "Nevar uzlabot uz %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1756
+#: src/gs-shell.c:1758
 #, c-format
 msgid "Unable to remove %s: authentication was required"
 msgstr "Nevar noņemt %s: bija vajadzīga autentifikācija"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1761
+#: src/gs-shell.c:1763
 #, c-format
 msgid "Unable to remove %s: authentication was invalid"
 msgstr "Nevar noņemt %s: autentifikācija bija nederīga"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1766
+#: src/gs-shell.c:1768
 #, c-format
 msgid "Unable to remove %s: you do not have permission to remove software"
 msgstr "Nevar noņemt %s: jums nav atļaujas noņemt programmatūru"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1772
+#: src/gs-shell.c:1774
 #, c-format
 msgid "Unable to remove %s: AC power is required"
 msgstr "Nevar noņemt %s: ir vajadzīgs maiņstrāvas pieslēgums"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1778
+#: src/gs-shell.c:1780
 #, c-format
 msgid "Unable to remove %s: The battery level is too low"
 msgstr "Nevar noņemt %s: baterijā ir pārāk maz enerģijas"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
-#: src/gs-shell.c:1790
+#: src/gs-shell.c:1792
 #, c-format
 msgid "Unable to remove %s"
 msgstr "Nevar noņemt %s"
@@ -4295,63 +4203,63 @@ msgstr "Nevar noņemt %s"
 #. * where the first %s is the application name (e.g. "GIMP")
 #. * and the second %s is the name of the runtime, e.g.
 #. * "GNOME SDK [flatpak.gnome.org]"
-#: src/gs-shell.c:1831
+#: src/gs-shell.c:1833
 #, c-format
 msgid "Unable to launch %s: %s is not installed"
 msgstr "Nevar palaist %s: %s nav instalēts"
 
-#. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1837 src/gs-shell.c:1885 src/gs-shell.c:1923
-#: src/gs-shell.c:1966
-msgid "Not enough disk space — free up some space and try again"
-msgstr "Nepietika diska vietas — atbrīvojiet kādu vietu un mēģiniet vēlreiz"
-
 #. TRANSLATORS: we failed to get a proper error code
-#: src/gs-shell.c:1848 src/gs-shell.c:1896 src/gs-shell.c:1934
-#: src/gs-shell.c:1987
+#: src/gs-shell.c:1841 src/gs-shell.c:1857 src/gs-shell.c:1905
+#: src/gs-shell.c:1943 src/gs-shell.c:1996
 msgid "Sorry, something went wrong"
 msgstr "Diemžēl kaut kas nogāja greizi"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1879
+#: src/gs-shell.c:1846 src/gs-shell.c:1894 src/gs-shell.c:1932
+#: src/gs-shell.c:1975
+msgid "Not enough disk space — free up some space and try again"
+msgstr "Nepietika diska vietas — atbrīvojiet kādu vietu un mēģiniet vēlreiz"
+
+#. TRANSLATORS: failure text for the in-app notification
+#: src/gs-shell.c:1888
 msgid "Failed to install file: not supported"
 msgstr "Neizdevās instalēt datni: nav atbalstīta"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1882
+#: src/gs-shell.c:1891
 msgid "Failed to install file: authentication failed"
 msgstr "Neizdevās instalēt datni: autentifikācija neizdevās"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1917
+#: src/gs-shell.c:1926
 msgid "Failed to install: not supported"
 msgstr "Neizdevās instalēt: nav atbalstīts"
 
 #. TRANSLATORS: failure text for the in-app notification
-#: src/gs-shell.c:1920
+#: src/gs-shell.c:1929
 msgid "Failed to install: authentication failed"
 msgstr "Neizdevās instalēt: autentifikācija neizdevās"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * the %s is the origin, e.g. "Fedora" or
 #. * "Fedora Project [fedoraproject.org]"
-#: src/gs-shell.c:1961
+#: src/gs-shell.c:1970
 #, c-format
 msgid "Unable to contact %s"
 msgstr "Nevar sazināties ar %s"
 
 #. TRANSLATORS: failure text for the in-app notification, where the 'Software' means this application, aka 'GNOME Software'.
-#: src/gs-shell.c:1971
+#: src/gs-shell.c:1980
 msgid "Software needs to be restarted to use new plugins."
 msgstr "“Programmatūru” vajag pārstartēt, lai lietotu jaunos spraudņus."
 
 #. TRANSLATORS: need to be connected to the AC power
-#: src/gs-shell.c:1975
+#: src/gs-shell.c:1984
 msgid "AC power is required"
 msgstr "Ir vajadzīgs maiņstrāvas pieslēgums"
 
 #. TRANSLATORS: not enough juice to do this safely
-#: src/gs-shell.c:1978
+#: src/gs-shell.c:1987
 msgid "The battery level is too low"
 msgstr "Baterijā ir pārāk maz enerģijas"
 
@@ -4371,7 +4279,7 @@ msgstr "Pārbaudīt disku"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-shell.ui:108 src/gs-updates-page.c:881
+#: src/gs-shell.ui:108 src/gs-updates-page.c:926
 msgid "Network Settings"
 msgstr "Tīkla iestatījumi"
 
@@ -4399,7 +4307,6 @@ msgstr "Uzzināt _vairāk"
 
 #. Translators: A label for a button to show only updates which are available to install.
 #: src/gs-shell.ui:328
-#| msgid "Updates"
 msgctxt "Header bar button for list of apps to be updated"
 msgid "Updates"
 msgstr "Atjauninājumi"
@@ -4449,7 +4356,6 @@ msgid "Shared system components required by this application"
 msgstr "Koplietotās sistēmas komponentes, kas ir nepieciešamas šai lietotnei"
 
 #: src/gs-storage-context-dialog.c:188
-#| msgid "Unknown"
 msgctxt "Download size"
 msgid "Unknown"
 msgstr "Nezināms"
@@ -4497,8 +4403,6 @@ msgid "Installed on %s"
 msgstr "Instalēts %s"
 
 #: src/gs-update-dialog.ui:77
-#| msgid "Software Update Installed"
-#| msgid_plural "Software Updates Installed"
 msgid "No Updates Installed"
 msgstr "Nav instalētu atjauninājumu"
 
@@ -4593,58 +4497,57 @@ msgid "Includes %s, %s and %s."
 msgstr "Iekļauj %s, %s un %s."
 
 #. TRANSLATORS: this is when the current operating system version goes end-of-life
-#: src/gs-update-monitor.c:671 src/gs-updates-page.ui:20
+#: src/gs-update-monitor.c:669 src/gs-updates-page.ui:52
 msgid "Operating System Updates Unavailable"
 msgstr "Operētājsistēmai atjauninājumi nav pieejami"
 
 #. TRANSLATORS: this is the message dialog for the distro EOL notice
-#: src/gs-update-monitor.c:673
+#: src/gs-update-monitor.c:671
 msgid "Upgrade to continue receiving security updates."
 msgstr ""
 "Pārejiet uz jaunāku OS versiju, lai turpinātu saņemt drošības atjauninājumus."
 
 #. TRANSLATORS: this is a distro upgrade, the replacement would be the
 #. * distro name, e.g. 'Fedora'
-#: src/gs-update-monitor.c:728
+#: src/gs-update-monitor.c:726
 #, c-format
 msgid "A new version of %s is available to install"
 msgstr "Jauna %s versija ir pieejama instalēšanai"
 
 #. TRANSLATORS: this is a distro upgrade
-#: src/gs-update-monitor.c:732
+#: src/gs-update-monitor.c:730
 msgid "Software Upgrade Available"
 msgstr "Pieejami programmatūras atjauninājumi"
 
 #. TRANSLATORS: title when we offline updates have failed
-#: src/gs-update-monitor.c:1137
+#: src/gs-update-monitor.c:1135
 msgid "Software Updates Failed"
 msgstr "Neizdevās atjaunināt programmatūru"
 
 #. TRANSLATORS: message when we offline updates have failed
-#: src/gs-update-monitor.c:1139
-#| msgid "An important OS update failed to be installed."
+#: src/gs-update-monitor.c:1137
 msgid "An important operating system update failed to be installed."
 msgstr "Neizdevās uzinstalēt svarīgu operētājsistēmas atjauninājumu."
 
-#: src/gs-update-monitor.c:1140
+#: src/gs-update-monitor.c:1138
 msgid "Show Details"
 msgstr "Rādīt sīkāku informāciju"
 
 #. TRANSLATORS: Notification title when we've done a distro upgrade
-#: src/gs-update-monitor.c:1162
+#: src/gs-update-monitor.c:1160
 msgid "System Upgrade Complete"
 msgstr "Sistēmas uzlabošana ir pabeigta"
 
 #. TRANSLATORS: This is the notification body when we've done a
 #. * distro upgrade. First %s is the distro name and the 2nd %s
 #. * is the version, e.g. "Welcome to Fedora 28!"
-#: src/gs-update-monitor.c:1167
+#: src/gs-update-monitor.c:1165
 #, c-format
 msgid "Welcome to %s %s!"
 msgstr "Laipni lūdzam sistēmā %s %s!"
 
 #. TRANSLATORS: title when we've done offline updates
-#: src/gs-update-monitor.c:1173
+#: src/gs-update-monitor.c:1171
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
 msgstr[0] "Programmatūras atjauninājums uzinstalēts"
@@ -4652,9 +4555,7 @@ msgstr[1] "Programmatūras atjauninājumi uzinstalēti"
 msgstr[2] "Programmatūras atjauninājumi uzinstalēti"
 
 #. TRANSLATORS: message when we've done offline updates
-#: src/gs-update-monitor.c:1177
-#| msgid "An important OS update has been installed."
-#| msgid_plural "Important OS updates have been installed."
+#: src/gs-update-monitor.c:1175
 msgid "An important operating system update has been installed."
 msgid_plural "Important operating system updates have been installed."
 msgstr[0] "Tika uzinstalēts svarīgs operētājsistēmas atjauninājums."
@@ -4666,30 +4567,30 @@ msgstr[2] "Tika uzinstalēti svarīgi operētājsistēmas atjauninājumi."
 #. * users can't express their opinions here. In some languages
 #. * "Review (evaluate) something" is a different translation than
 #. * "Review (browse) something."
-#: src/gs-update-monitor.c:1188
+#: src/gs-update-monitor.c:1186
 msgctxt "updates"
 msgid "Review"
 msgstr "Pārskats"
 
 #. TRANSLATORS: this is when the offline update failed
-#: src/gs-update-monitor.c:1237
+#: src/gs-update-monitor.c:1235
 msgid "Failed To Update"
 msgstr "Neizdevās atjaunināt"
 
 #. TRANSLATORS: the user must have updated manually after
 #. * the updates were prepared
-#: src/gs-update-monitor.c:1242
+#: src/gs-update-monitor.c:1240
 msgid "The system was already up to date."
 msgstr "Sistēma jau ir aktuāla."
 
 #. TRANSLATORS: the user aborted the update manually
-#: src/gs-update-monitor.c:1247
+#: src/gs-update-monitor.c:1245
 msgid "The update was cancelled."
 msgstr "Atjaunināšana tika atcelta."
 
 #. TRANSLATORS: the package manager needed to download
 #. * something with no network available
-#: src/gs-update-monitor.c:1252
+#: src/gs-update-monitor.c:1250
 msgid ""
 "Internet access was required but wasn’t available. Please make sure that you "
 "have internet access and try again."
@@ -4698,7 +4599,7 @@ msgstr ""
 "Pārliecinieties, ka jums ir pieeja internetam un mēģiniet vēlreiz."
 
 #. TRANSLATORS: if the package is not signed correctly
-#: src/gs-update-monitor.c:1257
+#: src/gs-update-monitor.c:1255
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
@@ -4707,13 +4608,13 @@ msgstr ""
 "programmatūras nodrošinātāju, lai uzzinātu vairāk."
 
 #. TRANSLATORS: we ran out of disk space
-#: src/gs-update-monitor.c:1262
+#: src/gs-update-monitor.c:1260
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
 msgstr "Nepietika diska vietas. Lūdzu, atbrīvojiet vietu un mēģiniet vēlreiz."
 
 #. TRANSLATORS: We didn't handle the error type
-#: src/gs-update-monitor.c:1266
+#: src/gs-update-monitor.c:1264
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
@@ -4722,42 +4623,51 @@ msgstr ""
 "tad mēģiniet vēlreiz. Ja problēma neatrisinās, sazinieties ar programmatūras "
 "nodrošinātāju."
 
+#: src/gs-updates-page.c:249
+#, fuzzy
+msgid "automatic updates on"
+msgstr "Automātiska atjaunināšana"
+
+#: src/gs-updates-page.c:252
+#, fuzzy
+msgid "automatic updates off"
+msgstr "Automātiska atjaunināšana"
+
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:247
+#: src/gs-updates-page.c:288
 #, c-format
 msgid "Last checked: %s"
 msgstr "Pēdējo reizi pārbaudīts: %s"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:559
+#: src/gs-updates-page.c:602
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "%s %s vairs netiek atbalstīta."
 
-#: src/gs-updates-page.c:563
-#| msgid "Your OS is no longer supported."
+#: src/gs-updates-page.c:606
 msgid "Your operating system is no longer supported."
 msgstr "Jūsu operētājsistēma vairs netiek atbalstīta."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:568
+#: src/gs-updates-page.c:611
 msgid "This means that it does not receive security updates."
 msgstr "Tas nozīmē, ka tā vairs nesaņem drošības atjauninājumus."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:572
+#: src/gs-updates-page.c:615
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "Ieteicams uzlabot OS uz jaunāku versiju."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:849
+#: src/gs-updates-page.c:894
 msgid "Charges May Apply"
 msgstr "Var tikt piemērota maksa"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:853
+#: src/gs-updates-page.c:898
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
@@ -4767,27 +4677,26 @@ msgstr ""
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:857
+#: src/gs-updates-page.c:902
 msgid "Check _Anyway"
 msgstr "_Tomēr pārbaudīt"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:873
+#: src/gs-updates-page.c:918
 msgid "No Network"
 msgstr "Nav tīkla"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:877
+#: src/gs-updates-page.c:922
 msgid "Internet access is required to check for updates."
 msgstr "Lai pārbaudītu atjauninājumus, nepieciešama piekļuve internetam."
 
-#: src/gs-updates-page.c:1250
+#: src/gs-updates-page.c:1355
 msgid "Check for updates"
 msgstr "Pārbaudīt atjauninājumus"
 
-#: src/gs-updates-page.c:1286
-#| msgid "Updates"
+#: src/gs-updates-page.c:1398
 msgctxt "Apps to be updated"
 msgid "Updates"
 msgstr "Atjauninājumi"
@@ -4797,25 +4706,25 @@ msgid "Updates page"
 msgstr "Atjauninājumu mape"
 
 #. TRANSLATORS: the updates panel is starting up.
-#: src/gs-updates-page.ui:82
+#: src/gs-updates-page.ui:114
 msgid "Loading Updates…"
 msgstr "Ielādē atjauninājumus…"
 
 #. TRANSLATORS: the updates panel is starting up.
-#: src/gs-updates-page.ui:95
+#: src/gs-updates-page.ui:127
 msgid "This could take a while."
 msgstr "Tas var aizņemt kādu laiciņu."
 
 #. TRANSLATORS: This means all software (plural) installed on this system is up to date.
-#: src/gs-updates-page.ui:203
+#: src/gs-updates-page.ui:235
 msgid "Up to Date"
 msgstr "Aktuāls"
 
-#: src/gs-updates-page.ui:242
+#: src/gs-updates-page.ui:274
 msgid "Use Mobile Data?"
 msgstr "Izmantojat mobilos datus?"
 
-#: src/gs-updates-page.ui:243
+#: src/gs-updates-page.ui:275
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges."
@@ -4823,27 +4732,27 @@ msgstr ""
 "Atjauninājumu pārbaudīšana, lietojot mobilo platjoslas savienojumu, var "
 "izmaksās papildus."
 
-#: src/gs-updates-page.ui:246
+#: src/gs-updates-page.ui:278
 msgid "_Check Anyway"
 msgstr "_Tomēr pārbaudīt"
 
-#: src/gs-updates-page.ui:262
+#: src/gs-updates-page.ui:294
 msgid "No Connection"
 msgstr "Nav savienojuma"
 
-#: src/gs-updates-page.ui:263
+#: src/gs-updates-page.ui:295
 msgid "Go online to check for updates."
 msgstr "Doties tiešsaistē, lai pārbaudītu atjauninājumus."
 
-#: src/gs-updates-page.ui:266
+#: src/gs-updates-page.ui:298
 msgid "_Network Settings"
 msgstr "_Tīkla iestatījumi"
 
-#: src/gs-updates-page.ui:295
+#: src/gs-updates-page.ui:327
 msgid "Error"
 msgstr "Kļūda"
 
-#: src/gs-updates-page.ui:296
+#: src/gs-updates-page.ui:328
 msgid "Updates are automatically managed."
 msgstr "Atjauninājumi tika automātiski sapludināti."
 
@@ -4901,7 +4810,6 @@ msgstr "Pieejami %s %s"
 #. * e.g. "GNOME OS Available"
 #: src/gs-upgrade-banner.c:95
 #, c-format
-#| msgid "%s %s Available"
 msgid "%s Available"
 msgstr "%s ir pieejams"
 
@@ -4939,6 +4847,10 @@ msgstr "Pā_rstartēt un uzlabot"
 msgid "Remember to back up data and files before upgrading."
 msgstr "Pirms uzlabošanas atcerieties izveidot datu un datņu dublējumu."
 
+#: src/org.gnome.Software.desktop.in:3
+msgid "App Center"
+msgstr ""
+
 #: src/org.gnome.Software.desktop.in:4
 msgid "Add, remove or update software on this computer"
 msgstr "Pievienot, izņemt vai atjaunināt programmatūru uz šī datora"
@@ -4955,7 +4867,6 @@ msgstr ""
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
 #: plugins/core/gs-plugin-generic-updates.c:67
-#| msgid "%s System Update"
 msgid "System Updates"
 msgstr "Sistēmas atjauninājumi"
 
@@ -4966,27 +4877,30 @@ msgid ""
 "General system updates, such as security or bug fixes, and performance "
 "improvements."
 msgstr ""
-"Vispārīgie sistēmas atjauninājumi, piemēram, drošības un kļūdu labojumi kā"
-" arī veiktspējas uzlabojumi."
+"Vispārīgie sistēmas atjauninājumi, piemēram, drošības un kļūdu labojumi kā "
+"arī veiktspējas uzlabojumi."
 
 #. TRANSLATORS: status text when downloading
 #: plugins/core/gs-plugin-rewrite-resource.c:155
 msgid "Downloading featured images…"
 msgstr "Lejupielādē piedāvātos attēlus…"
 
+#: plugins/eos/gs-plugin-eos.c:173
+#, fuzzy, c-format
+msgid "Could not launch this application."
+msgstr "Izvēlieties lietotni:"
+
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
-#: plugins/eos-updater/gs-plugin-eos-updater.c:637
+#: plugins/eos-updater/gs-plugin-eos-updater.c:639
 #, c-format
-#| msgid "An Endless OS update with new features and fixes."
 msgid "%s update with new features and fixes."
 msgstr "%s atjauninājumus ar jaunām iespējām un labojumiem."
 
-#: plugins/eos-updater/gs-plugin-eos-updater.c:970
+#: plugins/eos-updater/gs-plugin-eos-updater.c:1019
 msgid "EOS update service could not fetch and apply the update."
 msgstr "EOS atjauninājumu pakalpojums nevarēja saņemt un uzlikt atjauninājumu."
 
 #: plugins/epiphany/gs-plugin-epiphany.c:498
-#| msgid "GNOME Software"
 msgid "GNOME Web"
 msgstr "GNOME tīmeklis"
 
@@ -5004,7 +4918,7 @@ msgid "Downloading upgrade information…"
 msgstr "Lejupielādē informāciju par uzlabojumiem…"
 
 #. TRANSLATORS: this is a title for Fedora distro upgrades
-#: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:404
+#: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:405
 msgid ""
 "Upgrade for the latest features, performance and stability improvements."
 msgstr ""
@@ -5019,155 +4933,135 @@ msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak ir ietvars darbvirsmas lietotnēm uz Linux"
 
 #. Reference: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#idm45858571325264
-#: plugins/flatpak/gs-flatpak.c:313
+#: plugins/flatpak/gs-flatpak.c:324
 #, c-format
-#| msgid "System Services"
 msgid "System folder %s"
 msgstr "Sistēmas mape %s"
 
-#: plugins/flatpak/gs-flatpak.c:314 plugins/flatpak/gs-flatpak.c:315
+#: plugins/flatpak/gs-flatpak.c:325 plugins/flatpak/gs-flatpak.c:326
 #, c-format
-#| msgid "Home folder"
 msgid "Home subfolder %s"
 msgstr "Mājas apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:316
-#| msgid "Home folder"
+#: plugins/flatpak/gs-flatpak.c:327
 msgid "Host system folders"
 msgstr "Saimniekdatora sistēmas mapes"
 
-#: plugins/flatpak/gs-flatpak.c:317
+#: plugins/flatpak/gs-flatpak.c:328
 msgid "Host system configuration from /etc"
 msgstr "Saimniekdatora sistēmas konfigurācija no /etc"
 
-#: plugins/flatpak/gs-flatpak.c:318
-#| msgid "Desktop Only"
+#: plugins/flatpak/gs-flatpak.c:329
 msgid "Desktop folder"
 msgstr "Darbvirsmas mape"
 
-#: plugins/flatpak/gs-flatpak.c:318
+#: plugins/flatpak/gs-flatpak.c:329
 #, c-format
-#| msgid "Desktop Support"
 msgid "Desktop subfolder %s"
 msgstr "Darbvirsmas apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:319
-#| msgid "Home folder"
+#: plugins/flatpak/gs-flatpak.c:330
 msgid "Documents folder"
 msgstr "Dokumentu mape"
 
-#: plugins/flatpak/gs-flatpak.c:319
+#: plugins/flatpak/gs-flatpak.c:330
 #, c-format
-#| msgid "Home folder"
 msgid "Documents subfolder %s"
 msgstr "Dokumentu apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:320
-#| msgctxt "Menu of Audio & Video"
-#| msgid "Music Players"
+#: plugins/flatpak/gs-flatpak.c:331
 msgid "Music folder"
 msgstr "Mūzikas mape"
 
-#: plugins/flatpak/gs-flatpak.c:320
+#: plugins/flatpak/gs-flatpak.c:331
 #, c-format
-#| msgctxt "Menu of Audio & Video"
-#| msgid "Music Players"
 msgid "Music subfolder %s"
 msgstr "Mūzikas apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:321
-#| msgid "Picture"
+#: plugins/flatpak/gs-flatpak.c:332
 msgid "Pictures folder"
 msgstr "Bilžu mape"
 
-#: plugins/flatpak/gs-flatpak.c:321
+#: plugins/flatpak/gs-flatpak.c:332
 #, c-format
 msgid "Pictures subfolder %s"
 msgstr "Bilžu apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:322
+#: plugins/flatpak/gs-flatpak.c:333
 msgid "Public Share folder"
 msgstr "Publiska koplietošanas mape"
 
-#: plugins/flatpak/gs-flatpak.c:322
+#: plugins/flatpak/gs-flatpak.c:333
 #, c-format
 msgid "Public Share subfolder %s"
 msgstr "Publiska koplietošanas apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:323
-#| msgid "Home folder"
+#: plugins/flatpak/gs-flatpak.c:334
 msgid "Videos folder"
 msgstr "Video mape"
 
-#: plugins/flatpak/gs-flatpak.c:323
+#: plugins/flatpak/gs-flatpak.c:334
 #, c-format
-#| msgid "%s is suitable for %s"
 msgid "Videos subfolder %s"
 msgstr "Video apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:324
-#| msgid "Home folder"
+#: plugins/flatpak/gs-flatpak.c:335
 msgid "Templates folder"
 msgstr "Veidņu mape"
 
-#: plugins/flatpak/gs-flatpak.c:324
+#: plugins/flatpak/gs-flatpak.c:335
 #, c-format
 msgid "Templates subfolder %s"
 msgstr "Veidņu apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:325
+#: plugins/flatpak/gs-flatpak.c:336
 msgid "User cache folder"
 msgstr "Lietotāja kešatmiņas mape"
 
-#: plugins/flatpak/gs-flatpak.c:325
+#: plugins/flatpak/gs-flatpak.c:336
 #, c-format
 msgid "User cache subfolder %s"
 msgstr "Lietotāja kešatmiņas apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:326
-#| msgid "%s Configuration Update"
+#: plugins/flatpak/gs-flatpak.c:337
 msgid "User configuration folder"
 msgstr "Lietotāja konfigurācijas mape"
 
-#: plugins/flatpak/gs-flatpak.c:326
+#: plugins/flatpak/gs-flatpak.c:337
 #, c-format
-#| msgid "%s Configuration Update"
 msgid "User configuration subfolder %s"
 msgstr "Lietotāja konfigurācijas apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:327
-#| msgid "User Data"
+#: plugins/flatpak/gs-flatpak.c:338
 msgid "User data folder"
 msgstr "Lietotāja datu mape"
 
-#: plugins/flatpak/gs-flatpak.c:327
+#: plugins/flatpak/gs-flatpak.c:338
 #, c-format
 msgid "User data subfolder %s"
 msgstr "Lietotāja datu apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:328
-#| msgid "Home folder"
+#: plugins/flatpak/gs-flatpak.c:339
 msgid "User runtime folder"
 msgstr "Lietotāja izpildlaika mape"
 
-#: plugins/flatpak/gs-flatpak.c:328
+#: plugins/flatpak/gs-flatpak.c:339
 #, c-format
 msgid "User runtime subfolder %s"
 msgstr "Lietotāja izpildlaika apakšmape %s"
 
-#: plugins/flatpak/gs-flatpak.c:386
+#: plugins/flatpak/gs-flatpak.c:397
 #, c-format
-#| msgid "No File System Access"
 msgid "Filesystem access to %s"
 msgstr "Datņu sistēmas piekļuve %s"
 
 #. TRANSLATORS: status text when downloading new metadata
-#: plugins/flatpak/gs-flatpak.c:1403
+#: plugins/flatpak/gs-flatpak.c:1414
 #, c-format
 msgid "Getting flatpak metadata for %s…"
 msgstr "Saņem %s flatpak metadatus…"
 
-#: plugins/flatpak/gs-flatpak.c:3540
+#: plugins/flatpak/gs-flatpak.c:3643
 #, c-format
 msgid "Failed to refine addon ‘%s’: %s"
 msgstr "Neizdevās rafinēt papildinājumu “%s”: %s"
@@ -5180,24 +5074,39 @@ msgstr "Lietotāja instalācija"
 msgid "System Installation"
 msgstr "Sistēmas instalācija"
 
-#: plugins/flatpak/gs-plugin-flatpak.c:1038
+#: plugins/flatpak/gs-plugin-flatpak.c:1070
+#: plugins/flatpak/gs-plugin-flatpak.c:1533
+#, c-format
+msgid ""
+"You don’t have enough space to update these apps. Please remove apps or "
+"documents to create more space."
+msgstr ""
+
+#: plugins/flatpak/gs-plugin-flatpak.c:1162
 #, c-format
 msgid "Failed to add to install for addon ‘%s’: %s"
 msgstr "Papildinājumam “%s” neizdevās pievienot instalāciju: %s"
 
-#: plugins/flatpak/gs-plugin-flatpak.c:1052
+#: plugins/flatpak/gs-plugin-flatpak.c:1176
 #, c-format
 msgid "Failed to add to uninstall for addon ‘%s’: %s"
 msgstr "Papildinājumam “%s” neizdevās atinstalēt instalāciju: %s"
 
-#: plugins/flatpak/gs-plugin-flatpak.c:1318
+#: plugins/flatpak/gs-plugin-flatpak.c:1351
+#, c-format
+msgid ""
+"You don’t have enough space to install %s. Please remove apps or documents "
+"to create more space."
+msgstr ""
+
+#: plugins/flatpak/gs-plugin-flatpak.c:1453
 #, c-format
 msgid ""
 "Remote “%s” doesn't allow install of “%s”, possibly due to its filter. "
 "Remove the filter and repeat the install. Detailed error: %s"
 msgstr ""
-"Attālinātais “%s” neatļauj instalēt “%s”, iespējams, dēļ tā filtra. Noņemiet"
-" filtru un mēģiniet instalēt atkal. Informācija par kļūdu: %s"
+"Attālinātais “%s” neatļauj instalēt “%s”, iespējams, dēļ tā filtra. Noņemiet "
+"filtru un mēģiniet instalēt atkal. Informācija par kļūdu: %s"
 
 #. TRANSLATORS: a specific part of hardware,
 #. * the first %s is the device name, e.g. 'Unifying Receiver`
@@ -5311,7 +5220,6 @@ msgstr "%s tastatūras atjauninājumus"
 #. TRANSLATORS: Storage Controller is typically a RAID or SAS adapter
 #: plugins/fwupd/gs-fwupd-app.c:210
 #, c-format
-#| msgid "%s Controller Update"
 msgid "%s Storage Controller Update"
 msgstr "%s krātuves kontroliera atjauninājumus"
 
@@ -5319,7 +5227,6 @@ msgstr "%s krātuves kontroliera atjauninājumus"
 #. * PCI card, not the logical wired connection
 #: plugins/fwupd/gs-fwupd-app.c:215
 #, c-format
-#| msgid "%s Controller Update"
 msgid "%s Network Interface Update"
 msgstr "%s tīkla saskarnes atjauninājumus"
 
@@ -5327,7 +5234,6 @@ msgstr "%s tīkla saskarnes atjauninājumus"
 #. * external monitor
 #: plugins/fwupd/gs-fwupd-app.c:220
 #, c-format
-#| msgid "%s Device Update"
 msgid "%s Display Update"
 msgstr "%s displeja atjauninājums"
 
@@ -5335,7 +5241,6 @@ msgstr "%s displeja atjauninājums"
 #. * is the device that updates all the other firmware on the system
 #: plugins/fwupd/gs-fwupd-app.c:225
 #, c-format
-#| msgid "%s ME Update"
 msgid "%s BMC Update"
 msgstr "%s BMC atjauninājumus"
 
@@ -5343,11 +5248,10 @@ msgstr "%s BMC atjauninājumus"
 #. * device that stays in the USB port so the wireless peripheral works
 #: plugins/fwupd/gs-fwupd-app.c:230
 #, c-format
-#| msgid "%s Device Update"
 msgid "%s USB Receiver Update"
 msgstr "%s USB uztvērēja atjauninājums"
 
-#: plugins/fwupd/gs-plugin-fwupd.c:1241
+#: plugins/fwupd/gs-plugin-fwupd.c:1240
 msgid "Firmware"
 msgstr "Aparātprogrammatūra"
 
@@ -5360,7 +5264,6 @@ msgid "Provides support for firmware upgrades"
 msgstr "Nodrošina atbalstu aparātprogrammatūras uzlabojumiem"
 
 #: plugins/packagekit/gs-packagekit-task.c:148
-#| msgid "Install Third-Party Software?"
 msgid "Install Unsigned Software?"
 msgstr "Instalēt neparakstītu programmatūru?"
 
@@ -5370,12 +5273,11 @@ msgid ""
 "verify the origin of updates to this software, or whether updates have been "
 "tampered with."
 msgstr ""
-"Programmatūra, kura ir rindā uz uzinstalēšanu, nav parakstīta. Nebūs"
-" iespējams pārbaudīt šīs programmatūras atjauninājumu izcelsmi un vai kāds"
-" nav tos mainījis."
+"Programmatūra, kura ir rindā uz uzinstalēšanu, nav parakstīta. Nebūs "
+"iespējams pārbaudīt šīs programmatūras atjauninājumu izcelsmi un vai kāds "
+"nav tos mainījis."
 
 #: plugins/packagekit/gs-packagekit-task.c:153
-#| msgid "Find in Software"
 msgid "Download Unsigned Software?"
 msgstr "Lejupielādēt neparakstītu programmatūru?"
 
@@ -5384,11 +5286,10 @@ msgid ""
 "Unsigned updates are available. Without a signature, it is not possible to "
 "verify the origin of the update, or whether it has been tampered with."
 msgstr ""
-"Ir pieejami neparakstīti atjauninājumi. Bez paraksta nevar pārbaudīt šīs"
-" programmatūras atjauninājumu izcelsmi un vai kāds nav tos mainījis."
+"Ir pieejami neparakstīti atjauninājumi. Bez paraksta nevar pārbaudīt šīs "
+"programmatūras atjauninājumu izcelsmi un vai kāds nav tos mainījis."
 
 #: plugins/packagekit/gs-packagekit-task.c:158
-#| msgid "Find in Software"
 msgid "Update Unsigned Software?"
 msgstr "Atjaunināt neparakstītu programmatūru?"
 
@@ -5399,16 +5300,16 @@ msgid ""
 "Software updates will be disabled until unsigned updates are either removed "
 "or updated."
 msgstr ""
-"Ir pieejami neparakstīti atjauninājumi. Bez paraksta nevar pārbaudīt šīs"
-" programmatūras atjauninājumu izcelsmi un vai kāds nav tos mainījis."
-" Programmatūras atjaunināšana tiks izslēgta līdz neparakstītie atjauninājumi"
-" tiks izņemti vai atjaunināti."
+"Ir pieejami neparakstīti atjauninājumi. Bez paraksta nevar pārbaudīt šīs "
+"programmatūras atjauninājumu izcelsmi un vai kāds nav tos mainījis. "
+"Programmatūras atjaunināšana tiks izslēgta līdz neparakstītie atjauninājumi "
+"tiks izņemti vai atjaunināti."
 
 #: plugins/packagekit/gs-plugin-packagekit.c:367
 msgid "Packages"
 msgstr "Pakotnes"
 
-#: plugins/rpm-ostree/gs-plugin-rpm-ostree.c:2687
+#: plugins/rpm-ostree/gs-plugin-rpm-ostree.c:2696
 msgid "Operating System (OSTree)"
 msgstr "Operētājsistēma (OSTree)"
 
