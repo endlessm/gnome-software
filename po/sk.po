@@ -1,59 +1,49 @@
-# Slovak translation for gnome-software.
-# Copyright (C) 2013 gnome-software's COPYRIGHT HOLDER
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-software package.
-# Dušan Kazik <prescott66@gmail.com>, 2013-2021.
-#
+# 
+# Translators:
+# Dušan Kazik <prescott66@gmail.com>, 2013,2015
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-software master\n"
+"Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-07 16:12-0700\n"
-"PO-Revision-Date: 2021-10-05 08:35+0200\n"
-"Last-Translator: Dušan Kazik <prescott66@gmail.com>\n"
-"Language-Team: Slovak <gnome-sk-list@gnome.org>\n"
-"Language: sk\n"
+"POT-Creation-Date: 2022-12-08 00:11+0000\n"
+"PO-Revision-Date: 2016-04-15 19:22+0000\n"
+"Last-Translator: Dušan Kazik <prescott66@gmail.com>, 2013,2015\n"
+"Language-Team: Slovak (http://www.transifex.com/endless-os/gnome-software/language/sk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 1 : (n>=2 && n<=4) ? 2 : 0\n"
-"X-Generator: Gtranslator 40.0\n"
+"Language: sk\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n == 1 ? 0 : n % 1 == 0 && n >= 2 && n <= 4 ? 1 : n % 1 != 0 ? 2: 3);\n"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:7 src/gs-shell.ui:21
 msgid "Software"
 msgstr "Softvér"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:8
-#, fuzzy
 msgid "Install and update apps"
-msgstr "Nainštalované aktualizácie"
+msgstr ""
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:10
 msgid ""
 "Software allows you to find and install new applications and system "
 "extensions and remove existing installed applications."
-msgstr ""
-"Aplikácia Softvér vám umožňuje nájsť a nainštalovať nové aplikácie a "
-"systémové rozšírenia a odstrániť existujúce nainštalované aplikácie."
+msgstr "Aplikácia Softvér vám umožňuje nájsť a nainštalovať nové aplikácie a systémové rozšírenia a odstrániť existujúce nainštalované aplikácie."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:14
-#, fuzzy
 msgid ""
 "Software showcases featured and popular applications with useful "
 "descriptions and multiple screenshots per application. Applications can be "
 "found either through browsing the list of categories or by searching. It "
 "also allows you to update your system using an offline update."
 msgstr ""
-"Softvér prostredia GNOME predstavuje obľúbené aplikácie a aplikácie "
-"základnej výbavy s užitočnými popismi a snímkami obrazovky danej aplikácie. "
-"Aplikácie sa dajú nájsť buď prezeraním zoznamu kategórií alebo pomocou "
-"vyhľadávača. Tiež umožňuje aktualizovať váš systém za pomoci aktualizácií "
-"nevyužívajúcich pripojenie k sieti."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:25
 msgid "Overview panel"
 msgstr "Panel s náhľadom"
 
-# GtkLabel
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:29
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:33
 msgid "Details panel"
@@ -72,7 +62,8 @@ msgstr "Panel s aktualizáciami"
 msgid "The update details"
 msgstr "Podrobnosti o aktualizácii"
 
-#: data/metainfo/org.gnome.Software.metainfo.xml.in:89 src/gs-application.c:256
+#: data/metainfo/org.gnome.Software.metainfo.xml.in:89
+#: src/gs-application.c:256
 msgid "The GNOME Project"
 msgstr "Projekt GNOME"
 
@@ -92,15 +83,11 @@ msgstr "Zoznam kompatibilných projektov"
 msgid ""
 "This is a list of compatible projects we should show such as GNOME, KDE and "
 "XFCE."
-msgstr ""
-"Toto je zoznam kompatibilných projektov, ktoré by sa mali zobraziť ako "
-"GNOME, KDE a XFCE."
+msgstr "Toto je zoznam kompatibilných projektov, ktoré by sa mali zobraziť ako GNOME, KDE a XFCE."
 
 #: data/org.gnome.software.gschema.xml:10
 msgid "Whether to manage updates and upgrades in GNOME Software"
-msgstr ""
-"Či sa majú spravovať aktualizácie a inovácie v aplikácii Softvér prostredia "
-"GNOME"
+msgstr "Či sa majú spravovať aktualizácie a inovácie v aplikácii Softvér prostredia GNOME"
 
 #: data/org.gnome.software.gschema.xml:11
 msgid ""
@@ -116,10 +103,7 @@ msgstr "Automaticky prevziať a inštalovať aktualizácie"
 msgid ""
 "If enabled, GNOME Software automatically downloads software updates in the "
 "background, also installing ones that do not require a reboot."
-msgstr ""
-"Ak je táto voľba povolená, aplikácia Softvér prostredia GNOME automaticky "
-"prevezme aktualizácie softvéru na pozadí a nainštaluje tie, ktoré nevyžadujú "
-"reštart."
+msgstr "Ak je táto voľba povolená, aplikácia Softvér prostredia GNOME automaticky prevezme aktualizácie softvéru na pozadí a nainštaluje tie, ktoré nevyžadujú reštart."
 
 #: data/org.gnome.software.gschema.xml:20
 msgid "Notify the user about software updated in the background"
@@ -156,16 +140,13 @@ msgstr ""
 
 #: data/org.gnome.software.gschema.xml:42
 msgid "Non-free applications show a warning dialog before install"
-msgstr ""
-"Neslobodné aplikácie zobrazia pred inštaláciou dialógové okno s upozornením"
+msgstr "Neslobodné aplikácie zobrazia pred inštaláciou dialógové okno s upozornením"
 
 #: data/org.gnome.software.gschema.xml:43
 msgid ""
-"When non-free applications are installed a warning dialog can be shown. This "
-"controls if that dialog is suppressed."
-msgstr ""
-"Pri inštalácii neslobodných aplikácií, môže byť zobrazené dialógové okno s "
-"upozornením. Táto voľba ovláda potlačenie tohto dialógového okna."
+"When non-free applications are installed a warning dialog can be shown. This"
+" controls if that dialog is suppressed."
+msgstr "Pri inštalácii neslobodných aplikácií, môže byť zobrazené dialógové okno s upozornením. Táto voľba ovláda potlačenie tohto dialógového okna."
 
 #: data/org.gnome.software.gschema.xml:47
 msgid "The last update check timestamp"
@@ -176,14 +157,12 @@ msgid "The last upgrade notification timestamp"
 msgstr "Časová značka posledného oznámenia o aktualizácii"
 
 #: data/org.gnome.software.gschema.xml:55
-#, fuzzy
 msgid "The last update notification timestamp"
-msgstr "Časová značka posledného oznámenia o aktualizácii"
+msgstr ""
 
 #: data/org.gnome.software.gschema.xml:59
 msgid "The timestamp of the first security update, cleared after update"
-msgstr ""
-"Časová značka prvej bezpečnostnej aktualizácie, zmazanej po aktualizácii"
+msgstr "Časová značka prvej bezpečnostnej aktualizácie, zmazanej po aktualizácii"
 
 #: data/org.gnome.software.gschema.xml:63
 msgid "The last update timestamp"
@@ -200,8 +179,8 @@ msgstr ""
 #: data/org.gnome.software.gschema.xml:72
 msgid ""
 "Choosing a larger value will mean less round-trips to the remote server but "
-"updates to the screenshots may take longer to show to the user. A value of 0 "
-"means to never check the server if the image already exists in the cache."
+"updates to the screenshots may take longer to show to the user. A value of 0"
+" means to never check the server if the image already exists in the cache."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:81
@@ -217,34 +196,29 @@ msgid "Reviews with karma less than this number will not be shown."
 msgstr "Recenzie s karmou nižšou ako toto číslo nebudú zobrazené."
 
 #: data/org.gnome.software.gschema.xml:90
-msgid "A list of official repositories that should not be considered 3rd party"
-msgstr ""
-"Zoznam oficiálnych repozitárov, ktoré by nemali byť považované za repozitáre "
-"od tretích strán"
+msgid ""
+"A list of official repositories that should not be considered 3rd party"
+msgstr "Zoznam oficiálnych repozitárov, ktoré by nemali byť považované za repozitáre od tretích strán"
 
 #: data/org.gnome.software.gschema.xml:94
-#, fuzzy
 msgid "A list of required repositories that cannot be disabled or removed"
 msgstr ""
-"Zoznam oficiálnych repozitárov, ktoré by nemali byť považované za repozitáre "
-"od tretích strán"
 
 #: data/org.gnome.software.gschema.xml:98
-msgid "A list of official repositories that should be considered free software"
-msgstr ""
-"Zoznam oficiálnych repozitárov, ktoré by mali byť považované za slobodný "
-"softvér"
+msgid ""
+"A list of official repositories that should be considered free software"
+msgstr "Zoznam oficiálnych repozitárov, ktoré by mali byť považované za slobodný softvér"
 
 #: data/org.gnome.software.gschema.xml:102
 msgid ""
-"The licence URL to use when an application should be considered free software"
+"The licence URL to use when an application should be considered free "
+"software"
 msgstr "URL licencie, ktorá sa použije, keď je softvér považovaný za slobodný"
 
 #: data/org.gnome.software.gschema.xml:106
-msgid "Install bundled applications for all users on the system where possible"
-msgstr ""
-"Inštalovať sady aplikácií pre všetkých používateľov v systéme, kde je to "
-"možné"
+msgid ""
+"Install bundled applications for all users on the system where possible"
+msgstr "Inštalovať sady aplikácií pre všetkých používateľov v systéme, kde je to možné"
 
 #: data/org.gnome.software.gschema.xml:110
 msgid "Allow access to the Software Repositories dialog"
@@ -256,15 +230,15 @@ msgstr "Ponúknuť aktualizácie predčasných vydaní"
 
 #: data/org.gnome.software.gschema.xml:118
 msgid "Show some UI elements informing the user that an app is non-free"
-msgstr ""
-"Zobraziť niektoré prvky používateľského rozhrania, ktoré informujú "
-"používateľa o tom, že aplikácia nie je slobodná"
+msgstr "Zobraziť niektoré prvky používateľského rozhrania, ktoré informujú používateľa o tom, že aplikácia nie je slobodná"
 
 #: data/org.gnome.software.gschema.xml:122
 msgid "Show the installed size for apps in the list of installed applications"
 msgstr ""
 
-#. Translators: Replace the link with a version in your language, e.g. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include ''.
+#. Translators: Replace the link with a version in your language, e.g.
+#. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include
+#. ''.
 #: data/org.gnome.software.gschema.xml:126
 msgid "'https://en.wikipedia.org/wiki/Proprietary_software'"
 msgstr "'https://sk.wikipedia.org/wiki/Propriet%C3%A1rny_softv%C3%A9r'"
@@ -280,19 +254,18 @@ msgid ""
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:135
-#, fuzzy
 msgid ""
 "Install the AppStream files to a system-wide location for all users. If "
 "false, files are installed in non-standard $XDG_DATA_HOME/swcatalog/xml "
 "directory"
-msgstr "Inštalovať súbor appstream do systémového umiestnenia"
+msgstr ""
 
 #: data/org.gnome.software.gschema.xml:139
 msgid ""
 "Priority order of packaging formats to prefer, with more important formats "
 "listed first. An empty array means the default order. Omitted formats are "
-"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm, "
-"snap."
+"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm,"
+" snap."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:146
@@ -304,7 +277,6 @@ msgstr ""
 msgid "GNOME Software AppStream system-wide installer"
 msgstr ""
 
-# title
 #: gs-install-appstream/gs-install-appstream.c:145
 msgid "Failed to parse command line arguments"
 msgstr "Zlyhalo analyzovanie parametrov príkazového riadku"
@@ -321,16 +293,15 @@ msgstr "Tento program môže byť použitý iba správcom"
 
 #. TRANSLATORS: error details
 #: gs-install-appstream/gs-install-appstream.c:167
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to validate content type: %s"
-msgstr "Zlyhalo schválenie typu obsahu"
+msgstr ""
 
-# title
 #. TRANSLATORS: error details
 #: gs-install-appstream/gs-install-appstream.c:178
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to move: %s"
-msgstr "Kopírovanie zlyhalo"
+msgstr ""
 
 #: src/gnome-software-local-file-flatpak.desktop.in:3
 #: src/gnome-software-local-file-fwupd.desktop.in:3
@@ -348,33 +319,33 @@ msgstr "Inštaluje vybraný softvér do systému"
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:134
-#, fuzzy
 msgid "Cartoon Violence"
-msgstr "Žiadne kreslené násilie"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:136
 msgid "No information regarding cartoon violence"
 msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:144
-#, fuzzy
 msgid "Fantasy Violence"
-msgstr "Žiadne fiktívne násilie"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:146
 msgid "No information regarding fantasy violence"
 msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:154
-#, fuzzy
 msgid "Realistic Violence"
-msgstr "Žiadne realistické násilie"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:156
 msgid "No information regarding realistic violence"
 msgstr ""
@@ -384,18 +355,19 @@ msgstr ""
 msgid "Violence Depicting Bloodshed"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:166
 msgid "No information regarding bloodshed"
 msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:174
-#, fuzzy
 msgid "Sexual Violence"
-msgstr "Žiadne sexuálne násilie"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:176
 msgid "No information regarding sexual violence"
 msgstr ""
@@ -405,33 +377,33 @@ msgstr ""
 msgid "Alcohol"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:186
-#, fuzzy
 msgid "No information regarding references to alcohol"
-msgstr "Žiadne odkazy na alkohol"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:194
 msgid "Narcotics"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:196
-#, fuzzy
 msgid "No information regarding references to illicit drugs"
-msgstr "Žiadne odkazy na zakázané drogy"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:204
 msgid "Tobacco"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:206
-#, fuzzy
 msgid "No information regarding references to tobacco products"
-msgstr "Bez odkazov na tabakové výrobky"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:214
@@ -439,240 +411,227 @@ msgstr "Bez odkazov na tabakové výrobky"
 msgid "Nudity"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:216
-#, fuzzy
 msgid "No information regarding nudity of any sort"
-msgstr "Žiadna nahota akéhokoľvek druhu"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:224
 msgid "Sexual Themes"
 msgstr ""
 
-# cmdline description
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:226
-#, fuzzy
 msgid "No information regarding references to or depictions of sexual nature"
-msgstr "Bez sexuálnych odkazov alebo vyobrazení"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:234
 msgid "Profanity"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:236
-#, fuzzy
 msgid "No information regarding profanity of any kind"
-msgstr "Žiadne zneuctenie akéhokoľvek druhu"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:244
-#, fuzzy
 msgid "Inappropriate Humor"
-msgstr "Žiadny nevhodný humor"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:246
 msgid "No information regarding inappropriate humor"
 msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:254
-#, fuzzy
 msgid "Discrimination"
-msgstr "Dokumentácia"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:256
-#, fuzzy
 msgid "No information regarding discriminatory language of any kind"
-msgstr "Žiadny diskriminačný jazyk akéhokoľvek druhu"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:264
 msgid "Advertising"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:266
-#, fuzzy
 msgid "No information regarding advertising of any kind"
-msgstr "Žiadne reklamy akéhokoľvek druhu"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:274
-#, fuzzy
 msgid "Gambling"
-msgstr "Povoľuje sa"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:276
-#, fuzzy
 msgid "No information regarding gambling of any kind"
-msgstr "Žiadne hazardovanie akéhokoľvek druhu"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:284
-#, fuzzy
 msgid "Purchasing"
-msgstr "Kúpiť"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:286
-#, fuzzy
 msgid "No information regarding the ability to spend money"
-msgstr "Žiadne možnosti míňania peňazí"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:294
 msgid "Chat Between Users"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:296
-#, fuzzy
 msgid "No information regarding ways to chat with other users"
-msgstr "Žiadne možnosti textovej komunikácie s ostatnými používateľmi"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:304
 msgid "Audio Chat Between Users"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:306
-#, fuzzy
 msgid "No information regarding ways to talk with other users"
-msgstr "Žiadne možnosti hovoriť s ostatnými používateľmi"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:314
-#, fuzzy
 msgid "Contact Details"
-msgstr "Podrobnosti o zdroji"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:316
-#, fuzzy
 msgid ""
 "No information regarding sharing of social network usernames or email "
 "addresses"
 msgstr ""
-"Žiadne zdieľanie používateľských mien alebo emailových adries zo sociálnych "
-"sietí"
 
-# DK:cmd desc
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:324
-#, fuzzy
 msgid "Identifying Information"
-msgstr "Viac informácií"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:326
-#, fuzzy
-msgid "No information regarding sharing of user information with third parties"
-msgstr "Žiadne zdieľanie informácií o používateľoch s tretími stranami"
+msgid ""
+"No information regarding sharing of user information with third parties"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:334
 msgid "Location Sharing"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:336
-#, fuzzy
 msgid "No information regarding sharing of physical location with other users"
-msgstr "Žiadne zdieľanie fyzickej lokality ostatným používateľom"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:360
 msgid "Homosexuality"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:362
-#, fuzzy
 msgid "No information regarding references to homosexuality"
-msgstr "Žiadne odkazy na homosexualitu"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:370
-#, fuzzy
 msgid "Prostitution"
-msgstr "Konštrukcia"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:372
-#, fuzzy
 msgid "No information regarding references to prostitution"
-msgstr "Žiadne odkazy na prostitúciu"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:380
-#, fuzzy
 msgid "Adultery"
-msgstr "Iba dospelí"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:382
-#, fuzzy
 msgid "No information regarding references to adultery"
-msgstr "Žiadne odkazy na cudzoložstvo"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:390
-#, fuzzy
 msgid "Sexualized Characters"
-msgstr "Žiadne sexuálne násilie"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:392
 msgid "No information regarding sexualized characters"
 msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:400
-#, fuzzy
 msgid "Desecration"
-msgstr "Prezentácia"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:402
-#, fuzzy
 msgid "No information regarding references to desecration"
-msgstr "Žiadne odkazy na znesvätenie"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:410
-#, fuzzy
 msgid "Human Remains"
-msgstr "Humanita"
+msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:412
-#, fuzzy
 msgid "No information regarding visible dead human remains"
-msgstr "Bez viditeľných pozostatkov mŕtvych ľudí"
+msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:420
 msgid "Slavery"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:422
-#, fuzzy
 msgid "No information regarding references to slavery"
-msgstr "Žiadne odkazy na otroctvo"
+msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:494
-#, fuzzy
 msgid "Does not include references to drugs"
-msgstr "Žiadne odkazy na zakázané drogy"
+msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:496
 msgid ""
@@ -688,23 +647,20 @@ msgid "Does not include sex or nudity"
 msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:502
-#, fuzzy
 msgid "Does not include uncontrolled chat functionality"
-msgstr "Nekontrolovateľné rozhovory medzi používateľmi"
+msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:504
-#, fuzzy
 msgid "Does not include violence"
-msgstr "Žiadne realistické násilie"
+msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:537
 msgid "Drugs"
 msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:539
-#, fuzzy
 msgid "Strong Language"
-msgstr "Jazyky"
+msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:541
 msgid "Money"
@@ -715,26 +671,24 @@ msgid "Social"
 msgstr ""
 
 #: src/gs-age-rating-context-dialog.c:547
-#, fuzzy
 msgid "Violence"
-msgstr "Žiadne sexuálne násilie"
+msgstr ""
 
 #. Translators: This is used to join two list items together in
 #. * a compressed way of displaying a list of descriptions of age
 #. * ratings for apps. The order of the items does not matter.
 #: src/gs-age-rating-context-dialog.c:658
-#, fuzzy, c-format
+#, c-format
 msgid "%s • %s"
-msgstr "%s • %s"
+msgstr ""
 
-# GtkToggleButton
-#. Translators: The app is considered suitable to be run by all ages of people.
+#. Translators: The app is considered suitable to be run by all ages of
+#. people.
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-age-rating-context-dialog.c:936
-#, fuzzy
 msgctxt "Age rating"
 msgid "All"
-msgstr "Všetko"
+msgstr ""
 
 #. Translators: This is displayed for the download size in an
 #. * app’s context tile if the size is unknown. It should be short
@@ -747,62 +701,68 @@ msgstr "Všetko"
 msgid "?"
 msgstr ""
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for all ages. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1023
 #, c-format
 msgid "%s is suitable for everyone"
 msgstr ""
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 3. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1027
 #, c-format
 msgid "%s is suitable for toddlers"
 msgstr ""
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 5. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1031
 #, c-format
 msgid "%s is suitable for young children"
 msgstr ""
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people up to around age 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1039
 #, c-format
 msgid "%s is suitable for teenagers"
 msgstr ""
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people aged up to and over 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1043
-#, fuzzy, c-format
+#, c-format
 msgid "%s is suitable for adults"
-msgstr "Formát súboru %s"
+msgstr ""
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
-#. * for a specified age group. The first placeholder is the app name, the second
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
+#. * for a specified age group. The first placeholder is the app name, the
+#. second
 #. * is the age group.
 #: src/gs-age-rating-context-dialog.c:1048
 #, c-format
 msgid "%s is suitable for %s"
 msgstr ""
 
-#. Translators: This is the title of the dialog which contains information about the suitability of an app for different ages.
+#. Translators: This is the title of the dialog which contains information
+#. about the suitability of an app for different ages.
 #. this one’s not a placeholder
 #: src/gs-age-rating-context-dialog.ui:5 src/gs-app-context-bar.ui:211
 msgid "Age Rating"
 msgstr "Hodnotenie veku"
 
-# DK:cmd desc
 #: src/gs-age-rating-context-dialog.ui:68
 #: src/gs-hardware-support-context-dialog.ui:71
 #: src/gs-safety-context-dialog.ui:221
-#, fuzzy
 msgid "How to contribute missing information"
-msgstr "Vypíše podrobné ladiace informácie"
+msgstr ""
 
 #: lib/gs-app.c:6175
 msgid "Local file"
@@ -827,21 +787,18 @@ msgid "Pending"
 msgstr "Čaká na inštaláciu"
 
 #: src/gs-app-addon-row.c:101 src/gs-app-row.c:461 src/gs-details-page.c:369
-#, fuzzy
 msgid "Pending install"
-msgstr "Čakajúca inštalácia…"
+msgstr ""
 
 #: src/gs-app-addon-row.c:105 src/gs-app-row.c:465 src/gs-details-page.c:376
-#, fuzzy
 msgid "Pending remove"
-msgstr "Čaká na inštaláciu"
+msgstr ""
 
 #: src/gs-app-addon-row.c:111 src/gs-app-row.ui:197 src/gs-app-tile.ui:50
 #: src/gs-feature-tile.c:535
-#, fuzzy
 msgctxt "Single app"
 msgid "Installed"
-msgstr "Nainštalovaný"
+msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
@@ -853,11 +810,9 @@ msgstr "Inštaluje sa"
 msgid "Removing"
 msgstr "Odstraňuje sa"
 
-# GtkButton
 #: src/gs-app-addon-row.ui:64
-#, fuzzy
 msgid "_Uninstall"
-msgstr "_Inštalovať"
+msgstr ""
 
 #: src/gs-app-details-page.c:68
 msgid "Network"
@@ -909,7 +864,8 @@ msgstr "Môže zobrazovať súbory"
 msgid "File system"
 msgstr "Súborový systém"
 
-#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with actual files being part of the read/full lists
+#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with
+#. actual files being part of the read/full lists
 #: src/gs-app-details-page.c:77 src/gs-app-details-page.c:78
 msgid "Downloads folder"
 msgstr "Priečinok Stiahnuté"
@@ -931,9 +887,8 @@ msgid "Uses an old, insecure display system"
 msgstr "Používa starý, nezabezpečený zobrazovací systém"
 
 #: src/gs-app-details-page.c:81
-#, fuzzy
 msgid "Sandbox escape"
-msgstr "V izolovanom priestore"
+msgstr ""
 
 #: src/gs-app-details-page.c:81
 msgid "Can escape the sandbox and circumvent any other restrictions"
@@ -942,9 +897,8 @@ msgstr "Môže uniknúť z izolovaného priestoru a obísť akékoľvek iné obm
 #. FIXME support app == NULL
 #. set window title
 #: src/gs-app-details-page.c:166
-#, fuzzy
 msgid "Update Details"
-msgstr "Podrobnosti o aktualizácii"
+msgstr ""
 
 #. TRANSLATORS: this is where the packager did not write
 #. * a description for the update
@@ -952,7 +906,6 @@ msgstr "Podrobnosti o aktualizácii"
 msgid "No update description available."
 msgstr "Nie je poskytnutý žiadny popis aktualizácie."
 
-# GtkButton
 #: src/gs-app-details-page.ui:25 src/gs-os-update-page.ui:25
 #: src/gs-shell.ui:367 src/gs-shell.ui:458
 msgid "Go back"
@@ -962,42 +915,37 @@ msgstr "Prejsť späť"
 msgid "Requires additional permissions"
 msgstr "Požaduje dodatočné oprávnenia"
 
-#. Translators: Header of the section with other users' opinions about the app.
+#. Translators: Header of the section with other users' opinions about the
+#. app.
 #: src/gs-app-reviews-dialog.ui:6 src/gs-details-page.ui:855
 msgid "Reviews"
 msgstr "Recenzie"
 
 #: src/gs-app-reviews-dialog.ui:25
-#, fuzzy
 msgid "No reviews were found for this application."
-msgstr "Prepáčte, pre túto aplikáciu nie sú žiadne podrobnosti."
+msgstr ""
 
 #: src/gs-app-reviews-dialog.ui:27
-#, fuzzy
 msgid "No Reviews"
-msgstr "Recenzie"
+msgstr ""
 
-# GtkLabel
 #: src/gs-app-version-history-dialog.ui:6 src/gs-details-page.ui:533
-#, fuzzy
 msgid "Version History"
-msgstr "Verzia"
+msgstr ""
 
 #: src/gs-app-version-history-row.c:71
 #, c-format
 msgid "New in Version %s"
 msgstr ""
 
-# GtkLabel
 #: src/gs-app-version-history-row.c:78
-#, fuzzy, c-format
+#, c-format
 msgid "Version %s"
-msgstr "Verzia"
+msgstr ""
 
 #: src/gs-app-version-history-row.c:80
-#, fuzzy
 msgid "No details for this release"
-msgstr "Pre toto hodnotenie neboli dostupné žiadne podrobnosti."
+msgstr ""
 
 #. TRANSLATORS: This is the date string with: day number, month name, year.
 #. i.e. "25 May 2012"
@@ -1005,19 +953,15 @@ msgstr "Pre toto hodnotenie neboli dostupné žiadne podrobnosti."
 msgid "%e %B %Y"
 msgstr "%e. %B %Y"
 
-# cmdline description
 #. TRANSLATORS: this is a command line option
 #: src/gs-application.c:124
 msgid "Start up mode: either ‘updates’, ‘updated’, ‘installed’ or ‘overview’"
-msgstr ""
-"Režim spustenia: buď „updates“ (aktualizácie), „updated“ (aktualizované), "
-"„installed“ (nainštalované) alebo „overview“ (prehľad)"
+msgstr "Režim spustenia: buď „updates“ (aktualizácie), „updated“ (aktualizované), „installed“ (nainštalované) alebo „overview“ (prehľad)"
 
 #: src/gs-application.c:124
 msgid "MODE"
 msgstr "REŽIM"
 
-# cmdline description
 #: src/gs-application.c:126
 msgid "Search for applications"
 msgstr "Vyhľadá aplikácie"
@@ -1026,7 +970,6 @@ msgstr "Vyhľadá aplikácie"
 msgid "SEARCH"
 msgstr "HĽADANIE"
 
-# cmdline description
 #: src/gs-application.c:128
 msgid "Show application details (using application ID)"
 msgstr "Zobrazí podrobnosti o aplikácii (použitím identifikátora aplikácie)"
@@ -1035,7 +978,6 @@ msgstr "Zobrazí podrobnosti o aplikácii (použitím identifikátora aplikácie
 msgid "ID"
 msgstr "IDENTIFIKÁTOR"
 
-# cmdline description
 #: src/gs-application.c:130
 msgid "Show application details (using package name)"
 msgstr "Zobrazí podrobnosti o aplikácii (použitím názvu balíka)"
@@ -1044,18 +986,14 @@ msgstr "Zobrazí podrobnosti o aplikácii (použitím názvu balíka)"
 msgid "PKGNAME"
 msgstr "NÁZOV_BALÍKU"
 
-# cmdline description
 #: src/gs-application.c:132
 msgid "Install the application (using application ID)"
 msgstr "Nainštaluje aplikáciu (použitím identifikátora aplikácie)"
 
-# cmdline description
 #: src/gs-application.c:134
-#, fuzzy
 msgid "Uninstall the application (using application ID)"
-msgstr "Nainštaluje aplikáciu (použitím identifikátora aplikácie)"
+msgstr ""
 
-# DK:cmd desc
 #: src/gs-application.c:136
 msgid "Open a local package file"
 msgstr "Otvorí miestny súbor balíka"
@@ -1068,15 +1006,12 @@ msgstr "NÁZOV_SÚBORU"
 msgid ""
 "The kind of interaction expected for this action: either ‘none’, ‘notify’, "
 "or ‘full’"
-msgstr ""
-"Očakávaný druh interakcie pre túto akciu: buď „none“ (žiadna), "
-"„notify“ (oznámiť), alebo „full“ (úplná)"
+msgstr "Očakávaný druh interakcie pre túto akciu: buď „none“ (žiadna), „notify“ (oznámiť), alebo „full“ (úplná)"
 
 #: src/gs-application.c:141
 msgid "Show a local metainfo or appdata file"
 msgstr ""
 
-# DK:cmd desc
 #: src/gs-application.c:143
 msgid "Show verbose debugging information"
 msgstr "Vypíše podrobné ladiace informácie"
@@ -1089,12 +1024,10 @@ msgstr "Nainštaluje akékoľvek čakajúce aktualizácie na pozadí"
 msgid "Show update preferences"
 msgstr "Zobrazí predvoľby aktualizácií"
 
-# cmd line desc
 #: src/gs-application.c:149
 msgid "Quit the running instance"
 msgstr "Ukončí spustenú inštanciu"
 
-# DK:cmd desc
 #: src/gs-application.c:151
 msgid "Prefer local file sources to AppStream"
 msgstr "Budú sa preferovať miestne zdroje súborov pre AppStream"
@@ -1134,19 +1067,19 @@ msgid "Installed Size"
 msgstr "Veľkosť po nainštalovaní"
 
 #: src/gs-app-context-bar.c:165
-#, fuzzy, c-format
+#, c-format
 msgid "Includes %s of data and %s of cache"
-msgstr "Zahŕňa %s, %s a %s."
+msgstr ""
 
 #: src/gs-app-context-bar.c:168
-#, fuzzy, c-format
+#, c-format
 msgid "Includes %s of data"
-msgstr "Zahŕňa %s, %s a %s."
+msgstr ""
 
 #: src/gs-app-context-bar.c:171
-#, fuzzy, c-format
+#, c-format
 msgid "Includes %s of cache"
-msgstr "Zahŕňa %s, %s a %s."
+msgstr ""
 
 #: src/gs-app-context-bar.c:174
 msgid "Cache and data usage unknown"
@@ -1177,17 +1110,14 @@ msgstr ""
 #. * an app could not be determined.
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-app-context-bar.c:212
-#, fuzzy
 msgid "Size is unknown"
-msgstr "neznámy"
+msgstr ""
 
-# GtkLabel
 #. Translators: This indicates an app requires no permissions to run.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:282
-#, fuzzy
 msgid "No permissions"
-msgstr "Oprávnenia"
+msgstr ""
 
 #. Translators: This indicates an app uses the network.
 #. * It’s used in a context tile, so should be short.
@@ -1198,75 +1128,73 @@ msgstr ""
 #. Translators: This indicates an app uses D-Bus system services.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:300
-#, fuzzy
 msgid "Uses system services"
-msgstr "Systémové služby"
+msgstr ""
 
 #. Translators: This indicates an app uses D-Bus session services.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:307
-#, fuzzy
 msgid "Uses session services"
-msgstr "Služby relácie"
+msgstr ""
 
 #. Translators: This indicates an app can access arbitrary hardware devices.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:314
-#, fuzzy
 msgid "Can access hardware devices"
-msgstr "Môže pristupovať k súborom systémových zariadení"
+msgstr ""
 
-#. Translators: This indicates an app can read/write to the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read/write to the user’s home or the
+#. entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:326
 msgid "Can read/write all your data"
 msgstr ""
 
-#. Translators: This indicates an app can read (but not write) from the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. home or the entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:338
 msgid "Can read all your data"
 msgstr ""
 
-#. Translators: This indicates an app can read/write to the user’s Downloads directory.
+#. Translators: This indicates an app can read/write to the user’s Downloads
+#. directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:345
 msgid "Can read/write your downloads"
 msgstr ""
 
-#. Translators: This indicates an app can read (but not write) from the user’s Downloads directory.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. Downloads directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:352
 msgid "Can read your downloads"
 msgstr ""
 
-#. Translators: This indicates an app can access data in the system unknown to the Software.
+#. Translators: This indicates an app can access data in the system unknown to
+#. the Software.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:359
-#, fuzzy
 msgid "Can access arbitrary files"
-msgstr "Môže pristupovať k súborom systémových zariadení"
+msgstr ""
 
 #. Translators: This indicates an app can access or change user settings.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:366 src/gs-safety-context-dialog.c:227
-#, fuzzy
 msgid "Can access and change user settings"
-msgstr "Môže zobrazovať a meniť akékoľvek nastavenia"
+msgstr ""
 
 #. Translators: This indicates an app uses the X11 windowing system.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:373 src/gs-safety-context-dialog.c:211
-#, fuzzy
 msgid "Uses a legacy windowing system"
-msgstr "Používa starý, nezabezpečený zobrazovací systém"
+msgstr ""
 
 #. Translators: This indicates an app can escape its sandbox.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:380 src/gs-safety-context-dialog.c:219
-#, fuzzy
 msgid "Can acquire arbitrary permissions"
-msgstr "Požaduje dodatočné oprávnenia"
+msgstr ""
 
 #. Translators: This indicates that an application has been packaged
 #. * by the user’s distribution and is safe.
@@ -1282,32 +1210,32 @@ msgstr ""
 msgid "Provided by a third party"
 msgstr ""
 
-#. Translators: This indicates an app is not licensed under a free software license.
+#. Translators: This indicates an app is not licensed under a free software
+#. license.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:425
-#, fuzzy
 msgid "Proprietary code"
-msgstr "Uzavretá"
+msgstr ""
 
-#. Translators: This indicates an app’s source code is freely available, so can be audited for security.
+#. Translators: This indicates an app’s source code is freely available, so
+#. can be audited for security.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:431
 msgid "Auditable code"
 msgstr ""
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:438
-#, fuzzy
 msgid "Software developer is verified"
-msgstr "Softvérový repozitár identifikovaný"
+msgstr ""
 
 #. Translators: This indicates an app or its runtime reached its end of life.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:447
-#, fuzzy
 msgid "Software no longer supported"
-msgstr "Váš operačný systém už viac nie je podporovaný."
+msgstr ""
 
 #. Translators: This string is used to join various other translated
 #. * strings into an inline list of reasons why an app has been marked as
@@ -1319,7 +1247,8 @@ msgstr "Váš operačný systém už viac nie je podporovaný."
 #. Translators: This string is used to join various other translated
 #. * strings into an inline list of reasons why an app has been given a
 #. * certain content rating. For example:
-#. * “References to alcoholic beverages; Moderated chat functionality between users”
+#. * “References to alcoholic beverages; Moderated chat functionality between
+#. users”
 #. * If concatenating strings as a list using a separator like this is not
 #. * possible in your language, please file an issue against gnome-software:
 #. * https://gitlab.gnome.org/GNOME/gnome-software/-/issues/new
@@ -1379,14 +1308,12 @@ msgstr ""
 
 #: src/gs-app-context-bar.c:600 src/gs-hardware-support-context-dialog.c:634
 #: src/gs-hardware-support-context-dialog.c:640
-#, fuzzy
 msgid "Requires a keyboard"
-msgstr "Vyžaduje sa reštart"
+msgstr ""
 
 #: src/gs-app-context-bar.c:607
-#, fuzzy
 msgid "Requires a mouse"
-msgstr "Vyžaduje sa reštart"
+msgstr ""
 
 #: src/gs-app-context-bar.c:618
 msgid "Gamepad Needed"
@@ -1423,18 +1350,15 @@ msgid "Contains no age-inappropriate content"
 msgstr ""
 
 #: src/gs-app-context-bar.c:753
-#, fuzzy
 msgid "No age rating information available"
-msgstr "Nie je poskytnutý žiadny popis aktualizácie."
+msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
 #: src/gs-app-row.c:153
-#, fuzzy
 msgid "Visit Website"
-msgstr "Navštíviť webovú stránku"
+msgstr ""
 
-# GtkButton
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed.
 #. * The ellipsis indicates that further steps are required
@@ -1448,7 +1372,6 @@ msgstr "Inštalovať…"
 msgid "Cancel"
 msgstr "Zrušiť"
 
-# GtkButton
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily installed
 #. TRANSLATORS: button text
@@ -1463,23 +1386,20 @@ msgstr "Inštalovať"
 msgid "Update"
 msgstr "Aktualizovať"
 
-# GtkButton
 #. TRANSLATORS: this is a button next to the search results that
 #. * allows the application to be easily removed
 #. TRANSLATORS: button text in the header when an application can be erased
 #. TRANSLATORS: this is button text to remove the application
 #: src/gs-app-row.c:188 src/gs-app-row.c:198 src/gs-details-page.ui:281
 #: src/gs-page.c:549
-#, fuzzy
 msgid "Uninstall"
-msgstr "Inštalovať"
+msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being erased
 #: src/gs-app-row.c:212
-#, fuzzy
 msgid "Uninstalling"
-msgstr "Inštaluje sa"
+msgstr ""
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -1493,7 +1413,8 @@ msgstr "Zariadenie nie je možné používať počas aktualizácie."
 msgid "Source: %s"
 msgstr "Zdroj: %s"
 
-#. Translators: A message to indicate that an app has been renamed. The placeholder is the old human-readable name.
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
 #: src/gs-app-row.c:523
 #, c-format
 msgid "Renamed from %s"
@@ -1509,22 +1430,18 @@ msgstr ""
 #: src/gs-app-translation-dialog.c:70
 #, c-format
 msgid ""
-"%s is designed, developed, and translated by an international community of "
-"volunteers.\n"
+"%s is designed, developed, and translated by an international community of volunteers.\n"
 "\n"
-"This means that while it’s not yet available in your language, you can get "
-"involved and help translate it yourself."
+"This means that while it’s not yet available in your language, you can get involved and help translate it yourself."
 msgstr ""
 
 #: src/gs-app-translation-dialog.ui:5
-#, fuzzy
 msgid "Translations"
-msgstr "Preklad"
+msgstr ""
 
 #: src/gs-app-translation-dialog.ui:92
-#, fuzzy
 msgid "_Translation Website"
-msgstr "Preklad"
+msgstr ""
 
 #. TRANSLATORS: This is a description for entering user/password
 #: src/gs-basic-auth-dialog.c:82
@@ -1560,35 +1477,31 @@ msgstr "_Heslo"
 msgid "Other"
 msgstr "Ostatné"
 
-# GtkToggleButton
 #. TRANSLATORS: this is a subcategory matching all the
 #. * different apps in the parent category, e.g. "Games"
 #: lib/gs-category.c:214
-#, fuzzy
 msgctxt "Category"
 msgid "All"
-msgstr "Všetko"
+msgstr ""
 
-# GtkLabel
 #. TRANSLATORS: this is a subcategory of featured apps
 #: lib/gs-category.c:218
 msgid "Featured"
 msgstr "Softvér základnej výbavy"
 
 #. Heading for featured apps on a category page
-#. Translators: This is a heading for software which has been featured ('picked') by the distribution.
+#. Translators: This is a heading for software which has been featured
+#. ('picked') by the distribution.
 #: src/gs-category-page.ui:41 src/gs-overview-page.ui:106
-#, fuzzy
 msgid "Editor’s Choice"
-msgstr "Výber tvorcov"
+msgstr ""
 
-# GtkLabel
 #. Heading for recently updated apps on a category page
-#. Translators: This is a heading for software which has been recently released upstream.
+#. Translators: This is a heading for software which has been recently
+#. released upstream.
 #: src/gs-category-page.ui:69 src/gs-overview-page.ui:129
-#, fuzzy
 msgid "New & Updated"
-msgstr "Aktualizované"
+msgstr ""
 
 #. Heading for web apps on a category page
 #: src/gs-category-page.ui:97
@@ -1597,9 +1510,8 @@ msgstr ""
 
 #. Heading for the rest of the apps on a category page
 #: src/gs-category-page.ui:125
-#, fuzzy
 msgid "Other Software"
-msgstr "Slobodný softvér"
+msgstr ""
 
 #. TRANSLATORS: the user isn't reading the question
 #: lib/gs-cmd.c:194
@@ -1607,19 +1519,16 @@ msgstr "Slobodný softvér"
 msgid "Please enter a number from 1 to %u: "
 msgstr "Prosím, zadajte číslo v rozsahu od 1 do %u: "
 
-# cmdline description
 #. TRANSLATORS: asking the user to choose an app from a list
 #: lib/gs-cmd.c:266
 msgid "Choose an application:"
 msgstr "Zvoľte aplikáciu:"
 
-# GtkToggleButton
 #: lib/gs-desktop-data.c:16
 msgctxt "Menu of Graphics & Photography"
 msgid "All"
 msgstr "Všetko"
 
-# GtkLabel
 #: lib/gs-desktop-data.c:20
 msgctxt "Menu of Graphics & Photography"
 msgid "Featured"
@@ -1660,13 +1569,11 @@ msgctxt "Menu of Audio & Video"
 msgid "Music Players"
 msgstr "Prehrávače hudby"
 
-# GtkToggleButton
 #: lib/gs-desktop-data.c:53
 msgctxt "Menu of Productivity"
 msgid "All"
 msgstr "Všetko"
 
-# GtkLabel
 #: lib/gs-desktop-data.c:58
 msgctxt "Menu of Productivity"
 msgid "Featured"
@@ -1702,13 +1609,11 @@ msgctxt "Menu of Communication & News"
 msgid "Web Browsers"
 msgstr "Webové prehliadače"
 
-# GtkToggleButton
 #: lib/gs-desktop-data.c:87
 msgctxt "Menu of Audio & Video"
 msgid "All"
 msgstr "Všetko"
 
-# GtkLabel
 #: lib/gs-desktop-data.c:90
 msgctxt "Menu of Audio & Video"
 msgid "Featured"
@@ -1774,13 +1679,11 @@ msgctxt "Menu of Games"
 msgid "Strategy"
 msgstr "Strategické"
 
-# GtkToggleButton
 #: lib/gs-desktop-data.c:134
 msgctxt "Menu of Communication & News"
 msgid "All"
 msgstr "Všetko"
 
-# GtkLabel
 #: lib/gs-desktop-data.c:137
 msgctxt "Menu of Communication & News"
 msgid "Featured"
@@ -1791,13 +1694,11 @@ msgctxt "Menu of Communication & News"
 msgid "Chat"
 msgstr "Rozhovor"
 
-# GtkToggleButton
 #: lib/gs-desktop-data.c:151
 msgctxt "Menu of Education & Science"
 msgid "All"
 msgstr "Všetko"
 
-# GtkLabel
 #: lib/gs-desktop-data.c:158
 msgctxt "Menu of Education & Science"
 msgid "Featured"
@@ -1863,7 +1764,6 @@ msgctxt "Menu of Reference"
 msgid "Health"
 msgstr "Zdravie"
 
-# GtkDialog title
 #: lib/gs-desktop-data.c:207
 msgctxt "Menu of Reference"
 msgid "History"
@@ -1884,13 +1784,11 @@ msgctxt "Menu of Reference"
 msgid "Sports"
 msgstr "Šport"
 
-# GtkToggleButton
 #: lib/gs-desktop-data.c:223
 msgctxt "Menu of Developer Tools"
 msgid "All"
 msgstr "Všetko"
 
-# GtkLabel
 #: lib/gs-desktop-data.c:226
 msgctxt "Menu of Developer Tools"
 msgid "Featured"
@@ -1931,7 +1829,6 @@ msgctxt "Menu of Add-ons"
 msgid "Language Packs"
 msgstr "Jazykové balíky"
 
-# cmdline description
 #: lib/gs-desktop-data.c:275
 msgctxt "Menu of Add-ons"
 msgid "Localization"
@@ -1949,9 +1846,8 @@ msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:289
-#, fuzzy
 msgid "Play"
-msgstr "Prehrávače"
+msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:291
@@ -1960,53 +1856,43 @@ msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:293
-#, fuzzy
 msgid "Learn"
-msgstr "_Zistiť viac"
+msgstr ""
 
-# GtkLabel
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:295
-#, fuzzy
 msgid "Develop"
-msgstr "Vývojár"
+msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:298
-#, fuzzy
 msgid "Codecs"
-msgstr "Kodeky"
+msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:300
-#, fuzzy
 msgid "Hardware Drivers"
-msgstr "Ovládače hardvéru"
+msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:302
-#, fuzzy
 msgid "Fonts"
-msgstr "Písma"
+msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:304
-#, fuzzy
 msgid "Input Sources"
-msgstr "Zdroje vstupu"
+msgstr ""
 
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:306
-#, fuzzy
 msgid "Language Packs"
-msgstr "Jazykové balíky"
+msgstr ""
 
-# cmdline description
 #. Translators: this is a menu category
 #: lib/gs-desktop-data.c:308
-#, fuzzy
 msgid "Localization"
-msgstr "Lokalizácia"
+msgstr ""
 
 #. TRANSLATORS: this is the summary of a notification that an application
 #. * has been successfully installed
@@ -2032,9 +1918,8 @@ msgstr "Aplikácia je pripravená na používanie."
 #. TRANSLATORS: this is the summary of a notification that OS updates
 #. * have been successfully installed
 #: src/gs-common.c:84
-#, fuzzy
 msgid "System updates are now installed"
-msgstr "Aktualizácie operačného systému boli nainštalované"
+msgstr ""
 
 #. TRANSLATORS: this is the body of a notification that OS updates
 #. * have been successfully installed
@@ -2047,7 +1932,6 @@ msgstr "Nedávno nainštalované aktualizácie sú dostupné na kontrolu"
 msgid "Restart"
 msgstr "Reštartovať"
 
-# DK: akcia po nainstalovani softveru
 #: src/gs-common.c:112
 msgid "Launch"
 msgstr "Spustiť"
@@ -2065,16 +1949,13 @@ msgstr "Povoliť softvérový repozitár tretích strán?"
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
 #. * 2. Software repository name, e.g. fedora-optional
-#.
 #: src/gs-common.c:240
 #, c-format
 msgid ""
 "%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">free and open source software</a>, and is provided by “%s”."
-msgstr ""
-"%s nie je <a href=\"https://sk.wikipedia.org/wiki/"
-"Free_and_Open_Source_Software\">slobodný softvér s otvoreným zdrojom</a> a "
-"je poskytovaný zdrojom „%s“."
+"source_software\">free and open source software</a>, and is provided by "
+"“%s”."
+msgstr "%s nie je <a href=\"https://sk.wikipedia.org/wiki/Free_and_Open_Source_Software\">slobodný softvér s otvoreným zdrojom</a> a je poskytovaný zdrojom „%s“."
 
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
@@ -2086,23 +1967,18 @@ msgstr "%s je poskytovaný zdrojom „%s“."
 
 #: src/gs-common.c:259
 msgid "This software repository must be enabled to continue installation."
-msgstr ""
-"Pre pokračovanie v inštalácii musí byť tento repozitár so softvérom povolený."
+msgstr "Pre pokračovanie v inštalácii musí byť tento repozitár so softvérom povolený."
 
 #. TRANSLATORS: Laws are geographical, urgh...
 #: src/gs-common.c:269
 #, c-format
 msgid "It may be illegal to install or use %s in some countries."
-msgstr ""
-"Inštalácia alebo používanie softvéru %s môže byť v niektorých krajinách "
-"protizákonná."
+msgstr "Inštalácia alebo používanie softvéru %s môže byť v niektorých krajinách protizákonná."
 
 #. TRANSLATORS: Laws are geographical, urgh...
 #: src/gs-common.c:275
 msgid "It may be illegal to install or use this codec in some countries."
-msgstr ""
-"Inštalácia alebo používanie tohto kodeku môže byť v niektorých krajinách "
-"protizákonná."
+msgstr "Inštalácia alebo používanie tohto kodeku môže byť v niektorých krajinách protizákonná."
 
 #. TRANSLATORS: this is button text to not ask about non-free content again
 #: src/gs-common.c:282
@@ -2121,7 +1997,6 @@ msgstr "Povoliť a inštalovať"
 msgid "Detailed errors from the package manager follow:"
 msgstr "Podrobné chybové správy od správcu balíkov:"
 
-# GtkLabel
 #: src/gs-common.c:509 src/gs-safety-context-dialog.ui:72
 msgid "Details"
 msgstr "Podrobnosti"
@@ -2135,27 +2010,28 @@ msgstr ""
 #: src/gs-common.c:750
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
-msgstr[0] "Aktualizácie boli nainštalované"
-msgstr[1] "Aktualizácia bola nainštalovaná"
-msgstr[2] "Aktualizácie boli nainštalované"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
-# GsAppFolderDialog title, GtkLabel
 #. TRANSLATORS: we've just removed some apps
 #: src/gs-common.c:760
-#, fuzzy
 msgid "An application has been removed"
 msgid_plural "Applications have been removed"
-msgstr[0] "Vstúpi do servisného režimu GApplication"
-msgstr[1] "Vstúpi do servisného režimu GApplication"
-msgstr[2] "Vstúpi do servisného režimu GApplication"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:766
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
-msgstr[0] "Je potrebný reštart na uplatnenie zmien aplikácií."
-msgstr[1] "Je potrebný reštart na uplatnenie zmien aplikácie."
-msgstr[2] "Je potrebný reštart na uplatnenie zmien aplikácií."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:773
@@ -2174,6 +2050,7 @@ msgid_plural "%d minutes ago"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:875
 #, c-format
@@ -2182,22 +2059,25 @@ msgid_plural "%d hours ago"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:879
-#, fuzzy, c-format
+#, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
-msgstr[0] "Pred dvoma dňami"
-msgstr[1] "Pred dvoma dňami"
-msgstr[2] "Pred dvoma dňami"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:883
-#, fuzzy, c-format
+#, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
-msgstr[0] "Pred týždňom"
-msgstr[1] "Pred týždňom"
-msgstr[2] "Pred týždňom"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:887
 #, c-format
@@ -2206,6 +2086,7 @@ msgid_plural "%d months ago"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:891
 #, c-format
@@ -2214,9 +2095,12 @@ msgid_plural "%d years ago"
 msgstr[0] ""
 msgstr[1] ""
 msgstr[2] ""
+msgstr[3] ""
 
-#. Translators: This is to construct a disk size string consisting of the value and its unit, while
-#. * the unit is drawn with a smaller font. If you need to flip the order, then you can use "%2$s %1$s".
+#. Translators: This is to construct a disk size string consisting of the
+#. value and its unit, while
+#. * the unit is drawn with a smaller font. If you need to flip the order,
+#. then you can use "%2$s %1$s".
 #. * Make sure you'll preserve the no break space between the values.
 #. * Example result: "13.0 MB"
 #: src/gs-common.c:1255
@@ -2225,13 +2109,14 @@ msgctxt "format-size"
 msgid "%s %s"
 msgstr ""
 
-# cmdline description
-#. TRANSLATORS: this is a what we use in notifications if the app's name is unknown
+#. TRANSLATORS: this is a what we use in notifications if the app's name is
+#. unknown
 #: src/gs-dbus-helper.c:291
 msgid "An application"
 msgstr "Aplikácia"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional MIME types.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. MIME types.
 #: src/gs-dbus-helper.c:297
 #, c-format
 msgid "%s is requesting additional file format support."
@@ -2242,7 +2127,8 @@ msgstr "Softvér %s požaduje dodatočnú podporu formátu súborov."
 msgid "Additional MIME Types Required"
 msgstr "Požadujú sa dodatočné typy MIME"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional fonts.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. fonts.
 #: src/gs-dbus-helper.c:303
 #, c-format
 msgid "%s is requesting additional fonts."
@@ -2253,7 +2139,8 @@ msgstr "Softvér %s požaduje dodatočné písma."
 msgid "Additional Fonts Required"
 msgstr "Požadujú sa dodatočné písma"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional codecs.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. codecs.
 #: src/gs-dbus-helper.c:309
 #, c-format
 msgid "%s is requesting additional multimedia codecs."
@@ -2264,7 +2151,8 @@ msgstr "Softvér %s požaduje dodatočné multimediálne kodeky."
 msgid "Additional Multimedia Codecs Required"
 msgstr "Požadujú sa dodatočné multimediálne kodeky"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional printer drivers.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. printer drivers.
 #: src/gs-dbus-helper.c:315
 #, c-format
 msgid "%s is requesting additional printer drivers."
@@ -2275,7 +2163,8 @@ msgstr "Softvér %s požaduje dodatočné ovládače tlačiarne."
 msgid "Additional Printer Drivers Required"
 msgstr "Požadujú sa dodatočné ovládače tlačiarne"
 
-#. TRANSLATORS: this is a notification displayed when an app wants to install additional packages.
+#. TRANSLATORS: this is a notification displayed when an app wants to install
+#. additional packages.
 #: src/gs-dbus-helper.c:321
 #, c-format
 msgid "%s is requesting additional packages."
@@ -2296,23 +2185,20 @@ msgid "_Show More"
 msgstr "Zo_braziť viac"
 
 #: src/gs-description-box.c:67
-#, fuzzy
 msgid "_Show Less"
-msgstr "Zo_braziť viac"
+msgstr ""
 
 #: src/gs-details-page.c:357
 msgid "Removing…"
 msgstr "Odstraňuje sa…"
 
 #: src/gs-details-page.c:367
-#, fuzzy
 msgid "Requires restart to finish install"
-msgstr "Vyžaduje sa reštart"
+msgstr ""
 
 #: src/gs-details-page.c:374
-#, fuzzy
 msgid "Requires restart to finish remove"
-msgstr "Vyžaduje sa reštart"
+msgstr ""
 
 #. TRANSLATORS: This is a label on top of the app's progress
 #. * bar to inform the user that the app should be installed soon
@@ -2326,18 +2212,17 @@ msgstr "Čakajúca inštalácia…"
 msgid "Pending update…"
 msgstr "Čakajúca aktualizácia…"
 
-#. Translators: This string is shown when preparing to download and install an app.
+#. Translators: This string is shown when preparing to download and install an
+#. app.
 #: src/gs-details-page.c:414
 msgid "Preparing…"
 msgstr "Pripravuje sa…"
 
 #. Translators: This string is shown when uninstalling an app.
 #: src/gs-details-page.c:417
-#, fuzzy
 msgid "Uninstalling…"
-msgstr "Inštaluje sa"
+msgstr ""
 
-# GtkButton
 #. TRANSLATORS: button text in the header when an application
 #. * can be installed
 #. TRANSLATORS: button text in the header when firmware
@@ -2348,11 +2233,9 @@ msgid "_Install"
 msgstr "_Inštalovať"
 
 #: src/gs-details-page.c:886
-#, fuzzy
 msgid "_Restart"
-msgstr "Reštartovať"
+msgstr ""
 
-# GtkButton
 #. TRANSLATORS: this is a button that allows the apps to
 #. * be installed.
 #. * The ellipsis indicates that further steps are required,
@@ -2377,15 +2260,13 @@ msgstr "Ak chcete napísať recenziu, musíte byť pripojený k internetu"
 msgid "Unable to find “%s”"
 msgstr "Nie je možné nájsť „%s“"
 
-# GtkLabel
 #: src/gs-details-page.ui:7
 msgid "Details page"
 msgstr "Stránka s podrobnosťami"
 
 #: src/gs-details-page.ui:39
-#, fuzzy
 msgid "Loading application details…"
-msgstr "Preberajú sa hodnotenia aplikácií…"
+msgstr ""
 
 #: src/gs-details-page.ui:77
 msgid ""
@@ -2394,9 +2275,8 @@ msgid ""
 msgstr ""
 
 #: src/gs-details-page.ui:83
-#, fuzzy
 msgid "Help _Translate"
-msgstr "Preklad"
+msgstr ""
 
 #. TRANSLATORS: A label for a button to execute the selected application.
 #: src/gs-details-page.ui:244
@@ -2423,8 +2303,7 @@ msgstr "Vybraté doplnky budú nainštalované spolu s aplikáciou."
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
-msgstr ""
-"Táto aplikácia sa môže používať iba ak je aktívne internetové pripojenie."
+msgstr "Táto aplikácia sa môže používať iba ak je aktívne internetové pripojenie."
 
 #: src/gs-details-page.ui:587
 msgid "Software Repository Included"
@@ -2434,9 +2313,7 @@ msgstr "Zahrnutý softvérový repozitár"
 msgid ""
 "This application includes a software repository which provides updates, as "
 "well as access to other software."
-msgstr ""
-"V tejto aplikácii je zahrnutý repozitár so softvérom, ktorý poskytuje "
-"aktualizácie spolu s prístupom k ďalšiemu softvéru."
+msgstr "V tejto aplikácii je zahrnutý repozitár so softvérom, ktorý poskytuje aktualizácie spolu s prístupom k ďalšiemu softvéru."
 
 #: src/gs-details-page.ui:605
 msgid "No Software Repository Included"
@@ -2446,9 +2323,7 @@ msgstr "Žiadny zahrnutý softvérový repozitár"
 msgid ""
 "This application does not include a software repository. It will not be "
 "updated with new versions."
-msgstr ""
-"V tejto aplikácii nie je zahrnutý repozitár so softvérom. Preto nebude "
-"aktualizovaná na nové verzie."
+msgstr "V tejto aplikácii nie je zahrnutý repozitár so softvérom. Preto nebude aktualizovaná na nové verzie."
 
 #: src/gs-details-page.ui:624
 msgid ""
@@ -2456,7 +2331,8 @@ msgid ""
 "replaced."
 msgstr "Softvér je už poskytovaný vašou distribúciou a nemal by byť nahradený."
 
-#. Translators: a repository file used for installing software has been discovered.
+#. Translators: a repository file used for installing software has been
+#. discovered.
 #: src/gs-details-page.ui:641
 msgid "Software Repository Identified"
 msgstr "Softvérový repozitár identifikovaný"
@@ -2465,9 +2341,7 @@ msgstr "Softvérový repozitár identifikovaný"
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
-msgstr ""
-"Pridaním tohto softvérového repozitára získate prístup k dodatočnému "
-"softvéru a aktualizáciám."
+msgstr "Pridaním tohto softvérového repozitára získate prístup k dodatočnému softvéru a aktualizáciám."
 
 #: src/gs-details-page.ui:643
 msgid "Only use software repositories that you trust."
@@ -2483,20 +2357,17 @@ msgid ""
 "issue tracker."
 msgstr ""
 
-# GtkButton
 #: src/gs-details-page.ui:745
-#, fuzzy
 msgid "Project _Website"
-msgstr "_Webová stránka"
+msgstr ""
 
 #: src/gs-details-page.ui:762
 msgid "_Donate"
 msgstr "_Prispieť"
 
 #: src/gs-details-page.ui:779
-#, fuzzy
 msgid "Contribute _Translations"
-msgstr "Preklad"
+msgstr ""
 
 #: src/gs-details-page.ui:796
 msgid "_Report an Issue"
@@ -2506,17 +2377,16 @@ msgstr ""
 msgid "_Help"
 msgstr ""
 
-#. Translators: Button opening a dialog where the users can write and publish their opinions about the apps.
+#. Translators: Button opening a dialog where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-details-page.ui:908
-#, fuzzy
 msgid "_Write Review"
-msgstr "_Napísať recenziu"
+msgstr ""
 
 #. Translators: Button opening a dialog showing all reviews for an app.
 #: src/gs-details-page.ui:945
-#, fuzzy
 msgid "All Reviews"
-msgstr "Recenzie"
+msgstr ""
 
 #. TRANSLATORS: status text when downloading
 #: lib/gs-external-appstream-utils.c:244
@@ -2542,6 +2412,7 @@ msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Dostupné písma pre skripty jazyka %s"
 msgstr[1] "Dostupné písma pre skript jazyka %s"
 msgstr[2] "Dostupné písma pre skripty jazyka %s"
+msgstr[3] "Dostupné písma pre skripty jazyka %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2552,16 +2423,15 @@ msgid_plural "Available software for %s"
 msgstr[0] "Dostupný softvér pre kodeky %s"
 msgstr[1] "Dostupný softvér pre kodek %s"
 msgstr[2] "Dostupný softvér pre kodeky %s"
+msgstr[3] "Dostupný softvér pre kodeky %s"
 
 #: src/gs-extras-page.c:242
-#, fuzzy
 msgid "Requested software not found"
-msgstr "Veľkosť snímky obrazovky sa nenašla"
+msgstr ""
 
 #: src/gs-extras-page.c:244
-#, fuzzy
 msgid "Failed to find requested software"
-msgstr "Nepodarilo sa nájsť požadovaný softvér"
+msgstr ""
 
 #. TRANSLATORS: This string is used for codecs that weren't found
 #: src/gs-extras-page.c:343
@@ -2586,11 +2456,9 @@ msgstr "Nie sú dostupné žiadne aplikácie, ktoré poskytujú súbor %s."
 #: src/gs-extras-page.c:358 src/gs-extras-page.c:369 src/gs-extras-page.c:380
 #, c-format
 msgid ""
-"Information about %s, as well as options for how to get missing applications "
-"might be found %s."
-msgstr ""
-"Informácie o kodeku %s, ako aj o možnostiach získania chýbajúcich aplikácií "
-"môžete nájsť %s."
+"Information about %s, as well as options for how to get missing applications"
+" might be found %s."
+msgstr "Informácie o kodeku %s, ako aj o možnostiach získania chýbajúcich aplikácií môžete nájsť %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2613,9 +2481,7 @@ msgstr "Doplnok %s nie je dostupný."
 msgid ""
 "Information about %s, as well as options for how to get an application that "
 "can support this format might be found %s."
-msgstr ""
-"Informácie o kodeku %s, ako aj o možnostiach získania aplikácie s podporou "
-"tohto formátu môžete nájsť %s."
+msgstr "Informácie o kodeku %s, ako aj o možnostiach získania aplikácie s podporou tohto formátu môžete nájsť %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2631,9 +2497,7 @@ msgstr "Nie sú dostupné žiadne písma s podporou skriptov v jazyku %s."
 msgid ""
 "Information about %s, as well as options for how to get additional fonts "
 "might be found %s."
-msgstr ""
-"Informácie o kodeku %s, ako aj o možnostiach získania dodatočných písiem "
-"môžete nájsť %s."
+msgstr "Informácie o kodeku %s, ako aj o možnostiach získania dodatočných písiem môžete nájsť %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2649,9 +2513,7 @@ msgstr "Nie sú dostupné žiadne doplnky s kodekmi pre formát %s."
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
 "play this format might be found %s."
-msgstr ""
-"Informácie o kodeku %s, ako aj o možnostiach získania kodeku na prehranie "
-"tohto formátu môžete nájsť %s."
+msgstr "Informácie o kodeku %s, ako aj o možnostiach získania kodeku na prehranie tohto formátu môžete nájsť %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2667,9 +2529,7 @@ msgstr "Nie sú dostupné žiadne zdroje prostredia Plasma s podporou %s."
 msgid ""
 "Information about %s, as well as options for how to get additional Plasma "
 "resources might be found %s."
-msgstr ""
-"Informácie o kodeku %s, ako aj o možnostiach získania dodatočných zdrojov "
-"prostredia Plasma môžete nájsť %s."
+msgstr "Informácie o kodeku %s, ako aj o možnostiach získania dodatočných zdrojov prostredia Plasma môžete nájsť %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2685,37 +2545,32 @@ msgstr "Nie sú dostupné žiadne ovládače tlačiarne pre %s."
 msgid ""
 "Information about %s, as well as options for how to get a driver that "
 "supports this printer might be found %s."
-msgstr ""
-"Informácie o kodeku %s, ako aj o možnostiach získania ovládača s podporou "
-"tejto tlačiarne môžete nájsť %s."
+msgstr "Informácie o kodeku %s, ako aj o možnostiach získania ovládača s podporou tejto tlačiarne môžete nájsť %s."
 
 #. TRANSLATORS: hyperlink title
 #: src/gs-extras-page.c:481
-#, fuzzy
 msgid "the documentation"
-msgstr "Dokumentácia"
+msgstr ""
 
-#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual codec name(s),
-#. the second %s is the application name, which requested the codecs, the third %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual
+#. codec name(s),
+#. the second %s is the application name, which requested the codecs, the
+#. third %s is a link titled "the documentation"
 #: src/gs-extras-page.c:487
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Unable to find the %s requested by %s. Please see %s for more information."
 msgid_plural ""
 "Unable to find the %s requested by %s. Please see %s for more information."
 msgstr[0] ""
-"Bohužiaľ, nepodarilo sa nájsť kodeky %s, ktoré ste hľadali. Prosím, pre viac "
-"informácií navštívte %s."
 msgstr[1] ""
-"Bohužiaľ, nepodarilo sa nájsť kodek %s, ktorý ste hľadali. Prosím, pre viac "
-"informácií navštívte %s."
 msgstr[2] ""
-"Bohužiaľ, nepodarilo sa nájsť kodeky %s, ktoré ste hľadali. Prosím, pre viac "
-"informácií navštívte %s."
+msgstr[3] ""
 
-#. TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. First %s will be replaced by actual
+#. codec name(s), second %s is a link titled "the documentation"
 #: src/gs-extras-page.c:496
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Unable to find the %s you were searching for. Please see %s for more "
 "information."
@@ -2723,19 +2578,14 @@ msgid_plural ""
 "Unable to find the %s you were searching for. Please see %s for more "
 "information."
 msgstr[0] ""
-"Bohužiaľ, nepodarilo sa nájsť kodeky %s, ktoré ste hľadali. Prosím, pre viac "
-"informácií navštívte %s."
 msgstr[1] ""
-"Bohužiaľ, nepodarilo sa nájsť kodek %s, ktorý ste hľadali. Prosím, pre viac "
-"informácií navštívte %s."
 msgstr[2] ""
-"Bohužiaľ, nepodarilo sa nájsť kodeky %s, ktoré ste hľadali. Prosím, pre viac "
-"informácií navštívte %s."
+msgstr[3] ""
 
 #: src/gs-extras-page.c:574 src/gs-extras-page.c:631 src/gs-extras-page.c:671
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to find any search results: %s"
-msgstr "Zlyhalo nájdenie akýchkoľvek výsledkov hľadania"
+msgstr ""
 
 #: src/gs-extras-page.c:874
 #, c-format
@@ -2758,17 +2608,14 @@ msgstr "Predchádzajúca"
 msgid "Next"
 msgstr "Ďalšia"
 
-# GtkLabel
 #: src/gs-featured-carousel.ui:83
-#, fuzzy
 msgid "Featured Apps List"
-msgstr "Aplikácia základnej výbavy"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:577
 #: src/gs-hardware-support-context-dialog.c:586
-#, fuzzy
 msgid "Desktop Support"
-msgstr "Podpora služby Open Desktop Ratings"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:578
 #: src/gs-hardware-support-context-dialog.c:587
@@ -2784,14 +2631,12 @@ msgid "Not enough information to know if large screens are supported"
 msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:584
-#, fuzzy
 msgid "Requires a large screen"
-msgstr "Vyžaduje sa reštart"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:589
-#, fuzzy
 msgid "Desktop Not Supported"
-msgstr "Podpora služby Open Desktop Ratings"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:590
 msgid "Cannot be used on a large screen"
@@ -2799,9 +2644,8 @@ msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:597
 #: src/gs-hardware-support-context-dialog.c:606
-#, fuzzy
 msgid "Mobile Support"
-msgstr "Podpora nástroja Limba"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:598
 #: src/gs-hardware-support-context-dialog.c:607
@@ -2817,9 +2661,8 @@ msgid "Not enough information to know if small screens are supported"
 msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:604
-#, fuzzy
 msgid "Requires a small screen"
-msgstr "Vyžaduje sa reštart"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:609
 msgid "Mobile Not Supported"
@@ -2831,9 +2674,8 @@ msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:633
 #: src/gs-hardware-support-context-dialog.c:642
-#, fuzzy
 msgid "Keyboard Support"
-msgstr "Podpora nástroja Limba"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:636
 msgid "Keyboard Support Unknown"
@@ -2844,9 +2686,8 @@ msgid "Not enough information to know if keyboards are supported"
 msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:639
-#, fuzzy
 msgid "Keyboard Required"
-msgstr "Vyžaduje sa prihlásenie"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:643
 msgid "Supports keyboards"
@@ -2862,9 +2703,8 @@ msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:653
 #: src/gs-hardware-support-context-dialog.c:662
-#, fuzzy
 msgid "Mouse Support"
-msgstr "Podpora služby Steam"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:654
 #: src/gs-hardware-support-context-dialog.c:660
@@ -2881,9 +2721,8 @@ msgid ""
 msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:659
-#, fuzzy
 msgid "Mouse Required"
-msgstr "Vyžaduje sa prihlásenie"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:663
 msgid "Supports mice and pointing devices"
@@ -2911,9 +2750,8 @@ msgid "Not enough information to know if touchscreens are supported"
 msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:679
-#, fuzzy
 msgid "Touchscreen Required"
-msgstr "Vyžaduje sa prihlásenie"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:683
 msgid "Supports touchscreens"
@@ -2928,19 +2766,16 @@ msgid "Cannot be used with a touchscreen"
 msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:699
-#, fuzzy
 msgid "Gamepad Required"
-msgstr "Vyžaduje sa prihlásenie"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:700
-#, fuzzy
 msgid "Requires a gamepad"
-msgstr "Vyžaduje sa reštart"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:702
-#, fuzzy
 msgid "Gamepad Support"
-msgstr "Podpora balíkov Snap"
+msgstr ""
 
 #: src/gs-hardware-support-context-dialog.c:703
 msgid "Supports gamepads"
@@ -2974,18 +2809,20 @@ msgstr "Aplikácia %s nebude na tomto zariadení pracovať správne"
 msgid "%s will not work on this device"
 msgstr "Aplikácia %s nebude na tomto zariadení pracovať"
 
-#. Translators: This is the title of the dialog which contains information about the hardware support/requirements of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the hardware support/requirements of an app
 #: src/gs-hardware-support-context-dialog.ui:5
 msgid "Hardware Support"
 msgstr "Podpora hardvéru"
 
-#. Translators: This is in the context of a list of apps which are installed on the system.
-#. Translators: A label for a button to show only software which is already installed.
+#. Translators: This is in the context of a list of apps which are installed
+#. on the system.
+#. Translators: A label for a button to show only software which is already
+#. installed.
 #: src/gs-installed-page.c:812 src/gs-shell.ui:307
-#, fuzzy
 msgctxt "List of installed apps"
 msgid "Installed"
-msgstr "Nainštalovaný"
+msgstr ""
 
 #: src/gs-installed-page.ui:6
 msgid "Installed page"
@@ -2995,20 +2832,16 @@ msgstr "Nainštalovaný balík"
 msgid "In Progress"
 msgstr "Prebieha"
 
-# cmdline description
 #. origin_ui on a remote is the repo dialogue section name,
 #. * not the remote title
 #: src/gs-installed-page.ui:75 plugins/flatpak/gs-flatpak-utils.c:107
 msgid "Applications"
 msgstr "Aplikácie"
 
-# cmdline description
 #: src/gs-installed-page.ui:95
-#, fuzzy
 msgid "Web Applications"
-msgstr "Aplikácie"
+msgstr ""
 
-# cmdline description
 #: src/gs-installed-page.ui:115
 msgid "System Applications"
 msgstr "Systémové aplikácie"
@@ -3021,12 +2854,12 @@ msgstr ""
 msgid "_Get Involved"
 msgstr ""
 
-#. Translators: The first placeholder here is a link to information about the license, and the second placeholder here is the name of a software license.
+#. Translators: The first placeholder here is a link to information about the
+#. license, and the second placeholder here is the name of a software license.
 #: src/gs-license-tile.c:114
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the <a href=\"%s\">%s license</a>.\n"
+"This software is developed in the open by a community of volunteers, and released under the <a href=\"%s\">%s license</a>.\n"
 "\n"
 "You can contribute and help make it even better."
 msgstr ""
@@ -3035,8 +2868,7 @@ msgstr ""
 #: src/gs-license-tile.c:121
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the %s license.\n"
+"This software is developed in the open by a community of volunteers, and released under the %s license.\n"
 "\n"
 "You can contribute and help make it even better."
 msgstr ""
@@ -3046,24 +2878,20 @@ msgid "Proprietary"
 msgstr "Uzavretá"
 
 #: src/gs-license-tile.c:133
-#, fuzzy
 msgid "_Learn More"
 msgstr "_Zistiť viac"
 
 #: src/gs-license-tile.c:135
 msgid ""
-"This software is not developed in the open, so only its developers know how "
-"it works. It may be insecure in ways that are hard to detect, and it may "
-"change without oversight.\n"
+"This software is not developed in the open, so only its developers know how it works. It may be insecure in ways that are hard to detect, and it may change without oversight.\n"
 "\n"
 "You may not be able to contribute to this software."
 msgstr ""
 
 #. TRANSLATORS: initial start
 #: src/gs-loading-page.c:56
-#, fuzzy
 msgid "Downloading software catalog"
-msgstr "Preberajú sa obrázky kategórie základnej výbavy…"
+msgstr ""
 
 #: src/gs-loading-page.ui:6
 msgid "Loading page"
@@ -3079,25 +2907,12 @@ msgstr "Automatické aktualizácie pozastavené"
 
 #: src/gs-metered-data-dialog.ui:9
 msgid ""
-"The current network is metered. Metered connections have data limits or "
-"charges associated with them. To save data, automatic updates have therefore "
-"been paused.\n"
+"The current network is metered. Metered connections have data limits or charges associated with them. To save data, automatic updates have therefore been paused.\n"
 "\n"
-"Automatic updates will be resumed when an un­metered network becomes "
-"available. Until then, it is still possible to manually install updates.\n"
+"Automatic updates will be resumed when an un­metered network becomes available. Until then, it is still possible to manually install updates.\n"
 "\n"
-"Alternatively, if the current network has been in­correctly identified as "
-"being metered, this setting can be changed."
-msgstr ""
-"Aktuálna sieť je obmedzená. Obmedzené pripojenia majú obmedzené dáta a s tým "
-"sú spojené poplatky. Kvôli úspore dát boli preto automatické aktualizácie "
-"pozastavené.\n"
-"\n"
-"Automatické aktualizácie budú pokračovať, keď bude dostupná neobmedzená "
-"sieť. Dovtedy je možné inštalovať aktualizácie ručne.\n"
-"\n"
-"Alebo ak bolo obmedzenie aktuálnej siete nesprávne identifikované, môže byť "
-"toto nastavenie zmenené."
+"Alternatively, if the current network has been in­correctly identified as being metered, this setting can be changed."
+msgstr "Aktuálna sieť je obmedzená. Obmedzené pripojenia majú obmedzené dáta a s tým sú spojené poplatky. Kvôli úspore dát boli preto automatické aktualizácie pozastavené.\n\nAutomatické aktualizácie budú pokračovať, keď bude dostupná neobmedzená sieť. Dovtedy je možné inštalovať aktualizácie ručne.\n\nAlebo ak bolo obmedzenie aktuálnej siete nesprávne identifikované, môže byť toto nastavenie zmenené."
 
 #: src/gs-metered-data-dialog.ui:17
 msgid "Open Network _Settings"
@@ -3112,9 +2927,8 @@ msgid "There are no reviews to moderate"
 msgstr "Neexistujú žiadne recenzie na moderovanie"
 
 #: src/gs-origin-popover-row.c:105
-#, fuzzy
 msgid "Unknown source"
-msgstr "Neznáma"
+msgstr ""
 
 #. Translators: It's like a beta version of the software, a test version
 #: src/gs-origin-popover-row.ui:108
@@ -3123,9 +2937,8 @@ msgstr ""
 
 #. Translators: It's an origin scope, 'User' or 'System' installation
 #: src/gs-origin-popover-row.ui:138
-#, fuzzy
 msgid "User"
-msgstr "Po_užívateľ"
+msgstr ""
 
 #. TRANSLATORS: This is the header for package additions during
 #. * a system update
@@ -3133,7 +2946,6 @@ msgstr "Po_užívateľ"
 msgid "Additions"
 msgstr "Doplnky"
 
-# GtkButton
 #. TRANSLATORS: This is the header for package removals during
 #. * a system update
 #: src/gs-os-update-page.c:254
@@ -3143,10 +2955,9 @@ msgstr "Na odstránenie"
 #. TRANSLATORS: This is the header for package updates during
 #. * a system update
 #: src/gs-os-update-page.c:258
-#, fuzzy
 msgctxt "Packages to be updated during a system upgrade"
 msgid "Updates"
-msgstr "Aktualizácie"
+msgstr ""
 
 #. TRANSLATORS: This is the header for package downgrades during
 #. * a system update
@@ -3154,22 +2965,23 @@ msgstr "Aktualizácie"
 msgid "Downgrades"
 msgstr "Zníženia verzií"
 
-#. Translators: This is a clickable link on the third party repositories info bar. It's
-#. part of a constructed sentence: "Provides access to additional software from [selected external sources].
+#. Translators: This is a clickable link on the third party repositories info
+#. bar. It's
+#. part of a constructed sentence: "Provides access to additional software
+#. from [selected external sources].
 #. Some proprietary software is included."
 #: src/gs-overview-page.c:879
 msgid "selected external sources"
 msgstr ""
 
-#. Translators: This is the third party repositories info bar. The %s is replaced with "selected external sources" link.
+#. Translators: This is the third party repositories info bar. The %s is
+#. replaced with "selected external sources" link.
 #: src/gs-overview-page.c:881
-#, fuzzy, c-format
+#, c-format
 msgid ""
-"Provides access to additional software from %s. Some proprietary software is "
-"included."
+"Provides access to additional software from %s. Some proprietary software is"
+" included."
 msgstr ""
-"Poskytuje prístup k dodatočnému softvéru, vrátane webových prehliadačov a "
-"hier."
 
 #. TRANSLATORS: button to turn on third party software repositories
 #. TRANSLATORS: button to accept the agreement
@@ -3180,9 +2992,8 @@ msgstr "Povoliť"
 #. Translators: This is the title of the main page of the UI.
 #. Translators: A label for a button to show all available software.
 #: src/gs-overview-page.c:949 src/gs-shell.ui:294
-#, fuzzy
 msgid "Explore"
-msgstr "_Prehliadať"
+msgstr ""
 
 #: src/gs-overview-page.ui:7
 msgid "Overview page"
@@ -3192,29 +3003,23 @@ msgstr "Strana s náhľadom"
 msgid "Enable Third Party Software Repositories?"
 msgstr "Povoliť softvérové repozitáre tretích strán?"
 
-# GtkLabel
 #. Translators: This is a heading for a list of categories.
 #: src/gs-overview-page.ui:180
-#, fuzzy
 msgid "Other Categories"
-msgstr "Kategórie"
+msgstr ""
 
-# GtkLabel
-# PM: čo sú údaje aplikácie? nemá tu byť údaje o aplikácií?
 #: src/gs-overview-page.ui:221
 msgid "No Application Data Found"
 msgstr "Nenašli sa žiadne údaje aplikácie"
 
 #: lib/gs-plugin-loader.c:2825
-#, fuzzy
 msgctxt "Distribution name"
 msgid "Unknown"
-msgstr "Neznáma"
+msgstr ""
 
 #: src/gs-page.c:274
-#, fuzzy
 msgid "User declined installation"
-msgstr "Čakajúca inštalácia…"
+msgstr ""
 
 #. TRANSLATORS: this is a prompt message, and
 #. * '%s' is an application summary, e.g. 'GNOME Clocks'
@@ -3232,52 +3037,44 @@ msgstr "Naozaj chcete odstrániť repozitár %s?"
 
 #. TRANSLATORS: longer dialog text
 #: src/gs-page.c:522
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "All applications from %s will be uninstalled, and you will have to re-"
 "install the repository to use them again."
 msgstr ""
-"Všetky aplikácia z repozitára %s budú odstránené a pre ich opätovné použitie "
-"budete musieť repozitár znova nainštalovať."
 
 #. TRANSLATORS: this is a prompt message, and '%s' is an
 #. * application summary, e.g. 'GNOME Clocks'
 #: src/gs-page.c:530
-#, fuzzy, c-format
+#, c-format
 msgid "Are you sure you want to uninstall %s?"
-msgstr "Naozaj chcete kúpiť aplikáciu %s?"
+msgstr ""
 
 #. TRANSLATORS: longer dialog text
 #: src/gs-page.c:533
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s will be uninstalled, and you will have to install it to use it again."
 msgstr ""
-"Softvér %s bude odstránený a pre opätovné použitie ho budete musieť znova "
-"nainštalovať."
 
 #: src/gs-prefs-dialog.ui:5
 msgid "Update Preferences"
 msgstr "Aktualizácia predvolieb"
 
 #: src/gs-prefs-dialog.ui:16
-#, fuzzy
 msgid ""
 "To avoid charges and network caps, software updates are not automatically "
 "downloaded on mobile or metered connections."
 msgstr ""
-"Automatické aktualizácie sú zakázané, keď ste pripojený na mobilné alebo "
-"obmedzené pripojenia."
 
 #: src/gs-prefs-dialog.ui:19
 msgid "Automatic Updates"
 msgstr "Automatické aktualizácie"
 
 #: src/gs-prefs-dialog.ui:20
-#, fuzzy
 msgid ""
 "Downloads and installs software updates in the background, when possible."
-msgstr "Nainštaluje akékoľvek čakajúce aktualizácie na pozadí"
+msgstr ""
 
 #: src/gs-prefs-dialog.ui:32
 msgid "Automatic Update Notifications"
@@ -3294,10 +3091,7 @@ msgstr "Zobraziť oznámenia, po automatickej inštalácii aktualizácií."
 msgid ""
 "Some of the currently installed software is not compatible with %s. If you "
 "continue, the following will be automatically removed during the upgrade:"
-msgstr ""
-"Niektorý z nainštalovaného softvéru nie je kompatibilný so systémom %s. Ak "
-"budete pokračovať, nasledovný softvér bude automaticky odstránený počas "
-"aktualizácie:"
+msgstr "Niektorý z nainštalovaného softvéru nie je kompatibilný so systémom %s. Ak budete pokračovať, nasledovný softvér bude automaticky odstránený počas aktualizácie:"
 
 #: src/gs-removal-dialog.ui:4
 msgid "Incompatible Software"
@@ -3307,14 +3101,13 @@ msgstr "Nekompatibilný softvér"
 msgid "_Continue"
 msgstr "_Pokračovať"
 
-#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora Modular - x86_64"
+#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora
+#. Modular - x86_64"
 #: src/gs-repos-dialog.c:239
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Software that has been installed from “%s” will cease to receive updates."
 msgstr ""
-"Softvér nainštalovaný z tohto repozitára už nebude dostávať aktualizácie, "
-"vrátane bezpečnostných opráv."
 
 #: src/gs-repos-dialog.c:248
 msgid "Disable Repository?"
@@ -3329,40 +3122,38 @@ msgstr "Odstrániť repozitár?"
 msgid "_Disable"
 msgstr "_Zakázať"
 
-# GtkButton
 #. TRANSLATORS: this is button text to remove a repo
 #: src/gs-repos-dialog.c:257
 msgid "_Remove"
 msgstr "O_dstrániť"
 
 #: src/gs-repos-dialog.c:508
-#, fuzzy
 msgid "Enable New Repositories"
-msgstr "Softvérové repozitáre"
+msgstr ""
 
 #: src/gs-repos-dialog.c:509
 msgid "Turn on new repositories when they are added."
 msgstr ""
 
-# DK:cmd desc
 #. TRANSLATORS: this is the clickable
 #. * link on the third party repositories info bar
 #: src/gs-repos-dialog.c:518
 msgid "more information"
 msgstr "viac informácií"
 
-#. TRANSLATORS: this is the third party repositories info bar. The '%s' is replaced
-#. with a link consisting a text "more information", which constructs a sentence:
+#. TRANSLATORS: this is the third party repositories info bar. The '%s' is
+#. replaced
+#. with a link consisting a text "more information", which constructs a
+#. sentence:
 #. "Additional repositories from selected third parties - more information."
 #: src/gs-repos-dialog.c:523
-#, fuzzy, c-format
+#, c-format
 msgid "Additional repositories from selected third parties — %s."
-msgstr "Prístup k dodatočnému softvéru z vybraných zdrojov tretích strán."
+msgstr ""
 
 #: src/gs-repos-dialog.c:528
-#, fuzzy
 msgid "Fedora Third Party Repositories"
-msgstr "Repozitáre tretích strán"
+msgstr ""
 
 #. TRANSLATORS: this is the fallback text we use if we can't
 #. figure out the name of the operating system
@@ -3370,13 +3161,13 @@ msgstr "Repozitáre tretích strán"
 msgid "the operating system"
 msgstr "operačný systém"
 
-#. TRANSLATORS: This is the description text displayed in the Software Repositories dialog.
+#. TRANSLATORS: This is the description text displayed in the Software
+#. Repositories dialog.
 #. %s gets replaced by the name of the actual distro, e.g. Fedora.
 #: src/gs-repos-dialog.c:728
 #, c-format
 msgid "These repositories supplement the default software provided by %s."
-msgstr ""
-"Tieto repozitáre dodávajú predvolený softvér poskytovaný distribúciou %s."
+msgstr "Tieto repozitáre dodávajú predvolený softvér poskytovaný distribúciou %s."
 
 #. button in the info bar
 #: src/gs-repos-dialog.ui:8 src/gs-shell.ui:88
@@ -3387,7 +3178,6 @@ msgstr "Softvérové repozitáre"
 msgid "No Repositories"
 msgstr "Žiadne repozitáre"
 
-# * https://bugzilla.gnome.org/show_bug.cgi?id=726990
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. installed' sentence, describing a software repository.
 #: src/gs-repo-row.c:160
@@ -3397,6 +3187,7 @@ msgid_plural "%u applications installed"
 msgstr[0] "Bolo nainštalovaných %u aplikácií"
 msgstr[1] "Bola nainštalovaná %u aplikácia"
 msgstr[2] "Boli nainštalované %u aplikácie"
+msgstr[3] "Boli nainštalované %u aplikácie"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -3407,8 +3198,8 @@ msgid_plural "%u add-ons installed"
 msgstr[0] "Bolo nainštalovaných %u doplnkov"
 msgstr[1] "Bol nainštalovaný %u doplnok"
 msgstr[2] "Boli nainštalované %u doplnky"
+msgstr[3] "Boli nainštalované %u doplnky"
 
-# cmdline description
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
 #. The correct form here depends on the number of applications.
@@ -3419,6 +3210,7 @@ msgid_plural "%u applications"
 msgstr[0] "%u aplikácií"
 msgstr[1] "%u aplikácia"
 msgstr[2] "%u aplikácie"
+msgstr[3] "%u aplikácie"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3430,6 +3222,7 @@ msgid_plural "%u add-ons"
 msgstr[0] "%u doplnkov"
 msgstr[1] "%u doplnok"
 msgstr[2] "%u doplnky"
+msgstr[3] "%u doplnky"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3439,12 +3232,15 @@ msgstr[2] "%u doplnky"
 #, c-format
 msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
-msgstr[0] "%s a %s nainštalovaných"
-msgstr[1] "%s a %s nainštalovaný"
-msgstr[2] "%s a %s nainštalované"
+msgstr[0] "%s a %s"
+msgstr[1] "%s a %s"
+msgstr[2] "%s a %s "
+msgstr[3] "%s a %s "
 
-#. Translators: The first '%s' is replaced with a text like '10 applications installed',
-#. the second '%s' is replaced with installation kind, like in case of Flatpak 'User Installation'.
+#. Translators: The first '%s' is replaced with a text like '10 applications
+#. installed',
+#. the second '%s' is replaced with installation kind, like in case of Flatpak
+#. 'User Installation'.
 #: src/gs-repo-row.c:243
 #, c-format
 msgctxt "repo-row"
@@ -3511,8 +3307,8 @@ msgstr "Popis je príliš krátky"
 msgid "The description is too long"
 msgstr "Popis je príliš dlhý"
 
-# dialog title
-#. Translators: Title of the dialog box where the users can write and publish their opinions about the apps.
+#. Translators: Title of the dialog box where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-review-dialog.ui:10
 msgid "Post Review"
 msgstr "Odoslanie recenzie"
@@ -3534,9 +3330,7 @@ msgstr "Súhrn"
 msgid ""
 "Give a short summary of your review, for example: “Great app, would "
 "recommend”."
-msgstr ""
-"Napíšte krátky súhrn vašej recenzie, napríklad: „Výborná aplikácia, môžem "
-"odporučiť“."
+msgstr "Napíšte krátky súhrn vašej recenzie, napríklad: „Výborná aplikácia, môžem odporučiť“."
 
 #. Translators: This is where the users enter their opinions about the apps.
 #: src/gs-review-dialog.ui:119
@@ -3549,34 +3343,30 @@ msgid "What do you think of the app? Try to give reasons for your views."
 msgstr "Čo si myslíte o aplikácii? Skúste napísať dôvody vašej recenzie."
 
 #: src/gs-review-dialog.ui:156
-#, fuzzy
 msgid ""
-"Find what data is sent in our <a href=\"https://odrs.gnome.org/privacy"
-"\">privacy policy</a>. The full name attached to your account will be shown "
-"publicly."
+"Find what data is sent in our <a "
+"href=\"https://odrs.gnome.org/privacy\">privacy policy</a>. The full name "
+"attached to your account will be shown publicly."
 msgstr ""
-"Zistite aké údaje sú odosielané v našich <a href=\"https://odrs.gnome.org/"
-"privacy\">zásadách o súkromí</a>."
 
 #: src/gs-review-histogram.c:72
 #, c-format
 msgid "%u review total"
 msgid_plural "%u reviews total"
-msgstr[0] "Celkovo %u recenzií"
-msgstr[1] "Celkovo %u recenzia"
-msgstr[2] "Celkovo %u recenzie"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-review-histogram.ui:93
-#, fuzzy
 msgid "out of 5 stars"
-msgstr "O aplikácii Softvér"
+msgstr ""
 
 #. TRANSLATORS: this is when a user doesn't specify a name
 #: src/gs-review-row.c:56
-#, fuzzy
 msgctxt "Reviewer name"
 msgid "Unknown"
-msgstr "Neznáma"
+msgstr ""
 
 #. TRANSLATORS: we explain what the action is going to do
 #: src/gs-review-row.c:220
@@ -3588,11 +3378,8 @@ msgstr "Môžete nahlásiť nevhodné, nemravné, alebo diskriminujúce správan
 msgid ""
 "Once reported, a review will be hidden until it has been checked by an "
 "administrator."
-msgstr ""
-"Po nahlásení bude recenzia skrytá, až kým nebude skontrolovaná "
-"administrátorom."
+msgstr "Po nahlásení bude recenzia skrytá, až kým nebude skontrolovaná administrátorom."
 
-# dialog title
 #. TRANSLATORS: window title when
 #. * reporting a user-submitted review
 #. * for moderation
@@ -3606,7 +3393,8 @@ msgstr "Nahlásiť recenziu?"
 msgid "Report"
 msgstr "Nahlásiť"
 
-#. Translators: Users can express their opinions about other users' opinions about the apps.
+#. Translators: Users can express their opinions about other users' opinions
+#. about the apps.
 #: src/gs-review-row.ui:84
 msgid "Was this review useful to you?"
 msgstr "Bola táto recenzia pre vás užitočná?"
@@ -3624,12 +3412,10 @@ msgstr "Nie"
 msgid "Meh"
 msgstr "Nestojí to za reč"
 
-# GtkButton
 #: src/gs-review-row.ui:128
 msgid "Report…"
 msgstr "Nahlásiť…"
 
-# GtkButton
 #: src/gs-review-row.ui:137
 msgid "Remove…"
 msgstr "Odstrániť…"
@@ -3644,100 +3430,96 @@ msgid ""
 "malicious"
 msgstr ""
 
-# GtkLabel
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:160
-#, fuzzy
 msgid "No Permissions"
-msgstr "Oprávnenia"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:161
-#, fuzzy
 msgid "App is fully sandboxed"
-msgstr "Aplikácia je úplne izolovaná."
+msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:172
-#, fuzzy
 msgid "Network Access"
-msgstr "Nastavenia siete"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:173
-#, fuzzy
 msgid "Can access the internet"
-msgstr "Môže pristupovať k súborom systémových zariadení"
+msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:176
-#, fuzzy
 msgid "No Network Access"
-msgstr "Žiadne pripojenie k sieti"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:177
-#, fuzzy
 msgid "Cannot access the internet"
-msgstr "Môže pristupovať k súborom systémových zariadení"
+msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:183
-#, fuzzy
 msgid "Uses System Services"
-msgstr "Systémové služby"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:184
 msgid "Can request data from system services"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:191
-#, fuzzy
 msgid "Uses Session Services"
-msgstr "Služby relácie"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:192
 msgid "Can request data from session services"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:199
-#, fuzzy
 msgid "Device Access"
-msgstr "Zariadenia"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:200
 msgid "Can access devices such as webcams or gaming controllers"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:203
-#, fuzzy
 msgid "No Device Access"
-msgstr "Vzdialený prístup"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:204
 msgid "Cannot access devices such as webcams or gaming controllers"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:210
-#, fuzzy
 msgid "Legacy Windowing System"
-msgstr "Pôvodný zobrazovací systém"
+msgstr ""
 
-# GtkLabel
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:218
-#, fuzzy
 msgid "Arbitrary Permissions"
-msgstr "Oprávnenia"
+msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:226
-#, fuzzy
 msgid "User Settings"
-msgstr "Nastavenia"
+msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:238
 msgid "Full File System Read/Write Access"
 msgstr ""
@@ -3746,7 +3528,8 @@ msgstr ""
 msgid "Can read and write all data on the file system"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:247
 msgid "Home Folder Read/Write Access"
 msgstr ""
@@ -3755,7 +3538,8 @@ msgstr ""
 msgid "Can read and write all data in your home directory"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:256
 msgid "Full File System Read Access"
 msgstr ""
@@ -3764,7 +3548,8 @@ msgstr ""
 msgid "Can read all data on the file system"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:266
 msgid "Home Folder Read Access"
 msgstr ""
@@ -3773,7 +3558,8 @@ msgstr ""
 msgid "Can read all data in your home directory"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:276
 msgid "Download Folder Read/Write Access"
 msgstr ""
@@ -3782,11 +3568,11 @@ msgstr ""
 msgid "Can read and write all data in your downloads directory"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:288
-#, fuzzy
 msgid "Download Folder Read Access"
-msgstr "Priečinok Stiahnuté"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:289
 msgid "Can read all data in your downloads directory"
@@ -3800,18 +3586,18 @@ msgstr ""
 msgid "Can read all data in the directory"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:326
-#, fuzzy
 msgid "No File System Access"
-msgstr "Súborový systém"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:327
-#, fuzzy
 msgid "Cannot access the file system at all"
-msgstr "Môže pristupovať k súborom systémových zariadení"
+msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:341
 msgid "Proprietary Code"
 msgstr "Uzavretý kód"
@@ -3822,7 +3608,8 @@ msgid ""
 "might be unsafe"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:345
 msgid "Auditable Code"
 msgstr ""
@@ -3833,14 +3620,16 @@ msgid ""
 "app more likely to be safe"
 msgstr ""
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-safety-context-dialog.c:354
 msgid "App developer is verified"
 msgstr ""
 
 #: src/gs-safety-context-dialog.c:355
-msgid "The developer of this app has been verified to be who they say they are"
+msgid ""
+"The developer of this app has been verified to be who they say they are"
 msgstr ""
 
 #. Translators: This indicates an app uses an outdated SDK.
@@ -3875,17 +3664,18 @@ msgstr "Aplikácia %s je potencionálne nebezpečná"
 msgid "%s is unsafe"
 msgstr "Aplikácia %s nie je bezpečná"
 
-#. Translators: This is the title of the dialog which contains information about the permissions of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the permissions of an app
 #: src/gs-safety-context-dialog.ui:5
 msgid "Safety"
 msgstr "Bezpečnosť"
 
-# GtkLabel
 #: src/gs-safety-context-dialog.ui:101
 msgid "License"
 msgstr "Licencia"
 
-#. Translators: This is a heading for a row showing the origin/source of an app (such as ‘flathub’).
+#. Translators: This is a heading for a row showing the origin/source of an
+#. app (such as ‘flathub’).
 #: src/gs-safety-context-dialog.ui:141
 msgid "Source"
 msgstr "Zdroj"
@@ -3898,12 +3688,14 @@ msgstr "SDK"
 msgid "Outdated SDK version"
 msgstr ""
 
-#. Translators: This is the accessible description for a button to go to the previous screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. previous screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:46
 msgid "Previous Screenshot"
 msgstr "Predchádzajúci snímok obrazovky"
 
-#. Translators: This is the accessible description for a button to go to the next screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. next screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:74
 msgid "Next Screenshot"
 msgstr "Nasledujúci snímok obrazovky"
@@ -3919,7 +3711,6 @@ msgstr "Snímka obrazovky nebola poskytnutá"
 msgid "Screenshot not found"
 msgstr "Snímka obrazovky sa nenašla"
 
-# title
 #. TRANSLATORS: possibly image file corrupt or not an image
 #: src/gs-screenshot-image.c:438
 msgid "Failed to load image"
@@ -3961,18 +3752,16 @@ msgid_plural "%u more matches"
 msgstr[0] "%u ďalších výsledkov"
 msgstr[1] "%u ďalší výsledok"
 msgstr[2] "%u ďalšie výsledky"
+msgstr[3] "%u ďalšie výsledky"
 
 #: src/gs-search-page.ui:6
 msgid "Search page"
 msgstr "Strana s vyhľadávaním"
 
-# cmdline description
 #: src/gs-search-page.ui:17
-#, fuzzy
 msgid "Search for Apps"
-msgstr "Vyhľadá aplikácie"
+msgstr ""
 
-# GtkLabel
 #: src/gs-search-page.ui:46
 msgid "No Application Found"
 msgstr "Nenašla sa žiadna aplikácia"
@@ -3991,12 +3780,13 @@ msgstr "Nenašla sa žiadna aplikácia"
 msgid "“%s”"
 msgstr "„%s“"
 
-#. Translators: The '%s' is replaced with an error message, which had been shortened.
+#. Translators: The '%s' is replaced with an error message, which had been
+#. shortened.
 #. The dots at the end are there to highlight that to the user.
 #: src/gs-shell.c:1240
-#, fuzzy, c-format
+#, c-format
 msgid "%s…"
-msgstr "„%s“"
+msgstr ""
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
@@ -4020,10 +3810,9 @@ msgstr "Nie je možné prevziať aktualizácie"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1293
 msgid ""
-"Unable to download updates: internet access was required but wasn’t available"
-msgstr ""
-"Nie je možné prevziať aktualizácie: bolo potrebné internetové pripojenie, "
-"ale nebolo dostupné"
+"Unable to download updates: internet access was required but wasn’t "
+"available"
+msgstr "Nie je možné prevziať aktualizácie: bolo potrebné internetové pripojenie, ale nebolo dostupné"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
@@ -4040,8 +3829,7 @@ msgstr "Nie je možné prevziať aktualizácie: nedostatok miesta na disku"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1312
 msgid "Unable to download updates: authentication was required"
-msgstr ""
-"Nie je možné prevziať aktualizácie: bolo požadované overenie totožnosti"
+msgstr "Nie je možné prevziať aktualizácie: bolo požadované overenie totožnosti"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1316
@@ -4052,9 +3840,7 @@ msgstr "Nie je možné prevziať aktualizácie: overenie totožnosti nebolo plat
 #: src/gs-shell.c:1320
 msgid ""
 "Unable to download updates: you do not have permission to install software"
-msgstr ""
-"Nie je možné prevziať aktualizácie: nemáte dostatočné práva na inštaláciu "
-"softvéru"
+msgstr "Nie je možné prevziať aktualizácie: nemáte dostatočné práva na inštaláciu softvéru"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1331
@@ -4067,9 +3853,7 @@ msgstr "Nie je možné získať zoznam aktualizácií"
 #: src/gs-shell.c:1373
 #, c-format
 msgid "Unable to install %s as download failed from %s"
-msgstr ""
-"Nie je možné nainštalovať aplikáciu %s, pretože preberanie z lokality %s "
-"zlyhalo"
+msgstr "Nie je možné nainštalovať aplikáciu %s, pretože preberanie z lokality %s zlyhalo"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4085,8 +3869,7 @@ msgstr "Nie je možné nainštalovať aplikáciu %s, pretože preberanie zlyhalo
 #: src/gs-shell.c:1391
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
-msgstr ""
-"Nie je možné nainštalovať aplikáciu %s, pretože rozhranie %s nie je dostupné"
+msgstr "Nie je možné nainštalovať aplikáciu %s, pretože rozhranie %s nie je dostupné"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4098,9 +3881,7 @@ msgstr "Nie je možné nainštalovať aplikáciu %s, pretože nie je podporovan�
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1403
 msgid "Unable to install: internet access was required but wasn’t available"
-msgstr ""
-"Nie je možné vykonať inštaláciu: bolo potrebné internetové pripojenie, ale "
-"nebolo dostupné"
+msgstr "Nie je možné vykonať inštaláciu: bolo potrebné internetové pripojenie, ale nebolo dostupné"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1408
@@ -4118,25 +3899,21 @@ msgstr "Nie je možné nainštalovať aplikáciu %s: nedostatok miesta na disku"
 #: src/gs-shell.c:1418
 #, c-format
 msgid "Unable to install %s: authentication was required"
-msgstr ""
-"Nie je možné nainštalovať aplikáciu %s: bolo požadované overenie totožnosti"
+msgstr "Nie je možné nainštalovať aplikáciu %s: bolo požadované overenie totožnosti"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1424
 #, c-format
 msgid "Unable to install %s: authentication was invalid"
-msgstr ""
-"Nie je možné nainštalovať aplikáciu %s: overenie totožnosti nebolo platné"
+msgstr "Nie je možné nainštalovať aplikáciu %s: overenie totožnosti nebolo platné"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1430
 #, c-format
 msgid "Unable to install %s: you do not have permission to install software"
-msgstr ""
-"Nie je možné nainštalovať aplikáciu %s: nemáte dostatočné práva na "
-"inštaláciu softvéru"
+msgstr "Nie je možné nainštalovať aplikáciu %s: nemáte dostatočné práva na inštaláciu softvéru"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
@@ -4150,9 +3927,7 @@ msgstr "Nie je možné nainštalovať aplikáciu %s: vyžaduje sa napájanie zo 
 #: src/gs-shell.c:1443
 #, c-format
 msgid "Unable to install %s: The battery level is too low"
-msgstr ""
-"Nie je možné nainštalovať aplikáciu %s: Úroveň nabitia batérie je príliš "
-"nízka"
+msgstr "Nie je možné nainštalovať aplikáciu %s: Úroveň nabitia batérie je príliš nízka"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4168,9 +3943,7 @@ msgstr "Nie je možné nainštalovať aplikáciu %s"
 #: src/gs-shell.c:1497
 #, c-format
 msgid "Unable to update %s from %s as download failed"
-msgstr ""
-"Nie je možné aktualizovať aplikáciu %s zo zdroja %s, pretože zlyhalo "
-"preberanie"
+msgstr "Nie je možné aktualizovať aplikáciu %s zo zdroja %s, pretože zlyhalo preberanie"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4185,9 +3958,7 @@ msgstr "Nie je možné aktualizovať aplikáciu %s, pretože zlyhalo preberanie"
 #: src/gs-shell.c:1511
 #, c-format
 msgid "Unable to install updates from %s as download failed"
-msgstr ""
-"Nie je možné nainštalovať aktualizácie zo zdroja %s, pretože preberanie "
-"zlyhalo"
+msgstr "Nie je možné nainštalovať aktualizácie zo zdroja %s, pretože preberanie zlyhalo"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1515
@@ -4198,9 +3969,7 @@ msgstr "Nie je možné nainštalovať aktualizácie, pretože preberanie zlyhalo
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1520
 msgid "Unable to update: internet access was required but wasn’t available"
-msgstr ""
-"Nie je možné vykonať aktualizáciu: bolo potrebné internetové pripojenie, ale "
-"nebolo dostupné"
+msgstr "Nie je možné vykonať aktualizáciu: bolo potrebné internetové pripojenie, ale nebolo dostupné"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4220,48 +3989,40 @@ msgstr "Nie je možné nainštalovať aktualizácie: nedostatok miesta na disku"
 #: src/gs-shell.c:1543
 #, c-format
 msgid "Unable to update %s: authentication was required"
-msgstr ""
-"Nie je možné aktualizovať aplikáciu %s: bolo požadované overenie totožnosti"
+msgstr "Nie je možné aktualizovať aplikáciu %s: bolo požadované overenie totožnosti"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1548
 #, c-format
 msgid "Unable to install updates: authentication was required"
-msgstr ""
-"Nie je možné nainštalovať aktualizácie: bolo požadované overenie totožnosti"
+msgstr "Nie je možné nainštalovať aktualizácie: bolo požadované overenie totožnosti"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1556
 #, c-format
 msgid "Unable to update %s: authentication was invalid"
-msgstr ""
-"Nie je možné aktualizovať aplikáciu %s: overenie totožnosti nebolo platné"
+msgstr "Nie je možné aktualizovať aplikáciu %s: overenie totožnosti nebolo platné"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1561
 #, c-format
 msgid "Unable to install updates: authentication was invalid"
-msgstr ""
-"Nie je možné nainštalovať aktualizácie: overenie totožnosti nebolo platné"
+msgstr "Nie je možné nainštalovať aktualizácie: overenie totožnosti nebolo platné"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
 #: src/gs-shell.c:1569
 #, c-format
 msgid "Unable to update %s: you do not have permission to update software"
-msgstr ""
-"Nie je možné aktualizovať aplikáciu %s: nemáte dostatočné práva na "
-"aktualizáciu softvéru"
+msgstr "Nie je možné aktualizovať aplikáciu %s: nemáte dostatočné práva na aktualizáciu softvéru"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1575
 #, c-format
 msgid ""
 "Unable to install updates: you do not have permission to update software"
-msgstr ""
-"Nie je možné nainštalovať aktualizácie: nemáte dostatočné práva na "
-"aktualizáciu softvéru"
+msgstr "Nie je možné nainštalovať aktualizácie: nemáte dostatočné práva na aktualizáciu softvéru"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
@@ -4282,18 +4043,14 @@ msgstr "Nie je možné nainštalovať aktualizácie: vyžaduje sa napájanie zo 
 #: src/gs-shell.c:1598
 #, c-format
 msgid "Unable to update %s: The battery level is too low"
-msgstr ""
-"Nie je možné aktualizovať aplikáciu %s: Úroveň nabitia batérie je príliš "
-"nízka"
+msgstr "Nie je možné aktualizovať aplikáciu %s: Úroveň nabitia batérie je príliš nízka"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
 #: src/gs-shell.c:1604
 #, c-format
 msgid "Unable to install updates: The battery level is too low"
-msgstr ""
-"Nie je možné nainštalovať aktualizácie: Úroveň nabitia batérie je príliš "
-"nízka"
+msgstr "Nie je možné nainštalovať aktualizácie: Úroveň nabitia batérie je príliš nízka"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4329,9 +4086,7 @@ msgstr "Nie je možné aktualizovať na %s, pretože preberanie zlyhalo"
 #, c-format
 msgid ""
 "Unable to upgrade to %s: internet access was required but wasn’t available"
-msgstr ""
-"Nie je možné vykonať aktualizáciu na systém %s: bolo potrebné internetové "
-"pripojenie, ale nebolo dostupné"
+msgstr "Nie je možné vykonať aktualizáciu na systém %s: bolo potrebné internetové pripojenie, ale nebolo dostupné"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -4345,25 +4100,21 @@ msgstr "Nie je aktualizovať na systém %s: nedostatok miesta na disku"
 #: src/gs-shell.c:1688
 #, c-format
 msgid "Unable to upgrade to %s: authentication was required"
-msgstr ""
-"Nie je možné aktualizovať na systém %s: bolo požadované overenie totožnosti"
+msgstr "Nie je možné aktualizovať na systém %s: bolo požadované overenie totožnosti"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
 #: src/gs-shell.c:1694
 #, c-format
 msgid "Unable to upgrade to %s: authentication was invalid"
-msgstr ""
-"Nie je možné aktualizovať na systém %s: overenie totožnosti nebolo platné"
+msgstr "Nie je možné aktualizovať na systém %s: overenie totožnosti nebolo platné"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
 #: src/gs-shell.c:1700
 #, c-format
 msgid "Unable to upgrade to %s: you do not have permission to upgrade"
-msgstr ""
-"Nie je možné aktualizovať na systém %s: nemáte dostatočné práva na "
-"aktualizáciu"
+msgstr "Nie je možné aktualizovať na systém %s: nemáte dostatočné práva na aktualizáciu"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -4377,9 +4128,7 @@ msgstr "Nie je možné aktualizovať na systém %s: vyžaduje sa napájanie zo s
 #: src/gs-shell.c:1712
 #, c-format
 msgid "Unable to upgrade to %s: The battery level is too low"
-msgstr ""
-"Nie je možné vykonať aktualizáciu na systém %s: Úroveň nabitia batérie je "
-"príliš nízka"
+msgstr "Nie je možné vykonať aktualizáciu na systém %s: Úroveň nabitia batérie je príliš nízka"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -4393,8 +4142,7 @@ msgstr "Nie je možné aktualizovať na systém %s"
 #: src/gs-shell.c:1758
 #, c-format
 msgid "Unable to remove %s: authentication was required"
-msgstr ""
-"Nie je možné odstrániť aplikáciu %s: bolo požadované overenie totožnosti"
+msgstr "Nie je možné odstrániť aplikáciu %s: bolo požadované overenie totožnosti"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4408,9 +4156,7 @@ msgstr "Nie je možné odstrániť aplikáciu %s: overenie totožnosti nebolo pl
 #: src/gs-shell.c:1768
 #, c-format
 msgid "Unable to remove %s: you do not have permission to remove software"
-msgstr ""
-"Nie je možné odstrániť aplikáciu %s: nemáte dostatočné práva na odstránenie "
-"softvéru"
+msgstr "Nie je možné odstrániť aplikáciu %s: nemáte dostatočné práva na odstránenie softvéru"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4424,8 +4170,7 @@ msgstr "Nie je možné odstrániť aplikáciu %s: vyžaduje sa napájanie zo sie
 #: src/gs-shell.c:1780
 #, c-format
 msgid "Unable to remove %s: The battery level is too low"
-msgstr ""
-"Nie je možné odstrániť aplikáciu %s: Úroveň nabitia batérie je príliš nízka"
+msgstr "Nie je možné odstrániť aplikáciu %s: Úroveň nabitia batérie je príliš nízka"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4483,12 +4228,11 @@ msgstr "Zlyhala inštalácia: zlyhalo overenie totožnosti"
 msgid "Unable to contact %s"
 msgstr "Nie je možné kontaktovať lokalitu %s"
 
-#. TRANSLATORS: failure text for the in-app notification, where the 'Software' means this application, aka 'GNOME Software'.
+#. TRANSLATORS: failure text for the in-app notification, where the 'Software'
+#. means this application, aka 'GNOME Software'.
 #: src/gs-shell.c:1973
 msgid "Software needs to be restarted to use new plugins."
-msgstr ""
-"Pre používanie nových zásuvných modulov musí byť aplikácia Softvér "
-"reštartovaná."
+msgstr "Pre používanie nových zásuvných modulov musí byť aplikácia Softvér reštartovaná."
 
 #. TRANSLATORS: need to be connected to the AC power
 #: src/gs-shell.c:1977
@@ -4525,7 +4269,6 @@ msgstr "Nastavenia siete"
 msgid "Restart Now"
 msgstr "Reštartovať teraz"
 
-# DK:cmd desc
 #. button in the info bar
 #: src/gs-shell.ui:128
 msgid "More Information"
@@ -4543,26 +4286,24 @@ msgstr ""
 msgid "Find Out _More"
 msgstr "Z_istiť viac"
 
-#. Translators: A label for a button to show only updates which are available to install.
+#. Translators: A label for a button to show only updates which are available
+#. to install.
 #: src/gs-shell.ui:328
-#, fuzzy
 msgctxt "Header bar button for list of apps to be updated"
 msgid "Updates"
-msgstr "Aktualizácie"
+msgstr ""
 
 #. Translators: This is shown in a bubble to represent a 0 byte
 #. * storage size, so its context is “storage size: none”. The
 #. * bubble is small, so the string should be as short as
 #. * possible.
 #: src/gs-storage-context-dialog.c:95
-#, fuzzy
 msgid "None"
-msgstr "Žiadne"
+msgstr ""
 
 #: src/gs-storage-context-dialog.c:139
-#, fuzzy
 msgid "Application Data"
-msgstr "Aktualizácie aplikácií"
+msgstr ""
 
 #: src/gs-storage-context-dialog.c:140
 msgid "Data needed for the application to run"
@@ -4573,9 +4314,8 @@ msgid "User Data"
 msgstr ""
 
 #: src/gs-storage-context-dialog.c:146
-#, fuzzy
 msgid "Data created by you in the application"
-msgstr "Prosím, reštartujte aplikáciu."
+msgstr ""
 
 #: src/gs-storage-context-dialog.c:153
 msgid "Cache Data"
@@ -4585,11 +4325,9 @@ msgstr ""
 msgid "Temporary cached data"
 msgstr ""
 
-# * https://bugzilla.gnome.org/show_bug.cgi?id=726990
 #: src/gs-storage-context-dialog.c:172
-#, fuzzy
 msgid "The application itself"
-msgstr "Bolo nainštalovaných %u aplikácií"
+msgstr ""
 
 #: src/gs-storage-context-dialog.c:177
 msgid "Required Dependencies"
@@ -4600,12 +4338,12 @@ msgid "Shared system components required by this application"
 msgstr ""
 
 #: src/gs-storage-context-dialog.c:188
-#, fuzzy
 msgctxt "Download size"
 msgid "Unknown"
-msgstr "Neznáma"
+msgstr ""
 
-#. Translators: This is the title of the dialog which contains information about the storage or download size needed for an app
+#. Translators: This is the title of the dialog which contains information
+#. about the storage or download size needed for an app
 #: src/gs-storage-context-dialog.ui:5
 msgid "Storage"
 msgstr ""
@@ -4613,8 +4351,8 @@ msgstr ""
 #. Translators: Please do not translate the markup or link href
 #: src/gs-storage-context-dialog.ui:69
 msgid ""
-"Cached data can be cleared from the <a href=\"dummy\">_application settings</"
-"a>."
+"Cached data can be cleared from the <a href=\"dummy\">_application "
+"settings</a>."
 msgstr ""
 
 #: src/gs-summary-tile.c:118
@@ -4637,7 +4375,6 @@ msgstr "%s (Odstraňuje sa)"
 msgid "Installed Updates"
 msgstr "Nainštalované aktualizácie"
 
-# DK: %s=dátum
 #. TRANSLATORS: this is the subtitle of the installed updates dialog window.
 #. %s will be replaced by the date when the updates were installed.
 #. The date format is defined by the locale's preferred date representation
@@ -4648,11 +4385,9 @@ msgid "Installed on %s"
 msgstr "Nainštalované dňa %s"
 
 #: src/gs-update-dialog.ui:77
-#, fuzzy
 msgid "No Updates Installed"
-msgstr "Aktualizácie softvéru boli nainštalované"
+msgstr ""
 
-# title
 #: src/gs-update-monitor.c:213
 msgid "Software Updates Are Out of Date"
 msgstr "Aktualizácie softvéru nie sú aktuálne"
@@ -4698,18 +4433,20 @@ msgstr "Prosím, prevezmite čakajúce aktualizácie softvéru."
 #, c-format
 msgid "%u Application Updated — Restart Required"
 msgid_plural "%u Applications Updated — Restart Required"
-msgstr[0] "%u aktualizovaných aplikácií — Potrebný reštart"
-msgstr[1] "%u aktualizovaná aplikácia — Potrebný reštart"
-msgstr[2] "%u aktualizované aplikácie — Potrebný reštart"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:361
 #, c-format
 msgid "%u Application Updated"
 msgid_plural "%u Applications Updated"
-msgstr[0] "%u aktualizovaných aplikácií"
-msgstr[1] "%u aktualizovaná aplikácia"
-msgstr[2] "%u aktualizované aplikácie"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:372
@@ -4728,15 +4465,15 @@ msgstr "Prosím, reštartujte aplikáciu."
 msgid "%s and %s have been updated."
 msgstr "Aplikácie %s a %s boli aktualizované."
 
-# * https://bugzilla.gnome.org/show_bug.cgi?id=726990
 #. TRANSLATORS: at least one application needs restarting
 #: src/gs-update-monitor.c:389 src/gs-update-monitor.c:408
 #, c-format
 msgid "%u application requires a restart."
 msgid_plural "%u applications require a restart."
-msgstr[0] "%u aplikácií vyžaduje reštart."
-msgstr[1] "%u aplikácia vyžaduje reštart."
-msgstr[2] "%u aplikácie vyžadujú reštart."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:401
@@ -4744,7 +4481,8 @@ msgstr[2] "%u aplikácie vyžadujú reštart."
 msgid "Includes %s, %s and %s."
 msgstr "Zahŕňa %s, %s a %s."
 
-#. TRANSLATORS: this is when the current operating system version goes end-of-life
+#. TRANSLATORS: this is when the current operating system version goes end-of-
+#. life
 #: src/gs-update-monitor.c:669 src/gs-updates-page.ui:52
 msgid "Operating System Updates Unavailable"
 msgstr "Aktualizácie operačného systému nie sú dostupné"
@@ -4752,8 +4490,7 @@ msgstr "Aktualizácie operačného systému nie sú dostupné"
 #. TRANSLATORS: this is the message dialog for the distro EOL notice
 #: src/gs-update-monitor.c:671
 msgid "Upgrade to continue receiving security updates."
-msgstr ""
-"Vykonaním aktualizácie budete naďalej prijímať bezpečnostné aktualizácie."
+msgstr "Vykonaním aktualizácie budete naďalej prijímať bezpečnostné aktualizácie."
 
 #. TRANSLATORS: this is a distro upgrade, the replacement would be the
 #. * distro name, e.g. 'Fedora'
@@ -4767,7 +4504,6 @@ msgstr "Nová verzia systému %s je dostupná na inštaláciu"
 msgid "Software Upgrade Available"
 msgstr "Je dostupná aktualizácia softvéru"
 
-# title
 #. TRANSLATORS: title when we offline updates have failed
 #: src/gs-update-monitor.c:1135
 msgid "Software Updates Failed"
@@ -4775,9 +4511,8 @@ msgstr "Zlyhanie aktualizácií softvéru"
 
 #. TRANSLATORS: message when we offline updates have failed
 #: src/gs-update-monitor.c:1137
-#, fuzzy
 msgid "An important operating system update failed to be installed."
-msgstr "Zlyhala inštalácia dôležitej aktualizácie operačného systému."
+msgstr ""
 
 #: src/gs-update-monitor.c:1138
 msgid "Show Details"
@@ -4803,15 +4538,16 @@ msgid_plural "Software Updates Installed"
 msgstr[0] "Aktualizácie softvéru boli nainštalované"
 msgstr[1] "Aktualizácia softvéru bola nainštalovaná"
 msgstr[2] "Aktualizácie softvéru boli nainštalované"
+msgstr[3] "Aktualizácie softvéru boli nainštalované"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1175
-#, fuzzy
 msgid "An important operating system update has been installed."
 msgid_plural "Important operating system updates have been installed."
-msgstr[0] "Dôležité aktualizácie operačného systému boli nainštalované."
-msgstr[1] "Dôležitá aktualizácia operačného systému bola nainštalovaná."
-msgstr[2] "Dôležité aktualizácie operačného systému boli nainštalované."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -4823,7 +4559,6 @@ msgctxt "updates"
 msgid "Review"
 msgstr "Prezrieť"
 
-# title
 #. TRANSLATORS: this is when the offline update failed
 #: src/gs-update-monitor.c:1235
 msgid "Failed To Update"
@@ -4844,48 +4579,37 @@ msgstr "Aktualizácia bola zrušená."
 #. * something with no network available
 #: src/gs-update-monitor.c:1250
 msgid ""
-"Internet access was required but wasn’t available. Please make sure that you "
-"have internet access and try again."
-msgstr ""
-"Bolo požadované internetové pripojenie, ale nebolo dostupné. Prosím, uistite "
-"sa, že máte prístup na internet a skúste to znovu."
+"Internet access was required but wasn’t available. Please make sure that you"
+" have internet access and try again."
+msgstr "Bolo požadované internetové pripojenie, ale nebolo dostupné. Prosím, uistite sa, že máte prístup na internet a skúste to znovu."
 
 #. TRANSLATORS: if the package is not signed correctly
 #: src/gs-update-monitor.c:1255
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
-msgstr ""
-"Vyskytla sa bezpečnostná chyba s aktualizáciou. Prosím, pre viac informácií "
-"sa poraďte s vaším poskytovateľom softvéru."
+msgstr "Vyskytla sa bezpečnostná chyba s aktualizáciou. Prosím, pre viac informácií sa poraďte s vaším poskytovateľom softvéru."
 
 #. TRANSLATORS: we ran out of disk space
 #: src/gs-update-monitor.c:1260
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
-msgstr ""
-"Nebol dostupný dostatok priestoru na disku. Prosím, uvoľnite nejaký priestor "
-"a skúste to znovu."
+msgstr "Nebol dostupný dostatok priestoru na disku. Prosím, uvoľnite nejaký priestor a skúste to znovu."
 
 #. TRANSLATORS: We didn't handle the error type
 #: src/gs-update-monitor.c:1264
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
-msgstr ""
-"Ľutujeme: zlyhala inštalácia aktualizácie. Prosím, počkajte na ďalšiu "
-"aktualizáciu a skúste to znovu. Ak problém pretrváva, kontaktujte vášho "
-"poskytovateľa softvéru."
+msgstr "Ľutujeme: zlyhala inštalácia aktualizácie. Prosím, počkajte na ďalšiu aktualizáciu a skúste to znovu. Ak problém pretrváva, kontaktujte vášho poskytovateľa softvéru."
 
 #: src/gs-updates-page.c:249
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Automatické aktualizácie"
+msgstr ""
 
 #: src/gs-updates-page.c:252
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Automatické aktualizácie"
+msgstr ""
 
 #. TRANSLATORS: This is the time when we last checked for updates
 #: src/gs-updates-page.c:288
@@ -4901,9 +4625,8 @@ msgid "%s %s is no longer supported."
 msgstr "Systém %s %s už viac nie je podporovaný."
 
 #: src/gs-updates-page.c:606
-#, fuzzy
 msgid "Your operating system is no longer supported."
-msgstr "Váš operačný systém už viac nie je podporovaný."
+msgstr ""
 
 #. TRANSLATORS: EOL distros do not get important updates
 #: src/gs-updates-page.c:611
@@ -4926,9 +4649,7 @@ msgstr "Možné zvýšenie poplatkov"
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
-msgstr ""
-"Zisťovanie dostupných aktualizácií pomocou mobilného širokopásmového "
-"pripojenia vám môže zvýšiť poplatky."
+msgstr "Zisťovanie dostupných aktualizácií pomocou mobilného širokopásmového pripojenia vám môže zvýšiť poplatky."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
@@ -4952,10 +4673,9 @@ msgid "Check for updates"
 msgstr "Zistiť dostupnosť aktualizácií"
 
 #: src/gs-updates-page.c:1398
-#, fuzzy
 msgctxt "Apps to be updated"
 msgid "Updates"
-msgstr "Aktualizácie"
+msgstr ""
 
 #: src/gs-updates-page.ui:6
 msgid "Updates page"
@@ -4971,7 +4691,8 @@ msgstr "Načítavajú sa aktualizácie…"
 msgid "This could take a while."
 msgstr "Môže to chvíľu trvať."
 
-#. TRANSLATORS: This means all software (plural) installed on this system is up to date.
+#. TRANSLATORS: This means all software (plural) installed on this system is
+#. up to date.
 #: src/gs-updates-page.ui:235
 msgid "Up to Date"
 msgstr "Aktuálne"
@@ -4984,9 +4705,7 @@ msgstr "Použiť mobilné dáta?"
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges."
-msgstr ""
-"Kontrola aktualizácií pomocou mobilného širokopásmového pripojenia vám môže "
-"zvýšiť poplatky."
+msgstr "Kontrola aktualizácií pomocou mobilného širokopásmového pripojenia vám môže zvýšiť poplatky."
 
 #: src/gs-updates-page.ui:278
 msgid "_Check Anyway"
@@ -5065,9 +4784,9 @@ msgstr "Systém %s %s je dostupný"
 #. * upgrade is available. The %s is the distro name,
 #. * e.g. "GNOME OS Available"
 #: src/gs-upgrade-banner.c:95
-#, fuzzy, c-format
+#, c-format
 msgid "%s Available"
-msgstr "Systém %s %s je dostupný"
+msgstr ""
 
 #: src/gs-upgrade-banner.c:143
 msgid "Learn about the new version"
@@ -5077,7 +4796,8 @@ msgstr "Zistite viac o novej verzii"
 msgid "Downloading…"
 msgstr "Preberá sa…"
 
-#. Translators: the first '%s' is replaced with the downloaded size, the second '%s'
+#. Translators: the first '%s' is replaced with the downloaded size, the
+#. second '%s'
 #. with the total download size, forming text like "135 MB of 2 GB downloaded"
 #: src/gs-upgrade-banner.c:185
 #, c-format
@@ -5111,21 +4831,18 @@ msgstr ""
 msgid "Add, remove or update software on this computer"
 msgstr "Pridáva, odstraňuje alebo aktualizuje softvér vo vašom počítači"
 
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#. Translators: Search terms to find this application. Do NOT translate or
+#. localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.desktop.in:12
 msgid ""
-"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;"
-"Software;App;Store;"
-msgstr ""
-"Aktualizácie;Inovácia;Zdroje;Repozitáre;Nastavenia;Inštalácia;Inštalovanie;"
-"Odinštalovanie;Program;Softvér;Aplikácia;Obchod;"
+"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;"
+msgstr "Aktualizácie;Inovácia;Zdroje;Repozitáre;Nastavenia;Inštalácia;Inštalovanie;Odinštalovanie;Program;Softvér;Aplikácia;Obchod;"
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
 #: plugins/core/gs-plugin-generic-updates.c:67
-#, fuzzy
 msgid "System Updates"
-msgstr "Aktualizácia systému %s"
+msgstr ""
 
 #. TRANSLATORS: this is a longer description of the
 #. * "System Updates" string
@@ -5140,34 +4857,32 @@ msgstr ""
 msgid "Downloading featured images…"
 msgstr "Preberajú sa obrázky kategórie základnej výbavy…"
 
-# cmdline description
 #: plugins/eos/gs-plugin-eos.c:173
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Zvoľte aplikáciu:"
+msgstr ""
 
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
 #: plugins/eos-updater/gs-plugin-eos-updater.c:639
-#, fuzzy, c-format
+#, c-format
 msgid "%s update with new features and fixes."
-msgstr "Aktualizácia systému Endless OS prinášajúca nové funkcie a opravy."
+msgstr ""
 
 #: plugins/eos-updater/gs-plugin-eos-updater.c:1019
 msgid "EOS update service could not fetch and apply the update."
 msgstr ""
 
 #: plugins/epiphany/gs-plugin-epiphany.c:498
-#, fuzzy
 msgid "GNOME Web"
-msgstr "GNOME"
+msgstr ""
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
-msgstr "Podpora webových aplikácií"
+msgstr ""
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:7
 msgid "Run popular web applications in a browser"
-msgstr "Spúšťanie obľúbených webových aplikácií v prehliadači"
+msgstr ""
 
 #. TRANSLATORS: status text when downloading
 #: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:257
@@ -5178,8 +4893,7 @@ msgstr "Preberajú sa informácie o aktualizácii…"
 #: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:405
 msgid ""
 "Upgrade for the latest features, performance and stability improvements."
-msgstr ""
-"Aktualizácia prinášajúca najnovšie funkcie, vylepšenia výkonu a stability."
+msgstr "Aktualizácia prinášajúca najnovšie funkcie, vylepšenia výkonu a stability."
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:6
 msgid "Flatpak Support"
@@ -5189,61 +4903,56 @@ msgstr "Podpora nástroja Flatpak"
 msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak je architektúra počítačových aplikácií pre systém Linux"
 
-#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#idm45858571325264
+#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-
+#. reference.html#idm45858571325264
 #: plugins/flatpak/gs-flatpak.c:324
-#, fuzzy, c-format
+#, c-format
 msgid "System folder %s"
-msgstr "Systémové služby"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:325 plugins/flatpak/gs-flatpak.c:326
-#, fuzzy, c-format
+#, c-format
 msgid "Home subfolder %s"
-msgstr "Domovský priečinok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:327
-#, fuzzy
 msgid "Host system folders"
-msgstr "Domovský priečinok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:328
 msgid "Host system configuration from /etc"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:329
-#, fuzzy
 msgid "Desktop folder"
-msgstr "Podpora služby Open Desktop Ratings"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:329
-#, fuzzy, c-format
+#, c-format
 msgid "Desktop subfolder %s"
-msgstr "Podpora služby Open Desktop Ratings"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:330
-#, fuzzy
 msgid "Documents folder"
-msgstr "Domovský priečinok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:330
-#, fuzzy, c-format
+#, c-format
 msgid "Documents subfolder %s"
-msgstr "Domovský priečinok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:331
-#, fuzzy
 msgid "Music folder"
-msgstr "Prehrávače hudby"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:331
-#, fuzzy, c-format
+#, c-format
 msgid "Music subfolder %s"
-msgstr "Prehrávače hudby"
+msgstr ""
 
-# GtkLabel
 #: plugins/flatpak/gs-flatpak.c:332
-#, fuzzy
 msgid "Pictures folder"
-msgstr "Obrázok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:332
 #, c-format
@@ -5260,9 +4969,8 @@ msgid "Public Share subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:334
-#, fuzzy
 msgid "Videos folder"
-msgstr "Domovský priečinok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:334
 #, c-format
@@ -5270,9 +4978,8 @@ msgid "Videos subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:335
-#, fuzzy
 msgid "Templates folder"
-msgstr "Domovský priečinok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:335
 #, c-format
@@ -5289,14 +4996,13 @@ msgid "User cache subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:337
-#, fuzzy
 msgid "User configuration folder"
-msgstr "Aktualizácia konfigurácie %s"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:337
-#, fuzzy, c-format
+#, c-format
 msgid "User configuration subfolder %s"
-msgstr "Aktualizácia konfigurácie %s"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:338
 msgid "User data folder"
@@ -5308,9 +5014,8 @@ msgid "User data subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:339
-#, fuzzy
 msgid "User runtime folder"
-msgstr "Domovský priečinok"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:339
 #, c-format
@@ -5318,9 +5023,9 @@ msgid "User runtime subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "Filesystem access to %s"
-msgstr "Súborový systém"
+msgstr ""
 
 #. TRANSLATORS: status text when downloading new metadata
 #: plugins/flatpak/gs-flatpak.c:1414
@@ -5329,9 +5034,9 @@ msgid "Getting flatpak metadata for %s…"
 msgstr "Získavajú sa metaúdaje nástroja flatpak pre repozitár %s…"
 
 #: plugins/flatpak/gs-flatpak.c:3643
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to refine addon ‘%s’: %s"
-msgstr "Nie je možné nájsť „%s“"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak-utils.c:94
 msgid "User Installation"
@@ -5484,37 +5189,37 @@ msgstr "Aktualizácia klávesnice %s"
 
 #. TRANSLATORS: Storage Controller is typically a RAID or SAS adapter
 #: plugins/fwupd/gs-fwupd-app.c:210
-#, fuzzy, c-format
+#, c-format
 msgid "%s Storage Controller Update"
-msgstr "Aktualizácia ovládača %s"
+msgstr ""
 
 #. TRANSLATORS: Network Interface refers to the physical
 #. * PCI card, not the logical wired connection
 #: plugins/fwupd/gs-fwupd-app.c:215
-#, fuzzy, c-format
+#, c-format
 msgid "%s Network Interface Update"
-msgstr "Aktualizácia ovládača %s"
+msgstr ""
 
 #. TRANSLATORS: Video Display refers to the laptop internal display or
 #. * external monitor
 #: plugins/fwupd/gs-fwupd-app.c:220
-#, fuzzy, c-format
+#, c-format
 msgid "%s Display Update"
-msgstr "Aktualizácia zariadenia %s"
+msgstr ""
 
 #. TRANSLATORS: BMC refers to baseboard management controller which
 #. * is the device that updates all the other firmware on the system
 #: plugins/fwupd/gs-fwupd-app.c:225
-#, fuzzy, c-format
+#, c-format
 msgid "%s BMC Update"
-msgstr "Aktualizácia ME %s"
+msgstr ""
 
 #. TRANSLATORS: Receiver refers to a radio device, e.g. a tiny Bluetooth
 #. * device that stays in the USB port so the wireless peripheral works
 #: plugins/fwupd/gs-fwupd-app.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "%s USB Receiver Update"
-msgstr "Aktualizácia zariadenia %s"
+msgstr ""
 
 #: plugins/fwupd/gs-plugin-fwupd.c:1240
 msgid "Firmware"
@@ -5529,9 +5234,8 @@ msgid "Provides support for firmware upgrades"
 msgstr "Poskytuje podporu aktualizácií firmvéru"
 
 #: plugins/packagekit/gs-packagekit-task.c:148
-#, fuzzy
 msgid "Install Unsigned Software?"
-msgstr "Inštalovať softvér tretích strán?"
+msgstr ""
 
 #: plugins/packagekit/gs-packagekit-task.c:149
 msgid ""
@@ -5541,9 +5245,8 @@ msgid ""
 msgstr ""
 
 #: plugins/packagekit/gs-packagekit-task.c:153
-#, fuzzy
 msgid "Download Unsigned Software?"
-msgstr "Nájsť softvér"
+msgstr ""
 
 #: plugins/packagekit/gs-packagekit-task.c:154
 msgid ""
@@ -5552,9 +5255,8 @@ msgid ""
 msgstr ""
 
 #: plugins/packagekit/gs-packagekit-task.c:158
-#, fuzzy
 msgid "Update Unsigned Software?"
-msgstr "Nájsť softvér"
+msgstr ""
 
 #: plugins/packagekit/gs-packagekit-task.c:159
 msgid ""
@@ -5569,9 +5271,8 @@ msgid "Packages"
 msgstr "Balíky"
 
 #: plugins/rpm-ostree/gs-plugin-rpm-ostree.c:2690
-#, fuzzy
 msgid "Operating System (OSTree)"
-msgstr "Aktualizácie operačného systému nie sú dostupné"
+msgstr ""
 
 #. TRANSLATORS: default snap store name
 #: plugins/snap/gs-plugin-snap.c:300
@@ -5585,1844 +5286,3 @@ msgstr "Podpora balíkov Snap"
 #: plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in:7
 msgid "A snap is a universal Linux package"
 msgstr "Snap je univerzálnym balíkom pre systém Linux"
-
-#~ msgid "GNOME Software"
-#~ msgstr "Softvér prostredia GNOME"
-
-#~ msgid "Application manager for GNOME"
-#~ msgstr "Správca aplikácií prostredia GNOME"
-
-# cmdline description
-#~ msgid "A list of popular applications"
-#~ msgstr "Zoznam obľúbených aplikácií"
-
-#~ msgid "A list of applications to use, overriding the system defined ones."
-#~ msgstr ""
-#~ "Zoznam aplikácií, ktoré sa majú použiť, nahrádzajúc aplikácie určené "
-#~ "systémom."
-
-#, fuzzy, c-format
-#~| msgid "%s %f"
-#~ msgid "%s %s"
-#~ msgstr "%2$f %1$s"
-
-#, fuzzy
-#~| msgid "Removing…"
-#~ msgid "Loading…"
-#~ msgstr "Odstraňuje sa…"
-
-#~ msgid "_Add shortcut"
-#~ msgstr "_Pridať odkaz"
-
-# GtkButton
-#~ msgid "Re_move shortcut"
-#~ msgstr "O_dstrániť odkaz"
-
-# DK:window title
-#~ msgid "Welcome"
-#~ msgstr "Vitajte"
-
-#~ msgid "Welcome to Software"
-#~ msgstr "Vitajte v programe Softvér"
-
-#~ msgid ""
-#~ "Software lets you install all the software you need, all from one place. "
-#~ "See our recommendations, browse the categories, or search for the "
-#~ "applications you want."
-#~ msgstr ""
-#~ "Program Softvér vám umožní z jedného miesta nainštalovať všetok softvér, "
-#~ "ktorý potrebujete. Prezrite si naše odporúčania, prehliadajte kategórie, "
-#~ "alebo vyhľadajte aplikácie, ktoré chcete."
-
-#, fuzzy
-#~| msgid "Free Software"
-#~ msgid "_Browse Software"
-#~ msgstr "Slobodný softvér"
-
-#~ msgid "Software catalog is being downloaded"
-#~ msgstr "Prebieha preberanie katalógu so softvérom"
-
-#~ msgid "Downloading application ratings…"
-#~ msgstr "Preberajú sa hodnotenia aplikácií…"
-
-#~ msgid "Name"
-#~ msgstr "Názov"
-
-#~ msgid "system"
-#~ msgstr "systém"
-
-#~ msgid "user"
-#~ msgstr "používateľ"
-
-#~ msgid "Channel"
-#~ msgstr "Kanál"
-
-#~ msgid "Branch"
-#~ msgstr "Vetva"
-
-#~ msgid "URL"
-#~ msgstr "URL"
-
-#~ msgid "Installation"
-#~ msgstr "Inštalácia"
-
-# GtkLabel
-#~ msgid "Version"
-#~ msgstr "Verzia"
-
-#~ msgid "No updates have been installed on this system."
-#~ msgstr "V tomto počítači neboli nainštalované žiadne aktualizácie."
-
-#~ msgid "Checking…"
-#~ msgstr "Kontroluje sa…"
-
-#~ msgid "OS Updates"
-#~ msgstr "Aktualizácie operačného systému"
-
-#~ msgid "Includes performance, stability and security improvements."
-#~ msgstr "Zahŕňa vylepšenia výkonu, stability a zvýšenia bezpečnosti."
-
-#~ msgid "Endless OS"
-#~ msgstr "Systém Endless OS"
-
-#~ msgid "Downloading firmware update signature…"
-#~ msgstr "Preberá sa podpis aktualizácie firmvéru…"
-
-#~ msgid "Downloading firmware update metadata…"
-#~ msgstr "Preberajú sa metaúdaje aktualizácie firmvéru…"
-
-#~ msgid "Show the prompt to install nonfree software repositories"
-#~ msgstr "Zobraziť otázku pri inštalácii repozitárov neslobodného softvéru"
-
-#~ msgid "Enable GNOME Shell extensions repository"
-#~ msgstr "Povoliť repozitár s rozšíreniami Shellu prostredia GNOME"
-
-# GtkButton
-#~ msgid "Select All"
-#~ msgstr "Vybrať všetko"
-
-# GtkMenuItem
-#~ msgid "Select None"
-#~ msgstr "Zrušiť výber"
-
-# GtkToggleButton
-#~ msgid "_Installed"
-#~ msgstr "Na_inštalovaný"
-
-#~ msgid "_Updates"
-#~ msgstr "_Aktualizácie"
-
-# GtkButton
-#~ msgid "Remove"
-#~ msgstr "Odstrániť"
-
-# GtkLabel
-#~ msgid "Featured %s"
-#~ msgstr "Softvér základnej výbavy kategórie %s"
-
-#~ msgid "Show"
-#~ msgstr "Zobraziť"
-
-#~ msgid "Subcategories filter menu"
-#~ msgstr "Ponuka filtra podkategórií"
-
-#~ msgid "Sort"
-#~ msgstr "Usporiadať"
-
-#~ msgid "Subcategories sorting menu"
-#~ msgstr "Ponuka usporiadania podkategórií"
-
-#~ msgid "Cartoon characters in unsafe situations"
-#~ msgstr "Kreslené postavy v nebezpečných situáciách"
-
-#~ msgid "Cartoon characters in aggressive conflict"
-#~ msgstr "Kreslené postavy v agresívnom konflikte"
-
-#~ msgid "Graphic violence involving cartoon characters"
-#~ msgstr "Vyobrazené násilie zahŕňajúce kreslené postavy"
-
-#~ msgid "Characters in unsafe situations easily distinguishable from reality"
-#~ msgstr "Postavy v nebezpečných situáciach ľahko odlíšiteľných od reality"
-
-#~ msgid ""
-#~ "Characters in aggressive conflict easily distinguishable from reality"
-#~ msgstr "Postavy v agresívnom konflikte ľahko odlíšiteľnom od reality"
-
-#~ msgid "Graphic violence easily distinguishable from reality"
-#~ msgstr "Vyobrazené násilie ľahko odlíšiteľné od reality"
-
-#~ msgid "Mildly realistic characters in unsafe situations"
-#~ msgstr "Mierne skutočné postavy v nebezpečných situáciách"
-
-#~ msgid "Depictions of realistic characters in aggressive conflict"
-#~ msgstr "Vyobrazenia skutočných postáv v agresívnom konflikte"
-
-#~ msgid "Graphic violence involving realistic characters"
-#~ msgstr "Vyobrazené násilie zahŕňajúce skutočné postavy"
-
-#~ msgid "No bloodshed"
-#~ msgstr "Žiadne krviprelievanie"
-
-#~ msgid "Unrealistic bloodshed"
-#~ msgstr "Neskutočné krviprelievanie"
-
-#~ msgid "Realistic bloodshed"
-#~ msgstr "Skutočné krviprelievanie"
-
-#~ msgid "Depictions of bloodshed and the mutilation of body parts"
-#~ msgstr "Vyobrazenia krviprelievania a zohavených častí tiel"
-
-#~ msgid "Rape or other violent sexual behavior"
-#~ msgstr "Znásilnenie alebo iné násilné sexuálne správanie"
-
-#~ msgid "References to alcoholic beverages"
-#~ msgstr "Odkazy na alkoholické nápoje"
-
-#~ msgid "Use of alcoholic beverages"
-#~ msgstr "Požívanie alkoholických nápojov"
-
-#~ msgid "References to illicit drugs"
-#~ msgstr "Odkazy na zakázané drogy"
-
-#~ msgid "Use of illicit drugs"
-#~ msgstr "Požívanie zakázaných drog"
-
-#~ msgid "References to tobacco products"
-#~ msgstr "Odkazy na tabakové výrobky"
-
-#~ msgid "Use of tobacco products"
-#~ msgstr "Požívanie tabakových výrobkov"
-
-#~ msgid "Brief artistic nudity"
-#~ msgstr "Občasná umelecká nahota"
-
-#~ msgid "Prolonged nudity"
-#~ msgstr "Dlhotrvajúca nahota"
-
-#~ msgid "Provocative references or depictions"
-#~ msgstr "Provokačné odkazy alebo vyobrazenia"
-
-# cmdline description
-#~ msgid "Sexual references or depictions"
-#~ msgstr "Sexuálne odkazy alebo vyobrazenia"
-
-#~ msgid "Graphic sexual behavior"
-#~ msgstr "Vyobrazené sexuálne správanie"
-
-#~ msgid "Mild or infrequent use of profanity"
-#~ msgstr "Mierne alebo časte zneuctenie"
-
-#~ msgid "Moderate use of profanity"
-#~ msgstr "Stredne silné zneuctenie"
-
-#~ msgid "Strong or frequent use of profanity"
-#~ msgstr "Silné alebo časté zneuctenie"
-
-#~ msgid "Slapstick humor"
-#~ msgstr "Drsný humor"
-
-#~ msgid "Vulgar or bathroom humor"
-#~ msgstr "Vulgárny alebo kúpeľňový humor"
-
-#~ msgid "Mature or sexual humor"
-#~ msgstr "Sexuálny humor alebo humor pre dospelých"
-
-#~ msgid "Negativity towards a specific group of people"
-#~ msgstr "Odpor voči špecifickej skupine ľudí"
-
-#~ msgid "Discrimination designed to cause emotional harm"
-#~ msgstr "Diskriminácia s následkami emočnej ujmy"
-
-#~ msgid "Explicit discrimination based on gender, sexuality, race or religion"
-#~ msgstr ""
-#~ "Jednoznačná diskriminácia založená na pohlaví, sexuálnej orientácii, rase "
-#~ "alebo náboženstve"
-
-#~ msgid "Product placement"
-#~ msgstr "Umiestnenie výrobku"
-
-#~ msgid "Explicit references to specific brands or trademarked products"
-#~ msgstr ""
-#~ "Jednoznačné odkazy na produkty špecifických značiek alebo označené "
-#~ "obchodnou známkou"
-
-#~ msgid "Users are encouraged to purchase specific real-world items"
-#~ msgstr ""
-#~ "Používatelia sú vyzývaní na nákup špecifických položiek v skutočnom svete"
-
-#~ msgid "Gambling on random events using tokens or credits"
-#~ msgstr ""
-#~ "Hazardovanie na náhodných podujatiach použitím žetónov alebo kreditov"
-
-#~ msgid "Gambling using “play” money"
-#~ msgstr "Hazardovanie s fiktívnymi peniazmi"
-
-#~ msgid "Gambling using real money"
-#~ msgstr "Hazardovanie so skutočnými peniazmi"
-
-#~ msgid "Users are encouraged to donate real money"
-#~ msgstr "Používatelia sú vyzývaní na darovanie skutočných peňazí"
-
-#~ msgid "Ability to spend real money in-app"
-#~ msgstr "Možnosť míňania skutočných peňazí v aplikácii"
-
-#~ msgid "User-to-user interactions without chat functionality"
-#~ msgstr "Interakcie medzi používateľmi bez možnosti rozhovoru"
-
-#~ msgid "Moderated chat functionality between users"
-#~ msgstr "Moderované rozhovory medzi používateľmi"
-
-#~ msgid "Uncontrolled audio or video chat functionality between users"
-#~ msgstr "Nekontrolovateľné zvukové alebo video rozhovory medzi používateľmi"
-
-#~ msgid "Sharing social network usernames or email addresses"
-#~ msgstr ""
-#~ "Zdieľanie používateľských mien alebo emailových adries zo sociálnych sietí"
-
-#~ msgid "Checking for the latest application version"
-#~ msgstr "Kontroluje sa najnovšia verzia aplikácie"
-
-#~ msgid "Sharing diagnostic data that does not let others identify the user"
-#~ msgstr ""
-#~ "Sprístupnenie diagnostických údajov, ktoré neumožnia ostatným "
-#~ "identifikovať používateľa"
-
-#~ msgid "Sharing information that lets others identify the user"
-#~ msgstr ""
-#~ "Zdieľanie informácií, ktoré umožňujú ostatným identifikovať používateľa"
-
-#~ msgid "Sharing physical location with other users"
-#~ msgstr "Zdieľanie fyzickej lokality ostatným používateľom"
-
-#~ msgid "Indirect references to homosexuality"
-#~ msgstr "Nepriame odkazy na homosexualitu"
-
-#~ msgid "Kissing between people of the same gender"
-#~ msgstr "Bozkávanie ľudí rovnakého pohlavia"
-
-#~ msgid "Indirect references to prostitution"
-#~ msgstr "Nepriame odkazy na prostitúciu"
-
-#~ msgid "Direct references to prostitution"
-#~ msgstr "Priame odkazy na prostitúciu"
-
-#~ msgid "Graphic depictions of the act of prostitution"
-#~ msgstr "Grafické vyobrazenia aktu prostitúcie"
-
-#~ msgid "Indirect references to adultery"
-#~ msgstr "Nepriame odkazy na cudzoložstvo"
-
-#~ msgid "Direct references to adultery"
-#~ msgstr "Priame odkazy na cudzoložstvo"
-
-#~ msgid "Graphic depictions of the act of adultery"
-#~ msgstr "Grafické vyobrazenia aktu cudzoložstva"
-
-#~ msgid "Depictions of or references to historical desecration"
-#~ msgstr "Vyobrazenia alebo odkazy na historické znesvätenie"
-
-#~ msgid "Depictions of modern-day human desecration"
-#~ msgstr "Vyobrazenia ľudského znesvätenia modernej doby"
-
-#~ msgid "Graphic depictions of modern-day desecration"
-#~ msgstr "Grafické vyobrazenia znesvätenia modernej doby"
-
-#~ msgid "Visible dead human remains"
-#~ msgstr "Viditeľné pozostatky mŕtvych ľudí"
-
-#~ msgid "Graphic depictions of desecration of human bodies"
-#~ msgstr "Grafické vyobrazenia znesvätenia ľudských tiel"
-
-#~ msgid "Depictions of or references to historical slavery"
-#~ msgstr "Vyobrazenia alebo odkazy na historické otroctvo"
-
-#~ msgid "Depictions of modern-day slavery"
-#~ msgstr "Vyobrazenia otroctva modernej doby"
-
-#~ msgid "Graphic depictions of modern-day slavery"
-#~ msgstr "Grafické vyobrazenie otroctva modernej doby"
-
-#~ msgid "General"
-#~ msgstr "Všeobecné"
-
-#~ msgid "ALL"
-#~ msgstr "VŠETCI"
-
-#~ msgid "Teen"
-#~ msgstr "Mladiství"
-
-#~ msgid "Everyone 10+"
-#~ msgstr "Každý s vekom nad 10 rokov"
-
-#~ msgid "Everyone"
-#~ msgstr "Každý"
-
-#~ msgid "Early Childhood"
-#~ msgstr "Skoré detstvo"
-
-# GtkButton
-#~ msgid "_Launch"
-#~ msgstr "_Spustiť"
-
-#~ msgid ""
-#~ "Unable to determine which parts of the system this application accesses. "
-#~ "This is typical for older applications."
-#~ msgstr ""
-#~ "Nie je možné zistiť, ku ktorým častiam systému môže táto aplikácia "
-#~ "pristupovať. Je to obvyklé pri starších aplikáciách."
-
-#~ msgctxt "version"
-#~ msgid "Unknown"
-#~ msgstr "Neznáma"
-
-#~ msgctxt "updated"
-#~ msgid "Never"
-#~ msgstr "Nikdy"
-
-#~ msgctxt "origin"
-#~ msgid "Unknown"
-#~ msgstr "Neznámy"
-
-#~ msgid "Low"
-#~ msgstr "Nízke"
-
-#~ msgid "Medium"
-#~ msgstr "Stredné"
-
-#~ msgid "High"
-#~ msgstr "Vysoké"
-
-#~ msgid "Public domain"
-#~ msgstr "Verejná doména"
-
-#~ msgid "https://en.wikipedia.org/wiki/Public_domain"
-#~ msgstr "https://sk.wikipedia.org/wiki/Public_domain"
-
-#~ msgid "https://www.gnu.org/philosophy/free-sw"
-#~ msgstr "https://www.gnu.org/philosophy/free-sw"
-
-#~ msgid "Users are bound by the following license:"
-#~ msgid_plural "Users are bound by the following licenses:"
-#~ msgstr[0] "Používatelia sú viazaní týmito licenciami:"
-#~ msgstr[1] "Používatelia sú viazaní touto licenciou:"
-#~ msgstr[2] "Používatelia sú viazaní týmito licenciami:"
-
-#~ msgid "Localized in your Language"
-#~ msgstr "Lokalizovaný vo vašom jazyku"
-
-#~ msgid "Release Activity"
-#~ msgstr "Aktivita vydaní"
-
-#~ msgid "Sandboxed"
-#~ msgstr "V izolovanom priestore"
-
-# GtkLabel
-#~ msgid "Category"
-#~ msgstr "Kategória"
-
-#~ msgid "Free"
-#~ msgstr "Slobodná"
-
-#~ msgid ""
-#~ "This means that the software can be freely run, copied, distributed, "
-#~ "studied and modified."
-#~ msgstr ""
-#~ "To znamená, že softvér sa môže slobodne používať, kopírovať, šíriť, "
-#~ "študovať a upravovať."
-
-#~ msgid "Proprietary Software"
-#~ msgstr "Softvér s uzavretým zdrojom"
-
-#~ msgid ""
-#~ "This means that the software is owned by an individual or a company. "
-#~ "There are often restrictions on its use and its source code cannot "
-#~ "usually be accessed."
-#~ msgstr ""
-#~ "To znamená, že softvér vlastní jednotlivec alebo spoločnosť. Často sú s "
-#~ "jeho používaním spojené obmedzenia a jeho zdrojový kód nebýva obvykle "
-#~ "sprístupnený."
-
-#~ msgid "Unknown Software License"
-#~ msgstr "Neznáma licencia softvéru"
-
-#~ msgid "The license terms of this software are unknown."
-#~ msgstr "Licenčné podmienky používania tohto softvéru nie sú známe."
-
-#~ msgid "The application was rated this way because it features:"
-#~ msgstr "Aplikácia bola takto ohodnotená, pretože obsahuje:"
-
-#~ msgid "this website"
-#~ msgstr "túto webovú stránku"
-
-#~ msgid "_Let’s Go Shopping"
-#~ msgstr "_Poďme nakupovať"
-
-#~ msgctxt "app status"
-#~ msgid "Removed"
-#~ msgstr "Odstránený"
-
-#~ msgctxt "app status"
-#~ msgid "Installed"
-#~ msgstr "Nainštalovaný"
-
-# GtkLabel
-#~ msgctxt "app status"
-#~ msgid "Updated"
-#~ msgstr "Aktualizovaný"
-
-#~ msgctxt "app status"
-#~ msgid "Unknown"
-#~ msgstr "Neznáma"
-
-# GtkDialog title
-#~ msgid "History"
-#~ msgstr "História"
-
-#~ msgid "Format"
-#~ msgstr "Formát"
-
-#~ msgid "More…"
-#~ msgstr "Viac…"
-
-#~ msgid "Recommended Audio & Video Applications"
-#~ msgstr "Odporúčané aplikácie na prácu so zvukom a videom"
-
-#~ msgid "Recommended Games"
-#~ msgstr "Odporúčané hry"
-
-#~ msgid "Recommended Graphics Applications"
-#~ msgstr "Odporúčané grafické aplikácie"
-
-#~ msgid "Recommended Productivity Applications"
-#~ msgstr "Odporúčané aplikácie na zvýšenie produktivity"
-
-#~ msgid ""
-#~ "Some of this software is proprietary and therefore has restrictions on "
-#~ "use, sharing, and access to source code."
-#~ msgstr ""
-#~ "Niektoré z týchto softvérov sú uzavreté, a preto majú obmedzenia v "
-#~ "používaní, zdieľaní a prístupe k zdrojovému kódu."
-
-#~ msgid "Find out more…"
-#~ msgstr "Zistiť viac…"
-
-#~ msgid "Editor’s Picks"
-#~ msgstr "Výber tvorcov"
-
-#~ msgid "Recent Releases"
-#~ msgstr "Nedávne vydania"
-
-#~ msgid "Are you sure you want to remove %s?"
-#~ msgstr "Naozaj chcete odstrániť %s?"
-
-#~ msgid "Remove “%s”?"
-#~ msgstr "Odstrániť repozitár „%s“?"
-
-#~ msgid "Disable “%s”?"
-#~ msgstr "Zakázať repozitár „%s“?"
-
-#~ msgid "No Additional Repositories"
-#~ msgstr "Žiadne dodatočné repozitáre"
-
-#~ msgid "_Enable"
-#~ msgstr "_Povoliť"
-
-# GtkButton
-#~ msgid "_Remove…"
-#~ msgstr "O_dstrániť…"
-
-#~ msgid "_Disable…"
-#~ msgstr "_Zakázať…"
-
-#~ msgid "Disabling"
-#~ msgstr "Zakazuje sa"
-
-#~ msgid "Enabled"
-#~ msgstr "Povolený"
-
-#~ msgid "Disabled"
-#~ msgstr "Zakázaný"
-
-#~ msgid "ratings in total"
-#~ msgstr "hodnotení celkom"
-
-#~ msgid "This application needs to be restarted to use new plugins."
-#~ msgstr ""
-#~ "Pre používanie nových zásuvných modulov musí byť aplikácia reštartovaná."
-
-# GtkButton
-#~ msgid "_Remove All"
-#~ msgstr "O_dstrániť všetky"
-
-#~ msgid "Security Updates Pending"
-#~ msgstr "Čakajúce bezpečnostné aktualizácie"
-
-#~ msgid "It is recommended that you install important updates now"
-#~ msgstr "Odporúča sa, aby ste bezpečnostné aktualizácie nainštalovali ihneď"
-
-#~ msgid "Restart & Install"
-#~ msgstr "Reštartovať a inštalovať"
-
-#~ msgid "Important OS and application updates are ready to be installed"
-#~ msgstr ""
-#~ "Dôležité aktualizácie operačného systému a aplikácií sú pripravené na "
-#~ "inštaláciu"
-
-#~ msgid "View"
-#~ msgstr "Zobraziť"
-
-#~ msgid "%R"
-#~ msgstr "%R"
-
-#~ msgid "%l:%M %p"
-#~ msgstr "%l:%M %p"
-
-#~ msgid "Yesterday, %R"
-#~ msgstr "Včera o %R"
-
-#~ msgid "Yesterday, %l:%M %p"
-#~ msgstr "Včera o %l:%M %p"
-
-#~ msgid "Three days ago"
-#~ msgstr "Pred troma dňami"
-
-#~ msgid "Four days ago"
-#~ msgstr "Pred štyrmi dňami"
-
-#~ msgid "Five days ago"
-#~ msgstr "Pred piatimi dňami"
-
-#~ msgid "Six days ago"
-#~ msgstr "Pred šiestimi dňami"
-
-#~ msgid "Two weeks ago"
-#~ msgstr "Pred dvoma týždňami"
-
-#~ msgid "Looking for new updates…"
-#~ msgstr "Vyhľadávajú sa nové aktualizácie…"
-
-#~ msgid "Setting up updates…"
-#~ msgstr "Nastavujú sa aktualizácie…"
-
-# GtkLabel
-#~ msgid "Software is up to date"
-#~ msgstr "Softvér je aktuálny"
-
-#~ msgid "_Restart Now"
-#~ msgstr "_Reštartovať teraz"
-
-#~ msgid "Updates will be applied when the computer is restarted."
-#~ msgstr "Aktualizácie budú použité po reštarte počítača."
-
-#~ msgid "Waiting to Download %s %s"
-#~ msgstr "Čaká sa na prevzatie distribúcie %s %s"
-
-#~ msgid "Downloading %s %s"
-#~ msgstr "Preberá sa systém %s %s"
-
-#~ msgid "%s %s Ready to be Installed"
-#~ msgstr "Systém %s %s je pripravený na inštaláciu"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Games"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Games"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Utilities"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Utilities"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Reference"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Reference"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-#~ msgid "Audio & Video"
-#~ msgstr "Zvuk a video"
-
-#~ msgid "Developer Tools"
-#~ msgstr "Nástroje pre vývojárov"
-
-#~ msgid "Education & Science"
-#~ msgstr "Vzdelávanie a veda"
-
-#~ msgid "Games"
-#~ msgstr "Hry"
-
-#~ msgid "Graphics & Photography"
-#~ msgstr "Grafika a fotografia"
-
-#~ msgid "Productivity"
-#~ msgstr "Produktivita"
-
-#~ msgid "Communication & News"
-#~ msgstr "Komunikácia a novinky"
-
-#~ msgid "Reference"
-#~ msgstr "Referencia"
-
-#~ msgid "Utilities"
-#~ msgstr "Pomôcky"
-
-#~ msgid "ODRS is a service providing user reviews of applications"
-#~ msgstr "ODRS je služba poskytujúca používateľské recenzie aplikácií"
-
-#~ msgid "About %s"
-#~ msgstr "O aplikácii %s"
-
-#~ msgid "Extension Settings"
-#~ msgstr "Nastavenia rozšírenia"
-
-#~ msgid ""
-#~ "Extensions are used at your own risk. If you have any system problems, it "
-#~ "is recommended to disable them."
-#~ msgstr ""
-#~ "Rozšírenia sú použité na vlastné riziko. Ak pozorujete akékoľvek problémy "
-#~ "so systémom, odporúča sa zakázať ich."
-
-#~ msgctxt "Menu of Add-ons"
-#~ msgid "Shell Extensions"
-#~ msgstr "Rozšírenia pre Shell"
-
-#~ msgid "GNOME Shell Extensions Repository"
-#~ msgstr "Repozitár s rozšíreniami pre Shell prostredia GNOME"
-
-#~ msgid "Downloading shell extension metadata…"
-#~ msgstr "Preberajú sa metaúdaje rozšírenia pre Shell…"
-
-#~ msgid "GNOME Shell Extension"
-#~ msgstr "Rozšírenie pre Shell prostredia GNOME"
-
-#~ msgid "Show the folder management UI"
-#~ msgstr "Zobraziť používateľské rozhranie správy priečinkov"
-
-#~ msgid "system-software-install"
-#~ msgstr "system-software-install"
-
-# GtkToggleButton
-#~ msgid "_All"
-#~ msgstr "_Všetko"
-
-#~ msgid "Folder Name"
-#~ msgstr "Názov priečinka"
-
-#~ msgid "_Add"
-#~ msgstr "_Pridať"
-
-# GsAppFolderDialog title, GtkLabel
-#~ msgid "Add to Application Folder"
-#~ msgstr "Pridanie do priečinka s aplikáciami"
-
-# cmdline description
-#~ msgid "Show profiling information for the service"
-#~ msgstr "Zobrazí profilovacie informácie pre službu"
-
-#~ msgid "To continue you need to sign in."
-#~ msgstr "Pre pokračovanie sa musíte prihlásiť."
-
-#~ msgid "To continue you need to sign in to %s."
-#~ msgstr "Pre pokračovanie sa musíte prihlásiť do služby %s."
-
-#~ msgid "Email address"
-#~ msgstr "Emailová adresa"
-
-#~ msgid "I have an account already"
-#~ msgstr "Už mám účet"
-
-#~ msgid "I want to register for an account now"
-#~ msgstr "Chcem si teraz zaregistrovať účet"
-
-#~ msgid "I have forgotten my password"
-#~ msgstr "Zabudol som heslo"
-
-#~ msgid "Sign in automatically next time"
-#~ msgstr "Prihlásiť ma automaticky nabudúce"
-
-#~ msgid "Enter your one-time pin for two-factor authentication."
-#~ msgstr "Zadajte váš jednorázový pin pre dvojfaktorové overenie totožnosti."
-
-#~ msgid "PIN"
-#~ msgstr "PIN"
-
-# headerbar title
-#~ msgid "Authenticate"
-#~ msgstr "Overenie totožnosti"
-
-#~ msgid "Continue"
-#~ msgstr "Pokračovať"
-
-# GtkLabel
-#~ msgid "Top Rated"
-#~ msgstr "Najlepšie hodnotené"
-
-#~ msgid "CSS validated OK!"
-#~ msgstr "Overovanie CSS prebehlo v poriadku!"
-
-# title
-#~ msgid "Failed to load file"
-#~ msgstr "Zlyhalo načítanie súboru"
-
-#~ msgid "Unsaved changes"
-#~ msgstr "Neuložené zmeny"
-
-#~ msgid "Merge documents"
-#~ msgstr "Zlúčiť dokumenty"
-
-#~ msgid "Throw away changes"
-#~ msgstr "Zahodiť zmeny"
-
-# dialog title
-#~ msgid "Open AppStream File"
-#~ msgstr "Otvorenie súboru AppStream"
-
-#~ msgid "_Save"
-#~ msgstr "_Uložiť"
-
-# title
-#~ msgid "Failed to save file"
-#~ msgstr "Zlyhalo uloženie súboru"
-
-#~ msgid "%s banner design deleted."
-#~ msgstr "Návrh pútača aplikácie %s bol odstránený."
-
-#~ msgid "Banner design deleted."
-#~ msgstr "Návrh pútača bol odstránený."
-
-#~ msgid "The application list has unsaved changes."
-#~ msgstr "Zoznam aplikácií obsahuje neuložené zmeny."
-
-#~ msgid "Use verbose logging"
-#~ msgstr "Použije rozsiahle zaznamenávanie"
-
-#~ msgid "GNOME Software Banner Designer"
-#~ msgstr "Nástroj na návrh pútačov aplikácie Softvér prostredia GNOME"
-
-#~ msgid "No Designs"
-#~ msgstr "Žiadne návrhy"
-
-#~ msgid "Error message here"
-#~ msgstr "Sem patrí chybová hláška"
-
-#~ msgid "App ID"
-#~ msgstr "ID aplikácie"
-
-# GtkLabel
-#~ msgid "Category Featured"
-#~ msgstr "Kategória Softvér základnej výbavy"
-
-#~ msgid "Undo"
-#~ msgstr "Vrátiť späť"
-
-#~ msgid "Banner Designer"
-#~ msgstr "Nástroj na návrh pútačov"
-
-#~ msgid "New Banner"
-#~ msgstr "Nový pútač"
-
-#~ msgid "Import from file"
-#~ msgstr "Importovať so súboru"
-
-#~ msgid "Export to file"
-#~ msgstr "Exportovať do súboru"
-
-#~ msgid "Delete Design"
-#~ msgstr "Odstrániť návrh"
-
-#~ msgid "OS Upgrade"
-#~ msgstr "Aktualizácia operačného systému"
-
-#~ msgid "Spacing"
-#~ msgstr "Rozostupy"
-
-#~ msgid "The amount of space between children"
-#~ msgstr "Veľkosť priestoru medzi potomkami"
-
-#~ msgid "Click on items to select them"
-#~ msgstr "Kliknutím na položky ich vyberiete"
-
-# GtkButton
-#~ msgid "Select"
-#~ msgstr "Vybrať"
-
-# GsAppFolderDialog title, GtkLabel
-#~ msgid "_Add to Folder…"
-#~ msgstr "_Pridať do priečinka…"
-
-#~ msgid "_Move to Folder…"
-#~ msgstr "P_resunuť do priečinka…"
-
-# title
-#~ msgid "Software catalog is being loaded"
-#~ msgstr "Prebieha načítavanie katalógu softvéru"
-
-#~ msgid "_About"
-#~ msgstr "_O programe"
-
-#~ msgid "_Quit"
-#~ msgstr "_Ukončiť"
-
-#~ msgid "%s will be installed, and you will be charged %s."
-#~ msgstr ""
-#~ "Aplikácia %s bude nainštalovaná a bude vám účtovaný poplatok vo výške %s."
-
-#~ msgid ""
-#~ "Information about %s, as well as options for how to get a codec that can "
-#~ "play this format can be found on the website."
-#~ msgstr ""
-#~ "Informácie o formáte %s, ako aj o možnostiach získania kodeku na "
-#~ "prehranie tohto formátu, môžete nájsť na webovej stránke."
-
-#~ msgid "A$%.2f"
-#~ msgstr "%.2f A$"
-
-#~ msgid "C$%.2f"
-#~ msgstr "%.2f C$"
-
-#~ msgid "CN¥%.2f"
-#~ msgstr "%.2f CN¥"
-
-#~ msgid "€%.2f"
-#~ msgstr "%.2f €"
-
-#~ msgid "£%.2f"
-#~ msgstr "%.2f £"
-
-#~ msgid "¥%.2f"
-#~ msgstr "%.2f ¥"
-
-#~ msgid "NZ$%.2f"
-#~ msgstr "%.2f NZ$"
-
-#~ msgid "₽%.2f"
-#~ msgstr "%.2f ₽"
-
-#~ msgid "US$%.2f"
-#~ msgstr "%.2f US$"
-
-#~ msgid "It is not possible to install software until this has been resolved."
-#~ msgstr "Kým sa nevyrieši tento problém, nebude možné inštalovať softvér."
-
-#~ msgid "For more information, visit %s."
-#~ msgstr "Pre viac informácií navštívte adresu %s."
-
-#~ msgid "Unable to update %s from %s"
-#~ msgstr "Nie je možné aktualizovať aplikáciu %s z lokality %s"
-
-#~ msgid "Downloading new updates…"
-#~ msgstr "Preberajú sa nové aktualizácie…"
-
-#~ msgid "U_pdate All"
-#~ msgstr "A_ktualizovať všetko"
-
-# GtkButton
-#~ msgid "Restart & _Install"
-#~ msgstr "Reštartovať a _inštalovať"
-
-#~ msgid "org.gnome.Software"
-#~ msgstr "org.gnome.Software"
-
-#~ msgid "Design the featured banners for GNOME Software"
-#~ msgstr ""
-#~ "Navrhuje pútače aplikácií základnej výbavy pre Softvér prostredia GNOME"
-
-#~ msgid "AppStream;Software;App;"
-#~ msgstr "AppStream;Software;Softvér;App;"
-
-#~ msgid "Getting runtime source…"
-#~ msgstr "Získava sa zdroj prostredia…"
-
-#~ msgid "Limba provides developers a way to easily create software bundles"
-#~ msgstr "Limba umožňuje vývojárom jednoduché vytvárania softvérových balíkov"
-
-#~ msgid "Downloading application page…"
-#~ msgstr "Preberá sa stránka s aplikáciami…"
-
-#~ msgid "The ultimate entertainment platform from Valve"
-#~ msgstr "Platforma špičkovej zábavy od spoločnosti Valve"
-
-#~ msgid "The list of extra sources that have been previously enabled"
-#~ msgstr "Zoznam zdrojov navyše, ktoré boli predošle povolené"
-
-#~ msgid ""
-#~ "The list of sources that have been previously enabled when installing "
-#~ "third-party applications."
-#~ msgstr ""
-#~ "Zoznam zdrojov, ktoré boli predošle povolené pri inštalovaní aplikácií "
-#~ "tretích strán."
-
-#~ msgid "Show non-free software in search results"
-#~ msgstr "Zobraziť neslobodný softvér vo výsledkoch vyhľadávaní"
-
-#~ msgid "A list of non-free sources that can be optionally enabled"
-#~ msgstr "Zoznam neslobodných zdrojov, ktoré môžu byť voliteľne povolené"
-
-#~ msgid "Player-to-player preset interactions without chat functionality"
-#~ msgstr "Prednastavené herné interakcie medzi hráčmi bez možnosti rozhovoru"
-
-#~ msgid "Enable Proprietary Software Sources?"
-#~ msgstr "Povoliť zdroje uzavretého softvéru?"
-
-#~ msgid "No applications or addons installed; other software might still be"
-#~ msgstr ""
-#~ "Nie sú nainštalované žiadne aplikácie alebo doplnky. Ostatný softvér ale "
-#~ "stále môže byť nainštalovaný."
-
-#~ msgid "Typically has restrictions on use and access to source code."
-#~ msgstr ""
-#~ "Obvykle obsahuje obmedzenia spojené s používaním a prístupom k zdrojovému "
-#~ "kódu."
-
-#~ msgid "Proprietary Software Sources"
-#~ msgstr "Zdroje uzavretého softvéru"
-
-# GtkButton
-#~ msgid "Remove Source"
-#~ msgstr "Odstrániť zdroj"
-
-#~ msgid ""
-#~ "Software sources can be downloaded from the internet. They give you "
-#~ "access to additional software that is not provided by %s."
-#~ msgstr ""
-#~ "Zdroje softvéru môžu byť prevzaté z internetu. Umožnia vám pristupovať k "
-#~ "dodatočnému softvéru, ktorý nie je poskytovaný operačným systémom %s."
-
-#~ msgid ""
-#~ "Removing a source will also remove any software you have installed from "
-#~ "it."
-#~ msgstr ""
-#~ "Odstránením zdroja bude tiež odstránený všetok softvér, ktorý ste z neho "
-#~ "nainštalovali."
-
-#~ msgid "No software installed from this source"
-#~ msgstr "\"Z tohto zdroja nie je nainštalovaný žiadny softvér"
-
-#~ msgid "Installed from this Source"
-#~ msgstr "Nainštalovaný z tohto zdroja"
-
-#~ msgid "Last Checked"
-#~ msgstr "Posledná kontrola"
-
-#~ msgid "Added"
-#~ msgstr "Pridaný"
-
-# GtkButton
-#~ msgid "Website"
-#~ msgstr "Webová stránka"
-
-#~ msgid "“%s” [%s]"
-#~ msgstr "„%s“ [%s]"
-
-# GtkToggleButton
-#~ msgctxt "Menu of AudioVideo"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of AudioVideo"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Development"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Development"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Education and Science"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Education and Science"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Graphics"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Graphics"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Office"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Office"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Communication"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Communication"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Utility"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Utility"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-#~ msgid "Total"
-#~ msgstr "Celkom"
-
-# GtkButton
-#~ msgid "_Install All"
-#~ msgstr "_Inštalovať všetky"
-
-#~ msgid "Other Updates"
-#~ msgstr "Ostatné aktualizácie"
-
-#~ msgid "Installation of %s failed."
-#~ msgstr "Inštalácia softvéru %s zlyhala."
-
-#~ msgid "Removal of %s failed."
-#~ msgstr "Odstránenie softvéru %s zlyhalo."
-
-#~ msgid "Please make sure that you have internet access and try again."
-#~ msgstr "Prosím, uistite sa, že máte prístup na internet a skúste to znovu."
-
-#~ msgid "Please free up some space and try again."
-#~ msgstr "Prosím, uvoľnite nejaký priestor a skúste to znovu."
-
-#~ msgid "If the problem persists, contact your software provider."
-#~ msgstr "Ak problém pretrváva, kontaktuje vášho poskytovateľa softvéru."
-
-#~ msgctxt "content rating violence-fantasy"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating violence-realistic"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating violence-bloodshed"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating violence-sexual"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating drugs-alcohol"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating drugs-narcotics"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating sex-nudity"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating sex-themes"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating language-profanity"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating language-humor"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating language-discrimination"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating money-advertising"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating money-gambling"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating money-purchasing"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating social-chat"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating social-audio"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating social-contacts"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating social-info"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-#~ msgctxt "content rating social-location"
-#~ msgid "None"
-#~ msgstr "Žiadne"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Education"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Education"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-# GtkToggleButton
-#~ msgctxt "Menu of Science"
-#~ msgid "All"
-#~ msgstr "Všetko"
-
-# GtkLabel
-#~ msgctxt "Menu of Science"
-#~ msgid "Featured"
-#~ msgstr "Softvér základnej výbavy"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "Astronomy"
-#~ msgstr "Astronómia"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "Chemistry"
-#~ msgstr "Chémia"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "Math"
-#~ msgstr "Matematika"
-
-#~ msgid "Science"
-#~ msgstr "Veda"
-
-#~ msgid "Software sources give you access to additional software."
-#~ msgstr "Zdroje softvéru vám umožňujú získať dodatočný softvér."
-
-#~ msgid "3rd party"
-#~ msgstr "od tretej strany"
-
-#~ msgid "web app"
-#~ msgstr "webová aplikácia"
-
-#~ msgid "nonfree"
-#~ msgstr "neslobodný"
-
-#~ msgid "shell extension"
-#~ msgstr "rozšírenie pre shell"
-
-#~ msgid "_Installing"
-#~ msgstr "_Inštaluje sa"
-
-#~ msgid "_Removing"
-#~ msgstr "O_dstraňuje sa"
-
-#~ msgid " or "
-#~ msgstr " alebo "
-
-#~ msgctxt "license"
-#~ msgid "Unknown"
-#~ msgstr "Neznáma"
-
-#~ msgid "This software comes from a 3rd party."
-#~ msgstr "Tento softvér pochádza od tretích strán."
-
-#~ msgid ""
-#~ "This software comes from a 3rd party and may contain non-free components."
-#~ msgstr ""
-#~ "Tento softvér pochádza od tretích strán a môže obsahovať neslobodné "
-#~ "súčasti."
-
-#~ msgid "This software may contain non-free components."
-#~ msgstr "Tento softvér môže obsahovať neslobodné súčasti."
-
-#~ msgid "non-free"
-#~ msgstr "neslobodný"
-
-#~ msgid "One Star"
-#~ msgstr "Jedna hviezdička"
-
-#~ msgid "Two Stars"
-#~ msgstr "Dve hviezdičky"
-
-#~ msgid "Three Stars"
-#~ msgstr "Tri hviezdičky"
-
-#~ msgid "Four Stars"
-#~ msgstr "Štyri hviezdičky"
-
-#~ msgid "Five Stars"
-#~ msgstr "Päť hviezdičiek"
-
-#~ msgctxt "size"
-#~ msgid "Calculating…"
-#~ msgstr "Vypočítava sa…"
-
-#~ msgctxt "size"
-#~ msgid "Unknown"
-#~ msgstr "Neznáma"
-
-# GtkButton
-#~ msgid "_History"
-#~ msgstr "_História"
-
-# GtkLabel
-#~ msgid "Size"
-#~ msgstr "Veľkosť"
-
-#~ msgid "Recommended Office Applications"
-#~ msgstr "Odporúčané kancelárske aplikácie"
-
-#~ msgid "No AppStream data found"
-#~ msgstr "Nenašli sa žiadne údaje toku AppStream"
-
-#~ msgid "Audio"
-#~ msgstr "Audio"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Editing"
-#~ msgstr "Upravovanie"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Databases"
-#~ msgstr "Databázy"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Disc Burning"
-#~ msgstr "Napaľovanie diskov"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Ham Radio"
-#~ msgstr "Amatérske rádio"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "MIDI"
-#~ msgstr "MIDI"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Mixer"
-#~ msgstr "Zmiešavače"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Music"
-#~ msgstr "Hudba"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Recorders"
-#~ msgstr "Nahrávače"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Sequencers"
-#~ msgstr "Sekvencéry"
-
-#~ msgctxt "Menu subcategory of Audio"
-#~ msgid "Tuners"
-#~ msgstr "Rádiá"
-
-#~ msgctxt "Menu subcategory of Development Tools"
-#~ msgid "Building"
-#~ msgstr "Zostavovanie"
-
-#~ msgctxt "Menu subcategory of Development Tools"
-#~ msgid "Databases"
-#~ msgstr "Databázy"
-
-#~ msgctxt "Menu subcategory of Development Tools"
-#~ msgid "IDE"
-#~ msgstr "Integrované prostredia IDE"
-
-#~ msgctxt "Menu subcategory of Development Tools"
-#~ msgid "Profiling"
-#~ msgstr "Profilovanie"
-
-#~ msgctxt "Menu subcategory of Development Tools"
-#~ msgid "Web Development"
-#~ msgstr "Vývoj webu"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Biology"
-#~ msgstr "Biológia"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Computer Science"
-#~ msgstr "Počítačová veda"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Data Visualization"
-#~ msgstr "Vizualizácia údajov"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Economy"
-#~ msgstr "Ekonomika"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Electricity"
-#~ msgstr "Elektrina"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Electronics"
-#~ msgstr "Elektronika"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Engineering"
-#~ msgstr "Strojníctvo"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Geology"
-#~ msgstr "Geológia"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Geoscience"
-#~ msgstr "Geoveda"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "History"
-#~ msgstr "História"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Image Processing"
-#~ msgstr "Spracovanie obrázkov"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Literature"
-#~ msgstr "Literatúra"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Maps"
-#~ msgstr "Mapy"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Music"
-#~ msgstr "Hudba"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Numerical Analysis"
-#~ msgstr "Numerická analýza"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Parallel Computing"
-#~ msgstr "Súbežné spracovanie údajov"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Physics"
-#~ msgstr "Fyzika"
-
-#~ msgctxt "Menu subcategory of Education"
-#~ msgid "Spirituality"
-#~ msgstr "Spiritualita"
-
-#~ msgctxt "Menu subcategory of Games"
-#~ msgid "Shooter"
-#~ msgstr "Strieľacie"
-
-#~ msgctxt "Menu subcategory of Games"
-#~ msgid "Simulation"
-#~ msgstr "Simulačné"
-
-#~ msgctxt "Menu subcategory of Games"
-#~ msgid "Sports"
-#~ msgstr "Športové"
-
-#~ msgid "Graphics"
-#~ msgstr "Grafika"
-
-#~ msgctxt "Menu subcategory of Graphics"
-#~ msgid "2D Graphics"
-#~ msgstr "2D grafika"
-
-#~ msgctxt "Menu subcategory of Graphics"
-#~ msgid "OCR"
-#~ msgstr "Rozpoznávanie znakov OCR"
-
-#~ msgctxt "Menu subcategory of Graphics"
-#~ msgid "Publishing"
-#~ msgstr "Publikovanie"
-
-#~ msgctxt "Menu subcategory of Graphics"
-#~ msgid "Raster Graphics"
-#~ msgstr "Rastrová grafika"
-
-#~ msgid "Internet"
-#~ msgstr "Internet"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Dialup"
-#~ msgstr "Spojenie vytáčaním"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Email"
-#~ msgstr "Email"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Feed"
-#~ msgstr "Informačný kanál"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "File Transfer"
-#~ msgstr "Prenos súborov"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Ham Radio"
-#~ msgstr "Amatérske rádio"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Instant Messaging"
-#~ msgstr "Priama komunikácia"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "IRC Clients"
-#~ msgstr "Klienti IRC"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Monitor"
-#~ msgstr "Monitorovanie"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "P2P"
-#~ msgstr "P2P"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Telephony"
-#~ msgstr "Telefonovanie"
-
-#~ msgctxt "Menu subcategory of Internet"
-#~ msgid "Web Development"
-#~ msgstr "Vývoj webu"
-
-#~ msgid "Office"
-#~ msgstr "Kancelária"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Chart"
-#~ msgstr "Graf"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Contact Management"
-#~ msgstr "Správa kontaktov"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Dictionary"
-#~ msgstr "Slovník"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Email"
-#~ msgstr "Email"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Flow Chart"
-#~ msgstr "Plávajúci graf"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "PDA"
-#~ msgstr "PDA"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Photography"
-#~ msgstr "Fotografia"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Project Management"
-#~ msgstr "Správa projektov"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Publishing"
-#~ msgstr "Publikovanie"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Spreadsheet"
-#~ msgstr "Tabuľkový zošit"
-
-#~ msgctxt "Menu subcategory of Office"
-#~ msgid "Viewer"
-#~ msgstr "Prehliadač"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Art"
-#~ msgstr "Umenie"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Artificial Intelligence"
-#~ msgstr "Umelá inteligencia"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Astronomy"
-#~ msgstr "Astronómia"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Biology"
-#~ msgstr "Biológia"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Chemistry"
-#~ msgstr "Chémia"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Computer Science"
-#~ msgstr "Počítačová veda"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Construction"
-#~ msgstr "Konštrukcia"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Data Visualization"
-#~ msgstr "Vizualizácia údajov"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Economy"
-#~ msgstr "Ekonomika"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Electricity"
-#~ msgstr "Elektrina"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Electronics"
-#~ msgstr "Elektronika"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Engineering"
-#~ msgstr "Strojníctvo"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Geography"
-#~ msgstr "Geografia"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Geology"
-#~ msgstr "Geológia"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Geoscience"
-#~ msgstr "Geoveda"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "History"
-#~ msgstr "História"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Humanities"
-#~ msgstr "Humanita"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Image Processing"
-#~ msgstr "Spracovanie obrázkov"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Languages"
-#~ msgstr "Jazyky"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Literature"
-#~ msgstr "Literatúra"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Maps"
-#~ msgstr "Mapy"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Math"
-#~ msgstr "Matematika"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Medical"
-#~ msgstr "Zdravotníctvo"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Numerical Analysis"
-#~ msgstr "Numerická analýza"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Parallel Computing"
-#~ msgstr "Súbežné spracovanie údajov"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Physics"
-#~ msgstr "Fyzika"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Robotics"
-#~ msgstr "Robotika"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Spirituality"
-#~ msgstr "Spiritualita"
-
-#~ msgctxt "Menu subcategory of Science"
-#~ msgid "Sports"
-#~ msgstr "Šport"
-
-#~ msgctxt "Menu subcategory of System"
-#~ msgid "Emulator"
-#~ msgstr "Emulátor"
-
-#~ msgctxt "Menu subcategory of System"
-#~ msgid "File Manager"
-#~ msgstr "Správca súborov"
-
-#~ msgctxt "Menu subcategory of System"
-#~ msgid "File Tools"
-#~ msgstr "Súborové nástroje"
-
-#~ msgctxt "Menu subcategory of System"
-#~ msgid "Monitor"
-#~ msgstr "Monitorovanie"
-
-#~ msgctxt "Menu subcategory of System"
-#~ msgid "Security"
-#~ msgstr "Zabezpečenie"
-
-#~ msgctxt "Menu subcategory of System"
-#~ msgid "Terminal Emulator"
-#~ msgstr "Emulátor terminálu"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Accessibility"
-#~ msgstr "Uľahčenie prístupu"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Archiving"
-#~ msgstr "Archivácia"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Calculator"
-#~ msgstr "Kalkulačka"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Clock"
-#~ msgstr "Hodiny"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Compression"
-#~ msgstr "Komprimácia"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "File Tools"
-#~ msgstr "Súborové nástroje"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Maps"
-#~ msgstr "Mapy"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Spirituality"
-#~ msgstr "Spiritualita"
-
-#~ msgctxt "Menu subcategory of Utilities"
-#~ msgid "Telephony Tools"
-#~ msgstr "Nástroje na telefonovanie"
-
-#~ msgid "Video"
-#~ msgstr "Video"
-
-#~ msgctxt "Menu subcategory of Video"
-#~ msgid "Editing"
-#~ msgstr "Upravovanie"
-
-#~ msgctxt "Menu subcategory of Video"
-#~ msgid "Database"
-#~ msgstr "Databáza"
-
-#~ msgctxt "Menu subcategory of Video"
-#~ msgid "Disc Burning"
-#~ msgstr "Napaľovanie diskov"
-
-#~ msgctxt "Menu subcategory of Video"
-#~ msgid "Recorders"
-#~ msgstr "Nahrávače"
-
-#~ msgctxt "Menu subcategory of Video"
-#~ msgid "TV"
-#~ msgstr "Televízia"
-
-#~ msgid "A previous update was unfinished."
-#~ msgstr "Predchádzajúca aktualizácia nebola dokončená."
-
-#~ msgid ""
-#~ "The update couldn’t be installed; this is often a problem with the update "
-#~ "itself. Please wait for another update and try again."
-#~ msgstr ""
-#~ "Aktualizáciu sa nepodarilo nainštalovať. Toto často býva spôsobené "
-#~ "samotnou aktualizáciou. Prosím, počkajte na ďalšiu aktualizáciu a skúste "
-#~ "to znovu."
-
-#~ msgid "Internet Only Application"
-#~ msgstr "Iba internetové aplikácie"
-
-#~ msgid "An update was not signed in the correct way."
-#~ msgstr "Aktualizácia nebola správnym spôsobom podpísaná."
-
-#~ msgid "The update could not be completed."
-#~ msgstr "Aktualizáciu sa nepodarilo dokončiť."
-
-#~ msgid "An offline update was requested but no packages required updating."
-#~ msgstr ""
-#~ "Bola vyžiadaná aktualizácia bez prístupu k sieti, no žiadne balíky "
-#~ "nevyžadujú aktualizáciu."
-
-#~ msgid "No space was left on the drive."
-#~ msgstr "Na jednotke nebol dostatok miesta."
-
-#~ msgid "An update failed to install correctly."
-#~ msgstr "Zlyhala správna inštalácia aktualizácie."
-
-#~ msgid "The offline update failed in an unexpected way."
-#~ msgstr "Aktualizácia bez prístupu k sieti zlyhala neočakávaným spôsobom."
-
-#~ msgid "No sources found."
-#~ msgstr "Nenašli sa žiadne zdroje"
-
-#~ msgid "OK"
-#~ msgstr "OK"
-
-#~ msgid ""
-#~ "Depending on your country of residence, installing it could make you "
-#~ "liable to prosecution."
-#~ msgstr ""
-#~ "V závislosti od krajiny kde žijete, inštalácia tohto softvéru môže viesť "
-#~ "k možnému trestnému stíhaniu."
-
-#~ msgid "If you are uncertain about this, you should obtain legal advice."
-#~ msgstr ""
-#~ "Ak nie ste si o tomto istý, mali by ste vyhľadať právne poradenstvo."
-
-#~ msgid "Do you want to enable it?"
-#~ msgstr "Chcete ho povoliť?"

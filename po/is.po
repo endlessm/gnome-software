@@ -1,30 +1,30 @@
+# SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-#
-# Sveinn í Felli <sv1@fellsnet.is>, 2017, 2018, 2019, 2021, 2022.
+# This file is distributed under the same license as the gnome-software package.
+# 
+# Translators:
+# Sveinn í Felli <sv1@fellsnet.is>, 2017-2019,2021-2022
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-07 16:12-0700\n"
-"PO-Revision-Date: 2022-09-05 14:39+0000\n"
-"Last-Translator: Sveinn í Felli <sv1@fellsnet.is>\n"
-"Language-Team: Icelandic\n"
-"Language: is\n"
+"POT-Creation-Date: 2022-12-08 00:11+0000\n"
+"PO-Revision-Date: 2016-04-15 19:22+0000\n"
+"Last-Translator: Sveinn í Felli <sv1@fellsnet.is>, 2017-2019,2021-2022\n"
+"Language-Team: Icelandic (http://www.transifex.com/endless-os/gnome-software/language/is/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 21.12.3\n"
+"Language: is\n"
+"Plural-Forms: nplurals=2; plural=(n % 10 != 1 || n % 100 == 11);\n"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:7 src/gs-shell.ui:21
 msgid "Software"
 msgstr "Hugbúnaður"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:8
-#, fuzzy
 msgid "Install and update apps"
-msgstr "Uppsettar uppfærslur"
+msgstr ""
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:10
 msgid ""
@@ -62,7 +62,8 @@ msgstr "Spjald með uppfærslum"
 msgid "The update details"
 msgstr "Nánari upplýsingar um uppfærslu"
 
-#: data/metainfo/org.gnome.Software.metainfo.xml.in:89 src/gs-application.c:256
+#: data/metainfo/org.gnome.Software.metainfo.xml.in:89
+#: src/gs-application.c:256
 msgid "The GNOME Project"
 msgstr "GNOME verkefnið"
 
@@ -143,8 +144,8 @@ msgstr ""
 
 #: data/org.gnome.software.gschema.xml:43
 msgid ""
-"When non-free applications are installed a warning dialog can be shown. This "
-"controls if that dialog is suppressed."
+"When non-free applications are installed a warning dialog can be shown. This"
+" controls if that dialog is suppressed."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:47
@@ -178,8 +179,8 @@ msgstr ""
 #: data/org.gnome.software.gschema.xml:72
 msgid ""
 "Choosing a larger value will mean less round-trips to the remote server but "
-"updates to the screenshots may take longer to show to the user. A value of 0 "
-"means to never check the server if the image already exists in the cache."
+"updates to the screenshots may take longer to show to the user. A value of 0"
+" means to never check the server if the image already exists in the cache."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:81
@@ -195,7 +196,8 @@ msgid "Reviews with karma less than this number will not be shown."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:90
-msgid "A list of official repositories that should not be considered 3rd party"
+msgid ""
+"A list of official repositories that should not be considered 3rd party"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:94
@@ -203,16 +205,19 @@ msgid "A list of required repositories that cannot be disabled or removed"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:98
-msgid "A list of official repositories that should be considered free software"
+msgid ""
+"A list of official repositories that should be considered free software"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:102
 msgid ""
-"The licence URL to use when an application should be considered free software"
+"The licence URL to use when an application should be considered free "
+"software"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:106
-msgid "Install bundled applications for all users on the system where possible"
+msgid ""
+"Install bundled applications for all users on the system where possible"
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:110
@@ -231,7 +236,9 @@ msgstr ""
 msgid "Show the installed size for apps in the list of installed applications"
 msgstr ""
 
-#. Translators: Replace the link with a version in your language, e.g. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include ''.
+#. Translators: Replace the link with a version in your language, e.g.
+#. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include
+#. ''.
 #: data/org.gnome.software.gschema.xml:126
 msgid "'https://en.wikipedia.org/wiki/Proprietary_software'"
 msgstr "'https://is.wikipedia.org/wiki/Séreignarhugbúnaður'"
@@ -257,8 +264,8 @@ msgstr ""
 msgid ""
 "Priority order of packaging formats to prefer, with more important formats "
 "listed first. An empty array means the default order. Omitted formats are "
-"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm, "
-"snap."
+"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm,"
+" snap."
 msgstr ""
 
 #: data/org.gnome.software.gschema.xml:146
@@ -315,7 +322,8 @@ msgstr "Setja valinn hugbúnað upp á kerfinu"
 msgid "Cartoon Violence"
 msgstr "Teiknimyndaofbeldi"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:136
 msgid "No information regarding cartoon violence"
 msgstr "Engar upplýsingar varðandi teiknimyndaofbeldi"
@@ -325,7 +333,8 @@ msgstr "Engar upplýsingar varðandi teiknimyndaofbeldi"
 msgid "Fantasy Violence"
 msgstr "Fantasíuofbeldi"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:146
 msgid "No information regarding fantasy violence"
 msgstr "Engar upplýsingar varðandi fantasíuofbeldi"
@@ -335,7 +344,8 @@ msgstr "Engar upplýsingar varðandi fantasíuofbeldi"
 msgid "Realistic Violence"
 msgstr "Raunsæislegt ofbeldi"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:156
 msgid "No information regarding realistic violence"
 msgstr "Engar upplýsingar varðandi raunsæislegt ofbeldi"
@@ -345,7 +355,8 @@ msgstr "Engar upplýsingar varðandi raunsæislegt ofbeldi"
 msgid "Violence Depicting Bloodshed"
 msgstr "Ofbeldi sem sýnir blóðsúthellingar"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:166
 msgid "No information regarding bloodshed"
 msgstr "Engar upplýsingar varðandi blóðsúthellingar"
@@ -355,7 +366,8 @@ msgstr "Engar upplýsingar varðandi blóðsúthellingar"
 msgid "Sexual Violence"
 msgstr "Kynferðislegt ofbeldi"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:176
 msgid "No information regarding sexual violence"
 msgstr "Engar upplýsingar varðandi kynferðislegt ofbeldi"
@@ -365,7 +377,8 @@ msgstr "Engar upplýsingar varðandi kynferðislegt ofbeldi"
 msgid "Alcohol"
 msgstr "Áfengi"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:186
 msgid "No information regarding references to alcohol"
 msgstr "Engar upplýsingar varðandi tilvísanir í áfengi"
@@ -375,7 +388,8 @@ msgstr "Engar upplýsingar varðandi tilvísanir í áfengi"
 msgid "Narcotics"
 msgstr "Fíkniefni"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:196
 msgid "No information regarding references to illicit drugs"
 msgstr "Engar upplýsingar varðandi tilvísanir í ólögleg lyf"
@@ -385,7 +399,8 @@ msgstr "Engar upplýsingar varðandi tilvísanir í ólögleg lyf"
 msgid "Tobacco"
 msgstr "Tóbak"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:206
 msgid "No information regarding references to tobacco products"
 msgstr "Engar upplýsingar varðandi tilvísanir í tóbaksvörur"
@@ -396,7 +411,8 @@ msgstr "Engar upplýsingar varðandi tilvísanir í tóbaksvörur"
 msgid "Nudity"
 msgstr "Nekt"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:216
 msgid "No information regarding nudity of any sort"
 msgstr "Engar upplýsingar varðandi nekt af einhverju tagi"
@@ -406,7 +422,8 @@ msgstr "Engar upplýsingar varðandi nekt af einhverju tagi"
 msgid "Sexual Themes"
 msgstr "Kynlífstengt"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:226
 msgid "No information regarding references to or depictions of sexual nature"
 msgstr "Engar upplýsingar varðandi kynferðislegar tilvísanir eða myndefni"
@@ -416,7 +433,8 @@ msgstr "Engar upplýsingar varðandi kynferðislegar tilvísanir eða myndefni"
 msgid "Profanity"
 msgstr "Blótsyrði"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:236
 msgid "No information regarding profanity of any kind"
 msgstr ""
@@ -426,7 +444,8 @@ msgstr ""
 msgid "Inappropriate Humor"
 msgstr "Óviðeigandi húmor"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:246
 msgid "No information regarding inappropriate humor"
 msgstr "Engar upplýsingar varðandi óviðeigandi húmor"
@@ -436,7 +455,8 @@ msgstr "Engar upplýsingar varðandi óviðeigandi húmor"
 msgid "Discrimination"
 msgstr "Mismunun"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:256
 msgid "No information regarding discriminatory language of any kind"
 msgstr "Engar upplýsingar varðandi mismunandi orðfæri af einhverju tagi"
@@ -446,7 +466,8 @@ msgstr "Engar upplýsingar varðandi mismunandi orðfæri af einhverju tagi"
 msgid "Advertising"
 msgstr "Auglýsingar"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:266
 msgid "No information regarding advertising of any kind"
 msgstr "Engar upplýsingar varðandi auglýsingar af einhverju tagi"
@@ -456,7 +477,8 @@ msgstr "Engar upplýsingar varðandi auglýsingar af einhverju tagi"
 msgid "Gambling"
 msgstr "Fjárhættuspil"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:276
 msgid "No information regarding gambling of any kind"
 msgstr "Engar upplýsingar varðandi fjárhættuspil af einhverju tagi"
@@ -466,7 +488,8 @@ msgstr "Engar upplýsingar varðandi fjárhættuspil af einhverju tagi"
 msgid "Purchasing"
 msgstr "Verslun"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:286
 msgid "No information regarding the ability to spend money"
 msgstr ""
@@ -476,7 +499,8 @@ msgstr ""
 msgid "Chat Between Users"
 msgstr "Spjall milli notenda"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:296
 msgid "No information regarding ways to chat with other users"
 msgstr ""
@@ -486,7 +510,8 @@ msgstr ""
 msgid "Audio Chat Between Users"
 msgstr "Hljóðspjall milli notenda"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:306
 msgid "No information regarding ways to talk with other users"
 msgstr ""
@@ -496,7 +521,8 @@ msgstr ""
 msgid "Contact Details"
 msgstr "Nánar um tengilið"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:316
 msgid ""
 "No information regarding sharing of social network usernames or email "
@@ -508,9 +534,11 @@ msgstr ""
 msgid "Identifying Information"
 msgstr "Auðkennandi upplýsingar"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:326
-msgid "No information regarding sharing of user information with third parties"
+msgid ""
+"No information regarding sharing of user information with third parties"
 msgstr ""
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
@@ -518,7 +546,8 @@ msgstr ""
 msgid "Location Sharing"
 msgstr "Deiling staðsetninga"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:336
 msgid "No information regarding sharing of physical location with other users"
 msgstr ""
@@ -528,7 +557,8 @@ msgstr ""
 msgid "Homosexuality"
 msgstr "Hinsegin"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:362
 msgid "No information regarding references to homosexuality"
 msgstr ""
@@ -538,7 +568,8 @@ msgstr ""
 msgid "Prostitution"
 msgstr "Vændi"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:372
 msgid "No information regarding references to prostitution"
 msgstr ""
@@ -548,7 +579,8 @@ msgstr ""
 msgid "Adultery"
 msgstr "Fullorðinsefni"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:382
 msgid "No information regarding references to adultery"
 msgstr ""
@@ -558,7 +590,8 @@ msgstr ""
 msgid "Sexualized Characters"
 msgstr "Kyngerfðar persónur"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:392
 msgid "No information regarding sexualized characters"
 msgstr ""
@@ -568,7 +601,8 @@ msgstr ""
 msgid "Desecration"
 msgstr ""
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:402
 msgid "No information regarding references to desecration"
 msgstr ""
@@ -578,7 +612,8 @@ msgstr ""
 msgid "Human Remains"
 msgstr "Líkamsleifar"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:412
 msgid "No information regarding visible dead human remains"
 msgstr ""
@@ -588,7 +623,8 @@ msgstr ""
 msgid "Slavery"
 msgstr "Þrælahald"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:422
 msgid "No information regarding references to slavery"
 msgstr ""
@@ -646,13 +682,13 @@ msgstr "Ofbeldi"
 msgid "%s • %s"
 msgstr "%s • %s"
 
-#. Translators: The app is considered suitable to be run by all ages of people.
+#. Translators: The app is considered suitable to be run by all ages of
+#. people.
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-age-rating-context-dialog.c:936
-#, fuzzy
 msgctxt "Age rating"
 msgid "All"
-msgstr "Allt"
+msgstr ""
 
 #. Translators: This is displayed for the download size in an
 #. * app’s context tile if the size is unknown. It should be short
@@ -665,50 +701,58 @@ msgstr "Allt"
 msgid "?"
 msgstr "?"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for all ages. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1023
 #, c-format
 msgid "%s is suitable for everyone"
 msgstr "%s hentar fyrir alla aldurshópa"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 3. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1027
 #, c-format
 msgid "%s is suitable for toddlers"
 msgstr "%s hentar fyrir smábörn"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 5. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1031
 #, c-format
 msgid "%s is suitable for young children"
 msgstr "%s hentar fyrir ung börn"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people up to around age 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1039
 #, c-format
 msgid "%s is suitable for teenagers"
 msgstr "%s hentar fyrir unglinga"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people aged up to and over 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1043
 #, c-format
 msgid "%s is suitable for adults"
 msgstr "%s hentar fyrir fullorðna"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
-#. * for a specified age group. The first placeholder is the app name, the second
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
+#. * for a specified age group. The first placeholder is the app name, the
+#. second
 #. * is the age group.
 #: src/gs-age-rating-context-dialog.c:1048
 #, c-format
 msgid "%s is suitable for %s"
 msgstr "%s hentar fyrir %s"
 
-#. Translators: This is the title of the dialog which contains information about the suitability of an app for different ages.
+#. Translators: This is the title of the dialog which contains information
+#. about the suitability of an app for different ages.
 #. this one’s not a placeholder
 #: src/gs-age-rating-context-dialog.ui:5 src/gs-app-context-bar.ui:211
 msgid "Age Rating"
@@ -717,9 +761,8 @@ msgstr "Aldursbil"
 #: src/gs-age-rating-context-dialog.ui:68
 #: src/gs-hardware-support-context-dialog.ui:71
 #: src/gs-safety-context-dialog.ui:221
-#, fuzzy
 msgid "How to contribute missing information"
-msgstr "Hvernig á að bæta við upplýsingum sem vantar"
+msgstr ""
 
 #: lib/gs-app.c:6175
 msgid "Local file"
@@ -753,10 +796,9 @@ msgstr "Fjarlæging í bið"
 
 #: src/gs-app-addon-row.c:111 src/gs-app-row.ui:197 src/gs-app-tile.ui:50
 #: src/gs-feature-tile.c:535
-#, fuzzy
 msgctxt "Single app"
 msgid "Installed"
-msgstr "Uppsett"
+msgstr ""
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an application being installed
@@ -822,7 +864,8 @@ msgstr "Getur skoðað skrár"
 msgid "File system"
 msgstr "Skráakerfi"
 
-#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with actual files being part of the read/full lists
+#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with
+#. actual files being part of the read/full lists
 #: src/gs-app-details-page.c:77 src/gs-app-details-page.c:78
 msgid "Downloads folder"
 msgstr "Niðurhalsmappa"
@@ -854,9 +897,8 @@ msgstr ""
 #. FIXME support app == NULL
 #. set window title
 #: src/gs-app-details-page.c:166
-#, fuzzy
 msgid "Update Details"
-msgstr "Nánari upplýsingar um uppfærslu"
+msgstr ""
 
 #. TRANSLATORS: this is where the packager did not write
 #. * a description for the update
@@ -873,7 +915,8 @@ msgstr "Fara til baka"
 msgid "Requires additional permissions"
 msgstr "Krefst viðbótarheimilda"
 
-#. Translators: Header of the section with other users' opinions about the app.
+#. Translators: Header of the section with other users' opinions about the
+#. app.
 #: src/gs-app-reviews-dialog.ui:6 src/gs-details-page.ui:855
 msgid "Reviews"
 msgstr "Umsagnir"
@@ -1100,31 +1143,36 @@ msgstr "Notar setuþjónustur"
 msgid "Can access hardware devices"
 msgstr "Hefur aðgang að vélbúnaði"
 
-#. Translators: This indicates an app can read/write to the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read/write to the user’s home or the
+#. entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:326
 msgid "Can read/write all your data"
 msgstr "Getur lesið/skrifað öll gögnin þín"
 
-#. Translators: This indicates an app can read (but not write) from the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. home or the entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:338
 msgid "Can read all your data"
 msgstr "Getur lesið öll gögnin þín"
 
-#. Translators: This indicates an app can read/write to the user’s Downloads directory.
+#. Translators: This indicates an app can read/write to the user’s Downloads
+#. directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:345
 msgid "Can read/write your downloads"
 msgstr "Getur lesið/skrifað niðurhalið þitt"
 
-#. Translators: This indicates an app can read (but not write) from the user’s Downloads directory.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. Downloads directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:352
 msgid "Can read your downloads"
 msgstr "Getur lesið niðurhalið þitt"
 
-#. Translators: This indicates an app can access data in the system unknown to the Software.
+#. Translators: This indicates an app can access data in the system unknown to
+#. the Software.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:359
 msgid "Can access arbitrary files"
@@ -1162,19 +1210,22 @@ msgstr "Yfirfarið af dreifingunni þinni"
 msgid "Provided by a third party"
 msgstr "Í boði frá utanaðkomandi aðila"
 
-#. Translators: This indicates an app is not licensed under a free software license.
+#. Translators: This indicates an app is not licensed under a free software
+#. license.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:425
 msgid "Proprietary code"
 msgstr "Séreignarkóði"
 
-#. Translators: This indicates an app’s source code is freely available, so can be audited for security.
+#. Translators: This indicates an app’s source code is freely available, so
+#. can be audited for security.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:431
 msgid "Auditable code"
 msgstr "Yfirfaranlegur kóði"
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:438
 msgid "Software developer is verified"
@@ -1196,7 +1247,8 @@ msgstr "Hugbúnaður er ekki lengur studdur"
 #. Translators: This string is used to join various other translated
 #. * strings into an inline list of reasons why an app has been given a
 #. * certain content rating. For example:
-#. * “References to alcoholic beverages; Moderated chat functionality between users”
+#. * “References to alcoholic beverages; Moderated chat functionality between
+#. users”
 #. * If concatenating strings as a list using a separator like this is not
 #. * possible in your language, please file an issue against gnome-software:
 #. * https://gitlab.gnome.org/GNOME/gnome-software/-/issues/new
@@ -1361,7 +1413,8 @@ msgstr ""
 msgid "Source: %s"
 msgstr "Uppruni: %s"
 
-#. Translators: A message to indicate that an app has been renamed. The placeholder is the old human-readable name.
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
 #: src/gs-app-row.c:523
 #, c-format
 msgid "Renamed from %s"
@@ -1377,11 +1430,9 @@ msgstr "Hjálpa við þýðingu %s"
 #: src/gs-app-translation-dialog.c:70
 #, c-format
 msgid ""
-"%s is designed, developed, and translated by an international community of "
-"volunteers.\n"
+"%s is designed, developed, and translated by an international community of volunteers.\n"
 "\n"
-"This means that while it’s not yet available in your language, you can get "
-"involved and help translate it yourself."
+"This means that while it’s not yet available in your language, you can get involved and help translate it yourself."
 msgstr ""
 
 #: src/gs-app-translation-dialog.ui:5
@@ -1429,10 +1480,9 @@ msgstr "Annað"
 #. TRANSLATORS: this is a subcategory matching all the
 #. * different apps in the parent category, e.g. "Games"
 #: lib/gs-category.c:214
-#, fuzzy
 msgctxt "Category"
 msgid "All"
-msgstr "Allt"
+msgstr ""
 
 #. TRANSLATORS: this is a subcategory of featured apps
 #: lib/gs-category.c:218
@@ -1440,13 +1490,15 @@ msgid "Featured"
 msgstr "Í deiglunni"
 
 #. Heading for featured apps on a category page
-#. Translators: This is a heading for software which has been featured ('picked') by the distribution.
+#. Translators: This is a heading for software which has been featured
+#. ('picked') by the distribution.
 #: src/gs-category-page.ui:41 src/gs-overview-page.ui:106
 msgid "Editor’s Choice"
 msgstr "Valið af ritstjórn"
 
 #. Heading for recently updated apps on a category page
-#. Translators: This is a heading for software which has been recently released upstream.
+#. Translators: This is a heading for software which has been recently
+#. released upstream.
 #: src/gs-category-page.ui:69 src/gs-overview-page.ui:129
 msgid "New & Updated"
 msgstr "Nýtt og uppfært"
@@ -1897,12 +1949,12 @@ msgstr "Virkja hugbúnaðarsöfn utanaðkomandi aðila?"
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
 #. * 2. Software repository name, e.g. fedora-optional
-#.
 #: src/gs-common.c:240
 #, c-format
 msgid ""
 "%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">free and open source software</a>, and is provided by “%s”."
+"source_software\">free and open source software</a>, and is provided by "
+"“%s”."
 msgstr ""
 
 #. TRANSLATORS: the replacements are as follows:
@@ -2027,8 +2079,10 @@ msgid_plural "%d years ago"
 msgstr[0] "fyrir %d ári"
 msgstr[1] "fyrir %d árum"
 
-#. Translators: This is to construct a disk size string consisting of the value and its unit, while
-#. * the unit is drawn with a smaller font. If you need to flip the order, then you can use "%2$s %1$s".
+#. Translators: This is to construct a disk size string consisting of the
+#. value and its unit, while
+#. * the unit is drawn with a smaller font. If you need to flip the order,
+#. then you can use "%2$s %1$s".
 #. * Make sure you'll preserve the no break space between the values.
 #. * Example result: "13.0 MB"
 #: src/gs-common.c:1255
@@ -2037,12 +2091,14 @@ msgctxt "format-size"
 msgid "%s %s"
 msgstr ""
 
-#. TRANSLATORS: this is a what we use in notifications if the app's name is unknown
+#. TRANSLATORS: this is a what we use in notifications if the app's name is
+#. unknown
 #: src/gs-dbus-helper.c:291
 msgid "An application"
 msgstr "Forrit"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional MIME types.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. MIME types.
 #: src/gs-dbus-helper.c:297
 #, c-format
 msgid "%s is requesting additional file format support."
@@ -2053,7 +2109,8 @@ msgstr ""
 msgid "Additional MIME Types Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional fonts.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. fonts.
 #: src/gs-dbus-helper.c:303
 #, c-format
 msgid "%s is requesting additional fonts."
@@ -2064,7 +2121,8 @@ msgstr ""
 msgid "Additional Fonts Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional codecs.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. codecs.
 #: src/gs-dbus-helper.c:309
 #, c-format
 msgid "%s is requesting additional multimedia codecs."
@@ -2075,7 +2133,8 @@ msgstr ""
 msgid "Additional Multimedia Codecs Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional printer drivers.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. printer drivers.
 #: src/gs-dbus-helper.c:315
 #, c-format
 msgid "%s is requesting additional printer drivers."
@@ -2086,7 +2145,8 @@ msgstr ""
 msgid "Additional Printer Drivers Required"
 msgstr ""
 
-#. TRANSLATORS: this is a notification displayed when an app wants to install additional packages.
+#. TRANSLATORS: this is a notification displayed when an app wants to install
+#. additional packages.
 #: src/gs-dbus-helper.c:321
 #, c-format
 msgid "%s is requesting additional packages."
@@ -2134,7 +2194,8 @@ msgstr "Bíður uppsetningar…"
 msgid "Pending update…"
 msgstr "Bíður uppfærslu…"
 
-#. Translators: This string is shown when preparing to download and install an app.
+#. Translators: This string is shown when preparing to download and install an
+#. app.
 #: src/gs-details-page.c:414
 msgid "Preparing…"
 msgstr "Undirbý…"
@@ -2252,7 +2313,8 @@ msgid ""
 "replaced."
 msgstr ""
 
-#. Translators: a repository file used for installing software has been discovered.
+#. Translators: a repository file used for installing software has been
+#. discovered.
 #: src/gs-details-page.ui:641
 msgid "Software Repository Identified"
 msgstr ""
@@ -2297,7 +2359,8 @@ msgstr "Til_kynna um vandamál"
 msgid "_Help"
 msgstr "_Hjálp"
 
-#. Translators: Button opening a dialog where the users can write and publish their opinions about the apps.
+#. Translators: Button opening a dialog where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-details-page.ui:908
 msgid "_Write Review"
 msgstr "Skrifa _umsögn"
@@ -2371,8 +2434,8 @@ msgstr ""
 #: src/gs-extras-page.c:358 src/gs-extras-page.c:369 src/gs-extras-page.c:380
 #, c-format
 msgid ""
-"Information about %s, as well as options for how to get missing applications "
-"might be found %s."
+"Information about %s, as well as options for how to get missing applications"
+" might be found %s."
 msgstr ""
 
 #. TRANSLATORS: this is when we know about an application or
@@ -2467,8 +2530,10 @@ msgstr ""
 msgid "the documentation"
 msgstr "handbækurnar"
 
-#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual codec name(s),
-#. the second %s is the application name, which requested the codecs, the third %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual
+#. codec name(s),
+#. the second %s is the application name, which requested the codecs, the
+#. third %s is a link titled "the documentation"
 #: src/gs-extras-page.c:487
 #, c-format
 msgid ""
@@ -2478,7 +2543,8 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#. TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. First %s will be replaced by actual
+#. codec name(s), second %s is a link titled "the documentation"
 #: src/gs-extras-page.c:496
 #, c-format
 msgid ""
@@ -2717,18 +2783,20 @@ msgstr ""
 msgid "%s will not work on this device"
 msgstr ""
 
-#. Translators: This is the title of the dialog which contains information about the hardware support/requirements of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the hardware support/requirements of an app
 #: src/gs-hardware-support-context-dialog.ui:5
 msgid "Hardware Support"
 msgstr "Vélbúnaðarstuðningur"
 
-#. Translators: This is in the context of a list of apps which are installed on the system.
-#. Translators: A label for a button to show only software which is already installed.
+#. Translators: This is in the context of a list of apps which are installed
+#. on the system.
+#. Translators: A label for a button to show only software which is already
+#. installed.
 #: src/gs-installed-page.c:812 src/gs-shell.ui:307
-#, fuzzy
 msgctxt "List of installed apps"
 msgid "Installed"
-msgstr "Uppsett"
+msgstr ""
 
 #: src/gs-installed-page.ui:6
 msgid "Installed page"
@@ -2745,9 +2813,8 @@ msgid "Applications"
 msgstr "Forrit"
 
 #: src/gs-installed-page.ui:95
-#, fuzzy
 msgid "Web Applications"
-msgstr "Forrit"
+msgstr ""
 
 #: src/gs-installed-page.ui:115
 msgid "System Applications"
@@ -2761,12 +2828,12 @@ msgstr ""
 msgid "_Get Involved"
 msgstr "_Taktu þátt"
 
-#. Translators: The first placeholder here is a link to information about the license, and the second placeholder here is the name of a software license.
+#. Translators: The first placeholder here is a link to information about the
+#. license, and the second placeholder here is the name of a software license.
 #: src/gs-license-tile.c:114
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the <a href=\"%s\">%s license</a>.\n"
+"This software is developed in the open by a community of volunteers, and released under the <a href=\"%s\">%s license</a>.\n"
 "\n"
 "You can contribute and help make it even better."
 msgstr ""
@@ -2775,8 +2842,7 @@ msgstr ""
 #: src/gs-license-tile.c:121
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the %s license.\n"
+"This software is developed in the open by a community of volunteers, and released under the %s license.\n"
 "\n"
 "You can contribute and help make it even better."
 msgstr ""
@@ -2786,24 +2852,20 @@ msgid "Proprietary"
 msgstr "Séreignarhugbúnaður"
 
 #: src/gs-license-tile.c:133
-#, fuzzy
 msgid "_Learn More"
-msgstr "Lærdómur"
+msgstr "_Vita meira"
 
 #: src/gs-license-tile.c:135
 msgid ""
-"This software is not developed in the open, so only its developers know how "
-"it works. It may be insecure in ways that are hard to detect, and it may "
-"change without oversight.\n"
+"This software is not developed in the open, so only its developers know how it works. It may be insecure in ways that are hard to detect, and it may change without oversight.\n"
 "\n"
 "You may not be able to contribute to this software."
 msgstr ""
 
 #. TRANSLATORS: initial start
 #: src/gs-loading-page.c:56
-#, fuzzy
 msgid "Downloading software catalog"
-msgstr "Sækja óundirritaðan hugbúnað?"
+msgstr ""
 
 #: src/gs-loading-page.ui:6
 msgid "Loading page"
@@ -2819,15 +2881,11 @@ msgstr "Sjálfvirkar uppfærslur í bið"
 
 #: src/gs-metered-data-dialog.ui:9
 msgid ""
-"The current network is metered. Metered connections have data limits or "
-"charges associated with them. To save data, automatic updates have therefore "
-"been paused.\n"
+"The current network is metered. Metered connections have data limits or charges associated with them. To save data, automatic updates have therefore been paused.\n"
 "\n"
-"Automatic updates will be resumed when an un­metered network becomes "
-"available. Until then, it is still possible to manually install updates.\n"
+"Automatic updates will be resumed when an un­metered network becomes available. Until then, it is still possible to manually install updates.\n"
 "\n"
-"Alternatively, if the current network has been in­correctly identified as "
-"being metered, this setting can be changed."
+"Alternatively, if the current network has been in­correctly identified as being metered, this setting can be changed."
 msgstr ""
 
 #: src/gs-metered-data-dialog.ui:17
@@ -2843,9 +2901,8 @@ msgid "There are no reviews to moderate"
 msgstr ""
 
 #: src/gs-origin-popover-row.c:105
-#, fuzzy
 msgid "Unknown source"
-msgstr "Óþekkt"
+msgstr ""
 
 #. Translators: It's like a beta version of the software, a test version
 #: src/gs-origin-popover-row.ui:108
@@ -2854,9 +2911,8 @@ msgstr ""
 
 #. Translators: It's an origin scope, 'User' or 'System' installation
 #: src/gs-origin-popover-row.ui:138
-#, fuzzy
 msgid "User"
-msgstr "N_otandi"
+msgstr ""
 
 #. TRANSLATORS: This is the header for package additions during
 #. * a system update
@@ -2873,10 +2929,9 @@ msgstr "Fjarlægingar"
 #. TRANSLATORS: This is the header for package updates during
 #. * a system update
 #: src/gs-os-update-page.c:258
-#, fuzzy
 msgctxt "Packages to be updated during a system upgrade"
 msgid "Updates"
-msgstr "Uppfærslur"
+msgstr ""
 
 #. TRANSLATORS: This is the header for package downgrades during
 #. * a system update
@@ -2884,22 +2939,23 @@ msgstr "Uppfærslur"
 msgid "Downgrades"
 msgstr "Niðurfærslur"
 
-#. Translators: This is a clickable link on the third party repositories info bar. It's
-#. part of a constructed sentence: "Provides access to additional software from [selected external sources].
+#. Translators: This is a clickable link on the third party repositories info
+#. bar. It's
+#. part of a constructed sentence: "Provides access to additional software
+#. from [selected external sources].
 #. Some proprietary software is included."
 #: src/gs-overview-page.c:879
 msgid "selected external sources"
 msgstr ""
 
-#. Translators: This is the third party repositories info bar. The %s is replaced with "selected external sources" link.
+#. Translators: This is the third party repositories info bar. The %s is
+#. replaced with "selected external sources" link.
 #: src/gs-overview-page.c:881
 #, c-format
 msgid ""
-"Provides access to additional software from %s. Some proprietary software is "
-"included."
-msgstr ""
-"Gefur aðgang að viðbótarhugbúnaði frá %s. Einhver séreignarhugbúnaður er þar "
-"á meðal."
+"Provides access to additional software from %s. Some proprietary software is"
+" included."
+msgstr "Gefur aðgang að viðbótarhugbúnaði frá %s. Einhver séreignarhugbúnaður er þar á meðal."
 
 #. TRANSLATORS: button to turn on third party software repositories
 #. TRANSLATORS: button to accept the agreement
@@ -3019,7 +3075,8 @@ msgstr ""
 msgid "_Continue"
 msgstr "_Halda áfram"
 
-#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora Modular - x86_64"
+#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora
+#. Modular - x86_64"
 #: src/gs-repos-dialog.c:239
 #, c-format
 msgid ""
@@ -3058,8 +3115,10 @@ msgstr ""
 msgid "more information"
 msgstr "nánari upplýsingar"
 
-#. TRANSLATORS: this is the third party repositories info bar. The '%s' is replaced
-#. with a link consisting a text "more information", which constructs a sentence:
+#. TRANSLATORS: this is the third party repositories info bar. The '%s' is
+#. replaced
+#. with a link consisting a text "more information", which constructs a
+#. sentence:
 #. "Additional repositories from selected third parties - more information."
 #: src/gs-repos-dialog.c:523
 #, c-format
@@ -3076,7 +3135,8 @@ msgstr "Fedora -hugbúnaðarsöfn utanaðkomandi aðila"
 msgid "the operating system"
 msgstr "stýrikerfið"
 
-#. TRANSLATORS: This is the description text displayed in the Software Repositories dialog.
+#. TRANSLATORS: This is the description text displayed in the Software
+#. Repositories dialog.
 #. %s gets replaced by the name of the actual distro, e.g. Fedora.
 #: src/gs-repos-dialog.c:728
 #, c-format
@@ -3141,8 +3201,10 @@ msgid_plural "%s and %s installed"
 msgstr[0] "%s og %s uppsett"
 msgstr[1] "%s og %s uppsett"
 
-#. Translators: The first '%s' is replaced with a text like '10 applications installed',
-#. the second '%s' is replaced with installation kind, like in case of Flatpak 'User Installation'.
+#. Translators: The first '%s' is replaced with a text like '10 applications
+#. installed',
+#. the second '%s' is replaced with installation kind, like in case of Flatpak
+#. 'User Installation'.
 #: src/gs-repo-row.c:243
 #, c-format
 msgctxt "repo-row"
@@ -3209,7 +3271,8 @@ msgstr "Lýsingin er of stutt"
 msgid "The description is too long"
 msgstr "Lýsingin er of löng"
 
-#. Translators: Title of the dialog box where the users can write and publish their opinions about the apps.
+#. Translators: Title of the dialog box where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-review-dialog.ui:10
 msgid "Post Review"
 msgstr "Senda umsögn"
@@ -3245,9 +3308,9 @@ msgstr ""
 
 #: src/gs-review-dialog.ui:156
 msgid ""
-"Find what data is sent in our <a href=\"https://odrs.gnome.org/privacy"
-"\">privacy policy</a>. The full name attached to your account will be shown "
-"publicly."
+"Find what data is sent in our <a "
+"href=\"https://odrs.gnome.org/privacy\">privacy policy</a>. The full name "
+"attached to your account will be shown publicly."
 msgstr ""
 
 #: src/gs-review-histogram.c:72
@@ -3270,17 +3333,14 @@ msgstr "Óþekkt"
 #. TRANSLATORS: we explain what the action is going to do
 #: src/gs-review-row.c:220
 msgid "You can report reviews for abusive, rude, or discriminatory behavior."
-msgstr ""
-"Þú getur kært umsagnir fyrir misnotkun, ókurteisi eða særandi framkomu."
+msgstr "Þú getur kært umsagnir fyrir misnotkun, ókurteisi eða særandi framkomu."
 
 #. TRANSLATORS: we ask the user if they really want to do this
 #: src/gs-review-row.c:225
 msgid ""
 "Once reported, a review will be hidden until it has been checked by an "
 "administrator."
-msgstr ""
-"Eftir að umsögn hefur verið kærð, er hún falin þar til stjórnandi hefur "
-"yfirfarið málið."
+msgstr "Eftir að umsögn hefur verið kærð, er hún falin þar til stjórnandi hefur yfirfarið málið."
 
 #. TRANSLATORS: window title when
 #. * reporting a user-submitted review
@@ -3295,7 +3355,8 @@ msgstr "Kæra umsögn?"
 msgid "Report"
 msgstr "Kæra"
 
-#. Translators: Users can express their opinions about other users' opinions about the apps.
+#. Translators: Users can express their opinions about other users' opinions
+#. about the apps.
 #: src/gs-review-row.ui:84
 msgid "Was this review useful to you?"
 msgstr "Var þessi umsögn hjálpleg?"
@@ -3331,7 +3392,8 @@ msgid ""
 "malicious"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:160
 msgid "No Permissions"
 msgstr "Engar heimildir"
@@ -3340,7 +3402,8 @@ msgstr "Engar heimildir"
 msgid "App is fully sandboxed"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:172
 msgid "Network Access"
 msgstr "Netaðgangur"
@@ -3349,7 +3412,8 @@ msgstr "Netaðgangur"
 msgid "Can access the internet"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:176
 msgid "No Network Access"
 msgstr "Engin netaðgangur"
@@ -3358,7 +3422,8 @@ msgstr "Engin netaðgangur"
 msgid "Cannot access the internet"
 msgstr "Getur ekki tengst við internetið"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:183
 msgid "Uses System Services"
 msgstr "Notar kerfisþjónustur"
@@ -3367,7 +3432,8 @@ msgstr "Notar kerfisþjónustur"
 msgid "Can request data from system services"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:191
 msgid "Uses Session Services"
 msgstr ""
@@ -3376,7 +3442,8 @@ msgstr ""
 msgid "Can request data from session services"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:199
 msgid "Device Access"
 msgstr "Aðgangur tækis"
@@ -3385,7 +3452,8 @@ msgstr "Aðgangur tækis"
 msgid "Can access devices such as webcams or gaming controllers"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:203
 msgid "No Device Access"
 msgstr "Enginn aðgangur tækis"
@@ -3394,22 +3462,26 @@ msgstr "Enginn aðgangur tækis"
 msgid "Cannot access devices such as webcams or gaming controllers"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:210
 msgid "Legacy Windowing System"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:218
 msgid "Arbitrary Permissions"
 msgstr "Ýmsar heimildir"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:226
 msgid "User Settings"
 msgstr "Stillingar notanda"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:238
 msgid "Full File System Read/Write Access"
 msgstr ""
@@ -3418,7 +3490,8 @@ msgstr ""
 msgid "Can read and write all data on the file system"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:247
 msgid "Home Folder Read/Write Access"
 msgstr ""
@@ -3427,7 +3500,8 @@ msgstr ""
 msgid "Can read and write all data in your home directory"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:256
 msgid "Full File System Read Access"
 msgstr ""
@@ -3436,7 +3510,8 @@ msgstr ""
 msgid "Can read all data on the file system"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:266
 msgid "Home Folder Read Access"
 msgstr ""
@@ -3445,7 +3520,8 @@ msgstr ""
 msgid "Can read all data in your home directory"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:276
 msgid "Download Folder Read/Write Access"
 msgstr ""
@@ -3454,7 +3530,8 @@ msgstr ""
 msgid "Can read and write all data in your downloads directory"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:288
 msgid "Download Folder Read Access"
 msgstr "Lesaðgangur niðurhalsmöppu"
@@ -3464,16 +3541,15 @@ msgid "Can read all data in your downloads directory"
 msgstr ""
 
 #: src/gs-safety-context-dialog.c:299
-#, fuzzy
 msgid "Can read and write all data in the directory"
-msgstr "Getur lesið/skrifað öll gögnin þín"
+msgstr ""
 
 #: src/gs-safety-context-dialog.c:310
-#, fuzzy
 msgid "Can read all data in the directory"
-msgstr "Getur lesið öll gögnin þín"
+msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:326
 msgid "No File System Access"
 msgstr "Enginn aðgangur að skráakerfi"
@@ -3482,7 +3558,8 @@ msgstr "Enginn aðgangur að skráakerfi"
 msgid "Cannot access the file system at all"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:341
 msgid "Proprietary Code"
 msgstr "Séreignarkóði"
@@ -3493,7 +3570,8 @@ msgid ""
 "might be unsafe"
 msgstr ""
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:345
 msgid "Auditable Code"
 msgstr "Yfirfaranlegur kóði"
@@ -3504,14 +3582,16 @@ msgid ""
 "app more likely to be safe"
 msgstr ""
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-safety-context-dialog.c:354
 msgid "App developer is verified"
 msgstr ""
 
 #: src/gs-safety-context-dialog.c:355
-msgid "The developer of this app has been verified to be who they say they are"
+msgid ""
+"The developer of this app has been verified to be who they say they are"
 msgstr ""
 
 #. Translators: This indicates an app uses an outdated SDK.
@@ -3546,7 +3626,8 @@ msgstr "%s er mögulega óöruggt"
 msgid "%s is unsafe"
 msgstr "%s er ekki öruggt"
 
-#. Translators: This is the title of the dialog which contains information about the permissions of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the permissions of an app
 #: src/gs-safety-context-dialog.ui:5
 msgid "Safety"
 msgstr "Öryggi"
@@ -3555,7 +3636,8 @@ msgstr "Öryggi"
 msgid "License"
 msgstr "Notkunarleyfi"
 
-#. Translators: This is a heading for a row showing the origin/source of an app (such as ‘flathub’).
+#. Translators: This is a heading for a row showing the origin/source of an
+#. app (such as ‘flathub’).
 #: src/gs-safety-context-dialog.ui:141
 msgid "Source"
 msgstr "Upptök"
@@ -3568,12 +3650,14 @@ msgstr "SDK"
 msgid "Outdated SDK version"
 msgstr ""
 
-#. Translators: This is the accessible description for a button to go to the previous screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. previous screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:46
 msgid "Previous Screenshot"
 msgstr "Fyrri skjámynd"
 
-#. Translators: This is the accessible description for a button to go to the next screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. next screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:74
 msgid "Next Screenshot"
 msgstr "Næsta skjámynd"
@@ -3656,7 +3740,8 @@ msgstr "Ekkert forrit fannst"
 msgid "“%s”"
 msgstr "“%s”"
 
-#. Translators: The '%s' is replaced with an error message, which had been shortened.
+#. Translators: The '%s' is replaced with an error message, which had been
+#. shortened.
 #. The dots at the end are there to highlight that to the user.
 #: src/gs-shell.c:1240
 #, c-format
@@ -3685,7 +3770,8 @@ msgstr ""
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1293
 msgid ""
-"Unable to download updates: internet access was required but wasn’t available"
+"Unable to download updates: internet access was required but wasn’t "
+"available"
 msgstr ""
 
 #. TRANSLATORS: failure text for the in-app notification,
@@ -4102,7 +4188,8 @@ msgstr "Ekki tókst að setja upp skrána: auðkenning mistókst"
 msgid "Unable to contact %s"
 msgstr ""
 
-#. TRANSLATORS: failure text for the in-app notification, where the 'Software' means this application, aka 'GNOME Software'.
+#. TRANSLATORS: failure text for the in-app notification, where the 'Software'
+#. means this application, aka 'GNOME Software'.
 #: src/gs-shell.c:1973
 msgid "Software needs to be restarted to use new plugins."
 msgstr ""
@@ -4159,12 +4246,12 @@ msgstr "Aðalvalmynd"
 msgid "Find Out _More"
 msgstr "_Frekari upplýsingar"
 
-#. Translators: A label for a button to show only updates which are available to install.
+#. Translators: A label for a button to show only updates which are available
+#. to install.
 #: src/gs-shell.ui:328
-#, fuzzy
 msgctxt "Header bar button for list of apps to be updated"
 msgid "Updates"
-msgstr "Uppfærslur"
+msgstr ""
 
 #. Translators: This is shown in a bubble to represent a 0 byte
 #. * storage size, so its context is “storage size: none”. The
@@ -4211,12 +4298,12 @@ msgid "Shared system components required by this application"
 msgstr ""
 
 #: src/gs-storage-context-dialog.c:188
-#, fuzzy
 msgctxt "Download size"
 msgid "Unknown"
-msgstr "Óþekkt"
+msgstr ""
 
-#. Translators: This is the title of the dialog which contains information about the storage or download size needed for an app
+#. Translators: This is the title of the dialog which contains information
+#. about the storage or download size needed for an app
 #: src/gs-storage-context-dialog.ui:5
 msgid "Storage"
 msgstr "Geymslurými"
@@ -4224,8 +4311,8 @@ msgstr "Geymslurými"
 #. Translators: Please do not translate the markup or link href
 #: src/gs-storage-context-dialog.ui:69
 msgid ""
-"Cached data can be cleared from the <a href=\"dummy\">_application settings</"
-"a>."
+"Cached data can be cleared from the <a href=\"dummy\">_application "
+"settings</a>."
 msgstr ""
 
 #: src/gs-summary-tile.c:118
@@ -4258,9 +4345,8 @@ msgid "Installed on %s"
 msgstr "Uppsett þann %s"
 
 #: src/gs-update-dialog.ui:77
-#, fuzzy
 msgid "No Updates Installed"
-msgstr "Hugbúnaðaruppfærslur mistókust"
+msgstr ""
 
 #: src/gs-update-monitor.c:213
 msgid "Software Updates Are Out of Date"
@@ -4349,7 +4435,8 @@ msgstr[1] "%u forrit krefjast endurræsingar."
 msgid "Includes %s, %s and %s."
 msgstr "Innifelur %s, %s og %s."
 
-#. TRANSLATORS: this is when the current operating system version goes end-of-life
+#. TRANSLATORS: this is when the current operating system version goes end-of-
+#. life
 #: src/gs-update-monitor.c:669 src/gs-updates-page.ui:52
 msgid "Operating System Updates Unavailable"
 msgstr "Uppfærslur stýrikerfis ekki tiltækar"
@@ -4442,8 +4529,8 @@ msgstr "Hætt var við uppfærsluna."
 #. * something with no network available
 #: src/gs-update-monitor.c:1250
 msgid ""
-"Internet access was required but wasn’t available. Please make sure that you "
-"have internet access and try again."
+"Internet access was required but wasn’t available. Please make sure that you"
+" have internet access and try again."
 msgstr ""
 
 #. TRANSLATORS: if the package is not signed correctly
@@ -4467,14 +4554,12 @@ msgid ""
 msgstr ""
 
 #: src/gs-updates-page.c:249
-#, fuzzy
 msgid "automatic updates on"
-msgstr "Sjálfvirkar uppfærslur"
+msgstr ""
 
 #: src/gs-updates-page.c:252
-#, fuzzy
 msgid "automatic updates off"
-msgstr "Sjálfvirkar uppfærslur"
+msgstr ""
 
 #. TRANSLATORS: This is the time when we last checked for updates
 #: src/gs-updates-page.c:288
@@ -4538,10 +4623,9 @@ msgid "Check for updates"
 msgstr "Leita að uppfærslum"
 
 #: src/gs-updates-page.c:1398
-#, fuzzy
 msgctxt "Apps to be updated"
 msgid "Updates"
-msgstr "Uppfærslur"
+msgstr ""
 
 #: src/gs-updates-page.ui:6
 msgid "Updates page"
@@ -4557,7 +4641,8 @@ msgstr "Hleð inn uppfærslum…"
 msgid "This could take a while."
 msgstr "Þetta gæti tekið nokkra stund."
 
-#. TRANSLATORS: This means all software (plural) installed on this system is up to date.
+#. TRANSLATORS: This means all software (plural) installed on this system is
+#. up to date.
 #: src/gs-updates-page.ui:235
 msgid "Up to Date"
 msgstr "Allt uppfært"
@@ -4661,7 +4746,8 @@ msgstr "Kynntu þér nýju útgáfuna"
 msgid "Downloading…"
 msgstr "Sæki gögn…"
 
-#. Translators: the first '%s' is replaced with the downloaded size, the second '%s'
+#. Translators: the first '%s' is replaced with the downloaded size, the
+#. second '%s'
 #. with the total download size, forming text like "135 MB of 2 GB downloaded"
 #: src/gs-upgrade-banner.c:185
 #, c-format
@@ -4695,11 +4781,11 @@ msgstr ""
 msgid "Add, remove or update software on this computer"
 msgstr ""
 
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#. Translators: Search terms to find this application. Do NOT translate or
+#. localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.desktop.in:12
 msgid ""
-"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;"
-"Software;App;Store;"
+"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;"
 msgstr ""
 
 #. TRANSLATORS: this is a group of updates that are not
@@ -4722,9 +4808,9 @@ msgid "Downloading featured images…"
 msgstr ""
 
 #: plugins/eos/gs-plugin-eos.c:173
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Veldu forrit:"
+msgstr ""
 
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
 #: plugins/eos-updater/gs-plugin-eos-updater.c:639
@@ -4737,14 +4823,12 @@ msgid "EOS update service could not fetch and apply the update."
 msgstr ""
 
 #: plugins/epiphany/gs-plugin-epiphany.c:498
-#, fuzzy
 msgid "GNOME Web"
-msgstr "GNOME hugbúnaður"
+msgstr ""
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
-#, fuzzy
 msgid "Web Apps Support"
-msgstr "Stuðningur við skjáborðsumhverfi"
+msgstr ""
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:7
 msgid "Run popular web applications in a browser"
@@ -4769,60 +4853,56 @@ msgstr "Flatpak-stuðningur"
 msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr ""
 
-#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#idm45858571325264
+#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-
+#. reference.html#idm45858571325264
 #: plugins/flatpak/gs-flatpak.c:324
-#, fuzzy, c-format
+#, c-format
 msgid "System folder %s"
-msgstr "Kerfisuppfærslur"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:325 plugins/flatpak/gs-flatpak.c:326
-#, fuzzy, c-format
+#, c-format
 msgid "Home subfolder %s"
-msgstr "Heimamappa"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:327
-#, fuzzy
 msgid "Host system folders"
-msgstr "Heimamappa"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:328
 msgid "Host system configuration from /etc"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:329
-#, fuzzy
 msgid "Desktop folder"
-msgstr "Stuðningur við skjáborðsumhverfi"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:329
-#, fuzzy, c-format
+#, c-format
 msgid "Desktop subfolder %s"
-msgstr "Stuðningur við skjáborðsumhverfi"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:330
-#, fuzzy
 msgid "Documents folder"
-msgstr "Heimamappa"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:330
-#, fuzzy, c-format
+#, c-format
 msgid "Documents subfolder %s"
-msgstr "Heimamappa"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:331
-#, fuzzy
 msgid "Music folder"
-msgstr "Tónlistarspilarar"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:331
-#, fuzzy, c-format
+#, c-format
 msgid "Music subfolder %s"
-msgstr "Tónlistarspilarar"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:332
-#, fuzzy
 msgid "Pictures folder"
-msgstr "Mynd"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:332
 #, c-format
@@ -4839,19 +4919,17 @@ msgid "Public Share subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:334
-#, fuzzy
 msgid "Videos folder"
-msgstr "Heimamappa"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:334
-#, fuzzy, c-format
+#, c-format
 msgid "Videos subfolder %s"
-msgstr "%s hentar fyrir %s"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:335
-#, fuzzy
 msgid "Templates folder"
-msgstr "Heimamappa"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:335
 #, c-format
@@ -4868,19 +4946,17 @@ msgid "User cache subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:337
-#, fuzzy
 msgid "User configuration folder"
-msgstr "%s uppsetningaruppfærsla"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:337
-#, fuzzy, c-format
+#, c-format
 msgid "User configuration subfolder %s"
-msgstr "%s uppsetningaruppfærsla"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:338
-#, fuzzy
 msgid "User data folder"
-msgstr "Notandagögn"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:338
 #, c-format
@@ -4888,9 +4964,8 @@ msgid "User data subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:339
-#, fuzzy
 msgid "User runtime folder"
-msgstr "Heimamappa"
+msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:339
 #, c-format
@@ -4898,9 +4973,9 @@ msgid "User runtime subfolder %s"
 msgstr ""
 
 #: plugins/flatpak/gs-flatpak.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "Filesystem access to %s"
-msgstr "Enginn aðgangur að skráakerfi"
+msgstr ""
 
 #. TRANSLATORS: status text when downloading new metadata
 #: plugins/flatpak/gs-flatpak.c:1414
@@ -5092,9 +5167,9 @@ msgstr "%s BMC uppfærsla"
 #. TRANSLATORS: Receiver refers to a radio device, e.g. a tiny Bluetooth
 #. * device that stays in the USB port so the wireless peripheral works
 #: plugins/fwupd/gs-fwupd-app.c:230
-#, fuzzy, c-format
+#, c-format
 msgid "%s USB Receiver Update"
-msgstr "%s uppfærsla tækis"
+msgstr ""
 
 #: plugins/fwupd/gs-plugin-fwupd.c:1240
 msgid "Firmware"
@@ -5161,612 +5236,3 @@ msgstr "Stuðningur við Snap"
 #: plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in:7
 msgid "A snap is a universal Linux package"
 msgstr "Snap-pakkar eru algildir Linux-pakkar"
-
-#~ msgid "Application manager for GNOME"
-#~ msgstr "Forritaumsýsla fyrir GNOME"
-
-#~ msgid "A list of popular applications"
-#~ msgstr "Listi yfir vinsæl forrit"
-
-#, c-format
-#~ msgid "%s %s"
-#~ msgstr "%s %s"
-
-#~ msgid "Name"
-#~ msgstr "Heiti"
-
-#~ msgid "system"
-#~ msgstr "kerfis"
-
-#~ msgid "user"
-#~ msgstr "notanda"
-
-#~ msgid "Channel"
-#~ msgstr "Rás"
-
-#~ msgid "Branch"
-#~ msgstr "Grein"
-
-#~ msgid "URL"
-#~ msgstr "Slóð (URL)"
-
-#~ msgid "Installation"
-#~ msgstr "Uppsetning"
-
-#~ msgid "Version"
-#~ msgstr "Útgáfa"
-
-#~| msgid "Can access D-Bus services on the system bus"
-#~ msgid "Can access arbitrary files on the file system"
-#~ msgstr "Hefur aðgang að allskyns skrám á skráarkerfinu"
-
-#~ msgid "Checking…"
-#~ msgstr "Athuga..."
-
-#~ msgid "Endless OS"
-#~ msgstr "Endless OS"
-
-#~| msgid "Removing…"
-#~ msgid "Loading…"
-#~ msgstr "Hleð inn..."
-
-#~ msgid "_Add shortcut"
-#~ msgstr "Bæt_a við flýtilykli"
-
-#~ msgid "Re_move shortcut"
-#~ msgstr "Fjarlæ_gja flýtilykil"
-
-#~ msgid "Welcome"
-#~ msgstr "Velkomin"
-
-#~ msgid "Welcome to Software"
-#~ msgstr "Velkomin í hugbúnaðarstýringuna"
-
-#~| msgid "Free Software"
-#~ msgid "_Browse Software"
-#~ msgstr "Skoða hug_búnað"
-
-#~ msgid "OS Updates"
-#~ msgstr "Uppfærslur stýrikerfis"
-
-#~ msgid "Select All"
-#~ msgstr "Velja allt"
-
-#~ msgid "Select None"
-#~ msgstr "Velja ekkert"
-
-#~ msgid "_All"
-#~ msgstr "_Allt"
-
-#~ msgid "_Installed"
-#~ msgstr "U_ppsett"
-
-#~ msgid "_Updates"
-#~ msgstr "_Uppfærslur"
-
-#~ msgid "Folder Name"
-#~ msgstr "Heiti möppu"
-
-#~ msgid "_Add"
-#~ msgstr "_Bæta við"
-
-#~ msgid "Add to Application Folder"
-#~ msgstr "Bæta við forritamöppu"
-
-#~ msgid "About %s"
-#~ msgstr "Um %s"
-
-#~ msgid "Remove"
-#~ msgstr "Fjarlægja"
-
-#~ msgid "Continue"
-#~ msgstr "Halda áfram"
-
-#~ msgid "Use"
-#~ msgstr "Nota"
-
-#~| msgid "_Add to Folder…"
-#~ msgid "Add another…"
-#~ msgstr "Bæta við öðru…"
-
-#~ msgid "Featured %s"
-#~ msgstr "%s í deiglunni"
-
-#~ msgid "Top Rated"
-#~ msgstr "Hæsta einkunn"
-
-#~ msgid "Show"
-#~ msgstr "Birta"
-
-#~ msgid "Sort"
-#~ msgstr "Raða"
-
-#~ msgid "_Launch"
-#~ msgstr "_Ræsa"
-
-#~ msgctxt "version"
-#~ msgid "Unknown"
-#~ msgstr "Óþekkt"
-
-#~ msgctxt "updated"
-#~ msgid "Never"
-#~ msgstr "Aldrei"
-
-#~ msgctxt "origin"
-#~ msgid "Unknown"
-#~ msgstr "Óþekkt"
-
-#~ msgid "Public domain"
-#~ msgstr "Almenningseign"
-
-#~ msgid "https://en.wikipedia.org/wiki/Public_domain"
-#~ msgstr "https://en.wikipedia.org/wiki/Public_domain"
-
-#~ msgid "https://www.gnu.org/philosophy/free-sw"
-#~ msgstr "https://www.gnu.org/philosophy/free-sw"
-
-#~ msgid "Localized in your Language"
-#~ msgstr "Staðfært  tungumálið þitt"
-
-#~ msgid "Category"
-#~ msgstr "Flokkur"
-
-#~ msgid "Free"
-#~ msgstr "Frjálst"
-
-#~ msgid "Proprietary Software"
-#~ msgstr "Séreignarhugbúnaður"
-
-#~ msgid "Unknown Software License"
-#~ msgstr "Óþekkt hugbúnaðarleyfi"
-
-#~ msgid "Failed to load file"
-#~ msgstr "Mistókst að hlaða inn skrá"
-
-#~ msgid "Unsaved changes"
-#~ msgstr "Óvistaðar breytingar"
-
-#~ msgid "Throw away changes"
-#~ msgstr "Henda breytingum"
-
-#~ msgid "_Save"
-#~ msgstr "Vi_sta"
-
-#~ msgid "Failed to save file"
-#~ msgstr "Tókst ekki að vista skrá"
-
-#, fuzzy
-#~| msgid "GNOME Software"
-#~ msgid "GNOME Software Banner Designer"
-#~ msgstr "GNOME hugbúnaður"
-
-#~ msgid "Error message here"
-#~ msgstr "Villuskilaboð hér"
-
-#~ msgid "App ID"
-#~ msgstr "Auðkenni forrits"
-
-#~ msgid "Category Featured"
-#~ msgstr "Flokkur í deiglunni"
-
-#~ msgid "Undo"
-#~ msgstr "Afturkalla"
-
-#~ msgid "New Banner"
-#~ msgstr "Nýr borði"
-
-#~ msgid "Import from file"
-#~ msgstr "Flytja inn úr skrá"
-
-#~ msgid "Export to file"
-#~ msgstr "Flytja út í skrá"
-
-#~ msgid "OS Upgrade"
-#~ msgstr "Uppfærsla stýrikerfis"
-
-#~ msgid "Spacing"
-#~ msgstr "Millibil"
-
-#~ msgid "The amount of space between children"
-#~ msgstr "Bil milli afleiða"
-
-#~ msgctxt "app status"
-#~ msgid "Removed"
-#~ msgstr "Fjarlægt"
-
-#~ msgctxt "app status"
-#~ msgid "Installed"
-#~ msgstr "Uppsett"
-
-#~ msgctxt "app status"
-#~ msgid "Updated"
-#~ msgstr "Uppfært"
-
-#~ msgctxt "app status"
-#~ msgid "Unknown"
-#~ msgstr "Óþekkt"
-
-#~ msgid "History"
-#~ msgstr "Ferill"
-
-#~ msgid "Click on items to select them"
-#~ msgstr "Smelltu á atriði til að velja þau"
-
-#~ msgid "Select"
-#~ msgstr "Velja"
-
-#~ msgid "_Add to Folder…"
-#~ msgstr "Bæt_a í möppu…"
-
-#~ msgid "_Move to Folder…"
-#~ msgstr "Flytja í _möppu…"
-
-#~ msgid "_Remove from Folder"
-#~ msgstr "Fja_rlægja úr möppu"
-
-#~ msgid "Format"
-#~ msgstr "Snið"
-
-#~ msgid "More…"
-#~ msgstr "Meira…"
-
-#~ msgid ""
-#~ "Some of this software is proprietary and therefore has restrictions on "
-#~ "use, sharing, and access to source code."
-#~ msgstr ""
-#~ "Sumt af þessu hugbúnaði er séreignarhugbúnaður og er þar af leiðandi með "
-#~ "hömlur á notkun, deilingu og aðgangi að grunnkóða."
-
-#~| msgid "System Applications"
-#~ msgid "Featured Applications"
-#~ msgstr "Helstu forrit"
-
-#~ msgid "Are you sure you want to remove %s?"
-#~ msgstr "Ertu viss um að þú viljir fjarlægja %s?"
-
-#~ msgid "A$%.2f"
-#~ msgstr "A$%.2f"
-
-#~ msgid "C$%.2f"
-#~ msgstr "C$%.2f"
-
-#~ msgid "CN¥%.2f"
-#~ msgstr "CN¥%.2f"
-
-#~ msgid "€%.2f"
-#~ msgstr "€%.2f"
-
-#~ msgid "£%.2f"
-#~ msgstr "£%.2f"
-
-#~ msgid "¥%.2f"
-#~ msgstr "¥%.2f"
-
-#~ msgid "NZ$%.2f"
-#~ msgstr "NZ$%.2f"
-
-#~ msgid "₽%.2f"
-#~ msgstr "₽%.2f"
-
-#~ msgid "US$%.2f"
-#~ msgstr "US$%.2f"
-
-#~ msgid "Remove “%s”?"
-#~ msgstr "Fjarlægja „%s“?"
-
-#~ msgid "Disable “%s”?"
-#~ msgstr "Gera “%s” óvirkt?"
-
-#~ msgid "_Enable"
-#~ msgstr "V_irkja"
-
-#~ msgid "_Remove…"
-#~ msgstr "Fja_rlægja…"
-
-#~ msgid "_Disable…"
-#~ msgstr "_Gera óvirkt…"
-
-#~ msgid "Disabling"
-#~ msgstr "Geri óvirkt"
-
-#~ msgid "Enabled"
-#~ msgstr "Virkt"
-
-#~ msgid "Disabled"
-#~ msgstr "Óvirkt"
-
-#~ msgid "_Remove All"
-#~ msgstr "Fja_rlægja allt"
-
-#~ msgid "Restart & Install"
-#~ msgstr "Endurræsa og setja inn"
-
-#~ msgid "View"
-#~ msgstr "Skoða"
-
-#~ msgid "%R"
-#~ msgstr "%R"
-
-#~ msgid "%l:%M %p"
-#~ msgstr "%l:%M %p"
-
-#~ msgid "Yesterday, %R"
-#~ msgstr "Í gær kl. %R"
-
-#~ msgid "Yesterday, %l:%M %p"
-#~ msgstr "Í gær, kl. %I:%M %p"
-
-#~ msgid "Three days ago"
-#~ msgstr "Fyrir þremur dögum síðan"
-
-#~ msgid "Four days ago"
-#~ msgstr "Fyrir fjórum dögum síðan"
-
-#~ msgid "Five days ago"
-#~ msgstr "Fyrir fimm dögum síðan"
-
-#~ msgid "Six days ago"
-#~ msgstr "Fyrir sex dögum síðan"
-
-#~ msgid "Two weeks ago"
-#~ msgstr "Fyrir tveimur vikum síðan"
-
-#~ msgctxt "Menu of Games"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Games"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Add-ons"
-#~ msgid "Shell Extensions"
-#~ msgstr "Shell Extension skeljarviðbætur"
-
-#~ msgctxt "Menu of Utilities"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Utilities"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Reference"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Reference"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgid "Audio & Video"
-#~ msgstr "Hjóð/Myndskeið"
-
-#~ msgid "Developer Tools"
-#~ msgstr "Forritunartól"
-
-#~ msgid "Education & Science"
-#~ msgstr "Menntun & vísindi"
-
-#~ msgid "Games"
-#~ msgstr "Leikir"
-
-#~ msgid "Graphics & Photography"
-#~ msgstr "Ljósmyndun og myndefni"
-
-#~ msgid "Productivity"
-#~ msgstr "Vinna"
-
-#~ msgid "Communication & News"
-#~ msgstr "Samskipti og fréttir"
-
-#~ msgid "Reference"
-#~ msgstr "Uppflettirit"
-
-#~ msgid "Utilities"
-#~ msgstr "Nytjatól"
-
-#~| msgctxt "Menu of Add-ons"
-#~| msgid "Shell Extensions"
-#~ msgid "GNOME Shell Extension"
-#~ msgstr "GNOME Shell Extension skeljarviðbætur"
-
-#~ msgid "Email address"
-#~ msgstr "Tölvupóstfang"
-
-#~ msgid "PIN"
-#~ msgstr "PIN-númer"
-
-#~ msgid "Authenticate"
-#~ msgstr "Auðkenna"
-
-#~ msgid "_About"
-#~ msgstr "_Um hugbúnaðinn"
-
-#~ msgid "_Quit"
-#~ msgstr "_Hætta"
-
-#~| msgid "More information"
-#~ msgid "For more information, visit %s."
-#~ msgstr "Til að vita meira ættirðu að skoða %s."
-
-#~| msgid "_Update"
-#~ msgid "U_pdate All"
-#~ msgstr "U_ppfæra allt"
-
-#~ msgid "Restart & _Install"
-#~ msgstr "Endurræsa og setja _inn"
-
-#~| msgid "Software"
-#~ msgid "org.gnome.Software"
-#~ msgstr "org.gnome.Software"
-
-#~ msgid "Total"
-#~ msgstr "Samtals"
-
-#~ msgid "_Install All"
-#~ msgstr "Setja allt _inn"
-
-#~ msgid "Proprietary Software Sources"
-#~ msgstr "Upptök séreignarhugbúnaðar"
-
-#~ msgid "Added"
-#~ msgstr "Bætt við"
-
-#~ msgid "Website"
-#~ msgstr "Vefsvæði"
-
-#~ msgctxt "content rating violence-fantasy"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating violence-realistic"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating violence-bloodshed"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating violence-sexual"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating drugs-alcohol"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating drugs-narcotics"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating sex-nudity"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating sex-themes"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating language-profanity"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating language-humor"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating language-discrimination"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating money-advertising"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating money-gambling"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating money-purchasing"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating social-chat"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating social-audio"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating social-contacts"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating social-info"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "content rating social-location"
-#~ msgid "None"
-#~ msgstr "Ekkert"
-
-#~ msgctxt "Menu of AudioVideo"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of AudioVideo"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Development"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Development"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Education"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Education"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Graphics"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Graphics"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Office"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Office"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "Astronomy"
-#~ msgstr "Stjörnufræði"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "Chemistry"
-#~ msgstr "Efnafræði"
-
-#~ msgctxt "Menu of Science"
-#~ msgid "Math"
-#~ msgstr "Stærðfræði"
-
-#~ msgctxt "Menu of Communication"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Communication"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgctxt "Menu of Utility"
-#~ msgid "All"
-#~ msgstr "Allt"
-
-#~ msgctxt "Menu of Utility"
-#~ msgid "Featured"
-#~ msgstr "Í deiglunni"
-
-#~ msgid "Science"
-#~ msgstr "Vísindi"
