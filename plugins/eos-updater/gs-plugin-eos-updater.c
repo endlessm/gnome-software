@@ -375,6 +375,22 @@ updater_update_is_user_visible_changed (GsPlugin *plugin)
 }
 
 /* This will be invoked in the main thread, but doesn’t currently need to hold
+ * `mutex` since it only accesses `priv->updater_proxy` and `priv->os_upgrade`,
+ * both of which are internally thread-safe. */
+static void
+updater_release_notes_uri_changed (GsPlugin *plugin)
+{
+	GsPluginData *priv = gs_plugin_get_data (plugin);
+	const gchar *release_notes_uri = gs_eos_updater_get_release_notes_uri (priv->updater_proxy);
+
+	/* @release_notes_uri may be the empty string, in which case we want to remove the URL */
+	if (release_notes_uri != NULL && *release_notes_uri == '\0')
+		release_notes_uri = NULL;
+
+	gs_app_set_url (priv->os_upgrade, AS_URL_KIND_HOMEPAGE, release_notes_uri);
+}
+
+/* This will be invoked in the main thread, but doesn’t currently need to hold
  * `mutex` since `priv->updater_proxy` and `priv->os_upgrade` are both
  * thread-safe, and `priv->upgrade_fake_progress` and
  * `priv->upgrade_fake_progress_handler` are only ever accessed from the main
@@ -623,6 +639,9 @@ gs_plugin_setup (GsPlugin *plugin,
 	g_signal_connect_object (priv->updater_proxy, "notify::update-is-user-visible",
 				 G_CALLBACK (updater_update_is_user_visible_changed),
 				 plugin, G_CONNECT_SWAPPED);
+	g_signal_connect_object (priv->updater_proxy, "notify::release-notes-uri",
+				 G_CALLBACK (updater_release_notes_uri_changed),
+				 plugin, G_CONNECT_SWAPPED);
 
 	/* prepare EOS upgrade app + sync initial state */
 	os_release = gs_os_release_new (&local_error);
@@ -698,6 +717,9 @@ gs_plugin_destroy (GsPlugin *plugin)
 						      plugin);
 		g_signal_handlers_disconnect_by_func (priv->updater_proxy,
 						      G_CALLBACK (updater_update_is_user_visible_changed),
+						      plugin);
+		g_signal_handlers_disconnect_by_func (priv->updater_proxy,
+						      G_CALLBACK (updater_release_notes_uri_changed),
 						      plugin);
 	}
 
