@@ -7,19 +7,21 @@
 # Daniel Mustieles <daniel.mustieles@gmail.com>, 2013-2017
 # Daniel Mustieles <daniel.mustieles@gmail.com>, 2013-2017, 2017
 # germe_purr, 2021
+# germe_purr, 2021
 # Mazen Asef Ali <mazen@endlessm.com>, 2018
 # Nuritzi Sanchez <ns@endlessm.com>, 2016-2018
 # Robert McQueen <rob@endlessm.com>, 2019
 # Roddy Shuler <roddy@stanfordalumni.org>, 2016-2018
+# Rodrigo Lledó <rodhos92@gmail.com>, 2018
 # Rodrigo Lledó <rodhos92@gmail.com>, 2018
 # Will Thompson <wjt@endlessos.org>, 2019-2020
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-08 00:11+0000\n"
+"POT-Creation-Date: 2022-12-15 18:33+0000\n"
 "PO-Revision-Date: 2016-04-15 19:22+0000\n"
-"Last-Translator: germe_purr, 2021\n"
+"Last-Translator: Rodrigo Lledó <rodhos92@gmail.com>, 2018\n"
 "Language-Team: Spanish (http://www.transifex.com/endless-os/gnome-software/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2027,9 +2029,9 @@ msgstr[2] "Se han instalado las actualizaciones"
 #: src/gs-common.c:760
 msgid "An application has been removed"
 msgid_plural "Applications have been removed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Se ha eliminado una aplicación"
+msgstr[1] "Se han eliminado aplicaciones"
+msgstr[2] "Se han eliminado aplicaciones"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:766
@@ -2053,49 +2055,49 @@ msgstr "Ahora mismo"
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "hace %d minuto"
+msgstr[1] "hace %d minutos"
+msgstr[2] "hace %d minutos"
 
 #: src/gs-common.c:875
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "hace %d hora"
+msgstr[1] "hace %d horas"
+msgstr[2] "hace %d horas"
 
 #: src/gs-common.c:879
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "hace %d día"
+msgstr[1] "hace %d días"
+msgstr[2] "hace %d días"
 
 #: src/gs-common.c:883
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "hace %d semana"
+msgstr[1] "hace %d semanas"
+msgstr[2] "hace %d semanas"
 
 #: src/gs-common.c:887
 #, c-format
 msgid "%d month ago"
 msgid_plural "%d months ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "hace %d mes"
+msgstr[1] "hace %d meses"
+msgstr[2] "hace %d meses"
 
 #: src/gs-common.c:891
 #, c-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "hace %d año"
+msgstr[1] "hace %d años"
+msgstr[2] "hace %d años"
 
 #. Translators: This is to construct a disk size string consisting of the
 #. value and its unit, while
@@ -2560,9 +2562,9 @@ msgid ""
 "Unable to find the %s requested by %s. Please see %s for more information."
 msgid_plural ""
 "Unable to find the %s requested by %s. Please see %s for more information."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "No se pudo encontrar el %s solicitado por %s. Consulte %s para obtener más información."
+msgstr[1] "No se pudieron encontrar los %s solicitados por %s. Consulte %s para obtener más información."
+msgstr[2] "No se pudieron encontrar los %s solicitados por %s. Consulte %s para obtener más información."
 
 #. TRANSLATORS: no codecs were found. First %s will be replaced by actual
 #. codec name(s), second %s is a link titled "the documentation"
@@ -2574,9 +2576,9 @@ msgid ""
 msgid_plural ""
 "Unable to find the %s you were searching for. Please see %s for more "
 "information."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "No se pudo encontrar el %s que estaba buscando. Consulte %s para obtener más información."
+msgstr[1] "No se pudieron encontrar los %s que estaba buscando. Consulte %s para obtener más información."
+msgstr[2] "No se pudieron encontrar los %s que estaba buscando. Consulte %s para obtener más información."
 
 #: src/gs-extras-page.c:574 src/gs-extras-page.c:631 src/gs-extras-page.c:671
 #, c-format
@@ -3344,9 +3346,9 @@ msgstr "Conozca qué datos se envían en nuestra <a href=\"https://odrs.gnome.or
 #, c-format
 msgid "%u review total"
 msgid_plural "%u reviews total"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%u revisión total"
+msgstr[1] "%u revisiones totales"
+msgstr[2] "%u revisiones totales"
 
 #: src/gs-review-histogram.ui:93
 msgid "out of 5 stars"
@@ -4529,9 +4531,9 @@ msgstr[2] "Actualizaciones de software instaladas"
 #: src/gs-update-monitor.c:1175
 msgid "An important operating system update has been installed."
 msgid_plural "Important operating system updates have been installed."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Se ha instalado una actualización del sistema operativo importante."
+msgstr[1] "Se han instalado actualizaciones del sistema operativo importantes."
+msgstr[2] "Se han instalado actualizaciones del sistema operativo importantes."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -4847,12 +4849,12 @@ msgid "Could not launch this application."
 msgstr "No se pudo iniciar este programa."
 
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
-#: plugins/eos-updater/gs-plugin-eos-updater.c:639
+#: plugins/eos-updater/gs-plugin-eos-updater.c:709
 #, c-format
 msgid "%s update with new features and fixes."
 msgstr "Una actualización de %s, con características nuevas y correcciones."
 
-#: plugins/eos-updater/gs-plugin-eos-updater.c:1019
+#: plugins/eos-updater/gs-plugin-eos-updater.c:1126
 msgid "EOS update service could not fetch and apply the update."
 msgstr "El servicio de actualización de EOS no ha podido descargar y aplicar la actualización."
 
