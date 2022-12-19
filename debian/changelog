@@ -1,8 +1,43 @@
-gnome-software (43.0-1endless0) eos; urgency=medium
+gnome-software (43.2-3) unstable; urgency=medium
 
-  * Rebase EOS on GNOME 43.0 release
+  * Restore explicit Build-Depends on libsoup-3.0-dev
 
- -- Georges Basile Stavracas Neto <georges@endlessos.org>  Tue, 27 Sep 2022 10:58:12 +0100
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Thu, 08 Dec 2022 19:02:19 -0500
+
+gnome-software (43.2-2) unstable; urgency=medium
+
+  * Build against snapd-glib 1.63 using libsoup3
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Thu, 08 Dec 2022 18:11:05 -0500
+
+gnome-software (43.2-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Tue, 06 Dec 2022 08:48:10 -0500
+
+gnome-software (43.1-2) unstable; urgency=medium
+
+  * Restore accidentally dropped 43.0-2 changes
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Wed, 23 Nov 2022 10:48:34 -0500
+
+gnome-software (43.1-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Jeremy Bicha <jbicha@ubuntu.com>  Mon, 21 Nov 2022 08:48:46 -0500
+
+gnome-software (43.0-2) unstable; urgency=medium
+
+  * Team upload
+  * d/control.in: Replace transitional policykit-1 with polkitd.
+    pkexec is used in a couple of places, but neither is relevant to Debian:
+    we don't enable support for external AppStream metadata, and we don't
+    install a Fedora-specific plugin.
+  * Standards-Version: 4.6.1 (no changes required)
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 14 Oct 2022 10:27:33 +0100
 
 gnome-software (43.0-1) unstable; urgency=medium
 

@@ -13,11 +13,6 @@ GS_CONFIGURE_FLAGS = \
 	-Drpm_ostree=false \
 	-Dapt=true
 
-# Temporarily keep building with libsoup2 until we get the new snapd-glib
-ifneq (yes,$(shell dpkg-vendor --derives-from Ubuntu && echo yes))
-	GS_CONFIGURE_FLAGS= -Dsoup2=true
-endif
-
 # these are conditionally re-enabled later
 GS_CONFIGURE_FLAGS += \
 	-Dfwupd=false \
@@ -36,19 +31,12 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	
 	# Enable fwupd support on Linux
 	GS_CONFIGURE_FLAGS += -Dfwupd=true
-endif
 
-# EOS-specific configuration
-GS_CONFIGURE_FLAGS += \
-	-Deos_updater=true \
-	-Dexternal_appstream=true \
-	-Dfwupd=false \
-	-Dgudev=false \
-	-Dhardcoded_curated=false \
-	-Dmalcontent=true \
-	-Dmogwai=true \
-	-Dpackagekit=false \
-	-Dsoup2=true
+	# Enable snap support on supported architectures
+	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 ppc64el s390x))
+		GS_CONFIGURE_FLAGS += -Dsnap=true
+	endif
+endif
 
 DISTRO_ID = debian
 FREE_REPOS = \'@DISTRO@-*-main\'
