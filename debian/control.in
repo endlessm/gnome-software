@@ -12,7 +12,7 @@ Build-Depends: debhelper-compat (= 13),
                gtk-doc-tools,
                libadwaita-1-dev (>= 1.0.1),
                libappstream-dev (>= 0.14.0),
-               libflatpak-dev (>= 1.14.0) [amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32],
+               libflatpak-dev [amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32],
                libfwupd-dev (>= 1.5.6) [linux-any],
                libglib2.0-dev (>= 2.70.0),
                libglib-testing-0-dev,
@@ -20,7 +20,7 @@ Build-Depends: debhelper-compat (= 13),
                libgtk-4-dev (>= 4.6),
                libgudev-1.0-dev [linux-any],
                libjson-glib-dev (>= 1.6.0),
-               libostree-dev (>= 2022.5-2~) [linux-any],
+               libostree-dev [linux-any],
                libmalcontent-0-dev [amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32],
                libmogwai-schedule-client-0-dev,
                libpackagekit-glib2-dev (>= 1.1.11),
@@ -86,7 +86,7 @@ Description: Software Center for GNOME (common files)
 
 Package: gnome-software-plugin-flatpak
 Architecture: amd64 arm64 armel armhf i386 mipsel mips64el ppc64el s390x hppa powerpc ppc64 riscv64 x32
-Depends: flatpak (>= 1.14.0),
+Depends: flatpak,
          gnome-software (= ${binary:Version}),
          ${misc:Depends},
          ${shlibs:Depends}
