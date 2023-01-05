@@ -566,7 +566,10 @@ gs_plugin_setup (GsPlugin *plugin,
 	g_autofree gchar *name_owner = NULL;
 	g_autoptr(GsApp) app = NULL;
 	g_autoptr(AsIcon) ic = NULL;
+	g_autoptr(GsOsRelease) os_release = NULL;
 	g_autoptr(GMutexLocker) locker = NULL;
+	g_autoptr(GError) local_error = NULL;
+	const gchar *os_logo;
 
 	g_debug ("%s", G_STRFUNC);
 
@@ -622,11 +625,19 @@ gs_plugin_setup (GsPlugin *plugin,
 				 plugin, G_CONNECT_SWAPPED);
 
 	/* prepare EOS upgrade app + sync initial state */
+	os_release = gs_os_release_new (&local_error);
+	if (os_release == NULL) {
+		g_warning ("Failed to get OS release information: %s", local_error->message);
+		os_logo = NULL;
+		g_clear_error (&local_error);
+	} else {
+		os_logo = gs_os_release_get_logo (os_release);
+	}
 
 	/* use stock icon */
 	ic = as_icon_new ();
 	as_icon_set_kind (ic, AS_ICON_KIND_STOCK);
-	as_icon_set_name (ic, "software-update-available-symbolic");
+	as_icon_set_name (ic, (os_logo != NULL) ? os_logo : "software-update-available-symbolic");
 
 	/* create the OS upgrade */
 	app = gs_app_new ("com.endlessm.EOS.upgrade");
