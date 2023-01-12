@@ -1,22 +1,22 @@
-# Korean translation for gnome-software.
-# Copyright (C) 2013 gnome-software's all of contributors.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-software package.
-# Seong-ho Cho <shcho@gnome.org>, 2013-2022.
-#
+# 
+# Translators:
+# Seong-ho Cho <shcho@gnome.org>, 2013-2015, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: gnome-software main\n"
+"Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-19 16:07+0000\n"
-"PO-Revision-Date: 2022-08-28 20:26+0900\n"
-"Last-Translator: Seong-ho Cho <shcho@gnome.org>\n"
-"Language-Team: GNOME Korea <gnome-kr@googlegroups.com>\n"
-"Language: ko\n"
+"POT-Creation-Date: 2023-01-12 18:33+0000\n"
+"PO-Revision-Date: 2016-04-15 19:22+0000\n"
+"Last-Translator: Seong-ho Cho <shcho@gnome.org>, 2013-2015, 2016\n"
+"Language-Team: Korean (http://www.transifex.com/endless-os/gnome-software/language/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Language: ko\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 2.3.1\n"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:7 src/gs-shell.ui:21
 msgid "Software"
@@ -30,9 +30,7 @@ msgstr "앱 설치 및 업데이트"
 msgid ""
 "Software allows you to find and install new applications and system "
 "extensions and remove existing installed applications."
-msgstr ""
-"소프트웨어에서 새 프로그램과 시스템 확장을 찾아 설치할 수 있고, 기존에 설치"
-"한 프로그램을 제거할 수 있습니다."
+msgstr "소프트웨어에서 새 프로그램과 시스템 확장을 찾아 설치할 수 있고, 기존에 설치한 프로그램을 제거할 수 있습니다."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:14
 msgid ""
@@ -40,11 +38,7 @@ msgid ""
 "descriptions and multiple screenshots per application. Applications can be "
 "found either through browsing the list of categories or by searching. It "
 "also allows you to update your system using an offline update."
-msgstr ""
-"소프트웨어 프로그램은 각각의 추천 항목과 인기 있는 프로그램을 유용한 설명과 "
-"여러가지 미리보기 화면을 곁들여 선보입니다. 분류 목록을 탐색하거나 검색을 통"
-"해 프로그램을 찾을 수 있습니다. 오프라인 업데이트를 사용하여 시스템을 업데이"
-"트할 수도 있습니다."
+msgstr "소프트웨어 프로그램은 각각의 추천 항목과 인기 있는 프로그램을 유용한 설명과 여러가지 미리보기 화면을 곁들여 선보입니다. 분류 목록을 탐색하거나 검색을 통해 프로그램을 찾을 수 있습니다. 오프라인 업데이트를 사용하여 시스템을 업데이트할 수도 있습니다."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:25
 msgid "Overview panel"
@@ -68,7 +62,8 @@ msgstr "업데이트 패널"
 msgid "The update details"
 msgstr "업데이트 세부 항목"
 
-#: data/metainfo/org.gnome.Software.metainfo.xml.in:89 src/gs-application.c:256
+#: data/metainfo/org.gnome.Software.metainfo.xml.in:89
+#: src/gs-application.c:256
 msgid "The GNOME Project"
 msgstr "그놈 프로젝트"
 
@@ -98,9 +93,7 @@ msgstr "그놈 소프트웨어 업데이트 및 업그레이드 관리 여부"
 msgid ""
 "If disabled, GNOME Software will hide the updates panel, not perform any "
 "automatic updates actions or prompt for upgrades."
-msgstr ""
-"비활성화하면, 그놈 소프트웨어는 업데이트 패널을 숨기며 자동 업데이트 동작을 "
-"수행하거나 업그레이드 여부를 물어보지 않습니다."
+msgstr "비활성화하면, 그놈 소프트웨어는 업데이트 패널을 숨기며 자동 업데이트 동작을 수행하거나 업그레이드 여부를 물어보지 않습니다."
 
 #: data/org.gnome.software.gschema.xml:15
 msgid "Automatically download and install updates"
@@ -110,9 +103,7 @@ msgstr "업데이트를 자동으로 다운로드하고 설치"
 msgid ""
 "If enabled, GNOME Software automatically downloads software updates in the "
 "background, also installing ones that do not require a reboot."
-msgstr ""
-"설정을 활성화하면, 그놈 소프트웨어는 백그라운드에서 업데이트를 자동으로 다운"
-"로드하며, 재시작이 필요치 않은 항목을 설치합니다."
+msgstr "설정을 활성화하면, 그놈 소프트웨어는 백그라운드에서 업데이트를 자동으로 다운로드하며, 재시작이 필요치 않은 항목을 설치합니다."
 
 #: data/org.gnome.software.gschema.xml:20
 msgid "Notify the user about software updated in the background"
@@ -122,9 +113,7 @@ msgstr "백그라운드 프로그램 업데이트를 사용자에게 알림"
 msgid ""
 "If enabled, GNOME Software notifies the user about updates that happened "
 "whilst the user was idle."
-msgstr ""
-"활성화하면, 그놈 소프트웨어에서 사용자가 아무런 일을 하지 않을 때 업데이트 진"
-"행 여부를 알립니다."
+msgstr "활성화하면, 그놈 소프트웨어에서 사용자가 아무런 일을 하지 않을 때 업데이트 진행 여부를 알립니다."
 
 #: data/org.gnome.software.gschema.xml:25
 msgid "Whether to automatically refresh when on a metered connection"
@@ -135,10 +124,7 @@ msgid ""
 "If enabled, GNOME Software automatically refreshes in the background even "
 "when using a metered connection (eventually downloading some metadata, "
 "checking for updates, etc., which may incur in costs for the user)."
-msgstr ""
-"활성하면, 그놈 소프트웨어는 자동으로 종량제 연결을 활용하더라도 백그라운드에"
-"서 상태를 새로 고칩니다(일부 메타데이터를 다운로드하고, 업데이트를 검사하는 "
-"등의 동작으로 추가 요금이 발생할 수 있음)."
+msgstr "활성하면, 그놈 소프트웨어는 자동으로 종량제 연결을 활용하더라도 백그라운드에서 상태를 새로 고칩니다(일부 메타데이터를 다운로드하고, 업데이트를 검사하는 등의 동작으로 추가 요금이 발생할 수 있음)."
 
 #: data/org.gnome.software.gschema.xml:30
 msgid "Whether it’s the very first run of GNOME Software"
@@ -158,11 +144,9 @@ msgstr "독점 프로그램을 설치하기 전 경고 대화상자 표시"
 
 #: data/org.gnome.software.gschema.xml:43
 msgid ""
-"When non-free applications are installed a warning dialog can be shown. This "
-"controls if that dialog is suppressed."
-msgstr ""
-"독점 프로그램을 설치할 때 경고 대화상자를 표시할 수 있습니다. 대화 상자를 표"
-"시 여부를 다룹니다."
+"When non-free applications are installed a warning dialog can be shown. This"
+" controls if that dialog is suppressed."
+msgstr "독점 프로그램을 설치할 때 경고 대화상자를 표시할 수 있습니다. 대화 상자를 표시 여부를 다룹니다."
 
 #: data/org.gnome.software.gschema.xml:47
 msgid "The last update check timestamp"
@@ -195,12 +179,9 @@ msgstr "업스트림 스크린샷을 검증할 초단위 경과 시간은 여전
 #: data/org.gnome.software.gschema.xml:72
 msgid ""
 "Choosing a larger value will mean less round-trips to the remote server but "
-"updates to the screenshots may take longer to show to the user. A value of 0 "
-"means to never check the server if the image already exists in the cache."
-msgstr ""
-"큰 값을 설정하면 원격 서버 접근 횟수는 적어지지만 사용자에게 보여줄 스크린샷 "
-"업데이트 시간이 오래걸릴 수 있습니다. 0 값은 캐시에 이미 그림이 있을 경우 검"
-"사하지 않음을 의미합니다."
+"updates to the screenshots may take longer to show to the user. A value of 0"
+" means to never check the server if the image already exists in the cache."
+msgstr "큰 값을 설정하면 원격 서버 접근 횟수는 적어지지만 사용자에게 보여줄 스크린샷 업데이트 시간이 오래걸릴 수 있습니다. 0 값은 캐시에 이미 그림이 있을 경우 검사하지 않음을 의미합니다."
 
 #: data/org.gnome.software.gschema.xml:81
 msgid "The server to use for application reviews"
@@ -215,7 +196,8 @@ msgid "Reviews with karma less than this number will not be shown."
 msgstr "이 숫자보다 적은 카르마를 보유한 평가는 나타나지 않습니다."
 
 #: data/org.gnome.software.gschema.xml:90
-msgid "A list of official repositories that should not be considered 3rd party"
+msgid ""
+"A list of official repositories that should not be considered 3rd party"
 msgstr "제 3자 공급원으로 간주하지 않는 공식 저장소 목록"
 
 #: data/org.gnome.software.gschema.xml:94
@@ -223,16 +205,19 @@ msgid "A list of required repositories that cannot be disabled or removed"
 msgstr "사용 중지하거나 제거할 수 없는 필수 저장소 목록"
 
 #: data/org.gnome.software.gschema.xml:98
-msgid "A list of official repositories that should be considered free software"
+msgid ""
+"A list of official repositories that should be considered free software"
 msgstr "자유 프로그램으로 간주하는 공식 저장소 목록"
 
 #: data/org.gnome.software.gschema.xml:102
 msgid ""
-"The licence URL to use when an application should be considered free software"
+"The licence URL to use when an application should be considered free "
+"software"
 msgstr "자유 프로그램으로 간주하는 프로그램 항목에 활용할 라이선스 URL"
 
 #: data/org.gnome.software.gschema.xml:106
-msgid "Install bundled applications for all users on the system where possible"
+msgid ""
+"Install bundled applications for all users on the system where possible"
 msgstr "가능한 시스템에 모든 사용자용 번들 프로그램 설치"
 
 #: data/org.gnome.software.gschema.xml:110
@@ -251,12 +236,12 @@ msgstr "사용자에게 비 자유 앱을 알리는 일부 UI 구성 요소 표�
 msgid "Show the installed size for apps in the list of installed applications"
 msgstr "설치 프로그램 목록에 앱 설치 크기 표시"
 
-#. Translators: Replace the link with a version in your language, e.g. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include ''.
+#. Translators: Replace the link with a version in your language, e.g.
+#. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include
+#. ''.
 #: data/org.gnome.software.gschema.xml:126
 msgid "'https://en.wikipedia.org/wiki/Proprietary_software'"
-msgstr ""
-"'https://ko.wikipedia.org/wiki/"
-"%EC%82%AC%EC%9C%A0_%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4'"
+msgstr "'https://ko.wikipedia.org/wiki/%EC%82%AC%EC%9C%A0_%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4'"
 
 #: data/org.gnome.software.gschema.xml:127
 msgid "The URI that explains nonfree and proprietary software"
@@ -273,21 +258,15 @@ msgid ""
 "Install the AppStream files to a system-wide location for all users. If "
 "false, files are installed in non-standard $XDG_DATA_HOME/swcatalog/xml "
 "directory"
-msgstr ""
-"모든 사용자가 활용할 시스템 경로에 AppStream 파일을 설치합니다. 거짓으로 설정"
-"했다면, 해당 파일을 비표준 $XDG_DATA_HOME/swcatalog/xml 디렉터리 경로에 설치"
-"합니다"
+msgstr "모든 사용자가 활용할 시스템 경로에 AppStream 파일을 설치합니다. 거짓으로 설정했다면, 해당 파일을 비표준 $XDG_DATA_HOME/swcatalog/xml 디렉터리 경로에 설치합니다"
 
 #: data/org.gnome.software.gschema.xml:139
 msgid ""
 "Priority order of packaging formats to prefer, with more important formats "
 "listed first. An empty array means the default order. Omitted formats are "
-"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm, "
-"snap."
-msgstr ""
-"선호하는 패키징 형식 우선순위에 따라 중요한 순으로 나타냅니다. 빈 배열은 기"
-"본 순서를 나타냅니다. 형식을 생략하면 가장 뒤로 정렬함을 간주합니다. 패키징 "
-"형식의 예로 deb, flatpak, rpm, snap이 있습니다."
+"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm,"
+" snap."
+msgstr "선호하는 패키징 형식 우선순위에 따라 중요한 순으로 나타냅니다. 빈 배열은 기본 순서를 나타냅니다. 형식을 생략하면 가장 뒤로 정렬함을 간주합니다. 패키징 형식의 예로 deb, flatpak, rpm, snap이 있습니다."
 
 #: data/org.gnome.software.gschema.xml:146
 msgid "A string storing the gnome-online-account id used to login"
@@ -343,7 +322,8 @@ msgstr "선택한 프로그램을 시스템에 설치"
 msgid "Cartoon Violence"
 msgstr "만화 수준 폭력"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:136
 msgid "No information regarding cartoon violence"
 msgstr "만화 폭력 관련 내용 없음"
@@ -353,7 +333,8 @@ msgstr "만화 폭력 관련 내용 없음"
 msgid "Fantasy Violence"
 msgstr "판타지 폭력"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:146
 msgid "No information regarding fantasy violence"
 msgstr "공상적 폭력 관련 내용 없음"
@@ -363,7 +344,8 @@ msgstr "공상적 폭력 관련 내용 없음"
 msgid "Realistic Violence"
 msgstr "사실적인 폭력"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:156
 msgid "No information regarding realistic violence"
 msgstr "사실적 폭력 관련 내용 없음"
@@ -373,7 +355,8 @@ msgstr "사실적 폭력 관련 내용 없음"
 msgid "Violence Depicting Bloodshed"
 msgstr "유혈 묘사 폭력"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:166
 msgid "No information regarding bloodshed"
 msgstr "혈흔 관련 내용 없음"
@@ -383,7 +366,8 @@ msgstr "혈흔 관련 내용 없음"
 msgid "Sexual Violence"
 msgstr "성폭력"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:176
 msgid "No information regarding sexual violence"
 msgstr "성폭력 관련 내용 없음"
@@ -393,7 +377,8 @@ msgstr "성폭력 관련 내용 없음"
 msgid "Alcohol"
 msgstr "주류"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:186
 msgid "No information regarding references to alcohol"
 msgstr "주류 관련 내용 없음"
@@ -403,7 +388,8 @@ msgstr "주류 관련 내용 없음"
 msgid "Narcotics"
 msgstr "마약"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:196
 msgid "No information regarding references to illicit drugs"
 msgstr "불법 약물 관련 내용 없음"
@@ -413,7 +399,8 @@ msgstr "불법 약물 관련 내용 없음"
 msgid "Tobacco"
 msgstr "담배"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:206
 msgid "No information regarding references to tobacco products"
 msgstr "담배 상품 관련 내용 없음"
@@ -424,7 +411,8 @@ msgstr "담배 상품 관련 내용 없음"
 msgid "Nudity"
 msgstr "노출"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:216
 msgid "No information regarding nudity of any sort"
 msgstr "나체류 관련 내용 없음"
@@ -434,7 +422,8 @@ msgstr "나체류 관련 내용 없음"
 msgid "Sexual Themes"
 msgstr "성적 요소"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:226
 msgid "No information regarding references to or depictions of sexual nature"
 msgstr "성적 본성 묘사 관련 내용 없음"
@@ -444,7 +433,8 @@ msgstr "성적 본성 묘사 관련 내용 없음"
 msgid "Profanity"
 msgstr "비속어"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:236
 msgid "No information regarding profanity of any kind"
 msgstr "비속어 관련 내용 없음"
@@ -454,7 +444,8 @@ msgstr "비속어 관련 내용 없음"
 msgid "Inappropriate Humor"
 msgstr "부적절한 유머"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:246
 msgid "No information regarding inappropriate humor"
 msgstr "부적절한 유머 관련 내용 없음"
@@ -464,7 +455,8 @@ msgstr "부적절한 유머 관련 내용 없음"
 msgid "Discrimination"
 msgstr "차별"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:256
 msgid "No information regarding discriminatory language of any kind"
 msgstr "차별 언어 관련 내용 없음"
@@ -474,7 +466,8 @@ msgstr "차별 언어 관련 내용 없음"
 msgid "Advertising"
 msgstr "광고"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:266
 msgid "No information regarding advertising of any kind"
 msgstr "광고 관련 내용 없음"
@@ -484,7 +477,8 @@ msgstr "광고 관련 내용 없음"
 msgid "Gambling"
 msgstr "도박"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:276
 msgid "No information regarding gambling of any kind"
 msgstr "도박 관련 내용 없음"
@@ -494,7 +488,8 @@ msgstr "도박 관련 내용 없음"
 msgid "Purchasing"
 msgstr "구매"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:286
 msgid "No information regarding the ability to spend money"
 msgstr "금전 소비 관련 내용 없음"
@@ -504,7 +499,8 @@ msgstr "금전 소비 관련 내용 없음"
 msgid "Chat Between Users"
 msgstr "타인과의 문자 대화"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:296
 msgid "No information regarding ways to chat with other users"
 msgstr "타 사용자와의 문자 대화 관련 내용 없음"
@@ -514,7 +510,8 @@ msgstr "타 사용자와의 문자 대화 관련 내용 없음"
 msgid "Audio Chat Between Users"
 msgstr "타인과의 음성 대화"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:306
 msgid "No information regarding ways to talk with other users"
 msgstr "타 사용자와의 음성 대화 관련 내용 없음"
@@ -524,7 +521,8 @@ msgstr "타 사용자와의 음성 대화 관련 내용 없음"
 msgid "Contact Details"
 msgstr "연락처 상세 정보"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:316
 msgid ""
 "No information regarding sharing of social network usernames or email "
@@ -536,9 +534,11 @@ msgstr "소셜 네트워크 사용자 이름 또는 전자메일 주소 공유 �
 msgid "Identifying Information"
 msgstr "식별 정보"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:326
-msgid "No information regarding sharing of user information with third parties"
+msgid ""
+"No information regarding sharing of user information with third parties"
 msgstr "제 3자 업체와의 사용자 정보 공유 관련 내용 없음"
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
@@ -546,7 +546,8 @@ msgstr "제 3자 업체와의 사용자 정보 공유 관련 내용 없음"
 msgid "Location Sharing"
 msgstr "위치 공유"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:336
 msgid "No information regarding sharing of physical location with other users"
 msgstr "타인과의 위치 정보 공유 관련 내용 없음"
@@ -556,7 +557,8 @@ msgstr "타인과의 위치 정보 공유 관련 내용 없음"
 msgid "Homosexuality"
 msgstr "동성애"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:362
 msgid "No information regarding references to homosexuality"
 msgstr "동성애 관련 내용 없음"
@@ -566,7 +568,8 @@ msgstr "동성애 관련 내용 없음"
 msgid "Prostitution"
 msgstr "성매매"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:372
 msgid "No information regarding references to prostitution"
 msgstr "매춘 관련 내용 없음"
@@ -576,7 +579,8 @@ msgstr "매춘 관련 내용 없음"
 msgid "Adultery"
 msgstr "간통"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:382
 msgid "No information regarding references to adultery"
 msgstr "간통 관련 내용 없음"
@@ -586,7 +590,8 @@ msgstr "간통 관련 내용 없음"
 msgid "Sexualized Characters"
 msgstr "성적 대상화 주인공"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:392
 msgid "No information regarding sexualized characters"
 msgstr "성적 대상 내용 없음"
@@ -596,7 +601,8 @@ msgstr "성적 대상 내용 없음"
 msgid "Desecration"
 msgstr "신성 모독"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:402
 msgid "No information regarding references to desecration"
 msgstr "신성 모독 내용 없음"
@@ -606,7 +612,8 @@ msgstr "신성 모독 내용 없음"
 msgid "Human Remains"
 msgstr "시체"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:412
 msgid "No information regarding visible dead human remains"
 msgstr "시체 노출 내용 없음"
@@ -616,7 +623,8 @@ msgstr "시체 노출 내용 없음"
 msgid "Slavery"
 msgstr "노예"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:422
 msgid "No information regarding references to slavery"
 msgstr "노예 관련 내용 없음"
@@ -674,7 +682,8 @@ msgstr "폭력"
 msgid "%s • %s"
 msgstr "%s • %s"
 
-#. Translators: The app is considered suitable to be run by all ages of people.
+#. Translators: The app is considered suitable to be run by all ages of
+#. people.
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-age-rating-context-dialog.c:936
 msgctxt "Age rating"
@@ -692,50 +701,58 @@ msgstr "모두"
 msgid "?"
 msgstr "?"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for all ages. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1023
 #, c-format
 msgid "%s is suitable for everyone"
 msgstr "%s이(가) 전연령에 적합합니다"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 3. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1027
 #, c-format
 msgid "%s is suitable for toddlers"
 msgstr "%s이(가) 유아에게 적합합니다"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 5. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1031
 #, c-format
 msgid "%s is suitable for young children"
 msgstr "%s이(가) 어린이에게 적합합니다"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people up to around age 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1039
 #, c-format
 msgid "%s is suitable for teenagers"
 msgstr "%s이(가) 10대 연령에 적합합니다"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people aged up to and over 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1043
 #, c-format
 msgid "%s is suitable for adults"
 msgstr "%s이(가) 성인에게 적합합니다"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
-#. * for a specified age group. The first placeholder is the app name, the second
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
+#. * for a specified age group. The first placeholder is the app name, the
+#. second
 #. * is the age group.
 #: src/gs-age-rating-context-dialog.c:1048
 #, c-format
 msgid "%s is suitable for %s"
 msgstr "%1$s이(가) %2$s에 적합합니다"
 
-#. Translators: This is the title of the dialog which contains information about the suitability of an app for different ages.
+#. Translators: This is the title of the dialog which contains information
+#. about the suitability of an app for different ages.
 #. this one’s not a placeholder
 #: src/gs-age-rating-context-dialog.ui:5 src/gs-app-context-bar.ui:211
 msgid "Age Rating"
@@ -847,7 +864,8 @@ msgstr "파일 내용을 볼 수 있습니다"
 msgid "File system"
 msgstr "파일 시스템"
 
-#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with actual files being part of the read/full lists
+#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with
+#. actual files being part of the read/full lists
 #: src/gs-app-details-page.c:77 src/gs-app-details-page.c:78
 msgid "Downloads folder"
 msgstr "다운로드 폴더"
@@ -897,7 +915,8 @@ msgstr "뒤로 가기"
 msgid "Requires additional permissions"
 msgstr "추가 권한 필요"
 
-#. Translators: Header of the section with other users' opinions about the app.
+#. Translators: Header of the section with other users' opinions about the
+#. app.
 #: src/gs-app-reviews-dialog.ui:6 src/gs-details-page.ui:855
 msgid "Reviews"
 msgstr "평가"
@@ -1124,31 +1143,36 @@ msgstr "세션 서비스 활용"
 msgid "Can access hardware devices"
 msgstr "하드웨어 장치에 접근할 수 있음"
 
-#. Translators: This indicates an app can read/write to the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read/write to the user’s home or the
+#. entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:326
 msgid "Can read/write all your data"
 msgstr "모든 데이터를 읽고 쓸 수 있음"
 
-#. Translators: This indicates an app can read (but not write) from the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. home or the entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:338
 msgid "Can read all your data"
 msgstr "모든 데이터를 읽을 수 있음"
 
-#. Translators: This indicates an app can read/write to the user’s Downloads directory.
+#. Translators: This indicates an app can read/write to the user’s Downloads
+#. directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:345
 msgid "Can read/write your downloads"
 msgstr "다운로드를 읽고 쓸 수 있음"
 
-#. Translators: This indicates an app can read (but not write) from the user’s Downloads directory.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. Downloads directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:352
 msgid "Can read your downloads"
 msgstr "다운로드를 읽을 수 있음"
 
-#. Translators: This indicates an app can access data in the system unknown to the Software.
+#. Translators: This indicates an app can access data in the system unknown to
+#. the Software.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:359
 msgid "Can access arbitrary files"
@@ -1186,19 +1210,22 @@ msgstr "배포판에서 검토함"
 msgid "Provided by a third party"
 msgstr "제 3자 공급원에서 제공"
 
-#. Translators: This indicates an app is not licensed under a free software license.
+#. Translators: This indicates an app is not licensed under a free software
+#. license.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:425
 msgid "Proprietary code"
 msgstr "상업용 코드"
 
-#. Translators: This indicates an app’s source code is freely available, so can be audited for security.
+#. Translators: This indicates an app’s source code is freely available, so
+#. can be audited for security.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:431
 msgid "Auditable code"
 msgstr "검수할 수 있는 코드"
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:438
 msgid "Software developer is verified"
@@ -1220,7 +1247,8 @@ msgstr "소프트웨어를 더 이상 지원하지 않습니다"
 #. Translators: This string is used to join various other translated
 #. * strings into an inline list of reasons why an app has been given a
 #. * certain content rating. For example:
-#. * “References to alcoholic beverages; Moderated chat functionality between users”
+#. * “References to alcoholic beverages; Moderated chat functionality between
+#. users”
 #. * If concatenating strings as a list using a separator like this is not
 #. * possible in your language, please file an issue against gnome-software:
 #. * https://gitlab.gnome.org/GNOME/gnome-software/-/issues/new
@@ -1385,7 +1413,8 @@ msgstr "업데이트 하는 동안 장치를 사용할 수 없습니다."
 msgid "Source: %s"
 msgstr "공급원: %s"
 
-#. Translators: A message to indicate that an app has been renamed. The placeholder is the old human-readable name.
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
 #: src/gs-app-row.c:523
 #, c-format
 msgid "Renamed from %s"
@@ -1401,16 +1430,10 @@ msgstr "%s 번역 돕기"
 #: src/gs-app-translation-dialog.c:70
 #, c-format
 msgid ""
-"%s is designed, developed, and translated by an international community of "
-"volunteers.\n"
+"%s is designed, developed, and translated by an international community of volunteers.\n"
 "\n"
-"This means that while it’s not yet available in your language, you can get "
-"involved and help translate it yourself."
-msgstr ""
-"%s은(는) 자원봉사 국제 모임에서 설계, 개발, 번역합니다.\n"
-"\n"
-"원하는 언어가 아직 없을 수 있긴 하지만, 직접 참여하여 번역을 도울 수 있습니"
-"다."
+"This means that while it’s not yet available in your language, you can get involved and help translate it yourself."
+msgstr "%s은(는) 자원봉사 국제 모임에서 설계, 개발, 번역합니다.\n\n원하는 언어가 아직 없을 수 있긴 하지만, 직접 참여하여 번역을 도울 수 있습니다."
 
 #: src/gs-app-translation-dialog.ui:5
 msgid "Translations"
@@ -1467,13 +1490,15 @@ msgid "Featured"
 msgstr "추천"
 
 #. Heading for featured apps on a category page
-#. Translators: This is a heading for software which has been featured ('picked') by the distribution.
+#. Translators: This is a heading for software which has been featured
+#. ('picked') by the distribution.
 #: src/gs-category-page.ui:41 src/gs-overview-page.ui:106
 msgid "Editor’s Choice"
 msgstr "편집자 추천"
 
 #. Heading for recently updated apps on a category page
-#. Translators: This is a heading for software which has been recently released upstream.
+#. Translators: This is a heading for software which has been recently
+#. released upstream.
 #: src/gs-category-page.ui:69 src/gs-overview-page.ui:129
 msgid "New & Updated"
 msgstr "최신"
@@ -1924,16 +1949,13 @@ msgstr "제 3자 프로그램 저장소를 활성화하시겠습니까?"
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
 #. * 2. Software repository name, e.g. fedora-optional
-#.
 #: src/gs-common.c:240
 #, c-format
 msgid ""
 "%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">free and open source software</a>, and is provided by “%s”."
-msgstr ""
-"%s 프로그램은 <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">자유 오픈 소스 소프트웨어</a>가 아니며, “%s”에서 제공합니"
-"다."
+"source_software\">free and open source software</a>, and is provided by "
+"“%s”."
+msgstr "%s 프로그램은 <a href=\"https://en.wikipedia.org/wiki/Free_and_open-source_software\">자유 오픈 소스 소프트웨어</a>가 아니며, “%s”에서 제공합니다."
 
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
@@ -2048,8 +2070,10 @@ msgid "%d year ago"
 msgid_plural "%d years ago"
 msgstr[0] "%d년 전"
 
-#. Translators: This is to construct a disk size string consisting of the value and its unit, while
-#. * the unit is drawn with a smaller font. If you need to flip the order, then you can use "%2$s %1$s".
+#. Translators: This is to construct a disk size string consisting of the
+#. value and its unit, while
+#. * the unit is drawn with a smaller font. If you need to flip the order,
+#. then you can use "%2$s %1$s".
 #. * Make sure you'll preserve the no break space between the values.
 #. * Example result: "13.0 MB"
 #: src/gs-common.c:1255
@@ -2058,12 +2082,14 @@ msgctxt "format-size"
 msgid "%s %s"
 msgstr "%s %s"
 
-#. TRANSLATORS: this is a what we use in notifications if the app's name is unknown
+#. TRANSLATORS: this is a what we use in notifications if the app's name is
+#. unknown
 #: src/gs-dbus-helper.c:291
 msgid "An application"
 msgstr "프로그램"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional MIME types.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. MIME types.
 #: src/gs-dbus-helper.c:297
 #, c-format
 msgid "%s is requesting additional file format support."
@@ -2074,7 +2100,8 @@ msgstr "%s이(가) 추가 파일 형식 지원을 요청합니다."
 msgid "Additional MIME Types Required"
 msgstr "추가 MIME 형식이 필요함"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional fonts.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. fonts.
 #: src/gs-dbus-helper.c:303
 #, c-format
 msgid "%s is requesting additional fonts."
@@ -2085,7 +2112,8 @@ msgstr "%s이(가) 추가 글꼴을 요청합니다."
 msgid "Additional Fonts Required"
 msgstr "추가 글꼴이 필요함"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional codecs.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. codecs.
 #: src/gs-dbus-helper.c:309
 #, c-format
 msgid "%s is requesting additional multimedia codecs."
@@ -2096,7 +2124,8 @@ msgstr "%s이(가) 추가 멀티미디어 코덱을 요청합니다."
 msgid "Additional Multimedia Codecs Required"
 msgstr "추가 멀티미디어 코덱이 필요함"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional printer drivers.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. printer drivers.
 #: src/gs-dbus-helper.c:315
 #, c-format
 msgid "%s is requesting additional printer drivers."
@@ -2107,7 +2136,8 @@ msgstr "%s이(가) 추가 프린터 드라이버를 요청합니다."
 msgid "Additional Printer Drivers Required"
 msgstr "추가 프린터 드라이버가 필요함"
 
-#. TRANSLATORS: this is a notification displayed when an app wants to install additional packages.
+#. TRANSLATORS: this is a notification displayed when an app wants to install
+#. additional packages.
 #: src/gs-dbus-helper.c:321
 #, c-format
 msgid "%s is requesting additional packages."
@@ -2155,7 +2185,8 @@ msgstr "설치 대기중…"
 msgid "Pending update…"
 msgstr "업데이트 대기중…"
 
-#. Translators: This string is shown when preparing to download and install an app.
+#. Translators: This string is shown when preparing to download and install an
+#. app.
 #: src/gs-details-page.c:414
 msgid "Preparing…"
 msgstr "준비중…"
@@ -2214,9 +2245,7 @@ msgstr "프로그램 세부 정보 불러오는 중…"
 msgid ""
 "This software is not available in your language and will appear in US "
 "English."
-msgstr ""
-"이 프로그램은 시스템에서 사용중인 언어 메시지를 제공하지 않아 미국 영어 버전"
-"으로 나타납니다."
+msgstr "이 프로그램은 시스템에서 사용중인 언어 메시지를 제공하지 않아 미국 영어 버전으로 나타납니다."
 
 #: src/gs-details-page.ui:83
 msgid "Help _Translate"
@@ -2257,9 +2286,7 @@ msgstr "포함된 프로그램 저장소"
 msgid ""
 "This application includes a software repository which provides updates, as "
 "well as access to other software."
-msgstr ""
-"이 프로그램에는 다른 프로그램처럼 접근하여 업데이트를 제공하는 프로그램 저장"
-"소가 있습니다."
+msgstr "이 프로그램에는 다른 프로그램처럼 접근하여 업데이트를 제공하는 프로그램 저장소가 있습니다."
 
 #: src/gs-details-page.ui:605
 msgid "No Software Repository Included"
@@ -2269,18 +2296,16 @@ msgstr "포함된 프로그램 저장소 없음"
 msgid ""
 "This application does not include a software repository. It will not be "
 "updated with new versions."
-msgstr ""
-"이 프로그램에는 프로그램 저장소가 없습니다. 새 버전으로 업데이트하지 않겠습니"
-"다."
+msgstr "이 프로그램에는 프로그램 저장소가 없습니다. 새 버전으로 업데이트하지 않겠습니다."
 
 #: src/gs-details-page.ui:624
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
-msgstr ""
-"이 프로그램은 이미 배포판에서 제공하며 다른 프로그램으로 바꿀 수 없습니다."
+msgstr "이 프로그램은 이미 배포판에서 제공하며 다른 프로그램으로 바꿀 수 없습니다."
 
-#. Translators: a repository file used for installing software has been discovered.
+#. Translators: a repository file used for installing software has been
+#. discovered.
 #: src/gs-details-page.ui:641
 msgid "Software Repository Identified"
 msgstr "식별된 프로그램 저장소"
@@ -2289,9 +2314,7 @@ msgstr "식별된 프로그램 저장소"
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
-msgstr ""
-"이 프로그램 저장소을 추가하면 추가 프로그램과 업그레이드에 접근할 수 있습니"
-"다."
+msgstr "이 프로그램 저장소을 추가하면 추가 프로그램과 업그레이드에 접근할 수 있습니다."
 
 #: src/gs-details-page.ui:643
 msgid "Only use software repositories that you trust."
@@ -2305,8 +2328,7 @@ msgstr "메타데이터 없음"
 msgid ""
 "This software doesn’t provide any links to a website, code repository or "
 "issue tracker."
-msgstr ""
-"이 프로그램은 웹사이트, 코드 저장소 또는 문제 추적 사이트 링크가 없습니다."
+msgstr "이 프로그램은 웹사이트, 코드 저장소 또는 문제 추적 사이트 링크가 없습니다."
 
 #: src/gs-details-page.ui:745
 msgid "Project _Website"
@@ -2328,7 +2350,8 @@ msgstr "문제 보고(_R)"
 msgid "_Help"
 msgstr "도움말(_H)"
 
-#. Translators: Button opening a dialog where the users can write and publish their opinions about the apps.
+#. Translators: Button opening a dialog where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-details-page.ui:907
 msgid "_Write Review"
 msgstr "평가 작성(_W)"
@@ -2400,10 +2423,9 @@ msgstr "%s 파일을 제공하는 프로그램이 없습니다."
 #: src/gs-extras-page.c:358 src/gs-extras-page.c:369 src/gs-extras-page.c:380
 #, c-format
 msgid ""
-"Information about %s, as well as options for how to get missing applications "
-"might be found %s."
-msgstr ""
-"빠진 프로그램 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 있습니다."
+"Information about %s, as well as options for how to get missing applications"
+" might be found %s."
+msgstr "빠진 프로그램 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 있습니다."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2426,9 +2448,7 @@ msgstr "%s이(가) 없습니다."
 msgid ""
 "Information about %s, as well as options for how to get an application that "
 "can support this format might be found %s."
-msgstr ""
-"이 형식을 지원하는 프로그램 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 "
-"있습니다."
+msgstr "이 형식을 지원하는 프로그램 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 있습니다."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2460,9 +2480,7 @@ msgstr "%s 형식에 대한 추가 코덱이 없습니다."
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
 "play this format might be found %s."
-msgstr ""
-"이 형식을 재생할 수 있는 코덱 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 "
-"수 있습니다."
+msgstr "이 형식을 재생할 수 있는 코덱 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 있습니다."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2478,8 +2496,7 @@ msgstr "%s을(를) 지원하는 플라즈마 자원이 없습니다."
 msgid ""
 "Information about %s, as well as options for how to get additional Plasma "
 "resources might be found %s."
-msgstr ""
-"추가 플라즈마 자원 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 있습니다."
+msgstr "추가 플라즈마 자원 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 있습니다."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2495,28 +2512,27 @@ msgstr "%s용 프린터 드라이버가 없습니다."
 msgid ""
 "Information about %s, as well as options for how to get a driver that "
 "supports this printer might be found %s."
-msgstr ""
-"이 프린터를 지원하는 드라이버 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 "
-"수 있습니다."
+msgstr "이 프린터를 지원하는 드라이버 가져오기 설정 항목 같은 %s 정보는 %s에서 찾을 수 있습니다."
 
 #. TRANSLATORS: hyperlink title
 #: src/gs-extras-page.c:481
 msgid "the documentation"
 msgstr "문서"
 
-#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual codec name(s),
-#. the second %s is the application name, which requested the codecs, the third %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual
+#. codec name(s),
+#. the second %s is the application name, which requested the codecs, the
+#. third %s is a link titled "the documentation"
 #: src/gs-extras-page.c:487
 #, c-format
 msgid ""
 "Unable to find the %s requested by %s. Please see %s for more information."
 msgid_plural ""
 "Unable to find the %s requested by %s. Please see %s for more information."
-msgstr[0] ""
-"안타깝게도, %2$s에서 요청한 %1$s을(를) 찾지 못했습니다. 더 알아보시려면 %3$s"
-"을(를) 참고하십시오."
+msgstr[0] "안타깝게도, %2$s에서 요청한 %1$s을(를) 찾지 못했습니다. 더 알아보시려면 %3$s을(를) 참고하십시오."
 
-#. TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. First %s will be replaced by actual
+#. codec name(s), second %s is a link titled "the documentation"
 #: src/gs-extras-page.c:496
 #, c-format
 msgid ""
@@ -2525,9 +2541,7 @@ msgid ""
 msgid_plural ""
 "Unable to find the %s you were searching for. Please see %s for more "
 "information."
-msgstr[0] ""
-"안타깝게도, %s 검색 대상을 찾지 못했습니다. 더 알아보시려면 %s을(를) 참고하십"
-"시오."
+msgstr[0] "안타깝게도, %s 검색 대상을 찾지 못했습니다. 더 알아보시려면 %s을(를) 참고하십시오."
 
 #: src/gs-extras-page.c:574 src/gs-extras-page.c:631 src/gs-extras-page.c:671
 #, c-format
@@ -2756,13 +2770,16 @@ msgstr "이 장치에 %s이(가) 동작하지 않을 수도 있습니다"
 msgid "%s will not work on this device"
 msgstr "이 장치에 %s이(가) 동작하지 않습니다"
 
-#. Translators: This is the title of the dialog which contains information about the hardware support/requirements of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the hardware support/requirements of an app
 #: src/gs-hardware-support-context-dialog.ui:5
 msgid "Hardware Support"
 msgstr "하드웨어 지원"
 
-#. Translators: This is in the context of a list of apps which are installed on the system.
-#. Translators: A label for a button to show only software which is already installed.
+#. Translators: This is in the context of a list of apps which are installed
+#. on the system.
+#. Translators: A label for a button to show only software which is already
+#. installed.
 #: src/gs-installed-page.c:812 src/gs-shell.ui:307
 msgctxt "List of installed apps"
 msgid "Installed"
@@ -2798,33 +2815,24 @@ msgstr "커뮤니티에서 빌드함"
 msgid "_Get Involved"
 msgstr "참여하기(_G)"
 
-#. Translators: The first placeholder here is a link to information about the license, and the second placeholder here is the name of a software license.
+#. Translators: The first placeholder here is a link to information about the
+#. license, and the second placeholder here is the name of a software license.
 #: src/gs-license-tile.c:114
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the <a href=\"%s\">%s license</a>.\n"
+"This software is developed in the open by a community of volunteers, and released under the <a href=\"%s\">%s license</a>.\n"
 "\n"
 "You can contribute and help make it even better."
-msgstr ""
-"이 프로그램은 봉사자 모임에서 공개 개발하며, <a href=\"%s\">%s 라이선스</a> "
-"하에 출시합니다.\n"
-"\n"
-"프로그램 개선 기여에 참여할 수 있습니다."
+msgstr "이 프로그램은 봉사자 모임에서 공개 개발하며, <a href=\"%s\">%s 라이선스</a> 하에 출시합니다.\n\n프로그램 개선 기여에 참여할 수 있습니다."
 
 #. Translators: The placeholder here is the name of a software license.
 #: src/gs-license-tile.c:121
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the %s license.\n"
+"This software is developed in the open by a community of volunteers, and released under the %s license.\n"
 "\n"
 "You can contribute and help make it even better."
-msgstr ""
-"이 프로그램은 봉사자 모임에서 공개 개발하며, %s 라이선스 조항 하에 출시합니"
-"다.\n"
-"\n"
-"프로그램 개선 기여에 참여할 수 있습니다."
+msgstr "이 프로그램은 봉사자 모임에서 공개 개발하며, %s 라이선스 조항 하에 출시합니다.\n\n프로그램 개선 기여에 참여할 수 있습니다."
 
 #: src/gs-license-tile.c:127
 msgid "Proprietary"
@@ -2836,17 +2844,10 @@ msgstr "더 알아보기(_L)"
 
 #: src/gs-license-tile.c:135
 msgid ""
-"This software is not developed in the open, so only its developers know how "
-"it works. It may be insecure in ways that are hard to detect, and it may "
-"change without oversight.\n"
+"This software is not developed in the open, so only its developers know how it works. It may be insecure in ways that are hard to detect, and it may change without oversight.\n"
 "\n"
 "You may not be able to contribute to this software."
-msgstr ""
-"이 프로그램은 공개적으로 개발하지 않아 동작하는 방식은 개발자만 알고 있습니"
-"다. 사용상 제약이 있을 수 있으며, 프로그램이 안전한 지 여부를 알 수 없습니"
-"다.\n"
-"\n"
-"이 프로그램에 기여하거나 개발 과정에 영향을 줄 수 없습니다."
+msgstr "이 프로그램은 공개적으로 개발하지 않아 동작하는 방식은 개발자만 알고 있습니다. 사용상 제약이 있을 수 있으며, 프로그램이 안전한 지 여부를 알 수 없습니다.\n\n이 프로그램에 기여하거나 개발 과정에 영향을 줄 수 없습니다."
 
 #. TRANSLATORS: initial start
 #: src/gs-loading-page.c:56
@@ -2867,25 +2868,12 @@ msgstr "자동 업데이트 멈춤"
 
 #: src/gs-metered-data-dialog.ui:9
 msgid ""
-"The current network is metered. Metered connections have data limits or "
-"charges associated with them. To save data, automatic updates have therefore "
-"been paused.\n"
+"The current network is metered. Metered connections have data limits or charges associated with them. To save data, automatic updates have therefore been paused.\n"
 "\n"
-"Automatic updates will be resumed when an un­metered network becomes "
-"available. Until then, it is still possible to manually install updates.\n"
+"Automatic updates will be resumed when an un­metered network becomes available. Until then, it is still possible to manually install updates.\n"
 "\n"
-"Alternatively, if the current network has been in­correctly identified as "
-"being metered, this setting can be changed."
-msgstr ""
-"현재 접속 네트워크는 종량제입니다. 종량제 연결은 데이터 사용량, 속도 등을 제"
-"한하거나 해당 사용건에 대해 요금을 부과합니다. 데이터 사용량을 절약하려면 자"
-"동 업데이트를 멈춰야합니다.\n"
-"\n"
-"비 종량제 네트워크를 연결할 수 있을 경우 자동 업데이트를 재개합니다. 그때까지"
-"라도, 직접 업데이트를 설치하실 수 있습니다.\n"
-"\n"
-"대신 현재 네트워크를 종량제 네트워크로 잘못 인식했다면, 이 설정을 바꿀 수 있"
-"습니다."
+"Alternatively, if the current network has been in­correctly identified as being metered, this setting can be changed."
+msgstr "현재 접속 네트워크는 종량제입니다. 종량제 연결은 데이터 사용량, 속도 등을 제한하거나 해당 사용건에 대해 요금을 부과합니다. 데이터 사용량을 절약하려면 자동 업데이트를 멈춰야합니다.\n\n비 종량제 네트워크를 연결할 수 있을 경우 자동 업데이트를 재개합니다. 그때까지라도, 직접 업데이트를 설치하실 수 있습니다.\n\n대신 현재 네트워크를 종량제 네트워크로 잘못 인식했다면, 이 설정을 바꿀 수 있습니다."
 
 #: src/gs-metered-data-dialog.ui:17
 msgid "Open Network _Settings"
@@ -2938,21 +2926,23 @@ msgstr "업데이트"
 msgid "Downgrades"
 msgstr "다운그레이드"
 
-#. Translators: This is a clickable link on the third party repositories info bar. It's
-#. part of a constructed sentence: "Provides access to additional software from [selected external sources].
+#. Translators: This is a clickable link on the third party repositories info
+#. bar. It's
+#. part of a constructed sentence: "Provides access to additional software
+#. from [selected external sources].
 #. Some proprietary software is included."
 #: src/gs-overview-page.c:879
 msgid "selected external sources"
 msgstr "선택한 외부 공급원"
 
-#. Translators: This is the third party repositories info bar. The %s is replaced with "selected external sources" link.
+#. Translators: This is the third party repositories info bar. The %s is
+#. replaced with "selected external sources" link.
 #: src/gs-overview-page.c:881
 #, c-format
 msgid ""
-"Provides access to additional software from %s. Some proprietary software is "
-"included."
-msgstr ""
-"%s에서 추가 프로그램을 제공합니다. 일부 상업용 프로그램이 들어있습니다."
+"Provides access to additional software from %s. Some proprietary software is"
+" included."
+msgstr "%s에서 추가 프로그램을 제공합니다. 일부 상업용 프로그램이 들어있습니다."
 
 #. TRANSLATORS: button to turn on third party software repositories
 #. TRANSLATORS: button to accept the agreement
@@ -3012,9 +3002,7 @@ msgstr "정말로 %s 저장소를 제거하시겠습니까?"
 msgid ""
 "All applications from %s will be uninstalled, and you will have to re-"
 "install the repository to use them again."
-msgstr ""
-"%s에서 모든 프로그램을 제거하겠으며, 다시 사용하려면 저장소를 다시 설치해야 "
-"합니다."
+msgstr "%s에서 모든 프로그램을 제거하겠으며, 다시 사용하려면 저장소를 다시 설치해야 합니다."
 
 #. TRANSLATORS: this is a prompt message, and '%s' is an
 #. * application summary, e.g. 'GNOME Clocks'
@@ -3038,9 +3026,7 @@ msgstr "업데이트 기본 설정"
 msgid ""
 "To avoid charges and network caps, software updates are not automatically "
 "downloaded on mobile or metered connections."
-msgstr ""
-"프로그램 업데이트는 네트워크 과금을 방지할 목적으로 모바일 또는 종량제 연결망"
-"에서 자동으로 다운로드하지 않습니다."
+msgstr "프로그램 업데이트는 네트워크 과금을 방지할 목적으로 모바일 또는 종량제 연결망에서 자동으로 다운로드하지 않습니다."
 
 #: src/gs-prefs-dialog.ui:19
 msgid "Automatic Updates"
@@ -3066,9 +3052,7 @@ msgstr "업데이트를 자동으로 설치할 때 알림을 나타냅니다."
 msgid ""
 "Some of the currently installed software is not compatible with %s. If you "
 "continue, the following will be automatically removed during the upgrade:"
-msgstr ""
-"현재 설치한 일부 프로그램이 %s에 호환되지 않습니다. 계속하면 업그레이드를 진"
-"행하는 동안 다음 항목을 자동으로 제거합니다:"
+msgstr "현재 설치한 일부 프로그램이 %s에 호환되지 않습니다. 계속하면 업그레이드를 진행하는 동안 다음 항목을 자동으로 제거합니다:"
 
 #: src/gs-removal-dialog.ui:4
 msgid "Incompatible Software"
@@ -3078,7 +3062,8 @@ msgstr "호환성 없는 프로그램"
 msgid "_Continue"
 msgstr "계속(_C)"
 
-#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora Modular - x86_64"
+#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora
+#. Modular - x86_64"
 #: src/gs-repos-dialog.c:239
 #, c-format
 msgid ""
@@ -3117,8 +3102,10 @@ msgstr "새 공급원을 추가했을 때 바로 연결합니다."
 msgid "more information"
 msgstr "추가 정보"
 
-#. TRANSLATORS: this is the third party repositories info bar. The '%s' is replaced
-#. with a link consisting a text "more information", which constructs a sentence:
+#. TRANSLATORS: this is the third party repositories info bar. The '%s' is
+#. replaced
+#. with a link consisting a text "more information", which constructs a
+#. sentence:
 #. "Additional repositories from selected third parties - more information."
 #: src/gs-repos-dialog.c:523
 #, c-format
@@ -3135,7 +3122,8 @@ msgstr "페도라 제 3자 저장소"
 msgid "the operating system"
 msgstr "운영체제"
 
-#. TRANSLATORS: This is the description text displayed in the Software Repositories dialog.
+#. TRANSLATORS: This is the description text displayed in the Software
+#. Repositories dialog.
 #. %s gets replaced by the name of the actual distro, e.g. Fedora.
 #: src/gs-repos-dialog.c:728
 #, c-format
@@ -3195,8 +3183,10 @@ msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
 msgstr[0] "%s 및 %s을(를) 설치했습니다"
 
-#. Translators: The first '%s' is replaced with a text like '10 applications installed',
-#. the second '%s' is replaced with installation kind, like in case of Flatpak 'User Installation'.
+#. Translators: The first '%s' is replaced with a text like '10 applications
+#. installed',
+#. the second '%s' is replaced with installation kind, like in case of Flatpak
+#. 'User Installation'.
 #: src/gs-repo-row.c:243
 #, c-format
 msgctxt "repo-row"
@@ -3263,7 +3253,8 @@ msgstr "설명이 너무 짧습니다"
 msgid "The description is too long"
 msgstr "설명이 너무 깁니다"
 
-#. Translators: Title of the dialog box where the users can write and publish their opinions about the apps.
+#. Translators: Title of the dialog box where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-review-dialog.ui:10
 msgid "Post Review"
 msgstr "평가 제출"
@@ -3299,12 +3290,10 @@ msgstr "이 앱은 어떤가요? 평가해보시고 이유를 이야기해보세
 
 #: src/gs-review-dialog.ui:156
 msgid ""
-"Find what data is sent in our <a href=\"https://odrs.gnome.org/"
-"privacy\">privacy policy</a>. The full name attached to your account will be "
-"shown publicly."
-msgstr ""
-"<a href=\"https://odrs.gnome.org/privacy\">개인 정보 보호 정책</a>에서 어떤 "
-"데이터를 보내는지 확인해보십시오. 계정에 붙는 성명 정보는 공개됩니다."
+"Find what data is sent in our <a "
+"href=\"https://odrs.gnome.org/privacy\">privacy policy</a>. The full name "
+"attached to your account will be shown publicly."
+msgstr "<a href=\"https://odrs.gnome.org/privacy\">개인 정보 보호 정책</a>에서 어떤 데이터를 보내는지 확인해보십시오. 계정에 붙는 성명 정보는 공개됩니다."
 
 #: src/gs-review-histogram.c:72
 #, c-format
@@ -3325,9 +3314,7 @@ msgstr "알 수 없음"
 #. TRANSLATORS: we explain what the action is going to do
 #: src/gs-review-row.c:220
 msgid "You can report reviews for abusive, rude, or discriminatory behavior."
-msgstr ""
-"시스템에 해를 가하거나, 기능이 제대로 동작하지 않거나, 사용자를 차별하는 기능"
-"에 대한 평가를 보고할 수 있습니다."
+msgstr "시스템에 해를 가하거나, 기능이 제대로 동작하지 않거나, 사용자를 차별하는 기능에 대한 평가를 보고할 수 있습니다."
 
 #. TRANSLATORS: we ask the user if they really want to do this
 #: src/gs-review-row.c:225
@@ -3349,7 +3336,8 @@ msgstr "평가를 제출하시겠습니까?"
 msgid "Report"
 msgstr "제출"
 
-#. Translators: Users can express their opinions about other users' opinions about the apps.
+#. Translators: Users can express their opinions about other users' opinions
+#. about the apps.
 #: src/gs-review-row.ui:84
 msgid "Was this review useful to you?"
 msgstr "평가 내용이 도움 됐나요?"
@@ -3377,17 +3365,16 @@ msgstr "제거…"
 
 #: src/gs-safety-context-dialog.c:144
 msgid "Check that you trust the vendor, as the application isn’t sandboxed"
-msgstr ""
-"프로그램을 샌드박싱하지 않았습니다. 신뢰할 수 있는 공급자인지 확인하십시오."
+msgstr "프로그램을 샌드박싱하지 않았습니다. 신뢰할 수 있는 공급자인지 확인하십시오."
 
 #: src/gs-safety-context-dialog.c:147
 msgid ""
 "Application isn’t sandboxed but the distribution has checked that it is not "
 "malicious"
-msgstr ""
-"프로그램을 샌드박싱하지 않았지만 배포판 관리자가 취약점이 없음을 확인했습니다"
+msgstr "프로그램을 샌드박싱하지 않았지만 배포판 관리자가 취약점이 없음을 확인했습니다"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:160
 msgid "No Permissions"
 msgstr "권한 없음"
@@ -3396,7 +3383,8 @@ msgstr "권한 없음"
 msgid "App is fully sandboxed"
 msgstr "샌드박스에서만 온전히 실행하는 앱"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:172
 msgid "Network Access"
 msgstr "네트워크 접근"
@@ -3405,7 +3393,8 @@ msgstr "네트워크 접근"
 msgid "Can access the internet"
 msgstr "인터넷에 접근할 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:176
 msgid "No Network Access"
 msgstr "네트워크 접근 안함"
@@ -3414,7 +3403,8 @@ msgstr "네트워크 접근 안함"
 msgid "Cannot access the internet"
 msgstr "인터넷에 접근할 수 없음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:183
 msgid "Uses System Services"
 msgstr "시스템 서비스 활용"
@@ -3423,7 +3413,8 @@ msgstr "시스템 서비스 활용"
 msgid "Can request data from system services"
 msgstr "시스템 서비스에서 데이터를 요청할 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:191
 msgid "Uses Session Services"
 msgstr "세션 서비스 활용"
@@ -3432,7 +3423,8 @@ msgstr "세션 서비스 활용"
 msgid "Can request data from session services"
 msgstr "세션 서비스에서 데이터를 요청할 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:199
 msgid "Device Access"
 msgstr "장치 접근"
@@ -3441,7 +3433,8 @@ msgstr "장치 접근"
 msgid "Can access devices such as webcams or gaming controllers"
 msgstr "웹캠 또는 게임 컨트롤러 장치에 접근할 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:203
 msgid "No Device Access"
 msgstr "장치 접근 안함"
@@ -3450,22 +3443,26 @@ msgstr "장치 접근 안함"
 msgid "Cannot access devices such as webcams or gaming controllers"
 msgstr "웹캠 또는 게임 컨트롤러 장치에 접근할 수 없음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:210
 msgid "Legacy Windowing System"
 msgstr "이전 윈도우 시스템"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:218
 msgid "Arbitrary Permissions"
 msgstr "임의 권한"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:226
 msgid "User Settings"
 msgstr "사용자 설정"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:238
 msgid "Full File System Read/Write Access"
 msgstr "전체 파일 시스템 읽기/쓰기 접근"
@@ -3474,7 +3471,8 @@ msgstr "전체 파일 시스템 읽기/쓰기 접근"
 msgid "Can read and write all data on the file system"
 msgstr "파일 시스템의 모든 데이터를 읽고 쓸 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:247
 msgid "Home Folder Read/Write Access"
 msgstr "사용자 폴더 읽기/쓰기 접근"
@@ -3483,7 +3481,8 @@ msgstr "사용자 폴더 읽기/쓰기 접근"
 msgid "Can read and write all data in your home directory"
 msgstr "사용자 디렉터리의 모든 데이터를 읽고 쓸 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:256
 msgid "Full File System Read Access"
 msgstr "전체 파일 시스템 읽기 접근"
@@ -3492,7 +3491,8 @@ msgstr "전체 파일 시스템 읽기 접근"
 msgid "Can read all data on the file system"
 msgstr "파일 시스템의 모든 데이터를 읽을 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:266
 msgid "Home Folder Read Access"
 msgstr "사용자 폴더 읽기 접근"
@@ -3501,7 +3501,8 @@ msgstr "사용자 폴더 읽기 접근"
 msgid "Can read all data in your home directory"
 msgstr "사용자 디렉터리의 모든 데이터를 읽을 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:276
 msgid "Download Folder Read/Write Access"
 msgstr "다운로드 폴더 읽기/쓰기 접근"
@@ -3510,7 +3511,8 @@ msgstr "다운로드 폴더 읽기/쓰기 접근"
 msgid "Can read and write all data in your downloads directory"
 msgstr "다운로드 디렉터리의 모든 데이터를 읽고 쓸 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:288
 msgid "Download Folder Read Access"
 msgstr "다운로드 폴더 읽기 접근"
@@ -3527,7 +3529,8 @@ msgstr "디렉터리의 모든 데이터를 읽고 쓸 수 있음"
 msgid "Can read all data in the directory"
 msgstr "디렉터리의 모든 데이터를 읽을 수 있음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:326
 msgid "No File System Access"
 msgstr "파일 시스템 접근 안함"
@@ -3536,7 +3539,8 @@ msgstr "파일 시스템 접근 안함"
 msgid "Cannot access the file system at all"
 msgstr "파일 시스템 어디든 접근할 수 없음"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:341
 msgid "Proprietary Code"
 msgstr "상업용 코드"
@@ -3545,11 +3549,10 @@ msgstr "상업용 코드"
 msgid ""
 "The source code is not public, so it cannot be independently audited and "
 "might be unsafe"
-msgstr ""
-"소스 코드가 공개 상태가 아니어서 개별적으로 검수할 수 없으며 안전하지 않을 "
-"수 있습니다"
+msgstr "소스 코드가 공개 상태가 아니어서 개별적으로 검수할 수 없으며 안전하지 않을 수 있습니다"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:345
 msgid "Auditable Code"
 msgstr "검수 가능 코드"
@@ -3558,18 +3561,18 @@ msgstr "검수 가능 코드"
 msgid ""
 "The source code is public and can be independently audited, which makes the "
 "app more likely to be safe"
-msgstr ""
-"소스 코드가 공개 상태이며 개별 검수 가능하고, 앱을 좀 더 안전하게 개선할 수 "
-"있습니다"
+msgstr "소스 코드가 공개 상태이며 개별 검수 가능하고, 앱을 좀 더 안전하게 개선할 수 있습니다"
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-safety-context-dialog.c:354
 msgid "App developer is verified"
 msgstr "검증 완료한 앱 개발자"
 
 #: src/gs-safety-context-dialog.c:355
-msgid "The developer of this app has been verified to be who they say they are"
+msgid ""
+"The developer of this app has been verified to be who they say they are"
 msgstr "이 앱의 개발자 신원을 검증했습니다"
 
 #. Translators: This indicates an app uses an outdated SDK.
@@ -3581,8 +3584,7 @@ msgstr "안전하지 않은 의존 항목"
 #: src/gs-safety-context-dialog.c:367
 msgid ""
 "Software or its dependencies are no longer supported and may be insecure"
-msgstr ""
-"프로그램 또는 의존 요소를 더 이상 지원하지 않으며 안전하지 않을 수 있습니다"
+msgstr "프로그램 또는 의존 요소를 더 이상 지원하지 않으며 안전하지 않을 수 있습니다"
 
 #. Translators: The app is considered safe to install and run.
 #. * The placeholder is the app name.
@@ -3605,7 +3607,8 @@ msgstr "%s은(는) 잠재적으로 불안전합니다"
 msgid "%s is unsafe"
 msgstr "%s은(는) 불안전합니다"
 
-#. Translators: This is the title of the dialog which contains information about the permissions of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the permissions of an app
 #: src/gs-safety-context-dialog.ui:5
 msgid "Safety"
 msgstr "안전"
@@ -3614,7 +3617,8 @@ msgstr "안전"
 msgid "License"
 msgstr "라이선스"
 
-#. Translators: This is a heading for a row showing the origin/source of an app (such as ‘flathub’).
+#. Translators: This is a heading for a row showing the origin/source of an
+#. app (such as ‘flathub’).
 #: src/gs-safety-context-dialog.ui:141
 msgid "Source"
 msgstr "공급원"
@@ -3627,12 +3631,14 @@ msgstr "SDK"
 msgid "Outdated SDK version"
 msgstr "오래된 SDK 버전"
 
-#. Translators: This is the accessible description for a button to go to the previous screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. previous screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:46
 msgid "Previous Screenshot"
 msgstr "이전 스크린샷"
 
-#. Translators: This is the accessible description for a button to go to the next screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. next screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:74
 msgid "Next Screenshot"
 msgstr "다음 스크린샷"
@@ -3714,7 +3720,8 @@ msgstr "프로그램이 없습니다"
 msgid "“%s”"
 msgstr "“%s”"
 
-#. Translators: The '%s' is replaced with an error message, which had been shortened.
+#. Translators: The '%s' is replaced with an error message, which had been
+#. shortened.
 #. The dots at the end are there to highlight that to the user.
 #: src/gs-shell.c:1240
 #, c-format
@@ -3743,7 +3750,8 @@ msgstr "업데이트를 다운로드할 수 없습니다"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1293
 msgid ""
-"Unable to download updates: internet access was required but wasn’t available"
+"Unable to download updates: internet access was required but wasn’t "
+"available"
 msgstr "업데이트를 다운로드할 수 없음: 필요한 인터넷 연결이 끊어짐"
 
 #. TRANSLATORS: failure text for the in-app notification,
@@ -4160,7 +4168,8 @@ msgstr "설치 실패: 인증 실패"
 msgid "Unable to contact %s"
 msgstr "%s에 연락할 수 없습니다"
 
-#. TRANSLATORS: failure text for the in-app notification, where the 'Software' means this application, aka 'GNOME Software'.
+#. TRANSLATORS: failure text for the in-app notification, where the 'Software'
+#. means this application, aka 'GNOME Software'.
 #: src/gs-shell.c:1980
 msgid "Software needs to be restarted to use new plugins."
 msgstr "새 플러그인을 활용하려면 프로그램을 다시 시작해야합니다."
@@ -4191,7 +4200,7 @@ msgstr "디스크 검사"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-shell.ui:108 src/gs-updates-page.c:926
+#: src/gs-shell.ui:108 src/gs-updates-page.c:930
 msgid "Network Settings"
 msgstr "네트워크 설정"
 
@@ -4217,7 +4226,8 @@ msgstr "초기 메뉴"
 msgid "Find Out _More"
 msgstr "더 찾아보기(_M)"
 
-#. Translators: A label for a button to show only updates which are available to install.
+#. Translators: A label for a button to show only updates which are available
+#. to install.
 #: src/gs-shell.ui:328
 msgctxt "Header bar button for list of apps to be updated"
 msgid "Updates"
@@ -4272,7 +4282,8 @@ msgctxt "Download size"
 msgid "Unknown"
 msgstr "알 수 없음"
 
-#. Translators: This is the title of the dialog which contains information about the storage or download size needed for an app
+#. Translators: This is the title of the dialog which contains information
+#. about the storage or download size needed for an app
 #: src/gs-storage-context-dialog.ui:5
 msgid "Storage"
 msgstr "저장소"
@@ -4280,11 +4291,9 @@ msgstr "저장소"
 #. Translators: Please do not translate the markup or link href
 #: src/gs-storage-context-dialog.ui:69
 msgid ""
-"Cached data can be cleared from the <a href=\"dummy\">_application settings</"
-"a>."
-msgstr ""
-"<a href=\"dummy\">프로그램 설정(_A)</a>에서 캐시에 임시 저장한 데이터를 지울 "
-"수 있습니다."
+"Cached data can be cleared from the <a href=\"dummy\">_application "
+"settings</a>."
+msgstr "<a href=\"dummy\">프로그램 설정(_A)</a>에서 캐시에 임시 저장한 데이터를 지울 수 있습니다."
 
 #: src/gs-summary-tile.c:118
 #, c-format
@@ -4403,7 +4412,8 @@ msgstr[0] "프로그램 %u개를 다시 시작해야합니다."
 msgid "Includes %s, %s and %s."
 msgstr "%s, %s, %s을(를) 포함합니다."
 
-#. TRANSLATORS: this is when the current operating system version goes end-of-life
+#. TRANSLATORS: this is when the current operating system version goes end-of-
+#. life
 #: src/gs-update-monitor.c:669 src/gs-updates-page.ui:52
 msgid "Operating System Updates Unavailable"
 msgstr "운영체제 업데이트가 없습니다"
@@ -4494,111 +4504,100 @@ msgstr "업데이트를 취소했습니다."
 #. * something with no network available
 #: src/gs-update-monitor.c:1250
 msgid ""
-"Internet access was required but wasn’t available. Please make sure that you "
-"have internet access and try again."
-msgstr ""
-"인터넷 연결이 필요하지만 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 시도"
-"하십시오."
+"Internet access was required but wasn’t available. Please make sure that you"
+" have internet access and try again."
+msgstr "인터넷 연결이 필요하지만 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 시도하십시오."
 
 #. TRANSLATORS: if the package is not signed correctly
 #: src/gs-update-monitor.c:1255
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
-msgstr ""
-"업데이트에 보안 문제가 있습니다. 자세한 문제를 알아보려면 프로그램 공급자에"
-"게 연락하십시오."
+msgstr "업데이트에 보안 문제가 있습니다. 자세한 문제를 알아보려면 프로그램 공급자에게 연락하십시오."
 
 #. TRANSLATORS: we ran out of disk space
 #: src/gs-update-monitor.c:1260
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
-msgstr ""
-"디스크 공간이 충분하지 않습니다. 여분의 공간을 확보하고 다시 시도하십시오."
+msgstr "디스크 공간이 충분하지 않습니다. 여분의 공간을 확보하고 다시 시도하십시오."
 
 #. TRANSLATORS: We didn't handle the error type
 #: src/gs-update-monitor.c:1264
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
-msgstr ""
-"죄송합니다. 업데이트 설치에 실패했습니다. 다른 업데이트를 기다린 후 다시 시도"
-"하십시오. 문제가 계속되면 프로그램 공급자에게 연락하십시오."
+msgstr "죄송합니다. 업데이트 설치에 실패했습니다. 다른 업데이트를 기다린 후 다시 시도하십시오. 문제가 계속되면 프로그램 공급자에게 연락하십시오."
 
-#: src/gs-updates-page.c:249
-#, fuzzy
+#: src/gs-updates-page.c:253
 msgid "automatic updates on"
-msgstr "자동 업데이트"
+msgstr ""
 
-#: src/gs-updates-page.c:252
-#, fuzzy
+#: src/gs-updates-page.c:256
 msgid "automatic updates off"
-msgstr "자동 업데이트"
+msgstr ""
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:288
+#: src/gs-updates-page.c:292
 #, c-format
 msgid "Last checked: %s"
 msgstr "마지막 확인 일시: %s"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:602
+#: src/gs-updates-page.c:606
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "%s %s을(를) 더 이상 지원하지 않습니다."
 
-#: src/gs-updates-page.c:606
+#: src/gs-updates-page.c:610
 msgid "Your operating system is no longer supported."
 msgstr "현재 운영체제를 더 이상 지원하지 않습니다."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:611
+#: src/gs-updates-page.c:615
 msgid "This means that it does not receive security updates."
 msgstr "보안 업데이트를 더 이상 받지 않음을 의미합니다."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:615
+#: src/gs-updates-page.c:619
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "좀 더 최신 버전으로 업그레이드 하시는 편이 좋습니다."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:894
+#: src/gs-updates-page.c:898
 msgid "Charges May Apply"
 msgstr "요금이 청구될 수 있음"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:898
+#: src/gs-updates-page.c:902
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
-msgstr ""
-"모바일 광대역망을 사용하여 업데이트를 확인하면 추가 요금이 발생할 수 있습니"
-"다."
+msgstr "모바일 광대역망을 사용하여 업데이트를 확인하면 추가 요금이 발생할 수 있습니다."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:902
+#: src/gs-updates-page.c:906
 msgid "Check _Anyway"
 msgstr "어쨌든 확인(_A)"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:918
+#: src/gs-updates-page.c:922
 msgid "No Network"
 msgstr "네트워크 연결 없음"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:922
+#: src/gs-updates-page.c:926
 msgid "Internet access is required to check for updates."
 msgstr "업데이트를 확인하려면 인터넷 접근이 필요합니다."
 
-#: src/gs-updates-page.c:1355
+#: src/gs-updates-page.c:1359
 msgid "Check for updates"
 msgstr "업데이트 검사"
 
-#: src/gs-updates-page.c:1398
+#: src/gs-updates-page.c:1402
 msgctxt "Apps to be updated"
 msgid "Updates"
 msgstr "업데이트"
@@ -4617,7 +4616,8 @@ msgstr "업데이트 불러오는 중…"
 msgid "This could take a while."
 msgstr "시간이 좀 걸릴 수 있습니다."
 
-#. TRANSLATORS: This means all software (plural) installed on this system is up to date.
+#. TRANSLATORS: This means all software (plural) installed on this system is
+#. up to date.
 #: src/gs-updates-page.ui:235
 msgid "Up to Date"
 msgstr "최신"
@@ -4630,9 +4630,7 @@ msgstr "모바일 데이터를 사용합니까?"
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges."
-msgstr ""
-"모바일 광대역망을 사용하여 업데이트를 확인하면 추가 요금이 발생할 수 있습니"
-"다."
+msgstr "모바일 광대역망을 사용하여 업데이트를 확인하면 추가 요금이 발생할 수 있습니다."
 
 #: src/gs-updates-page.ui:278
 msgid "_Check Anyway"
@@ -4723,7 +4721,8 @@ msgstr "새 버전 알아보기"
 msgid "Downloading…"
 msgstr "다운로드 중…"
 
-#. Translators: the first '%s' is replaced with the downloaded size, the second '%s'
+#. Translators: the first '%s' is replaced with the downloaded size, the
+#. second '%s'
 #. with the total download size, forming text like "135 MB of 2 GB downloaded"
 #: src/gs-upgrade-banner.c:185
 #, c-format
@@ -4757,17 +4756,13 @@ msgstr ""
 msgid "Add, remove or update software on this computer"
 msgstr "이 컴퓨터에 프로그램을 추가, 제거, 업데이트 합니다"
 
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#. Translators: Search terms to find this application. Do NOT translate or
+#. localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.desktop.in:12
 msgid ""
-"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;"
-"Software;App;Store;"
-msgstr ""
-"Updates;업데이트;Upgrade;업그레이드;Sources;공급원;Repositories;저장소;"
-"Preferences;기본 설정;Install;설치;Uninstall;설치 제거;Program;프로그램;"
-"Software;소프트웨어;App;앱;Store;스토어;"
+"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;"
+msgstr "Updates;업데이트;Upgrade;업그레이드;Sources;공급원;Repositories;저장소;Preferences;기본 설정;Install;설치;Uninstall;설치 제거;Program;프로그램;Software;소프트웨어;App;앱;Store;스토어;"
 
-# flatpak 설치 범위를 나타냅니다. user vs system
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
 #: plugins/core/gs-plugin-generic-updates.c:67
@@ -4780,8 +4775,7 @@ msgstr "시스템 업데이트"
 msgid ""
 "General system updates, such as security or bug fixes, and performance "
 "improvements."
-msgstr ""
-"보안 업데이트 또는 버그 수정, 성능 개선 등의 일반 시스템 업데이트 입니다."
+msgstr "보안 업데이트 또는 버그 수정, 성능 개선 등의 일반 시스템 업데이트 입니다."
 
 #. TRANSLATORS: status text when downloading
 #: plugins/core/gs-plugin-rewrite-resource.c:155
@@ -4789,17 +4783,17 @@ msgid "Downloading featured images…"
 msgstr "추천 그림 다운로드 중…"
 
 #: plugins/eos/gs-plugin-eos.c:173
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "프로그램을 선택하십시오:"
+msgstr ""
 
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
-#: plugins/eos-updater/gs-plugin-eos-updater.c:639
+#: plugins/eos-updater/gs-plugin-eos-updater.c:709
 #, c-format
 msgid "%s update with new features and fixes."
 msgstr "새 기능과 수정 사항이 들어간 %s 업데이트입니다."
 
-#: plugins/eos-updater/gs-plugin-eos-updater.c:1019
+#: plugins/eos-updater/gs-plugin-eos-updater.c:1126
 msgid "EOS update service could not fetch and apply the update."
 msgstr "EOS 업데이트 서비스에서 업데이트를 가져오고 적용할 수 없습니다."
 
@@ -4834,8 +4828,8 @@ msgstr "Flatpak 지원"
 msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak은 리눅스 데스크톱 프로그램용 프레임워크입니다"
 
-# flatpak 설치 범위를 나타냅니다. user vs system
-#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#idm45858571325264
+#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-
+#. reference.html#idm45858571325264
 #: plugins/flatpak/gs-flatpak.c:324
 #, c-format
 msgid "System folder %s"
@@ -5007,9 +5001,7 @@ msgstr ""
 msgid ""
 "Remote “%s” doesn't allow install of “%s”, possibly due to its filter. "
 "Remove the filter and repeat the install. Detailed error: %s"
-msgstr ""
-"원격 “%s”은(는) 필터 문제로 인해 “%s” 설치를 허용하지 않습니다. 필터를 제거하"
-"고 설치를 다시 진행하십시오. 세부 오류: %s"
+msgstr "원격 “%s”은(는) 필터 문제로 인해 “%s” 설치를 허용하지 않습니다. 필터를 제거하고 설치를 다시 진행하십시오. 세부 오류: %s"
 
 #. TRANSLATORS: a specific part of hardware,
 #. * the first %s is the device name, e.g. 'Unifying Receiver`
@@ -5018,7 +5010,6 @@ msgstr ""
 msgid "%s Device Update"
 msgstr "%s 장치 업데이트"
 
-# flatpak 설치 범위를 나타냅니다. user vs system
 #. TRANSLATORS: the entire system, e.g. all internal devices,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:139
@@ -5176,9 +5167,7 @@ msgid ""
 "Software that is to be installed is not signed. It will not be possible to "
 "verify the origin of updates to this software, or whether updates have been "
 "tampered with."
-msgstr ""
-"설치할 프로그램에 서명이 없습니다. 이 프로그램의 업데이트 원본을 검증할 수 없"
-"거나, 부당한 수정이 있었는지 여부를 알 수 없습니다."
+msgstr "설치할 프로그램에 서명이 없습니다. 이 프로그램의 업데이트 원본을 검증할 수 없거나, 부당한 수정이 있었는지 여부를 알 수 없습니다."
 
 #: plugins/packagekit/gs-packagekit-task.c:153
 msgid "Download Unsigned Software?"
@@ -5188,9 +5177,7 @@ msgstr "서명하지 않은 프로그램을 다운로드합니까?"
 msgid ""
 "Unsigned updates are available. Without a signature, it is not possible to "
 "verify the origin of the update, or whether it has been tampered with."
-msgstr ""
-"서명하지 않은 업데이트가 있습니다. 서명이 없으면 업데이트 원본을 검증할 수 없"
-"거나, 부당한 수정이 있었는지 여부를 알 수 없습니다."
+msgstr "서명하지 않은 업데이트가 있습니다. 서명이 없으면 업데이트 원본을 검증할 수 없거나, 부당한 수정이 있었는지 여부를 알 수 없습니다."
 
 #: plugins/packagekit/gs-packagekit-task.c:158
 msgid "Update Unsigned Software?"
@@ -5202,10 +5189,7 @@ msgid ""
 "verify the origin of the update, or whether it has been tampered with. "
 "Software updates will be disabled until unsigned updates are either removed "
 "or updated."
-msgstr ""
-"서명하지 않은 업데이트가 있습니다. 서명이 없으면 업데이트 원본을 검증할 수 없"
-"거나, 부당한 수정이 있었는지 여부를 알 수 없습니다. 서명하지 않은 업데이트를 "
-"제거하거나 업데이트하기 전에는 프로그램 업데이트를 진행할 수 없습니다."
+msgstr "서명하지 않은 업데이트가 있습니다. 서명이 없으면 업데이트 원본을 검증할 수 없거나, 부당한 수정이 있었는지 여부를 알 수 없습니다. 서명하지 않은 업데이트를 제거하거나 업데이트하기 전에는 프로그램 업데이트를 진행할 수 없습니다."
 
 #: plugins/packagekit/gs-plugin-packagekit.c:367
 msgid "Packages"
@@ -5227,124 +5211,3 @@ msgstr "스냅 지원"
 #: plugins/snap/org.gnome.Software.Plugin.Snap.metainfo.xml.in:7
 msgid "A snap is a universal Linux package"
 msgstr "스냅은 통합 리눅스 패키지 형식입니다"
-
-#~ msgid "Application manager for GNOME"
-#~ msgstr "그놈용 프로그램 관리자"
-
-#~ msgid "A list of popular applications"
-#~ msgstr "인기있는 프로그램 목록"
-
-#~ msgid "A list of applications to use, overriding the system defined ones."
-#~ msgstr "시스템에서 지정한 프로그램 목록보다 우선해서 활용할 프로그램 목록."
-
-#, c-format
-#~ msgid "%s %s"
-#~ msgstr "%s %s"
-
-#~ msgid "Software catalog is being downloaded"
-#~ msgstr "소프트웨어 카탈로그를 다운로드하고 있습니다"
-
-#~ msgid "Name"
-#~ msgstr "이름"
-
-# flatpak 설치 범위를 나타냅니다. user vs system
-#~ msgid "system"
-#~ msgstr "시스템"
-
-# flatpak 설치 범위를 나타냅니다. user vs system
-#~ msgid "user"
-#~ msgstr "사용자 계정"
-
-#~ msgid "Channel"
-#~ msgstr "채널"
-
-#~ msgid "Branch"
-#~ msgstr "브랜치"
-
-#~ msgid "URL"
-#~ msgstr "URL"
-
-#~ msgid "Installation"
-#~ msgstr "설치 대상"
-
-#~ msgid "Version"
-#~ msgstr "버전"
-
-#~ msgid "No updates have been installed on this system."
-#~ msgstr "이 시스템에 설치한 업데이트가 없습니다."
-
-#~ msgid "Checking…"
-#~ msgstr "검사 중…"
-
-#~ msgid "Endless OS"
-#~ msgstr "Endless OS"
-
-#~ msgid "Loading…"
-#~ msgstr "불러오는 중…"
-
-#~ msgid "Downloading application ratings…"
-#~ msgstr "프로그램 등급 정보 다운로드 중…"
-
-#~ msgid "The URI that references the background for an upgrade banner."
-#~ msgstr "업그레이드 배너용 백그라운드 참조 URI 입니다."
-
-#~ msgid ""
-#~ "The URI can contain up to three '%u', which will be replaced by the "
-#~ "upgrade version."
-#~ msgstr ""
-#~ "URI는 최대 3 '%u' 만큼 넣을 수 있으며, 업그레이드 버전으로 바꿀 수 있습니"
-#~ "다."
-
-#~ msgid "_Add shortcut"
-#~ msgstr "바로 가기 추가(_A)"
-
-#~ msgid "Re_move shortcut"
-#~ msgstr "바로 가기 제거(_M)"
-
-#~ msgid "Welcome"
-#~ msgstr "환영합니다"
-
-#~ msgid "Welcome to Software"
-#~ msgstr "소프트웨어 사용을 환영합니다"
-
-#~ msgid ""
-#~ "Software lets you install all the software you need, all from one place. "
-#~ "See our recommendations, browse the categories, or search for the "
-#~ "applications you want."
-#~ msgstr ""
-#~ "소프트웨어는 여러분이 필요한 모든 프로그램을 한 곳에서 모두 설치할 수 있"
-#~ "게 해줍니다. 추천 항목을 살펴보고, 분류를 탐색하거나, 원하는 프로그램을 검"
-#~ "색해보세요."
-
-#~ msgid "_Browse Software"
-#~ msgstr "소프트웨어 탐색(_B)"
-
-#~ msgid "OS Updates"
-#~ msgstr "운영체제 업데이트"
-
-#~ msgid "Includes performance, stability and security improvements."
-#~ msgstr "성능, 안정성, 보안 개선 요소가 있습니다."
-
-#~ msgid "Downloading firmware update signature…"
-#~ msgstr "펌웨어 업데이트 서명 다운로드 중…"
-
-#~ msgid "Downloading firmware update metadata…"
-#~ msgstr "펌웨어 업데이트 메타데이터 다운로드 중…"
-
-#~ msgid "Software has unknown permissions"
-#~ msgstr "프로그램에서 알 수 없는 권한을 요구합니다"
-
-#~ msgid "Software comes from a trusted source"
-#~ msgstr "믿을 수 있는 공급처에서 제공한 프로그램"
-
-#~ msgid "Unknown Permissions"
-#~ msgstr "알 수 없는 권한"
-
-#~ msgid "The permissions needed by this app aren’t known"
-#~ msgstr "이 앱에서 필요한 권한의 종류를 알 수 없음"
-
-#~ msgid "App comes from a trusted source"
-#~ msgstr "믿을 수 있는 공급처에서 제공한 앱"
-
-#~ msgid "Your distribution has verified that this app can be trusted"
-#~ msgstr "배포판에서 이 앱을 신뢰할 수 있다고 검증했습니다"

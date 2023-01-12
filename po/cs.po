@@ -1,26 +1,26 @@
-# Czech translation for gnome-software.
-# Copyright (C) 2013 gnome-software's COPYRIGHT HOLDER
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the gnome-software package.
-#
-# Petr Kovar <pknbe@volny.cz>, 2015.
-# Marek Černocký <marek@manet.cz>, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022.
-# Vojtěch Perník <translations@pervoj.cz>, 2021-2022.
-#
+# 
+# Translators:
+# Ascii Wolf <mail@asciiwolf.com>, 2018
+# Marek Černocký <marek@manet.cz>, 2013-2022
+# Petr Kovar <pknbe@volny.cz>, 2015
+# Roddy Shuler <roddy@stanfordalumni.org>, 2017
+# Vendula Durakova, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-19 16:07+0000\n"
-"PO-Revision-Date: 2022-08-28 11:45+0200\n"
-"Last-Translator: Vojtěch Perník <translations@pervoj.cz>\n"
-"Language-Team: Czech <gnome-cs-list@gnome.org>\n"
-"Language: cs\n"
+"POT-Creation-Date: 2023-01-12 18:33+0000\n"
+"PO-Revision-Date: 2016-04-15 19:22+0000\n"
+"Last-Translator: Marek Černocký <marek@manet.cz>, 2013-2022\n"
+"Language-Team: Czech (http://www.transifex.com/endless-os/gnome-software/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Poedit 3.1.1\n"
-"X-Project-Style: gnome\n"
+"Language: cs\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:7 src/gs-shell.ui:21
 msgid "Software"
@@ -34,9 +34,7 @@ msgstr "Instalujte a aktualizujte aplikace"
 msgid ""
 "Software allows you to find and install new applications and system "
 "extensions and remove existing installed applications."
-msgstr ""
-"Aplikace Software umožňuje vyhledávat a instalovat aplikace a systémová "
-"rozšíření a odebírat stávající nainstalované aplikace."
+msgstr "Aplikace Software umožňuje vyhledávat a instalovat aplikace a systémová rozšíření a odebírat stávající nainstalované aplikace."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:14
 msgid ""
@@ -44,11 +42,7 @@ msgid ""
 "descriptions and multiple screenshots per application. Applications can be "
 "found either through browsing the list of categories or by searching. It "
 "also allows you to update your system using an offline update."
-msgstr ""
-"Aplikace Software vám představí významné a oblíbené aplikace pomocí "
-"srozumitelného popisu a několika snímků obrazovky. Aplikace můžete najít buď "
-"ručním procházením podle kategorií nebo pomocí textového vyhledávání. Rovněž "
-"můžete aktualizovat svůj systém a to i bez aktuálního připojení k Internetu."
+msgstr "Aplikace Software vám představí významné a oblíbené aplikace pomocí srozumitelného popisu a několika snímků obrazovky. Aplikace můžete najít buď ručním procházení podle kategorií nebo pomocí textového vyhledávání. Rovněž můžete aktualizovat svůj systém a to i bez aktuálního připojení k Internetu."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:25
 msgid "Overview panel"
@@ -72,7 +66,8 @@ msgstr "Panel s aktualizacemi"
 msgid "The update details"
 msgstr "Podrobnosti o aktualizaci"
 
-#: data/metainfo/org.gnome.Software.metainfo.xml.in:89 src/gs-application.c:256
+#: data/metainfo/org.gnome.Software.metainfo.xml.in:89
+#: src/gs-application.c:256
 msgid "The GNOME Project"
 msgstr "Projekt GNOME"
 
@@ -92,9 +87,7 @@ msgstr "Seznam kompatibilních projektů"
 msgid ""
 "This is a list of compatible projects we should show such as GNOME, KDE and "
 "XFCE."
-msgstr ""
-"Seznam kompatibilních projektů, jako je GNOME, KDE a XFCE, které by se měly "
-"zobrazovat."
+msgstr "Seznam kompatibilních projektů, jako je GNOME, KDE a XFCE, které by se měly zobrazovat."
 
 #: data/org.gnome.software.gschema.xml:10
 msgid "Whether to manage updates and upgrades in GNOME Software"
@@ -104,9 +97,7 @@ msgstr "Zda se o aktualizace a povýšení starat v Softwaru GNOME"
 msgid ""
 "If disabled, GNOME Software will hide the updates panel, not perform any "
 "automatic updates actions or prompt for upgrades."
-msgstr ""
-"Když je vypnuto, Software GNOME skryje panel s aktualizacemi a nebude "
-"provádět automatické činnosti ohledně aktualizací, nebo se ptát na povýšení."
+msgstr "Když je vypnuto, Software GNOME skryje panel s aktualizacemi a nebude provádět automatické činnosti ohledně aktualizací, nebo se ptát na povýšení."
 
 #: data/org.gnome.software.gschema.xml:15
 msgid "Automatically download and install updates"
@@ -116,9 +107,7 @@ msgstr "Automaticky stahovat a instalovat aktualizace"
 msgid ""
 "If enabled, GNOME Software automatically downloads software updates in the "
 "background, also installing ones that do not require a reboot."
-msgstr ""
-"Když je zapnuto, bude Software GNOME na pozadí automaticky stahovat "
-"softwarové aktualizace a ty, které nevyžadují restart, také nainstaluje."
+msgstr "Když je zapnuto, bude Software GNOME na pozadí automaticky stahovat softwarové aktualizace a ty, které nevyžadují restart, také nainstaluje."
 
 #: data/org.gnome.software.gschema.xml:20
 msgid "Notify the user about software updated in the background"
@@ -128,9 +117,7 @@ msgstr "Oznamovat uživateli softwarové aktualizace na pozadí"
 msgid ""
 "If enabled, GNOME Software notifies the user about updates that happened "
 "whilst the user was idle."
-msgstr ""
-"Když je zapnuto, oznamuje Software GNOME uživateli, když během jeho "
-"nečinnosti proběhnou na pozadí aktualizace."
+msgstr "Když je zapnuto, oznamuje Software GNOME uživateli, když během jeho nečinnosti proběhnou na pozadí aktualizace."
 
 #: data/org.gnome.software.gschema.xml:25
 msgid "Whether to automatically refresh when on a metered connection"
@@ -141,11 +128,7 @@ msgid ""
 "If enabled, GNOME Software automatically refreshes in the background even "
 "when using a metered connection (eventually downloading some metadata, "
 "checking for updates, etc., which may incur in costs for the user)."
-msgstr ""
-"Když je zapnuto, bude Software GNOME na pozadí automaticky aktualizovat "
-"informace, i v případě, že připojení není účtované paušální částkou "
-"(případně stahovat některá metadata, kontrolovat aktualizace atd., což se "
-"může projevit v ceně za připojení)."
+msgstr "Když je zapnuto, bude Software GNOME na pozadí automaticky aktualizovat informace, i v případě, že připojení není účtované paušální částkou (případně stahovat některá metadata, kontrolovat aktualizace atd., což se může projevit v ceně za připojení)."
 
 #: data/org.gnome.software.gschema.xml:30
 msgid "Whether it’s the very first run of GNOME Software"
@@ -157,8 +140,7 @@ msgstr "Zobrazovat vedle aplikace hodnocení hvězdičkami"
 
 #: data/org.gnome.software.gschema.xml:38
 msgid "Filter applications based on the default branch set for the remote"
-msgstr ""
-"Filtrovat aplikace podle výchozí větve nastavené pro vzdálený protějšek"
+msgstr "Filtrovat aplikace podle výchozí větve nastavené pro vzdálený protějšek"
 
 #: data/org.gnome.software.gschema.xml:42
 msgid "Non-free applications show a warning dialog before install"
@@ -166,11 +148,9 @@ msgstr "Před instalací nesvobodných aplikací zobrazit varovné dialogové ok
 
 #: data/org.gnome.software.gschema.xml:43
 msgid ""
-"When non-free applications are installed a warning dialog can be shown. This "
-"controls if that dialog is suppressed."
-msgstr ""
-"Když se instaluje nesvobodná aplikace, může být zobrazeno varovné dialogové "
-"okno. Tímto se řídí potlačení tohoto dialogového okna."
+"When non-free applications are installed a warning dialog can be shown. This"
+" controls if that dialog is suppressed."
+msgstr "Když se instaluje nesvobodná aplikace, může být zobrazeno varovné dialogové okno. Tímto se řídí potlačení tohoto dialogového okna."
 
 #: data/org.gnome.software.gschema.xml:47
 msgid "The last update check timestamp"
@@ -194,25 +174,18 @@ msgstr "Datum a čas poslední aktualizace"
 
 #: data/org.gnome.software.gschema.xml:67
 msgid "The last timestamp when the system was online and got any updates"
-msgstr ""
-"Datum a čas, kdy byl systém naposledy on-line a dostal nějaké aktualizace"
+msgstr "Datum a čas, kdy byl systém naposledy on-line a dostal nějaké aktualizace"
 
 #: data/org.gnome.software.gschema.xml:71
 msgid "The age in seconds to verify the upstream screenshot is still valid"
-msgstr ""
-"Doba v sekundách, po které se má ověřit, jestli je snímek obrazovky z "
-"hlavního zdroje stále platný"
+msgstr "Doba v sekundách, po které se má ověřit, jestli je snímek obrazovky z hlavního zdroje stále platný"
 
 #: data/org.gnome.software.gschema.xml:72
 msgid ""
 "Choosing a larger value will mean less round-trips to the remote server but "
-"updates to the screenshots may take longer to show to the user. A value of 0 "
-"means to never check the server if the image already exists in the cache."
-msgstr ""
-"Čím větší hodnotu zvolíte, tím méně návštěv vzdáleného serveru se provede, "
-"ale může trvat déle, než se uživateli zobrazí aktuálnější snímek. Hodnota 0 "
-"znamená, že se kontroly na serveru nemají provádět vůbec, pokud je již "
-"snímek v mezipaměti."
+"updates to the screenshots may take longer to show to the user. A value of 0"
+" means to never check the server if the image already exists in the cache."
+msgstr "Čím větší hodnotu zvolíte, tím méně návštěv vzdáleného serveru se provede, ale může trvat déle, než se uživateli zobrazí aktuálnější snímek. Hodnota 0 znamená, že se kontroly na serveru nemají provádět vůbec, pokud je již snímek v mezipaměti."
 
 #: data/org.gnome.software.gschema.xml:81
 msgid "The server to use for application reviews"
@@ -227,32 +200,29 @@ msgid "Reviews with karma less than this number will not be shown."
 msgstr "Recenze s karmou nižší než toto číslo nebudou zobrazovány."
 
 #: data/org.gnome.software.gschema.xml:90
-msgid "A list of official repositories that should not be considered 3rd party"
-msgstr ""
-"Seznam oficiálních repozitářů, které by neměly být považovány za třetí stranu"
+msgid ""
+"A list of official repositories that should not be considered 3rd party"
+msgstr "Seznam oficiálních repozitářů, které by neměly být považovány za třetí stranu"
 
 #: data/org.gnome.software.gschema.xml:94
 msgid "A list of required repositories that cannot be disabled or removed"
-msgstr ""
-"Seznam vyžadovaných repozitářů, které nemohou být zakázány nebo odebrány"
+msgstr "Seznam vyžadovaných repozitářů, které nemohou být zakázány nebo odebrány"
 
 #: data/org.gnome.software.gschema.xml:98
-msgid "A list of official repositories that should be considered free software"
-msgstr ""
-"Seznam oficiálních repozitářů, které by měly být považovány za svobodný "
-"software"
+msgid ""
+"A list of official repositories that should be considered free software"
+msgstr "Seznam oficiálních repozitářů, které by měly být považovány za svobodný software"
 
 #: data/org.gnome.software.gschema.xml:102
 msgid ""
-"The licence URL to use when an application should be considered free software"
-msgstr ""
-"Adresa URL licence, která se má použít, když má aplikace považována za "
-"svobodný software"
+"The licence URL to use when an application should be considered free "
+"software"
+msgstr "Adresa URL licence, která se má použít, když má aplikace považována za svobodný software"
 
 #: data/org.gnome.software.gschema.xml:106
-msgid "Install bundled applications for all users on the system where possible"
-msgstr ""
-"Kde je to možné, instalovat všem uživatelům v systému přibalené aplikace"
+msgid ""
+"Install bundled applications for all users on the system where possible"
+msgstr "Kde je to možné, instalovat všem uživatelům v systému přibalené aplikace"
 
 #: data/org.gnome.software.gschema.xml:110
 msgid "Allow access to the Software Repositories dialog"
@@ -264,16 +234,15 @@ msgstr "Nabízet povýšení na předběžná vydání"
 
 #: data/org.gnome.software.gschema.xml:118
 msgid "Show some UI elements informing the user that an app is non-free"
-msgstr ""
-"Zobrazovat v rozhraní prvky, které informují uživatele, že aplikace není "
-"svobodná"
+msgstr "Zobrazovat v rozhraní prvky, které informují uživatele, že aplikace není svobodná"
 
 #: data/org.gnome.software.gschema.xml:122
 msgid "Show the installed size for apps in the list of installed applications"
-msgstr ""
-"Zobrazovat velikost instalace pro aplikace v seznamu nainstalovaných aplikací"
+msgstr "Zobrazovat velikost instalace pro aplikace v seznamu nainstalovaných aplikací"
 
-#. Translators: Replace the link with a version in your language, e.g. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include ''.
+#. Translators: Replace the link with a version in your language, e.g.
+#. 'https://de.wikipedia.org/wiki/Proprietäre_Software'. Remember to include
+#. ''.
 #: data/org.gnome.software.gschema.xml:126
 msgid "'https://en.wikipedia.org/wiki/Proprietary_software'"
 msgstr "'https://cs.wikipedia.org/wiki/Propriet%C3%A1rn%C3%AD_software'"
@@ -286,31 +255,22 @@ msgstr "Adresa URI, která vysvětluje nesvobodný a komerční software"
 msgid ""
 "A list of URLs pointing to appstream files that will be downloaded into an "
 "swcatalog folder"
-msgstr ""
-"Seznam adres URL ukazujících na soubory appstream, které byly stažené do "
-"složky swcatalog"
+msgstr "Seznam adres URL ukazujících na soubory appstream, které byly stažené do složky swcatalog"
 
 #: data/org.gnome.software.gschema.xml:135
 msgid ""
 "Install the AppStream files to a system-wide location for all users. If "
 "false, files are installed in non-standard $XDG_DATA_HOME/swcatalog/xml "
 "directory"
-msgstr ""
-"Instalovat soubory AppStream do celosystémového umístění pro všechny "
-"uživatele. Pokud je vypnuto, budou soubory instalovány do nestandardní "
-"složky $XDG_DATA_HOME/swcatalog/xmls"
+msgstr "Instalovat soubory AppStream do celosystémového umístění pro všechny uživatele. Pokud je vypnuto, budou soubory instalovány do nestandardní složky $XDG_DATA_HOME/swcatalog/xmls"
 
 #: data/org.gnome.software.gschema.xml:139
 msgid ""
 "Priority order of packaging formats to prefer, with more important formats "
 "listed first. An empty array means the default order. Omitted formats are "
-"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm, "
-"snap."
-msgstr ""
-"Prioritní pořadí formátů balíčků, kterým dáváte přednost, přičemž "
-"důležitější formáty jsou uvedeny na prvním místě. Prázdné pole znamená "
-"výchozí pořadí. Předpokládá se, že vynechané formáty budou uvedeny jako "
-"poslední. Příklady balíčkovacích formátů: deb, flatpak, rpm, snap."
+"assumed to be listed last. Example packaging formats are: deb, flatpak, rpm,"
+" snap."
+msgstr "Prioritní pořadí formátů balíčků, kterým dáváte přednost, přičemž důležitější formáty jsou uvedeny na prvním místě. Prázdné pole znamená výchozí pořadí. Předpokládá se, že vynechané formáty budou uvedeny jako poslední. Příklady balíčkovacích formátů: deb, flatpak, rpm, snap."
 
 #: data/org.gnome.software.gschema.xml:146
 msgid "A string storing the gnome-online-account id used to login"
@@ -366,7 +326,8 @@ msgstr "Nainstalujte si vybraný software do systému"
 msgid "Cartoon Violence"
 msgstr "Kreslené násilí"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:136
 msgid "No information regarding cartoon violence"
 msgstr "Bez informací o kresleném násilí"
@@ -376,7 +337,8 @@ msgstr "Bez informací o kresleném násilí"
 msgid "Fantasy Violence"
 msgstr "Násilí ve fantasy"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:146
 msgid "No information regarding fantasy violence"
 msgstr "Bez informací o násilí ve fantasy"
@@ -386,7 +348,8 @@ msgstr "Bez informací o násilí ve fantasy"
 msgid "Realistic Violence"
 msgstr "Realistické násilí"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:156
 msgid "No information regarding realistic violence"
 msgstr "Bez informací o realistickém násilí"
@@ -396,7 +359,8 @@ msgstr "Bez informací o realistickém násilí"
 msgid "Violence Depicting Bloodshed"
 msgstr "Násilí zobrazující krvácení"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:166
 msgid "No information regarding bloodshed"
 msgstr "Bez informací o krvácení"
@@ -406,7 +370,8 @@ msgstr "Bez informací o krvácení"
 msgid "Sexual Violence"
 msgstr "Sexuální násilí"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:176
 msgid "No information regarding sexual violence"
 msgstr "Bez informací o sexuálním násilí"
@@ -416,7 +381,8 @@ msgstr "Bez informací o sexuálním násilí"
 msgid "Alcohol"
 msgstr "Alkohol"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:186
 msgid "No information regarding references to alcohol"
 msgstr "Bez informací o odkazech na alkohol"
@@ -426,7 +392,8 @@ msgstr "Bez informací o odkazech na alkohol"
 msgid "Narcotics"
 msgstr "Narkotika"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:196
 msgid "No information regarding references to illicit drugs"
 msgstr "Bez informací o odkazech na nezákonné drogy"
@@ -436,7 +403,8 @@ msgstr "Bez informací o odkazech na nezákonné drogy"
 msgid "Tobacco"
 msgstr "Tabák"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:206
 msgid "No information regarding references to tobacco products"
 msgstr "Bez informací o odkazech na tabákové produkty"
@@ -447,7 +415,8 @@ msgstr "Bez informací o odkazech na tabákové produkty"
 msgid "Nudity"
 msgstr "Nahota"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:216
 msgid "No information regarding nudity of any sort"
 msgstr "Bez informací o nahotě jakéhokoliv typu"
@@ -457,7 +426,8 @@ msgstr "Bez informací o nahotě jakéhokoliv typu"
 msgid "Sexual Themes"
 msgstr "Sexuální tématika"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:226
 msgid "No information regarding references to or depictions of sexual nature"
 msgstr "Bez informací o odkazech na nebo vyobrazení sexuální tématiky"
@@ -467,7 +437,8 @@ msgstr "Bez informací o odkazech na nebo vyobrazení sexuální tématiky"
 msgid "Profanity"
 msgstr "Vulgarismy"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:236
 msgid "No information regarding profanity of any kind"
 msgstr "Bez informací o vulgaritách jakéhokoliv typu"
@@ -477,7 +448,8 @@ msgstr "Bez informací o vulgaritách jakéhokoliv typu"
 msgid "Inappropriate Humor"
 msgstr "Nepřiměřený humor"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:246
 msgid "No information regarding inappropriate humor"
 msgstr "Bez informací o nepřiměřeném humoru"
@@ -487,7 +459,8 @@ msgstr "Bez informací o nepřiměřeném humoru"
 msgid "Discrimination"
 msgstr "Diskriminace"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:256
 msgid "No information regarding discriminatory language of any kind"
 msgstr "Bez informací o diskriminačních projevech jakéhokoliv typu"
@@ -497,7 +470,8 @@ msgstr "Bez informací o diskriminačních projevech jakéhokoliv typu"
 msgid "Advertising"
 msgstr "Reklamy"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:266
 msgid "No information regarding advertising of any kind"
 msgstr "Bez informací o reklamách jakéhokoliv typu"
@@ -507,7 +481,8 @@ msgstr "Bez informací o reklamách jakéhokoliv typu"
 msgid "Gambling"
 msgstr "Hazard"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:276
 msgid "No information regarding gambling of any kind"
 msgstr "Bez informací o hazardu jakéhokoliv typu"
@@ -517,7 +492,8 @@ msgstr "Bez informací o hazardu jakéhokoliv typu"
 msgid "Purchasing"
 msgstr "Nakupování"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:286
 msgid "No information regarding the ability to spend money"
 msgstr "Bez informací o možnosti utrácet peníze"
@@ -527,7 +503,8 @@ msgstr "Bez informací o možnosti utrácet peníze"
 msgid "Chat Between Users"
 msgstr "Konverzace mezi uživateli"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:296
 msgid "No information regarding ways to chat with other users"
 msgstr "Bez informací o způsobech konverzace mezi uživateli"
@@ -537,7 +514,8 @@ msgstr "Bez informací o způsobech konverzace mezi uživateli"
 msgid "Audio Chat Between Users"
 msgstr "Hlasová konverzace mezi uživateli"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:306
 msgid "No information regarding ways to talk with other users"
 msgstr "Bez informací o způsobech hlasové komunikace mezi uživateli"
@@ -547,23 +525,24 @@ msgstr "Bez informací o způsobech hlasové komunikace mezi uživateli"
 msgid "Contact Details"
 msgstr "Kontaktní údaje"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:316
 msgid ""
 "No information regarding sharing of social network usernames or email "
 "addresses"
-msgstr ""
-"Bez informací o sdílení uživatelských jmen ze sociálních sítí nebo e-"
-"mailových adres"
+msgstr "Bez informací o sdílení uživatelských jmen ze sociálních sítí nebo e-mailových adres"
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:324
 msgid "Identifying Information"
 msgstr "Identifikační údaje"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:326
-msgid "No information regarding sharing of user information with third parties"
+msgid ""
+"No information regarding sharing of user information with third parties"
 msgstr "Bez informací o sdílení údajů o uživatelích se třetími stranami"
 
 #. TRANSLATORS: content rating title, see https://hughsie.github.io/oars/
@@ -571,7 +550,8 @@ msgstr "Bez informací o sdílení údajů o uživatelích se třetími stranami
 msgid "Location Sharing"
 msgstr "Sdílení polohy"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:336
 msgid "No information regarding sharing of physical location with other users"
 msgstr "Bez informací o sdílení fyzické polohy s ostatními uživateli"
@@ -581,7 +561,8 @@ msgstr "Bez informací o sdílení fyzické polohy s ostatními uživateli"
 msgid "Homosexuality"
 msgstr "Homosexualita"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:362
 msgid "No information regarding references to homosexuality"
 msgstr "Bez informací o odkazech na homosexualitu"
@@ -591,7 +572,8 @@ msgstr "Bez informací o odkazech na homosexualitu"
 msgid "Prostitution"
 msgstr "Prostituce"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:372
 msgid "No information regarding references to prostitution"
 msgstr "Bez informací o odkazech na prostituci"
@@ -601,7 +583,8 @@ msgstr "Bez informací o odkazech na prostituci"
 msgid "Adultery"
 msgstr "Cizoložství"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:382
 msgid "No information regarding references to adultery"
 msgstr "Bez informací o odkazech na cizoložství"
@@ -611,7 +594,8 @@ msgstr "Bez informací o odkazech na cizoložství"
 msgid "Sexualized Characters"
 msgstr "Sexualizované postavy"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:392
 msgid "No information regarding sexualized characters"
 msgstr "Bez informací o sexualizovaných postavách"
@@ -621,7 +605,8 @@ msgstr "Bez informací o sexualizovaných postavách"
 msgid "Desecration"
 msgstr "Znesvěcení"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:402
 msgid "No information regarding references to desecration"
 msgstr "Bez informací o odkazech na znesvěcení"
@@ -631,7 +616,8 @@ msgstr "Bez informací o odkazech na znesvěcení"
 msgid "Human Remains"
 msgstr "Lidské ostatky"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:412
 msgid "No information regarding visible dead human remains"
 msgstr "Bez informací o viditelných ostatcích mrtvých lidí"
@@ -641,7 +627,8 @@ msgstr "Bez informací o viditelných ostatcích mrtvých lidí"
 msgid "Slavery"
 msgstr "Otroctví"
 
-#. TRANSLATORS: content rating description, see https://hughsie.github.io/oars/
+#. TRANSLATORS: content rating description, see
+#. https://hughsie.github.io/oars/
 #: src/gs-age-rating-context-dialog.c:422
 msgid "No information regarding references to slavery"
 msgstr "Bez informací o odkazech na otroctví"
@@ -699,7 +686,8 @@ msgstr "Násilí"
 msgid "%s • %s"
 msgstr "%s • %s"
 
-#. Translators: The app is considered suitable to be run by all ages of people.
+#. Translators: The app is considered suitable to be run by all ages of
+#. people.
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-age-rating-context-dialog.c:936
 msgctxt "Age rating"
@@ -717,50 +705,58 @@ msgstr "Vše"
 msgid "?"
 msgstr "?"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for all ages. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1023
 #, c-format
 msgid "%s is suitable for everyone"
 msgstr "Aplikace %s je vhodná pro každého"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 3. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1027
 #, c-format
 msgid "%s is suitable for toddlers"
 msgstr "Aplikace %s je vhodná pro batolata"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for children up to around age 5. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1031
 #, c-format
 msgid "%s is suitable for young children"
 msgstr "Aplikace %s je vhodná pro malé děti"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people up to around age 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1039
 #, c-format
 msgid "%s is suitable for teenagers"
 msgstr "Aplikace %s je vhodná pro dospívající mládež"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
 #. * for people aged up to and over 18. The placeholder is the app name.
 #: src/gs-age-rating-context-dialog.c:1043
 #, c-format
 msgid "%s is suitable for adults"
 msgstr "Aplikace %s je vhodná pro dospělé"
 
-#. Translators: This is a dialogue title which indicates that an app is suitable
-#. * for a specified age group. The first placeholder is the app name, the second
+#. Translators: This is a dialogue title which indicates that an app is
+#. suitable
+#. * for a specified age group. The first placeholder is the app name, the
+#. second
 #. * is the age group.
 #: src/gs-age-rating-context-dialog.c:1048
 #, c-format
 msgid "%s is suitable for %s"
 msgstr "Aplikace %s je vhodná pro %s"
 
-#. Translators: This is the title of the dialog which contains information about the suitability of an app for different ages.
+#. Translators: This is the title of the dialog which contains information
+#. about the suitability of an app for different ages.
 #. this one’s not a placeholder
 #: src/gs-age-rating-context-dialog.ui:5 src/gs-app-context-bar.ui:211
 msgid "Age Rating"
@@ -872,7 +868,8 @@ msgstr "Může zobrazovat soubory"
 msgid "File system"
 msgstr "Souborový systém"
 
-#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with actual files being part of the read/full lists
+#. The GS_APP_PERMISSIONS_FLAGS_FILESYSTEM_OTHER is used only as a flag, with
+#. actual files being part of the read/full lists
 #: src/gs-app-details-page.c:77 src/gs-app-details-page.c:78
 msgid "Downloads folder"
 msgstr "Složka se staženými soubory"
@@ -922,7 +919,8 @@ msgstr "Přejít zpět"
 msgid "Requires additional permissions"
 msgstr "Vyžaduje dodatečná oprávnění"
 
-#. Translators: Header of the section with other users' opinions about the app.
+#. Translators: Header of the section with other users' opinions about the
+#. app.
 #: src/gs-app-reviews-dialog.ui:6 src/gs-details-page.ui:855
 msgid "Reviews"
 msgstr "Recenze"
@@ -962,9 +960,7 @@ msgstr "%e. %B %Y"
 #. TRANSLATORS: this is a command line option
 #: src/gs-application.c:124
 msgid "Start up mode: either ‘updates’, ‘updated’, ‘installed’ or ‘overview’"
-msgstr ""
-"Režim spuštění: buď „updates“ (aktualizace), „updated“ (aktualizované), "
-"„installed“ (nainstalované) nebo „overview“ (přehled)"
+msgstr "Režim spuštění: buď „updates“ (aktualizace), „updated“ (aktualizované), „installed“ (nainstalované) nebo „overview“ (přehled)"
 
 #: src/gs-application.c:124
 msgid "MODE"
@@ -1014,9 +1010,7 @@ msgstr "NÁZEV_SOUBORU"
 msgid ""
 "The kind of interaction expected for this action: either ‘none’, ‘notify’, "
 "or ‘full’"
-msgstr ""
-"Pro tuto činnost je očekáván druh interakce: buď „none“ (nic), "
-"„notify“ (upozornit) nebo „full“ (úplná)"
+msgstr "Pro tuto činnost je očekáván druh interakce: buď „none“ (nic), „notify“ (upozornit) nebo „full“ (úplná)"
 
 #: src/gs-application.c:141
 msgid "Show a local metainfo or appdata file"
@@ -1048,13 +1042,11 @@ msgstr "Zobrazit číslo verze"
 
 #: src/gs-application.c:261 src/gs-application.c:269
 msgid "Copyright © 2016–2022 GNOME Software contributors"
-msgstr "Copyright © 2016 – 2022 přispěvatelé Softwaru GNOME"
+msgstr "Copyright © 2016 – 2022 přispěvatelé GNOME Software"
 
 #: src/gs-application.c:263 src/gs-application.c:272
 msgid "translator-credits"
-msgstr ""
-"Marek Černocký <marek@manet.cz>\n"
-"Vojtěch Perník <translations@pervoj.cz>"
+msgstr "Marek Černocký <marek@manet.cz>\nVojtěch Perník <translations@pervoj.cz>"
 
 #. TRANSLATORS: this is the title of the about window
 #. TRANSLATORS: this is the menu item that opens the about window
@@ -1155,31 +1147,36 @@ msgstr "Využívá služby sezení"
 msgid "Can access hardware devices"
 msgstr "Může přistupovat k hardwarovým zařízením"
 
-#. Translators: This indicates an app can read/write to the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read/write to the user’s home or the
+#. entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:326
 msgid "Can read/write all your data"
 msgstr "Může číst/zapisovat všechna vaše data"
 
-#. Translators: This indicates an app can read (but not write) from the user’s home or the entire filesystem.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. home or the entire filesystem.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:338
 msgid "Can read all your data"
 msgstr "Může číst všechna vaše data"
 
-#. Translators: This indicates an app can read/write to the user’s Downloads directory.
+#. Translators: This indicates an app can read/write to the user’s Downloads
+#. directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:345
 msgid "Can read/write your downloads"
 msgstr "Může zapisovat do všech vašich dat"
 
-#. Translators: This indicates an app can read (but not write) from the user’s Downloads directory.
+#. Translators: This indicates an app can read (but not write) from the user’s
+#. Downloads directory.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:352
 msgid "Can read your downloads"
 msgstr "Může číst vaše stažené soubory"
 
-#. Translators: This indicates an app can access data in the system unknown to the Software.
+#. Translators: This indicates an app can access data in the system unknown to
+#. the Software.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:359
 msgid "Can access arbitrary files"
@@ -1217,19 +1214,22 @@ msgstr "Zkontrolováno vaší distribucí"
 msgid "Provided by a third party"
 msgstr "Poskytováno třetí stranou"
 
-#. Translators: This indicates an app is not licensed under a free software license.
+#. Translators: This indicates an app is not licensed under a free software
+#. license.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:425
 msgid "Proprietary code"
 msgstr "Uzavřený kód"
 
-#. Translators: This indicates an app’s source code is freely available, so can be audited for security.
+#. Translators: This indicates an app’s source code is freely available, so
+#. can be audited for security.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:431
 msgid "Auditable code"
 msgstr "Otevřený kód"
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:438
 msgid "Software developer is verified"
@@ -1251,7 +1251,8 @@ msgstr "Software není nadále podporován"
 #. Translators: This string is used to join various other translated
 #. * strings into an inline list of reasons why an app has been given a
 #. * certain content rating. For example:
-#. * “References to alcoholic beverages; Moderated chat functionality between users”
+#. * “References to alcoholic beverages; Moderated chat functionality between
+#. users”
 #. * If concatenating strings as a list using a separator like this is not
 #. * possible in your language, please file an issue against gnome-software:
 #. * https://gitlab.gnome.org/GNOME/gnome-software/-/issues/new
@@ -1416,7 +1417,8 @@ msgstr "Zařízení nelze během aktualizace používat."
 msgid "Source: %s"
 msgstr "Zdroj: %s"
 
-#. Translators: A message to indicate that an app has been renamed. The placeholder is the old human-readable name.
+#. Translators: A message to indicate that an app has been renamed. The
+#. placeholder is the old human-readable name.
 #: src/gs-app-row.c:523
 #, c-format
 msgid "Renamed from %s"
@@ -1432,17 +1434,10 @@ msgstr "Pomozte přeložit %s"
 #: src/gs-app-translation-dialog.c:70
 #, c-format
 msgid ""
-"%s is designed, developed, and translated by an international community of "
-"volunteers.\n"
+"%s is designed, developed, and translated by an international community of volunteers.\n"
 "\n"
-"This means that while it’s not yet available in your language, you can get "
-"involved and help translate it yourself."
-msgstr ""
-"Aplikace %s je navržena, vyvinuta a přeložena mezinárodní komunitou "
-"dobrovolníků.\n"
-"\n"
-"To znamená, že i když ještě není k dispozici ve vašem jazyce, můžete se "
-"zapojit a pomoci s jeho překladem."
+"This means that while it’s not yet available in your language, you can get involved and help translate it yourself."
+msgstr "Aplikace %s je navržena, vyvinuta a přeložena mezinárodní komunitou dobrovolníků.\n\nTo znamená, že i když ještě není k dispozici ve vašem jazyce, můžete se zapojit a pomoci s jeho překladem."
 
 #: src/gs-app-translation-dialog.ui:5
 msgid "Translations"
@@ -1499,13 +1494,15 @@ msgid "Featured"
 msgstr "Významné"
 
 #. Heading for featured apps on a category page
-#. Translators: This is a heading for software which has been featured ('picked') by the distribution.
+#. Translators: This is a heading for software which has been featured
+#. ('picked') by the distribution.
 #: src/gs-category-page.ui:41 src/gs-overview-page.ui:106
 msgid "Editor’s Choice"
 msgstr "Výběr od distribuce"
 
 #. Heading for recently updated apps on a category page
-#. Translators: This is a heading for software which has been recently released upstream.
+#. Translators: This is a heading for software which has been recently
+#. released upstream.
 #: src/gs-category-page.ui:69 src/gs-overview-page.ui:129
 msgid "New & Updated"
 msgstr "Nové a aktualizované"
@@ -1956,15 +1953,13 @@ msgstr "Povolit repozitář softwaru třetí strany?"
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
 #. * 2. Software repository name, e.g. fedora-optional
-#.
 #: src/gs-common.c:240
 #, c-format
 msgid ""
 "%s is not <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">free and open source software</a>, and is provided by “%s”."
-msgstr ""
-"%s není <a href=\"https://en.wikipedia.org/wiki/Free_and_open-"
-"source_software\">svobodný a otevřený software</a> a poskytuje jej „%s“."
+"source_software\">free and open source software</a>, and is provided by "
+"“%s”."
+msgstr "%s není <a href=\"https://en.wikipedia.org/wiki/Free_and_open-source_software\">svobodný a otevřený software</a> a poskytuje jej „%s“."
 
 #. TRANSLATORS: the replacements are as follows:
 #. * 1. Application name, e.g. "Firefox"
@@ -1976,22 +1971,18 @@ msgstr "%s poskytuje „%s“."
 
 #: src/gs-common.c:259
 msgid "This software repository must be enabled to continue installation."
-msgstr ""
-"Aby bylo možné pokračovat v instalaci, je nutné povolit tento repozitář "
-"softwaru."
+msgstr "Aby bylo možné pokračovat v instalaci, je nutné povolit tento repozitář softwaru."
 
 #. TRANSLATORS: Laws are geographical, urgh...
 #: src/gs-common.c:269
 #, c-format
 msgid "It may be illegal to install or use %s in some countries."
-msgstr ""
-"V některých zemích nemusí být instalace a používání softwaru %s legální."
+msgstr "V některých zemích nemusí být instalace a používání softwaru %s legální."
 
 #. TRANSLATORS: Laws are geographical, urgh...
 #: src/gs-common.c:275
 msgid "It may be illegal to install or use this codec in some countries."
-msgstr ""
-"V některých zemích nemusí být instalace a používání tohoto kodeku legální."
+msgstr "V některých zemích nemusí být instalace a používání tohoto kodeku legální."
 
 #. TRANSLATORS: this is button text to not ask about non-free content again
 #: src/gs-common.c:282
@@ -2023,25 +2014,28 @@ msgstr "_Přijmout"
 #: src/gs-common.c:750
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
-msgstr[0] "Aktualizace byla nainstalována"
-msgstr[1] "Aktualizace byly nainstalovány"
-msgstr[2] "Aktualizace byly nainstalovány"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: we've just removed some apps
 #: src/gs-common.c:760
 msgid "An application has been removed"
 msgid_plural "Applications have been removed"
-msgstr[0] "Aplikace byla odebrána"
-msgstr[1] "Aplikace byly odebrány"
-msgstr[2] "Aplikace byly odebrány"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:766
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
-msgstr[0] "Aby se projevila, je zapotřebí provést restart."
-msgstr[1] "Aby se projevily, je zapotřebí provést restart."
-msgstr[2] "Aby se projevily, je zapotřebí provést restart."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:773
@@ -2057,52 +2051,60 @@ msgstr "právě teď"
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
-msgstr[0] "před %d minutou"
-msgstr[1] "před %d minutami"
-msgstr[2] "před %d minutami"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:875
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
-msgstr[0] "před %d hodinou"
-msgstr[1] "před %d hodinami"
-msgstr[2] "před %d hodinami"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:879
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
-msgstr[0] "před %d dnem"
-msgstr[1] "před %d dny"
-msgstr[2] "před %d dny"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:883
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
-msgstr[0] "před %d týdnem"
-msgstr[1] "před %d týdny"
-msgstr[2] "před %d týdny"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:887
 #, c-format
 msgid "%d month ago"
 msgid_plural "%d months ago"
-msgstr[0] "před %d měsícem"
-msgstr[1] "před %d měsíci"
-msgstr[2] "před %d měsíci"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-common.c:891
 #, c-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
-msgstr[0] "před %d rokem"
-msgstr[1] "před %d roky"
-msgstr[2] "před %d lety"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
-#. Translators: This is to construct a disk size string consisting of the value and its unit, while
-#. * the unit is drawn with a smaller font. If you need to flip the order, then you can use "%2$s %1$s".
+#. Translators: This is to construct a disk size string consisting of the
+#. value and its unit, while
+#. * the unit is drawn with a smaller font. If you need to flip the order,
+#. then you can use "%2$s %1$s".
 #. * Make sure you'll preserve the no break space between the values.
 #. * Example result: "13.0 MB"
 #: src/gs-common.c:1255
@@ -2111,12 +2113,14 @@ msgctxt "format-size"
 msgid "%s %s"
 msgstr "%s %s"
 
-#. TRANSLATORS: this is a what we use in notifications if the app's name is unknown
+#. TRANSLATORS: this is a what we use in notifications if the app's name is
+#. unknown
 #: src/gs-dbus-helper.c:291
 msgid "An application"
 msgstr "Nějaká aplikace"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional MIME types.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. MIME types.
 #: src/gs-dbus-helper.c:297
 #, c-format
 msgid "%s is requesting additional file format support."
@@ -2127,7 +2131,8 @@ msgstr "%s požaduje dodatečnou podporu formátů souborů."
 msgid "Additional MIME Types Required"
 msgstr "Požadavek na dodatečné typy MIME"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional fonts.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. fonts.
 #: src/gs-dbus-helper.c:303
 #, c-format
 msgid "%s is requesting additional fonts."
@@ -2138,7 +2143,8 @@ msgstr "%s požaduje dodatečná písma."
 msgid "Additional Fonts Required"
 msgstr "Požadavek na dodatečná písma"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional codecs.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. codecs.
 #: src/gs-dbus-helper.c:309
 #, c-format
 msgid "%s is requesting additional multimedia codecs."
@@ -2149,7 +2155,8 @@ msgstr "%s požaduje dodatečné multimediální kodeky."
 msgid "Additional Multimedia Codecs Required"
 msgstr "Požadavek na dodatečné multimediální kodeky"
 
-#. TRANSLATORS: this is a notification displayed when an app needs additional printer drivers.
+#. TRANSLATORS: this is a notification displayed when an app needs additional
+#. printer drivers.
 #: src/gs-dbus-helper.c:315
 #, c-format
 msgid "%s is requesting additional printer drivers."
@@ -2160,7 +2167,8 @@ msgstr "%s požaduje dodatečné tiskové ovladače."
 msgid "Additional Printer Drivers Required"
 msgstr "Požadavek na dodatečné tiskové ovladače"
 
-#. TRANSLATORS: this is a notification displayed when an app wants to install additional packages.
+#. TRANSLATORS: this is a notification displayed when an app wants to install
+#. additional packages.
 #: src/gs-dbus-helper.c:321
 #, c-format
 msgid "%s is requesting additional packages."
@@ -2208,7 +2216,8 @@ msgstr "Probíhá instalace…"
 msgid "Pending update…"
 msgstr "Probíhá aktualizace…"
 
-#. Translators: This string is shown when preparing to download and install an app.
+#. Translators: This string is shown when preparing to download and install an
+#. app.
 #: src/gs-details-page.c:414
 msgid "Preparing…"
 msgstr "Připravuje se…"
@@ -2267,9 +2276,7 @@ msgstr "Načítají se podrobnosti o aplikaci…"
 msgid ""
 "This software is not available in your language and will appear in US "
 "English."
-msgstr ""
-"Tento software není dostupný ve vašem jazyce a zobrazí se v americké "
-"angličtině."
+msgstr "Tento software není dostupný ve vašem jazyce a zobrazí se v americké angličtině."
 
 #: src/gs-details-page.ui:83
 msgid "Help _Translate"
@@ -2300,8 +2307,7 @@ msgstr "Vybrané doplňky budou nainstalovány spolu s aplikací."
 msgid ""
 "This application can only be used when there is an active internet "
 "connection."
-msgstr ""
-"Tuto aplikaci je možné používat, jen když je funkční připojení k Internetu."
+msgstr "Tuto aplikaci je možné používat, jen když je funkční připojení k Internetu."
 
 #: src/gs-details-page.ui:587
 msgid "Software Repository Included"
@@ -2311,9 +2317,7 @@ msgstr "Součástí je repozitář softwaru"
 msgid ""
 "This application includes a software repository which provides updates, as "
 "well as access to other software."
-msgstr ""
-"Součástí této aplikace je repozitář softwaru, který poskytuje aktualizace a "
-"přístup k dalšímu softwaru."
+msgstr "Součástí této aplikace je repozitář softwaru, který poskytuje aktualizace a přístup k dalšímu softwaru."
 
 #: src/gs-details-page.ui:605
 msgid "No Software Repository Included"
@@ -2323,18 +2327,16 @@ msgstr "Součástí není žádný repozitář softwaru"
 msgid ""
 "This application does not include a software repository. It will not be "
 "updated with new versions."
-msgstr ""
-"Součástí této aplikace není žádný repozitář softwaru. Nebude tak průběžně "
-"aktualizována na novější verze."
+msgstr "Součástí této aplikace není žádný repozitář softwaru. Nebude tak průběžně aktualizována na novější verze."
 
 #: src/gs-details-page.ui:624
 msgid ""
 "This software is already provided by your distribution and should not be "
 "replaced."
-msgstr ""
-"Tento software již poskytuje vaše distribuce a neměli byste jej nahrazovat."
+msgstr "Tento software již poskytuje vaše distribuce a neměli byste jej nahrazovat."
 
-#. Translators: a repository file used for installing software has been discovered.
+#. Translators: a repository file used for installing software has been
+#. discovered.
 #: src/gs-details-page.ui:641
 msgid "Software Repository Identified"
 msgstr "Rozpoznán repozitář softwaru"
@@ -2343,9 +2345,7 @@ msgstr "Rozpoznán repozitář softwaru"
 msgid ""
 "Adding this software repository will give you access to additional software "
 "and upgrades."
-msgstr ""
-"Přídáním tohoto repozitáře softwaru získáte přístup k dalšímu softwaru a "
-"aktualizacím."
+msgstr "Přídáním tohoto repozitáře softwaru získáte přístup k dalšímu softwaru a aktualizacím."
 
 #: src/gs-details-page.ui:643
 msgid "Only use software repositories that you trust."
@@ -2359,9 +2359,7 @@ msgstr "Žádná metadata"
 msgid ""
 "This software doesn’t provide any links to a website, code repository or "
 "issue tracker."
-msgstr ""
-"Tento software neposkytuje žádné odkazy na webové stránky, repozitáře kódu "
-"ani nástroj pro sledování problémů."
+msgstr "Tento software neposkytuje žádné odkazy na webové stránky, repozitáře kódu ani nástroj pro sledování problémů."
 
 #: src/gs-details-page.ui:745
 msgid "Project _Website"
@@ -2383,7 +2381,8 @@ msgstr "_Nahlásit chybu"
 msgid "_Help"
 msgstr "_Nápověda"
 
-#. Translators: Button opening a dialog where the users can write and publish their opinions about the apps.
+#. Translators: Button opening a dialog where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-details-page.ui:907
 msgid "_Write Review"
 msgstr "Nap_sat recenzi"
@@ -2417,6 +2416,7 @@ msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "Dostupné fonty pro písmo %s"
 msgstr[1] "Dostupné fonty pro písma %s"
 msgstr[2] "Dostupné fonty pro písma %s"
+msgstr[3] "Dostupné fonty pro písma %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2427,6 +2427,7 @@ msgid_plural "Available software for %s"
 msgstr[0] "Dostupný software pro kodek %s"
 msgstr[1] "Dostupný software pro kodeky %s"
 msgstr[2] "Dostupný software pro kodeky %s"
+msgstr[3] "Dostupný software pro kodeky %s"
 
 #: src/gs-extras-page.c:242
 msgid "Requested software not found"
@@ -2459,11 +2460,9 @@ msgstr "Nejsou k dispozici žádné aplikace, které by poskytovaly soubor %s."
 #: src/gs-extras-page.c:358 src/gs-extras-page.c:369 src/gs-extras-page.c:380
 #, c-format
 msgid ""
-"Information about %s, as well as options for how to get missing applications "
-"might be found %s."
-msgstr ""
-"Informace o formátu %s, včetně toho, jak získat chybějící aplikace, najdete "
-"%s."
+"Information about %s, as well as options for how to get missing applications"
+" might be found %s."
+msgstr "Informace o formátu %s, včetně toho, jak získat chybějící aplikace, najdete %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2486,9 +2485,7 @@ msgstr "%s není k dispozici."
 msgid ""
 "Information about %s, as well as options for how to get an application that "
 "can support this format might be found %s."
-msgstr ""
-"Informace o formátu %s, včetně toho, jak získat aplikaci, který umí tento "
-"tento formát podporovat, najdete %s."
+msgstr "Informace o formátu %s, včetně toho, jak získat aplikaci, který umí tento tento formát podporovat, najdete %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2504,8 +2501,7 @@ msgstr "Pro podporu písma %s nejsou k dispozici žádné fonty."
 msgid ""
 "Information about %s, as well as options for how to get additional fonts "
 "might be found %s."
-msgstr ""
-"Informace o písmu %s, včetně toho, jak získat dodatečná písma, najdete %s."
+msgstr "Informace o písmu %s, včetně toho, jak získat dodatečná písma, najdete %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2521,9 +2517,7 @@ msgstr "Pro formát %s nejsou k dispozici žádné dodatečné kodeky."
 msgid ""
 "Information about %s, as well as options for how to get a codec that can "
 "play this format might be found %s."
-msgstr ""
-"Informace o kodeku %s, včetně toho, jak získat kodek, který umí tento formát "
-"přehrát, najdete %s."
+msgstr "Informace o kodeku %s, včetně toho, jak získat kodek, který umí tento formát přehrát, najdete %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2539,9 +2533,7 @@ msgstr "Pro podporu %s nejsou k dispozici žádné prostředky Plasma."
 msgid ""
 "Information about %s, as well as options for how to get additional Plasma "
 "resources might be found %s."
-msgstr ""
-"Informace o kodeku %s, včetně toho, jak získat dodatečné prostředky Plasma, "
-"najdete %s."
+msgstr "Informace o kodeku %s, včetně toho, jak získat dodatečné prostředky Plasma, najdete %s."
 
 #. TRANSLATORS: this is when we know about an application or
 #. * addon, but it can't be listed for some reason
@@ -2557,17 +2549,17 @@ msgstr "Pro %s nejsou k dispozici žádné tiskové ovladače."
 msgid ""
 "Information about %s, as well as options for how to get a driver that "
 "supports this printer might be found %s."
-msgstr ""
-"Informace o tiskárně %s, včetně toho, jak získat ovladač, který podporuje "
-"tuto tiskárnu, najdete %s."
+msgstr "Informace o tiskárně %s, včetně toho, jak získat ovladač, který podporuje tuto tiskárnu, najdete %s."
 
 #. TRANSLATORS: hyperlink title
 #: src/gs-extras-page.c:481
 msgid "the documentation"
 msgstr "dokumentace"
 
-#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual codec name(s),
-#. the second %s is the application name, which requested the codecs, the third %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. The first %s will be replaced by actual
+#. codec name(s),
+#. the second %s is the application name, which requested the codecs, the
+#. third %s is a link titled "the documentation"
 #: src/gs-extras-page.c:487
 #, c-format
 msgid ""
@@ -2575,16 +2567,12 @@ msgid ""
 msgid_plural ""
 "Unable to find the %s requested by %s. Please see %s for more information."
 msgstr[0] ""
-"Nelze najít kodek %s požadovaný aplikací %s. Na další informace se prosím "
-"podívejte do %s."
 msgstr[1] ""
-"Nelze najít kodeky %s požadované aplikací %s. Na další informace se prosím "
-"podívejte do %s."
 msgstr[2] ""
-"Nelze najít kodeky %s požadované aplikací %s. Na další informace se prosím "
-"podívejte do %s."
+msgstr[3] ""
 
-#. TRANSLATORS: no codecs were found. First %s will be replaced by actual codec name(s), second %s is a link titled "the documentation"
+#. TRANSLATORS: no codecs were found. First %s will be replaced by actual
+#. codec name(s), second %s is a link titled "the documentation"
 #: src/gs-extras-page.c:496
 #, c-format
 msgid ""
@@ -2594,14 +2582,9 @@ msgid_plural ""
 "Unable to find the %s you were searching for. Please see %s for more "
 "information."
 msgstr[0] ""
-"Nelze najít kodek %s, který hledáte. Na další informace se prosím podívejte "
-"do %s."
 msgstr[1] ""
-"Nelze najít kodeky %s, které hledáte. Na další informace se prosím podívejte "
-"do %s."
 msgstr[2] ""
-"Nelze najít kodeky %s, které hledáte. Na další informace se prosím podívejte "
-"do %s."
+msgstr[3] ""
 
 #: src/gs-extras-page.c:574 src/gs-extras-page.c:631 src/gs-extras-page.c:671
 #, c-format
@@ -2649,8 +2632,7 @@ msgstr "Neznámá podpora pro PC"
 
 #: src/gs-hardware-support-context-dialog.c:581
 msgid "Not enough information to know if large screens are supported"
-msgstr ""
-"Není dostatek informací, abychom věděli, zda jsou podporovány velké obrazovky"
+msgstr "Není dostatek informací, abychom věděli, zda jsou podporovány velké obrazovky"
 
 #: src/gs-hardware-support-context-dialog.c:584
 msgid "Requires a large screen"
@@ -2680,8 +2662,7 @@ msgstr "Neznámá podpora pro mobilní zařízení"
 
 #: src/gs-hardware-support-context-dialog.c:601
 msgid "Not enough information to know if small screens are supported"
-msgstr ""
-"Není dostatek informací, abychom věděli, zda jsou podporovány malé obrazovky"
+msgstr "Není dostatek informací, abychom věděli, zda jsou podporovány malé obrazovky"
 
 #: src/gs-hardware-support-context-dialog.c:604
 msgid "Requires a small screen"
@@ -2706,8 +2687,7 @@ msgstr "Neznámá podpora klávesnice"
 
 #: src/gs-hardware-support-context-dialog.c:637
 msgid "Not enough information to know if keyboards are supported"
-msgstr ""
-"Není dostatek informací, abychom věděli, zda jsou podporovány klávesnice"
+msgstr "Není dostatek informací, abychom věděli, zda jsou podporovány klávesnice"
 
 #: src/gs-hardware-support-context-dialog.c:639
 msgid "Keyboard Required"
@@ -2742,9 +2722,7 @@ msgstr "Neznámá podpora myši"
 #: src/gs-hardware-support-context-dialog.c:657
 msgid ""
 "Not enough information to know if mice or pointing devices are supported"
-msgstr ""
-"Není dostatek informací, abychom věděli, zda jsou podporovány myši nebo "
-"ukazovátka"
+msgstr "Není dostatek informací, abychom věděli, zda jsou podporovány myši nebo ukazovátka"
 
 #: src/gs-hardware-support-context-dialog.c:659
 msgid "Mouse Required"
@@ -2773,9 +2751,7 @@ msgstr "Neznámá podpora dotykové obrazovky"
 
 #: src/gs-hardware-support-context-dialog.c:677
 msgid "Not enough information to know if touchscreens are supported"
-msgstr ""
-"Není dostatek informací, abychom věděli, zda jsou podporovány dotykové "
-"obrazovky"
+msgstr "Není dostatek informací, abychom věděli, zda jsou podporovány dotykové obrazovky"
 
 #: src/gs-hardware-support-context-dialog.c:679
 msgid "Touchscreen Required"
@@ -2837,13 +2813,16 @@ msgstr "Aplikace %s na tomto zařízení nebude fungovat správně"
 msgid "%s will not work on this device"
 msgstr "Aplikace %s na tomto zařízení nebude fungovat"
 
-#. Translators: This is the title of the dialog which contains information about the hardware support/requirements of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the hardware support/requirements of an app
 #: src/gs-hardware-support-context-dialog.ui:5
 msgid "Hardware Support"
 msgstr "Podpora hardwaru"
 
-#. Translators: This is in the context of a list of apps which are installed on the system.
-#. Translators: A label for a button to show only software which is already installed.
+#. Translators: This is in the context of a list of apps which are installed
+#. on the system.
+#. Translators: A label for a button to show only software which is already
+#. installed.
 #: src/gs-installed-page.c:812 src/gs-shell.ui:307
 msgctxt "List of installed apps"
 msgid "Installed"
@@ -2879,33 +2858,24 @@ msgstr "Vybudováno komunitou"
 msgid "_Get Involved"
 msgstr "_Zapojit se"
 
-#. Translators: The first placeholder here is a link to information about the license, and the second placeholder here is the name of a software license.
+#. Translators: The first placeholder here is a link to information about the
+#. license, and the second placeholder here is the name of a software license.
 #: src/gs-license-tile.c:114
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the <a href=\"%s\">%s license</a>.\n"
+"This software is developed in the open by a community of volunteers, and released under the <a href=\"%s\">%s license</a>.\n"
 "\n"
 "You can contribute and help make it even better."
-msgstr ""
-"Tento software je vyvíjen otevřeně komunitou dobrovolníků a je uvolněn pod "
-"<a href=\"%s\">licencí %s</a>.\n"
-"\n"
-"Můžete přispět a pomoci jej ještě vylepšit."
+msgstr "Tento software je vyvíjen otevřeně komunitou dobrovolníků a je uvolněn pod <a href=\"%s\">licencí %s</a>.\n\nMůžete přispět a pomoci jej ještě vylepšit."
 
 #. Translators: The placeholder here is the name of a software license.
 #: src/gs-license-tile.c:121
 #, c-format
 msgid ""
-"This software is developed in the open by a community of volunteers, and "
-"released under the %s license.\n"
+"This software is developed in the open by a community of volunteers, and released under the %s license.\n"
 "\n"
 "You can contribute and help make it even better."
-msgstr ""
-"Tento software je vyvíjen otevřeně komunitou dobrovolníků a je uvolněn pod "
-"licencí %s.\n"
-"\n"
-"Můžete přispět a pomoci jej ještě vylepšit."
+msgstr "Tento software je vyvíjen otevřeně komunitou dobrovolníků a je uvolněn pod licencí %s.\n\nMůžete přispět a pomoci jej ještě vylepšit."
 
 #: src/gs-license-tile.c:127
 msgid "Proprietary"
@@ -2917,17 +2887,10 @@ msgstr "Zjistit _více"
 
 #: src/gs-license-tile.c:135
 msgid ""
-"This software is not developed in the open, so only its developers know how "
-"it works. It may be insecure in ways that are hard to detect, and it may "
-"change without oversight.\n"
+"This software is not developed in the open, so only its developers know how it works. It may be insecure in ways that are hard to detect, and it may change without oversight.\n"
 "\n"
 "You may not be able to contribute to this software."
-msgstr ""
-"Tento software není vyvíjen otevřeně, takže o jeho fungování vědí pouze jeho "
-"vývojáři. Může být nezabezpečený způsobem, který je těžké odhalit, a může se "
-"měnit, aniž byste o tom věděli.\n"
-"\n"
-"Nejspíše nebudete moci do tohoto softwaru přispívat."
+msgstr "Tento software není vyvíjen otevřeně, takže o jeho fungování vědí pouze jeho vývojáři. Může být nezabezpečený způsobem, který je těžké odhalit, a může se měnit, aniž byste o tom věděli.\n\nNejspíše nebudete moci do tohoto softwaru přispívat."
 
 #. TRANSLATORS: initial start
 #: src/gs-loading-page.c:56
@@ -2948,25 +2911,12 @@ msgstr "Automatické aktualizace jsou pozastaveny"
 
 #: src/gs-metered-data-dialog.ui:9
 msgid ""
-"The current network is metered. Metered connections have data limits or "
-"charges associated with them. To save data, automatic updates have therefore "
-"been paused.\n"
+"The current network is metered. Metered connections have data limits or charges associated with them. To save data, automatic updates have therefore been paused.\n"
 "\n"
-"Automatic updates will be resumed when an un­metered network becomes "
-"available. Until then, it is still possible to manually install updates.\n"
+"Automatic updates will be resumed when an un­metered network becomes available. Until then, it is still possible to manually install updates.\n"
 "\n"
-"Alternatively, if the current network has been in­correctly identified as "
-"being metered, this setting can be changed."
-msgstr ""
-"Současná síť používá měřené připojení. Ta mívají omezené množství "
-"přenesených dat nebo účtované poplatky za přenesená data. Aby se ušetřil "
-"přenos dat, byly pozastaveny automatické aktualizace.\n"
-"\n"
-"Jakmile bude dostupné neměřené připojení, budou automatické aktualizace "
-"pokračovat. Do té doby je stále možné instalovat aktualizace ručně.\n"
-"\n"
-"Případně, pokud bylo současné připojení určeno nesprávně jako měřené, lze to "
-"změnit nastavením."
+"Alternatively, if the current network has been in­correctly identified as being metered, this setting can be changed."
+msgstr "Současná síť používá měřené připojení. Ta mívají omezené množství přenesených dat nebo účtované poplatky za přenesená data. Aby se ušetřil přenos dat, byly pozastaveny automatické aktualizace.\n\nJakmile bude dostupné neměřené připojení, budou automatické aktualizace pokračovat. Do té doby je stále možné instalovat aktualizace ručně.\n\nPřípadně, pokud bylo současné připojení určeno nesprávně jako měřené, lze to změnit nastavením."
 
 #: src/gs-metered-data-dialog.ui:17
 msgid "Open Network _Settings"
@@ -3019,22 +2969,23 @@ msgstr "Aktualizace"
 msgid "Downgrades"
 msgstr "Ponižování"
 
-#. Translators: This is a clickable link on the third party repositories info bar. It's
-#. part of a constructed sentence: "Provides access to additional software from [selected external sources].
+#. Translators: This is a clickable link on the third party repositories info
+#. bar. It's
+#. part of a constructed sentence: "Provides access to additional software
+#. from [selected external sources].
 #. Some proprietary software is included."
 #: src/gs-overview-page.c:879
 msgid "selected external sources"
 msgstr "vybraných externích zdrojů"
 
-#. Translators: This is the third party repositories info bar. The %s is replaced with "selected external sources" link.
+#. Translators: This is the third party repositories info bar. The %s is
+#. replaced with "selected external sources" link.
 #: src/gs-overview-page.c:881
 #, c-format
 msgid ""
-"Provides access to additional software from %s. Some proprietary software is "
-"included."
-msgstr ""
-"Poskytuje přístup k dalšímu softwaru z %s. Součástí je i některý uzavřený "
-"software."
+"Provides access to additional software from %s. Some proprietary software is"
+" included."
+msgstr "Poskytuje přístup k dalšímu softwaru z %s. Součástí je i některý uzavřený software."
 
 #. TRANSLATORS: button to turn on third party software repositories
 #. TRANSLATORS: button to accept the agreement
@@ -3094,9 +3045,7 @@ msgstr "Opravdu chcete odebrat repozitář %s?"
 msgid ""
 "All applications from %s will be uninstalled, and you will have to re-"
 "install the repository to use them again."
-msgstr ""
-"Všechny aplikace pocházející ze repozitáře %s budou odinstalovány. Abyste je "
-"mohli znovu použít, budete muset repozitář znovu nainstalovat."
+msgstr "Všechny aplikace pocházející ze repozitáře %s budou odinstalovány. Abyste je mohli znovu použít, budete muset repozitář znovu nainstalovat."
 
 #. TRANSLATORS: this is a prompt message, and '%s' is an
 #. * application summary, e.g. 'GNOME Clocks'
@@ -3110,9 +3059,7 @@ msgstr "Opravdu chcete odinstalovat %s?"
 #, c-format
 msgid ""
 "%s will be uninstalled, and you will have to install it to use it again."
-msgstr ""
-"Odinstaluje se %s a když jej budete chtít v budoucnu znovu použít, budete "
-"muset provést novou instalaci."
+msgstr "Odinstaluje se %s a když jej budete chtít v budoucnu znovu použít, budete muset provést novou instalaci."
 
 #: src/gs-prefs-dialog.ui:5
 msgid "Update Preferences"
@@ -3122,9 +3069,7 @@ msgstr "Předvolby aktualizací"
 msgid ""
 "To avoid charges and network caps, software updates are not automatically "
 "downloaded on mobile or metered connections."
-msgstr ""
-"Aby se předešlo poplatkům a omezením sítě, nejsou aktualizace softwaru "
-"automaticky stahovány na mobilních nebo měřených připojeních."
+msgstr "Aby se předešlo poplatkům a omezením sítě, nejsou aktualizace softwaru automaticky stahovány na mobilních nebo měřených připojeních."
 
 #: src/gs-prefs-dialog.ui:19
 msgid "Automatic Updates"
@@ -3150,9 +3095,7 @@ msgstr "Zobrazovat oznámení, když jsou automaticky nainstalovány aplikace."
 msgid ""
 "Some of the currently installed software is not compatible with %s. If you "
 "continue, the following will be automatically removed during the upgrade:"
-msgstr ""
-"Některý z právě instalovaného softwaru není kompatibilní s distribucí %s. "
-"Pokud budete pokračovat, následujíc se během povýšení odstraní:"
+msgstr "Některý z právě instalovaného softwaru není kompatibilní s distribucí %s. Pokud budete pokračovat, následujíc se během povýšení odstraní:"
 
 #: src/gs-removal-dialog.ui:4
 msgid "Incompatible Software"
@@ -3162,13 +3105,13 @@ msgstr "Nekompatibilní software"
 msgid "_Continue"
 msgstr "_Pokračovat"
 
-#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora Modular - x86_64"
+#. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora
+#. Modular - x86_64"
 #: src/gs-repos-dialog.c:239
 #, c-format
 msgid ""
 "Software that has been installed from “%s” will cease to receive updates."
-msgstr ""
-"Software, který byl nainstalován z „%s“, přestane dostávat aktualizace."
+msgstr "Software, který byl nainstalován z „%s“, přestane dostávat aktualizace."
 
 #: src/gs-repos-dialog.c:248
 msgid "Disable Repository?"
@@ -3202,8 +3145,10 @@ msgstr "Zapnout nové repozitáře při jejich přidání."
 msgid "more information"
 msgstr "více informací"
 
-#. TRANSLATORS: this is the third party repositories info bar. The '%s' is replaced
-#. with a link consisting a text "more information", which constructs a sentence:
+#. TRANSLATORS: this is the third party repositories info bar. The '%s' is
+#. replaced
+#. with a link consisting a text "more information", which constructs a
+#. sentence:
 #. "Additional repositories from selected third parties - more information."
 #: src/gs-repos-dialog.c:523
 #, c-format
@@ -3220,14 +3165,13 @@ msgstr "Repozitáře třetích stran Fedory"
 msgid "the operating system"
 msgstr "operačního systému"
 
-#. TRANSLATORS: This is the description text displayed in the Software Repositories dialog.
+#. TRANSLATORS: This is the description text displayed in the Software
+#. Repositories dialog.
 #. %s gets replaced by the name of the actual distro, e.g. Fedora.
 #: src/gs-repos-dialog.c:728
 #, c-format
 msgid "These repositories supplement the default software provided by %s."
-msgstr ""
-"Tyto repozitáře doplňují výchozí nabídku softwaru poskytovaného distribucí "
-"%s."
+msgstr "Tyto repozitáře doplňují výchozí nabídku softwaru poskytovaného distribucí %s."
 
 #. button in the info bar
 #: src/gs-repos-dialog.ui:8 src/gs-shell.ui:88
@@ -3247,6 +3191,7 @@ msgid_plural "%u applications installed"
 msgstr[0] "Nainstalována %u aplikace"
 msgstr[1] "Nainstalovány %u aplikace"
 msgstr[2] "Nainstalováno %u aplikací"
+msgstr[3] "Nainstalováno %u aplikací"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -3257,6 +3202,7 @@ msgid_plural "%u add-ons installed"
 msgstr[0] "Nainstalován %u doplněk"
 msgstr[1] "Nainstalovány %u doplňky"
 msgstr[2] "Nainstalováno %u doplňků"
+msgstr[3] "Nainstalováno %u doplňků"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3268,6 +3214,7 @@ msgid_plural "%u applications"
 msgstr[0] "%u aplikace"
 msgstr[1] "%u aplikace"
 msgstr[2] "%u aplikací"
+msgstr[3] "%u aplikací"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3279,6 +3226,7 @@ msgid_plural "%u add-ons"
 msgstr[0] "%u doplněk"
 msgstr[1] "%u doplňky"
 msgstr[2] "%u doplňků"
+msgstr[3] "%u doplňků"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3291,9 +3239,12 @@ msgid_plural "%s and %s installed"
 msgstr[0] "%s a %s"
 msgstr[1] "%s a %s"
 msgstr[2] "%s a %s"
+msgstr[3] "%s a %s"
 
-#. Translators: The first '%s' is replaced with a text like '10 applications installed',
-#. the second '%s' is replaced with installation kind, like in case of Flatpak 'User Installation'.
+#. Translators: The first '%s' is replaced with a text like '10 applications
+#. installed',
+#. the second '%s' is replaced with installation kind, like in case of Flatpak
+#. 'User Installation'.
 #: src/gs-repo-row.c:243
 #, c-format
 msgctxt "repo-row"
@@ -3360,7 +3311,8 @@ msgstr "Recenze je příliš krátká"
 msgid "The description is too long"
 msgstr "Recenze je příliš dlouhá"
 
-#. Translators: Title of the dialog box where the users can write and publish their opinions about the apps.
+#. Translators: Title of the dialog box where the users can write and publish
+#. their opinions about the apps.
 #: src/gs-review-dialog.ui:10
 msgid "Post Review"
 msgstr "Příspěvek do recenzí"
@@ -3382,8 +3334,7 @@ msgstr "Celkový dojem"
 msgid ""
 "Give a short summary of your review, for example: “Great app, would "
 "recommend”."
-msgstr ""
-"Uveďte krátké shrnutí své recenze, například: „Skvělá aplikace, doporučuji“."
+msgstr "Uveďte krátké shrnutí své recenze, například: „Skvělá aplikace, doporučuji“."
 
 #. Translators: This is where the users enter their opinions about the apps.
 #: src/gs-review-dialog.ui:119
@@ -3397,21 +3348,19 @@ msgstr "Co si o aplikaci myslíte? Snažte se uvést důvody svého hodnocení."
 
 #: src/gs-review-dialog.ui:156
 msgid ""
-"Find what data is sent in our <a href=\"https://odrs.gnome.org/"
-"privacy\">privacy policy</a>. The full name attached to your account will be "
-"shown publicly."
-msgstr ""
-"Najděte si v našich <a href=\"https://odrs.gnome.org/privacy\">zásadách "
-"soukromí</a>, jaká data jsou odesílána. Celé jméno přiřazené k vašemu účtu "
-"bude veřejně zobrazené."
+"Find what data is sent in our <a "
+"href=\"https://odrs.gnome.org/privacy\">privacy policy</a>. The full name "
+"attached to your account will be shown publicly."
+msgstr "Najděte si v našich <a href=\"https://odrs.gnome.org/privacy\">zásadách soukromí</a>, jaká data jsou odesílána. Celé jméno přiřazené k vašemu účtu bude veřejně zobrazené."
 
 #: src/gs-review-histogram.c:72
 #, c-format
 msgid "%u review total"
 msgid_plural "%u reviews total"
-msgstr[0] "celkem %u recenze"
-msgstr[1] "celkem %u recenze"
-msgstr[2] "celkem %u recenzí"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #: src/gs-review-histogram.ui:93
 msgid "out of 5 stars"
@@ -3426,8 +3375,7 @@ msgstr "anonym"
 #. TRANSLATORS: we explain what the action is going to do
 #: src/gs-review-row.c:220
 msgid "You can report reviews for abusive, rude, or discriminatory behavior."
-msgstr ""
-"Můžete nahlásit recenze, které jsou urážlivé, sprosté nebo diskriminační."
+msgstr "Můžete nahlásit recenze, které jsou urážlivé, sprosté nebo diskriminační."
 
 #. TRANSLATORS: we ask the user if they really want to do this
 #: src/gs-review-row.c:225
@@ -3449,7 +3397,8 @@ msgstr "Nahlásit recenzi?"
 msgid "Report"
 msgstr "Nahlásit"
 
-#. Translators: Users can express their opinions about other users' opinions about the apps.
+#. Translators: Users can express their opinions about other users' opinions
+#. about the apps.
 #: src/gs-review-row.ui:84
 msgid "Was this review useful to you?"
 msgstr "Byla pro vás tato recenze přínosná?"
@@ -3477,19 +3426,16 @@ msgstr "Odebrat…"
 
 #: src/gs-safety-context-dialog.c:144
 msgid "Check that you trust the vendor, as the application isn’t sandboxed"
-msgstr ""
-"Zkontrolujte si, že důvěřujete dodavateli, protože aplikace není v "
-"izolovaném prostředí."
+msgstr "Zkontrolujte si, že důvěřujete dodavateli, protože aplikace není v izolovaném prostředí."
 
 #: src/gs-safety-context-dialog.c:147
 msgid ""
 "Application isn’t sandboxed but the distribution has checked that it is not "
 "malicious"
-msgstr ""
-"Aplikace není v izolovaném prostředí, ale je prověřená v distribuci, že "
-"neobsahuje škodlivý kód."
+msgstr "Aplikace není v izolovaném prostředí, ale je prověřená v distribuci, že neobsahuje škodlivý kód."
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:160
 msgid "No Permissions"
 msgstr "Žádná oprávnění"
@@ -3498,7 +3444,8 @@ msgstr "Žádná oprávnění"
 msgid "App is fully sandboxed"
 msgstr "Aplikace je v plně izolovaném prostředí"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:172
 msgid "Network Access"
 msgstr "Přístup k síti"
@@ -3507,7 +3454,8 @@ msgstr "Přístup k síti"
 msgid "Can access the internet"
 msgstr "Může přistupovat k internetu"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:176
 msgid "No Network Access"
 msgstr "Žádný přístup k síti"
@@ -3516,7 +3464,8 @@ msgstr "Žádný přístup k síti"
 msgid "Cannot access the internet"
 msgstr "Nemůže přistupovat k internetu"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:183
 msgid "Uses System Services"
 msgstr "Využívá služby systému"
@@ -3525,7 +3474,8 @@ msgstr "Využívá služby systému"
 msgid "Can request data from system services"
 msgstr "Může si vyžádat data ze služeb systému"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:191
 msgid "Uses Session Services"
 msgstr "Využívá služby sezení"
@@ -3534,7 +3484,8 @@ msgstr "Využívá služby sezení"
 msgid "Can request data from session services"
 msgstr "Může si vyžádat data ze služeb sezení"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:199
 msgid "Device Access"
 msgstr "Přístup k zařízení"
@@ -3543,7 +3494,8 @@ msgstr "Přístup k zařízení"
 msgid "Can access devices such as webcams or gaming controllers"
 msgstr "Může přistupovat k zařízením jako jsou webkamery nebo herní ovladače"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:203
 msgid "No Device Access"
 msgstr "Žádný přístup k zařízení"
@@ -3552,22 +3504,26 @@ msgstr "Žádný přístup k zařízení"
 msgid "Cannot access devices such as webcams or gaming controllers"
 msgstr "Nemůže přistupovat k zařízením jako jsou webkamery nebo herní ovladače"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:210
 msgid "Legacy Windowing System"
 msgstr "Zastaralý zobrazovací systém"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:218
 msgid "Arbitrary Permissions"
 msgstr "Libovolná oprávnění"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:226
 msgid "User Settings"
 msgstr "Uživatelská nastavení"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:238
 msgid "Full File System Read/Write Access"
 msgstr "Plný přístup k souborovému systému pro čtení/zápis"
@@ -3576,7 +3532,8 @@ msgstr "Plný přístup k souborovému systému pro čtení/zápis"
 msgid "Can read and write all data on the file system"
 msgstr "Může číst a zapisovat všechna data v souborovém systému"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:247
 msgid "Home Folder Read/Write Access"
 msgstr "Přístup k domovské složce pro čtení/zápis"
@@ -3585,7 +3542,8 @@ msgstr "Přístup k domovské složce pro čtení/zápis"
 msgid "Can read and write all data in your home directory"
 msgstr "Může číst a zapisovat všechna data ve vaší domovské složce"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:256
 msgid "Full File System Read Access"
 msgstr "Plný přístup k souborovému systému pro čtení"
@@ -3594,7 +3552,8 @@ msgstr "Plný přístup k souborovému systému pro čtení"
 msgid "Can read all data on the file system"
 msgstr "Může číst všechna data v souborovém systému"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:266
 msgid "Home Folder Read Access"
 msgstr "Přístup k domovské složce pro čtení"
@@ -3603,7 +3562,8 @@ msgstr "Přístup k domovské složce pro čtení"
 msgid "Can read all data in your home directory"
 msgstr "Může číst všechna data ve vaší domovské složce"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:276
 msgid "Download Folder Read/Write Access"
 msgstr "Přístup ke složce se staženými soubory pro čtení/zápis"
@@ -3612,7 +3572,8 @@ msgstr "Přístup ke složce se staženými soubory pro čtení/zápis"
 msgid "Can read and write all data in your downloads directory"
 msgstr "Může číst a zapisovat všechna data ve vaší složce se staženými soubory"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:288
 msgid "Download Folder Read Access"
 msgstr "Přístup ke složce se staženými soubory pro čtení"
@@ -3629,7 +3590,8 @@ msgstr "Může číst a zapisovat všechna data ve složce"
 msgid "Can read all data in the directory"
 msgstr "Může číst všechna data ve složce"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:326
 msgid "No File System Access"
 msgstr "Žádný přístup k souborovému systému"
@@ -3638,7 +3600,8 @@ msgstr "Žádný přístup k souborovému systému"
 msgid "Cannot access the file system at all"
 msgstr "Vůbec nemůže přistupovat k souborovému systému"
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:341
 msgid "Proprietary Code"
 msgstr "uzavřená"
@@ -3647,11 +3610,10 @@ msgstr "uzavřená"
 msgid ""
 "The source code is not public, so it cannot be independently audited and "
 "might be unsafe"
-msgstr ""
-"Zdrojový kód není veřejný, takže jej nelze nezávisle zkontrolovat a může být "
-"nebezpečný."
+msgstr "Zdrojový kód není veřejný, takže jej nelze nezávisle zkontrolovat a může být nebezpečný."
 
-#. Translators: This refers to permissions (for example, from flatpak) which an app requests from the user.
+#. Translators: This refers to permissions (for example, from flatpak) which
+#. an app requests from the user.
 #: src/gs-safety-context-dialog.c:345
 msgid "Auditable Code"
 msgstr "otevřený kód"
@@ -3660,18 +3622,18 @@ msgstr "otevřený kód"
 msgid ""
 "The source code is public and can be independently audited, which makes the "
 "app more likely to be safe"
-msgstr ""
-"Zdrojový kód je veřejný a může být nezávisle kontrolován, což zvyšuje "
-"pravděpodobnost, že je aplikace bezpečná."
+msgstr "Zdrojový kód je veřejný a může být nezávisle kontrolován, což zvyšuje pravděpodobnost, že je aplikace bezpečná."
 
-#. Translators: This indicates an app was written and released by a developer who has been verified.
+#. Translators: This indicates an app was written and released by a developer
+#. who has been verified.
 #. * It’s used in a context tile, so should be short.
 #: src/gs-safety-context-dialog.c:354
 msgid "App developer is verified"
 msgstr "Vývojář aplikace je ověřený"
 
 #: src/gs-safety-context-dialog.c:355
-msgid "The developer of this app has been verified to be who they say they are"
+msgid ""
+"The developer of this app has been verified to be who they say they are"
 msgstr "Bylo ověřeno, že vývojář této aplikace je tím, za koho se vydává"
 
 #. Translators: This indicates an app uses an outdated SDK.
@@ -3683,9 +3645,7 @@ msgstr "Bezpečnostní rizika v závislostech"
 #: src/gs-safety-context-dialog.c:367
 msgid ""
 "Software or its dependencies are no longer supported and may be insecure"
-msgstr ""
-"Software nebo jeho závislosti nejsou nadále podporovány a mohou obsahovat "
-"bezpečnostní rizika"
+msgstr "Software nebo jeho závislosti nejsou nadále podporovány a mohou obsahovat bezpečnostní rizika"
 
 #. Translators: The app is considered safe to install and run.
 #. * The placeholder is the app name.
@@ -3708,7 +3668,8 @@ msgstr "Aplikace %s je potenciálně nebezpečná"
 msgid "%s is unsafe"
 msgstr "Aplikace %s je nebezpečná"
 
-#. Translators: This is the title of the dialog which contains information about the permissions of an app
+#. Translators: This is the title of the dialog which contains information
+#. about the permissions of an app
 #: src/gs-safety-context-dialog.ui:5
 msgid "Safety"
 msgstr "Bezpečnost"
@@ -3717,7 +3678,8 @@ msgstr "Bezpečnost"
 msgid "License"
 msgstr "Licence"
 
-#. Translators: This is a heading for a row showing the origin/source of an app (such as ‘flathub’).
+#. Translators: This is a heading for a row showing the origin/source of an
+#. app (such as ‘flathub’).
 #: src/gs-safety-context-dialog.ui:141
 msgid "Source"
 msgstr "Zdroj"
@@ -3730,12 +3692,14 @@ msgstr "SDK"
 msgid "Outdated SDK version"
 msgstr "Zastaralá verze SDK"
 
-#. Translators: This is the accessible description for a button to go to the previous screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. previous screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:46
 msgid "Previous Screenshot"
 msgstr "Předchozí snímek obrazovky"
 
-#. Translators: This is the accessible description for a button to go to the next screenshot in the screenshot carousel.
+#. Translators: This is the accessible description for a button to go to the
+#. next screenshot in the screenshot carousel.
 #: src/gs-screenshot-carousel.ui:74
 msgid "Next Screenshot"
 msgstr "Následující snímek obrazovky"
@@ -3792,6 +3756,7 @@ msgid_plural "%u more matches"
 msgstr[0] "%u další výsledek hledání"
 msgstr[1] "%u další výsledky hledání"
 msgstr[2] "%u dalších výsledků hledání"
+msgstr[3] "%u dalších výsledků hledání"
 
 #: src/gs-search-page.ui:6
 msgid "Search page"
@@ -3819,7 +3784,8 @@ msgstr "Žádná aplikace nebyla nalezena"
 msgid "“%s”"
 msgstr "„%s“"
 
-#. Translators: The '%s' is replaced with an error message, which had been shortened.
+#. Translators: The '%s' is replaced with an error message, which had been
+#. shortened.
 #. The dots at the end are there to highlight that to the user.
 #: src/gs-shell.c:1240
 #, c-format
@@ -3848,10 +3814,9 @@ msgstr "Nelze stáhnout aktualizace"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1293
 msgid ""
-"Unable to download updates: internet access was required but wasn’t available"
-msgstr ""
-"Nelze stáhout aktualizace: přístup k internetu je nezbytný, ale není k "
-"dispozici"
+"Unable to download updates: internet access was required but wasn’t "
+"available"
+msgstr "Nelze stáhout aktualizace: přístup k internetu je nezbytný, ale není k dispozici"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the source (e.g. "alt.fedoraproject.org")
@@ -3908,8 +3873,7 @@ msgstr "Nelze nainstalovat balíček %s, protože selhalo stažení"
 #: src/gs-shell.c:1391
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
-msgstr ""
-"Nelze nainstalovat balíček %s, protože není k dispozici běhové prostředí %s"
+msgstr "Nelze nainstalovat balíček %s, protože není k dispozici běhové prostředí %s"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -3921,8 +3885,7 @@ msgstr "Nelze nainstalovat balíček %s, protože není podporovaný"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1403
 msgid "Unable to install: internet access was required but wasn’t available"
-msgstr ""
-"Nelze nainstalovat: přístup k internetu je nezbytný, ale není k dispozici"
+msgstr "Nelze nainstalovat: přístup k internetu je nezbytný, ale není k dispozici"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1408
@@ -4010,8 +3973,7 @@ msgstr "Nelze nainstalovat aktualizace, protože selhalo stažení"
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1520
 msgid "Unable to update: internet access was required but wasn’t available"
-msgstr ""
-"Nelze aktualizovat: přístup k internetu je nezbytný, ale není k dispozici"
+msgstr "Nelze aktualizovat: přístup k internetu je nezbytný, ale není k dispozici"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "GIMP")
@@ -4064,24 +4026,21 @@ msgstr "Nelze aktualizovat balíček %s: nemáte oprávnění k aktualizaci soft
 #, c-format
 msgid ""
 "Unable to install updates: you do not have permission to update software"
-msgstr ""
-"Nelze nainstalovat aktualizace: nemáte oprávnění k aktualizaci softwaru"
+msgstr "Nelze nainstalovat aktualizace: nemáte oprávnění k aktualizaci softwaru"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
 #: src/gs-shell.c:1584
 #, c-format
 msgid "Unable to update %s: AC power is required"
-msgstr ""
-"Nelze aktualizovat balíček %s: je vyžadováno napájení z elektrické sítě"
+msgstr "Nelze aktualizovat balíček %s: je vyžadováno napájení z elektrické sítě"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
 #: src/gs-shell.c:1590
 #, c-format
 msgid "Unable to install updates: AC power is required"
-msgstr ""
-"Nelze nainstalovat aktualizace: je vyžadováno napájení z elektrické sítě"
+msgstr "Nelze nainstalovat aktualizace: je vyžadováno napájení z elektrické sítě"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the application name (e.g. "Dell XPS 13")
@@ -4131,9 +4090,7 @@ msgstr "Nelze povýšit na %s, protože selhalo stažení"
 #, c-format
 msgid ""
 "Unable to upgrade to %s: internet access was required but wasn’t available"
-msgstr ""
-"Nelze povýšit na %s: přístup k Internetu je nezbytný a přitom není k "
-"dispozici"
+msgstr "Nelze povýšit na %s: přístup k Internetu je nezbytný a přitom není k dispozici"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -4245,8 +4202,7 @@ msgstr "Litujeme, ale něco se stalo špatně"
 #: src/gs-shell.c:1846 src/gs-shell.c:1894 src/gs-shell.c:1932
 #: src/gs-shell.c:1975
 msgid "Not enough disk space — free up some space and try again"
-msgstr ""
-"Nebyl dostatek místa na disku – uvolněte nějaké místo a pak to zkuste znovu"
+msgstr "Nebyl dostatek místa na disku – uvolněte nějaké místo a pak to zkuste znovu"
 
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1888
@@ -4276,12 +4232,11 @@ msgstr "Selhala instalace: selhalo ověření"
 msgid "Unable to contact %s"
 msgstr "Nelze kontaktovat %s"
 
-#. TRANSLATORS: failure text for the in-app notification, where the 'Software' means this application, aka 'GNOME Software'.
+#. TRANSLATORS: failure text for the in-app notification, where the 'Software'
+#. means this application, aka 'GNOME Software'.
 #: src/gs-shell.c:1980
 msgid "Software needs to be restarted to use new plugins."
-msgstr ""
-"Aplikace Software musí být restartována, aby mohla používat nový zásuvný "
-"modul."
+msgstr "Aplikace Software musí být restartována, aby mohla používat nový zásuvný modul."
 
 #. TRANSLATORS: need to be connected to the AC power
 #: src/gs-shell.c:1984
@@ -4309,7 +4264,7 @@ msgstr "Prozkoumat disk"
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-shell.ui:108 src/gs-updates-page.c:926
+#: src/gs-shell.ui:108 src/gs-updates-page.c:930
 msgid "Network Settings"
 msgstr "Nastavení sítě"
 
@@ -4335,7 +4290,8 @@ msgstr "Hlavní nabídky"
 msgid "Find Out _More"
 msgstr "Dozvědět se _více…"
 
-#. Translators: A label for a button to show only updates which are available to install.
+#. Translators: A label for a button to show only updates which are available
+#. to install.
 #: src/gs-shell.ui:328
 msgctxt "Header bar button for list of apps to be updated"
 msgid "Updates"
@@ -4390,7 +4346,8 @@ msgctxt "Download size"
 msgid "Unknown"
 msgstr "neznámá"
 
-#. Translators: This is the title of the dialog which contains information about the storage or download size needed for an app
+#. Translators: This is the title of the dialog which contains information
+#. about the storage or download size needed for an app
 #: src/gs-storage-context-dialog.ui:5
 msgid "Storage"
 msgstr "Úložiště"
@@ -4398,11 +4355,9 @@ msgstr "Úložiště"
 #. Translators: Please do not translate the markup or link href
 #: src/gs-storage-context-dialog.ui:69
 msgid ""
-"Cached data can be cleared from the <a href=\"dummy\">_application settings</"
-"a>."
-msgstr ""
-"Data uložená v mezipaměti lze vymazat v <a href=\"dummy\">_nastavení "
-"aplikace</a>."
+"Cached data can be cleared from the <a href=\"dummy\">_application "
+"settings</a>."
+msgstr "Data uložená v mezipaměti lze vymazat v <a href=\"dummy\">_nastavení aplikace</a>."
 
 #: src/gs-summary-tile.c:118
 #, c-format
@@ -4482,18 +4437,20 @@ msgstr "Stáhněte prosím čekající aktualizace softwaru."
 #, c-format
 msgid "%u Application Updated — Restart Required"
 msgid_plural "%u Applications Updated — Restart Required"
-msgstr[0] "Byla aktualizována %u aplikace — vyžaduje restart"
-msgstr[1] "Byly aktualizovány %u aplikace — vyžaduje restart"
-msgstr[2] "Bylo aktualizováno %u aplikací — vyžaduje restart"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:361
 #, c-format
 msgid "%u Application Updated"
 msgid_plural "%u Applications Updated"
-msgstr[0] "Byla aktualizována %u aplikace"
-msgstr[1] "Byly aktualizovány %u aplikace"
-msgstr[2] "Bylo aktualizováno %u aplikací"
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:372
@@ -4517,9 +4474,10 @@ msgstr "Aplikace %s a %s byly aktualizovány."
 #, c-format
 msgid "%u application requires a restart."
 msgid_plural "%u applications require a restart."
-msgstr[0] "%u aplikace vyžaduje restart."
-msgstr[1] "%u aplikace vyžadují restart."
-msgstr[2] "%u aplikací vyžaduje restart."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:401
@@ -4527,7 +4485,8 @@ msgstr[2] "%u aplikací vyžaduje restart."
 msgid "Includes %s, %s and %s."
 msgstr "Včetně %s, %s a %s."
 
-#. TRANSLATORS: this is when the current operating system version goes end-of-life
+#. TRANSLATORS: this is when the current operating system version goes end-of-
+#. life
 #: src/gs-update-monitor.c:669 src/gs-updates-page.ui:52
 msgid "Operating System Updates Unavailable"
 msgstr "Aktualizace operačního systému nejsou dostupné"
@@ -4583,14 +4542,16 @@ msgid_plural "Software Updates Installed"
 msgstr[0] "Aktualizace softwaru nainstalována"
 msgstr[1] "Aktualizace softwaru nainstalovány"
 msgstr[2] "Aktualizace softwaru nainstalovány"
+msgstr[3] "Aktualizace softwaru nainstalovány"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1175
 msgid "An important operating system update has been installed."
 msgid_plural "Important operating system updates have been installed."
-msgstr[0] "Byla nainstalována důležitá aktualizace operačního systému."
-msgstr[1] "Byly nainstalovány důležité aktualizace operačního systému."
-msgstr[2] "Byly nainstalovány důležité aktualizace operačního systému."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
+msgstr[3] ""
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
@@ -4622,114 +4583,100 @@ msgstr "Aktualizace byla zrušena."
 #. * something with no network available
 #: src/gs-update-monitor.c:1250
 msgid ""
-"Internet access was required but wasn’t available. Please make sure that you "
-"have internet access and try again."
-msgstr ""
-"Je vyžadován přístup k Internetu, ale není dostupný. Zkontrolujte své "
-"připojení k Internetu a zkuste to znovu."
+"Internet access was required but wasn’t available. Please make sure that you"
+" have internet access and try again."
+msgstr "Je vyžadován přístup k Internetu, ale není dostupný. Zkontrolujte své připojení k Internetu a zkuste to znovu."
 
 #. TRANSLATORS: if the package is not signed correctly
 #: src/gs-update-monitor.c:1255
 msgid ""
 "There were security issues with the update. Please consult your software "
 "provider for more details."
-msgstr ""
-"S aktualizací nastal bezpečnostní problém. Podrobnosti prosím proberte se "
-"svým poskytovatelem softwaru."
+msgstr "S aktualizací nastal bezpečnostní problém. Podrobnosti prosím proberte se svým poskytovatelem softwaru."
 
 #. TRANSLATORS: we ran out of disk space
 #: src/gs-update-monitor.c:1260
 msgid ""
 "There wasn’t enough disk space. Please free up some space and try again."
-msgstr ""
-"Nebyl dostatek místa na disku. Uvolněte prosím nějaké místo a pak to zkuste "
-"znovu."
+msgstr "Nebyl dostatek místa na disku. Uvolněte prosím nějaké místo a pak to zkuste znovu."
 
 #. TRANSLATORS: We didn't handle the error type
 #: src/gs-update-monitor.c:1264
 msgid ""
 "We’re sorry: the update failed to install. Please wait for another update "
 "and try again. If the problem persists, contact your software provider."
-msgstr ""
-"Bohužel, instalace aktualizace selhala. Vyčkejte prosím na další aktualizaci "
-"a pak to zkuste znovu. Pokud problém přetrvá, kontaktujte svého "
-"poskytovatele softwaru."
+msgstr "Bohužel, instalace aktualizace selhala. Vyčkejte prosím na další aktualizaci a pak to zkuste znovu. Pokud problém přetrvá, kontaktujte svého poskytovatele softwaru."
 
-#: src/gs-updates-page.c:249
-#, fuzzy
+#: src/gs-updates-page.c:253
 msgid "automatic updates on"
-msgstr "Automatické aktualizace"
+msgstr "automatické aktualizace zapnuty"
 
-#: src/gs-updates-page.c:252
-#, fuzzy
+#: src/gs-updates-page.c:256
 msgid "automatic updates off"
-msgstr "Automatické aktualizace"
+msgstr "automatické aktualizace vypnuty"
 
 #. TRANSLATORS: This is the time when we last checked for updates
-#: src/gs-updates-page.c:288
+#: src/gs-updates-page.c:292
 #, c-format
 msgid "Last checked: %s"
 msgstr "Poslední kontrola: %s"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
-#: src/gs-updates-page.c:602
+#: src/gs-updates-page.c:606
 #, c-format
 msgid "%s %s is no longer supported."
 msgstr "Systém %s %s již není podporován."
 
-#: src/gs-updates-page.c:606
+#: src/gs-updates-page.c:610
 msgid "Your operating system is no longer supported."
 msgstr "Váš operační systém není nadále podporován."
 
 #. TRANSLATORS: EOL distros do not get important updates
-#: src/gs-updates-page.c:611
+#: src/gs-updates-page.c:615
 msgid "This means that it does not receive security updates."
-msgstr ""
-"Znamená to, že pro něj již nadále nejsou poskytovány bezpečnostní opravy."
+msgstr "Znamená to, že pro něj již nadále nejsou poskytovány bezpečnostní opravy."
 
 #. TRANSLATORS: upgrade refers to a major update, e.g. Fedora 25 to 26
-#: src/gs-updates-page.c:615
+#: src/gs-updates-page.c:619
 msgid "It is recommended that you upgrade to a more recent version."
 msgstr "Doporučuje se povýšit na nejnovější verzi."
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
-#: src/gs-updates-page.c:894
+#: src/gs-updates-page.c:898
 msgid "Charges May Apply"
 msgstr "Možné zpoplatnění"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:898
+#: src/gs-updates-page.c:902
 msgid ""
 "Checking for updates while using mobile broadband could cause you to incur "
 "charges."
-msgstr ""
-"Kontrola aktualizací přes mobilní připojení může být zpoplatněna vaším "
-"operátorem."
+msgstr "Kontrola aktualizací přes mobilní připojení může být zpoplatněna vaším operátorem."
 
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
-#: src/gs-updates-page.c:902
+#: src/gs-updates-page.c:906
 msgid "Check _Anyway"
 msgstr "_Přesto zkontrolovat"
 
 #. TRANSLATORS: can't do updates check
-#: src/gs-updates-page.c:918
+#: src/gs-updates-page.c:922
 msgid "No Network"
 msgstr "Žádné připojení k síti"
 
 #. TRANSLATORS: we need network
 #. * to do the updates check
-#: src/gs-updates-page.c:922
+#: src/gs-updates-page.c:926
 msgid "Internet access is required to check for updates."
 msgstr "Přístup k internetu je nezbytný pro kontrolu aktualizací."
 
-#: src/gs-updates-page.c:1355
+#: src/gs-updates-page.c:1359
 msgid "Check for updates"
 msgstr "Zkontrolovat aktualizace"
 
-#: src/gs-updates-page.c:1398
+#: src/gs-updates-page.c:1402
 msgctxt "Apps to be updated"
 msgid "Updates"
 msgstr "Aktualizace"
@@ -4748,7 +4695,8 @@ msgstr "Načítají se aktualizace…"
 msgid "This could take a while."
 msgstr "Může to chvilku trvat."
 
-#. TRANSLATORS: This means all software (plural) installed on this system is up to date.
+#. TRANSLATORS: This means all software (plural) installed on this system is
+#. up to date.
 #: src/gs-updates-page.ui:235
 msgid "Up to Date"
 msgstr "Aktuální"
@@ -4761,9 +4709,7 @@ msgstr "Použít mobilní data?"
 msgid ""
 "Checking for updates when using mobile broadband could cause you to incur "
 "charges."
-msgstr ""
-"Kontrola aktualizací při používání mobilního širokopásmového připojení vám "
-"může způsobit poplatky."
+msgstr "Kontrola aktualizací při používání mobilního širokopásmového připojení vám může způsobit poplatky."
 
 #: src/gs-updates-page.ui:278
 msgid "_Check Anyway"
@@ -4854,7 +4800,8 @@ msgstr "Přečíst si o nové verzi"
 msgid "Downloading…"
 msgstr "Stahuje se…"
 
-#. Translators: the first '%s' is replaced with the downloaded size, the second '%s'
+#. Translators: the first '%s' is replaced with the downloaded size, the
+#. second '%s'
 #. with the total download size, forming text like "135 MB of 2 GB downloaded"
 #: src/gs-upgrade-banner.c:185
 #, c-format
@@ -4882,20 +4829,18 @@ msgstr "Nezapomeňte zazálohovat si před povýšením svá data a soubory."
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Centrum aplikací"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "Add, remove or update software on this computer"
 msgstr "Přidat, odebrat nebo aktualizovat software v tomto počítači"
 
-#. Translators: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#. Translators: Search terms to find this application. Do NOT translate or
+#. localize the semicolons! The list MUST also end with a semicolon!
 #: src/org.gnome.Software.desktop.in:12
 msgid ""
-"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;"
-"Software;App;Store;"
-msgstr ""
-"aktualizace;povýšení;zdroje;repozitáře;předvolby;nastavení;instalace;"
-"odinstalace;odebrání;program;software;aplikace;obchod;"
+"Updates;Upgrade;Sources;Repositories;Preferences;Install;Uninstall;Program;Software;App;Store;"
+msgstr "aktualizace;povýšení;zdroje;repozitáře;předvolby;nastavení;instalace;odinstalace;odebrání;program;software;aplikace;obchod;"
 
 #. TRANSLATORS: this is a group of updates that are not
 #. * packages and are not shown in the main list
@@ -4909,9 +4854,7 @@ msgstr "Aktualizace systému"
 msgid ""
 "General system updates, such as security or bug fixes, and performance "
 "improvements."
-msgstr ""
-"Obecné aktualizace systému, jako jsou bezpečnostní opravy, opravy chyb a "
-"vylepšení výkonu."
+msgstr "Obecné aktualizace systému, jako jsou bezpečnostní opravy, opravy chyb a vylepšení výkonu."
 
 #. TRANSLATORS: status text when downloading
 #: plugins/core/gs-plugin-rewrite-resource.c:155
@@ -4919,17 +4862,17 @@ msgid "Downloading featured images…"
 msgstr "Stahují se obrázky k významným aplikacím…"
 
 #: plugins/eos/gs-plugin-eos.c:173
-#, fuzzy, c-format
+#, c-format
 msgid "Could not launch this application."
-msgstr "Vyberte aplikaci:"
+msgstr "Aplikaci se nepodařilo spustit."
 
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
-#: plugins/eos-updater/gs-plugin-eos-updater.c:639
+#: plugins/eos-updater/gs-plugin-eos-updater.c:709
 #, c-format
 msgid "%s update with new features and fixes."
 msgstr "Aktualizace %s s novými funkcemi a opravami."
 
-#: plugins/eos-updater/gs-plugin-eos-updater.c:1019
+#: plugins/eos-updater/gs-plugin-eos-updater.c:1126
 msgid "EOS update service could not fetch and apply the update."
 msgstr "Aktualizační služba EOS nemohla stáhnout a nasadit aktualizaci."
 
@@ -4954,9 +4897,7 @@ msgstr "Stahují se informace o povýšení…"
 #: plugins/fedora-pkgdb-collections/gs-plugin-fedora-pkgdb-collections.c:405
 msgid ""
 "Upgrade for the latest features, performance and stability improvements."
-msgstr ""
-"Proveďte povýšení, abyste získali nejnovější funkce a zlepšení výkonu a "
-"stability."
+msgstr "Proveďte povýšení, abyste získali nejnovější funkce a zlepšení výkonu a stability."
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:6
 msgid "Flatpak Support"
@@ -4966,7 +4907,8 @@ msgstr "Podpora pro Flatpak"
 msgid "Flatpak is a framework for desktop applications on Linux"
 msgstr "Flatpak je systém pro provozování aplikací na Linuxu"
 
-#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-reference.html#idm45858571325264
+#. Reference: https://docs.flatpak.org/en/latest/flatpak-command-
+#. reference.html#idm45858571325264
 #: plugins/flatpak/gs-flatpak.c:324
 #, c-format
 msgid "System folder %s"
@@ -5138,9 +5080,7 @@ msgstr ""
 msgid ""
 "Remote “%s” doesn't allow install of “%s”, possibly due to its filter. "
 "Remove the filter and repeat the install. Detailed error: %s"
-msgstr ""
-"Vzdálený server „%s“ nedovoluje instalaci „%s“, pravděpodobně kvůli svému "
-"filtru. Odstraňte filtr a instalaci zopakujte. Podrobnosti chyby: %s"
+msgstr "Vzdálený server „%s“ nedovoluje instalaci „%s“, pravděpodobně kvůli svému filtru. Odstraňte filtr a instalaci zopakujte. Podrobnosti chyby: %s"
 
 #. TRANSLATORS: a specific part of hardware,
 #. * the first %s is the device name, e.g. 'Unifying Receiver`
@@ -5306,9 +5246,7 @@ msgid ""
 "Software that is to be installed is not signed. It will not be possible to "
 "verify the origin of updates to this software, or whether updates have been "
 "tampered with."
-msgstr ""
-"Software, který se chystáte nainstalovat, není podepsaný. Nebude tak možné "
-"ověřit původ jeho aktualizací, nebo zda aktualizace nebyly zmanipulovány."
+msgstr "Software, který se chystáte nainstalovat, není podepsaný. Nebude tak možné ověřit původ jeho aktualizací, nebo zda aktualizace nebyly zmanipulovány."
 
 #: plugins/packagekit/gs-packagekit-task.c:153
 msgid "Download Unsigned Software?"
@@ -5318,9 +5256,7 @@ msgstr "Stáhnout nepodepsaný software?"
 msgid ""
 "Unsigned updates are available. Without a signature, it is not possible to "
 "verify the origin of the update, or whether it has been tampered with."
-msgstr ""
-"Jsou k dispozici nepodepsané aktualizace. Bez podpisu není možné ověřit "
-"původ aktualizace, nebo zda nebyla zmanipulována."
+msgstr "Jsou k dispozici nepodepsané aktualizace. Bez podpisu není možné ověřit původ aktualizace, nebo zda nebyla zmanipulována."
 
 #: plugins/packagekit/gs-packagekit-task.c:158
 msgid "Update Unsigned Software?"
@@ -5332,11 +5268,7 @@ msgid ""
 "verify the origin of the update, or whether it has been tampered with. "
 "Software updates will be disabled until unsigned updates are either removed "
 "or updated."
-msgstr ""
-"Jsou k dispozici nepodepsané aktualizace. Bez podpisu není možné ověřit "
-"původ aktualizace, nebo zda nebyla zmanipulována. Aktualizace softwaru budou "
-"zakázány, dokud nebudou nepodepsané aktualizace buďto odstraněny nebo "
-"nahrazeny jinými."
+msgstr "Jsou k dispozici nepodepsané aktualizace. Bez podpisu není možné ověřit původ aktualizace, nebo zda nebyla zmanipulována. Aktualizace softwaru budou zakázány, dokud nebudou nepodepsané aktualizace buďto odstraněny nebo nahrazeny jinými."
 
 #: plugins/packagekit/gs-plugin-packagekit.c:367
 msgid "Packages"
