@@ -11,13 +11,14 @@
 # Stas Solovey <whats_up@tut.by>, 2013-2017
 # Stas Solovey <whats_up@tut.by>, 2019
 # Yuri Myasoedov <ymyasoedov@yandex.ru>, 2014-2015
+# Виктор, 2023
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-12 18:33+0000\n"
+"POT-Creation-Date: 2023-01-26 18:34+0000\n"
 "PO-Revision-Date: 2016-04-15 19:22+0000\n"
-"Last-Translator: Ivan Molodetskikh <yalterz@gmail.com>, 2022\n"
+"Last-Translator: Виктор, 2023\n"
 "Language-Team: Russian (http://www.transifex.com/endless-os/gnome-software/language/ru/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -811,11 +812,11 @@ msgstr "Установлено"
 #. * shows the status of an application being installed
 #: src/gs-app-addon-row.c:115 src/gs-app-row.c:205 src/gs-details-page.c:362
 msgid "Installing"
-msgstr "Устанавливается"
+msgstr "Установка"
 
 #: src/gs-app-addon-row.c:119
 msgid "Removing"
-msgstr "Удаляется"
+msgstr "Удаление"
 
 #: src/gs-app-addon-row.ui:64
 msgid "_Uninstall"
@@ -958,7 +959,7 @@ msgstr "Для этого релиза нет подробностей"
 #. i.e. "25 May 2012"
 #: src/gs-app-version-history-row.c:94 src/gs-review-row.c:63
 msgid "%e %B %Y"
-msgstr "%e %b., %Y"
+msgstr "%e %B, %Y"
 
 #. TRANSLATORS: this is a command line option
 #: src/gs-application.c:124
@@ -1049,7 +1050,7 @@ msgstr "Авторское право © 2016-2022 Разработчики пр
 
 #: src/gs-application.c:263 src/gs-application.c:272
 msgid "translator-credits"
-msgstr "Станислав Соловей <whats_up@tut.by>, 2013-2019.\nЮрий Мясоедов <ymyasoedov@yandex.ru>, 2014.\nAlexey Rubtsov <rushills@gmail.com>, 2021.\nAleksandr Melman <Alexmelman88@gmail.com>, 2022"
+msgstr "Станислав Соловей <whats_up@tut.by>, 2013-2019.\nЮрий Мясоедов <ymyasoedov@yandex.ru>, 2014.\nAlexey Rubtsov <rushills@gmail.com>, 2021.\nAleksandr Melman <Alexmelman88@gmail.com>, 2022\nVictor <github.com/viktoron>, 2023"
 
 #. TRANSLATORS: this is the title of the about window
 #. TRANSLATORS: this is the menu item that opens the about window
@@ -1406,7 +1407,7 @@ msgstr "Удалить"
 #. * shows the status of an application being erased
 #: src/gs-app-row.c:212
 msgid "Uninstalling"
-msgstr "Удаляется"
+msgstr "Удаление"
 
 #. TRANSLATORS: during the update the device
 #. * will restart into a special update-only mode
@@ -1440,7 +1441,7 @@ msgid ""
 "%s is designed, developed, and translated by an international community of volunteers.\n"
 "\n"
 "This means that while it’s not yet available in your language, you can get involved and help translate it yourself."
-msgstr "%s проектируется, разрабатывается и переводится международным сообществом добровольцев.\n\nЭто означает, что, хотя он еще не доступен на вашем языке, вы можете принять участие и помочь перевести его самостоятельно."
+msgstr "%s проектируется, разрабатывается и переводится международным сообществом добровольцев.\n\nЭто означает, что, хотя оно еще не доступно на вашем языке, вы можете принять участие и помочь перевести его самостоятельно."
 
 #: src/gs-app-translation-dialog.ui:5
 msgid "Translations"
@@ -1513,7 +1514,7 @@ msgstr "Новые и обновленные"
 #. Heading for web apps on a category page
 #: src/gs-category-page.ui:97
 msgid "Picks from the Web"
-msgstr "Подборки из Cети"
+msgstr "Подборки из Интернета"
 
 #. Heading for the rest of the apps on a category page
 #: src/gs-category-page.ui:125
@@ -2017,28 +2018,28 @@ msgstr "_Принять"
 #: src/gs-common.c:750
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Обновление установлено"
+msgstr[1] "Обновления установлены"
+msgstr[2] "Обновления установлены"
+msgstr[3] "Обновления установлены"
 
 #. TRANSLATORS: we've just removed some apps
 #: src/gs-common.c:760
 msgid "An application has been removed"
 msgid_plural "Applications have been removed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Приложение удалено"
+msgstr[1] "Приложения удалены"
+msgstr[2] "Приложения удалены"
+msgstr[3] "Приложения удалены"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:766
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Для вступления в силу требуется перезагрузка."
+msgstr[1] "Для вступления в силу требуется перезагрузка."
+msgstr[2] "Для вступления в силу требуется перезагрузка."
+msgstr[3] "Для вступления в силу требуется перезагрузка."
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:773
@@ -2054,55 +2055,55 @@ msgstr "Только что"
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%d минуту назад"
+msgstr[1] "%d минуты назад"
+msgstr[2] "%d минут назад"
+msgstr[3] "%d минут назад"
 
 #: src/gs-common.c:875
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%d час назад"
+msgstr[1] "%d часа назад"
+msgstr[2] "%d часов назад"
+msgstr[3] "%d часов назад"
 
 #: src/gs-common.c:879
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%d день назад"
+msgstr[1] "%d дня назад"
+msgstr[2] "%d дней назад"
+msgstr[3] "%d дней назад"
 
 #: src/gs-common.c:883
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%d неделю назад"
+msgstr[1] "%d недели назад"
+msgstr[2] "%d недель назад"
+msgstr[3] "%d недель назад"
 
 #: src/gs-common.c:887
 #, c-format
 msgid "%d month ago"
 msgid_plural "%d months ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%d месяц назад"
+msgstr[1] "%d месяца назад"
+msgstr[2] "%d месяцев назад"
+msgstr[3] "%d месяцев назад"
 
 #: src/gs-common.c:891
 #, c-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%d год назад"
+msgstr[1] "%d года назад"
+msgstr[2] "%d лет назад"
+msgstr[3] "%d лет назад"
 
 #. Translators: This is to construct a disk size string consisting of the
 #. value and its unit, while
@@ -2223,7 +2224,7 @@ msgstr "В ожидании обновления…"
 #. app.
 #: src/gs-details-page.c:414
 msgid "Preparing…"
-msgstr "Подготавливается…"
+msgstr "Подготовка…"
 
 #. Translators: This string is shown when uninstalling an app.
 #: src/gs-details-page.c:417
@@ -2283,7 +2284,7 @@ msgstr "Это программное обеспечение недоступн�
 
 #: src/gs-details-page.ui:83
 msgid "Help _Translate"
-msgstr "Помочь _Перевести"
+msgstr "Помочь _перевести"
 
 #. TRANSLATORS: A label for a button to execute the selected application.
 #: src/gs-details-page.ui:244
@@ -2296,7 +2297,7 @@ msgstr "_Обновить"
 
 #: src/gs-details-page.ui:319
 msgid "Downloading"
-msgstr "Загружается"
+msgstr "Загрузка"
 
 #: src/gs-details-page.ui:456 src/gs-installed-page.ui:135
 msgid "Add-ons"
@@ -2416,10 +2417,10 @@ msgstr ", "
 #, c-format
 msgid "Available fonts for the %s script"
 msgid_plural "Available fonts for the %s scripts"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Доступные шрифты для скрипта %s"
+msgstr[1] "Доступные шрифты для скриптов %s"
+msgstr[2] "Доступные шрифты для скриптов %s"
+msgstr[3] "Доступные шрифты для скриптов %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2427,10 +2428,10 @@ msgstr[3] ""
 #, c-format
 msgid "Available software for %s"
 msgid_plural "Available software for %s"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Доступное программное обеспечение для %s"
+msgstr[1] "Доступное программное обеспечение для %s"
+msgstr[2] "Доступное программное обеспечение для %s"
+msgstr[3] "Доступное программное обеспечение для %s"
 
 #: src/gs-extras-page.c:242
 msgid "Requested software not found"
@@ -2609,11 +2610,11 @@ msgstr "Страница кодеков"
 
 #: src/gs-featured-carousel.ui:43
 msgid "Previous"
-msgstr "Предыдущая"
+msgstr "Назад"
 
 #: src/gs-featured-carousel.ui:66
 msgid "Next"
-msgstr "Следующая"
+msgstr "Далее"
 
 #: src/gs-featured-carousel.ui:83
 msgid "Featured Apps List"
@@ -2923,7 +2924,7 @@ msgstr "Выбранная сеть тарифицируется. Такие с�
 
 #: src/gs-metered-data-dialog.ui:17
 msgid "Open Network _Settings"
-msgstr "Параметры _Сети"
+msgstr "_Настройки сети"
 
 #: src/gs-moderate-page.ui:6
 msgid "Moderate page"
@@ -3156,7 +3157,7 @@ msgstr "больше информации"
 #: src/gs-repos-dialog.c:523
 #, c-format
 msgid "Additional repositories from selected third parties — %s."
-msgstr "Дополнительные репозитории от выбранных сторонних источников - %s."
+msgstr "Дополнительные репозитории от выбранных сторонних источников — %s."
 
 #: src/gs-repos-dialog.c:528
 msgid "Fedora Third Party Repositories"
@@ -3183,7 +3184,7 @@ msgstr "Репозитории ПО"
 
 #: src/gs-repos-dialog.ui:53
 msgid "No Repositories"
-msgstr "Нет репозиторий"
+msgstr "Нет репозиториев"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. installed' sentence, describing a software repository.
@@ -3191,10 +3192,10 @@ msgstr "Нет репозиторий"
 #, c-format
 msgid "%u application installed"
 msgid_plural "%u applications installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Установлено %u приложение"
+msgstr[1] "Установлено %u приложения"
+msgstr[2] "Установлено %u приложений"
+msgstr[3] "Установлено %u приложений"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -3287,12 +3288,12 @@ msgstr "Обожаю"
 #. TRANSLATORS: the review can't just be copied and pasted
 #: src/gs-review-dialog.c:118
 msgid "Please take more time writing the review"
-msgstr "Уделите рецензированию больше времени"
+msgstr "Пожалуйста, уделите больше времени написанию отзыва"
 
 #. TRANSLATORS: the review is not acceptable
 #: src/gs-review-dialog.c:122
 msgid "Please choose a star rating"
-msgstr "Выберите оценку"
+msgstr "Пожалуйста, выберите оценку"
 
 #. TRANSLATORS: the review is not acceptable
 #: src/gs-review-dialog.c:126
@@ -3360,10 +3361,10 @@ msgstr "Узнать какие данные передаются можно в 
 #, c-format
 msgid "%u review total"
 msgid_plural "%u reviews total"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Всего %u отзыв"
+msgstr[1] "Всего %u отзыва"
+msgstr[2] "Всего %u отзывов"
+msgstr[3] "Всего %u отзывов"
 
 #: src/gs-review-histogram.ui:93
 msgid "out of 5 stars"
@@ -3373,7 +3374,7 @@ msgstr "из 5 звезд"
 #: src/gs-review-row.c:56
 msgctxt "Reviewer name"
 msgid "Unknown"
-msgstr "Неизвестный"
+msgstr "Неизвестно"
 
 #. TRANSLATORS: we explain what the action is going to do
 #: src/gs-review-row.c:220
@@ -4093,7 +4094,7 @@ msgstr "Не удалось обновить до %s из-за сбоя загр
 #, c-format
 msgid ""
 "Unable to upgrade to %s: internet access was required but wasn’t available"
-msgstr "Не удалось обновиться на %s: необходимо подключение к Интернету, но оно недоступно"
+msgstr "Не удалось обновить до %s: необходимо подключение к Интернету, но оно недоступно"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the distro name (e.g. "Fedora 25")
@@ -4262,14 +4263,14 @@ msgstr "_Параметры обновлений"
 #. button in the info bar
 #: src/gs-shell.ui:98
 msgid "Examine Disk"
-msgstr "Изучить диск"
+msgstr "Проверить диск"
 
 #. button in the info bar
 #. TRANSLATORS: this is a link to the
 #. * control-center network panel
 #: src/gs-shell.ui:108 src/gs-updates-page.c:930
 msgid "Network Settings"
-msgstr "Параметры сети"
+msgstr "Настройки сети"
 
 #. button in the info bar
 #: src/gs-shell.ui:118
@@ -4326,7 +4327,7 @@ msgstr "Данные, созданные вами в приложении"
 
 #: src/gs-storage-context-dialog.c:153
 msgid "Cache Data"
-msgstr "Данные кэша"
+msgstr "Кэш данных"
 
 #: src/gs-storage-context-dialog.c:154
 msgid "Temporary cached data"
@@ -4370,12 +4371,12 @@ msgstr "%s (Установлено)"
 #: src/gs-summary-tile.c:123
 #, c-format
 msgid "%s (Installing)"
-msgstr "%s (Устанавливается)"
+msgstr "%s (Установка)"
 
 #: src/gs-summary-tile.c:128
 #, c-format
 msgid "%s (Removing)"
-msgstr "%s (Удаляется)"
+msgstr "%s (Удаление)"
 
 #. TRANSLATORS: this is the title of the installed updates dialog window
 #: src/gs-update-dialog.c:65 src/gs-update-dialog.c:152
@@ -4393,7 +4394,7 @@ msgstr "Установлено %s"
 
 #: src/gs-update-dialog.ui:77
 msgid "No Updates Installed"
-msgstr "Обновления не установлены"
+msgstr "Нет установленных обновлений"
 
 #: src/gs-update-monitor.c:213
 msgid "Software Updates Are Out of Date"
@@ -4440,20 +4441,20 @@ msgstr "Пожалуйста, загрузите ожидающие обновл
 #, c-format
 msgid "%u Application Updated — Restart Required"
 msgid_plural "%u Applications Updated — Restart Required"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u приложение обновлено — требуется перезагрузка"
+msgstr[1] "%u приложения обновлено — требуется перезагрузка"
+msgstr[2] "%u приложений обновлено — требуется перезагрузка"
+msgstr[3] "%u приложений обновлено — требуется перезагрузка"
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:361
 #, c-format
 msgid "%u Application Updated"
 msgid_plural "%u Applications Updated"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u приложение обновлено"
+msgstr[1] "%u приложения обновлено"
+msgstr[2] "%u приложений обновлено"
+msgstr[3] "%u приложений обновлено"
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:372
@@ -4542,10 +4543,10 @@ msgstr "Добро пожаловать в %s %s!"
 #: src/gs-update-monitor.c:1171
 msgid "Software Update Installed"
 msgid_plural "Software Updates Installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Обновление программного обеспечения установлено"
+msgstr[1] "Обновления программного обеспечения установлены"
+msgstr[2] "Обновления программного обеспечения установлены"
+msgstr[3] "Обновления программного обеспечения установлены"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1175
@@ -4612,11 +4613,11 @@ msgstr "К сожалению обновление не удалось уста�
 
 #: src/gs-updates-page.c:253
 msgid "automatic updates on"
-msgstr ""
+msgstr "автоматические обновления включены"
 
 #: src/gs-updates-page.c:256
 msgid "automatic updates off"
-msgstr ""
+msgstr "автоматические обновления выключены"
 
 #. TRANSLATORS: This is the time when we last checked for updates
 #: src/gs-updates-page.c:292
@@ -4728,7 +4729,7 @@ msgstr "Чтобы проверить обновления, подключите
 
 #: src/gs-updates-page.ui:298
 msgid "_Network Settings"
-msgstr "_Параметры сети"
+msgstr "_Настройки сети"
 
 #: src/gs-updates-page.ui:327
 msgid "Error"
@@ -4824,7 +4825,7 @@ msgstr "Крупное обновление, с новыми возможнос�
 
 #: src/gs-upgrade-banner.ui:187
 msgid "_Restart & Upgrade"
-msgstr "_Перезапуск и Обновление"
+msgstr "_Перезагрузить и обновить"
 
 #: src/gs-upgrade-banner.ui:201
 msgid "Remember to back up data and files before upgrading."
@@ -4832,7 +4833,7 @@ msgstr "Не забудьте создать резервную копию да�
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
-msgstr ""
+msgstr "Центр приложений"
 
 #: src/org.gnome.Software.desktop.in:4
 msgid "Add, remove or update software on this computer"
@@ -4867,7 +4868,7 @@ msgstr "Загрузка изображений рекомендуемых пр�
 #: plugins/eos/gs-plugin-eos.c:173
 #, c-format
 msgid "Could not launch this application."
-msgstr ""
+msgstr "Не удалось запустить это приложение."
 
 #. Translators: The '%s' is replaced with the OS name, like "Endless OS"
 #: plugins/eos-updater/gs-plugin-eos-updater.c:709
@@ -5059,7 +5060,7 @@ msgstr "Системная установка"
 msgid ""
 "You don’t have enough space to update these apps. Please remove apps or "
 "documents to create more space."
-msgstr ""
+msgstr "У вас недостаточно места для обновления этих приложений. Удалите приложения или документы, чтобы освободить место."
 
 #: plugins/flatpak/gs-plugin-flatpak.c:1162
 #, c-format
@@ -5097,14 +5098,14 @@ msgstr "Обновление устройства %s"
 #: plugins/fwupd/gs-fwupd-app.c:139
 #, c-format
 msgid "%s System Update"
-msgstr "Обновление %s"
+msgstr "Обновление системы %s"
 
 #. TRANSLATORS: the EC is typically the keyboard controller chip,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
 #: plugins/fwupd/gs-fwupd-app.c:144
 #, c-format
 msgid "%s Embedded Controller Update"
-msgstr "Обновление контроллера %s"
+msgstr "Обновление встроенного контроллера %s"
 
 #. TRANSLATORS: ME stands for Management Engine, the Intel AMT thing,
 #. * the first %s is the device name, e.g. 'ThinkPad P50`
