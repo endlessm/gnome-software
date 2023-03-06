@@ -1050,6 +1050,19 @@ cancelled_cb (GCancellable *ui_cancellable,
 	g_cond_broadcast (&self->state_change_cond);
 }
 
+static gboolean
+is_wrong_state_error (const GError *error)
+{
+	g_autofree gchar *remote_error = NULL;
+
+	if (!g_dbus_error_is_remote_error (error))
+		return FALSE;
+
+	remote_error = g_dbus_error_get_remote_error (error);
+
+	return g_str_equal (remote_error, "com.endlessm.Updater.Error.WrongState");
+}
+
 /* Called in a #GTask worker thread, and it needs to hold `self->mutex` due to
  * synchronising on state with the main thread. */
 static gboolean
@@ -1062,6 +1075,7 @@ gs_plugin_eos_updater_app_upgrade_download (GsPlugin      *plugin,
 	gulong cancelled_id = 0;
 	EosUpdaterState state;
 	gboolean done, allow_restart;
+	g_autoptr(GError) local_error = NULL;
 	g_autoptr(GMutexLocker) locker = g_mutex_locker_new (&self->mutex);
 
 	/* only process this app if was created by this plugin */
@@ -1112,9 +1126,21 @@ gs_plugin_eos_updater_app_upgrade_download (GsPlugin      *plugin,
 				allow_restart = FALSE;
 				g_debug ("Restarting OS upgrade from none/ready state");
 				if (!gs_eos_updater_call_poll_sync (self->updater_proxy,
-								    cancellable, error)) {
-					gs_eos_updater_error_convert (error);
-					return FALSE;
+								    cancellable, &local_error)) {
+					/* Ignore WrongState errors, since we
+					 * explicitly synchronise to the daemon’s
+					 * state again in the next iteration of
+					 * this loop, so should be able to
+					 * recover from them. The user can’t do
+					 * anything about them anyway. */
+					if (is_wrong_state_error (local_error)) {
+						g_debug ("Got WrongState error from eos-updater daemon; ignoring.");
+						g_clear_error (&local_error);
+					} else {
+						gs_eos_updater_error_convert (&local_error);
+						g_propagate_error (error, g_steal_pointer (&local_error));
+						return FALSE;
+					}
 				}
 			} else {
 				/* Display an error to the user. */
@@ -1151,9 +1177,16 @@ gs_plugin_eos_updater_app_upgrade_download (GsPlugin      *plugin,
 
 			if (!gs_eos_updater_call_fetch_full_sync (self->updater_proxy,
 								  g_variant_dict_end (&options_dict),
-								  cancellable, error)) {
-				gs_eos_updater_error_convert (error);
-				return FALSE;
+								  cancellable, &local_error)) {
+				/* Ignore WrongState errors, as above. */
+				if (is_wrong_state_error (local_error)) {
+					g_debug ("Got WrongState error from eos-updater daemon; ignoring.");
+					g_clear_error (&local_error);
+				} else {
+					gs_eos_updater_error_convert (&local_error);
+					g_propagate_error (error, g_steal_pointer (&local_error));
+					return FALSE;
+				}
 			}
 
 			break;
@@ -1171,9 +1204,16 @@ gs_plugin_eos_updater_app_upgrade_download (GsPlugin      *plugin,
 			gs_app_set_size_download (app, GS_SIZE_TYPE_VALID, 0);
 
 			if (!gs_eos_updater_call_apply_sync (self->updater_proxy,
-							     cancellable, error)) {
-				gs_eos_updater_error_convert (error);
-				return FALSE;
+							     cancellable, &local_error)) {
+				/* Ignore WrongState errors, as above. */
+				if (is_wrong_state_error (local_error)) {
+					g_debug ("Got WrongState error from eos-updater daemon; ignoring.");
+					g_clear_error (&local_error);
+				} else {
+					gs_eos_updater_error_convert (&local_error);
+					g_propagate_error (error, g_steal_pointer (&local_error));
+					return FALSE;
+				}
 			}
 
 			break;
