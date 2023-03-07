@@ -43,7 +43,9 @@ GS_CONFIGURE_FLAGS += \
 	-Dmalcontent=true \
 	-Dmogwai=true \
 	-Dpackagekit=false \
-	-Dsoup2=true
+	-Dsoup2=true \
+	-Dhardcoded_foss_webapps=false \
+	-Dhardcoded_proprietary_webapps=false
 
 DISTRO_ID = debian
 FREE_REPOS = \'@DISTRO@-*-main\'
