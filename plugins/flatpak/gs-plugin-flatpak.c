@@ -1050,13 +1050,11 @@ gs_plugin_flatpak_update_apps_async (GsPlugin                           *plugin,
 }
 
 static gboolean
-get_installation_dir_free_space (GsFlatpak *flatpak, guint64 *free_space, gboolean interactive, GError **error)
+get_installation_dir_free_space (FlatpakInstallation *installation, guint64 *free_space, GError **error)
 {
-	FlatpakInstallation *installation;
 	g_autoptr (GFile) installation_dir = NULL;
 	g_autoptr (GFileInfo) info = NULL;
 
-	installation = gs_flatpak_get_installation (flatpak, interactive);
 	installation_dir = flatpak_installation_get_path (installation);
 
 	info = g_file_query_filesystem_info (installation_dir,
@@ -1096,7 +1094,7 @@ gs_flatpak_has_space_to_install (GsFlatpak *flatpak, GsApp *app, gboolean intera
 	}
 	space_required = space_required + min_free_space;
 
-	if (!get_installation_dir_free_space (flatpak, &free_space, interactive, &error)) {
+	if (!get_installation_dir_free_space (installation, &free_space, &error)) {
 		g_warning ("Error getting the free space available for installing %s: %s",
 			   gs_app_get_unique_id (app), error->message);
 		g_clear_error (&error);
@@ -1140,7 +1138,7 @@ gs_flatpak_has_space_to_update (GsFlatpak *flatpak, GsAppList *list, gboolean in
 		g_clear_error (&error);
 	}
 	space_required = space_required + min_free_space;
-	if (!get_installation_dir_free_space (flatpak, &free_space, interactive, &error)) {
+	if (!get_installation_dir_free_space (installation, &free_space, &error)) {
 		g_warning ("Error getting the free space available for updating an app list: %s",
 			   error->message);
 		g_clear_error (&error);
