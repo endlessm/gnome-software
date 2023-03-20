@@ -1521,14 +1521,6 @@ gs_plugin_flatpak_update (GsPlugin *plugin,
 		g_debug ("Skipping %s for %s: not enough space on disk",
 			 (!interactive ? "automatic update" : "update"),
 			 gs_flatpak_get_id (flatpak));
-		if (!interactive) {
-			/* If we're performing automatic updates in the
-			 * background, don't return an error: we don't want an
-			 * error banner showing up out of the blue. Continue to
-			 * the next installation (if any).
-			 */
-			return TRUE;
-		}
 		g_set_error (error, GS_PLUGIN_ERROR, GS_PLUGIN_ERROR_NO_SPACE,
 			     _("You don’t have enough space to update these apps. Please remove apps or documents to create more space."));
 		return FALSE;
