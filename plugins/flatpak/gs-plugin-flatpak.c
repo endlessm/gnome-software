@@ -989,7 +989,8 @@ gs_flatpak_has_space_to_update (GsFlatpak *flatpak, GsAppList *list, gboolean in
 
 			size_type = gs_app_get_size_installed (app_temp, &installed_size);
 
-			if (size_type == GS_SIZE_TYPE_VALID)
+			if (size_type == GS_SIZE_TYPE_VALID ||
+			    !gs_app_get_is_update_downloaded (app_temp))
 				space_required += installed_size;
 		}
 	}
