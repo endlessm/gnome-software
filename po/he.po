@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-10-05 17:33+0000\n"
+"POT-Creation-Date: 2024-03-01 23:33+0000\n"
 "PO-Revision-Date: 2016-04-15 19:22+0000\n"
 "Last-Translator: Elad Alfassa <elad@fedoraproject.org>, 2013\n"
 "Language-Team: Hebrew (http://app.transifex.com/endless-os/gnome-software/language/he/)\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Language: he\n"
-"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: (n % 10 == 0 && n % 1 == 0 && n > 10) ? 2 : 3;\n"
+"Plural-Forms: nplurals=3; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: 2;\n"
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:7 src/gs-shell.ui:21
 msgid "Software"
@@ -2015,7 +2015,6 @@ msgid_plural "Updates have been installed"
 msgstr[0] "עדכון הותקן"
 msgstr[1] "עדכונים הותקנו"
 msgstr[2] "עדכונים הותקנו"
-msgstr[3] "עדכונים הותקנו"
 
 #. TRANSLATORS: we've just removed some apps
 #: src/gs-common.c:760
@@ -2024,7 +2023,6 @@ msgid_plural "Applications have been removed"
 msgstr[0] "יישום הוסר"
 msgstr[1] "יישומים הוסרו"
 msgstr[2] "יישומים הוסרו"
-msgstr[3] "יישומים הוסרו"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:766
@@ -2033,7 +2031,6 @@ msgid_plural "A restart is required for them to take effect."
 msgstr[0] "יש להפעיk את המערכת מחדש כדי שהעדכון יכנס לתוקף."
 msgstr[1] "יש להפעיל את המערכת מחדש כדי שהעדכונים יכנסו לתוקף."
 msgstr[2] "יש להפעיל את המערכת מחדש כדי שהעדכונים יכנסו לתוקף."
-msgstr[3] "יש להפעיל את המערכת מחדש כדי שהעדכונים יכנסו לתוקף."
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:773
@@ -2051,8 +2048,7 @@ msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "לפני דקה"
 msgstr[1] "לפני שתי דקות"
-msgstr[2] "‫לפני %d דקות"
-msgstr[3] "‫‫לפני %d דקות"
+msgstr[2] "‫‫לפני %d דקות"
 
 #: src/gs-common.c:875
 #, c-format
@@ -2061,7 +2057,6 @@ msgid_plural "%d hours ago"
 msgstr[0] "לפני שעה"
 msgstr[1] "לפני שעתיים"
 msgstr[2] "‫לפני %d שעות"
-msgstr[3] "‫לפני %d שעות"
 
 #: src/gs-common.c:879
 #, c-format
@@ -2070,7 +2065,6 @@ msgid_plural "%d days ago"
 msgstr[0] "אתמול"
 msgstr[1] "שלשום"
 msgstr[2] "‫לפני %d ימים"
-msgstr[3] "‫לפני %d ימים"
 
 #: src/gs-common.c:883
 #, c-format
@@ -2079,7 +2073,6 @@ msgid_plural "%d weeks ago"
 msgstr[0] "לפני שבוע"
 msgstr[1] "לפני שבועיים"
 msgstr[2] "‫לפני %d שבועות"
-msgstr[3] "‫לפני %d שבועות"
 
 #: src/gs-common.c:887
 #, c-format
@@ -2088,7 +2081,6 @@ msgid_plural "%d months ago"
 msgstr[0] "לפני חודש"
 msgstr[1] "לפני חודשיים"
 msgstr[2] "‫לפני %d חודשים"
-msgstr[3] "‫לפני %d חודשים"
 
 #: src/gs-common.c:891
 #, c-format
@@ -2096,8 +2088,7 @@ msgid "%d year ago"
 msgid_plural "%d years ago"
 msgstr[0] "לפני שנה"
 msgstr[1] "לפני שנתיים"
-msgstr[2] "לפני %d שנים"
-msgstr[3] "‫לפני %d שנים"
+msgstr[2] "‫לפני %d שנים"
 
 #. Translators: This is to construct a disk size string consisting of the
 #. value and its unit, while
@@ -2413,8 +2404,7 @@ msgid "Available fonts for the %s script"
 msgid_plural "Available fonts for the %s scripts"
 msgstr[0] "גופנים זמינים עבור הסקריפט %s"
 msgstr[1] "‫גופנים זמינים עבור הסקריפטים %s"
-msgstr[2] "גופנים זמינים עבור הסקריפטים %s"
-msgstr[3] "‫גופנים זמינים עבור הסקריפטים %s"
+msgstr[2] "‫גופנים זמינים עבור הסקריפטים %s"
 
 #. TRANSLATORS: Application window title for codec installation.
 #. %s will be replaced by actual codec name(s)
@@ -2425,7 +2415,6 @@ msgid_plural "Available software for %s"
 msgstr[0] "תכניות זמינות עבור %s"
 msgstr[1] "‫תכניות זמינות עבור %s"
 msgstr[2] "‫תכניות זמינות עבור %s"
-msgstr[3] "‫תכניות זמינות עבור %s"
 
 #: src/gs-extras-page.c:242
 msgid "Requested software not found"
@@ -2567,7 +2556,6 @@ msgid_plural ""
 msgstr[0] "לא ניתן למצוא את %s שנדרש על ידי %s. נא לעיין ב%s למידע נוסף."
 msgstr[1] "‫לא ניתן למצוא את %s שנדרשו על ידי %s. נא לעיין ב%s למידע נוסף."
 msgstr[2] "‫לא ניתן למצוא את %s שנדרש על ידי %s. נא לעיין ב%s למידע נוסף."
-msgstr[3] "‫לא ניתן למצוא את %s שנדרש על ידי %s. נא לעיין ב%s למידע נוסף."
 
 #. TRANSLATORS: no codecs were found. First %s will be replaced by actual
 #. codec name(s), second %s is a link titled "the documentation"
@@ -2582,7 +2570,6 @@ msgid_plural ""
 msgstr[0] "לא הצלחנו למצוא את %s שחיפשת. נא לעיין ב%s למידע נוסף."
 msgstr[1] "‫לא הצלחנו למצוא את %s שחיפשת. נא לעיין ב%s למידע נוסף."
 msgstr[2] "‫לא הצלחנו למצוא את %s שחיפשת. נא לעיין ב%s למידע נוסף."
-msgstr[3] "‫לא הצלחנו למצוא את %s שחיפשת. נא לעיין ב%s למידע נוסף."
 
 #: src/gs-extras-page.c:574 src/gs-extras-page.c:631 src/gs-extras-page.c:671
 #, c-format
@@ -3189,7 +3176,6 @@ msgid_plural "%u applications installed"
 msgstr[0] "הותקן יישום אחד"
 msgstr[1] "הותקנו שני יישומים"
 msgstr[2] "‫הותקנו %u יישומים"
-msgstr[3] "‫הותקנו %u יישומים"
 
 #. TRANSLATORS: This string is used to construct the 'X add-ons
 #. installed' sentence, describing a software repository.
@@ -3199,8 +3185,7 @@ msgid "%u add-on installed"
 msgid_plural "%u add-ons installed"
 msgstr[0] "תוסף אחד הותקן"
 msgstr[1] "שני תוספים הותקנו"
-msgstr[2] "‫%u תוספים הותקנו"
-msgstr[3] "‏‫%u תוספים הותקנו"
+msgstr[2] "‏‫%u תוספים הותקנו"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3211,8 +3196,7 @@ msgid "%u application"
 msgid_plural "%u applications"
 msgstr[0] "יישום אחד"
 msgstr[1] "‫שני יישומים"
-msgstr[2] "‫%u יישומים"
-msgstr[3] "‏‫%u יישומים"
+msgstr[2] "‏‫%u יישומים"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3224,7 +3208,6 @@ msgid_plural "%u add-ons"
 msgstr[0] "תוסף אחד"
 msgstr[1] "שני תוספים"
 msgstr[2] "‫־%u תוספים"
-msgstr[3] "‫־%u תוספים"
 
 #. TRANSLATORS: This string is used to construct the 'X applications
 #. and y add-ons installed' sentence, describing a software repository.
@@ -3236,8 +3219,7 @@ msgid "%s and %s installed"
 msgid_plural "%s and %s installed"
 msgstr[0] "‫%s ו%s הותקנו"
 msgstr[1] "‫%s ו%s הותקנו"
-msgstr[2] "‫%s ו%s הותקנו"
-msgstr[3] "‏‫%s ו%s הותקנו"
+msgstr[2] "‏‫%s ו%s הותקנו"
 
 #. Translators: The first '%s' is replaced with a text like '10 applications
 #. installed',
@@ -3358,7 +3340,6 @@ msgid_plural "%u reviews total"
 msgstr[0] "סקירה אחת בסך הכול"
 msgstr[1] "שתי סקירות בסך הכול"
 msgstr[2] "‫%u סקירות בסך הכול"
-msgstr[3] "‫%u סקירות בסך הכול"
 
 #: src/gs-review-histogram.ui:93
 msgid "out of 5 stars"
@@ -3753,8 +3734,7 @@ msgid "%u more match"
 msgid_plural "%u more matches"
 msgstr[0] "עוד תוצאה אחת"
 msgstr[1] "עוד שתי תוצאות"
-msgstr[2] "עוד %u תוצאות"
-msgstr[3] "‫עוד %u תוצאות"
+msgstr[2] "‫עוד %u תוצאות"
 
 #: src/gs-search-page.ui:6
 msgid "Search page"
@@ -4438,7 +4418,6 @@ msgid_plural "%u Applications Updated — Restart Required"
 msgstr[0] "יישום אחד עודכן - נדרשת הפעלה מחדש"
 msgstr[1] "שני יישומים עודכנו - נדרשת הפעלה מחדש"
 msgstr[2] "‫‏%u יישומים עודכנו - נדרשת הפעלה מחדש"
-msgstr[3] "‫‏%u יישומים עודכנו - נדרשת הפעלה מחדש"
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:361
@@ -4448,7 +4427,6 @@ msgid_plural "%u Applications Updated"
 msgstr[0] "יישום אחד עודכן"
 msgstr[1] "שני יישומים עודכנו"
 msgstr[2] "‫‏%u יישומים עודכנו"
-msgstr[3] "‫‏%u יישומים עודכנו"
 
 #. TRANSLATORS: %1 is an application name, e.g. Firefox
 #: src/gs-update-monitor.c:372
@@ -4475,7 +4453,6 @@ msgid_plural "%u applications require a restart."
 msgstr[0] "יישום אחד דורש הפעלה מחדש."
 msgstr[1] "שני יישומים דורשים הפעלה מחדש."
 msgstr[2] "‫%u יישומים דורשים הפעלה מחדש."
-msgstr[3] "‫%u יישומים דורשים הפעלה מחדש."
 
 #. TRANSLATORS: %1, %2 and %3 are all application names, e.g. Firefox
 #: src/gs-update-monitor.c:401
@@ -4540,7 +4517,6 @@ msgid_plural "Software Updates Installed"
 msgstr[0] "הותקן עדכון תכנה"
 msgstr[1] "הותקנו עדכוני תכנה"
 msgstr[2] "הותקנו עדכוני תכנה"
-msgstr[3] "הותקנו עדכוני תכנה"
 
 #. TRANSLATORS: message when we've done offline updates
 #: src/gs-update-monitor.c:1175
@@ -4549,7 +4525,6 @@ msgid_plural "Important operating system updates have been installed."
 msgstr[0] "הותקן עדכון חשוב למערכת הפעלה."
 msgstr[1] "הותקנו עדכונים חשובים למערכת הפעלה."
 msgstr[2] "הותקנו עדכונים חשובים למערכת הפעלה."
-msgstr[3] "הותקנו עדכונים חשובים למערכת הפעלה."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the application reviews, the
