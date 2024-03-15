@@ -1,0 +1,25 @@
+From: =?utf-8?q?Jeremy_B=C3=ADcha?= <jeremy.bicha@canonical.com>
+Date: Fri, 4 Aug 2023 08:49:30 -0400
+Subject: =?utf-8?q?Revert_=22shell=3A_Don=E2=80=99t_launch_software-propert?=
+ =?utf-8?q?ies-gtk_when_opening_repos_dialog=22?=
+
+This reverts commit 8188310f0706ce4ab567f8ba1561d0061566bd6d.
+---
+ src/gs-shell.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/gs-shell.c b/src/gs-shell.c
+index 8e25813..8d5bc13 100644
+--- a/src/gs-shell.c
++++ b/src/gs-shell.c
+@@ -2339,6 +2339,10 @@ gs_shell_show_sources (GsShell *shell)
+ {
+ 	GtkWidget *dialog;
+ 
++	/* use if available */
++	if (g_spawn_command_line_async ("software-properties-gtk", NULL))
++		return;
++
+ 	dialog = gs_repos_dialog_new (GTK_WINDOW (shell), shell->plugin_loader);
+ 	gs_shell_modal_dialog_present (shell, GTK_WINDOW (dialog));
+ }

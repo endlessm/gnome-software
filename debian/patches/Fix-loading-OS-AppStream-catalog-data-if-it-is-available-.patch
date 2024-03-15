@@ -1,0 +1,30 @@
+From: Matthias Klumpp <matthias@tenstral.net>
+Date: Sat, 6 Jan 2024 08:13:34 +0100
+Subject: Fix loading OS AppStream catalog data if it is available as YAML
+
+Sometimes MIME detection produces a different mediatype application/yaml
+(which seems to be the default on more recent systems), which makes
+GNOME Software not load YAML AppStream data on Debian and Ubuntu.
+This change adds the mediatype to the recognized list, so GNOME Software
+works again.
+
+Forwarded: https://gitlab.gnome.org/GNOME/gnome-software/-/merge_requests/1862
+---
+ plugins/core/gs-plugin-appstream.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/plugins/core/gs-plugin-appstream.c b/plugins/core/gs-plugin-appstream.c
+index ef3226a..08a8112 100644
+--- a/plugins/core/gs-plugin-appstream.c
++++ b/plugins/core/gs-plugin-appstream.c
+@@ -483,6 +483,10 @@ gs_plugin_appstream_load_appstream_fn (GsPluginAppstream  *self,
+ 	g_autoptr(XbBuilderSource) source = xb_builder_source_new ();
+ 
+ 	/* add support for DEP-11 files */
++	xb_builder_source_add_adapter (source,
++				       "application/yaml",
++				       gs_plugin_appstream_load_dep11_cb,
++				       NULL, NULL);
+ 	xb_builder_source_add_adapter (source,
+ 				       "application/x-yaml",
+ 				       gs_plugin_appstream_load_dep11_cb,

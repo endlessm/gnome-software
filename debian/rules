@@ -31,21 +31,12 @@ ifeq ($(DEB_HOST_ARCH_OS), linux)
 	
 	# Enable fwupd support on Linux
 	GS_CONFIGURE_FLAGS += -Dfwupd=true
-endif
 
-# EOS-specific configuration
-GS_CONFIGURE_FLAGS += \
-	-Deos_updater=true \
-	-Dexternal_appstream=true \
-	-Dfwupd=false \
-	-Dgudev=false \
-	-Dhardcoded_curated=false \
-	-Dmalcontent=true \
-	-Dmogwai=true \
-	-Dpackagekit=false \
-	-Dsoup2=true \
-	-Dhardcoded_foss_webapps=false \
-	-Dhardcoded_proprietary_webapps=false
+	# Enable snap support on supported architectures
+	ifneq (,$(filter $(DEB_HOST_ARCH), amd64 arm64 armel armhf i386 ppc64el s390x))
+		GS_CONFIGURE_FLAGS += -Dsnap=true
+	endif
+endif
 
 DISTRO_ID = debian
 FREE_REPOS = \'@DISTRO@-*-main\'
@@ -105,3 +96,5 @@ endif
 override_dh_clean:
 	rm -f debian/gnome-software.gsettings-override
 	dh_clean
+
+override_dh_gnome_clean:
