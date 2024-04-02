@@ -68,6 +68,7 @@
 
         <child>
           <object class="GtkButton" id="safety_tile">
+            <property name="visible">false</property>
             <signal name="clicked" handler="tile_clicked_cb"/>
             <style>
               <class name="context-tile"/>
@@ -131,6 +132,7 @@
 
         <child>
           <object class="GtkButton" id="hardware_support_tile">
+            <property name="visible">false</property>
             <signal name="clicked" handler="tile_clicked_cb"/>
             <style>
               <class name="context-tile"/>

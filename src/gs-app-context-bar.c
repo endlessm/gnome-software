@@ -586,7 +586,9 @@ update_hardware_support_tile (GsAppContextBar *self)
 	g_assert (self->app != NULL);
 
 	/* Don’t show the hardware support tile for non-desktop apps. */
-	if (!show_tile_for_non_applications (self, HARDWARE_SUPPORT_TILE))
+	// In Endless OS, the hardware support tile is hidden in all cases:
+	// <https://phabricator.endlessm.com/T35252>
+	if (true || !show_tile_for_non_applications (self, HARDWARE_SUPPORT_TILE))
 		return;
 
 	relations = gs_app_get_relations (self->app);
