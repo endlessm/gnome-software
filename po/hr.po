@@ -263,7 +263,7 @@ msgid ""
 "assumed to be listed last. Example packaging formats are: deb, flatpak, rpm,"
 " snap. The formats can be optionally specified with an origin name, divided "
 "by a colon, for example 'flatpak:flathub'."
-msgstr ""
+msgstr "Poželjni poredak prioriteta formata pakiranja, s najbitnijim formatom poredanim kao prvim. Prazno znači zadani poredak. Izostavljeni formati pretpostavljeno su poredani kao posljednji. Primjeri formata pakiranja su: deb, flatpak, rpm, snap. Formati se po potrebi mogu navesti nazivom izvora, odvojenim dvotočkom, primjerice 'flatpak:flathub'."
 
 #: data/org.gnome.software.gschema.xml:139
 msgid "The timestamp of the last attempt to remove unused Flatpak runtimes"
@@ -3392,7 +3392,7 @@ msgstr ""
 msgid ""
 "Installed software is incompatible with %s, and will be automatically "
 "removed during upgrade."
-msgstr ""
+msgstr "Instalirani softver nije kompatibilan sa %s i biti će automatski uklonjen tijekom nadogradnje."
 
 #: src/gs-removal-dialog.ui:7
 msgid "Incompatible Software"
@@ -3400,7 +3400,7 @@ msgstr "Nekompatibilan softver"
 
 #: src/gs-removal-dialog.ui:37
 msgid "_Upgrade"
-msgstr ""
+msgstr "_Nadogradi"
 
 #. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora
 #. Modular - x86_64"
@@ -4221,7 +4221,7 @@ msgstr "Nemoguća je instalirati %s uslijed neuspješnog preuzimanja"
 #: src/gs-shell.c:1385
 #, c-format
 msgid "Unable to install %s as runtime %s not available"
-msgstr "Nemoguća je instalirati %s jer komponenta izvršavanja %s nije dostupna"
+msgstr "Nemoguća je instalirati %s jer radni proces %s nije dostupan"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the app name (e.g. "GIMP")
@@ -5263,11 +5263,11 @@ msgstr "EOS usluga nadopune ne može preuzeti i primijeniti nadopunu."
 #: plugins/epiphany/gs-plugin-epiphany.c:500
 #: plugins/epiphany/gs-plugin-epiphany.c:504
 msgid "Web App"
-msgstr ""
+msgstr "Web aplikacija"
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
-msgstr "Web Apps podrška"
+msgstr "Podrška web aplikacija"
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:7
 msgid "Run popular web applications in a browser"
@@ -5469,45 +5469,45 @@ msgstr "Udaljeni “%s” ne dopušta instalaciju “%s”, vjerojatno zbog njeg
 #. TRANSLATORS: as in laptop battery power
 #: plugins/fwupd/gs-fwupd-app.c:66
 msgid "System power is too low to perform the update"
-msgstr ""
+msgstr "Energija sustava je preslaba za obavljanje nadopune"
 
 #. TRANSLATORS: as in laptop battery power
 #: plugins/fwupd/gs-fwupd-app.c:70
 #, c-format
 msgid "System power is too low to perform the update (%u%%, requires %u%%)"
-msgstr ""
+msgstr "Energija sustava je preslaba za obavljanje nadopune (%u%%, potrebno je %u%%)"
 
 #. TRANSLATORS: for example, a Bluetooth mouse that is in powersave mode
 #: plugins/fwupd/gs-fwupd-app.c:76
 msgid "Device is unreachable, or out of wireless range"
-msgstr ""
+msgstr "Uređaj je nedostupan, ili je izvan bežičnog dosega"
 
 #. TRANSLATORS: for example the batteries *inside* the Bluetooth mouse
 #: plugins/fwupd/gs-fwupd-app.c:82
 #, c-format
 msgid "Device battery power is too low"
-msgstr ""
+msgstr "Energija baterije uređaja je preslaba"
 
 #. TRANSLATORS: for example the batteries *inside* the Bluetooth mouse
 #: plugins/fwupd/gs-fwupd-app.c:85
 #, c-format
 msgid "Device battery power is too low (%u%%, requires %u%%)"
-msgstr ""
+msgstr "Energija baterije uređaja je preslaba (%u%%, potrebno je %u%%)"
 
 #. TRANSLATORS: usually this is when we're waiting for a reboot
 #: plugins/fwupd/gs-fwupd-app.c:91
 msgid "Device is waiting for the update to be applied"
-msgstr ""
+msgstr "Uređaj čeka za primjenu nadopuna"
 
 #. TRANSLATORS: as in, wired mains power for a laptop
 #: plugins/fwupd/gs-fwupd-app.c:95
 msgid "Device requires AC power to be connected"
-msgstr ""
+msgstr "Uređaj zahtijeva vanjski izvor energije"
 
 #. TRANSLATORS: lid means "laptop top cover"
 #: plugins/fwupd/gs-fwupd-app.c:99
 msgid "Device cannot be used while the lid is closed"
-msgstr ""
+msgstr "Uređaj se ne može koristiti dok je poklopac spušten"
 
 #. TRANSLATORS: a specific part of hardware,
 #. * the first %s is the device name, e.g. 'Unifying Receiver`

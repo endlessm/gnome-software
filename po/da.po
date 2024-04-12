@@ -4,6 +4,7 @@
 # 
 # Translators:
 # askhl <asklarsen@gmail.com>, 2014
+# askhl <asklarsen@gmail.com>, 2014
 # Joe Hansen <joedalton2@yahoo.dk>, 2013
 # scootergrisen, 2019
 msgid ""
@@ -32,7 +33,7 @@ msgstr "Installér og opdatér programmer"
 msgid ""
 "Software allows you to find and install new apps and system extensions and "
 "remove existing installed apps."
-msgstr ""
+msgstr "Software lader dig finde og installere nye programmer og systemudvidelser, samt fjerne allerede installerede programmer."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:14
 msgid ""
@@ -40,7 +41,7 @@ msgid ""
 "multiple screenshots per app. Apps can be found either through browsing the "
 "list of categories or by searching. It also allows you to update your system"
 " using an offline update."
-msgstr ""
+msgstr "Software fremviser udvalgte og populære programmer med nyttige beskrivelser og adskillige skærmbilleder per program. Programmer kan findes enten ved gennemsyn af oversigten over kategorier eller gennem søgning. Dette program giver dig også mulighed for at opdatere dit system ved brug af offlineopdatering."
 
 #: data/metainfo/org.gnome.Software.metainfo.xml.in:25
 msgid "Overview panel"
@@ -265,21 +266,21 @@ msgid ""
 "assumed to be listed last. Example packaging formats are: deb, flatpak, rpm,"
 " snap. The formats can be optionally specified with an origin name, divided "
 "by a colon, for example 'flatpak:flathub'."
-msgstr ""
+msgstr "Prioriteringsrækkefølge for foretrukne pakkeformater med vigtigere formater vist først. Er oversigten tom, bruges standardrækkefølgen. Udeladte formater antages at blive vist sidst. Eksempler på pakkeformater: deb, flatpak, rpm, snap. Formaterne kan desuden angives med et oprindelsesnavn adskilt med et kolon (f.eks. “flatpak:flathub”)."
 
 #: data/org.gnome.software.gschema.xml:139
 msgid "The timestamp of the last attempt to remove unused Flatpak runtimes"
-msgstr ""
+msgstr "Tidsstemplet for det seneste forsøg på at fjerne ubrugte Flatpak-kørselsmiljøer"
 
 #: data/org.gnome.software.gschema.xml:143
 msgid ""
 "Set to 'true' to show only freely licensed apps and hide any proprietary "
 "apps."
-msgstr ""
+msgstr "Sæt til “true” (sand) for kun at vise frie programmer og skjule proprietære programmer."
 
 #: data/org.gnome.software.gschema.xml:147
 msgid "The timestamp of the last received historical updates."
-msgstr ""
+msgstr "Tidsstemplet for de sidst modtagne historiske opdateringer."
 
 #: data/org.gnome.software.gschema.xml:154
 msgid "A string storing the gnome-online-account id used to login"
@@ -719,7 +720,7 @@ msgstr "?"
 #: src/gs-age-rating-context-dialog.c:1010
 #, c-format
 msgid "%s has an unknown age rating"
-msgstr ""
+msgstr "%s har en ukendt aldersvurdering"
 
 #. Translators: This is a dialogue title which indicates that an app is
 #. suitable
@@ -751,7 +752,7 @@ msgstr "%s er egnet for mindre børn"
 #: src/gs-age-rating-context-dialog.c:1033
 #, c-format
 msgid "%s is suitable for children"
-msgstr ""
+msgstr "%s er egnet for børn"
 
 #. Translators: This is a dialogue title which indicates that an app is
 #. suitable
@@ -879,7 +880,7 @@ msgstr "Enheder"
 
 #: src/gs-app-details-page.c:76
 msgid "Can access arbitrary devices such as webcams"
-msgstr ""
+msgstr "Kan tilgå vilkårlige enheder såsom webkameraer"
 
 #: src/gs-app-details-page.c:77
 msgid "Can access system device files"
@@ -962,7 +963,7 @@ msgstr "Anmeldelser"
 
 #: src/gs-app-reviews-dialog.ui:25
 msgid "No reviews were found for this app."
-msgstr ""
+msgstr "Der er ingen anmeldelser af dette program."
 
 #: src/gs-app-reviews-dialog.ui:27
 msgid "No Reviews"
@@ -1055,7 +1056,7 @@ msgstr "Vis en lokal metainfo- eller appdata-fil"
 msgid ""
 "Enable verbose debugging output (from the running instance, if already "
 "running)"
-msgstr ""
+msgstr "Aktivér uddybende fejlsøgningsoutput (fra den kørende instans, hvis den allerede kører)"
 
 #: src/gs-application.c:145
 msgid "Installs any pending updates in the background"
@@ -1063,7 +1064,7 @@ msgstr "Installerer afventende opdateringer i baggrunden"
 
 #: src/gs-application.c:147
 msgid "Show preferences"
-msgstr ""
+msgstr "Vis indstillinger"
 
 #: src/gs-application.c:149
 msgid "Quit the running instance"
@@ -1079,7 +1080,7 @@ msgstr "Vis versionsnummer"
 
 #: src/gs-application.c:271 src/gs-application.c:279
 msgid "Copyright © 2016–2023 GNOME Software contributors"
-msgstr ""
+msgstr "Ophavsret © 2016–2023 bidragyderne til GNOME Software"
 
 #: src/gs-application.c:273 src/gs-application.c:282
 msgid "translator-credits"
@@ -1189,7 +1190,7 @@ msgstr "Kan tilgå hardwareenheder"
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:337
 msgid "Can access system devices"
-msgstr ""
+msgstr "Kan tilgå systemenheder"
 
 #. Translators: This indicates an app can read/write to the user’s home or the
 #. entire filesystem.
@@ -1224,7 +1225,7 @@ msgstr "Kan læse alle dine downloads"
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:382
 msgid "Can access some specific files"
-msgstr ""
+msgstr "Kan tilgå nogle specifikke filer"
 
 #. Translators: This indicates an app can access or change user settings.
 #. * It’s used in a context tile, so should be short.
@@ -1256,7 +1257,7 @@ msgstr "Programudvikler er bekræftet"
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:434 src/gs-safety-context-dialog.c:146
 msgid "Reviewed by OS distributor"
-msgstr ""
+msgstr "Gennemset af OS-distributøren"
 
 #. Translators: This indicates that an app has been packaged
 #. * by the user’s distribution and is probably safe.
@@ -1266,7 +1267,7 @@ msgstr ""
 #: src/gs-app-context-bar.c:440 src/gs-safety-context-dialog.c:149
 #, c-format
 msgid "Reviewed by %s"
-msgstr ""
+msgstr "Gennemset af %s"
 
 #. Translators: This indicates that an app has been packaged
 #. * by someone other than the user’s distribution, so might not be safe.
@@ -1293,7 +1294,7 @@ msgstr "Kode kan auditeres"
 #. * It’s used in a context tile, so should be short.
 #: src/gs-app-context-bar.c:487
 msgid "Unknown license"
-msgstr ""
+msgstr "Ukendt licens"
 
 #. Translators: This indicates an app is not licensed under a free software
 #. license.
@@ -1326,7 +1327,7 @@ msgstr "; "
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-app-context-bar.c:522
 msgid "Privileged"
-msgstr ""
+msgstr "Privilegeret"
 
 #. Translators: The app is considered safe to install and run.
 #. * This is displayed in a context tile, so the string should be short.
@@ -1338,7 +1339,7 @@ msgstr "Sikker"
 #. * This is displayed in a context tile, so the string should be short.
 #: src/gs-app-context-bar.c:536
 msgid "Probably Safe"
-msgstr ""
+msgstr "Sandsynligvis sikker"
 
 #. Translators: The app is considered potentially unsafe to install and run.
 #. * This is displayed in a context tile, so the string should be short.
@@ -1466,7 +1467,7 @@ msgstr "Opdatér"
 #. * allows the app to be easily removed
 #: src/gs-app-row.c:191 src/gs-app-row.c:201
 msgid "Uninstall…"
-msgstr ""
+msgstr "Afinstallér …"
 
 #. TRANSLATORS: this is a button next to the search results that
 #. * shows the status of an app being erased
@@ -1496,12 +1497,12 @@ msgstr "Omdøbt fra %s"
 #. Replace user-provided non-localized string with a localized text
 #: src/gs-app-row.c:562 src/gs-details-page.ui:562
 msgid "Stopped Receiving Updates"
-msgstr ""
+msgstr "Stoppet med at modtage opdateringer"
 
 #: src/gs-app-row.ui:58 src/gs-app-row.ui:60 src/gs-os-update-page.c:157
 #: src/gs-os-update-page.c:160
 msgid "Critical update"
-msgstr ""
+msgstr "Kritisk opdatering"
 
 #: src/gs-app-row.ui:227 src/gs-feature-tile.c:574
 msgctxt "Single app"
@@ -1564,7 +1565,7 @@ msgstr "Bruger"
 #. Translators: Placeholder text for a login entry.
 #: src/gs-basic-auth-dialog.ui:73
 msgid "Password"
-msgstr ""
+msgstr "Adgangskode"
 
 #. TRANSLATORS: this is where all apps that don't
 #. * fit in other groups are put
@@ -1617,7 +1618,7 @@ msgstr "Vælg venligst et tal mellem 1 og %u: "
 #. TRANSLATORS: asking the user to choose an app from a list
 #: lib/gs-cmd.c:283
 msgid "Choose an app:"
-msgstr ""
+msgstr "Vælg et program:"
 
 #: lib/gs-desktop-data.c:16
 msgctxt "Menu of Graphics & Photography"
@@ -2008,7 +2009,7 @@ msgstr "Der kræves en genstart, før ændringerne træder i kraft."
 #. * has been successfully installed
 #: src/gs-common.c:77
 msgid "App is ready to be used."
-msgstr ""
+msgstr "Programmet er klar til at blive taget i brug."
 
 #. TRANSLATORS: this is the summary of a notification that OS updates
 #. * have been successfully installed
@@ -2034,7 +2035,7 @@ msgstr "Kør"
 #. TRANSLATORS: window title
 #: src/gs-common.c:230
 msgid "Install Software?"
-msgstr ""
+msgstr "Installér software?"
 
 #. TRANSLATORS: window title
 #: src/gs-common.c:232
@@ -2044,7 +2045,7 @@ msgstr "Installér tredjeparts-software?"
 #. TRANSLATORS: window title
 #: src/gs-common.c:236
 msgid "Enable Software Repository?"
-msgstr ""
+msgstr "Aktivér softwarearkiv?"
 
 #. TRANSLATORS: window title
 #: src/gs-common.c:238 src/gs-repos-dialog.c:168
@@ -2088,12 +2089,12 @@ msgstr "Det er muligvis ulovligt at installere og bruge dette codec i visse land
 #. TRANSLATORS: this is button text to not ask about non-free content again
 #: src/gs-common.c:299
 msgid "Don’t _Warn Again"
-msgstr ""
+msgstr "Advar _mig ikke igen"
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:308
 msgid "Enable and _Install"
-msgstr ""
+msgstr "Aktivér og _installér"
 
 #. TRANSLATORS: these are show_detailed_error messages from the
 #. * package manager no mortal is supposed to understand,
@@ -2109,7 +2110,7 @@ msgstr "Detaljer"
 #. TRANSLATORS: button text
 #: src/gs-common.c:567
 msgid "_Close"
-msgstr ""
+msgstr "_Luk"
 
 #. Translators: an accept button label, in a Cancel/Accept dialog
 #: src/gs-common.c:689
@@ -2127,8 +2128,8 @@ msgstr[1] "Opdateringer er blevet installeret"
 #: src/gs-common.c:845
 msgid "An app has been removed"
 msgid_plural "Apps have been removed"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Et program er blevet fjernet"
+msgstr[1] "Programmer er blevet fjernet"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:851
@@ -2205,7 +2206,7 @@ msgstr "%s %s"
 #. unknown
 #: src/gs-dbus-helper.c:291
 msgid "An app"
-msgstr ""
+msgstr "Et program"
 
 #. TRANSLATORS: this is a notification displayed when an app needs additional
 #. MIME types.
@@ -2319,7 +2320,7 @@ msgstr "Afinstallerer …"
 #: src/gs-details-page.c:564
 #, c-format
 msgid "%s is not installed, but it still has data present."
-msgstr ""
+msgstr "%s er ikke installeret, men programmet har stadig tilstedeværende data."
 
 #: src/gs-details-page.c:1046
 msgid "_Restart"
@@ -2335,21 +2336,21 @@ msgstr "_Installér …"
 
 #: src/gs-details-page.c:1137
 msgid "_Uninstall…"
-msgstr ""
+msgstr "A_finstallér …"
 
 #. Translators: %s is the user-visible app name
 #: src/gs-details-page.c:1283
 #, c-format
 msgid "%s will appear in US English"
-msgstr ""
+msgstr "%s vil optræde på amerikansk engelsk"
 
 #: src/gs-details-page.c:1291
 msgid "This app will appear in US English"
-msgstr ""
+msgstr "Programmet vil optræde på amerikansk engelsk"
 
 #: src/gs-details-page.c:1293
 msgid "This software will appear in US English"
-msgstr ""
+msgstr "Programmet vil optræde på amerikansk engelsk"
 
 #: src/gs-details-page.c:1328 src/gs-details-page.ui:60
 msgid "Help _Translate"
@@ -2368,23 +2369,23 @@ msgstr "Du skal have internetadgang for at skrive en anmeldelse"
 
 #: src/gs-details-page.c:1887
 msgid "This app is no longer receiving updates, including security fixes"
-msgstr ""
+msgstr "Dette program modtager ikke længere opdateringer (heller ikke sikkerhedsrettelser)"
 
 #: src/gs-details-page.c:1888
 msgid ""
 "This app is already provided by your distribution and should not be "
 "replaced."
-msgstr ""
+msgstr "Dette program udbydes allerede af din distribution og bør ikke erstattes."
 
 #: src/gs-details-page.c:1889
 msgid ""
 "This app doesn’t provide any links to a website, code repository or issue "
 "tracker."
-msgstr ""
+msgstr "Dette program har ingen links til et websted, kodearkiv eller issue tracker."
 
 #: src/gs-details-page.c:1891
 msgid "This software is no longer receiving updates, including security fixes"
-msgstr ""
+msgstr "Denne software modtager ikke længere opdateringer (heller ikke sikkerhedsrettelser)"
 
 #: src/gs-details-page.c:1892
 msgid ""
@@ -2406,7 +2407,7 @@ msgstr "Kunne ikke finde “%s”"
 #: src/gs-details-page.c:2345
 #, c-format
 msgid "Failed to submit review for “%s”: %s"
-msgstr ""
+msgstr "Kunne ikke indsende anmeldelsen for “%s”: %s"
 
 #: src/gs-details-page.ui:7
 msgid "Details page"
@@ -2414,7 +2415,7 @@ msgstr "Detaljeside"
 
 #: src/gs-details-page.ui:40
 msgid "Loading app details…"
-msgstr ""
+msgstr "Indlæser programdetaljer …"
 
 #. TRANSLATORS: A label for a button to execute the selected app.
 #: src/gs-details-page.ui:227
@@ -2440,7 +2441,7 @@ msgstr "Udvidelser"
 
 #: src/gs-details-page.ui:633
 msgid "This app can only be used when there is an active internet connection."
-msgstr ""
+msgstr "Dette program kan kun bruges, når der er en aktiv internet-forbindelse."
 
 #: src/gs-details-page.ui:656
 msgid "Software Repository Included"
@@ -2450,7 +2451,7 @@ msgstr "Softwarearkiv inkluderet"
 msgid ""
 "This app includes a software repository which provides updates, as well as "
 "access to other software."
-msgstr ""
+msgstr "Dette program inkluderer et softwarearkiv, som tilbyder opdateringer så vel som adgang til anden software."
 
 #: src/gs-details-page.ui:694
 msgid "No Software Repository Included"
@@ -2460,7 +2461,7 @@ msgstr "Intet softwarearkiv inkluderet"
 msgid ""
 "This app does not include a software repository. It will not be updated with"
 " new versions."
-msgstr ""
+msgstr "Dette program inkluderer ikke et softwarearkiv. Det vil ikke blive opdateret med nye versioner."
 
 #. Translators: a repository file used for installing software has been
 #. discovered.
@@ -2480,11 +2481,11 @@ msgstr "Brug kun softwarearkiver, du stoler på."
 
 #: src/gs-details-page.ui:821
 msgid "Clear app data"
-msgstr ""
+msgstr "Ryd programdata"
 
 #: src/gs-details-page.ui:838
 msgid "D_elete Data"
-msgstr ""
+msgstr "Sl_et data"
 
 #: src/gs-details-page.ui:914
 msgid "No Metadata"
@@ -2514,13 +2515,13 @@ msgstr "_Hjælp"
 #: src/gs-details-page.ui:1036
 msgctxt "verb"
 msgid "_Contact"
-msgstr ""
+msgstr "_Kontakt"
 
 #. Translators: Button opening a dialog where the users can write and publish
 #. their opinions about the apps.
 #: src/gs-details-page.ui:1130
 msgid "Write R_eview"
-msgstr ""
+msgstr "_Skriv anmeldelse"
 
 #. Translators: Button opening a dialog showing all reviews for an app.
 #: src/gs-details-page.ui:1167
@@ -2584,7 +2585,7 @@ msgstr "på webstedet"
 #: src/gs-extras-page.c:430
 #, c-format
 msgid "No apps are available that provide the file %s."
-msgstr ""
+msgstr "Ingen programmer er tilgængelige til at udbyde filen %s."
 
 #. TRANSLATORS: first %s is the codec name, and second %s is a
 #. * hyperlink with the "on the website" text
@@ -2593,14 +2594,14 @@ msgstr ""
 msgid ""
 "Information about %s, as well as options for how to get missing apps might "
 "be found %s."
-msgstr ""
+msgstr "Information om %s, såvel som muligheder for at hente manglende programmer, kan muligvis findes %s."
 
 #. TRANSLATORS: this is when we know about an app or
 #. * addon, but it can't be listed for some reason
 #: src/gs-extras-page.c:441 src/gs-extras-page.c:463
 #, c-format
 msgid "No apps are available for %s support."
-msgstr ""
+msgstr "Ingen programmer er tilgængelige for understøttelse af %s."
 
 #. TRANSLATORS: this is when we know about an app or
 #. * addon, but it can't be listed for some reason
@@ -2616,7 +2617,7 @@ msgstr "%s ikke tilgængelig."
 msgid ""
 "Information about %s, as well as options for how to get an app that can "
 "support this format might be found %s."
-msgstr ""
+msgstr "Information om %s, såvel som muligheder for at hente et program, der kan understøtte dette format, kan findes %s."
 
 #. TRANSLATORS: this is when we know about an app or
 #. * addon, but it can't be listed for some reason
@@ -2725,7 +2726,7 @@ msgstr "%s-filformatet"
 
 #: src/gs-extras-page.c:1325
 msgid "Install _All"
-msgstr ""
+msgstr "Installér _alle"
 
 #: src/gs-extras-page.c:1355
 msgid "Unable to Find Requested Software"
@@ -2935,7 +2936,7 @@ msgstr "%s virker på denne enhed"
 #: src/gs-hardware-support-context-dialog.c:725
 #, c-format
 msgid "%s possibly works on this device"
-msgstr ""
+msgstr "%s virker muligvis på denne enhed"
 
 #. Translators: The app may not work fully on the current hardware.
 #. * The placeholder is the app name.
@@ -2976,15 +2977,15 @@ msgstr "I gang"
 #. * not the remote title
 #: src/gs-installed-page.ui:75 plugins/flatpak/gs-flatpak-utils.c:107
 msgid "Apps"
-msgstr ""
+msgstr "Programmer"
 
 #: src/gs-installed-page.ui:95
 msgid "Web Apps"
-msgstr ""
+msgstr "Webprogrammer"
 
 #: src/gs-installed-page.ui:115
 msgid "System Apps"
-msgstr ""
+msgstr "Systemprogrammer"
 
 #: src/gs-license-tile.c:102
 msgid "Community Built"
@@ -3002,7 +3003,7 @@ msgid ""
 "This app is developed in the open by a community of volunteers, and released under the <a href=\"%s\">%s license</a>.\n"
 "\n"
 "You can contribute and help make it even better."
-msgstr ""
+msgstr "Dette program er udviklet i åbenhed af et fællesskab af frivillige og frigivet under <a href=\"%s\">%s-licensen</a>.\n\nDu kan bidrage og være med til at gøre programmet endnu bedre."
 
 #. Translators: The placeholder here is the name of a software license.
 #: src/gs-license-tile.c:128
@@ -3011,7 +3012,7 @@ msgid ""
 "This app is developed in the open by a community of volunteers, and released under the %s license.\n"
 "\n"
 "You can contribute and help make it even better."
-msgstr ""
+msgstr "Dette program er udviklet i åbenhed af et fællesskab af frivillige og frigivet under %s-licensen.\n\nDu kan bidrage og være med til at gøre det endnu bedre."
 
 #. Translators: The first placeholder here is a link to information about the
 #. license, and the second placeholder here is the name of a software license.
@@ -3036,7 +3037,7 @@ msgstr "Dette program er udviklet i åbenhed af et fællesskab af frivillige og 
 #. developed under.
 #: src/gs-license-tile.c:148 src/gs-safety-context-dialog.c:388
 msgid "Unknown License"
-msgstr ""
+msgstr "Ukendt licens"
 
 #: src/gs-license-tile.c:154 src/gs-license-tile.c:172
 #: src/gs-license-tile.c:196
@@ -3048,14 +3049,14 @@ msgid ""
 "This app does not specify what license it is developed under, and may be proprietary. It may be insecure in ways that are hard to detect, and it may change without oversight.\n"
 "\n"
 "You may or may not be able to contribute to this app."
-msgstr ""
+msgstr "Dette program angiver ikke, hvilken licens det er udviklet under og kan være proprietært. Det kan være usikkert på måder, der er svære at opdage, og det kan ændres uden tilsyn.\n\nDu kan måske/måske ikke bidrage til programmet."
 
 #: src/gs-license-tile.c:161
 msgid ""
 "This software does not specify what license it is developed under, and may be proprietary. It may be insecure in ways that are hard to detect, and it may change without oversight.\n"
 "\n"
 "You may or may not be able to contribute to this software."
-msgstr ""
+msgstr "Denne software angiver ikke, hvilken licens det er udviklet under og kan være proprietært. Det kan være usikkert på måder, der er svære at opdage, og det kan ændres uden tilsyn.\n\nDu kan måske/måske ikke bidrage til programmet."
 
 #. Translators: This is used for "License    Proprietary"
 #: src/gs-license-tile.c:166 src/gs-safety-context-dialog.c:547
@@ -3067,7 +3068,7 @@ msgid ""
 "This app is not developed in the open, so only its developers know how it works. It may be insecure in ways that are hard to detect, and it may change without oversight.\n"
 "\n"
 "You may not be able to contribute to this app."
-msgstr ""
+msgstr "Dette program er ikke udviklet i åbenhed, så kun udviklerne ved, hvordan det fungerer. Det kan være usikkert på måder, der er svære at opdage, og det kan ændres uden tilsyn.\n\nDu kan måske ikke bidrage til programmet."
 
 #: src/gs-license-tile.c:179
 msgid ""
@@ -3078,7 +3079,7 @@ msgstr "Dette program er ikke udviklet i åbenhed, så kun udviklerne ved, hvord
 
 #: src/gs-license-tile.c:190
 msgid "Special License"
-msgstr ""
+msgstr "Speciel licens"
 
 #. Translators: The first placeholder here is a link to information about the
 #. license, and the second placeholder here is the name of a software license.
@@ -3088,7 +3089,7 @@ msgid ""
 "This app is developed under the special license <a href=\"%s\">%s</a>.\n"
 "\n"
 "You may or may not be able to contribute to this app."
-msgstr ""
+msgstr "Dette program er udviklet under den specielle licens <a href=\"%s\">%s</a>.\n\nDu kan måske/måske ikke bidrage til programmet."
 
 #. Translators: The placeholder here is the name of a software license.
 #: src/gs-license-tile.c:208
@@ -3097,7 +3098,7 @@ msgid ""
 "This app is developed under the special license “%s”.\n"
 "\n"
 "You may or may not be able to contribute to this app."
-msgstr ""
+msgstr "Dette program er udviklet under den specielle licens “%s”.\n\nDu kan måske/måske ikke bidrage til programmet."
 
 #. Translators: The first placeholder here is a link to information about the
 #. license, and the second placeholder here is the name of a software license.
@@ -3107,7 +3108,7 @@ msgid ""
 "This software is developed under the special license <a href=\"%s\">%s</a>.\n"
 "\n"
 "You may or may not be able to contribute to this software."
-msgstr ""
+msgstr "Denne software er udviklet under den specielle licens <a href=\"%s\">%s</a>.\n\nDu kan måske/måske ikke bidrage til programmet."
 
 #. Translators: The placeholder here is the name of a software license.
 #: src/gs-license-tile.c:223
@@ -3116,7 +3117,7 @@ msgid ""
 "This software is developed under the special license “%s”.\n"
 "\n"
 "You may or may not be able to contribute to this software."
-msgstr ""
+msgstr "Denne software er udviklet under den specielle licens “%s”.\n\nDu kan måske/måske ikke bidrage til programmet."
 
 #. TRANSLATORS: initial start
 #: src/gs-loading-page.c:56
@@ -3140,7 +3141,7 @@ msgid ""
 "The current network is metered, so it may have data limits or charges associated with it. To save data, automatic updates have been paused.\n"
 "\n"
 "If the network has been incorrectly identified as metered, this can be changed in Settings."
-msgstr ""
+msgstr "Det nuværende netværk er forbrugsafregnet, så der kan være en begrænset mængde data til rådighed, eller det kan koste penge. For at spare på dataforbruget er automatiske opdateringer sat på pause.\n\nEr det nuværende netværk forkert blevet klassificeret som forbrugsafregnet, kan indstillingen ændres."
 
 #: src/gs-metered-data-dialog.ui:15
 msgid "Open Network _Settings"
@@ -3206,7 +3207,7 @@ msgid ""
 "Provides access to additional software from %s. Some proprietary software is included.\n"
 "\n"
 "You can enable those repositories later in Software Repositories preferences."
-msgstr ""
+msgstr "Giver adgang til flere programmer fra %s. Indeholder også proprietære programmer.\n\nDu kan aktivere disse arkiver senere i indstillinger for softwarearkiver."
 
 #. TRANSLATORS: Heading asking whether to turn third party software
 #. repositories on of off.
@@ -3217,24 +3218,24 @@ msgstr "Aktivér softwarearkiver fra tredjepart?"
 #. TRANSLATORS: button to keep the third party software repositories off
 #: src/gs-overview-page.c:617
 msgid "_Ignore"
-msgstr ""
+msgstr "I_gnorér"
 
 #. TRANSLATORS: button to turn on third party software repositories
 #. TRANSLATORS: button to accept the agreement
 #: src/gs-overview-page.c:619 src/gs-repos-dialog.c:173
 msgid "_Enable"
-msgstr ""
+msgstr "A_ktivér"
 
 #: src/gs-overview-page.c:822
 msgid "Available for your operating system"
-msgstr ""
+msgstr "Tilgængelig til dit styresystem"
 
 #. Translators: the '%s' is replaced with the distribution name, constructing
 #. for example: "Available for Fedora Linux"
 #: src/gs-overview-page.c:826
 #, c-format
 msgid "Available for %s"
-msgstr ""
+msgstr "Tilgængelig til %s"
 
 #. Translators: This is the title of the main page of the UI.
 #: src/gs-overview-page.c:1122
@@ -3248,7 +3249,7 @@ msgstr "Oversigtsside"
 #. Translators: This is a heading for a section with all available apps.
 #: src/gs-overview-page.ui:146
 msgid "Available Apps"
-msgstr ""
+msgstr "Tilgængelige programmer"
 
 #. Translators: This is a heading for a list of categories.
 #: src/gs-overview-page.ui:173
@@ -3257,7 +3258,7 @@ msgstr "Andre kategorier"
 
 #: src/gs-overview-page.ui:215
 msgid "No App Data Found"
-msgstr ""
+msgstr "Ingen programdata fundet"
 
 #: lib/gs-plugin-loader.c:2792
 msgctxt "Distribution name"
@@ -3267,7 +3268,7 @@ msgstr "Ukendt"
 #. TRANSLATORS: button text
 #: src/gs-page.c:93
 msgid "_OK"
-msgstr ""
+msgstr "_OK"
 
 #: src/gs-page.c:290
 msgid "User declined installation"
@@ -3293,43 +3294,43 @@ msgstr "Er du sikker på, du vil fjerne arkivet %s?"
 msgid ""
 "All apps from %s will be uninstalled, and you will have to re-install the "
 "repository to use them again."
-msgstr ""
+msgstr "Alle programmer fra %s vil blive afinstalleret, og du skal geninstallere arkivet for at bruge dem igen."
 
 #. TRANSLATORS: this is a prompt message, and '%s' is an
 #. * app summary, e.g. 'GNOME Clocks'
 #: src/gs-page.c:582
 #, c-format
 msgid "Uninstall %s?"
-msgstr ""
+msgstr "Afinstallér %s?"
 
 #: src/gs-page.c:591
 msgid "App Settings & Data"
-msgstr ""
+msgstr "Programindstillinger og -data"
 
 #. Translators: the '%s' is replaced with the app name
 #: src/gs-page.c:594
 #, c-format
 msgid "It will not be possible to use %s after removal."
-msgstr ""
+msgstr "%s kan ikke bruges, når det er blevet fjernet."
 
 #. Translators: this is part of section about deleting app's data, where the
 #. 'keep' means 'keep the data'
 #: src/gs-page.c:617
 msgid "_Keep"
-msgstr ""
+msgstr "_Behold"
 
 #: src/gs-page.c:623
 msgid "Allows restoring app settings and content"
-msgstr ""
+msgstr "Tillader gendannelse af programindstillinger og -indhold"
 
 #. Translators: this is part of section about deleting app's data
 #: src/gs-page.c:632
 msgid "_Delete"
-msgstr ""
+msgstr "_Slet"
 
 #: src/gs-page.c:638
 msgid "Permanently deletes data to save disk space"
-msgstr ""
+msgstr "Sletter data permanent for at spare diskplads"
 
 #. TRANSLATORS: longer dialog text
 #: src/gs-page.c:645
@@ -3337,11 +3338,11 @@ msgstr ""
 msgid ""
 "It will not be possible to use %s after removal. App data and settings will "
 "be kept on disk, to allow restoring the app in the future."
-msgstr ""
+msgstr "%s kan ikke bruges, når det er blevet fjernet. Programdata og -indstillinger vil blive gemt på disken, så programmet kan gendannes på et senere tidspunkt."
 
 #: src/gs-prefs-dialog.ui:5
 msgid "Preferences"
-msgstr ""
+msgstr "Indstillinger"
 
 #: src/gs-prefs-dialog.ui:16
 msgid ""
@@ -3351,28 +3352,28 @@ msgstr "For at undgå udgifter og netværksbegrænsninger hentes programopdateri
 
 #: src/gs-prefs-dialog.ui:19
 msgid "Automatic _Updates"
-msgstr ""
+msgstr "A_utomatiske opdateringer"
 
 #: src/gs-prefs-dialog.ui:20
 msgid ""
 "Downloads and installs software updates in the background, when possible"
-msgstr ""
+msgstr "Om muligt hentes og installeres programopdateringer i baggrunden"
 
 #: src/gs-prefs-dialog.ui:33
 msgid "Automatic Update _Notifications"
-msgstr ""
+msgstr "P_åmindelser om automatiske opdateringer"
 
 #: src/gs-prefs-dialog.ui:34
 msgid "Show notifications when updates have been automatically installed"
-msgstr ""
+msgstr "Vis påmindelser, når opdateringer er installeret automatisk"
 
 #: src/gs-prefs-dialog.ui:47
 msgid "Show Only _Free Apps"
-msgstr ""
+msgstr "Vis kun _frie programmer"
 
 #: src/gs-prefs-dialog.ui:48
 msgid "Show only freely licensed apps and hide any proprietary apps"
-msgstr ""
+msgstr "Vis kun frie programmer og skjul proprietære programmer"
 
 #. TRANSLATORS: This is a text displayed during a distro upgrade. %s
 #. will be replaced by the name and version of distro, e.g. 'Fedora 23'.
@@ -3381,7 +3382,7 @@ msgstr ""
 msgid ""
 "Installed software is incompatible with %s, and will be automatically "
 "removed during upgrade."
-msgstr ""
+msgstr "Installeret software er ikke kompatibelt med %s og vil automatisk blive fjernet under opgraderingen."
 
 #: src/gs-removal-dialog.ui:7
 msgid "Incompatible Software"
@@ -3389,7 +3390,7 @@ msgstr "Inkompatibelt software"
 
 #: src/gs-removal-dialog.ui:37
 msgid "_Upgrade"
-msgstr ""
+msgstr "O_pgradér"
 
 #. TRANSLATORS: The '%s' is replaced with a repository name, like "Fedora
 #. Modular - x86_64"
@@ -3475,8 +3476,8 @@ msgstr "Ingen arkiver"
 #, c-format
 msgid "%u app installed"
 msgid_plural "%u apps installed"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u program installeret"
+msgstr[1] "%u programmer installeret"
 
 #. TRANSLATORS: This string states how many add-ons have been
 #. * installed from a particular repo, and is displayed on a row
@@ -3498,8 +3499,8 @@ msgstr[1] "%u tilføjelser installeret"
 #, c-format
 msgid "%u app"
 msgid_plural "%u apps"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u program"
+msgstr[1] "%u programmer"
 
 #. TRANSLATORS: This string is used to construct the 'X apps
 #. and Y add-ons installed' sentence, stating how many things have been
@@ -3535,7 +3536,7 @@ msgstr[1] "%s og %s er nu installeret"
 
 #: src/gs-repo-row.c:241
 msgid "Checking installed software…"
-msgstr ""
+msgstr "Undersøger installeret software …"
 
 #. Translators: The first '%s' is replaced with installation kind, like in
 #. case of Flatpak 'User Installation',
@@ -3548,7 +3549,7 @@ msgstr "%s • %s"
 
 #: src/gs-repo-row.c:399
 msgid "Remove"
-msgstr ""
+msgstr "Fjern"
 
 #. TRANSLATORS: lighthearted star rating description;
 #. *		A really bad app
@@ -3584,7 +3585,7 @@ msgstr "Elsker det"
 #. *		No star has been clicked yet
 #: src/gs-review-dialog.c:109
 msgid "Select a Star to Leave a Rating"
-msgstr ""
+msgstr "Vælg en stjerne for at lave en bedømmelse"
 
 #. TRANSLATORS: the review can't just be copied and pasted
 #: src/gs-review-dialog.c:127
@@ -3620,28 +3621,28 @@ msgstr "Beskrivelsen er for lang"
 #. their opinions about the apps.
 #: src/gs-review-dialog.ui:6
 msgid "Write a Review"
-msgstr ""
+msgstr "Skriv en anmeldelse"
 
 #. Translators: A button to publish the user's opinion about the app.
 #: src/gs-review-dialog.ui:34
 msgid "_Send"
-msgstr ""
+msgstr "_Send"
 
 #: src/gs-review-dialog.ui:120
 msgid ""
 "What did you like about this app? Leaving your feedback along with your "
 "reasons for leaving a review is helpful for others."
-msgstr ""
+msgstr "Hvad kunne du godt lide ved programmet? Giver du feedback sammen med begrundelsen for din anmeldelse, kan det hjælpe andre."
 
 #: src/gs-review-dialog.ui:133
 msgid "Review Summary"
-msgstr ""
+msgstr "Opsummering af anmeldelse"
 
 #. Translators: This is where the users enter their opinions about the apps.
 #: src/gs-review-dialog.ui:165
 msgctxt "app review"
 msgid "Write a short review"
-msgstr ""
+msgstr "Skriv en kort anmeldelse"
 
 #: src/gs-review-dialog.ui:209
 msgid ""
@@ -3690,7 +3691,7 @@ msgstr "Rapportér anmeldelse?"
 #. * sending a review for moderation
 #: src/gs-review-row.c:244
 msgid "_Report"
-msgstr ""
+msgstr "_Rapportér"
 
 #. Translators: Users can express their opinions about other users' opinions
 #. about the apps.
@@ -3723,11 +3724,11 @@ msgstr "Fjern …"
 msgid ""
 "App isn’t sandboxed but the distribution has checked that it is not "
 "malicious"
-msgstr ""
+msgstr "Programmet kører ikke i sandkassetilstand, men distributionen har tjekket, at det ikke er ondsindet"
 
 #: src/gs-safety-context-dialog.c:164
 msgid "Check that you trust the vendor, as the app isn’t sandboxed"
-msgstr ""
+msgstr "Undersøg, om du har tillid til leverandøren, da programmet ikke kører i sandkassetilstand"
 
 #. Translators: This refers to permissions (for example, from flatpak) which
 #. an app requests from the user.
@@ -3783,7 +3784,7 @@ msgstr "Kan anmode sessionstjenester om data"
 #. an app requests from the user.
 #: src/gs-safety-context-dialog.c:218
 msgid "User Device Access"
-msgstr ""
+msgstr "Adgang til brugerenheder"
 
 #: src/gs-safety-context-dialog.c:219
 msgid "Can access devices such as webcams or gaming controllers"
@@ -3793,7 +3794,7 @@ msgstr "Kan tilgå enheder såsom webkameraer eller spilenheder"
 #. an app requests from the user.
 #: src/gs-safety-context-dialog.c:222
 msgid "No User Device Access"
-msgstr ""
+msgstr "Ingen adgang til brugerenheder"
 
 #: src/gs-safety-context-dialog.c:223
 msgid "Cannot access devices such as webcams or gaming controllers"
@@ -3803,11 +3804,11 @@ msgstr "Kan ikke tilgå enheder såsom webkameraer eller spilenheder"
 #. an app requests from the user.
 #: src/gs-safety-context-dialog.c:229
 msgid "System Device Access"
-msgstr ""
+msgstr "Adgang til systemenheder"
 
 #: src/gs-safety-context-dialog.c:230
 msgid "Can access system devices which require elevated permissions"
-msgstr ""
+msgstr "Kan tilgå systemenheder, som kræver rettigheder på et højere niveau"
 
 #. Translators: This refers to permissions (for example, from flatpak) which
 #. an app requests from the user.
@@ -3932,13 +3933,13 @@ msgstr "Programmet eller dets afhængigheder understøttes ikke længere og kan 
 msgid ""
 "This app does not specify what license it is developed under, and may be "
 "proprietary"
-msgstr ""
+msgstr "Dette program angiver ikke, hvilken licens det er udviklet under og kan være proprietært"
 
 #: src/gs-safety-context-dialog.c:391
 msgid ""
 "This software does not specify what license it is developed under, and may "
 "be proprietary"
-msgstr ""
+msgstr "Denne software angiver ikke, hvilken licens den er udviklet under og kan være proprietært"
 
 #. Translators: This refers to permissions (for example, from flatpak) which
 #. an app requests from the user.
@@ -3970,7 +3971,7 @@ msgstr "Koden er offentligt tilgængelig og kan auditeres af uafhængige persone
 #: src/gs-safety-context-dialog.c:425
 #, c-format
 msgid "%s is privileged"
-msgstr ""
+msgstr "%s leveres af distributionen"
 
 #. Translators: The app is considered safe to install and run.
 #. * The placeholder is the app name.
@@ -3984,7 +3985,7 @@ msgstr "%s er sikker"
 #: src/gs-safety-context-dialog.c:439
 #, c-format
 msgid "%s is probably safe"
-msgstr ""
+msgstr "%s er sandsynligvis sikker"
 
 #. Translators: The app is considered potentially unsafe to install and run.
 #. * The placeholder is the app name.
@@ -4004,7 +4005,7 @@ msgstr "%s er usikker"
 #: src/gs-safety-context-dialog.c:544
 msgctxt "Unknown license"
 msgid "Unknown"
-msgstr ""
+msgstr "Ukendt"
 
 #. Translators: This is the title of the dialog which contains information
 #. about the permissions of an app
@@ -4046,7 +4047,7 @@ msgstr "Næste skærmbillede"
 #. app’s details.
 #: src/gs-screenshot-carousel.ui:130
 msgid "No Screenshots"
-msgstr ""
+msgstr "Ingen skærmbilleder"
 
 #. TRANSLATORS: this is when we try to download a screenshot and
 #. * we get back 404
@@ -4106,7 +4107,7 @@ msgstr "Søg efter programmer"
 
 #: src/gs-search-page.ui:46
 msgid "No App Found"
-msgstr ""
+msgstr "Intet program fundet"
 
 #. TRANSLATORS: this is part of the in-app notification,
 #. * where the %s is the truncated hostname, e.g.
@@ -4220,7 +4221,7 @@ msgstr "Kunne ikke installere: netværksadgang var påkrævet, men var ikke tilg
 #. TRANSLATORS: failure text for the in-app notification
 #: src/gs-shell.c:1402
 msgid "Unable to install: the app has an invalid format"
-msgstr ""
+msgstr "Kunne ikke installere: programmet har et ugyldigt format"
 
 #. TRANSLATORS: failure text for the in-app notification,
 #. * where the %s is the app name (e.g. "GIMP")
@@ -4584,7 +4585,7 @@ msgstr "_Softwarearkiver"
 
 #: src/gs-shell.ui:12
 msgid "_Preferences"
-msgstr ""
+msgstr "_Indstillinger"
 
 #. button in the info bar
 #: src/gs-shell.ui:109
@@ -4599,7 +4600,7 @@ msgstr "Netværksindstillinger"
 #. button in the info bar
 #: src/gs-shell.ui:129
 msgid "_Restart Now…"
-msgstr ""
+msgstr "_Genstart nu …"
 
 #. button in the info bar
 #: src/gs-shell.ui:140
@@ -4612,15 +4613,15 @@ msgstr "Søg"
 
 #: src/gs-shell.ui:216 src/gs-shell.ui:218
 msgid "Main Menu"
-msgstr ""
+msgstr "Hovedmenu"
 
 #: src/gs-shell.ui:245
 msgid "Search apps"
-msgstr ""
+msgstr "Find programmer"
 
 #: src/gs-shell.ui:257
 msgid "Metered network ‒ automatic updates paused"
-msgstr ""
+msgstr "Forbrugsafregnet forbindelse ‒ automatiske opdateringer sat på pause"
 
 #: src/gs-shell.ui:258
 msgid "Find Out _More"
@@ -4629,21 +4630,21 @@ msgstr "Få _mere at vide"
 #. Translators: A label for a button to show all available software.
 #: src/gs-shell.ui:272
 msgid "_Explore"
-msgstr ""
+msgstr "_Udforsk"
 
 #. Translators: A label for a button to show only software which is already
 #. installed.
 #: src/gs-shell.ui:286
 msgctxt "List of installed apps"
 msgid "_Installed"
-msgstr ""
+msgstr "_Installerede"
 
 #. Translators: A label for a button to show only updates which are available
 #. to install.
 #: src/gs-shell.ui:308
 msgctxt "Header bar button for list of apps to be updated"
 msgid "_Updates"
-msgstr ""
+msgstr "_Opdateringer"
 
 #. Translators: This is shown in a bubble to represent a 0 byte
 #. * storage size, so its context is “storage size: none”. The
@@ -4655,11 +4656,11 @@ msgstr "Ingen"
 
 #: src/gs-storage-context-dialog.c:139
 msgid "App Data"
-msgstr ""
+msgstr "Programdata"
 
 #: src/gs-storage-context-dialog.c:140
 msgid "Data needed for the app to run"
-msgstr ""
+msgstr "Data programmet behøver for at køre"
 
 #: src/gs-storage-context-dialog.c:145
 msgid "User Data"
@@ -4667,7 +4668,7 @@ msgstr "Brugerdata"
 
 #: src/gs-storage-context-dialog.c:146
 msgid "Data created by you in the app"
-msgstr ""
+msgstr "Data genereret af dig i programmet"
 
 #: src/gs-storage-context-dialog.c:153
 msgid "Cache Data"
@@ -4679,7 +4680,7 @@ msgstr "Midlertige cachedata"
 
 #: src/gs-storage-context-dialog.c:172
 msgid "The app itself"
-msgstr ""
+msgstr "Programmet selv"
 
 #: src/gs-storage-context-dialog.c:177
 msgid "Required Dependencies"
@@ -4687,7 +4688,7 @@ msgstr "Nødvendige afhængigheder"
 
 #: src/gs-storage-context-dialog.c:178
 msgid "Shared system components required by this app"
-msgstr ""
+msgstr "Delte systemkomponenter dette program kræver"
 
 #: src/gs-storage-context-dialog.c:188
 msgctxt "Download size"
@@ -4703,7 +4704,7 @@ msgstr "Lager"
 #. Translators: Please do not translate the markup or link href
 #: src/gs-storage-context-dialog.ui:69
 msgid "Cached data can be cleared from the <a href=\"dummy\">_app settings</a>."
-msgstr ""
+msgstr "Cachedata kan ryddes i <a href=\"dummy\">_programmets indstillinger</a>."
 
 #: src/gs-summary-tile.c:139
 #, c-format
@@ -4783,16 +4784,16 @@ msgstr "Hent venligst softwareopdateringer der venter."
 #, c-format
 msgid "%u App Updated — Restart Required"
 msgid_plural "%u Apps Updated — Restart Required"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u program opdateret — genstart nødvendig"
+msgstr[1] "%u programmer opdateret — genstart nødvendig"
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:363
 #, c-format
 msgid "%u App Updated"
 msgid_plural "%u Apps Updated"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u program opdateret"
+msgstr[1] "%u programmer opdateret"
 
 #. TRANSLATORS: %1 is an app name, e.g. Firefox
 #: src/gs-update-monitor.c:374
@@ -4803,7 +4804,7 @@ msgstr "%s er blevet opdateret."
 #. TRANSLATORS: the app needs restarting
 #: src/gs-update-monitor.c:377
 msgid "Please restart the app."
-msgstr ""
+msgstr "Genstart venligst programmet."
 
 #. TRANSLATORS: %1 and %2 are both app names, e.g. Firefox
 #: src/gs-update-monitor.c:385
@@ -4816,8 +4817,8 @@ msgstr "%s og %s er blevet opdateret."
 #, c-format
 msgid "%u app requires a restart."
 msgid_plural "%u apps require a restart."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%u program kræver en genstart."
+msgstr[1] "%u programmer kræver en genstart."
 
 #. TRANSLATORS: %1, %2 and %3 are all app names, e.g. Firefox
 #: src/gs-update-monitor.c:403
@@ -4959,24 +4960,24 @@ msgstr "Seneste søgning: %s"
 
 #: src/gs-updates-page.c:345
 msgid "Stop"
-msgstr ""
+msgstr "Stop"
 
 #: src/gs-updates-page.c:354 src/gs-updates-page.c:366
 msgid "Check for Updates"
-msgstr ""
+msgstr "Søg efter opdateringer"
 
 #. TRANSLATORS:  the first %s is the distro name, e.g. 'Fedora'
 #. * and the second %s is the distro version, e.g. '25'
 #: src/gs-updates-page.c:616
 #, c-format
 msgid "%s %s has stopped receiving critical software updates"
-msgstr ""
+msgstr "%s %s modtager ikke længere kritiske softwareopdateringer"
 
 #. TRANSLATORS: This message is meant to tell users that they need to upgrade
 #. * or else their distro will not get important updates.
 #: src/gs-updates-page.c:622
 msgid "Your operating system has stopped receiving critical software updates"
-msgstr ""
+msgstr "Dit styresystem modtager ikke længere kritiske softwareopdateringer"
 
 #. TRANSLATORS: this is to explain that downloading updates may cost money
 #: src/gs-updates-page.c:894
@@ -5008,15 +5009,15 @@ msgstr "Der kræves internetadgang for at søge efter opdateringer."
 #. TRANSLATORS: this is a link to the control-center network panel
 #: src/gs-updates-page.c:917
 msgid "Network _Settings"
-msgstr ""
+msgstr "_Netværksindstillinger"
 
 #: src/gs-updates-page.c:955
 msgid "Software Upgrades Downloaded"
-msgstr ""
+msgstr "Softwareopgraderinger hentet"
 
 #: src/gs-updates-page.c:956
 msgid "Software upgrades have been downloaded and are ready to be installed."
-msgstr ""
+msgstr "Softwareopgraderinger er blevet hentet og er klar til at blive installeret."
 
 #: src/gs-updates-page.c:1365
 msgid "Check for updates"
@@ -5085,21 +5086,21 @@ msgstr "Opdateringer håndteres automatisk."
 #. * offline updates
 #: src/gs-updates-section.c:365
 msgid "_Restart & Update…"
-msgstr ""
+msgstr "_Genstart og opdatér …"
 
 #. TRANSLATORS: This is the button for upgrading all
 #. * online-updatable apps
 #: src/gs-updates-section.c:371
 msgid "U_pdate All"
-msgstr ""
+msgstr "O_pdatér alle"
 
 #: src/gs-updates-section.c:448
 msgid "Software Updates Downloaded"
-msgstr ""
+msgstr "Softwareopdateringer hentet"
 
 #: src/gs-updates-section.c:449
 msgid "Software updates have been downloaded and are ready to be installed."
-msgstr ""
+msgstr "Softwareopdateringer er blevet hentet og er klar til at blive installeret."
 
 #. TRANSLATORS: This is the header for system firmware that
 #. * requires a reboot to apply
@@ -5117,7 +5118,7 @@ msgstr "Kræver genstart"
 #. * app updates, typically flatpaks or snaps
 #: src/gs-updates-section.c:535
 msgid "App Updates"
-msgstr ""
+msgstr "Programopdateringer"
 
 #. TRANSLATORS: This is the header for device firmware that can
 #. * be installed online
@@ -5175,7 +5176,7 @@ msgstr "En stor opgradering med nye funktioner og mere finpudsning."
 
 #: src/gs-upgrade-banner.ui:187
 msgid "_Restart & Upgrade…"
-msgstr ""
+msgstr "_Genstart og opgradér …"
 
 #: src/gs-upgrade-banner.ui:215
 msgid "Remember to back up data and files before upgrading."
@@ -5184,12 +5185,12 @@ msgstr "Husk at tage en sikkerhedskopi af dine data inden opgraderingen."
 #: lib/gs-utils.c:523 lib/gs-utils.c:554
 #, c-format
 msgid "Failed to delete file “%s”: %s"
-msgstr ""
+msgstr "Kunne ikke slette filen “%s”: %s"
 
 #: lib/gs-utils.c:565
 #, c-format
 msgid "Failed to delete directory “%s”: %s"
-msgstr ""
+msgstr "Kunne ikke slette mappen “%s”: %s"
 
 #: src/org.gnome.Software.desktop.in:3
 msgid "App Center"
@@ -5240,7 +5241,7 @@ msgstr "EOS-opdateringstjenesten kunne ikke hente og anvende opdateringen."
 #: plugins/epiphany/gs-plugin-epiphany.c:500
 #: plugins/epiphany/gs-plugin-epiphany.c:504
 msgid "Web App"
-msgstr ""
+msgstr "Webprogram"
 
 #: plugins/epiphany/org.gnome.Software.Plugin.Epiphany.metainfo.xml.in:6
 msgid "Web Apps Support"
@@ -5267,7 +5268,7 @@ msgstr "Understøttelse af Flatpak"
 
 #: plugins/flatpak/org.gnome.Software.Plugin.Flatpak.metainfo.xml.in:7
 msgid "Flatpak is a framework for desktop apps on Linux"
-msgstr ""
+msgstr "Flatpak er et framework til skrivebordsprogrammer på Linux"
 
 #. Reference: https://docs.flatpak.org/en/latest/flatpak-command-
 #. reference.html#idm45858571325264
@@ -5446,45 +5447,45 @@ msgstr "Fjernenheden “%s” tillader ikke installering af “%s” sandsynligv
 #. TRANSLATORS: as in laptop battery power
 #: plugins/fwupd/gs-fwupd-app.c:66
 msgid "System power is too low to perform the update"
-msgstr ""
+msgstr "Systemets batteriniveau er for lavt til at gennemføre opdateringen"
 
 #. TRANSLATORS: as in laptop battery power
 #: plugins/fwupd/gs-fwupd-app.c:70
 #, c-format
 msgid "System power is too low to perform the update (%u%%, requires %u%%)"
-msgstr ""
+msgstr "Systemets batteriniveau er for lavt til at gennemføre opdateringen (%u %%, %u %% er nødvendig)"
 
 #. TRANSLATORS: for example, a Bluetooth mouse that is in powersave mode
 #: plugins/fwupd/gs-fwupd-app.c:76
 msgid "Device is unreachable, or out of wireless range"
-msgstr ""
+msgstr "Enheden kan ikke nås eller er uden for den trådløse rækkevidde"
 
 #. TRANSLATORS: for example the batteries *inside* the Bluetooth mouse
 #: plugins/fwupd/gs-fwupd-app.c:82
 #, c-format
 msgid "Device battery power is too low"
-msgstr ""
+msgstr "Enhedens batteriniveau er for lavt"
 
 #. TRANSLATORS: for example the batteries *inside* the Bluetooth mouse
 #: plugins/fwupd/gs-fwupd-app.c:85
 #, c-format
 msgid "Device battery power is too low (%u%%, requires %u%%)"
-msgstr ""
+msgstr "Enhedens batteriniveau er for lavt (%u %%, %u %% er nødvendig)"
 
 #. TRANSLATORS: usually this is when we're waiting for a reboot
 #: plugins/fwupd/gs-fwupd-app.c:91
 msgid "Device is waiting for the update to be applied"
-msgstr ""
+msgstr "Enheden venter på, at opdateringen udføres"
 
 #. TRANSLATORS: as in, wired mains power for a laptop
 #: plugins/fwupd/gs-fwupd-app.c:95
 msgid "Device requires AC power to be connected"
-msgstr ""
+msgstr "Enheden kræver, at strømforsyningen er tilsluttet"
 
 #. TRANSLATORS: lid means "laptop top cover"
 #: plugins/fwupd/gs-fwupd-app.c:99
 msgid "Device cannot be used while the lid is closed"
-msgstr ""
+msgstr "Enhed kan ikke bruges, mens låget er lukket"
 
 #. TRANSLATORS: a specific part of hardware,
 #. * the first %s is the device name, e.g. 'Unifying Receiver`
@@ -5633,45 +5634,45 @@ msgstr "USB-modtageropdatering til %s"
 #: plugins/fwupd/gs-fwupd-app.c:319
 #, c-format
 msgid "%s Drive Update"
-msgstr ""
+msgstr "Drevopdatering til %s"
 
 #. TRANSLATORS: flash refers to solid state storage, e.g. UFS or eMMC
 #: plugins/fwupd/gs-fwupd-app.c:323
 #, c-format
 msgid "%s Flash Drive Update"
-msgstr ""
+msgstr "Flashdrevopdatering til %s"
 
 #. TRANSLATORS: SSD refers to a Solid State Drive, e.g. non-rotating
 #. * SATA or NVMe disk
 #: plugins/fwupd/gs-fwupd-app.c:328
 #, c-format
 msgid "%s SSD Update"
-msgstr ""
+msgstr "SSD-opdatering til %s"
 
 #. TRANSLATORS: GPU refers to a Graphics Processing Unit, e.g.
 #. * the "video card"
 #: plugins/fwupd/gs-fwupd-app.c:333
 #, c-format
 msgid "%s GPU Update"
-msgstr ""
+msgstr "GPU-opdatering til %s"
 
 #. TRANSLATORS: Dock refers to the port replicator hardware laptops are
 #. * cradled in, or lowered onto
 #: plugins/fwupd/gs-fwupd-app.c:338
 #, c-format
 msgid "%s Dock Update"
-msgstr ""
+msgstr "Dockopdatering til %s"
 
 #. TRANSLATORS: Dock refers to the port replicator device connected
 #. * by plugging in a USB cable -- which may or may not also provide power
 #: plugins/fwupd/gs-fwupd-app.c:343
 #, c-format
 msgid "%s USB Dock Update"
-msgstr ""
+msgstr "USB-dockopdatering til %s"
 
 #: plugins/fwupd/gs-plugin-fwupd.c:1656
 msgid "Firmware update could not be applied: "
-msgstr ""
+msgstr "Firmwareopdatering kunne ikke udføres: "
 
 #: plugins/fwupd/gs-plugin-fwupd.c:1788
 msgid "Firmware"
@@ -5724,7 +5725,7 @@ msgstr "Pakker"
 
 #: plugins/packagekit/gs-plugin-packagekit.c:3147
 msgid "Failed to install updates: "
-msgstr ""
+msgstr "Kunne ikke installere opdateringer: "
 
 #: plugins/rpm-ostree/gs-plugin-rpm-ostree.c:2946
 msgid "Operating System (OSTree)"
