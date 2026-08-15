@@ -6,6 +6,7 @@
 # Ascii Wolf <mail@asciiwolf.com>, 2018
 # Ascii Wolf <mail@asciiwolf.com>, 2018,2023
 # Marek Černocký <marek@manet.cz>, 2013-2022
+# Pavel Borecki <pavel.borecki@gmail.com>, 2026
 # Petr Kovar <pknbe@volny.cz>, 2015
 # Roddy Shuler <roddy@stanfordalumni.org>, 2017
 # Roddy Shuler <roddy@stanfordalumni.org>, 2017
@@ -15,9 +16,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-software\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-04-06 16:01+0000\n"
+"POT-Creation-Date: 2026-08-15 16:02+0000\n"
 "PO-Revision-Date: 2016-04-15 19:22+0000\n"
-"Last-Translator: Ascii Wolf <mail@asciiwolf.com>, 2018,2023\n"
+"Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>, 2026\n"
 "Language-Team: Czech (http://app.transifex.com/endless-os/gnome-software/language/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -2125,28 +2126,28 @@ msgstr "_Přijmout"
 #: src/gs-common.c:835
 msgid "An update has been installed"
 msgid_plural "Updates have been installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Aktualizace byla nainstalována"
+msgstr[1] "Aktualizace byly nainstalovány"
+msgstr[2] "Aktualizací bylo nainstalováno"
+msgstr[3] "Aktualizace byly nainstalovány"
 
 #. TRANSLATORS: we've just removed some apps
 #: src/gs-common.c:845
 msgid "An app has been removed"
 msgid_plural "Apps have been removed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Aplikace byla odebrána"
+msgstr[1] "Aplikace byly odebrány"
+msgstr[2] "Aplikací bylo odebráno"
+msgstr[3] "Aplikace byly odebrány"
 
 #. TRANSLATORS: the new apps will not be run until we restart
 #: src/gs-common.c:851
 msgid "A restart is required for it to take effect."
 msgid_plural "A restart is required for them to take effect."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Aby se projevila, je zapotřebí restartovat."
+msgstr[1] "Aby se projevily, je zapotřebí restartovat."
+msgstr[2] "Aby se projevily, je zapotřebí restartovat."
+msgstr[3] "Aby se projevily, je zapotřebí restartovat."
 
 #. TRANSLATORS: button text
 #: src/gs-common.c:858
@@ -2162,55 +2163,55 @@ msgstr "právě teď"
 #, c-format
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Před minutou"
+msgstr[1] "Před %d minutami"
+msgstr[2] "Před %d minutami"
+msgstr[3] "Před %d minutami"
 
 #: src/gs-common.c:960
 #, c-format
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Před hodinou"
+msgstr[1] "Před %d hodinami"
+msgstr[2] "Před %d hodinami"
+msgstr[3] "Před %d hodinami"
 
 #: src/gs-common.c:964
 #, c-format
 msgid "%d day ago"
 msgid_plural "%d days ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Včera"
+msgstr[1] "Před %d dny"
+msgstr[2] "Před %d dny"
+msgstr[3] "Před %d dny"
 
 #: src/gs-common.c:968
 #, c-format
 msgid "%d week ago"
 msgid_plural "%d weeks ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Před týdnem"
+msgstr[1] "Před %d týdny"
+msgstr[2] "Před %d týdny"
+msgstr[3] "Před %d týdny"
 
 #: src/gs-common.c:972
 #, c-format
 msgid "%d month ago"
 msgid_plural "%d months ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Před měsícem"
+msgstr[1] "Před %d měsíci"
+msgstr[2] "Před %d měsíci"
+msgstr[3] "Před %d měsíci"
 
 #: src/gs-common.c:976
 #, c-format
 msgid "%d year ago"
 msgid_plural "%d years ago"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Před rokem"
+msgstr[1] "Před %d lety"
+msgstr[2] "Před %d lety"
+msgstr[3] "Před %d lety"
 
 #. Translators: This is to construct a disk size string consisting of the
 #. value and its unit, while
@@ -2724,10 +2725,10 @@ msgid ""
 "Unable to find the %s requested by %s. Please see %s for more information."
 msgid_plural ""
 "Unable to find the %s requested by %s. Please see %s for more information."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Nebylo možné najít %s, vyžadované %s. Další informace viz %s. "
+msgstr[1] "Nebylo možné najít %s, vyžadované %s. Další informace viz %s. "
+msgstr[2] "Nebylo možné najít %s, vyžadované %s. Další informace viz %s. "
+msgstr[3] "Nebylo možné najít %s, vyžadované %s. Další informace viz %s. "
 
 #. TRANSLATORS: no codecs were found. First %s will be replaced by actual
 #. codec name(s), second %s is a link titled "the documentation"
@@ -2739,10 +2740,10 @@ msgid ""
 msgid_plural ""
 "Unable to find the %s you were searching for. Please see %s for more "
 "information."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Nebylo možné najít %s, které jste hledali. Další informace viz %s. "
+msgstr[1] "Nebylo možné najít %s, které jste hledali. Další informace viz %s. "
+msgstr[2] "Nebylo možné najít %s, které jste hledali. Další informace viz %s. "
+msgstr[3] "Nebylo možné najít %s, které jste hledali. Další informace viz %s. "
 
 #: src/gs-extras-page.c:650 src/gs-extras-page.c:707 src/gs-extras-page.c:747
 #, c-format
@@ -3506,10 +3507,10 @@ msgstr "Žádné repozitáře"
 #, c-format
 msgid "%u app installed"
 msgid_plural "%u apps installed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u aplikace nainstalována"
+msgstr[1] "%u aplikace nainstalovány"
+msgstr[2] "%u aplikací nainstalováno"
+msgstr[3] "%u aplikace nainstalovány"
 
 #. TRANSLATORS: This string states how many add-ons have been
 #. * installed from a particular repo, and is displayed on a row
@@ -3533,10 +3534,10 @@ msgstr[3] "Nainstalováno %u doplňků"
 #, c-format
 msgid "%u app"
 msgid_plural "%u apps"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u aplikace"
+msgstr[1] "%u aplikace"
+msgstr[2] "%u aplikací"
+msgstr[3] "%u aplikace"
 
 #. TRANSLATORS: This string is used to construct the 'X apps
 #. and Y add-ons installed' sentence, stating how many things have been
@@ -3695,10 +3696,10 @@ msgstr "Najděte si v našich <a href=\"https://odrs.gnome.org/privacy\">zásad�
 #, c-format
 msgid "%u review total"
 msgid_plural "%u reviews total"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u recenze celkem"
+msgstr[1] "%u recenze celkem"
+msgstr[2] "%u recenzí celkem"
+msgstr[3] "%u recenze celkem"
 
 #: src/gs-review-histogram.ui:88
 msgid "out of 5 stars"
@@ -4828,20 +4829,20 @@ msgstr "Stáhněte prosím čekající aktualizace softwaru."
 #, c-format
 msgid "%u App Updated — Restart Required"
 msgid_plural "%u Apps Updated — Restart Required"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u aplikace aktualizována – je třeba restartovat"
+msgstr[1] "%u aplikace aktualizovány – je třeba restartovat"
+msgstr[2] "%u aplikací aktualizováno – je třeba restartovat"
+msgstr[3] "%u aplikace aktualizovány – je třeba restartovat"
 
 #. TRANSLATORS: apps were auto-updated
 #: src/gs-update-monitor.c:363
 #, c-format
 msgid "%u App Updated"
 msgid_plural "%u Apps Updated"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u aplikace aktualizována"
+msgstr[1] "%u aplikace aktualizovány"
+msgstr[2] "%u aplikací aktualizováno"
+msgstr[3] "%u aplikace aktualizovány"
 
 #. TRANSLATORS: %1 is an app name, e.g. Firefox
 #: src/gs-update-monitor.c:374
@@ -4865,10 +4866,10 @@ msgstr "Aplikace %s a %s byly aktualizovány."
 #, c-format
 msgid "%u app requires a restart."
 msgid_plural "%u apps require a restart."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "%u aplikace vyžaduje restart."
+msgstr[1] "%u aplikace vyžadují restart."
+msgstr[2] "%u aplikací vyžaduje restart."
+msgstr[3] "%u aplikace vyžadují restart."
 
 #. TRANSLATORS: %1, %2 and %3 are all app names, e.g. Firefox
 #: src/gs-update-monitor.c:403
@@ -4939,10 +4940,10 @@ msgstr[3] "Aktualizace softwaru nainstalovány"
 #: src/gs-update-monitor.c:1275
 msgid "An important operating system update has been installed."
 msgid_plural "Important operating system updates have been installed."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
-msgstr[3] ""
+msgstr[0] "Důležitá aktualizace operačního systému byla nainstalovaná."
+msgstr[1] "Důležité aktualizace operačního systému byly nainstalované."
+msgstr[2] "Důležité aktualizace operačního systému byly nainstalované."
+msgstr[3] "Důležité aktualizace operačního systému byly nainstalované."
 
 #. TRANSLATORS: Button to look at the updates that were installed.
 #. * Note that it has nothing to do with the app reviews, the
@@ -5472,7 +5473,7 @@ msgstr "Systémová instalace"
 msgid ""
 "You don’t have enough space to update these apps. Please remove apps or "
 "documents to create more space."
-msgstr ""
+msgstr "Nemáte dostatek místa pro aktualizaci těchto aplikací. Odeberte aplikace nebo dokumenty a uvolněte tak víc místa."
 
 #: plugins/flatpak/gs-plugin-flatpak.c:1459
 #, c-format
@@ -5489,7 +5490,7 @@ msgstr "Selhalo přidání doplňku „%s“ k odinstalování: %s"
 msgid ""
 "You don’t have enough space to install %s. Please remove apps or documents "
 "to create more space."
-msgstr ""
+msgstr "Nemáte dostatek místa pro instalaci %s. Odeberte aplikace nebo dokumenty a uvolněte tak víc místa."
 
 #: plugins/flatpak/gs-plugin-flatpak.c:1751
 #, c-format
